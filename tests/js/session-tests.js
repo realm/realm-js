@@ -1073,27 +1073,22 @@ module.exports = {
         realm.close();
 
         // delete Realm on server
-        const encodedPath = encodeURIComponent('myrealm');
-        const url = new URL(`/realms/files/${user.identity}/${encodedPath}`, user.server);
-        const options = {
+        let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
+        let url = new URL(`/realms/files/${encodedPath}`, user.server);
+        let options = {
             headers: {
-                Authorization: user.token,
-                Accept: 'application/json, text/plain, */*',
+                Authorization: `${user.token}`,
                 'Content-Type': 'application/json',
             },
             method: 'DELETE',
         };
-        const response = await fetch(url, options);
-        if (response.ok) {
-            // open the Realm again and download
-            realm = await Realm.open(config);
-            await realm.syncSession.downloadAllServerChanges();
-            TestCase.assertEqual(realm.objects(schemas.IntOnly.name).length, 0);
-            realm.close();
-            Promise.resolve();
-        } else {
-            Promise.reject(`Failed to delete Realm: ${JSON.stringify(response)}`);
-        }
+        let response = await fetch(url, options);
+        // open the Realm again and download
+        realm = await Realm.open(config);
+        await realm.syncSession.downloadAllServerChanges();
+        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).length, 0);
+        realm.close();
+        Promise.resolve();
     },
 
     testClientResyncIncorrectMode() {
