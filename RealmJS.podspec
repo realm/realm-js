@@ -35,6 +35,11 @@ Pod::Spec.new do |s|
   # @see https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#platform-ios
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
+  # We run the download-realm.js script both:
+  # 1) As "prepare_command" (executed when running `pod install`), to have the files available when  to modify the XCode project correctly.
+  # 2) As "script_phase" (executed by XCode when building), to allow developers to commit their `ios/Pods` directory to their repository (and not run `pod install` after cloning it).
+  # Note: It leaves a lock file, ensuring it will only download the archive once.
+  s.prepare_command        = 'node ./scripts/download-realm.js ios --sync'
   s.script_phase           = { :name => 'Download Realm Core & Sync',
                                :script => 'echo "Using Node.js $(node --version)" && node ${PODS_TARGET_SRCROOT}/scripts/download-realm.js ios --sync',
                                :execution_position => :before_compile }
