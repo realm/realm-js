@@ -26,6 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
+const URL = require('url-parse');
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
@@ -1033,42 +1034,66 @@ module.exports = {
         });
     },
 
-    testClientResetAtOpen() {
+    async testClientResetAtOpen() {
         // FIXME: try to enable for React Native
         if (!isNodeProcess) {
             return;
         }
+        const fetch = require('node-fetch');
 
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-            return new Promise((resolve, _reject) => {
-                var realm;
-                const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
-                config.sync.clientResyncMode = 'manual';
-                config.sync.error = (sender, error) => {
-                    try {
-                        TestCase.assertEqual(error.name, 'ClientReset');
-                        TestCase.assertDefined(error.config);
-                        TestCase.assertNotEqual(error.config.path, '');
-                        const path = realm.path;
-                        realm.close();
-                        Realm.Sync.initiateClientReset(path);
-                        // open Realm with error.config, and copy required objects a Realm at `path`
-                        resolve();
-                    }
-                    catch (e) {
-                        _reject(e);
-                    }
-                };
+        let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));
+        var realm;
+        const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
+        config.schema = [schemas.IntOnly];
+        config.sync.clientResyncMode = 'manual';
+        config.sync.fullSynchronization = true;
+        // config.sync.error = (sender, error) => {
+        //     try {
+        //         TestCase.assertEqual(error.name, 'ClientReset');
+        //         TestCase.assertDefined(error.config);
+        //         TestCase.assertNotEqual(error.config.path, '');
+        //         const path = realm.path;
+        //         realm.close();
+        //         Realm.Sync.initiateClientReset(path);
+        //         // open Realm with error.config, and copy required objects a Realm at `path`
+        //         resolve();
+        //     }
+        //     catch (e) {
+        //         reject(e);
+        //     }
+        // };
 
-                return Realm.open(config).then(r => {
-                    realm = r;
-                    const session = realm.syncSession;
-
-                    TestCase.assertEqual(session.config.error, config.sync.error);
-                    session._simulateError(211, 'ClientReset'); // 211 -> divering histories
-                });
-            });
+        // open, download, create an object, upload and close
+        realm = await Realm.open(config);
+        await realm.syncSession.downloadAllServerChanges();
+        realm.write(() => {
+            realm.create(schemas.IntOnly.name, { intCol: 1 });
         });
+        await realm.syncSession.uploadAllLocalChanges();
+        realm.close();
+
+        // delete Realm on server
+        const encodedPath = encodeURIComponent('myrealm');
+        const url = new URL(`/realms/files/${user.identity}/${encodedPath}`, user.server);
+        const options = {
+            headers: {
+                Authorization: user.token,
+                Accept: 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+            },
+            method: 'DELETE',
+        };
+        const response = await fetch(url, options);
+        if (response.ok) {
+            // open the Realm again and download
+            realm = await Realm.open(config);
+            await realm.syncSession.downloadAllServerChanges();
+            TestCase.assertEqual(realm.objects(schemas.IntOnly.name).length, 0);
+            realm.close();
+            Promise.resolve();
+        } else {
+            Promise.reject(`Failed to delete Realm: ${JSON.stringify(response)}`);
+        }
     },
 
     testClientResyncIncorrectMode() {
