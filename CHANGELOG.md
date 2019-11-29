@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgraded Realm Object Store to commit eb3b351c9e4d6a5024e442243bfb1fa320d94bfe.
+* A new error code is added. When the state is entered, it is often when a client attempt to connect to a server after a long period of being offline.
 
 3.5.0-alpha.1 Release notes (2019-11-27)
 =============================================================
