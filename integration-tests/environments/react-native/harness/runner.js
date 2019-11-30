@@ -64,9 +64,7 @@ function ensureSimulator(deviceName, deviceTypeId) {
     // Boot up the device
     console.log(`Booting simulator`);
     xcode.simctl.boot(deviceId);
-    console.log(`Waiting for simulator`);
-    // Wait for "com.apple.springboard" launching, to ensure device is ready ...
-    xcode.simctl.launch(deviceName, "com.apple.springboard");
+    console.log(`Simulator booted`);
     return deviceId;
 }
 
