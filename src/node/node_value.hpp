@@ -304,7 +304,12 @@ inline node::String node::Value::to_string(Napi::Env env, const Napi::Value& val
 
 template<>
 inline double node::Value::to_number(Napi::Env env, const Napi::Value& value) {
-	return value.ToNumber();
+	double number = value.ToNumber();
+	if (std::isnan(number)) {
+		throw std::invalid_argument(util::format("Value '%1' not convertible to a number.", (std::string)to_string(env, value)));
+	}
+	
+	return number;
 }
 
 //template<>

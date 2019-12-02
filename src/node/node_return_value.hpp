@@ -44,7 +44,7 @@ class ReturnValue<node::Types> {
 	}
 
     void set(const Napi::Value &value) {
-        m_value = Napi::Value::From(m_env, value);
+        m_value = Napi::Value(m_env, value);
     }
 
     void set(const std::string &string) {
@@ -53,7 +53,7 @@ class ReturnValue<node::Types> {
 
     void set(const char *str) {
         if (!str) {
-			m_value = Napi::Value::From(m_env, m_env.Null());
+			m_value = Napi::Value(m_env, m_env.Null());
         }
         else {
 			m_value = Napi::Value::From(m_env, str);
@@ -79,15 +79,15 @@ class ReturnValue<node::Types> {
     void set(realm::Mixed mixed) {
 		//Napi: check is correct 
 		//m_value.Set(Value<node::Types>::from_mixed(nullptr, mixed));
-		m_value = Napi::Value::From(m_env, Value<node::Types>::from_mixed(nullptr, mixed));
+		m_value = Napi::Value(m_env, Value<node::Types>::from_mixed(nullptr, mixed));
     }
 
     void set_null() {
-		m_value = Napi::Value::From(m_env, m_env.Null());
+		m_value = Napi::Value(m_env, m_env.Null());
     }
 
     void set_undefined() {
-		m_value = Napi::Value::From(m_env, m_env.Undefined());
+		m_value = Napi::Value(m_env, m_env.Undefined());
     }
 
     template<typename T>
