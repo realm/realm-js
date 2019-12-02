@@ -1,10 +1,11 @@
-x.x.x Release notes (yyyy-MM-dd)
+3.5.0 Release notes (2019-12-2)
 =============================================================
+NOTE: Including changes from v3.5.0-alpha.1.
+
 ### Enhancements
-* None.
+* Improved performance for some queries involving links. ([RJS-350](https://jira.mongodb.org/browse/RJS-340))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
@@ -13,6 +14,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
+* Added a test to verify that an exception is thrown when an object schema has no properties.
+* Added a test to verify that `Realm.close()` is idempotent.
+* Upgraded the React Native integration tests app (now using RN v0.61.3). ([#2603](https://github.com/realm/realm-js/pull/2603) & [#2609](https://github.com/realm/realm-js/pull/2609))
+* Upgraded Realm Sync from v4.8.3 to v4.9.0. ([RJS-350](https://jira.mongodb.org/browse/RJS-350))
 * Upgraded Realm Object Store to commit eb3b351c9e4d6a5024e442243bfb1fa320d94bfe.
 * A new error code is added. When the state is entered, it is often when a client attempt to connect to a server after a long period of being offline.
 
