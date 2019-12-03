@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Fixed download URLs to make it possible to build without sync. ([RJS-355](https://jira.mongodb.org/browse/RJS-355))
+* Now explicitly (deleting and re-)creating a "realm-js-integration-tests" simulator when running the React Native iOS integration tests.
 
 3.5.0 Release notes (2019-12-2)
 =============================================================
@@ -891,10 +892,10 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
   * A new class - `Realm.Sync.Credentials` has been added that contains factory methods to create credentials with all supported providers.
   * Here are some examples on how to transform your old code to use the new API:
 
-  | Old | New |
-  | - | - |
-  | `const user = await Realm.Sync.User.login(serverUrl, 'username', 'password');` | `const credentials = Realm.Sync.Credentials.usernamePassword('username', 'password');`<br/> `const user = await Realm.Sync.User.login(serverUrl, credentials);` |
-  | `const jwtToken = 'acc3ssT0ken...';`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'jwt', jwtToken);` | `const jwtToken = 'acc3ssT0ken...';`<br>`const credentials = Realm.Sync.Credentials.jwt(jwtToken);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
+  | Old                                                                                                                                                                                                  | New                                                                                                                                                                                                                                                        |
+  | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `const user = await Realm.Sync.User.login(serverUrl, 'username', 'password');`                                                                                                                       | `const credentials = Realm.Sync.Credentials.usernamePassword('username', 'password');`<br/> `const user = await Realm.Sync.User.login(serverUrl, credentials);`                                                                                            |
+  | `const jwtToken = 'acc3ssT0ken...';`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'jwt', jwtToken);`                                                                       | `const jwtToken = 'acc3ssT0ken...';`<br>`const credentials = Realm.Sync.Credentials.jwt(jwtToken);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);`                                                                                 |
   | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'custom/fooauth', customToken, userInfo);` | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const credentials = Realm.Sync.Credentials.custom('custom/fooauth', customToken, userInfo);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
 * Exposed `Realm.Sync.User.serialize()` to create a persistable representation of a user instance, as well as `Realm.Sync.User.deserialize()` to later inflate a `User` instance that can be used to connect to Realm Object Server and open synchronized Realms. ([#1276](https://github.com/realm/realm-js/issues/1276))
 * Added `Realm.Sync.Session.pause()` and `Realm.Sync.Session.resume()` to allow controlling when to sync data. ([#2014](https://github.com/realm/realm-js/issues/2014))
