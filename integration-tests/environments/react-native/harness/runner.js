@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const { MochaRemoteServer } = require("mocha-remote-server");
+const { timeout, TimeoutError } = require("promise-timeout");
 
 const rn = require("./react-native-cli");
 const android = require("./android-cli");
@@ -36,6 +37,9 @@ function ensureSimulator(deviceName, deviceTypeId) {
         throw new Error(`System doesn't have the "${deviceTypeId}" device type`);
     }
 
+    // Shutdown all booted simulators (as they might interfeer by loading and executing the Metro bundle)
+    xcode.simctl.shutdown('all');
+
     // Determine if the device exists and has the correct deviceTypeId and latest runtime
     const { devices: devicesByType } = xcode.simctl.list('devices', 'available');
     const availableDevices = [].concat(...Object.keys(devicesByType).map(type => devicesByType[type]));
@@ -44,10 +48,6 @@ function ensureSimulator(deviceName, deviceTypeId) {
 
     // Delete any existing devices with the expected name
     for (const device of devices) {
-        if (device.state !== "Shutdown") {
-            console.log(`Shutting down simulator (id = ${device.udid})`);
-            xcode.simctl.shutdown(device.udid);
-        }
         console.log(`Deleting simulator (id = ${device.udid})`);
         xcode.simctl.delete(device.udid);
     }
@@ -111,21 +111,20 @@ async function runApp(platform, junitFilePath) {
         // Ask React Native to run the android app
         rn.sync("run-android", "--no-packager");
     } else if (platform === "ios") {
-        const deviceName = 'realm-js-integration-tests';
+        const deviceName = "realm-js-integration-tests";
         ensureSimulator(deviceName, 'com.apple.CoreSimulator.SimDeviceType.iPhone-11');
         console.log("Simulator is ready 🚀");
         // Ask React Native to run the ios app
-        rn.sync("run-ios", "--no-packager", `--simulator`, deviceName);
+        rn.sync("run-ios", "--no-packager", "--simulator", deviceName);
     } else {
         throw new Error(`Unexpected platform: '${platform}'`);
     }
 
-    // Wait until the tests ends
-    return new Promise((resolve) => {
-        server.run((failures) => {
-            resolve(failures);
-        });
-    });
+    // Run tests with a 5 minute timeout
+    return timeout(new Promise((resolve) => {
+        console.log("Running tests 🏃‍♂️");
+        server.run(resolve);
+    }), 60000 * 5);
 }
 
 async function run() {
@@ -139,9 +138,14 @@ async function run() {
 }
 
 run().then(failures => {
+    console.log(`Completed running (${failures} failures)`);
     // Exit with a non-zero code if we had failures
     process.exit(failures > 0 ? 1 : 0);
 }, err => {
-    console.error(err.stack);
+    if (err instanceof TimeoutError) {
+        console.error("Timed out running tests");
+    } else {
+        console.error(err.stack);
+    }
     process.exit(2);
 });
