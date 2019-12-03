@@ -129,7 +129,12 @@ stage('test') {
 
 stage('integration tests') {
   parallel(
-    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
+    'React Native on Android':  inAndroidContainer {
+      // Locking the Android device to prevent other jobs from interfering
+      lock("${NODE_NAME}-android") {
+        reactNativeIntegrationTests('android')
+      }
+    },
     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
     'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
     'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
@@ -219,32 +224,29 @@ def reactNativeIntegrationTests(targetPlatform) {
   dir('integration-tests/environments/react-native') {
     sh "${nvm} npm install"
 
-    // Locking the Android device to prevent other jobs from interfering
-    lock("${NODE_NAME}-android") {
-      if (targetPlatform == "android") {
-        // In case the tests fail, it's nice to have an idea on the devices attached to the machine
-        sh 'adb devices'
-        sh 'adb wait-for-device'
-        // Uninstall any other installations of this package before trying to install it again
-        sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
-      } else if (targetPlatform == "ios") {
-        dir('ios') {
-          sh 'pod install'
-        }
+    if (targetPlatform == "android") {
+      // In case the tests fail, it's nice to have an idea on the devices attached to the machine
+      sh 'adb devices'
+      sh 'adb wait-for-device'
+      // Uninstall any other installations of this package before trying to install it again
+      sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
+    } else if (targetPlatform == "ios") {
+      dir('ios') {
+        sh 'pod install'
       }
+    }
 
-      timeout(30) { // minutes
-        try {
-          sh "${nvm} npm run test/${targetPlatform} -- test-results.xml"
-        } finally {
-          junit(
-            allowEmptyResults: true,
-            testResults: 'test-results.xml',
-          )
-          if (targetPlatform == "android") {
-            // Read out the logs in case we want some more information to debug from
-            sh 'adb logcat -d -s ReactNativeJS:*'
-          }
+    timeout(30) { // minutes
+      try {
+        sh "${nvm} npm run test/${targetPlatform} -- test-results.xml"
+      } finally {
+        junit(
+          allowEmptyResults: true,
+          testResults: 'test-results.xml',
+        )
+        if (targetPlatform == "android") {
+          // Read out the logs in case we want some more information to debug from
+          sh 'adb logcat -d -s ReactNativeJS:*'
         }
       }
     }
