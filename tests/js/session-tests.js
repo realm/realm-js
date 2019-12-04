@@ -1458,5 +1458,28 @@ module.exports = {
                 }
                 TestCase.assertFalse(Realm.Sync._hasExistingSessions());
             });
+    },
+
+    testDeleteModelThrowsWhenSync() {
+        if (!isNodeProcess) {
+            return;
+        }
+
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
+            let config = {
+                schema: [schemas.TestObject],
+                sync: {
+                    user: u,
+                    url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
+                    fullSynchronization: true,
+                }
+            };
+            return Realm.open(config);
+        }).then(realm => {
+            realm.write(() => {
+                TestCase.assertThrows(() => { realm.deleteModel(schemas.TestObject.name); });
+            });
+            realm.close();
+        });
     }
 };
