@@ -153,7 +153,7 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm
     if (!table) {
         throw std::runtime_error("Table does not exist. Object type: " + object_type);
     }
-    return create_object<T, ResultsClass<T>>(ctx, new realm::js::Results<T>(realm, *table));
+    return create_object<T, ResultsClass<T>>(ctx, new realm::js::Results<T>(realm, table));
 }
 
 inline void setup_aliases(parser::KeyPathMapping &mapping, const realm::SharedRealm &realm)

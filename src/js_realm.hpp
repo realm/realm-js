@@ -1021,7 +1021,7 @@ void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, Argument
     for (auto objectSchema : realm->schema()) {
         auto table = ObjectStore::table_for_object_type(realm->read_group(), objectSchema.name);
         if (realm->is_partial()) {
-            realm::Results(realm, *table).clear();
+            realm::Results(realm, table).clear();
         }
         else {
             table->clear();
