@@ -13,8 +13,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Updated from Realm Core v6.0.0-alpha.23 to v6.0.0-beta.1.
-* Updated from Realm Sync v4.7.1-core6.4 to v5.0.0-beta.1.
+* Updated from Realm Core v6.0.0-alpha.23 to v6.0.0-beta.0.
+* Updated from Realm Sync v4.7.1-core6.4 to v5.0.0-beta.0.
 * Updated to Realm Object Store commit dc34c655c88a902a66ff407f771efd48e37d29fd.
 
 4.0.0-alpha.2 Release notes (2019-11-27)
