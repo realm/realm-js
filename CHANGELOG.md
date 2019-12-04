@@ -48,7 +48,7 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 3.5.0-alpha.1 Release notes (2019-11-27)
 =============================================================
 ### Enhancements
-* Improved performance for some queries involving links. ([RJS-350](https://jira.mongodb.org/browse/RJS-340))
+* None.
 
 ### Fixed
 * None.
@@ -59,11 +59,51 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
+* Fixed download URLs to make it possible to build without sync. ([RJS-355](https://jira.mongodb.org/browse/RJS-355))
+* Now explicitly (deleting and re-)creating a "realm-js-integration-tests" simulator when running the React Native iOS integration tests.
+
+3.5.0 Release notes (2019-12-2)
+=============================================================
+NOTE: Including changes from v3.5.0-alpha.1.
+
+### Enhancements
+* Improved performance for some queries involving links. ([RJS-350](https://jira.mongodb.org/browse/RJS-340))
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Added a test to verify that an exception is thrown when an object schema has no properties.
+* Added a test to verify that `Realm.close()` is idempotent.
+* Upgraded the React Native integration tests app (now using RN v0.61.3). ([#2603](https://github.com/realm/realm-js/pull/2603) & [#2609](https://github.com/realm/realm-js/pull/2609))
+* Upgraded Realm Sync from v4.8.3 to v4.9.0. ([RJS-350](https://jira.mongodb.org/browse/RJS-350))
+* Upgraded Realm Object Store to commit eb3b351c9e4d6a5024e442243bfb1fa320d94bfe.
+* A new error code is added. When the state is entered, it is often when a client attempt to connect to a server after a long period of being offline.
+
+3.5.0-alpha.1 Release notes (2019-11-27)
+=============================================================
+### Enhancements
+* Improved performance for some queries involving links. ([RJS-350](https://jira.mongodb.org/browse/RJS-340))
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
 * Added a test to verify that an exception is thrown when an object schema has no properties.
 * Added a test to verify that `Realm.close()` is idempotent.
 * Upgraded the React Native integration tests app (now using RN v0.61.3). ([#2603](https://github.com/realm/realm-js/pull/2603) & [#2609](https://github.com/realm/realm-js/pull/2609))
 * Upgraded Realm Object Store to commit be469eedfb573024839fd61d69e92933b9c1fc9e. ([RJS-349](https://jira.mongodb.org/browse/RJS-349))
-
+* Upgraded Realm Sync from v4.8.3 to v4.9.0. ([RJS-350](https://jira.mongodb.org/browse/RJS-350))
 
 3.4.2 Release notes (2019-11-14)
 =============================================================
@@ -899,10 +939,10 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
   * A new class - `Realm.Sync.Credentials` has been added that contains factory methods to create credentials with all supported providers.
   * Here are some examples on how to transform your old code to use the new API:
 
-  | Old | New |
-  | - | - |
-  | `const user = await Realm.Sync.User.login(serverUrl, 'username', 'password');` | `const credentials = Realm.Sync.Credentials.usernamePassword('username', 'password');`<br/> `const user = await Realm.Sync.User.login(serverUrl, credentials);` |
-  | `const jwtToken = 'acc3ssT0ken...';`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'jwt', jwtToken);` | `const jwtToken = 'acc3ssT0ken...';`<br>`const credentials = Realm.Sync.Credentials.jwt(jwtToken);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
+  | Old                                                                                                                                                                                                  | New                                                                                                                                                                                                                                                        |
+  | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `const user = await Realm.Sync.User.login(serverUrl, 'username', 'password');`                                                                                                                       | `const credentials = Realm.Sync.Credentials.usernamePassword('username', 'password');`<br/> `const user = await Realm.Sync.User.login(serverUrl, credentials);`                                                                                            |
+  | `const jwtToken = 'acc3ssT0ken...';`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'jwt', jwtToken);`                                                                       | `const jwtToken = 'acc3ssT0ken...';`<br>`const credentials = Realm.Sync.Credentials.jwt(jwtToken);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);`                                                                                 |
   | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'custom/fooauth', customToken, userInfo);` | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const credentials = Realm.Sync.Credentials.custom('custom/fooauth', customToken, userInfo);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
 * Exposed `Realm.Sync.User.serialize()` to create a persistable representation of a user instance, as well as `Realm.Sync.User.deserialize()` to later inflate a `User` instance that can be used to connect to Realm Object Server and open synchronized Realms. ([#1276](https://github.com/realm/realm-js/issues/1276))
 * Added `Realm.Sync.Session.pause()` and `Realm.Sync.Session.resume()` to allow controlling when to sync data. ([#2014](https://github.com/realm/realm-js/issues/2014))
