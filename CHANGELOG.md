@@ -4,8 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* When calling `Realm.deleteModel()` on a synced Realm could lead to an error message like `Failed while synchronizing Realm: Bad changeset (DOWNLOAD)`. A better error message (`Cannot delete model for a read-only or a synced Realm.`) is introduced. ([RJS-230](https://jira.mongodb.org/browse/RJS-230), since v1.12.0)
+
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
