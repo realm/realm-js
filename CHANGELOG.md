@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+4.0.0-beta.0 Release notes (2019-12-5)
 =============================================================
 ### Enhancements
 * None.
