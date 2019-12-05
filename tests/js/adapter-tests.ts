@@ -174,7 +174,7 @@ describe('Adapter', () => {
         const realmsSeenInChangeCallback: string[] = [];
         await new Promise(async (resolve, reject) => {
             const timeout = setTimeout(() => reject('Notification not recieved'), notificationNotReceivedTimeout);
-    
+
             function callback(realmPath: string) {
                 realmsSeenInChangeCallback.push(realmPath);
                 if (realmsSeenInChangeCallback.length == 2) {
@@ -182,7 +182,7 @@ describe('Adapter', () => {
                     resolve();
                 }
             }
-    
+
             adapter = new Realm.Sync.Adapter(tmpDir.name, `realm://localhost:${rosController.httpPort}`,
                 rosController.adminUser, predicate, callback);
         });
@@ -327,7 +327,7 @@ describe('Adapter', () => {
                     actual_object = realm.objectForPrimaryKey(object_type, change_object[object_schema.primaryKey]);
                 }
                 else {
-                    actual_object = realm.objectForObjectId(object_type, identity);
+                    actual_object = realm._objectForObjectId(object_type, identity);
                 }
 
                 expect(actual_object).toBeDefined();

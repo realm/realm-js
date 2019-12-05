@@ -245,16 +245,6 @@ class Realm {
     objectForPrimaryKey(type, key) { }
 
     /**
-     * Searches for a Realm object by its object id.
-     * @param {string} id - The object id of the object to search for.
-     * @param {Realm~ObjectType} type - The type of Realm object to search for.
-     * @returns {Realm.Object|undefined} if no object is found.
-     * @see {@link Realm.Object#objectId objectId}
-     * @since 4.0.0
-     */
-    objectForObjectId(type, id) { }
-
-    /**
      * Add a listener `callback` for the specified event `name`.
      * @param {string} name - The name of event that should cause the callback to be called.
      *   _Currently, only the "change" and "schema" events are supported_.

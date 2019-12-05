@@ -210,18 +210,18 @@ module.exports = {
         var id;
         realm.write(function() {
             olivier = realm.create('PersonObject', {name: 'Olivier', age: 0});
-            id = olivier.objectId();
+            id = olivier._objectId();
             realm.create('PersonObject', {name: 'Christine', age: 25, children: [olivier]});
         });
 
         TestCase.assertEqual(olivier.linkingObjectsCount(), 1);
-        TestCase.assertEqual(olivier.objectId(), id);
+        TestCase.assertEqual(olivier._objectId(), id);
 
         realm.write(function() {
             john.children.push(olivier);
         });
 
-        TestCase.assertEqual(olivier.objectId(), id);
+        TestCase.assertEqual(olivier._objectId(), id);
         TestCase.assertEqual(john.children.length, 1);
         TestCase.assertEqual(john.children[0]['name'], 'Olivier');
         TestCase.assertEqual(realm.objects('PersonObject').length, 3);

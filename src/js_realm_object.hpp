@@ -95,7 +95,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
         {"objectSchema", wrap<get_object_schema>},
         {"linkingObjects", wrap<linking_objects>},
         {"linkingObjectsCount", wrap<linking_objects_count>},
-        {"objectId", wrap<get_object_id>},
+        {"_objectId", wrap<get_object_id>},
         {"_isSameObject", wrap<is_same_object>},
         {"_setLink", wrap<set_link>},
         {"addListener", wrap<add_listener>},
