@@ -17,8 +17,11 @@ x.x.x Release notes (yyyy-MM-dd)
 
 4.0.0-beta.0 Release notes (2019-12-5)
 =============================================================
-NOTE: Accumulated release notes (including v4.0.0-alpha.1 and v4.0.0-alpha.2)
-NOTE: Contains all previous releases up to v3.5.0
+NOTE 1: Accumulated release notes (including v4.0.0-alpha.1 and v4.0.0-alpha.2)
+NOTE 2: Contains all previous releases up to v3.5.0
+
+NOTE 3: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
+
 
 ### Breaking changes
 * Calling `Realm.close()` on a closed Realm will throw an exception.
