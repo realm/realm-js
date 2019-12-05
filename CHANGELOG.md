@@ -17,6 +17,16 @@ x.x.x Release notes (yyyy-MM-dd)
 
 4.0.0-beta.0 Release notes (2019-12-5)
 =============================================================
+NOTE: Accumulated release notes (including v4.0.0-alpha.1 and v4.0.0-alpha.2)
+NOTE: Contains all previous releases up to v3.5.0
+
+### Breaking changes
+* Calling `Realm.close()` on a closed Realm will throw an exception.
+* Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
+* `Realm.delete(Realm.Collection)` will conserve the order i.e., if a `Realm.Results` is `[1, 2, 3]` (pseudo-notation), `Realm.delete(2)` will produce `[1, 3]`.
+* It is only possible to compact a Realm when a single instance is open. Consider to use configuration parameter `shouldCompactOnLaunch` in the future.
+* Schemas are not cached but will be reread when opening a Realm. This has an impact of default values as they are not persisted in the Realm files.
+
 ### Enhancements
 * None.
 
@@ -65,6 +75,7 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * Schemas are not cached but will be reread when opening a Realm. This has an impact of default values as they are not persisted in the Realm files.
 
 ### Enhancements
+NOTE: The following methods have been removed in later versions.
 * Added `Realm.objectForObjectId()`. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))
 * Added `Realm.Object.objectId()` which returns a unique identifier for the object. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))
 
