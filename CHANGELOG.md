@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed a React Native iOS build failure ('realm/util/assert.hpp' file not found) when installing in a repository where CocoaPods (ios/Pods) are committed to repository. ([#2617](https://github.com/realm/realm-js/issues/2617), since v3.4.0)
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* When calling `Realm.deleteModel()` on a synced Realm could lead to an error message like `Failed while synchronizing Realm: Bad changeset (DOWNLOAD)`. A better error message (`Cannot delete model for a read-only or a synced Realm.`) is introduced. ([RJS-230](https://jira.mongodb.org/browse/RJS-230), since v1.12.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
