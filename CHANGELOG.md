@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Improved performance of constructing queries, especially for large schemas.
 
 ### Fixed
 * When calling `Realm.deleteModel()` on a synced Realm could lead to an error message like `Failed while synchronizing Realm: Bad changeset (DOWNLOAD)`. A better error message (`Cannot delete model for a read-only or a synced Realm.`) is introduced. ([RJS-230](https://jira.mongodb.org/browse/RJS-230), since v1.12.0)
