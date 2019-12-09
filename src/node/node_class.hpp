@@ -104,9 +104,9 @@ private:
 		
 			
 
-			static Napi::Value combinedGetProxyTrap(const Napi::CallbackInfo& info);
-			static Napi::Value combinedSetProxyTrap(const Napi::CallbackInfo& info);
-			static Napi::Value combinedGetProxyTrapHandleFunctions(const Napi::CallbackInfo& info, bool* handled);
+			static Napi::Value getProxyTrap(const Napi::CallbackInfo& info);
+			static Napi::Value getProxyTrapHandleFunctions(const Napi::CallbackInfo& info, bool* handled);
+			static Napi::Value setProxyTrap(const Napi::CallbackInfo& info);
 			static Napi::Value ownKeysProxyTrap(const Napi::CallbackInfo& info);
 			static Napi::Value hasProxyTrap(const Napi::CallbackInfo& info);
 			static Napi::Value getOwnPropertyDescriptorTrap(const Napi::CallbackInfo& info);
@@ -407,8 +407,8 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(N
 	Napi::EscapableHandleScope scope(env);
 
 	Napi::Object proxyObj = Napi::Object::New(env);
-	Napi::PropertyDescriptor instanceGetTrapFunc = Napi::PropertyDescriptor::Function("get", &WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrap);
-	Napi::PropertyDescriptor instanceSetTrapFunc = Napi::PropertyDescriptor::Function("set", &WrappedObject<ClassType>::ProxyHandler::combinedSetProxyTrap);
+	Napi::PropertyDescriptor instanceGetTrapFunc = Napi::PropertyDescriptor::Function("get", &WrappedObject<ClassType>::ProxyHandler::getProxyTrap);
+	Napi::PropertyDescriptor instanceSetTrapFunc = Napi::PropertyDescriptor::Function("set", &WrappedObject<ClassType>::ProxyHandler::setProxyTrap);
 	Napi::PropertyDescriptor ownKeysTrapFunc = Napi::PropertyDescriptor::Function("ownKeys", &WrappedObject<ClassType>::ProxyHandler::ownKeysProxyTrap);
 	Napi::PropertyDescriptor hasTrapFunc = Napi::PropertyDescriptor::Function("has", &WrappedObject<ClassType>::ProxyHandler::hasProxyTrap);
 	Napi::PropertyDescriptor getOwnPropertyDescriptorTrapFunc = Napi::PropertyDescriptor::Function("getOwnPropertyDescriptor", &WrappedObject<ClassType>::ProxyHandler::getOwnPropertyDescriptorTrap);
@@ -423,10 +423,10 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(N
 
 	/*Napi::Object proxyObj = Napi::Object::New(env);
 
-	Napi::Function instanceGetTrapFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrap, "get");
+	Napi::Function instanceGetTrapFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::getProxyTrap, "get");
 	proxyObj.Set("get", instanceGetTrapFunc);
 
-	Napi::Function instanceSetTrapFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::combinedSetProxyTrap, "set");
+	Napi::Function instanceSetTrapFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::setProxyTrap, "set");
 	proxyObj.Set("set", instanceSetTrapFunc);
 
 	Napi::Function ownKeysTrapFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::ownKeysProxyTrap, "ownKeys");
@@ -451,13 +451,13 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(N
 }
 
 template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrap(const Napi::CallbackInfo& info) {
+Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	Napi::EscapableHandleScope scope(env);
 
 	//if its a function property return it
 	bool handled = true;
-	Napi::Value result = combinedGetProxyTrapHandleFunctions(info, &handled);
+	Napi::Value result = getProxyTrapHandleFunctions(info, &handled);
 	if (handled) {
 		return scope.Escape(result);
 	}
@@ -509,7 +509,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrap(const N
 
 //Napi: this is handling not only bound functions but also decides if index and named handlers will be called. Make this as the default get Proxy trap and call index and named handlers from it
 template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrapHandleFunctions(const Napi::CallbackInfo& info, bool* handled) {
+Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrapHandleFunctions(const Napi::CallbackInfo& info, bool* handled) {
 	*handled = true;
 	Napi::Env env = info.Env();
 	Napi::EscapableHandleScope scope(env);
@@ -584,7 +584,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrapHandleFu
 }
 
 template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedSetProxyTrap(const Napi::CallbackInfo& info) {
+Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	Napi::EscapableHandleScope scope(env);
 
