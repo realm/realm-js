@@ -538,21 +538,50 @@ void WrappedObject<ClassType>::readonly_static_setter_callback(const Napi::Callb
 
 template<typename ClassType>
 Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(Napi::Env env) {
-	//return env.Global().Get("realmInstanceHandler");
-	
 	Napi::EscapableHandleScope scope(env);
 
 	Napi::Object proxyObj = Napi::Object::New(env);
-	Napi::PropertyDescriptor instanceGetTrapFunc = Napi::PropertyDescriptor::Function("get", combinedGetProxyTrap);
-	Napi::PropertyDescriptor instanceSetTrapFunc = Napi::PropertyDescriptor::Function("set", combinedSetProxyTrap);
-	Napi::PropertyDescriptor ownKeysTrapFunc = Napi::PropertyDescriptor::Function("ownKeys", ownKeysProxyTrap);
-	Napi::PropertyDescriptor hasTrapFunc = Napi::PropertyDescriptor::Function("has", hasProxyTrap);
-	Napi::PropertyDescriptor getOwnPropertyDescriptorTrapFunc = Napi::PropertyDescriptor::Function("getOwnPropertyDescriptor", getOwnPropertyDescriptorTrap);
-	Napi::PropertyDescriptor getPrototypeOfFunc = Napi::PropertyDescriptor::Function("getPrototypeOf", getPrototypeofProxyTrap);
-	Napi::PropertyDescriptor setPrototypeOfFunc = Napi::PropertyDescriptor::Function("setPrototypeOf", setPrototypeofProxyTrap);
+	Napi::PropertyDescriptor instanceGetTrapFunc = Napi::PropertyDescriptor::Function("get", &WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrap);
+	Napi::PropertyDescriptor instanceSetTrapFunc = Napi::PropertyDescriptor::Function("set", &WrappedObject<ClassType>::ProxyHandler::combinedSetProxyTrap);
+	Napi::PropertyDescriptor ownKeysTrapFunc = Napi::PropertyDescriptor::Function("ownKeys", &WrappedObject<ClassType>::ProxyHandler::ownKeysProxyTrap);
+	Napi::PropertyDescriptor hasTrapFunc = Napi::PropertyDescriptor::Function("has", &WrappedObject<ClassType>::ProxyHandler::hasProxyTrap);
+	Napi::PropertyDescriptor getOwnPropertyDescriptorTrapFunc = Napi::PropertyDescriptor::Function("getOwnPropertyDescriptor", &WrappedObject<ClassType>::ProxyHandler::getOwnPropertyDescriptorTrap);
+	Napi::PropertyDescriptor getPrototypeOfFunc = Napi::PropertyDescriptor::Function("getPrototypeOf", &WrappedObject<ClassType>::ProxyHandler::getPrototypeofProxyTrap);
+	Napi::PropertyDescriptor setPrototypeOfFunc = Napi::PropertyDescriptor::Function("setPrototypeOf", &WrappedObject<ClassType>::ProxyHandler::setPrototypeofProxyTrap);
 	
 	proxyObj.DefineProperties({ instanceGetTrapFunc, instanceSetTrapFunc, ownKeysTrapFunc, hasTrapFunc, getOwnPropertyDescriptorTrapFunc, getPrototypeOfFunc, setPrototypeOfFunc });
+	
 	return scope.Escape(proxyObj);
+
+	//NAPI: version with function members
+
+	/*Napi::Object proxyObj = Napi::Object::New(env);
+
+	Napi::Function instanceGetTrapFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrap, "get");
+	proxyObj.Set("get", instanceGetTrapFunc);
+
+	Napi::Function instanceSetTrapFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::combinedSetProxyTrap, "set");
+	proxyObj.Set("set", instanceSetTrapFunc);
+
+	Napi::Function ownKeysTrapFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::ownKeysProxyTrap, "ownKeys");
+	proxyObj.Set("ownKeys", ownKeysTrapFunc);
+
+	Napi::Function hasTrapFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::hasProxyTrap, "has");
+	proxyObj.Set("has", hasTrapFunc);
+
+	Napi::Function getOwnPropertyDescriptorTrapFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::getOwnPropertyDescriptorTrap, "getOwnPropertyDescriptor");
+	proxyObj.Set("getOwnPropertyDescriptor", getOwnPropertyDescriptorTrapFunc);
+
+	Napi::Function getPrototypeOfFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::getPrototypeofProxyTrap, "getPrototypeOf");
+	proxyObj.Set("getPrototypeOf", getPrototypeOfFunc);
+
+	Napi::Function setPrototypeOfFunc = Napi::Function::New(env, &WrappedObject<ClassType>::ProxyHandler::setPrototypeofProxyTrap, "setPrototypeOf");
+	proxyObj.Set("setPrototypeOf", setPrototypeOfFunc);
+
+	
+	return proxyObj;*/
+
+
 }
 
 //template<typename ClassType>
@@ -767,10 +796,6 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrap(const N
 		catch (const std::exception) {}
 
 		if (success) {
-			if (index < 0) {
-				throw Napi::Error::New(info.Env(), "Index should be a positive integer number");
-			}
-
 			Napi::Value result = wrappedObject->m_indexPropertyHandlers->getter(info, instance, index);
 			return scope.Escape(result);
 		}
@@ -786,6 +811,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrap(const N
 	return scope.Escape(value);
 }
 
+//Napi: this is handling not only bound functions but also decides if index and named handlers will be called. Make this as the default get Proxy trap and call index and named handlers from it
 template<typename ClassType>
 Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrapHandleFunctions(const Napi::CallbackInfo& info, bool* handled) {
 	*handled = true;
@@ -795,6 +821,16 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrapHandleFu
 	Napi::Object target = info[0].As<Napi::Object>();
 	Napi::Value arg1 = info[1];
 	
+
+	if (target.HasOwnProperty("_proto")) {
+		Napi::Object proto = target.Get("_proto").As<Napi::Object>();
+		//if the _proto prototype chain has the property return it
+		if (proto.Has(arg1)) {
+			Napi::Value propertyValue = proto.Get(arg1);
+			return scope.Escape(propertyValue);
+		}
+	}
+
 	//if the target prototype chain don't have the property return any value to allow named and index handlers to kick in
 	if (!target.Has(arg1)) {
 		*handled = false;
@@ -810,14 +846,15 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrapHandleFu
 	Napi::String property = arg1.As<Napi::String>();
 	std::string propertyName = property;
 
-	//NAPI: cache this function for performance 
 	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
 	if (instance.IsUndefined() || instance.IsNull()) {
 		throw Napi::Error::New(env, "Invalid object. No _instance member");
 	}
 
+	//NAPI: cache this function for performance 
 	//NAPI: preserve a FunctionReference to this 'hasOwnProperty' function when creating the ProxyHandler and use that to optimize this call a bit
-	//this checks for property existence without going up the proptotype chain
+	//this checks for property existence without going up the proptotype chain.
+	//NAPI: consider using target.HasOwnProperty()
 	Napi::Boolean targetHasOwnProperty = env.Global().Get("Object").As<Napi::Object>().Get("hasOwnProperty").As<Napi::Function>().Call(target, { property }).As<Napi::Boolean>();
 
 	if (targetHasOwnProperty) {
@@ -825,7 +862,6 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrapHandleFu
 		return scope.Escape(propertyValue);
 	}
 
-	
 	Napi::Value propertyValue = instance.Get(propertyName);
 
 	//bind the function from the instance and set it on the target object. Napi does not work if a function is invoked with 'this' instance different than the class it is defined onto
@@ -894,6 +930,14 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedSetProxyTrap(const N
 		}
 	}
 
+	if (target.HasOwnProperty("_proto")) {
+		Napi::Object proto = target.Get("_proto").As<Napi::Object>();
+		if (proto.Has(property)) {
+			proto.Set(property, value);
+			return scope.Escape(Napi::Boolean::New(env, true));
+		}
+	}
+
 	if (instance.Has(property)) {
 		try {
 			instance.Set(property, value);
@@ -954,6 +998,13 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::hasProxyTrap(const Napi::Cal
 	Napi::Object target = info[0].As<Napi::Object>();
 	Napi::Value propertyArg = info[1];
 
+	if (target.HasOwnProperty("_proto")) {
+		Napi::Object proto = target.Get("_proto").As<Napi::Object>();
+		if (proto.Has(propertyArg)) {
+			return scope.Escape(Napi::Boolean::From(env, true));
+		}
+	}
+
 	//skip symbols etc
 	if (!propertyArg.IsString()) {
 		bool hasProperty = target.Has(propertyArg);
@@ -985,12 +1036,8 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::hasProxyTrap(const Napi::Cal
 		catch (const std::exception) {}
 
 		if (success) {
-			if (index < 0) {
-				throw Napi::Error::New(info.Env(), "Index should be a positive integer number");
-			}
-
-			uint32_t length = instance.Get("length").As<Napi::Number>();
-			bool hasIndex = index < length;
+			int32_t length = instance.Get("length").As<Napi::Number>();
+			bool hasIndex = index >= 0 && index < length;
 			return scope.Escape(Napi::Boolean::From(env, hasIndex));
 		}
 	}
@@ -999,7 +1046,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::hasProxyTrap(const Napi::Cal
 		Napi::Array array = wrappedObject->m_namedPropertyHandlers->enumerator(info, instance).As<Napi::Array>();
 		uint32_t count = array.Length();
 
-		for (int i = 0; i < count; i++) {
+		for (uint32_t i = 0; i < count; i++) {
 			Napi::String arrayValue = array.Get(i).As<Napi::String>();
 			if (!arrayValue.IsUndefined()) {
 				std::string propertyName = arrayValue;
@@ -1357,7 +1404,6 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 	}
 	catch (std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
-		//throw e;
 	}
 }
 
@@ -1381,7 +1427,6 @@ void wrap(const Napi::CallbackInfo& info, const Napi::Value& value) {
     }
     catch (std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
-		//throw e;
     }
 }
 
@@ -1414,11 +1459,11 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, u
 		catch (std::out_of_range&) {
 			// Out-of-bounds index getters should just return undefined in JS.
 			result.set_undefined();
+			return result.ToValue();
 		}
 	}
     catch (std::exception &e) {
 		throw Napi::Error::New(info.Env(), e.what());
-		//throw e;
     }
 }
 
@@ -1447,7 +1492,6 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, u
     }
     catch (std::exception &e) {
 		throw Napi::Error::New(info.Env(), e.what());
-		//throw e;
     }
 }
 
@@ -1473,7 +1517,6 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, c
     }
     catch (std::exception &e) {
 		throw Napi::Error::New(info.Env(), e.what());
-		//throw e;
     }
 }
 
@@ -1502,7 +1545,6 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, c
     }
     catch (std::exception &e) {
 		throw Napi::Error::New(info.Env(), e.what());
-		//throw e;
     }
 }
 
@@ -1536,7 +1578,6 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance) {
 	}
 	catch (std::exception & e) {
 		throw Napi::Error::New(info.Env(), e.what());
-		//throw e;
 	}
 }
 

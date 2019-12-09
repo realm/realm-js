@@ -79,12 +79,13 @@ class ReturnValue<node::Types> {
     void set(realm::Mixed mixed) {
 		//Napi: check is correct 
 		//m_value.Set(Value<node::Types>::from_mixed(nullptr, mixed));
-		m_value = Napi::Value(m_env, Value<node::Types>::from_mixed(nullptr, mixed));
+		m_value = Napi::Value(m_env, Value<node::Types>::from_mixed(m_env, mixed));
     }
 
     void set_null() {
 		m_value = Napi::Value(m_env, m_env.Null());
     }
+
 
     void set_undefined() {
 		m_value = Napi::Value(m_env, m_env.Undefined());

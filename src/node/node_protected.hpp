@@ -61,18 +61,17 @@ public:
 	}
 
 	~Protected() {
-		uint32_t result;
-		napi_status status = napi_reference_unref(m_env, m_ref, &result);
-		if (status != napi_ok) {
-			throw std::runtime_error(util::format("Can't decrease protected reference count: napi_status %1", status));
-		}
+		try {
+			uint32_t result;
+			napi_status status = napi_reference_unref(m_env, m_ref, &result);
+			REALM_ASSERT((status == napi_ok) && "~Protected: Can't decrease protected reference count");
 
-		if (result == 0) {
-			napi_status status = napi_delete_reference(m_env, m_ref);
-			if (status != napi_ok) {
-				throw std::runtime_error(util::format("Can't unallocate protected reference: napi_status %1", status));
+			if (result == 0) {
+				napi_status status = napi_delete_reference(m_env, m_ref);
+				REALM_ASSERT((status == napi_ok) && "~Protected: Can't unallocate protected reference");
 			}
 		}
+		catch (...) {}
 	}
 
 	operator MemberType() const {

@@ -182,9 +182,7 @@ inline bool node::Value::is_undefined(Napi::Env env, const Napi::Value& value) {
 //NAPI: node::Buffer::HasInstance is doing value->IsArrayBufferView check internally. Seems redundant. Double check it
 template<>
 inline bool node::Value::is_binary(Napi::Env env, const Napi::Value& value) {
-	auto v8Value = reinterpret_cast<v8::Local<v8::Value>*>((napi_value)value);
 	return Value::is_array_buffer(env, value) || Value::is_array_buffer_view(env, value);
-		//|| ::node::Buffer::HasInstance(*v8Value);
 }
 
 //template<>
@@ -214,7 +212,7 @@ inline Napi::Value node::Value::from_boolean(Napi::Env env, bool boolean) {
 
 template<>
 inline Napi::Value node::Value::from_null(Napi::Env env) {
-	return env.Null();
+	return Napi::Value(env, env.Null());
 }
 
 //template<>
@@ -269,7 +267,7 @@ inline Napi::Value node::Value::from_nonnull_binary(Napi::Env env, BinaryData da
 
 template<>
 inline Napi::Value node::Value::from_undefined(Napi::Env env) {
-	return env.Undefined();
+	return Napi::Value(env, env.Undefined());
 }
 
 //template<>
