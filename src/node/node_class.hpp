@@ -541,28 +541,6 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrapHandleFunctions(
 		//if the _proto prototype chain has the property return it
 		if (proto.Has(arg1)) {
 			Napi::Value propertyValue = proto.Get(arg1);
-
-			//if (propertyValue.IsFunction()) {
-			//	//do not bind the non native functions. These are attached from extensions.js and should be called on the instanceProxy.
-			//	Napi::String property = arg1.As<Napi::String>();
-			//	std::string propertyName = property;
-			//	if (!m_has_native_methodFunc(propertyName)) {
-			//		//return the function without binding it to the instance
-			//		return scope.Escape(propertyValue);
-			//	}
-
-			//	Napi::Function bindFunc = propertyValue.As<Napi::Function>().Get("bind").As<Napi::Function>();
-			//	if (bindFunc.IsEmpty() || bindFunc.IsUndefined()) {
-			//		throw std::runtime_error("bind function not found on function " + propertyName);
-			//	}
-			//	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
-			//	Napi::Function boundFunc = bindFunc.Call(propertyValue, { instance }).As<Napi::Function>();
-			//	target.Set(propertyName, boundFunc);
-
-			//	return scope.Escape(boundFunc);
-			//}
-
-
 			if (propertyValue.IsFunction()) {
 				Napi::String function = arg1.As<Napi::String>();
 				std::string functionName = function;
@@ -611,23 +589,6 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrapHandleFunctions(
 
 	//bind the function from the instance and set it on the target object. Napi does not work if a function is invoked with 'this' instance different than the class it is defined onto
 	if (propertyValue.IsFunction()) {
-		/*//do not bind the non native functions. These are attached from extensions.js and should be called on the instanceProxy.
-		if (!m_has_native_methodFunc(propertyName)) {
-			//return the function without binding it to the instance
-			return scope.Escape(propertyValue);
-		}
-
-		Napi::Function bindFunc = propertyValue.As<Napi::Function>().Get("bind").As<Napi::Function>();
-		if (bindFunc.IsEmpty() || bindFunc.IsUndefined()) {
-			throw std::runtime_error("bind function not found on function " + propertyName);
-		}
-
-		Napi::Function boundFunc = bindFunc.Call(propertyValue, { instance }).As<Napi::Function>();
-		target.Set(propertyName, boundFunc);
-
-		return scope.Escape(boundFunc);
-		*/
-
 		Napi::Value boundFunc = bindFunction(env, propertyName, propertyValue.As<Napi::Function>(), instance);
 		target.Set(propertyName, boundFunc);
 		return scope.Escape(boundFunc);
