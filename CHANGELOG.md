@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Improved performance of constructing queries, especially for large schemas. ([ROBJSTORE](https://jira.mongodb.org/browse/ROBJSTORE-58))
+* Improved performance of constructing queries, especially for large schemas. ([ROBJSTORE-58](https://jira.mongodb.org/browse/ROBJSTORE-58))
 
 ### Fixed
 * Fixed a React Native iOS build failure ('realm/util/assert.hpp' file not found) when installing in a repository where CocoaPods (ios/Pods) are committed to repository. ([#2617](https://github.com/realm/realm-js/issues/2617), since v3.4.0)
