@@ -362,7 +362,7 @@ declare namespace Realm.Sync {
      */
     class User {
         static readonly all: { [identity: string]: User };
-        static readonly current: User;
+        static readonly current: User | undefined;
         readonly identity: string;
         readonly isAdmin: boolean;
         readonly isAdminToken: boolean;
