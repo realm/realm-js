@@ -2,6 +2,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Improved performance of constructing queries, especially for large schemas. ([ROBJSTORE-58](https://jira.mongodb.org/browse/ROBJSTORE-58))
+* Reduce the encrypted page reclaimer's impact on battery life on Apple platforms. ([realm/realm-core#3461](https://github.com/realm/realm-core/pull/3461))
 
 ### Fixed
 * Fixed a React Native iOS build failure ('realm/util/assert.hpp' file not found) when installing in a repository where CocoaPods (ios/Pods) are committed to repository. ([#2617](https://github.com/realm/realm-js/issues/2617), since v3.4.0)
@@ -15,6 +16,9 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Fixed download URLs to make it possible to build without sync. ([RJS-355](https://jira.mongodb.org/browse/RJS-355))
 * Now explicitly (deleting and re-)creating a "realm-js-integration-tests" simulator when running the React Native iOS integration tests.
+* Updated Realm Core from v5.23.6 to v5.23.7.
+* Updated Realm Sync from v4.9.0 to v4.9.1.
+* Updated Realm Object Store to commit 8c274c2dbb2b6da67cd95707e39da4597993f938.
 
 3.5.0 Release notes (2019-12-2)
 =============================================================
