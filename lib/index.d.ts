@@ -585,8 +585,8 @@ declare namespace Realm.Sync {
         readonly error: string;
 
         unsubscribe(): void;
-        addListener(subscruptionCallback: SubscriptionNotificationCallback): void;
-        removeListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+        addListener(subscriptionCallback: SubscriptionNotificationCallback): void;
+        removeListener(subscriptionCallback: SubscriptionNotificationCallback): void;
         removeAllListeners(): void;
     }
 
