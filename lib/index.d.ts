@@ -574,7 +574,7 @@ declare namespace Realm.Sync {
         uploadAllLocalChanges(timeoutMs?: number): Promise<void>;
     }
 
-    type SubscriptionNotificationCallback = (subscription: Subscription, state: number) => void;
+    type SubscriptionNotificationCallback = (subscription: Subscription, state: SubscriptionState) => void;
 
     /**
      * Subscription
