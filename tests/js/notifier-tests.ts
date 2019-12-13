@@ -28,9 +28,7 @@ const ipcSchema = [{
         path: 'string',
         insertions: 'int[]',
         deletions: 'int[]',
-        modifications: 'int[]',
-        newModifications: 'int[]',
-        oldModifications: 'int[]'
+        modifications: 'int[]'
     }
 }];
 
@@ -871,7 +869,6 @@ describe('Multi-process Notifier', () => {
         expectArrayishEqual(event.insertions, insertions);
         expectArrayishEqual(event.deletions, deletions);
         expectArrayishEqual(event.modifications, modifications);
-        expectArrayishEqual(event.oldModifications, modifications);
     }
 
     // expect an event for each of the realms at the paths present in events

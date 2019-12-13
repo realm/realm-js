@@ -55,9 +55,18 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
     std::vector<ValueType> scratch;
     auto make_array = [&](auto const& keys) {
         scratch.clear();
-        scratch.reserve(keys.count());
+        scratch.reserve(keys.size());
         for (auto index : keys) {
             scratch.push_back(Value::from_number(ctx, index));
+        }
+        return Object::create_array(ctx, scratch);
+    };
+
+    auto make_array_from_modifications = [&](auto const& keys) {
+        scratch.clear();
+        scratch.reserve(keys.size());
+        for (auto index : keys) {
+            scratch.push_back(Value::from_number(ctx, index.first));
         }
         return Object::create_array(ctx, scratch);
     };
@@ -71,7 +80,7 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
 
     Object::set_property(ctx, object, "insertions", make_array(change_set.get_insertions()));
 
-    auto old_modifications = make_array(change_set.get_modification_keys());
+    auto old_modifications = make_array_from_modifications(change_set.get_modifications());
     Object::set_property(ctx, object, "modifications", old_modifications);
 
     // we don't set "newModifications" or "oldModifications" here, as they are the same as modifications

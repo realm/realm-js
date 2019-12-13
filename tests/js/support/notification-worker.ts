@@ -7,9 +7,7 @@ const schema = [{
         path: 'string',
         insertions: 'int[]',
         deletions: 'int[]',
-        modifications: 'int[]',
-        newModifications: 'int[]',
-        oldModifications: 'int[]'
+        modifications: 'int[]'
     }
 }];
 
@@ -25,8 +23,6 @@ async function logEvent(event: string, path: string, rows: any={}) {
             insertions: rows.insertions || [],
             deletions: rows.deletions || [],
             modifications: rows.modifications || [],
-            newModifications: rows.newModifications || [],
-            oldModifications: rows.oldModifications || [],
         });
     });
 }

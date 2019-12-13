@@ -372,29 +372,24 @@ class ChangeEvent {
 
     /**
      * The modified Realm prior to any of the changes being applied. This can
-     * be used in combination with the change indices to read the old values of
-     * any objects which were modified.
+     * be used in combination with the changed object keys to read the old
+     * values of any objects which were modified.
      *
      * @type {Realm}
      */
     get oldRealm() { }
 
     /**
-     * The change indexes for all added, removed, and modified objects in the
-     * changed Realm. This object is a hashmap of object types to arrays of
-     * indexes for all changed objects:
-     *
-     * Note that deleting an object in Realm can cause other objects in the
-     * Realm to move, which will be reported as an insertion/deletion pair. For
-     * example, if there are ten objects in a Realm and the fifth is deleted,
-     * the change indices will be `{insertions: [4], deletions: [4, 9]}`.
+     * The changed primary keys for all added, removed, and modified objects in
+     * the changed Realm. This object is a hashmap of object types to arrays of
+     * object keys for all objects changed between the two reported realm versions:
      *
      * @example
      * {
      *   MyObject: {
-     *     insertions:    [indexes...],
-     *     deletions:     [indexes...],
-     *     modifications: [indexes...]
+     *     insertions:    [keys...],
+     *     deletions:     [keys...],
+     *     modifications: [keys...]
      *   },
      *   MyOtherObject:
      *     ...
