@@ -23,6 +23,7 @@
 #include "js_observable.hpp"
 
 #include "collection_notifications.hpp"
+#include "object_changeset.hpp"
 #if REALM_ENABLE_SYNC
 #include "sync/subscription_state.hpp"
 #endif
@@ -43,8 +44,41 @@ struct CollectionClass : ClassDefinition<T, Collection, ObservableClass<T>> {
 
     std::string const name = "Collection";
 
+    static inline ValueType create_collection_change_set(ContextType ctx, const ObjectChangeSet &change_set);
     static inline ValueType create_collection_change_set(ContextType ctx, const CollectionChangeSet &change_set);
 };
+
+template<typename T>
+typename T::Value CollectionClass<T>::create_collection_change_set(ContextType ctx, const ObjectChangeSet &change_set)
+{
+    ObjectType object = Object::create_empty(ctx);
+    std::vector<ValueType> scratch;
+    auto make_array = [&](auto const& keys) {
+        scratch.clear();
+        scratch.reserve(keys.count());
+        for (auto index : keys) {
+            scratch.push_back(Value::from_number(ctx, index));
+        }
+        return Object::create_array(ctx, scratch);
+    };
+
+    if (change_set.clear_did_occur()) {
+        Object::set_property(ctx, object, "deletions", Object::create_array(ctx, {Value::from_null(ctx)}));
+    }
+    else {
+        Object::set_property(ctx, object, "deletions", make_array(change_set.get_deletions()));
+    }
+
+    Object::set_property(ctx, object, "insertions", make_array(change_set.get_insertions()));
+
+    auto old_modifications = make_array(change_set.get_modification_keys());
+    Object::set_property(ctx, object, "modifications", old_modifications);
+
+    // we don't set "newModifications" or "oldModifications" here, as they are the same as modifications
+    // since the keys don't change across transactions (as compared to indices in an IndexSet)
+
+    return object;
+}
 
 template<typename T>
 typename T::Value CollectionClass<T>::create_collection_change_set(ContextType ctx, const CollectionChangeSet &change_set)

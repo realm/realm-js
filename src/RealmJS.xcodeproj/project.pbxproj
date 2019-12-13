@@ -40,6 +40,7 @@
 		3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */; };
 		420FB79F1F7FBFE900D43D0F /* partial_sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 423737AF1F7E333400FAEDFF /* partial_sync.cpp */; };
 		4261AF8E203C42000052450D /* work_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425A120F20235A1400C2F932 /* work_queue.cpp */; };
+		4BC5E2F723A2E7DD0044BEBD /* object_changeset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4BC5E2F623A2E7DD0044BEBD /* object_changeset.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
 		504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */; };
 		504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8561EBCAE3600A9A4B6 /* system_configuration.cpp */; };
@@ -183,6 +184,7 @@
 		425A120F20235A1400C2F932 /* work_queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = work_queue.cpp; sourceTree = "<group>"; };
 		425A121020235A1400C2F932 /* work_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = work_queue.hpp; sourceTree = "<group>"; };
 		426FCDFF1F7DA2F9005565DC /* sync_config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_config.cpp; path = src/sync/sync_config.cpp; sourceTree = "<group>"; };
+		4BC5E2F623A2E7DD0044BEBD /* object_changeset.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = object_changeset.cpp; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
 		504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = network_reachability_observer.cpp; sourceTree = "<group>"; };
@@ -385,6 +387,7 @@
 		02B58CA71AE99CEB009B348C = {
 			isa = PBXGroup;
 			children = (
+				4BC5E2F623A2E7DD0044BEBD /* object_changeset.cpp */,
 				832C1D2E229D3035001A20C1 /* async_open_task.cpp */,
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
 				02B58CB21AE99CEC009B348C /* Products */,
@@ -884,6 +887,7 @@
 				02414BA71CE6ABCF00A8669F /* list_notifier.cpp in Sources */,
 				504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */,
 				502B07E41E2CD201007A84ED /* object.cpp in Sources */,
+				4BC5E2F723A2E7DD0044BEBD /* object_changeset.cpp in Sources */,
 				8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */,
 				02F59EC11C88F17D007F774C /* object_schema.cpp in Sources */,
 				02F59EC21C88F17D007F774C /* object_store.cpp in Sources */,

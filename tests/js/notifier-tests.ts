@@ -155,6 +155,11 @@ function availablePromise(path, action) {
     });
 }
 
+function checkArrayEqualityUnordered(array1, array2) {
+    expect(array1.length).toEqual(array2.length);
+    expect(array1.sort()).toEqual(array2.sort());
+}
+
 function notificationPromise(regex, action, notification) {
     regex = `${notificationFilterPrefix}${regex}`;
     return changeObjectPromise(action, (changes) => {
@@ -163,10 +168,9 @@ function notificationPromise(regex, action, notification) {
         for (const objectType in notification) {
             const expected = notification[objectType];
             const actual = changes.changes[objectType];
-            expect(actual.insertions).toEqual(expected.insertions || []);
-            expect(actual.deletions).toEqual(expected.deletions || []);
-            expect(actual.modifications).toEqual(expected.modifications || []);
-            expect(actual.oldModifications).toEqual(expected.modifications || []);
+            checkArrayEqualityUnordered(actual.insertions, expected.insertions || []);
+            checkArrayEqualityUnordered(actual.deletions, expected.deletions || []);
+            checkArrayEqualityUnordered(actual.modifications, expected.modifications || []);
         }
     });
 }

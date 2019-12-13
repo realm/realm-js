@@ -66,6 +66,7 @@ LOCAL_SRC_FILES += src/object-store/src/list.cpp
 LOCAL_SRC_FILES += src/object-store/src/object_schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/object_store.cpp
 LOCAL_SRC_FILES += src/object-store/src/object.cpp
+LOCAL_SRC_FILES += src/object-store/src/object_changeset.cpp
 LOCAL_SRC_FILES += src/object-store/src/results.cpp
 LOCAL_SRC_FILES += src/object-store/src/schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
