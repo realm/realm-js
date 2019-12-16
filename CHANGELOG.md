@@ -13,13 +13,14 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* None.
+* Updated Realm Core from v6.0.0-beta.1 to v6.0.0-beta.2.
+* Updated Realm Sync from v5.0.0-beta.0 to v5.0.0-beta.1.
+* Updated Realm Object Store to commit fe6729961a9df52dea27ac5a4257088c86c5b82f.
 
 4.0.0-beta.0 Release notes (2019-12-5)
 =============================================================
-NOTE 1: Accumulated release notes (including v4.0.0-alpha.1 and v4.0.0-alpha.2)
-NOTE 2: Contains all previous releases up to v3.5.0
-
+NOTE 1: Accumulated release notes (including v4.0.0-alpha.1 and v4.0.0-alpha.2).
+NOTE 2: Contains all previous releases up to v3.5.0.
 NOTE 3: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
 
 
