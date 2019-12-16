@@ -727,6 +727,17 @@ void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Argume
 
     SharedRealm& realm = *get_internal<T, RealmClass<T>>(this_object);
 
+    auto& config = realm->config();
+    if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::Additive || config.schema_mode == SchemaMode::ReadOnlyAlternative) {
+        throw std::runtime_error("Cannot delete model for a read-only or a synced Realm.");
+    }
+
+    realm->verify_open();
+    if (!realm->is_in_transaction()) {
+        throw std::runtime_error("Can only delete objects within a transaction.");
+    }
+
+
     Group& group = realm->read_group();
     std::string model_name = Value::validated_to_string(ctx, value, "deleteModel");
     ObjectStore::delete_data_for_object(group, model_name);
