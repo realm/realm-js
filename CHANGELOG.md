@@ -14,7 +14,7 @@ NOTE: Contains all previous releases up to v3.6.0.
 ### Internal
 * Updated Realm Core from v6.0.0-beta.1 to v6.0.0-beta.2.
 * Updated Realm Sync from v5.0.0-beta.0 to v5.0.0-beta.1.
-* Updated Realm Object Store to commit fe6729961a9df52dea27ac5a4257088c86c5b82f.
+* Updated Realm Object Store to commit 315cb3b828e20a355122bec1e1df2faccec18c04.
 
 4.0.0-beta.0 Release notes (2019-12-5)
 =============================================================
