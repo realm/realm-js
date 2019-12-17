@@ -17,6 +17,11 @@ x.x.x Release notes (yyyy-MM-dd)
 
 3.0.0-beta.2 Release notes (2019-7-12)
 =============================================================
+
+This is based on realm-js ??
+
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Files created with older versions of Realm will be automatically upgraded.
+
 ### Breaking Changes
 * Removed the `isAdmin` parameter from `Credentials.nickname` as that has no effect in new Realm Object Server versions.
 * Deprecated the `Credentials.nickname` method as the nickname auth provider will not be supported in future Realm Object Server versions.
@@ -37,16 +42,16 @@ x.x.x Release notes (yyyy-MM-dd)
   | `Realm.openAsync()` | `Realm.open()` |
 
 ### Enhancements
-* None.
+* Storing large binary blobs in Realm files no longer forces the file to be at least 8x the size of the largest blob.
+* Reduce the size of transaction logs stored inside the Realm file, reducing file size growth from large transactions.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
-* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+* File format: Generates Realms with format v10 (Reads and upgrades all previous formats)
 
 ### Internal
 * None.
@@ -54,6 +59,11 @@ x.x.x Release notes (yyyy-MM-dd)
 
 3.0.0-beta.1 Release notes (2019-6-13)
 =============================================================
+
+This is based on realm-js ??
+
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Files created with older versions of Realm will be automatically upgraded.
+
 ### Breaking Changes
 * Reworked the internal implementation of the permission API. For the most part, the method signatures haven't changed or where they have changed, the API have remained close to the original (e.g. `Results<T>` has changed to `T[]`).
   * Changed the return type of `User.getGrantedPermissions` from `Results<Permission>` to `Permission[]`. This means that the collection is no longer observable like regular Realm-backed collections. If you need to be notified for changes of this collection, you need to implement a polling-based mechanism yourself.
@@ -70,7 +80,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
-* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+* File format: Generates Realms with format v10 (Reads and upgrades all previous formats)
 
 ## Internal
 * None
