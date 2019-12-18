@@ -281,17 +281,37 @@ class Realm {
 
     /**
      * Initiate a write transaction.
+     *
+     * When doing a transaction, it is highly recommended to do error handling.
+     * If you don't handle errors, your data might become inconsistent. Error handling
+     * will often involve canceling the transaction.
+     *
+     * @example
+     * realm.beginTransaction();
+     * try {
+     *   realm.create('Person', { name: 'Arthur Dent',  origin: 'Earth' });
+     *   realm.create('Person', { name: 'Ford Prefect', origin: 'Betelgeuse Five' });
+     *   realm.commitTransaction();
+     * } catch (e) {
+     *   realm.cancelTransaction();
+     * }
      * @throws {Error} When already in write transaction
+     * @see {@link Realm#cancelTransaction cancelTransaction()}
+     * @see {@link Realm#commitTransaction commitTransaction()}
      */
     beginTransaction() { }
 
     /**
      * Commit a write transaction.
+     *
+     * @see {@link Realm#beginTransaction beginTransaction()}
      */
     commitTransaction() { }
 
     /**
      * Cancel a write transaction.
+     *
+     * @see {@link Realm#beginTransaction beginTransaction()}
      */
     cancelTransaction() { }
 
