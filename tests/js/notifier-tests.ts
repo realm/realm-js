@@ -241,7 +241,7 @@ describe('Notifier', () => {
             throw new Error(`No matching RealmFile for filter "path ENDSWITH '${currentTestName}/test' in admin Realm. `
                             + `These were found: ${adminRealm.objects('RealmFile').map((f) => f.path)}`);
         }
-        expect(fs.existsSync(`${temp.name}/realms${realmFile.path}/${realmFile._objectId()}.realm`)).toBeTruthy();
+        expect(fs.existsSync(`${temp.name}/realms${realmFile.path}/${realmFile.globalKey()}.realm`)).toBeTruthy();
         temp.removeCallback();
     });
 

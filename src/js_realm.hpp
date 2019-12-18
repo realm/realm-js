@@ -326,7 +326,7 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
         {"_updateSchema", wrap<update_schema>},
-        {"_objectForObjectId", wrap<object_for_object_id>},
+        {"objectForGlobalKey", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
 

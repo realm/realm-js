@@ -51,17 +51,17 @@ module.exports = {
                     none = realm.create('NoPrimaryKey', ["hello, world"]);
                 });
 
-                let integerId = integer._objectId();
-                let nullIntegerId = nullInteger._objectId();
-                let stringId = string._objectId();
-                let nullStringId = nullString._objectId();
-                let noneId = none._objectId();
+                let integerId = integer.globalKey();
+                let nullIntegerId = nullInteger.globalKey();
+                let stringId = string.globalKey();
+                let nullStringId = nullString.globalKey();
+                let noneId = none.globalKey();
 
-                TestCase.assertTrue(integer._isSameObject(realm._objectForObjectId('IntegerPrimaryKey', integerId)));
-                TestCase.assertTrue(nullInteger._isSameObject(realm._objectForObjectId('IntegerPrimaryKey', nullIntegerId)));
-                TestCase.assertTrue(string._isSameObject(realm._objectForObjectId('StringPrimaryKey', stringId)));
-                TestCase.assertTrue(nullString._isSameObject(realm._objectForObjectId('StringPrimaryKey', nullStringId)));
-                TestCase.assertTrue(none._isSameObject(realm._objectForObjectId('NoPrimaryKey', noneId)));
+                TestCase.assertTrue(integer._isSameObject(realm.objectForGlobalKey('IntegerPrimaryKey', integerId)));
+                TestCase.assertTrue(nullInteger._isSameObject(realm.objectForGlobalKey('IntegerPrimaryKey', nullIntegerId)));
+                TestCase.assertTrue(string._isSameObject(realm.objectForGlobalKey('StringPrimaryKey', stringId)));
+                TestCase.assertTrue(nullString._isSameObject(realm.objectForGlobalKey('StringPrimaryKey', nullStringId)));
+                TestCase.assertTrue(none._isSameObject(realm.objectForGlobalKey('NoPrimaryKey', noneId)));
             });
         });
 

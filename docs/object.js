@@ -91,10 +91,10 @@ class Object {
     removeAllListeners() { }
 
     /**
-     * Returns a unique identifier. For synced objects, the uniqueness is only guaranteed when the object has been
+     * Returns a unique and global key. For synced objects, the uniqueness is only guaranteed when the object has been
      * synchronized.
-     * @see {@link Realm#objectForObjectId objectForObjectId}
+     * @see {@link Realm#objectForGlobalKey objectForGlobalKey}
      * @since 4.0.0
      */
-    objectId() { }
+    globalKey() { }
 }

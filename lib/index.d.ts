@@ -157,7 +157,7 @@ declare namespace Realm {
          */
         linkingObjectsCount(): number;
 
-        objectId(): string;
+        globalKey(): string;
 
         /**
          * @returns void
@@ -926,6 +926,15 @@ declare class Realm {
      * @returns {T | undefined}
      */
     objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, id: string): T & Realm.Object | undefined;
+
+    /**
+     *
+     * @param  {string|Realm.ObjectType|Function} type
+     * @param  {string} key
+     * @returns {T | undefined}
+     */
+    objectForGlobalKey<T>(type: string | Realm.ObjectType | Function, key: string) : T & Realm.Object | undefined;
+
 
     /**
      * @param  {string|Realm.ObjectType|Function} type

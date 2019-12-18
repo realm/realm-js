@@ -245,6 +245,16 @@ class Realm {
     objectForPrimaryKey(type, key) { }
 
     /**
+     * Searches for a Realm object by its global key.
+     * @param {string} key - The value of the global key of the object to search for.
+     * @throws {Error} If type passed into this method is invalid.
+     * @returns {Realm.Object|undefined} if no object is found.
+     * @see {@link Realm.Object#globalKey Realm.Object.globalKey}
+     * @since 4.0.0
+     */
+    objectForGlobalKey(key) { }
+
+    /**
      * Add a listener `callback` for the specified event `name`.
      * @param {string} name - The name of event that should cause the callback to be called.
      *   _Currently, only the "change" and "schema" events are supported_.

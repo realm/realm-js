@@ -6,7 +6,7 @@ NOTE: Contains all previous releases up to v3.6.0.
 * None.
 
 ### Enhancements
-* None.
+* Added `Realm.Object.globalKey()` which returns a global and unique key for the object. Added `Realm.getObjectByGlobalKey()` to retrieve objects using global keys. ([RJS-383](https://jira.mongodb.org/browse/RJS-383))
 
 ### Fixed
 * None.
