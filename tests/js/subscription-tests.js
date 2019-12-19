@@ -270,6 +270,9 @@ module.exports = {
                             const sub2 = query2.subscribe({name: 'update-query', update: true});
                             sub2.addListener((subscription2, state2) => {
                                 if (pendingOrComplete(state2)) {
+                                    TestCase.assertEqual(realm.subscriptions('update-query').length, 1);
+                                    TestCase.assertEqual(realm.objects('__ResultSets').filtered(`name = 'update-query'`).length, 1);
+                                    console.log(JSON.stringify(realm.objects('__ResultSets')));
                                     sub2.removeAllListeners();
                                     TestCase.assertFalse(query1.description() === query2.description(), "'description()' was not updated.");
                                     TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime(), "'updatedAt' was not correctly updated.");
