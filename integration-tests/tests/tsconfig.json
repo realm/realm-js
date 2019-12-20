@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
         "moduleResolution": "node",
         "outDir": "dist",
         "types": [
@@ -12,7 +12,9 @@
         "noResolve": true,
         "noImplicitAny": true,
         "lib": [
-            "es2015.promise"
+            "es5",
+            "es2015.promise",
+            "es2015.iterable"
         ]
     },
     "include": [

@@ -111,8 +111,8 @@ async function runApp(platform, junitFilePath) {
     });
     // Close the runner if metro closes unexpectedly
     metro.on("close", (code) => {
+        console.error(`Metro server closed (code = ${code})`);
         if (code !== 0) {
-            console.error(`Metro server unexpectedly closed (code = ${code})`);
             process.exit(code);
         }
     });
