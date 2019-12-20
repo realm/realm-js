@@ -476,6 +476,40 @@ module.exports = {
         });
     },
 
+    testThrowInListener:function() {
+        if (typeof navigator !== 'undefined' && /Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
+            // FIXME: async callbacks do not work correctly in Chrome debugging mode
+            return Promise.resolve();
+        }
+
+        const realm = new Realm({ schema: [schemas.TestObject] });
+
+        realm.write(() => {
+            realm.create('TestObject', { doubleCol: 1 });
+            realm.create('TestObject', { doubleCol: 2 });
+            realm.create('TestObject', { doubleCol: 3 });
+        });
+
+        let called = false;
+        realm.objects('TestObject').addListener((testObjects, changes) => {
+            called = true;
+            throw new Error('Boom');
+        });
+
+        return new Promise((resolve, reject) => {
+            realm.write(() => {
+                realm.create('TestObject', { doubleCol: 4 });
+            });
+            setTimeout(() => {
+                if (called) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            }, 1000);
+        });
+    },
+
     testResultsAggregateFunctions: function() {
         var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
         const N = 50;

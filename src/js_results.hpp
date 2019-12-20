@@ -439,13 +439,28 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    auto token = collection.add_notification_callback([=](CollectionChangeSet const& change_set, std::exception_ptr exception) {
+    auto token = collection.add_notification_callback([=](CollectionChangeSet const& change_set, std::exception_ptr err) {
             HANDLESCOPE
+            if (err) {
+                try {
+                    std::rethrow_exception(err);
+                }
+                catch (const std::exception& e) {
+                    // FIXME: log the exception
+                    return ;
+                }
+            }
             ValueType arguments[] {
                 static_cast<ObjectType>(protected_this),
                 CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)
             };
-            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+
+            try {
+                Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+            }
+            catch (const std::exception& e) {
+                // FIXME: log the exception
+            }
         });
     collection.m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
