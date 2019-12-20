@@ -294,6 +294,7 @@ class Realm {
      *   realm.commitTransaction();
      * } catch (e) {
      *   realm.cancelTransaction();
+     *   throw e;
      * }
      * @throws {Error} When already in write transaction
      * @see {@link Realm#cancelTransaction cancelTransaction()}
