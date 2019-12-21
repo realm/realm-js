@@ -23,13 +23,21 @@
 #include "js_observable.hpp"
 
 #include "collection_notifications.hpp"
+#include "object.hpp"
 #include "object_changeset.hpp"
+
 #if REALM_ENABLE_SYNC
 #include "sync/subscription_state.hpp"
 #endif
 
 namespace realm {
 namespace js {
+
+template<typename T>
+class RealmObject;
+
+template<typename T>
+struct RealmObjectClass;
 
 // Empty class that merely serves as useful type for now.
 class Collection {};
@@ -44,29 +52,34 @@ struct CollectionClass : ClassDefinition<T, Collection, ObservableClass<T>> {
 
     std::string const name = "Collection";
 
-    static inline ValueType create_collection_change_set(ContextType ctx, const ObjectChangeSet &change_set);
+    static inline ValueType create_collection_change_set(ContextType ctx, StringData object_type, const ObjectChangeSet &change_set, realm::SharedRealm old_realm, realm::SharedRealm new_realm);
     static inline ValueType create_collection_change_set(ContextType ctx, const CollectionChangeSet &change_set);
 };
 
 template<typename T>
-typename T::Value CollectionClass<T>::create_collection_change_set(ContextType ctx, const ObjectChangeSet &change_set)
+typename T::Value CollectionClass<T>::create_collection_change_set(ContextType ctx, StringData object_type, const ObjectChangeSet &change_set, realm::SharedRealm old_realm, realm::SharedRealm new_realm)
 {
     ObjectType object = Object::create_empty(ctx);
     std::vector<ValueType> scratch;
-    auto make_array = [&](auto const& keys) {
+
+    auto make_object_array = [&](auto const& keys, auto realm) {
         scratch.clear();
         scratch.reserve(keys.size());
-        for (auto index : keys) {
-            scratch.push_back(Value::from_number(ctx, index));
+        for (auto key : keys) {
+            auto realm_object = realm::Object(realm, object_type, realm::ObjKey(key));
+            auto obj = RealmObjectClass<T>::create_instance(ctx, realm_object);
+            scratch.push_back(obj);
         }
         return Object::create_array(ctx, scratch);
     };
 
-    auto make_array_from_modifications = [&](auto const& keys) {
+    auto make_object_array_from_modifications = [&](auto const& keys, auto realm) {
         scratch.clear();
         scratch.reserve(keys.size());
-        for (auto index : keys) {
-            scratch.push_back(Value::from_number(ctx, index.first));
+        for (auto key : keys) {
+            auto realm_object = realm::Object(realm, object_type, realm::ObjKey(key.first));
+            auto obj = RealmObjectClass<T>::create_instance(ctx, realm_object);
+            scratch.push_back(obj);
         }
         return Object::create_array(ctx, scratch);
     };
@@ -75,16 +88,16 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
         Object::set_property(ctx, object, "deletions", Object::create_array(ctx, {Value::from_null(ctx)}));
     }
     else {
-        Object::set_property(ctx, object, "deletions", make_array(change_set.get_deletions()));
+        Object::set_property(ctx, object, "deletions", make_object_array(change_set.get_deletions(), old_realm));
     }
 
-    Object::set_property(ctx, object, "insertions", make_array(change_set.get_insertions()));
+    Object::set_property(ctx, object, "insertions", make_object_array(change_set.get_insertions(), new_realm));
 
-    auto old_modifications = make_array_from_modifications(change_set.get_modifications());
-    Object::set_property(ctx, object, "modifications", old_modifications);
+    auto old_modifications = make_object_array_from_modifications(change_set.get_modifications(), old_realm);
+    Object::set_property(ctx, object, "oldModifications", old_modifications);
 
-    // we don't set "newModifications" or "oldModifications" here, as they are the same as modifications
-    // since the keys don't change across transactions (as compared to indices in an IndexSet)
+    auto new_modifications = make_object_array_from_modifications(change_set.get_modifications(), new_realm);
+    Object::set_property(ctx, object, "newModifications", new_modifications);
 
     return object;
 }

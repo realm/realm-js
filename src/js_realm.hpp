@@ -42,6 +42,7 @@
 #include "thread_safe_reference.hpp"
 
 #include <realm/disable_sync_to_disk.hpp>
+#include <realm/global_key.hpp>
 #include <realm/util/file.hpp>
 #include <realm/util/scope_exit.hpp>
 
@@ -1220,7 +1221,7 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
 
     const Group& group = realm->read_group();
     auto table = ObjectStore::table_for_object_type(group, object_schema.name);
-    auto object_id = ObjectID::from_string(object_id_string);
+    auto object_id = realm::GlobalKey::from_string(object_id_string);
     auto object_key = table->get_obj_key(object_id);
     if (object_key) {
         return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, object_key)));

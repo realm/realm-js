@@ -380,16 +380,20 @@ class ChangeEvent {
     get oldRealm() { }
 
     /**
-     * The changed primary keys for all added, removed, and modified objects in
+     * The changed objects for all added, removed, and modified objects in
      * the changed Realm. This object is a hashmap of object types to arrays of
-     * object keys for all objects changed between the two reported realm versions:
+     * objects for all objects changed between the two reported realm versions.
+     * The objects in `insertions` and `newModifications` are referencing the
+     * new realm version (`realm()`) while `deletions` and `oldModifications`
+     * refer to the objects in the old realm (`oldRealm()`).
      *
      * @example
      * {
      *   MyObject: {
-     *     insertions:    [keys...],
-     *     deletions:     [keys...],
-     *     modifications: [keys...]
+     *     insertions:    [objects...],
+     *     deletions:     [objects...],
+     *     newModifications: [objects...],
+     *     oldModifications: [objects...]
      *   },
      *   MyOtherObject:
      *     ...
