@@ -109,38 +109,12 @@ public:
 	}
 
 	bool operator==(const MemberType &other) const {
-		/*napi_value value;
-		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
-		if (status != napi_ok) {
-			throw std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
-		}
-
-		if (value == nullptr) {
-			throw std::runtime_error(util::format("Can not use unallocated protected reference"));
-		}
-
-		return value == other;
-		
-		*/
-
 		MemberType memberType = *this;
 
 	    return memberType == other;
 	}
 
 	bool operator!=(const MemberType& other) const {
-		/*napi_value value;
-		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
-		if (status != napi_ok) {
-			throw std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
-		}
-
-		if (value == nullptr) {
-			throw std::runtime_error(util::format("Can not use unallocated protected reference"));
-		}
-		return value != other;
-		*/
-
 		MemberType memberType = *this;
 		return memberType != other;
 	}
