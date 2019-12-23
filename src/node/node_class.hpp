@@ -39,27 +39,11 @@ using PropertyType = js::PropertyType<Types>;
 using IndexPropertyType = js::IndexPropertyType<Types>;
 using StringPropertyType = js::StringPropertyType<Types>;
 
-//struct ReadOnlyError : public Napi::Error {
-//public:
-//	ReadOnlyError() : Napi::Error() {}
-//	ReadOnlyError(napi_env env, napi_value message) : Napi::Error(env, message) {}
-//
-//	static inline ReadOnlyError ReadOnlyError::New(napi_env env, const std::string& message) {
-//		return Error::New<ReadOnlyError>(env, message.c_str(), message.size(), napi_create_error);
-//	}
-//};
-
-//struct ReadOnlyError : std::runtime_error {
-//public:
-//	ReadOnlyError(const std::string& message) : std::runtime_error(message) {}
-//};
-
 template<typename ClassType>
 class WrappedObject : public Napi::ObjectWrap<WrappedObject<ClassType>> {
 	using Internal = typename ClassType::Internal;
 public:
 	WrappedObject(const Napi::CallbackInfo& info);
-	//~WrappedObject();
 
 	static Napi::Value create_instance_with_proxy(const Napi::CallbackInfo& info);
 
@@ -90,10 +74,8 @@ public:
 
 private:
 	std::unique_ptr<Internal> m_internal;
-	//std::shared_ptr<Internal> m_internal;
 	static Napi::FunctionReference constructor;
 	static Napi::FunctionReference factory_constructor;
-	//static std::exception_ptr constructorException;
 	static IndexPropertyType* m_indexPropertyHandlers;
 	static StringPropertyType* m_namedPropertyHandlers;
 	static std::string m_name;
@@ -124,9 +106,6 @@ Napi::FunctionReference WrappedObject<ClassType>::constructor;
 
 template<typename ClassType>
 Napi::FunctionReference WrappedObject<ClassType>::factory_constructor;
-
-//template<typename ClassType>
-//std::exception_ptr WrappedObject<ClassType>::constructorException;
 
 template<typename ClassType>
 IndexPropertyType* WrappedObject<ClassType>::m_indexPropertyHandlers;
@@ -233,7 +212,6 @@ WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::
 		constructor_callback(info);
 	}
 	catch (const std::exception& e) {
-		//WrappedObject<ClassType>::constructorException = std::current_exception();
 		throw Napi::Error::New(env, e.what());
 	}
 }
@@ -287,15 +265,8 @@ Napi::Value WrappedObject<ClassType>::create_instance_with_proxy(const Napi::Cal
 
 		auto arguments = get_arguments(info);
 		std::vector<napi_value> arrgs(arguments.begin(), arguments.end());
-		
-		//NAPI: throwing exceptions from inside napi constructors causes v8 GC to fail with access violations. Rethrowing it here
-		//constructorException = nullptr;
+	
 		Napi::Object instance = constructor.New(arrgs);
-		/*if (constructorException != nullptr) {
-			std::exception_ptr exception = constructorException;
-			constructorException = nullptr;
-			std::rethrow_exception(exception);
-		}*/
 
 		//using DefineProperty to make it non enumerable and non configurable and non writable
 		instance.DefineProperty(Napi::PropertyDescriptor::Value("_instance", instance, napi_default));
@@ -355,15 +326,13 @@ WrappedObject<ClassType>* WrappedObject<ClassType>::TryUnwrap(const Napi::Object
 
 template<typename ClassType>
 inline typename ClassType::Internal* WrappedObject<ClassType>::get_internal() {
-	//return m_internal.get();
 	return m_internal.get();
 }
 
 template<typename ClassType>
 inline void WrappedObject<ClassType>::set_internal(Internal* internal) {
-	if (internal) {
+	if (internal != nullptr) {
 		m_internal = std::unique_ptr<Internal>(internal);
-		//m_internal = std::shared_ptr<Internal>(internal);
 	}
 }
 
@@ -416,18 +385,11 @@ void WrappedObject<ClassType>::setter_callback(const Napi::CallbackInfo& info, c
 
 template<typename ClassType>
 void WrappedObject<ClassType>::readonly_setter_callback(const Napi::CallbackInfo& info, const Napi::Value& value) {
-	//throw ReadOnlyError::New(info.Env(), "Cannot assign to read only property");
-	//throw std::runtime_error("Cannot assign to read only property");
-	
 	throw Napi::Error::New(info.Env(), "Cannot assign to read only property");
-
-	/*std::string message = "Cannot assign to read only property";
-	throw Napi::Error::New(info.Env(), message);*/
 }
 
 template<typename ClassType>
 void WrappedObject<ClassType>::readonly_static_setter_callback(const Napi::CallbackInfo& info, const Napi::Value& value) {
-	//throw ReadOnlyError::New(info.Env(), "Cannot assign to read only property");
 	throw Napi::Error::New(info.Env(), "Cannot assign to read only static property");
 }
 
@@ -856,14 +818,13 @@ Napi::Function ObjectWrap<ClassType>::init_class(Napi::Env env) {
 	}
 
 	std::vector<Napi::ClassPropertyDescriptor<WrappedObject<ClassType>>> properties;
+	//setup properties and accessors on the class
 
 	for (auto& pair : s_class.static_properties) {
 		Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> statc_property = setup_static_property(env, pair.first, pair.second);
 		properties.push_back(statc_property);
 	}
 
-	//Napi: setup properties and accessors on the class
-	// Static properties are setup in create_constructor() because V8.
 	for (auto& pair : s_class.static_methods) {
 		Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> staticMethod = setup_static_method(env, pair.first, pair.second);
 		properties.push_back(staticMethod);
@@ -892,7 +853,7 @@ Napi::Function ObjectWrap<ClassType>::init_class(Napi::Env env) {
 		throw std::runtime_error("undefined 'prototype' on construtor");
 	}
 
-	Napi::Function parentCtor = ObjectWrapAccessor<ParentClassType>::init_class(env); //ObjectWrap<ParentClassType>::init_class(env);
+	Napi::Function parentCtor = ObjectWrapAccessor<ParentClassType>::init_class(env);
 	if (!parentCtor.IsEmpty()) {
 
 		auto parentCtorPrototypeProperty = parentCtor.Get("prototype");
