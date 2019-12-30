@@ -24,7 +24,6 @@
 #include "js_util.hpp"
 
 #include "napi.h"
-#include "node_napi_convert.hpp"
 
 namespace realm {
 namespace node {

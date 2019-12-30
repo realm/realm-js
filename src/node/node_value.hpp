@@ -19,9 +19,7 @@
 #pragma once
 
 #include "node_types.hpp"
-
 #include "napi.h"
-#include "node_napi_convert.hpp"
 
 namespace realm {
 namespace js {

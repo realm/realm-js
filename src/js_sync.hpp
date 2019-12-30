@@ -35,7 +35,6 @@
 #include "impl/realm_coordinator.hpp"
 #include "node/js_global_notifier.hpp"
 #include "node/sync_logger.hpp"
-#include "node_napi_convert.hpp"
 #endif
 
 #if REALM_ANDROID

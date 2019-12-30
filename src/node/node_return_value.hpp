@@ -19,7 +19,6 @@
 #pragma once
 
 #include "node_types.hpp"
-
 #include "napi.h"
 
 namespace realm {
