@@ -32,7 +32,6 @@
 
 #include "napi.h"
 
-//NAPI: all placess that use this define HANDLESCOPE should be checked so indeed a Napi::HandleScope is present
 #define HANDLESCOPE(env) Napi::HandleScope handle_scope(env);
 
 namespace realm {
@@ -40,7 +39,7 @@ namespace node {
 
 struct Types {
 	using Context = Napi::Env; //v8::Isolate*;
-	using GlobalContext = Napi::Env; //Napi::Object;//v8::Local<v8::Context>; //NAPI: or Napi::ObjectReference ?
+	using GlobalContext = Napi::Env; //v8::Local<v8::Context>;
 	using Value = Napi::Value; //v8::Local<v8::Value>;
 	using Object = Napi::Object; //v8::Local<v8::Object>;
 	using String = Napi::String; //v8::Local<v8::String>;

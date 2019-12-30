@@ -72,7 +72,6 @@ template<typename T> class AsyncOpenTaskClass;
 template<typename T>
 class RealmDelegate : public BindingContext {
 private:
-	//NAPI: uncomment these methods
     void did_change(std::vector<ObserverState> const&, std::vector<void*> const&, bool) override {
 		HANDLESCOPE(m_context)
         notify(m_notifications, "change");

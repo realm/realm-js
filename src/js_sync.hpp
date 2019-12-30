@@ -1386,13 +1386,6 @@ void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object
         return;
     }
 
-	//NAPI: remove comment
-    /*auto arr = Nan::New<v8::Array>(local_realms.size());
-    for (size_t i = 0; i < local_realms.size(); i++) {
-        Nan::Set(arr, i, Nan::New<v8::String>(local_realms[i]).ToLocalChecked());
-    }
-	return_value.set(arr);*/
-
 	Napi::Array arr = Napi::Array::New(ctx, local_realms.size());
 	for (size_t i = 0; i < local_realms.size(); i++) {
 		arr.Set(i, Napi::String::New(ctx, local_realms[i]));

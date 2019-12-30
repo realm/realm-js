@@ -141,7 +141,6 @@ inline void node::Object::set_property(Napi::Env env, const Napi::Object& object
 	try {
 		Napi::Object obj = object;
 		if (attributes) {
-			//Napi: is this setting property value or defining new property
 			napi_property_attributes napi_attributes = napi_default | attributes;
 			std::string name = key;
 			auto propDescriptor = Napi::PropertyDescriptor::Value(name, value, napi_attributes);
@@ -239,7 +238,6 @@ inline Napi::Value node::Object::get_prototype(Napi::Env env, const Napi::Object
 
 template<>
 inline void node::Object::set_prototype(Napi::Env env, const Napi::Object& object, const Napi::Value& prototype) {
-	//NAPI: cache this function
 	auto setPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
 	if (setPrototypeOfFunc.IsEmpty() || setPrototypeOfFunc.IsUndefined()) {
 		throw std::runtime_error("no 'setPrototypeOf'");
@@ -282,7 +280,6 @@ inline Napi::Object node::Object::create_array(Napi::Env env, uint32_t length, c
 //    return Nan::New<v8::Date>(time).ToLocalChecked();
 //}
 
-//NAPI: Napi::Date is experimental it seems. 
 template<>
 inline Napi::Object node::Object::create_date(Napi::Env env, double time) {
 	Napi::Function date_constructor = env.Global().Get("Date").As<Napi::Function>();

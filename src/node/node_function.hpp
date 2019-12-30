@@ -80,17 +80,6 @@ inline Napi::Value node::Function::call(Napi::Env env, const Napi::Function& fun
 
 template <>
 inline Napi::Value node::Function::callback(Napi::Env env, const Napi::Function& function, const Napi::Object& this_object, size_t argc, const Napi::Value arguments[]) {
-	//NAPI: if possible do not use Napi::Function::MakeCallback
-	//v8::Isolate* isolate = realm::node::getIsolate(env);
-	//if (!isolate->GetCallingContext().IsEmpty())
-	//{
-	//	// if there are any JavaScript frames on the stack below this one we don't need to
-	//	// go through the trouble of calling MakeCallback. MakeCallback is only for when a
-	//	// thread with no JavaScript frames on its stack needs to call into JavaScript, like in
-	//	// an uv_async callback.
-	//	return call(env, function, this_object, argc, arguments);
-	//}
-
 	auto recv = this_object.IsEmpty() ? env.Global() : this_object;
 	try	{
 		std::vector<napi_value> args(const_cast<const Napi::Value*>(arguments), const_cast<const Napi::Value*>(arguments) + argc);

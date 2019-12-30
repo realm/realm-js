@@ -23,7 +23,6 @@
 namespace realm {
 namespace node {
 
-//Napi: could reimplement with Napi::ObjectReference
 template<typename MemberType>
 class Protected {
 protected:
@@ -161,25 +160,21 @@ class Protected<node::Types::GlobalContext> {
 	}
 };
 
-//Napi: Can't use Napi::Persistent on Napi::Value
 template<>
 class Protected<node::Types::Value> : public node::Protected<Napi::Value> {
   public:
-    //Protected() : node::Protected<Napi::Value>() {}
     Protected(Napi::Env env, Napi::Value value) : node::Protected<Napi::Value>(env, value) {}
 };
 
 template<>
 class Protected<node::Types::Object> : public node::Protected<Napi::Object> {
   public:
-    //Protected() : node::Protected<Napi::Object>() {}
     Protected(Napi::Env env, Napi::Object object) : node::Protected<Napi::Object>(env, object) {}
 };
 
 template<>
 class Protected<node::Types::Function> : public node::Protected<Napi::Function> {
   public:
-    //Protected() : node::Protected<Napi::Function>() {}
     Protected(Napi::Env env, Napi::Function function) : node::Protected<Napi::Function>(env, function) {}
 };
 

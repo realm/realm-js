@@ -58,7 +58,6 @@ namespace js {
 //}
 
 
-//NAPI: consider removing in favor of Napi::String
 template<>
 class String<node::Types> {
     std::string m_str;

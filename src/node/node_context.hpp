@@ -41,13 +41,12 @@ inline Napi::Env node::Context::get_global_context(Napi::Env env) {
 //	return reinterpret_cast<AbstractExecutionContextID>(isolate);
 //}
 
-
-//NAPI: AbstractExecutionContextID does not exists in NAPI
 template<>
 inline AbstractExecutionContextID node::Context::get_execution_context_id(Napi::Env env)
 {
-	v8::Isolate* isolate = realm::node::getIsolate(env);
-    return reinterpret_cast<AbstractExecutionContextID>(isolate);
+	//NAPI: return 1 here since there is no other id available from NAPI
+	return 1;
+
 }
 
 } // js

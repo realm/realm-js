@@ -85,7 +85,6 @@ inline bool node::Value::is_array_buffer_view(Napi::Env env, const Napi::Value& 
 //    return value->IsDate();
 //}
 
-//NAPI: IsDate does not exists in NAPI
 template<>
 inline bool node::Value::is_date(Napi::Env env, const Napi::Value& value) {
 	return value.IsObject() && value.As<Napi::Object>().InstanceOf(env.Global().Get("Date").As<Napi::Function>());
@@ -178,8 +177,6 @@ inline bool node::Value::is_undefined(Napi::Env env, const Napi::Value& value) {
 //        || ::node::Buffer::HasInstance(value);
 //}
 
-//NAPI: check is needed. Uses node api's. 
-//NAPI: node::Buffer::HasInstance is doing value->IsArrayBufferView check internally. Seems redundant. Double check it
 template<>
 inline bool node::Value::is_binary(Napi::Env env, const Napi::Value& value) {
 	return Value::is_array_buffer(env, value) || Value::is_array_buffer_view(env, value);
@@ -250,14 +247,15 @@ inline Napi::Value node::Value::from_nonnull_string(Napi::Env env, const node::S
 
 template<>
 inline Napi::Value node::Value::from_nonnull_binary(Napi::Env env, BinaryData data) {
-	//NAPI:: should probably use Napi::EscapableHandleScope or not
+	Napi::EscapableHandleScope scope(env);
+
 	Napi::ArrayBuffer buffer = Napi::ArrayBuffer::New(env, data.size());
 
 	if (data.size()) {
 		memcpy(buffer.Data(), data.data(), data.size());
 	}
 
-	return buffer;
+	return scope.Escape(buffer);
 }
 
 //template<>
@@ -360,24 +358,7 @@ inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value v
 		int64_t byteOffset = value.As<Napi::Object>().Get("byteOffset").As<Napi::Number>();
 		Napi::ArrayBuffer arrayBuffer = value.As<Napi::Object>().Get("buffer").As<Napi::ArrayBuffer>();
 		return make_owned_binary_data(static_cast<char*>(arrayBuffer.Data()) + byteOffset, byteLength);
-
-
-
-
-		//NAPI: fix for ArrayBufferView. REMOVE
-		/*auto v8Value = *reinterpret_cast<v8::Local<v8::Value>*>((napi_value)value);
-		v8::Local<v8::ArrayBufferView> array_buffer_view = v8Value.As<v8::ArrayBufferView>();
-		std::unique_ptr<char[]> data(new char[array_buffer_view->ByteLength()]);
-
-		size_t bytes = array_buffer_view->CopyContents(data.get(), array_buffer_view->ByteLength());
-		OwnedData owned_data(std::move(data), bytes);
-
-		return *reinterpret_cast<OwnedBinaryData*>(&owned_data);*/
 	}
-	//NAPI: redundant case of node::Buffer. Should be handled by the IsArrayBufferView check above
-	//else if (::node::Buffer::HasInstance(value)) {
-	//	return make_owned_binary_data(::node::Buffer::Data(value), ::node::Buffer::Length(value));
-	//}
 	else {
 		throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
 	}

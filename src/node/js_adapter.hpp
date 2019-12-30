@@ -181,11 +181,6 @@ public:
 
     bool key(string_t& val) override
     {
-		//NAPI: implement with NAPI. Why we go from std::string to v8::String using node::String here
-        //m_key = &m_string_pool[val];
-        //if (m_key->IsEmpty())
-        //    *m_key =  node::String(val);
-		
 		m_key = val;
         return true;
     }
@@ -197,8 +192,6 @@ public:
 
 private:
     ContextType m_ctx;
-    //std::unordered_map<std::string, v8::Local<v8::String>> m_string_pool;
-    //v8::Local<v8::String>* m_key = nullptr;
 	std::string m_key;
     std::vector<ObjectType> m_obj_stack;
     enum class ArrayState {
@@ -215,14 +208,6 @@ private:
     {
         REALM_ASSERT(!m_key.empty());
         REALM_ASSERT(!m_obj_stack.empty());
-        // Use Nan::Set directly because going through Object::set_property()
-        // will create a new v8 string rather than using our interned one
-       /* Nan::TryCatch trycatch;
-        Nan::Set(m_obj_stack.back(), *m_key, value);
-        m_key = nullptr;
-        if (trycatch.HasCaught()) {
-            throw node::Exception(m_ctx, trycatch.Exception());
-        }*/
 
 		try {
 			Object::set_property(m_ctx, m_obj_stack.back(), node::String(m_key), value);
