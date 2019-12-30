@@ -35,7 +35,7 @@ class ReturnValue<node::Types> {
 	ReturnValue(Napi::Env env, Napi::Value value) : m_env(env), m_value(value) {}
 
 	Napi::Value ToValue() {
-		//guard check. Empty values cause node to fail in obscure places, so return undefined instead
+		//guard check. env.Empty() values cause node to fail in obscure places, so return undefined instead
 		if (m_value.IsEmpty()) {
 			return Napi::Value(m_env, m_env.Undefined());
 		}
@@ -77,8 +77,6 @@ class ReturnValue<node::Types> {
     }
 
     void set(realm::Mixed mixed) {
-		//Napi: check is correct 
-		//m_value.Set(Value<node::Types>::from_mixed(nullptr, mixed));
 		m_value = Napi::Value(m_env, Value<node::Types>::from_mixed(m_env, mixed));
     }
 

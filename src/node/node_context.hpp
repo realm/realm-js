@@ -25,21 +25,10 @@
 namespace realm {
 namespace js {
 
-//template<>
-//inline v8::Local<v8::Context> node::Context::get_global_context(v8::Isolate* isolate) {
-//	return isolate->GetCurrentContext();
-//}
-
 template<>
 inline Napi::Env node::Context::get_global_context(Napi::Env env) {
 	return env;
 }
-
-//template<>
-//inline AbstractExecutionContextID node::Context::get_execution_context_id(v8::Isolate* isolate)
-//{
-//	return reinterpret_cast<AbstractExecutionContextID>(isolate);
-//}
 
 template<>
 inline AbstractExecutionContextID node::Context::get_execution_context_id(Napi::Env env)

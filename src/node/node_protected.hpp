@@ -153,9 +153,8 @@ class Protected<node::Types::GlobalContext> {
 		return m_ctx;
     }
 
-	//Napi: comparing Napi::Env does not have a meaning in Napi since Napi::Env maps to v8::Isolate not to v8::Context. Validate the runtime behavior of this
-	//this is used in RealmClass<T>::set_binding_context -> REALM_ASSERT(js_binding_context->m_context == global_context);
 	bool operator==(const Protected<node::Types::GlobalContext>& other) const {
+		//GlobalContext is always equal since its Napi::Env
 		return true;
 	}
 };

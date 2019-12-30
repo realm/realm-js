@@ -38,15 +38,13 @@ namespace realm {
 namespace node {
 
 struct Types {
-	using Context = Napi::Env; //v8::Isolate*;
-	using GlobalContext = Napi::Env; //v8::Local<v8::Context>;
-	using Value = Napi::Value; //v8::Local<v8::Value>;
-	using Object = Napi::Object; //v8::Local<v8::Object>;
-	using String = Napi::String; //v8::Local<v8::String>;
-	using Function = Napi::Function; //v8::Local<v8::Function>;
+	using Context = Napi::Env;
+	using GlobalContext = Napi::Env;
+	using Value = Napi::Value;
+	using Object = Napi::Object;
+	using String = Napi::String;
+	using Function = Napi::Function;
 
-
-	
 	typedef Napi::Value(*NapiFunctionCallback)(const Napi::CallbackInfo& info);
 
 	typedef Napi::Value(*NapiIndexGetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, uint32_t index);
@@ -58,27 +56,12 @@ struct Types {
 	typedef Napi::Value(*NapiStringPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, const Napi::String& property, const Napi::Value& value);
 	typedef Napi::Value(*NapiStringPropertyEnumeratorCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance);
 
-	//using ConstructorCallback = Nan::FunctionCallback;
-    //using FunctionCallback = Nan::FunctionCallback;
-    //using PropertyGetterCallback = Nan::GetterCallback;
-    //using PropertySetterCallback = Nan::SetterCallback;
-    //using IndexPropertyGetterCallback = Nan::IndexGetterCallback;
-    //using IndexPropertySetterCallback = Nan::IndexSetterCallback;
-    //using StringPropertyGetterCallback = v8::NamedPropertyGetterCallback;
-    //using StringPropertySetterCallback = v8::NamedPropertySetterCallback;
-    //using StringPropertyEnumeratorCallback = v8::NamedPropertyEnumeratorCallback;
-	
 	using ConstructorCallback = NapiFunctionCallback;
 	using FunctionCallback = NapiFunctionCallback;
 	using PropertyGetterCallback = NapiPropertyGetterCallback;
 	using PropertySetterCallback = NapiPropertySetterCallback;
 	using IndexPropertyGetterCallback = NapiIndexGetterCallback;
 	using IndexPropertySetterCallback = NapiIndexSetterCallback;
-
-	//Napi: napi does not have support for named property handlers.
-	//using StringPropertyGetterCallback = v8::NamedPropertyGetterCallback;
-	//using StringPropertySetterCallback = v8::NamedPropertySetterCallback;
-	//using StringPropertyEnumeratorCallback = v8::NamedPropertyEnumeratorCallback;
 
 	using StringPropertyGetterCallback = NapiStringPropertyGetterCallback;
 	using StringPropertySetterCallback = NapiStringPropertySetterCallback;

@@ -69,30 +69,6 @@ protected:
     void do_log(realm::util::Logger::Level, std::string) override final;
 };
 
-//Napi: remove
-//void SyncLoggerQueue::log_uv_callback()
-//{
-//    // This function is always executed by the Node.js event loop
-//    // thread.
-//    v8::HandleScope scope(m_v8_isolate);
-//    v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(m_v8_isolate, m_callback);
-//
-//    std::queue<SyncLoggerMessage> popped;
-//    {
-//        std::lock_guard<std::mutex> lock(m_mutex); // Throws
-//        popped.swap(m_log_queue);
-//    }
-//
-//    while (!popped.empty()) {
-//        v8::Local<v8::Value> argv[] = {v8::Integer::New(m_v8_isolate, static_cast<int>(popped.front().m_level)),
-//                                       v8::String::NewFromUtf8(m_v8_isolate, popped.front().m_message.c_str())};
-//
-//        callback->Call(m_v8_isolate->GetCurrentContext(), v8::Null(m_v8_isolate), 2, argv);
-//
-//        popped.pop();
-//    }
-//}
-
 void SyncLoggerQueue::log_uv_callback()
 {
 	// This function is always executed by the Node.js event loop
@@ -125,16 +101,6 @@ void SyncLogger::do_log(realm::util::Logger::Level level, std::string message)
 }
 
 } // anonymous namespace
-
-//Napi: remove
-//std::unique_ptr<util::Logger> realm::node::SyncLoggerFactory::make_logger(util::Logger::Level level)
-//{
-//    v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(m_v8_isolate, m_callback);
-//
-//    auto logger = std::make_unique<SyncLogger>(m_v8_isolate, callback); // Throws
-//    logger->set_level_threshold(level);
-//    return std::unique_ptr<util::Logger>(logger.release());
-//}
 
 std::unique_ptr<util::Logger> realm::node::SyncLoggerFactory::make_logger(util::Logger::Level level)
 {

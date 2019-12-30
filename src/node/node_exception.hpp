@@ -24,12 +24,6 @@
 namespace realm {
 namespace js {
 
-
-//template<>
-//inline v8::Local<v8::Value> node::Exception::value(v8::Isolate* isolate, const std::string& message) {
-//	return Nan::Error(message.c_str());
-//}
-
 template<>
 inline Napi::Value node::Exception::value(Napi::Env env, const std::string &message) {
 	return Napi::String::New(env, message);
