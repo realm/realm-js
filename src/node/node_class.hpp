@@ -91,7 +91,7 @@ private:
 			
 
 			static Napi::Value getProxyTrap(const Napi::CallbackInfo& info);
-			static Napi::Value getProxyTrapHandleFunctions(const Napi::CallbackInfo& info, bool* handled);
+			static Napi::Value getProxyTrapInvokeNamedAndIndexHandlers(const Napi::CallbackInfo& info);
 			static Napi::Value setProxyTrap(const Napi::CallbackInfo& info);
 			static Napi::Value ownKeysProxyTrap(const Napi::CallbackInfo& info);
 			static Napi::Value hasProxyTrap(const Napi::CallbackInfo& info);
@@ -429,16 +429,9 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::bindFunction(Napi::Env env, 
 }
 
 template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::CallbackInfo& info) {
+Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrapInvokeNamedAndIndexHandlers(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	Napi::EscapableHandleScope scope(env);
-
-	//if its a function property return it
-	bool handled = true;
-	Napi::Value result = getProxyTrapHandleFunctions(info, &handled);
-	if (handled) {
-		return scope.Escape(result);
-	}
 
 	Napi::Object target = info[0].As<Napi::Object>();
 	Napi::Value propertyArg = info[1];
@@ -485,10 +478,8 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::Cal
 	return scope.Escape(value);
 }
 
-//Napi: this is handling not only bound functions but also decides if index and named handlers will be called. Make this as the default get Proxy trap and call index and named handlers from it
 template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrapHandleFunctions(const Napi::CallbackInfo& info, bool* handled) {
-	*handled = true;
+Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	Napi::EscapableHandleScope scope(env);
 
@@ -514,10 +505,10 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrapHandleFunctions(
 		}
 	}
 
-	//if the target prototype chain don't have the property return any value to allow named and index handlers to kick in
+	//if the target prototype chain don't have the property invoke the named and index handlers to handle the get property call
 	if (!target.Has(arg1)) {
-		*handled = false;
-		return scope.Escape(env.Undefined());
+		Napi::Value result = getProxyTrapInvokeNamedAndIndexHandlers(info);
+		return scope.Escape(result);
 	}
 
 	//skip non string property names like Symbol
@@ -760,10 +751,8 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getPrototypeofProxyTrap(cons
 	Napi::Object proto = target.Get("_proto").As<Napi::Object>();
 	
 	if (proto.IsUndefined()) {
-		//Napi: use napi_get_prototype
 		auto getPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("getPrototypeOf").As<Napi::Function>();
 		proto = getPrototypeOfFunc.Call({ target }).As<Napi::Object>();
-		
 	}
 	
 	return scope.Escape(proto);
