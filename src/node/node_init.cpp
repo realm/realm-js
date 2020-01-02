@@ -16,9 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-//NAPI: Enable NAPI Realm module convertion
-//NAPI: FIXME: tidy up when convertion is complete
-
 #include "node_init.hpp"
 #include "napi.h"
 
