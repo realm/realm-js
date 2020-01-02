@@ -131,8 +131,14 @@ exports.runTest = function(suiteName, testName) {
     if (testMethod) {
         Realm.clearTestState();
         console.warn("Starting test " + testName);
-        return testMethod.call(testSuite);
+        var result = testMethod.call(testSuite);
+
+        //make sure v8 GC can collect garbage after each test and does not fail
+        global.gc();
+        
+        return result;
     }
+
     if (!testSuite || !(testName in SPECIAL_METHODS)) {
         throw new Error(`Missing test: ${suiteName}.${testName}`);
     }

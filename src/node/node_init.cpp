@@ -24,53 +24,28 @@
 
 #include "js_realm.hpp"
 #if REALM_ENABLE_SYNC
-//NAPI: enable and implement js_adapter.hpp which is node_adapter.hpp actually
 #include "js_adapter.hpp"
 #endif
 
  namespace realm {
  namespace node {
 
-static void napi_init(Napi::Env env, v8::Isolate* isolate, Napi::Object exports) {
-	//v8::Local<v8::Function> realm_constructor = js::RealmClass<Types>::create_constructor(env);
+static void napi_init(Napi::Env env, Napi::Object exports) {
 	Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
 
-	/*auto ctorName = realm_constructor.GetName().As<v8::String>();
-	v8::String::Utf8Value value(ctorName);
-	char* v = *value;
-	Napi::String::New(env, v);*/
-	//Nan::Set(exports, realm_constructor->GetName(), realm_constructor);
-	//exports.Set(Napi::String::New(env, v), Napi::Function::New(env, Method));
+	std::string name = realm_constructor.Get("name").As<Napi::String>();
+	exports.Set(Napi::String::New(env, name), realm_constructor);
 }
-
 
 } // node
 } // realm
 
-static Napi::String Method(const Napi::CallbackInfo& info) {
-  Napi::Env env = info.Env();
-  return Napi::String::New(env, "world");
-}
-
 static Napi::Object NAPI_Init(Napi::Env env, Napi::Object exports) {
-//NAPI: Enable NAPI Realm module convertion
-//NAPI: FIXME: remove when NAPI complete
-/////////////////////
-  napi_env e  =  env;
-  v8::Isolate* isolate = (v8::Isolate*)e + 3;
-  //the following two will fail or context will be null if isolate is not found at the expected location
-  auto currentIsolate = isolate->GetCurrent();
-  auto context = currentIsolate->GetCurrentContext();
-/////////////////////
-
-  realm::node::napi_init(env, currentIsolate, exports);
+  realm::node::napi_init(env, exports);
   return exports;
 }
 
 NODE_API_MODULE(hello, NAPI_Init)
-
-//NODE_MODULE_CONTEXT_AWARE(Realm, realm::node::init);
-
 
 
 
