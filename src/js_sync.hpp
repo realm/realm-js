@@ -902,7 +902,7 @@ void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object,
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     auto token = subscription->add_notification_callback([=]() {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
 
         ValueType arguments[2];
         arguments[0] = static_cast<ObjectType>(protected_this),

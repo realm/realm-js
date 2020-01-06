@@ -1437,7 +1437,7 @@ void AsyncOpenTaskClass<T>::add_download_notification(ContextType ctx, ObjectTyp
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     EventLoopDispatcher<SyncProgressHandler> callback_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) mutable {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
         ValueType callback_arguments[2];
         callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
         callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);

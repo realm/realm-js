@@ -21,7 +21,7 @@
   },
   "scripts": {
     "check-typescript": "tsc --types --noEmit --alwaysStrict ./../lib/index.d.ts",
-    "js-tests": "jasmine spec/unit_tests.js",
+    "js-tests": "node --expose_gc node_modules/jasmine/bin/jasmine.js spec/unit_tests.js --filter=.",
     "test": "npm run check-typescript && npm run js-tests"
   }
 }
