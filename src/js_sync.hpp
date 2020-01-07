@@ -845,6 +845,11 @@ public:
 };
 
 template<typename T>
+typename T::Function SubscriptionClass<T>::create_constructor(ContextType ctx) {
+	return ObjectWrap<T, SubscriptionClass<T>>::create_constructor(ctx);
+}
+
+template<typename T>
 typename T::Object SubscriptionClass<T>::create_instance(ContextType ctx, partial_sync::Subscription subscription, util::Optional<std::string> name) {
     return create_object<T, SubscriptionClass<T>>(ctx, new Subscription<T>(std::move(subscription), name));
 }

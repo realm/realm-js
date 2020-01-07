@@ -243,7 +243,9 @@ Napi::Value WrappedObject<ClassType>::create_instance_with_proxy(const Napi::Cal
 	Napi::Env env = info.Env();
 
 	if (constructor.IsEmpty()) {
-		throw Napi::Error::New(env, "Class not initialized. Call init() first");
+		std::string typeName(typeid(ClassType).name());
+		std::string errorMessage = "create_instance_with_proxy: Class " + typeName + " not initialized. Call init() first";
+		throw Napi::Error::New(env, errorMessage);
 	}
 
 	if (!info.IsConstructCall()) {
@@ -285,7 +287,9 @@ Napi::Value WrappedObject<ClassType>::create_instance_with_proxy(const Napi::Cal
 template<typename ClassType>
 Napi::Object WrappedObject<ClassType>::create_instance(Napi::Env env) {
 	if (constructor.IsEmpty() || factory_constructor.IsEmpty()) {
-		throw Napi::Error::New(env, "Class not initialized. Call init() first");
+		std::string typeName(typeid(ClassType).name());
+		std::string errorMessage = "create_instance: Class " + typeName + " not initialized. Call init() first";
+		throw Napi::Error::New(env, errorMessage);
 	}
 	Napi::EscapableHandleScope scope(env);
 
@@ -344,7 +348,9 @@ Napi::Function WrappedObject<ClassType>::get_constructor(Napi::Env env) {
 template<typename ClassType>
 inline bool WrappedObject<ClassType>::is_instance(Napi::Env env, const Napi::Object& object) {
 	if (constructor.IsEmpty()) {
-		throw Napi::Error::New(env, "Class not initialized. Call init() first");
+		std::string typeName(typeid(ClassType).name());
+		std::string errorMessage = "is_instance: Class " + typeName + " not initialized. Call init() first";
+		throw Napi::Error::New(env, errorMessage);
 	}
 
 	Napi::HandleScope scope(env);

@@ -450,6 +450,9 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
 #if REALM_ENABLE_SYNC
     FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
     Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
+
+	AsyncOpenTaskClass<T>::create_constructor(ctx);
+	SubscriptionClass<T>::create_constructor(ctx);
 #endif
 
     if (getenv("REALM_DISABLE_SYNC_TO_DISK")) {
