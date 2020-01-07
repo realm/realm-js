@@ -278,7 +278,7 @@ class Realm {
      * you’ll lose the changes in that transaction, but the Realm itself won’t be affected (or corrupted). The exception is
      * rethrown. More precisely, {@link Realm#beginTransaction beginTransaction()} and {@link Realm#commitTransaction commitTransaction()} will be called
      * automatically. If any exception is thrown during the transaction {@link Realm#cancelTransaction cancelTransaction()} will
-     * be called instead of {@link Realm#commitTransaction commitTransaction()}.
+     * be called instead of {@link Realm#commitTransaction commitTransaction()} and the exception will be re-thrown to the caller of `write`.
      *
      * Nested transactions (calling `write()` within `write()`) is not possible.
      * @param {function()} callback
