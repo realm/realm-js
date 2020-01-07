@@ -1,4 +1,4 @@
-X.Y.Z (yyyy-MM-dd)
+4.0.0-beta.1 Release notes (2020-1-7)
 =============================================================
 NOTE: Contains all previous releases up to v3.6.0.
 
