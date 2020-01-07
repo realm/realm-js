@@ -869,11 +869,11 @@ describe('Multi-process Notifier', () => {
     function expectEvent(event, type, path, insertions=[], deletions=[], oldModifications=[], newModifications=[]) {
         expect(event.type).toEqual(type);
         expect(event.path).toEqual(`/${currentTestName}/${path}`);
-        const propertyToCheck = 'int';
-        expectArrayishEqual(event.insertions.map(obj => obj[propertyToCheck]), insertions);
-        expectArrayishEqual(event.deletions.map(obj => obj[propertyToCheck]), deletions);
-        expectArrayishEqual(event.oldModifications.map(obj => obj[propertyToCheck]), oldModifications);
-        expectArrayishEqual(event.newModifications.map(obj => obj[propertyToCheck]), newModifications);
+
+        expectArrayishEqual(event.insertions, insertions);
+        expectArrayishEqual(event.deletions, deletions);
+        expectArrayishEqual(event.oldModifications, oldModifications);
+        expectArrayishEqual(event.newModifications, newModifications);
     }
 
     // expect an event for each of the realms at the paths present in events
@@ -932,17 +932,17 @@ describe('Multi-process Notifier', () => {
         await expectNotifications('test', async (next) => {
             expectEvent(await next(), 'available', 'test');
 
-            realm.write(() => realm.create('IntObject', [0]));
-            expectEvent(await next(), 'change', 'test', [0]);
+            realm.write(() => realm.create('IntObject', [55]));
+            expectEvent(await next(), 'change', 'test', [55]);
 
-            realm.write(() => realm.create('IntObject', [0]));
-            expectEvent(await next(), 'change', 'test', [0]);
+            realm.write(() => realm.create('IntObject', [77]));
+            expectEvent(await next(), 'change', 'test', [77]);
 
-            realm.write(() => { realm.objects('IntObject')[1].int = 2; });
-            expectEvent(await next(), 'change', 'test', [], [], [0], [2]);
+            realm.write(() => { realm.objects('IntObject').filtered('int = 77')[0].int = 2; });
+            expectEvent(await next(), 'change', 'test', [], [], [77], [2]);
 
-            realm.write(() => { realm.delete(realm.objects('IntObject')[0]); });
-            expectEvent(await next(), 'change', 'test', [], [0], [], []);
+            realm.write(() => { realm.delete(realm.objects('IntObject').filtered('int == 55')[0]); });
+            expectEvent(await next(), 'change', 'test', [], [55], [], []);
         });
         realm.close();
     });
