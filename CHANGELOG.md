@@ -1,9 +1,15 @@
 4.0.0-beta.1 Release notes (2020-1-7)
 =============================================================
-NOTE: Contains all previous releases up to v3.6.0.
+NOTE 1: Accumulated release notes (including v4.0.0-alpha.1, v4.0.0-alpha.2, and v4.0.0-beta.0).
+NOTE 2: Contains all previous releases up to v3.6.0.
+NOTE 3: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
 
 ### Breaking changes
-* None.
+* Calling `Realm.close()` on a closed Realm will throw an exception.
+* Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
+* `Realm.delete(Realm.Collection)` will conserve the order i.e., if a `Realm.Results` is `[1, 2, 3]` (pseudo-notation), `Realm.delete(2)` will produce `[1, 3]`.
+* It is only possible to compact a Realm when a single instance is open. Consider to use configuration parameter `shouldCompactOnLaunch` in the future.
+* Schemas are not cached but will be reread when opening a Realm. This has an impact of default values as they are not persisted in the Realm files.
 
 ### Enhancements
 * None.
