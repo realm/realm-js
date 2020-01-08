@@ -266,15 +266,15 @@ module.exports = {
                     if (pendingOrComplete(state1)) {
                         sub1.removeAllListeners();
                         const namedSub = realm.subscriptions("update-query")[0];
-                        const update1 = namedSub.updatedAt;
+                        const timeOfSub1Update = namedSub.updatedAt.getTime();
                         setTimeout(function() {
                             let query2 = realm.objects('ObjectA').filtered("name = 'Foo'");
                             const sub2 = query2.subscribe({name: 'update-query', update: true});
                             sub2.addListener((subscription2, state2) => {
-                                if (pendingOrComplete(state2)) {
+                                if (state2 == Realm.Sync.SubscriptionState.Complete) {
                                     sub2.removeAllListeners();
-                                    TestCase.assertFalse(query1.description() === query2.description(), "'description()' was not updated.");
-                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime(), "'updatedAt' was not correctly updated.");
+                                    TestCase.assertFalse(query1.description() === query2.description(), `'description()' was not updated. '${query1.description()}' should not equal '${query2.description()}'`);
+                                    TestCase.assertTrue(timeOfSub1Update < namedSub.updatedAt.getTime(), `'updatedAt' was not correctly updated. Comparing: ${timeOfSub1Update} < ${namedSub.updatedAt.getTime()}`);
                                     resolve();
                                 }
                             });
