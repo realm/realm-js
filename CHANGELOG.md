@@ -1,5 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Breaking changes
+* The notification callbacks from Realm.Sync.addListener have changed the format of ChangeEvent.changes() to pass out Realm objects instead of just the internal object ids. The objects associated with the `ChangeEvent.newRealm()` are `insertions`, and `newModifications` while the objects from `ChangeEvent.oldRealm()` are `deletions`, and `oldModifications`. The ambiguous `modifications` has been removed.
+
 ### Enhancements
 * None.
 
@@ -13,7 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* None.
+* Updated Realm Object Store to commit 973e596f556bcae9ef29d5d712d8a8752f681047.
 
 4.0.0-beta.1 Release notes (2020-1-7)
 =============================================================
