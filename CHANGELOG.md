@@ -1,9 +1,32 @@
-X.Y.Z (yyyy-MM-dd)
+x.x.x Release notes (yyyy-MM-dd)
 =============================================================
-NOTE: Contains all previous releases up to v3.6.0.
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
+* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
+
+### Internal
+* None.
+
+4.0.0-beta.1 Release notes (2020-1-7)
+=============================================================
+NOTE 1: Accumulated release notes (including v4.0.0-alpha.1, v4.0.0-alpha.2, and v4.0.0-beta.0).
+NOTE 2: Contains all previous releases up to v3.6.0.
+NOTE 3: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
 
 ### Breaking changes
-* None.
+* Calling `Realm.close()` on a closed Realm will throw an exception.
+* Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
+* `Realm.delete(Realm.Collection)` will conserve the order i.e., if a `Realm.Results` is `[1, 2, 3]` (pseudo-notation), `Realm.delete(2)` will produce `[1, 3]`.
+* It is only possible to compact a Realm when a single instance is open. Consider to use configuration parameter `shouldCompactOnLaunch` in the future.
+* Schemas are not cached but will be reread when opening a Realm. This has an impact of default values as they are not persisted in the Realm files.
 
 ### Enhancements
 * None.
@@ -12,9 +35,9 @@ NOTE: Contains all previous releases up to v3.6.0.
 * None.
 
 ### Internal
-* Updated Realm Core from v6.0.0-beta.1 to v6.0.0-beta.2.
-* Updated Realm Sync from v5.0.0-beta.0 to v5.0.0-beta.1.
-* Updated Realm Object Store to commit 315cb3b828e20a355122bec1e1df2faccec18c04.
+* Updated Realm Core from v6.0.0-beta.1 to v6.0.0-beta.3.
+* Updated Realm Sync from v5.0.0-beta.0 to v5.0.0-beta.2.
+* Updated Realm Object Store to commit 720c67e9fc0ce98b0a3a6d28c450efc4f89c498c.
 
 4.0.0-beta.0 Release notes (2019-12-5)
 =============================================================
