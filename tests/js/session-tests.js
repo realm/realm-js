@@ -1084,12 +1084,15 @@ module.exports = {
         };
         await fetch(url, options);
 
-        // open the Realm again and download
-        realm = await Realm.open(config);
-        await realm.syncSession.downloadAllServerChanges();
-        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).length, 0);
-        TestCase.assertTrue(called);
-        realm.close();
+        // open the Realm again and see it fail
+        return Realm.open(config).then(realm => {
+            Promise.reject();
+        }).catch(error => {
+            TestCase.assertTrue(called); // the error handler was called
+            TestCase.assertDefined(error.name);
+            TestCase.assertEqual(error.name, "IncompatibleSyncedRealmError");
+            Promise.resolve();
+        })
     },
 
     async testClientResyncDiscard() {
