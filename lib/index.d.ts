@@ -30,14 +30,14 @@ declare namespace Realm {
         oldModifications: number[];
     }
 
-    interface ObjectKeysChangeSet {
+    interface ObjectChanges {
         insertions: Object[];
         deletions: Object[];
         newModifications: Object[];
         oldModifications: Object[];
     }
 
-    type CollectionChangeCallback<T> = (collection: Collection<T>, change: ObjectKeysChangeSet) => void;
+    type CollectionChangeCallback<T> = (collection: Collection<T>, change: ObjectChanges) => void;
 
     /**
      * PropertyType
@@ -621,7 +621,7 @@ declare namespace Realm.Sync {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.ChangeEvent.html }
      */
     interface ChangeEvent {
-        readonly changes: { [object_type: string]: ObjectKeysChangeSet };
+        readonly changes: { [object_type: string]: ObjectChanges };
         readonly oldRealm: Realm;
         readonly path: string;
         readonly realm: Realm;
