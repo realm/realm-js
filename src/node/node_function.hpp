@@ -46,6 +46,7 @@ inline Napi::Value node::Function::callback(Napi::Env env, const Napi::Function&
 		return result;
 	}
 	catch (const Napi::Error& e) {
+		//Napi::Error::Fatal("node::Function::callback", e.what());
 		throw node::Exception(env, e.Message());
 	}
 }

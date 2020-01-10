@@ -197,6 +197,18 @@ ClassType ObjectWrap<ClassType>::s_class;
 template<typename ClassType>
 std::unordered_set<std::string> ObjectWrap<ClassType>::s_nativeMethods;
 
+inline static void copyObject(Napi::Env env, const Napi::Value& source, const Napi::Error& target) {
+	Napi::HandleScope scope(env);
+
+	if (source.IsEmpty() || source.IsNull() || source.IsUndefined()) {
+		return;
+	}
+
+	Napi::Function objectFunc = env.Global().Get("Object").As<Napi::Function>();
+	Napi::Function assignFunc = objectFunc.Get("assign").As<Napi::Function>();
+	assignFunc.Call({ target.Value(), source });
+}
+
 template<typename ClassType>
 WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::ObjectWrap<WrappedObject<ClassType>>(info) {
 	Napi::Env env = info.Env();
@@ -209,6 +221,11 @@ WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::
 	try {
 		node::Types::FunctionCallback constructor_callback = (node::Types::FunctionCallback)info.Data();
 		constructor_callback(info);
+	}
+	catch (const node::Exception& e) {
+		Napi::Error error = Napi::Error::New(info.Env(), e.what());
+		copyObject(env, e.m_value, error);
+		throw error;
 	}
 	catch (const std::exception& e) {
 		throw Napi::Error::New(env, e.what());
@@ -279,7 +296,10 @@ Napi::Value WrappedObject<ClassType>::create_instance_with_proxy(const Napi::Cal
 		instance.DefineProperty(Napi::PropertyDescriptor::Value("_instanceProxy", instanceProxy, napi_default));
 		return scope.Escape(instanceProxy);
 	}
-	catch (std::exception & e) {
+	catch (const Napi::Error & e) {
+		throw e;
+	}
+	catch (const std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
 	}
 }
@@ -457,7 +477,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrapInvokeNamedAndIn
 			index = std::stoi(propertyText);
 			success = true;
 		}
-		catch (const std::exception) {}
+		catch (const std::exception& e) {}
 
 		if (success) {
 			Napi::Value result = wrappedObject->m_indexPropertyHandlers->getter(info, instance, index);
@@ -565,13 +585,13 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 			index = std::stoi(propertyText);
 			success = true;
 		}
-		catch (const std::exception) {}
+		catch (const std::exception& e) {}
 
 		if (success) {
 			try {
 				realm::js::validated_positive_index(propertyText);
 			}
-			catch (std::out_of_range& e) {
+			catch (const std::out_of_range& e) {
 				throw Napi::Error::New(env, e.what());
 			}
 
@@ -693,7 +713,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::hasProxyTrap(const Napi::Cal
 			index = std::stoi(propertyText);
 			success = true;
 		}
-		catch (const std::exception) {}
+		catch (const std::exception& e) {}
 
 		if (success) {
 			int32_t length = instance.Get("length").As<Napi::Number>();
@@ -773,7 +793,7 @@ Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
 	Napi::Function ctor = init_class(env);
 	
 	//since NAPI ctors can't change the returned type we need to return a factory func which will be called when 'new ctor()' is called from JS. 
-	//This will create a JS Proxy on top of the prototype chain of that instance and return the instance to the caller. The proxy is needed to support named and index handlers
+	//This will create a JS Proxy and return it to the caller. The proxy is needed to support named and index handlers
 	Napi::Function factory = Napi::Function::New(env, WrappedObject<ClassType>::create_instance_with_proxy, s_class.name);
 	auto ctorPrototypeProperty = ctor.Get("prototype");
 	auto setPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
@@ -971,7 +991,12 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 		F(env, instanceProxy, args, result);
 		return result.ToValue();
 	}
-	catch (std::exception& e) {
+	catch (const node::Exception& e) {
+		Napi::Error error = Napi::Error::New(info.Env(), e.what());
+		copyObject(env, e.m_value, error);
+		throw error;
+	}
+	catch (const std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
 	}
 }
@@ -984,7 +1009,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 		F(env, info.This().As<Napi::Object>(), result);
 		return result.ToValue();
 	}
-	catch (std::exception& e) {
+	catch (const std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
 	}
 }
@@ -996,7 +1021,7 @@ void wrap(const Napi::CallbackInfo& info, const Napi::Value& value) {
     try {
 		F(env, info.This().As<Napi::Object>(), value);
     }
-    catch (std::exception& e) {
+    catch (const std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
     }
 }
@@ -1011,13 +1036,13 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, u
 			F(env, instance, index, result);
 			return result.ToValue();
 		}
-		catch (std::out_of_range&) {
+		catch (const std::out_of_range& e) {
 			// Out-of-bounds index getters should just return undefined in JS.
 			result.set_undefined();
 			return result.ToValue();
 		}
 	}
-    catch (std::exception &e) {
+    catch (const std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
     }
 }
@@ -1032,7 +1057,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, u
 		// Indicate that the property was intercepted.
 		return Napi::Value::From(env, success);
     }
-    catch (std::exception &e) {
+    catch (const std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
     }
 }
@@ -1046,7 +1071,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, c
         F(env, instance, property, result);
 		return result.ToValue();
     }
-    catch (std::exception &e) {
+    catch (const std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
     }
 }
@@ -1058,7 +1083,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, c
 		bool success = F(env, instance, property, value);
 		return Napi::Value::From(env, success);
     }
-    catch (std::exception &e) {
+    catch (const std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
     }
 }
@@ -1078,7 +1103,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance) {
 
 		return array;
 	}
-	catch (std::exception & e) {
+	catch (const std::exception& e) {
 		throw Napi::Error::New(info.Env(), e.what());
 	}
 }

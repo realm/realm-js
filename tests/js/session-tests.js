@@ -572,16 +572,17 @@ module.exports = {
         });
     },
 
-/*    testProgressNotificationsForRealmConstructor() {
+    testProgressNotificationsForRealmConstructor() {
         if (!isNodeProccess) {
             return;
         }
 
         const username = Utils.uuid();
         const realmName = Utils.uuid();
+        const credentials = Realm.Sync.Credentials.nickname(username);
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', username, 'password'))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080',  credentials))
             .then(user => {
                 let config = {
                     sync: {
@@ -604,7 +605,7 @@ module.exports = {
                     });
                 });
             });
-    },*/
+    },
 
     testProgressNotificationsUnregisterForRealmConstructor() {
         if (!isNodeProccess) {
@@ -845,7 +846,7 @@ module.exports = {
 
         const username = Utils.uuid();
         const path = `/~/testPartialSync`;
-        const credentials = Realm.Sync.Credentials.nickname(username, true);
+        const credentials = Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password);
         await runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH, path)
         const user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
 

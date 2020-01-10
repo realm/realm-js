@@ -134,7 +134,13 @@ exports.runTest = function(suiteName, testName) {
         var result = testMethod.call(testSuite);
 
         //make sure v8 GC can collect garbage after each test and does not fail
-        global.gc();
+        if (result instanceof Promise) {
+            result.finally(() => global.gc());
+            return result;
+        }
+        else {
+            global.gc();
+        }
         
         return result;
     }
