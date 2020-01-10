@@ -1056,7 +1056,7 @@ module.exports = {
                 TestCase.assertNotEqual(error.config.path, '');
                 const path = realm.path;
                 realm.close();
-                Realm.Sync.initiateClientReset(path);
+                //Realm.Sync.initiateClientReset(path);
                 // open Realm with error.config, and copy required objects a Realm at `path`
             }
             catch (e) {
