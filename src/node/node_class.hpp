@@ -85,7 +85,7 @@ private:
 			static Napi::Value get_instance_proxy_handler(Napi::Env env);
 		
 		private:
-			static Napi::Value bindFunction(Napi::Env env, const std::string& functionName, const Napi::Function& function, const Napi::Object& thisObject);
+			static Napi::Value bindNativeFunction(Napi::Env env, const std::string& functionName, const Napi::Function& function, const Napi::Object& thisObject);
 		
 			
 
@@ -400,12 +400,16 @@ void WrappedObject<ClassType>::setter_callback(const Napi::CallbackInfo& info, c
 
 template<typename ClassType>
 void WrappedObject<ClassType>::readonly_setter_callback(const Napi::CallbackInfo& info, const Napi::Value& value) {
-	throw Napi::Error::New(info.Env(), "Cannot assign to read only property");
+	Napi::Error error = Napi::Error::New(info.Env(), "Cannot assign to read only property");
+	error.Set("readOnly", true);
+	throw error;
 }
 
 template<typename ClassType>
 void WrappedObject<ClassType>::readonly_static_setter_callback(const Napi::CallbackInfo& info, const Napi::Value& value) {
-	throw Napi::Error::New(info.Env(), "Cannot assign to read only static property");
+	Napi::Error error = Napi::Error::New(info.Env(), "Cannot assign to read only static property");
+	error.Set("readOnly", true);
+	throw error;
 }
 
 template<typename ClassType>
@@ -426,15 +430,8 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(N
 	return scope.Escape(proxyObj);
 }
 
-template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::bindFunction(Napi::Env env, const std::string& functionName, const Napi::Function& function, const Napi::Object& thisObject) {
+static Napi::Value bindFunction(Napi::Env env, const std::string& functionName, const Napi::Function& function, const Napi::Object& thisObject) {
 	Napi::EscapableHandleScope scope(env);
-
-	//do not bind the non native functions. These are attached from extensions.js and should be called on the instanceProxy.
-	if (!m_has_native_methodFunc(functionName)) {
-		//return the function without binding it to the instance
-		return scope.Escape(function);
-	}
 
 	Napi::Function bindFunc = function.As<Napi::Function>().Get("bind").As<Napi::Function>();
 	if (bindFunc.IsEmpty() || bindFunc.IsUndefined()) {
@@ -443,6 +440,21 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::bindFunction(Napi::Env env, 
 
 	Napi::Function boundFunc = bindFunc.Call(function, { thisObject }).As<Napi::Function>();
 	return scope.Escape(boundFunc);
+}
+
+
+template<typename ClassType>
+Napi::Value WrappedObject<ClassType>::ProxyHandler::bindNativeFunction(Napi::Env env, const std::string& functionName, const Napi::Function& function, const Napi::Object& thisObject) {
+	Napi::EscapableHandleScope scope(env);
+
+	//do not bind the non native functions. These are attached from extensions.js and should be called on the instanceProxy.
+	if (!m_has_native_methodFunc(functionName)) {
+		//return undefined to indicate this is not a native function
+		return scope.Escape(env.Undefined());
+	}
+
+	Napi::Value result = bindFunction(env, functionName, function, thisObject);
+	return scope.Escape(result);
 }
 
 template<typename ClassType>
@@ -501,20 +513,100 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::Cal
 	Napi::EscapableHandleScope scope(env);
 
 	Napi::Object target = info[0].As<Napi::Object>();
-	Napi::Value arg1 = info[1];
-	
+	Napi::Value property = info[1];
 
+	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
+	if (instance.IsUndefined() || instance.IsNull()) {
+		throw Napi::Error::New(env, "Invalid object. No _instance member");
+	}
+
+	//Order of execution
+	//1.Consult target own properties
+	//2.Consult instance own properties
+	//3.Consult _proto chain
+	//4.Consult target chain
+	//5.Consult named/index handlers
+
+	//1.Consult target own properties
+	//this checks for property existence without going up the proptotype chain.
+	bool targetHasOwnProperty = target.HasOwnProperty(property);
+	if (targetHasOwnProperty) {
+		std::string propertyName = property.As<Napi::String>();
+		Napi::Value propertyValue = target.Get(property);
+		return scope.Escape(propertyValue);
+	}
+
+	//2.Consult instance prototype own properties. Handles native functions
+	napi_value napi_proto;
+	napi_status status = napi_get_prototype(env, instance, &napi_proto);
+	if (status != napi_ok) {
+		throw Napi::Error::New(env, "Invalid object. Couldn't get prototype of _instance");
+	}
+	Napi::Object instancePrototype = Napi::Object(env, napi_proto);
+	bool instanceHasOwnProperty = instancePrototype.HasOwnProperty(property);
+	
+	if (instanceHasOwnProperty) {
+		Napi::Value propertyValue = instance.Get(property);
+		if (!property.IsString()) {
+			return scope.Escape(propertyValue);
+		}
+
+		std::string propertyName = property.As<Napi::String>();
+
+		//bind the function from the instance and set it on the target object. Napi does not work if a function is invoked with 'this' instance different than the class it is defined onto
+		if (propertyValue.IsFunction()) {
+			Napi::Value boundFunc = bindNativeFunction(env, propertyName, propertyValue.As<Napi::Function>(), instance);
+			if (boundFunc.IsUndefined()) {
+				return scope.Escape(propertyValue.As<Napi::Function>());
+			}
+
+			target.Set(propertyName, boundFunc);
+			return scope.Escape(boundFunc);
+		}
+
+		return scope.Escape(propertyValue);
+	}
+
+	//3.Consult _proto chain
 	if (target.HasOwnProperty("_proto")) {
 		Napi::Object proto = target.Get("_proto").As<Napi::Object>();
+		
 		//if the _proto prototype chain has the property return it
-		if (proto.Has(arg1)) {
-			Napi::Value propertyValue = proto.Get(arg1);
+		if (proto.Has(property)) {
+
+			//handle Symbol properties
+			if (!property.IsString()) {
+				Napi::Value propertyValue = proto.Get(property);
+				return scope.Escape(propertyValue);
+			}
+
+			std::string propertyName = property.As<Napi::String>();
+
+			Napi::Function getOwnPropertyDescriptorFunc = env.Global().Get("Object").As<Napi::Object>().Get("getOwnPropertyDescriptor").As<Napi::Function>();
+			Napi::Object propertyDescriptor = getOwnPropertyDescriptorFunc.Call({ proto, property }).As<Napi::Object>();
+			if (propertyDescriptor.IsUndefined()) {
+				//if no descriptor then return undefined as the value of the property
+				return scope.Escape(env.Undefined());
+			}
+
+			Napi::Value propertyValue = env.Undefined();
+			Napi::Function getValueFunc = propertyDescriptor.Get("get").As<Napi::Function>();
+			if (!getValueFunc.IsUndefined()) {
+			    //if there property getter bind the getter function to the instanceProxy and call it to get the value. 
+				Napi::Object instanceProxy = instance.Get("_instanceProxy").As<Napi::Object>();
+				Napi::Function boundGetValueFunc = bindFunction(env, propertyName, getValueFunc, instanceProxy).As<Napi::Function>();
+				propertyValue = boundGetValueFunc.Call({});
+			}
+			else {
+				//this is a data property. Get the value directly from property descriptor
+				propertyValue = propertyDescriptor.Get("value");
+			}
+
+			//if propertyValue is a function, bind it to the instanceProxy and set it as a function on the target
 			if (propertyValue.IsFunction()) {
-				Napi::String function = arg1.As<Napi::String>();
-				std::string functionName = function;
-				Napi::Object instance = target.Get("_instance").As<Napi::Object>();
-				Napi::Value boundFunc = bindFunction(env, functionName, propertyValue.As<Napi::Function>(), instance);
-				target.Set(functionName, boundFunc);
+				Napi::Object instanceProxy = instance.Get("_instanceProxy").As<Napi::Object>();
+				Napi::Value boundFunc = bindFunction(env, propertyName, propertyValue.As<Napi::Function>(), instanceProxy);
+				target.Set(propertyName, boundFunc);
 				return scope.Escape(boundFunc);
 			}
 
@@ -522,44 +614,16 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::Cal
 		}
 	}
 
+	//5.Consult named/index handlers
 	//if the target prototype chain don't have the property invoke the named and index handlers to handle the get property call
-	if (!target.Has(arg1)) {
+	if (!instance.Has(property)) {
 		Napi::Value result = getProxyTrapInvokeNamedAndIndexHandlers(info);
 		return scope.Escape(result);
 	}
 
-	//skip non string property names like Symbol
-	if (!arg1.IsString()) {
-		Napi::Value value = target.Get(arg1);
-		return scope.Escape(value);
-	}
+	//4.Consult instance chain. (this will go up to isntance prototype Object which is Object for members like toString etc)
+	Napi::Value propertyValue = instance.Get(property);
 
-	Napi::String property = arg1.As<Napi::String>();
-	std::string propertyName = property;
-
-	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
-	if (instance.IsUndefined() || instance.IsNull()) {
-		throw Napi::Error::New(env, "Invalid object. No _instance member");
-	}
-
-	//this checks for property existence without going up the proptotype chain.
-	Napi::Boolean targetHasOwnProperty = env.Global().Get("Object").As<Napi::Object>().Get("hasOwnProperty").As<Napi::Function>().Call(target, { property }).As<Napi::Boolean>();
-
-	if (targetHasOwnProperty) {
-		Napi::Value propertyValue = target.Get(propertyName);
-		return scope.Escape(propertyValue);
-	}
-
-	Napi::Value propertyValue = instance.Get(propertyName);
-
-	//bind the function from the instance and set it on the target object. Napi does not work if a function is invoked with 'this' instance different than the class it is defined onto
-	if (propertyValue.IsFunction()) {
-		Napi::Value boundFunc = bindFunction(env, propertyName, propertyValue.As<Napi::Function>(), instance);
-		target.Set(propertyName, boundFunc);
-		return scope.Escape(boundFunc);
-	}
-	
-	//return the non function property on the instance
 	return scope.Escape(propertyValue);
 }
 
@@ -572,7 +636,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 	Napi::String property = info[1].As<Napi::String>();
 	Napi::Value value = info[2];
 
-	std::string propertyText = property;
+	std::string propertyName = property;
 
 	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
 	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
@@ -582,14 +646,14 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 		bool success = false;
 		int32_t index = 0;
 		try {
-			index = std::stoi(propertyText);
+			index = std::stoi(propertyName);
 			success = true;
 		}
 		catch (const std::exception& e) {}
 
 		if (success) {
 			try {
-				realm::js::validated_positive_index(propertyText);
+				realm::js::validated_positive_index(propertyName);
 			}
 			catch (const std::out_of_range& e) {
 				throw Napi::Error::New(env, e.what());
@@ -607,8 +671,47 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 
 	if (target.HasOwnProperty("_proto")) {
 		Napi::Object proto = target.Get("_proto").As<Napi::Object>();
+
 		if (proto.Has(property)) {
-			proto.Set(property, value);
+
+			//get the property descritpor
+			Napi::Function getOwnPropertyDescriptorFunc = env.Global().Get("Object").As<Napi::Object>().Get("getOwnPropertyDescriptor").As<Napi::Function>();
+			Napi::Object propertyDescriptor = getOwnPropertyDescriptorFunc.Call({ proto, property }).As<Napi::Object>();
+			if (propertyDescriptor.IsUndefined()) {
+				//if no descriptor then return undefined as per JS spec
+				return scope.Escape(env.Undefined());
+			}
+
+			Napi::Function getValueFunc = propertyDescriptor.Get("get").As<Napi::Function>();
+			Napi::Function setValueFunc = propertyDescriptor.Get("set").As<Napi::Function>();
+			Napi::Boolean writable = propertyDescriptor.Get("writable").As<Napi::Boolean>();
+
+			if (setValueFunc.IsUndefined()) {
+				//if not setter and only getter then the value is readonly
+				if (!getValueFunc.IsUndefined()) {
+					std::string message = "Cannot assign to read only property '" + propertyName + "'";
+					throw Napi::Error::New(env, message);
+				}
+				else {
+					//this is a data property.
+					//if not writable throw an exception
+					if (!writable.IsUndefined() && !writable) {
+						std::string message = "Cannot assign to read only property '" + propertyName + "'";
+						throw Napi::Error::New(env, message);
+					}
+					else {
+						//The value is writable and can be set. Set the value directly
+						proto.Set(property, value);
+					}
+				}
+			}
+			else {
+				//if there is a property setter bind the setter function to the instanceProxy and call it to set the value. 
+				Napi::Object instanceProxy = instance.Get("_instanceProxy").As<Napi::Object>();
+				Napi::Function boundSetValueFunc = bindFunction(env, propertyName, setValueFunc, instanceProxy).As<Napi::Function>();
+				boundSetValueFunc.Call({ value });
+			}
+			
 			return scope.Escape(Napi::Boolean::New(env, true));
 		}
 	}
@@ -619,12 +722,13 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 			return scope.Escape(Napi::Boolean::New(env, true));
 		}
 		catch (const Napi::Error& e) {
-			std::string message = e.Message();
-			if (message.find("read only") != std::string::npos) {
-				message = "Cannot assign to read only property '" + propertyText + "'";
+			Napi::Boolean readOnly = e.Get("readOnly").As<Napi::Boolean>();
+			if (!readOnly.IsUndefined() && readOnly) {
+				std::string message = "Cannot assign to read only property '" + propertyName + "'";
+				throw Napi::Error::New(env, message);
 			}
-			
-			throw Napi::Error::New(env, message);
+
+			throw e;
 		}
 	}
 
@@ -638,7 +742,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 	}
 
 	//create the new property on the instance
-	instance.Set(propertyText, value);
+	instance.Set(propertyName, value);
 	return scope.Escape(Napi::Boolean::New(env, true));
 }
 
