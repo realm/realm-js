@@ -17,6 +17,7 @@ RUN yum -y install \
     libXScrnSaver \
     gtk3 \
     alsa-lib \
+    git \
  && yum clean all \
  \
   # TODO: install openssl in /usr/local
@@ -32,4 +33,5 @@ RUN yum -y install \
  && . $NVM_DIR/nvm.sh \
  && nvm install 8.15.0 \
  && nvm install 10.15.1 \
+ && nvm install 12.14.1 \
  && chmod a+rwX -R $NVM_DIR \
