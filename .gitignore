@@ -63,9 +63,10 @@ examples/ReactExample/ios/Pods/
 examples/ReactExample/ios/ReactExample.xcworkspace/
 
 # Integration tests
-integration-tests/**/realm-*.tgz
-integration-tests/**/realm-integration-tests-*.tgz
+integration-tests/**/realm.tgz
+integration-tests/**/realm-integration-tests.tgz
 integration-tests/environments/electron/dist/
+integration-tests/environments/react-native/ios/Pods/
 integration-tests/tests/dist/
 
 #Ignore symlinked directories (otherwise on Windows they are shown as untracked files)

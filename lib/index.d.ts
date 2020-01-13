@@ -362,7 +362,7 @@ declare namespace Realm.Sync {
      */
     class User {
         static readonly all: { [identity: string]: User };
-        static readonly current: User;
+        static readonly current: User | undefined;
         readonly identity: string;
         readonly isAdmin: boolean;
         readonly isAdminToken: boolean;
@@ -489,6 +489,12 @@ declare namespace Realm.Sync {
         validateCallback?: SSLVerifyCallback;
     }
 
+    const enum ClientResyncMode {
+        Discard = 'discard',
+        Manual = 'manual',
+        Recover = 'recover'
+    }
+
     interface SyncConfiguration {
         user: User;
         url: string;
@@ -505,9 +511,10 @@ declare namespace Realm.Sync {
         _disableQueryBasedSyncUrlChecks?: boolean;
         _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
-        customQueryBasedSyncIdentifier?: string,
-        newRealmFileBehavior?: OpenRealmBehaviorConfiguration
-        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration
+        customQueryBasedSyncIdentifier?: string;
+        newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        clientResyncMode?: ClientResyncMode;
     }
 
     interface OpenRealmBehaviorConfiguration {
@@ -567,7 +574,7 @@ declare namespace Realm.Sync {
         uploadAllLocalChanges(timeoutMs?: number): Promise<void>;
     }
 
-    type SubscriptionNotificationCallback = (subscription: Subscription, state: number) => void;
+    type SubscriptionNotificationCallback = (subscription: Subscription, state: SubscriptionState) => void;
 
     /**
      * Subscription
@@ -578,8 +585,8 @@ declare namespace Realm.Sync {
         readonly error: string;
 
         unsubscribe(): void;
-        addListener(subscruptionCallback: SubscriptionNotificationCallback): void;
-        removeListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+        addListener(subscriptionCallback: SubscriptionNotificationCallback): void;
+        removeListener(subscriptionCallback: SubscriptionNotificationCallback): void;
         removeAllListeners(): void;
     }
 
@@ -640,19 +647,21 @@ declare namespace Realm.Sync {
      */
     interface LocalRealm {
         readonly path: string;
-        realm (): Realm;
+        realm(): Realm;
     }
+
+    type RealmWatchPredicate = (realmPath: string) => boolean;
 
     /**
      * @deprecated, to be removed in future versions
      */
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): void;
+    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     /**
      * @deprecated, to be removed in future versions
      */
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
-    function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): void;
-    function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
+    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): Promise<void>;
+    function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
+    function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): Promise<void>;
     function removeAllListeners(): Promise<void>;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     function setLogLevel(logLevel: LogLevel): void;
@@ -686,7 +695,7 @@ declare namespace Realm.Sync {
             local_path: string,
             server_url: string,
             admin_user: User,
-            regex: string,
+            filter: string | RealmWatchPredicate,
             change_callback: Function,
             ssl?: SSLConfiguration
         )

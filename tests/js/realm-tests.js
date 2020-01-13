@@ -88,6 +88,14 @@ module.exports = {
         TestCase.assertTrue(realm.isClosed);
     },
 
+    testRealmCallCloseTwice: function () {
+        const realm = new Realm({schema: []});
+        realm.close();
+        TestCase.assertTrue(realm.isClosed);
+        realm.close();
+        TestCase.assertTrue(realm.isClosed);
+    },
+
     testRealmConstructorSchemaVersion: function() {
         const defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.schemaVersion, 0);
@@ -942,6 +950,29 @@ module.exports = {
         TestCase.assertEqual(realm.objects('IntPrimaryObject').length, 0);
     },
 
+    testDeleteAllAfterDeleteModel: function() {
+        const realm = new Realm({schema: [schemas.TestObject, schemas.IntPrimary]});
+
+        realm.write(() => {
+            realm.create('TestObject', {doubleCol: 1});
+            realm.create('TestObject', {doubleCol: 2});
+            realm.create('IntPrimaryObject', {primaryCol: 2, valueCol: 'value'});
+        });
+
+        TestCase.assertEqual(realm.objects('TestObject').length, 2);
+        TestCase.assertEqual(realm.objects('IntPrimaryObject').length, 1);
+
+        realm.write(() => {
+            realm.deleteModel('IntPrimaryObject');
+        });
+        realm.write(() => {
+            realm.deleteAll();
+        });
+
+        TestCase.assertEqual(realm.objects('TestObject').length, 0);
+        TestCase.assertThrows(() => realm.objects('IntPrimaryObject'));
+    },
+
     testRealmObjects: function() {
         const realm = new Realm({schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject]});
 
@@ -1492,11 +1523,11 @@ module.exports = {
 
         TestCase.assertThrows(function() {
             new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, readOnly: true});
-        }, "Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.")
+        }, "Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.");
 
         TestCase.assertThrows(function() {
             new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, migration: function(oldRealm, newRealm) {}});
-        }, "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.")
+        }, "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.");
     },
 
     testDisableFileFormatUpgrade: function() {
@@ -1717,5 +1748,16 @@ module.exports = {
             realm.unsubscribe('foo');
         }, 'Wrong Realm type');
     } ,
+
+    testObjectWithoutProperties: function() {
+        const realm = new Realm({schema: [schemas.ObjectWithoutProperties]});
+        realm.write(() => {
+            TestCase.assertThrows(() => {
+                realm.create(schemas.ObjectWithoutProperties.name, {});
+            });
+        });
+        realm.objects(schemas.ObjectWithoutProperties.name);
+        realm.close();
+    }
 
 };

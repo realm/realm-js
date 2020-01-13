@@ -204,6 +204,13 @@ exports.StringOnly = {
     }
 };
 
+exports.IntOnly = {
+    name: 'IntOnlyObject',
+    properties: {
+        intCol: 'int',
+    }
+};
+
 exports.FloatOnly = {
     name: 'FloatObjectonly',
     properties: {
@@ -345,5 +352,10 @@ exports.Country = {
         name: 'string',
         languages: 'Language[]',
     }
+};
+
+exports.ObjectWithoutProperties = {
+    name: 'ObjectWithoutProperties',
+    properties: {}
 };
 

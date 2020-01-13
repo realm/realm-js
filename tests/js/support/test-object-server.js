@@ -99,7 +99,6 @@ global.TestObjectServer = module.exports = class TestObjectServer extends EventE
     constructor() {
         super();
         const SyncServer = require('realm-sync-server').RealmSyncServer;
-        Realm.Sync.setLogLevel('error');
 
         this._key = new NodeRSA({b: 2048});
         this.adminToken = signAdminToken(this._key, token);
