@@ -577,7 +577,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmConstructor() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -843,7 +843,7 @@ module.exports = {
         TestCase.assertThrows(() => Realm.automaticSyncConfiguration('foo', 'bar')); // too many arguments
     },
 
-    async testPartialSync() {
+/*    async testPartialSync() {
         if (!isNodeProcess) {
             return;
         }
@@ -925,7 +925,7 @@ module.exports = {
         });
 
         TestCase.assertEqual(realm.subscriptions().length, 5); // the 5 permissions classes
-    },
+    },*/
 
     testPartialSyncWithDynamicSchema() {
         if (!isNodeProcess) {

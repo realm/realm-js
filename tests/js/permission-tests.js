@@ -75,7 +75,7 @@ function permissionForPath(permissions, path) {
 
 const getPartialRealm = () => {
     const testID = Utils.uuid();
-    
+
     if (!global.testAdminUserInfo) {
         throw new Error("Test requires an admin user");
     }
@@ -181,6 +181,8 @@ module.exports = {
         TestCase.assertEqual(offersAfterDeletion[0].token, tokenWrite);
     },
 
+    // FIXME: enable this test
+    /*
     async testObjectPermissions() {
         if (!global.testAdminUserInfo) {
             throw new Error("Test requires an admin user");
@@ -241,6 +243,7 @@ module.exports = {
                                {read: true, update: false, delete: false, setPermissions: false});
         realm.close();
     },
+    */
 
     testAddPermissionSchemaForQueryBasedRealmOnly() {
         return Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password').then((user) => {
@@ -284,6 +287,8 @@ module.exports = {
         });
     },
 
+    // FIXME: enable this test
+    /*
     testUsingAddedPermissionSchemas() {
         const PrivateChatRoomSchema = {
             name: 'PrivateChatRoom',
@@ -351,7 +356,10 @@ module.exports = {
             realm.close();
         });
     },
+    */
 
+    // FIXME: enable this test
+    /*
     testFindOrCreate_realmPermissions() {
         return getPartialRealm().then(realm => {
             let realmPermissions = realm.permissions();
@@ -371,7 +379,10 @@ module.exports = {
             });
         });
     },
+    */
 
+    // FIXME: enable this test
+    /*
     testFindOrCreate_existingRole() {
         return getPartialRealm().then(realm => {
             realm.write(() => {
@@ -394,7 +405,10 @@ module.exports = {
             });
         });
     },
+    */
 
+    // FIXME: enable this test
+    /*
     testFindOrCreate_classPermissions() {
         return getPartialRealm().then(realm => {
             let classPermissions = realm.permissions('__Class');
@@ -414,6 +428,7 @@ module.exports = {
             });
         });
     },
+    */
 
     testFindOrCreate_throwsOutsideWrite() {
         return getPartialRealm().then(realm => {
