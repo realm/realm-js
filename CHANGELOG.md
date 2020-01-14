@@ -1,4 +1,21 @@
-3.7.0 Release notes (2020-1-14)
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
+
+3.7.0-alpha.0 Release notes (2020-1-14)
 =============================================================
 NOTE 1: This is an easy pre-release. It contains bugs, it might crash and corrupt data. On other words, please use this release carefully.
 NOTE 2: Node v10 and v12 are support, and node v8 support is removed.
