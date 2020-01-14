@@ -1,10 +1,12 @@
-x.x.x Release notes (yyyy-MM-dd)
+3.7.0 Release notes (2020-1-14)
 =============================================================
+NOTE 1: This is an easy pre-release. It contains bugs, it might crash and corrupt data. On other words, please use this release carefully.
+NOTE 2: Node v10 and v12 are support, and node v8 support is removed.
+
 ### Enhancements
 * Added support for Node v12. ([#2516](https://github.com/realm/realm-js/issues/2516))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
