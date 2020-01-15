@@ -68,7 +68,7 @@ stage('pretest') {
       maxWarnings: 0,
       ignoreFailures: false])
   })
-  parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
+    parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}"), { // "Release is not used
     publishHTML([
       allowMissing: false,
       alwaysLinkToLastBuild: false,
