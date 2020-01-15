@@ -56,7 +56,7 @@ stage('check') {
 
 stage('pretest') {
   parallelExecutors = [:]
-  parallelExecutors["eslint"] = testLinux('eslint-ci', "Release" 10, { // "Release" is not used
+    parallelExecutors["eslint"] = testLinux('eslint-ci', "Release", 10, { // "Release" is not used
     step([
       $class: 'CheckStylePublisher',
       canComputeNew: false,
