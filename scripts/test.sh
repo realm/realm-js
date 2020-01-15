@@ -354,19 +354,14 @@ case "$TARGET" in
   check_test_results ReactTests
   ;;
 
-"node-test-runners")
-  npm run check-environment
-  npm run test-runners
-  ;;
-
 "node")
   if [ "${CONFIGURATION}" == "Debug" ]; then
-      DEBUG_FLAG=1
+      USE_REALM_DEBUG=1
   else
-      DEBUG_FLAG=0
+      USE_REALM_DEBUG=0
   fi
   npm run check-environment
-  npm ci --build-from-source=realm --realm_enable_sync --realm_enable_debug=${DEBUG_FLAG}
+  npm ci --build-from-source=realm --realm_enable_sync --use_realm_debug=${USE_REALM_DEBUG}
   start_server
 
   # Change to a temp directory.
@@ -407,7 +402,7 @@ case "$TARGET" in
   ;;
 "test-runners")
   npm run check-environment
-  npm ci
+  npm ci --build-from-source=realm --use_realm_debug=${USE_REALM_DEBUG}
   npm run test-runners
   ;;
 "all")
