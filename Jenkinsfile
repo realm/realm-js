@@ -56,7 +56,7 @@ stage('check') {
 
 stage('pretest') {
   parallelExecutors = [:]
-    parallelExecutors["eslint"] = testLinux('eslint-ci', "Release", 10, { // "Release" is not used
+    parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}"), { // "Release" is not used
     step([
       $class: 'CheckStylePublisher',
       canComputeNew: false,
@@ -68,7 +68,7 @@ stage('pretest') {
       maxWarnings: 0,
       ignoreFailures: false])
   })
-  parallelExecutors["jsdoc"] = testLinux('jsdoc', "Release", 10, { // "Release is not used
+  parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
     publishHTML([
       allowMissing: false,
       alwaysLinkToLastBuild: false,
@@ -110,9 +110,10 @@ stage('test') {
   for (def nodeVersion in nodeVersions) {
     parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
     parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node", "Debug", nodeVersion)
-    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node", "Release", nodeVersion)
-    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', "Release", nodeVersion) // "Release" is not used
+    parallelExecutors["macOS test runners ${nodeVersion}"] = testMacOS("test-runners Release ${nodeVersion}")
+    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug ${nodeVersion}")
+    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release ${nodeVersion}")
+    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux("test-runners Release ${nodeVersion}")
     parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
   parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
@@ -512,10 +513,10 @@ def testAndroid(target, postStep = null) {
   }
 }
 
-def testLinux(target, buildType, nodeVersion = 10, postStep = null) {
+def testLinux(target, postStep = null) {
   return {
       node('docker') {
-      def reportName = "Linux-node-{$target}-${buildType}"
+      def reportName = "Linux {$target}"
       deleteDir()
       unstash 'source'
       def image
@@ -529,7 +530,7 @@ def testLinux(target, buildType, nodeVersion = 10, postStep = null) {
         image.inside('-e HOME=/tmp') {
           timeout(time: 1, unit: 'HOURS') {
             withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} ${buildType} ${nodeVersion}"
+              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target}"
             }
           }
           if (postStep) {
