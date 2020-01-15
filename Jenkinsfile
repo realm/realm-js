@@ -110,9 +110,9 @@ stage('test') {
   for (def nodeVersion in nodeVersions) {
     parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
     parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug ${nodeVersion}", nodeVersion)
-    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release ${nodeVersion}", nodeVersion)
-    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', nodeVersion)
+    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node", "Debug", nodeVersion)
+    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node", "Release", nodeVersion)
+    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', "Release", nodeVersion) // "Release" is not used
     parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
   //  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
@@ -512,9 +512,10 @@ def testAndroid(target, postStep = null) {
   }
 }
 
-def testLinux(target, nodeVersion = 10, postStep = null) {
+def testLinux(target, buildType, nodeVersion = 10, postStep = null) {
   return {
-    node('docker') {
+      node('docker') {
+      def reportName = "Linux-node-{$target}-${buildType}"
       deleteDir()
       unstash 'source'
       def image
@@ -524,21 +525,21 @@ def testLinux(target, nodeVersion = 10, postStep = null) {
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
       try {
-        reportStatus(target, 'PENDING', 'Build has started')
+        reportStatus(reportName, 'PENDING', 'Build has started')
         image.inside('-e HOME=/tmp') {
           timeout(time: 1, unit: 'HOURS') {
             withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} ${nodeVersion}"
+              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} ${buildType} ${nodeVersion}"
             }
           }
           if (postStep) {
             postStep.call()
           }
           deleteDir()
-          reportStatus(target, 'SUCCESS', 'Success!')
+          reportStatus(reportName, 'SUCCESS', 'Success!')
         }
       } catch(Exception e) {
-        reportStatus(target, 'FAILURE', e.toString())
+        reportStatus(reportName, 'FAILURE', e.toString())
         throw e
       }
     }
