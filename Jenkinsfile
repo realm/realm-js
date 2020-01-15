@@ -56,7 +56,7 @@ stage('check') {
 
 stage('pretest') {
   parallelExecutors = [:]
-  parallelExecutors["eslint"] = testLinux('eslint-ci', 10, {
+  parallelExecutors["eslint"] = testLinux('eslint-ci', "Release" 10, { // "Release" is not used
     step([
       $class: 'CheckStylePublisher',
       canComputeNew: false,
@@ -68,7 +68,7 @@ stage('pretest') {
       maxWarnings: 0,
       ignoreFailures: false])
   })
-  parallelExecutors["jsdoc"] = testLinux('jsdoc', 10, {
+  parallelExecutors["jsdoc"] = testLinux('jsdoc', "Releae", 10, { // "Release is not used
     publishHTML([
       allowMissing: false,
       alwaysLinkToLastBuild: false,
