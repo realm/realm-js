@@ -115,9 +115,9 @@ stage('test') {
     parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', "Release", nodeVersion) // "Release" is not used
     parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
-  //  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
+  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  // parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
+  parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
