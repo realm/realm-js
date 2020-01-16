@@ -364,7 +364,6 @@ Napi::Function WrappedObject<ClassType>::get_constructor(Napi::Env env) {
 	return Napi::Function(env, env.Null());
 }
 
-
 template<typename ClassType>
 inline bool WrappedObject<ClassType>::is_instance(Napi::Env env, const Napi::Object& object) {
 	if (constructor.IsEmpty()) {
@@ -375,10 +374,22 @@ inline bool WrappedObject<ClassType>::is_instance(Napi::Env env, const Napi::Obj
 
 	Napi::HandleScope scope(env);
 
+	//Check the object is instance of the constructor. This will be true when the object have it's prototype set with setPrototypeOf. 
+	//This is true for objects configured in the schema with a function type. In this case the _proto member will exists
 	Napi::Function ctor  = constructor.Value();
-	return object.InstanceOf(ctor);
-}
+	bool isInstanceOf = object.InstanceOf(ctor);
+	if (isInstanceOf) {
+		return true;
+	}
 
+	//Object store needs is_instance to return true when called with RealmObject instance even if the prototype was changed with setPrototypeOf
+	Napi::Object instance = object.Get("_instance").As<Napi::Object>();
+	if (!instance.IsUndefined()) {
+		isInstanceOf = instance.InstanceOf(ctor);
+	}
+
+	return isInstanceOf;
+}
 
 template<typename ClassType>
 Napi::Value WrappedObject<ClassType>::method_callback(const Napi::CallbackInfo& info) {
