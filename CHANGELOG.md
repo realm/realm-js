@@ -4,9 +4,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed a bug that prevented `ClientResyncMode.Discard` to discard the local changes. ([RJS-348](https://jira.mongodb.org/browse/RJS-348) and [#2664](https://github.com/realm/realm-js/issues/2664))
-* Fixed a bug where properties with float and double values would not be sorted correctly. (since v3.6.0)
-* Fixed a bug wjere a `NOT` query on a list would incorrectly match rows which have a row index one less than a correctly matching row which appeared earlier in the list.
+* Fixed a bug that prevented `ClientResyncMode.Discard` to discard the local changes. ([RJS-348](https://jira.mongodb.org/browse/RJS-348) and [#2664](https://github.com/realm/realm-js/issues/2664), since v3.1.0)
+* Fixed a bug where properties with float and double values would not be sorted correctly. ([realm/realm-core#3520](https://github.com/realm/realm-core/pull/3520), since v3.6.0)
+* Fixed a bug where a `NOT` query on a list would incorrectly match objects which have an object index one less than a correctly matching object which appeared earlier in the list. ([realm/realm-cocoa#6289](https://github.com/realm/realm-cocoa/issues/6289), since v1.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
