@@ -1090,9 +1090,9 @@ module.exports = {
         }
         const fetch = require('node-fetch');
 
-        const url = 'realm://127.0.0.1:9080/~/myrealm';
+        const realmUrl = 'realm://127.0.0.1:9080/~/myrealm';
         let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));
-        const config1 = user.createConfiguration({ sync: { url: url } });
+        const config1 = user.createConfiguration({ sync: { url: realmUrl } });
         config1.schema = [schemas.IntOnly];
         config1.sync.clientResyncMode = 'discard';
         config1.sync.fullSynchronization = true;
@@ -1108,6 +1108,7 @@ module.exports = {
         realm1.close();
 
         // delete Realm on server
+        var URL = require('url').URL;
         let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
         let url = new URL(`/realms/files/${encodedPath}`, user.server);
         let options = {
@@ -1117,10 +1118,10 @@ module.exports = {
             },
             method: 'DELETE',
         };
-        await fetch(url, options);
+        await fetch(url.toString(), options);
 
         // open the Realm again without schema and download
-        const config2 = user.createConfiguration({ sync: { url: url } });
+        const config2 = user.createConfiguration({ sync: { url: realmUrl } });
         config2.sync.clientResyncMode = 'discard';
         config2.sync.fullSynchronization = true;
         config2._cache = false;

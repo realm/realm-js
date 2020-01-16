@@ -1,4 +1,4 @@
-3.6.2 Release notes (2020-1-16)
+x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * None.
@@ -15,7 +15,7 @@
 ### Internal
 * None.
 
-3.6.1 Release notes (2020-1-16)
+3.6.2 Release notes (2020-1-16)
 =============================================================
 ### Enhancements
 * None.
