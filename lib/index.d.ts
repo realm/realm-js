@@ -362,7 +362,7 @@ declare namespace Realm.Sync {
      */
     class User {
         static readonly all: { [identity: string]: User };
-        static readonly current: User;
+        static readonly current: User | undefined;
         readonly identity: string;
         readonly isAdmin: boolean;
         readonly isAdminToken: boolean;
@@ -574,7 +574,7 @@ declare namespace Realm.Sync {
         uploadAllLocalChanges(timeoutMs?: number): Promise<void>;
     }
 
-    type SubscriptionNotificationCallback = (subscription: Subscription, state: number) => void;
+    type SubscriptionNotificationCallback = (subscription: Subscription, state: SubscriptionState) => void;
 
     /**
      * Subscription
@@ -585,8 +585,8 @@ declare namespace Realm.Sync {
         readonly error: string;
 
         unsubscribe(): void;
-        addListener(subscruptionCallback: SubscriptionNotificationCallback): void;
-        removeListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+        addListener(subscriptionCallback: SubscriptionNotificationCallback): void;
+        removeListener(subscriptionCallback: SubscriptionNotificationCallback): void;
         removeAllListeners(): void;
     }
 

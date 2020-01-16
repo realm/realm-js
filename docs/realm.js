@@ -274,24 +274,51 @@ class Realm {
     removeAllListeners(name) { }
 
     /**
-     * Synchronously call the provided `callback` inside a write transaction.
+     * Synchronously call the provided `callback` inside a write transaction. If an exception happens inside a transaction,
+     * you’ll lose the changes in that transaction, but the Realm itself won’t be affected (or corrupted). 
+     * More precisely, {@link Realm#beginTransaction beginTransaction()} and {@link Realm#commitTransaction commitTransaction()} will be called
+     * automatically. If any exception is thrown during the transaction {@link Realm#cancelTransaction cancelTransaction()} will
+     * be called instead of {@link Realm#commitTransaction commitTransaction()} and the exception will be re-thrown to the caller of `write()`.
+     *
+     * Nested transactions (calling `write()` within `write()`) is not possible.
      * @param {function()} callback
      */
     write(callback) { }
 
     /**
      * Initiate a write transaction.
+     *
+     * When doing a transaction, it is highly recommended to do error handling.
+     * If you don't handle errors, your data might become inconsistent. Error handling
+     * will often involve canceling the transaction.
+     *
+     * @example
+     * realm.beginTransaction();
+     * try {
+     *   realm.create('Person', { name: 'Arthur Dent',  origin: 'Earth' });
+     *   realm.create('Person', { name: 'Ford Prefect', origin: 'Betelgeuse Five' });
+     *   realm.commitTransaction();
+     * } catch (e) {
+     *   realm.cancelTransaction();
+     *   throw e;
+     * }
      * @throws {Error} When already in write transaction
+     * @see {@link Realm#cancelTransaction cancelTransaction()}
+     * @see {@link Realm#commitTransaction commitTransaction()}
      */
     beginTransaction() { }
 
     /**
      * Commit a write transaction.
+     *
+     * @see {@link Realm#beginTransaction beginTransaction()}
      */
     commitTransaction() { }
 
     /**
      * Cancel a write transaction.
+     *
+     * @see {@link Realm#beginTransaction beginTransaction()}
      */
     cancelTransaction() { }
 
