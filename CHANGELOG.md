@@ -4,8 +4,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed a bug that prevented `ClientResyncMode.Discard` to discard the local changes. ([RJS-348](https://jira.mongodb.org/browse/RJS-348) and [#2664](https://github.com/realm/realm-js/issues/2664))
+* Fixed a bug where properties with float and double values would not be sorted correctly. (since v3.6.0)
+* Fixed a bug wjere a `NOT` query on a list would incorrectly match rows which have a row index one less than a correctly matching row which appeared earlier in the list.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,7 +14,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Upgraded Realm Core from v5.23.7 to v5.23.8.
+* Upgraded Realm Sync from v4.9.1 to v4.9.3.
 
 3.6.0 Release notes (2019-12-11)
 =============================================================
