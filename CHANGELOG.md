@@ -1,3 +1,20 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
+
 3.6.1 Release notes (2020-1-16)
 =============================================================
 ### Enhancements
@@ -6,7 +23,7 @@
 ### Fixed
 * Fixed a bug that prevented `ClientResyncMode.Discard` to discard the local changes. ([#2664](https://github.com/realm/realm-js/issues/2664), since v3.1.0)
 * Fixed a bug where properties with float and double values would not be sorted correctly. ([realm/realm-core#3520](https://github.com/realm/realm-core/pull/3520), since v3.6.0)
-* Fixed a bug where a `NOT` query on a list would incorrectly match objects which have an object index one less than a correctly matching object which appeared earlier in the list. ([realm/realm-cocoa#6289](https://github.com/realm/realm-cocoa/issues/6289), since v1.0.0)
+  * Fixed a bug where a `NOT` query on a list would incorrectly match objects which have an object index one less than a correctly matching object which appeared earlier in the list. ([realm/realm-cocoa#6289](https://github.com/realm/realm-cocoa/issues/6289), since v1.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
