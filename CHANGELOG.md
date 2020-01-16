@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Untrusted SSL certificates were treated as transient rather than fatal errors on Apple platforms. (since v3.6.2)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Updated Realm Sync from v4.9.3 to v4.9.4.
 
 3.6.2 Release notes (2020-1-16)
 =============================================================
