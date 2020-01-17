@@ -516,7 +516,7 @@ def testAndroid(target, postStep = null) {
 def testLinux(target, postStep = null) {
   return {
       node('docker') {
-      def reportName = "Linux {$target}"
+      def reportName = "Linux ${target}"
       deleteDir()
       unstash 'source'
       def image
