@@ -15,6 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * None.
 
+<<<<<<< HEAD
 3.7.0-alpha.0 Release notes (2020-1-14)
 =============================================================
 NOTE 1: This is an easy pre-release. It contains bugs, it might crash and corrupt data. On other words, please use this release carefully.
@@ -25,6 +26,17 @@ NOTE 2: Node v10 and v12 are support, and node v8 support is removed.
 
 ### Fixed
 * None.
+=======
+3.6.2 Release notes (2020-1-16)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed a bug that prevented `ClientResyncMode.Discard` to discard the local changes. ([#2664](https://github.com/realm/realm-js/issues/2664), since v3.1.0)
+* Fixed a bug where properties with float and double values would not be sorted correctly. ([realm/realm-core#3520](https://github.com/realm/realm-core/pull/3520), since v3.6.0)
+  * Fixed a bug where a `NOT` query on a list would incorrectly match objects which have an object index one less than a correctly matching object which appeared earlier in the list. ([realm/realm-cocoa#6289](https://github.com/realm/realm-cocoa/issues/6289), since v1.0.0)
+>>>>>>> 09da3c6b351f12dca9cedbfac704e79c74c1f213
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -32,7 +44,12 @@ NOTE 2: Node v10 and v12 are support, and node v8 support is removed.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
+<<<<<<< HEAD
 * None.
+=======
+* Upgraded Realm Core from v5.23.7 to v5.23.8.
+* Upgraded Realm Sync from v4.9.1 to v4.9.3.
+>>>>>>> 09da3c6b351f12dca9cedbfac704e79c74c1f213
 
 3.6.0 Release notes (2019-12-11)
 =============================================================
