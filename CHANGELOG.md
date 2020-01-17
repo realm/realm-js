@@ -4,6 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
+* Added missing `Realm.Sync.ClientResyncMode` constants. ([#2690](https://github.com/realm/realm-js/issues/2690), since v3.1.0)
 * Untrusted SSL certificates were treated as transient rather than fatal errors on Apple platforms. (since v3.6.2)
 
 ### Compatibility

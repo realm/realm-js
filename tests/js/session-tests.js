@@ -1033,6 +1033,12 @@ module.exports = {
         });
     },
 
+    testClientResyncMode() {
+        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Discard, 'discard');
+        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Manual, 'manual');
+        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Recover, 'recover');
+    },
+
     testClientResyncIncorrectMode() {
         // FIXME: try to enable for React Native
         if (!isNodeProcess) {
