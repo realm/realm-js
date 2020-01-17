@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Added missing `Realm.Sync.ClientResyncMode` constants. ([#2690](https://github.com/realm/realm-js/issues/2690), since v3.1.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
