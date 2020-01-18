@@ -88,7 +88,6 @@ function addAvailableListener(regex, ros, expectedRealms = undefined) {
     return new Promise(async (resolve, reject) => {
         let timeout;
         const callback = (path) => {
-            console.log('callback', path);
             if (expectedRealms) {
                 for (let i = 0; i < expectedRealms.length; i++) {
                     if (!path.match(notificationFilterPrefix + expectedRealms[i])) {
@@ -193,10 +192,6 @@ describe('Notifier', () => {
         Realm.clearTestState();
         this.tmpListenerDir = tmp.dirSync({ unsafeCleanup: true });
         Realm.Sync.setListenerDirectory(this.tmpListenerDir.name);
-        Realm.Sync.setSyncLogger((level, message) => {
-            console.log('test-client: %s', message);
-        });
-        Realm.Sync.setLogLevel('info');
 
         if (useTestServer) {
             rosController = new TestObjectServer();
@@ -802,10 +797,6 @@ describe('Multi-process Notifier', () => {
         this.tmpIpcDir = tmp.dirSync({ unsafeCleanup: true });
         tmpIpcPath = this.tmpIpcDir.name + '/test.realm';
         Realm.Sync.setListenerDirectory(this.tmpListenerDir.name);
-        Realm.Sync.setSyncLogger((level, message) => {
-            console.log('test-client: %s', message);
-        });
-        Realm.Sync.setLogLevel('info');
 
         worker = new Realm.Worker(__dirname + '/support/notification-worker.ts', {
             execArgv: ['-r', 'ts-node/register'],

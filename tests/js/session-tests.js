@@ -22,13 +22,17 @@
 
 /* global REALM_MODULE_PATH */
 
+// Run these tests with the `DEBUG=tests:session` environment variable set to get the stdout of sub-processes.
+
+const debug = require('debug')('tests:session');
 const Realm = require('realm');
+
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
 
 const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
-const isNodeProccess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
 
 const require_method = require;
 function node_require(module) {
@@ -40,7 +44,7 @@ let fs;
 let execFile;
 let path;
 
-if (isNodeProccess) {
+if (isNodeProcess) {
     tmp = node_require('tmp');
     fs = node_require('fs');
     execFile = node_require('child_process').execFile;
@@ -59,17 +63,17 @@ function copyFileToTempDir(filename) {
 function runOutOfProcess() {
     const args = Array.prototype.slice.call(arguments);
     let tmpDir = tmp.dirSync();
-    console.log(`runOutOfProcess : ${args.join(' ')}`);
+    debug(`runOutOfProcess : ${args.join(' ')}`);
     return new Promise((resolve, reject) => {
         try {
-            execFile(process.execPath, args, {cwd: tmpDir.name}, (error, stdout, stderr) => {
+            execFile(process.execPath, args, { cwd: tmpDir.name }, (error, stdout, stderr) => {
                 if (error) {
                     console.error("runOutOfProcess failed\n", error, stdout, stderr);
                     reject(new Error(`Running ${args[0]} failed. error: ${error}`));
                     return;
                 }
 
-                console.log('runOutOfProcess success\n' + stdout);
+                debug('runOutOfProcess success\n' + stdout);
                 resolve();
             });
         }
@@ -89,7 +93,7 @@ function waitForConnectionState(session, state) {
         };
         session.addConnectionNotification(callback);
         callback(session.connectionState);
-        setTimeout(() => { reject('Connection state notification timed out') }, 10000);
+        setTimeout(() => { reject('Connection state notification timed out'); }, 10000);
     });
 }
 
@@ -163,7 +167,7 @@ module.exports = {
     },
 
     testRealmOpen() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -199,7 +203,7 @@ module.exports = {
     },
 
     testRealmOpenWithExistingLocalRealm() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -241,7 +245,7 @@ module.exports = {
     },
 
     testRealmOpenAsync() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -290,7 +294,7 @@ module.exports = {
     },
 
     testRealmOpenAsyncNoSchema() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -419,7 +423,7 @@ module.exports = {
     },
 
     testListNestedSync() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -460,7 +464,7 @@ module.exports = {
 
     testIncompatibleSyncedRealmOpen() {
         let realm = "sync-v1.realm";
-        if (isNodeProccess) {
+        if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
         else {
@@ -494,7 +498,7 @@ module.exports = {
 
     testIncompatibleSyncedRealmOpenAsync() {
         let realm = "sync-v1.realm";
-        if (isNodeProccess) {
+        if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
         else {
@@ -535,7 +539,7 @@ module.exports = {
 
     testIncompatibleSyncedRealmConsructor() {
         let realm = "sync-v1.realm";
-        if (isNodeProccess) {
+        if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
         else {
@@ -608,7 +612,7 @@ module.exports = {
     },
 
     testProgressNotificationsUnregisterForRealmConstructor() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -675,7 +679,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpen() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -703,7 +707,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpenAsync() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -840,7 +844,7 @@ module.exports = {
     },
 
     async testPartialSync() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -924,7 +928,7 @@ module.exports = {
     },
 
     testPartialSyncWithDynamicSchema() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
         const username = Utils.uuid();
@@ -971,7 +975,7 @@ module.exports = {
     },
 
     testRoleClassWithPartialSyncCanCoexistWithPermissionsClass() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -997,7 +1001,7 @@ module.exports = {
 
     testClientReset() {
         // FIXME: try to enable for React Native
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -1005,6 +1009,7 @@ module.exports = {
             return new Promise((resolve, _reject) => {
                 var realm;
                 const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
+                config.sync.clientResyncMode = 'manual';
                 config.sync.error = (sender, error) => {
                     try {
                         TestCase.assertEqual(error.name, 'ClientReset');
@@ -1029,6 +1034,110 @@ module.exports = {
         });
     },
 
+    testClientResyncMode() {
+        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Discard, 'discard');
+        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Manual, 'manual');
+        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Recover, 'recover');
+    },
+
+    testClientResyncIncorrectMode() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProcess) {
+            return;
+        }
+
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+            return new Promise((resolve, reject) => {
+                var realm;
+                const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
+                config.sync.clientResyncMode = 'foobar'; // incorrect mode
+                try {
+                    new Realm(config);
+                    reject('Should have failed if incorrect resync mode.');
+                }
+                catch (e) {
+                    resolve();
+                }
+            });
+        });
+    },
+
+    testClientResyncIncorrectModeForQueryBasedSync() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProcess) {
+            return;
+        }
+
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+            return new Promise((resolve, reject) => {
+                var realm;
+                let config = {
+                    sync: {
+                        user: user,
+                        url: 'realm://127.0.0.1:9080/~/dynamicSchema',
+                        fullSynchronization: false,
+                        clientResyncMode: 'recover'
+                    }
+                };
+                try {
+                    new Realm(config);
+                    reject('Should have failed if incorrect resync mode.');
+                }
+                catch (e) {
+                    resolve();
+                }
+            });
+        });
+    },
+
+    async testClientResyncDiscard() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProcess) {
+            return;
+        }
+        const fetch = require('node-fetch');
+
+        const realmUrl = 'realm://127.0.0.1:9080/~/myrealm';
+        let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));
+        const config1 = user.createConfiguration({ sync: { url: realmUrl } });
+        config1.schema = [schemas.IntOnly];
+        config1.sync.clientResyncMode = 'discard';
+        config1.sync.fullSynchronization = true;
+        config1._cache = false;
+
+        // open, download, create an object, upload and close
+        let realm1 = await Realm.open(config1);
+        await realm1.syncSession.downloadAllServerChanges();
+        realm1.write(() => {
+            realm1.create(schemas.IntOnly.name, { intCol: 1 });
+        });
+        await realm1.syncSession.uploadAllLocalChanges();
+        realm1.close();
+
+        // delete Realm on server
+        var URL = require('url').URL;
+        let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
+        let url = new URL(`/realms/files/${encodedPath}`, user.server);
+        let options = {
+            headers: {
+                Authorization: `${user.token}`,
+                'Content-Type': 'application/json',
+            },
+            method: 'DELETE',
+        };
+        await fetch(url.toString(), options);
+
+        // open the Realm again without schema and download
+        const config2 = user.createConfiguration({ sync: { url: realmUrl } });
+        config2.sync.clientResyncMode = 'discard';
+        config2.sync.fullSynchronization = true;
+        config2._cache = false;
+        let realm2 = await Realm.open(config2);
+        await realm2.syncSession.downloadAllServerChanges();
+        TestCase.assertEqual(realm2.schema.length, 0);
+        realm2.close();
+    },
+
     testAddConnectionNotification() {
         return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
             let config = {
@@ -1046,8 +1155,8 @@ module.exports = {
                         resolve();
                     }
                 });
-                realm.close()
-            })
+                realm.close();
+            });
         });
     },
 
@@ -1075,13 +1184,13 @@ module.exports = {
                 session.addConnectionNotification(callback1);
                 session.addConnectionNotification(callback2);
                 session.removeConnectionNotification(callback1);
-                realm.close()
+                realm.close();
             });
         });
     },
 
     testConnectionState() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -1102,35 +1211,37 @@ module.exports = {
 
             return new Promise((resolve, reject) => {
                 session.addConnectionNotification((newState, oldState) => {
+                    let state = session.connectionState;
+                    let isConnected = session.isConnected();
                     switch (newState) {
                         case Realm.Sync.ConnectionState.Disconnected:
-                            TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
-                            TestCase.assertFalse(session.isConnected());
+                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Disconnected);
+                            TestCase.assertFalse(isConnected);
                             break;
                         case Realm.Sync.ConnectionState.Connecting:
-                            TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Connecting);
-                            TestCase.assertFalse(session.isConnected());
+                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Connecting);
+                            TestCase.assertFalse(isConnected);
                             break;
                         case Realm.Sync.ConnectionState.Connected:
-                            TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Connected);
-                            TestCase.assertTrue(session.isConnected());
+                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Connected);
+                            TestCase.assertTrue(isConnected);
                             break;
                         default:
                             reject(`unknown connection value: ${newState}`);
                     }
 
-                    if (oldState === Realm.Sync.ConnectionState.Connecting && newState === Realm.Sync.ConnectionState.Connected) {
+                    if (newState === Realm.Sync.ConnectionState.Connected) {
                         resolve();
                     }
                 });
                 session.resume();
-                setTimeout(() => { reject() }, 10000);
+                setTimeout(() => { reject('timeout') }, 10000);
             });
         });
     },
 
     async testResumePause() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password');
         const config = {
             sync: {
                 user: user,
@@ -1151,7 +1262,7 @@ module.exports = {
     },
 
     async testMultipleResumes() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password');
         const config = {
             sync: {
                 user: user,
@@ -1167,19 +1278,13 @@ module.exports = {
         session.resume();
         session.resume();
         session.resume();
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (session.isConnected()) {
-                    resolve();
-                } else {
-                    reject(`Session should have been connected but was '${session.connectionState}'.`);
-                }
-            }, 1000);
-        });
+
+        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        TestCase.assertTrue(session.isConnected());
     },
 
     async testMultiplePauses() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password');
         const config = {
             sync: {
                 user: user,
@@ -1195,15 +1300,9 @@ module.exports = {
         session.pause();
         session.pause();
         session.pause();
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (!session.isConnected()) {
-                    resolve();
-                } else {
-                    reject(`Session should have been disconnected but was '${session.connectionState}'.`);
-                }
-            }, 1000);
-        });
+
+        await waitForConnectionState(session, Realm.Sync.ConnectionState.Disconnected);
+        TestCase.assertFalse(session.isConnected());
     },
 
     testUploadDownloadAllChanges() {
@@ -1252,16 +1351,24 @@ module.exports = {
     },
 
     testDownloadAllServerChangesTimeout() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
         const AUTH_URL = 'http://127.0.0.1:9080';
         const REALM_URL = 'realm://127.0.0.1:9080/timeout_download_realm';
+        const schema = {
+            name: 'CompletionHandlerObject',
+            properties: {
+                'name': { type: 'string'}
+            }
+        };
+
         let realm;
         return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
             .then((admin1) => {
                 const admin1Config = admin1.createConfiguration({
+                    schema: [schema],
                     sync: {
                         url: REALM_URL,
                         fullSynchronization: true
@@ -1276,7 +1383,7 @@ module.exports = {
     },
 
     testUploadAllLocalChangesTimeout() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -1406,5 +1513,28 @@ module.exports = {
                 }
                 TestCase.assertFalse(Realm.Sync._hasExistingSessions());
             });
+    },
+
+    testDeleteModelThrowsWhenSync() {
+        if (!isNodeProcess) {
+            return;
+        }
+
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
+            let config = {
+                schema: [schemas.TestObject],
+                sync: {
+                    user: u,
+                    url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
+                    fullSynchronization: true,
+                }
+            };
+            return Realm.open(config);
+        }).then(realm => {
+            realm.write(() => {
+                TestCase.assertThrows(() => { realm.deleteModel(schemas.TestObject.name); });
+            });
+            realm.close();
+        });
     }
 };

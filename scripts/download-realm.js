@@ -144,8 +144,8 @@ function getCoreRequirements(dependencies, options, required = {}) {
 
     switch (options.platform) {
         case 'mac':
-            required.CORE_SERVER_FOLDER += `/macos/${flavor}`;
-            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Darwin-devel.tar.gz`;
+            required.CORE_SERVER_FOLDER += `/macosx/${flavor}`;
+            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-macosx-devel.tar.gz`;
             return required;
         case 'ios':
             flavor = flavor === 'Debug' ? 'MinSizeDebug' : flavor;
@@ -160,7 +160,7 @@ function getCoreRequirements(dependencies, options, required = {}) {
             return required;
         }
         case 'linux':
-            required.CORE_SERVER_FOLDER = 'core';
+            required.CORE_SERVER_FOLDER += `/linux/${flavor}`;
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Linux-devel.tar.gz`;
             return required;
         default:

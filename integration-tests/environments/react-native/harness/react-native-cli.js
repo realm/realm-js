@@ -27,11 +27,15 @@ function async(...args) {
 }
 
 function sync(...args) {
-    return cp.spawnSync(
+    const process = cp.spawnSync(
         "node",
         [ require.resolve("react-native/local-cli/cli.js"), ...args ],
         { stdio: ["inherit", "inherit", "inherit"] }
     );
+    if (process.status !== 0) {
+        throw new Error(`Failed running "react-native ${args.join(' ')}"`);
+    }
+    return process;
 }
 
 module.exports = { async, sync };

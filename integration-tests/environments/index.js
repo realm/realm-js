@@ -36,5 +36,5 @@ concurrently(environments.map(e => ({
     name: e.name,
 })), {
     prefix: "name",
-    killOthers: ["failure"]
+    killOthers: ["failure"],
 }).then(undefined, err => process.exit(1));

@@ -214,4 +214,23 @@ module.exports = {
 
         realm.close();
     },
+
+    testInQuery: function() {
+        var realm = new Realm({ schema: [schemas.StringOnly, schemas.IntOnly] });
+        realm.write(function() {
+            [1, 2, 3, 5, 8, 13].forEach(v => {
+                realm.create(schemas.IntOnly.name, { intCol: v });
+                realm.create(schemas.StringOnly.name, { stringCol: `${v}` });
+            });
+        });
+
+        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).filtered([2, 3, 8].map(v => `intCol == ${v}`).join(' OR ')).length, 3);
+        TestCase.assertEqual(realm.objects(schemas.StringOnly.name).filtered([2, 3, 8].map(v => `stringCol == '${v}'`).join(' OR ')).length, 3);
+
+        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).filtered([3, 7, 8].map(v => `intCol == ${v}`).join(' OR ')).length, 2);
+        TestCase.assertEqual(realm.objects(schemas.StringOnly.name).filtered([3, 7, 8].map(v => `stringCol == '${v}'`).join(' OR ')).length, 2);
+
+        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).filtered([0, 14].map(v => `intCol == ${v}`).join(' OR ')).length, 0);
+        TestCase.assertEqual(realm.objects(schemas.StringOnly.name).filtered([0, 14].map(v => `stringCol == '${v}'`).join(' OR ')).length, 0);
+    },
 };

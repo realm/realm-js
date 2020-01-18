@@ -76,7 +76,7 @@ function verifySubscriptionWithParents(parentToInclude, filterClause) {
         TestCase.assertEqual(a_objects[1].parents.length, 0);
         return new Promise((resolve, reject) => {
             if (!filterClause) {
-                filterClause = "TRUEPREDICATE"
+                filterClause = "TRUEPREDICATE";
             }
             const query = realm.objects("ObjectA").filtered(filterClause);
             let listOfInclusionPropertyPaths = [];
@@ -85,7 +85,7 @@ function verifySubscriptionWithParents(parentToInclude, filterClause) {
             }
             let subscriptionOptions = {
                 includeLinkingObjects: listOfInclusionPropertyPaths,
-            }
+            };
             const sub = query.subscribe(subscriptionOptions);
             const desc = sub.query;
             sub.addListener((subscription, state) => {
@@ -179,8 +179,8 @@ module.exports = {
                                 TestCase.assertTrue(updated.getTime() < namedSub.updatedAt.getTime());
                                 realm.commitTransaction();
                                 resolve();
-                            }, 2);
-                        }, 2);
+                            }, 1000);
+                        }, 1000);
                     }
                 });
             });
@@ -276,7 +276,7 @@ module.exports = {
                                     resolve();
                                 }
                             });
-                        }, 2);
+                        }, 2000);
                     }
                 });
             });
@@ -301,14 +301,14 @@ module.exports = {
                             sub2.addListener((subscription2, state2) => {
                                 if (pendingOrComplete(state2)) {
                                     sub2.removeAllListeners();
-                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime(), "'UpdatedAt' was not updated correctly.");
+                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime(), "'updatedAt' was not updated correctly.");
                                     TestCase.assertTrue(expires1.getTime() < namedSub.expiresAt.getTime(), "'expiresAt' was not updated correctly.");
                                     TestCase.assertEqual(namedSub.timeToLive, 5000, "'timeToLive' was not updated correctly.");
                                     TestCase.assertTrue(queryDescription === namedSub.query, "'query' was not updated correctly.");
                                     resolve();
                                 }
                             });
-                        }, 2);
+                        }, 2000);
                     }
                 });
             });
@@ -397,7 +397,7 @@ module.exports = {
 
     testSubscribeToChildrenWithMalformedInclusion1() {
         return verifySubscriptionWithParents("something.wrong").then(() => {
-            throw new Error('subscription should have failed')
+            throw Error('subscription should have failed');
         },
             (err) => TestCase.assertEqual(err.message, "No property 'something' on object of type 'ObjectA'")
         );
@@ -405,7 +405,7 @@ module.exports = {
 
     testSubscribeToChildrenWithMalformedInclusion2() {
         return verifySubscriptionWithParents("@links.Parent.missing_property").then(() => {
-            throw new Error('subscription should have failed')
+            throw Error('subscription should have failed');
         },
             (err) => TestCase.assertEqual(err.message, "No property 'missing_property' found in type 'Parent' which links to type 'ObjectA'")
         );
@@ -413,7 +413,7 @@ module.exports = {
 
     testSubscribeToChildrenWithMalformedInclusion3() {
         return verifySubscriptionWithParents(4.2).then(() => {
-            throw new Error('subscription should have failed')
+            throw Error('subscription should have failed');
         },
             (err) => TestCase.assertEqual(err.message, "JS value must be of type 'string', got (4.2)")
         );

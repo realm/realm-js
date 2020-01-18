@@ -169,7 +169,7 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
         throw TypeErrorException(accessor, realm_object->get_object_schema().name, *prop, value);
     }
 
-    realm_object->set_property_value(accessor, prop->name, value, true);
+    realm_object->set_property_value(accessor, prop->name, value, realm::CreatePolicy::UpdateAll);
     return true;
 }
 
@@ -213,7 +213,7 @@ void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments
     }
 
     if (row_ndx == realm::not_found) {
-		realm_object->row().nullify_link(prop->table_column);
+        realm_object->row().nullify_link(prop->table_column);
     }
     else {
         realm_object->row().set_link(prop->table_column, row_ndx);

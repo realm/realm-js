@@ -146,6 +146,11 @@ Iterative development requires performing more of the steps manually:
 
 After making changes to the C++ source files rerun `npm run build-changes` to rebuild the files which have changed. Changes to JS or TS files don't require any manual steps beyond rerunning the tests.
 
+If you want the Realm JS Sync client's logs in the console, run your command with the `DEBUG=realm` environment variable set (i.e. `DEBUG=realm npm run js-tests`)
+To adjust the lowest log level set the `REALM_LOG_LEVEL` environment variable (defaults to `info`).
+
+Some tests have been instrumented with detailed logging, run your command with the `DEBUG=tests:*` environment variable set to see these (i.e. `DEBUG=tests:* npm run js-tests`)
+
 ### How To: Debug React Native Unit tests
 
 This guide assumes that development is happening on a Mac.
@@ -166,3 +171,12 @@ If you want to modify the Javascript in an iterative manner or enable break poin
 The Javascript tests are run twice: once directly in the simulator, and once in Chrome, talking to the simulator via the RPC bridge used for Chrome debugging. When running the Chrome tests you can open the Chrome Developer Tools on the tab that they open to debug the tests themselves. The JS engine running inside the simulator (for both the RPC server and the tests themselves in the non-Chrome test suite) can be debugged using the Safari developer tools.
 
 Note that it isn't possible to easily run a single unit test from Xcode. Instead you should disable the tests manually by modifying `tests/react-test-app/node_modules/realm-tests/index.js`.
+
+### How To: Debug React Native Podspec
+
+The [Podspec](./RealmJS.podspec) file follows [the CocoaPods Podspec syntax](https://guides.cocoapods.org/syntax/podspec.html). It describes how Realm JS is build for React Native apps on iOS and is automatically discovered by the React Native CLI when running `pod install` from a users project.
+
+The Podspec file expects to be located in the `./node_modules/realm/` folder of a React Native project with a `./ios/Podfile` file. The easiest way to verify that changes to the Podspec is not breaking installing the library, install Realm JS in a new React Native app, make the changes to the `./node_modules/realm/RealmJS.podspec` and build the app.
+
+It's also possible to run `pod lib lint --verbose` from the `./node_modules/realm/` directory, but then it's required that `'#{app_path}/ios/Pods/Headers/Public/React-Core'` is added to the `HEADER_SEARCH_PATHS` of `s.pod_target_xcconfig`.
+Consider adding `--no-clean` to prevent the CocoaPods CLI from deleting the temporary project created during linting. Once linting passes, try installing the pod and running the consuming app on an iOS device.

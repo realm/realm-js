@@ -48,6 +48,11 @@ mockRealm(path.resolve(__dirname, '../..'))
 
 
 const Realm = require('realm');
+
+// Setup a Realm logger
+const RealmLogging = require('./helpers/realm-logging');
+RealmLogging.patch(Realm);
+
 const RealmTests = require('../js');
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
@@ -61,7 +66,7 @@ if (isDebuggerAttached) {
 }
 
 // Create this method with appropriate implementation for Node testing.
-Realm.copyBundledRealmFiles = function() {
+Realm.copyBundledRealmFiles = function () {
     let sourceDir = path.join(__dirname, '../data');
     let destinationDir = path.dirname(Realm.defaultPath);
 
@@ -73,7 +78,7 @@ Realm.copyBundledRealmFiles = function() {
         try {
             fs.accessSync(dest);
             continue;
-        } catch (e) {}
+        } catch (e) { }
 
         fs.writeFileSync(dest, fs.readFileSync(src));
     }

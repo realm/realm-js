@@ -22,9 +22,10 @@
 #include "js_realm_object.hpp"
 #include "js_util.hpp"
 
-#include "results.hpp"
+#include "keypath_helpers.hpp"
 #include "list.hpp"
 #include "object_store.hpp"
+#include "results.hpp"
 
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
@@ -156,26 +157,6 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm
     return create_object<T, ResultsClass<T>>(ctx, new realm::js::Results<T>(realm, *table));
 }
 
-inline void setup_aliases(parser::KeyPathMapping &mapping, const realm::SharedRealm &realm)
-{
-    const realm::Schema &schema = realm->schema();
-    for (auto it = schema.begin(); it != schema.end(); ++it) {
-        for (const Property &property : it->computed_properties) {
-            if (property.type == realm::PropertyType::LinkingObjects) {
-                auto target_object_schema = schema.find(property.object_type);
-                const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
-                std::string native_name = "@links." + target_object_schema->name + "." + property.link_origin_property_name;
-                mapping.add_mapping(table, property.name, native_name);
-            }
-        }
-
-        for (const Property &property : it->persisted_properties) {
-            const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
-            mapping.add_mapping(table, property.public_name, property.name);
-        }
-    }
-}
-
 template<typename T>
 template<typename U>
 typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &collection, Arguments &args) {
@@ -189,8 +170,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     auto const &object_schema = collection.get_object_schema();
     DescriptorOrdering ordering;
     parser::KeyPathMapping mapping;
-    mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type("")); // prefix is "class_" defined by object store
-    setup_aliases(mapping, realm);
+    realm::populate_keypath_mapping(mapping, *realm);
 
     parser::ParserResult result = parser::parse(query_string);
     NativeAccessor<T> accessor(ctx, realm, object_schema);
@@ -355,8 +335,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
                 ObjectType property_paths = Value::validated_to_array(ctx, user_includes, available_options[INCLUSIONS]);
 
                 parser::KeyPathMapping mapping;
-                mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type("")); // prefix is "class_"
-                setup_aliases(mapping, realm); // this enables user defined linkingObjects property names to be parsed
+                realm::populate_keypath_mapping(mapping, *realm); // this enables user defined linkingObjects property names to be parsed
                 DescriptorOrdering combined_orderings;
 
                 size_t prop_count = Object::validated_get_length(ctx, property_paths);

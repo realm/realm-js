@@ -48,6 +48,28 @@
  * @property {string} [customQueryBasedSyncIdentifier] - A custom identifier to append to the Realm url rather than the default
  *    identifier which is comprised of the user id and a random string. It allows you to reuse query based Realms across
  *    different devices.
+ * @property {string} [clientResyncMode] A Client Resync is triggered if the device and server cannot agree on a common shared history
+ *     for the Realm file, thus making it impossible for the device to upload or receive any changes.
+ *     This can happen if the server is rolled back or restored from backup. Just having the device offline will not trigger a Client Resync.
+ *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'manual'` as the default value for
+ *     query-based sync and `'recover'` for full sync.
+ *     Query-based synced Realm only support `'manual'`.
+ * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
+       If not set, the Realm will be downloaded before opened.
+ * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
+ *    file to complete and then open. If not set, the Realm will be downloaded before opened.
+ */
+
+/**
+ * This describes the client resync modes.
+ * @typedef {("recover"|"discard"|"manual")} Realm.Sync~ClientResyncMode
+ * @property "recover" - Realm will compare the local Realm with the Realm on the server and automatically transfer
+ *     any changes from the local Realm that makes sense to the Realm provided by the server.
+ *     This is the default mode for fully synchronized Realms. It is not yet supported by query-based Realms.
+ * @property "discard" - The local Realm will be discarded and replaced with the server side Realm.
+ *     All local changes will be lost. This mode is not yet supported by query-based Realms.
+ * @property "manual" - A manual Client Resync is also known as a Client Reset. An error will be thrown.
+ *     See also {@link Realm.Sync.initiateClientReset}.
  */
 
 /**
@@ -98,18 +120,28 @@
  */
 
 /**
+ * Specify how to open a synced Realm.
+ *
+ * @typedef {Object} Realm.Sync~OpenRealmBehaviorConfiguration
+ * @property {string} type - how to open a Realm - 'downloadBeforeOpen' to wait for download to complete or 'openImmediately' to open the local Realm
+ * @property {number} [timeOut] - how long to wait for a download (in ms). Default: infinity
+ * @property {string} [timeOutBehavior] - what to do when download times out - 'openLocalRealm' to open the local Realm or 'throwException' to throw an exception.
+ * @see {@link Realm.Sync~openLocalRealmBehavior}
+ * @see {@link Realm.Sync~downloadBeforeOpenBehavior}
+ */
+
+/**
  * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
  * If this is the first time you open the Realm, it will be empty while the server data is being downloaded
  * in the background.
  *
- * @typedef {Object} Realm.Sync.openLocalRealmBehavior
+ * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~openLocalRealmBehavior
  */
 
 /**
- * The default behavior settings if you want to fully synchronize a Realm before it is opened.
- * If this takes more than 30 seconds, an exception will be thrown.
+ * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
  *
- * @typedef {Object} Realm.Sync.downloadBeforeOpenBehavior
+ * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~downloadBeforeOpenBehavior
  */
 
 /**
@@ -131,6 +163,7 @@ class Sync {
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {string} name - The name of the event.
      * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
+     * @returns {Promise<void>} A promise which is resolved when the worker has started.
      *
      * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
@@ -149,7 +182,6 @@ class Sync {
      *    deleted from the server. The virtual path of the Realm being deleted is
      *    passed as an argument.
      *
-     * Only available in the Enterprise Edition.
      * @deprecated Use `addListener(config, eventName, changeCallback)` instead`.
      */
     static addListener(serverUrl, adminUser, filterRegex, name, changeCallback) { }
@@ -160,6 +192,7 @@ class Sync {
      * @param {Realm.Sync.RealmListenerConfiguration} config - The configuration object for Realms being observed.
      * @param {string} eventName - The name of the event to observe.
      * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
+     * @returns {Promise<void>} A promise which is resolved when the worker has started.
      *
      * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
@@ -178,7 +211,6 @@ class Sync {
      *    deleted from the server. The virtual path of the Realm being deleted is
      *    passed as an argument.
      *
-     * Only available in the Enterprise Edition.
      */
     static addListener(config, eventName, changeCallback) { }
 
@@ -189,8 +221,8 @@ class Sync {
      * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {Realm.Worker} worker - Worker to deliver events to.
+     * @returns {Promise<void>} A promise which is resolved when the worker has started.
      *
-     * Only available in the Enterprise Edition.
      */
     static addListener(serverUrl, adminUser, filterRegex, worker) { }
 
@@ -1102,9 +1134,9 @@ class Adapter {
 	 * @param {string} localPath - the local path where realm files are stored
 	 * @param {string} serverUrl - the sync server to listen to
 	 * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
-	 * @param {string} regex - a regular expression used to determine which changed Realms should be monitored -
-	 *  use `.*` to match all all Realms
-	 * @param {function(realmPath)} changeCallback - called when a new transaction is available
+	 * @param {(string|Realm.Sync.Adapter~RealmWatchPredicate)} filter - a filter used to determine which changed Realms should be monitored -
+	 *  can be a regular expression string or a predicate function. Use `'.*'` to match all Realms.
+	 * @param {Realm.Sync.Adapter~RealmChangeCallback} changeCallback - called when a new transaction is available
 	 *  to process for the given realm_path
      * @param {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration for the spawned sync sessions.
 	 */
@@ -1191,3 +1223,14 @@ class Adapter {
 	 */
     close() { }
 }
+
+/**
+ * @callback Realm.Sync.Adapter~RealmWatchPredicate
+ * @param {string} path - the path of the realm to consider for change tracking
+ * @returns {boolean} - whether or not to track changes for the realm
+ */
+
+/**
+ * @callback Realm.Sync.Adapter~RealmChangeCallback
+ * @param {string} path - the path of the realm for which a new transaction is available
+ */
