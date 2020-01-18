@@ -11,9 +11,10 @@ if [ -f node_modules/realm-object-server/package.json ]; then
     fi
 fi
 
-echo "Installing realm-object-server version: " $REALM_OBJECT_SERVER_VERSION
-npm install --no-save realm-object-server@$REALM_OBJECT_SERVER_VERSION 
-
 echo "Installing patched version of diskusage"
 npm install --no-save 
 https://github.com/blagoev/node-diskusage
+
+echo "Installing realm-object-server version: " $REALM_OBJECT_SERVER_VERSION
+npm install --no-save realm-object-server@$REALM_OBJECT_SERVER_VERSION 
+
