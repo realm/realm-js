@@ -42,7 +42,7 @@ static Napi::Object NAPI_Init(Napi::Env env, Napi::Object exports) {
   return exports;
 }
 
-NODE_API_MODULE(hello, NAPI_Init)
+NODE_API_MODULE(realm, NAPI_Init)
 
 
 
