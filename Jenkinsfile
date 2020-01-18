@@ -86,14 +86,14 @@ stage('build') {
   nodeVersions.each { nodeVersion ->
     parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
     parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-    parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
-    parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
+    //parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
+    //parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
   }
   electronVersions.each { electronVersion ->
     parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
     parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
-    parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
-    parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
+    //parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
+    //parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
   }
   parallelExecutors["Android React Native"] = buildAndroid()
   parallel parallelExecutors
@@ -113,7 +113,7 @@ stage('test') {
     parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("Debug", nodeVersion)
     parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("Release", nodeVersion)
     parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', nodeVersion)
-    parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
+    //parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
   parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
