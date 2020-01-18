@@ -45,7 +45,7 @@ if (isNodeProcess && process.platform === 'win32') {
 const fs = isNodeProcess ? nodeRequire('fs-extra') : require('react-native-fs');
 
 module.exports = {
-    testRealmConstructor: function() {
+    testRealmConstructorTest: function() {
         const realm = new Realm({schema: []});
         TestCase.assertTrue(realm instanceof Realm);
 
