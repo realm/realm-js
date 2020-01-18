@@ -534,6 +534,8 @@ std::string SessionClass<T>::get_connection_state_value(SyncSession::ConnectionS
         case SyncSession::ConnectionState::Disconnected: return "disconnected";
         case SyncSession::ConnectionState::Connecting: return "connecting";
         case SyncSession::ConnectionState::Connected: return "connected";
+		default:
+			throw std::runtime_error("Unknown connection state value");
     }
 }
 
