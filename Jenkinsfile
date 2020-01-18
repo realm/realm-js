@@ -4,12 +4,12 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js' // This is a global variable
 
-def nodeVersions = ['8.15.0', '10.15.1']
-def electronVersions = ['2.0.18', '3.0.16', '3.1.8', '4.0.8', '4.1.4', '4.2.6']
+def nodeVersions = ['10.18.1', '12.14.1', '13.6.1']
+def electronVersions = ['3.0.16', '3.1.8', '4.0.8', '4.1.4', '4.2.6', '5.0.13', '6.1.7', '7.1.8']
 def gitTag = null
 def formattedVersion = null
 dependencies = null
-nodeTestVersion = '8.15.0'
+nodeTestVersion = '12.14.1'
 
 // == Stages
 
@@ -110,14 +110,14 @@ stage('test') {
   for (def nodeVersion in nodeVersions) {
     parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
     parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug ${nodeVersion}", nodeVersion)
-    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release ${nodeVersion}", nodeVersion)
+    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("Debug", nodeVersion)
+    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("Release", nodeVersion)
     parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', nodeVersion)
     parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
-  //  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
+  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  // parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
+  parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
@@ -512,7 +512,7 @@ def testAndroid(target, postStep = null) {
   }
 }
 
-def testLinux(target, nodeVersion = 10, postStep = null) {
+def testLinux(target, nodeVersion = 12, postStep = null) {
   return {
     node('docker') {
       deleteDir()
@@ -528,7 +528,7 @@ def testLinux(target, nodeVersion = 10, postStep = null) {
         image.inside('-e HOME=/tmp') {
           timeout(time: 1, unit: 'HOURS') {
             withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} ${nodeVersion}"
+              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} Release ${nodeVersion}"
             }
           }
           if (postStep) {

@@ -40,7 +40,7 @@ struct JSPredicateFunctor {
 public:
     JSPredicateFunctor(Protected<GlobalContextType> ctx, Protected<ObjectType> this_object, Protected<FunctionType> predicate)
     : m_js_function([ctx, this_object, predicate](std::string realm_path, std::promise<bool>&& result) {
-        HANDLESCOPE
+        HANDLESCOPE(ctx)
         ValueType arguments[1] = { Value::from_string(ctx, realm_path) };
         ValueType js_result = Function::callback(ctx, predicate, this_object, 1, arguments);
         result.set_value(Value::validated_to_boolean(ctx, js_result));
