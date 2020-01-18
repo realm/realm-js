@@ -55,8 +55,15 @@ public:
 		}
 	}
 
-	Protected& operator=(const Protected& other) {
-		return *this = Protected(other);
+	friend void swap(Protected& first, Protected& second) {
+		std::swap(first.m_env, second.m_env);
+		std::swap(first.m_ref, second.m_ref);
+		std::swap(first.m_isValue, second.m_isValue);
+	}
+
+	Protected& operator=(Protected other) {
+		swap(*this, other);
+		return *this;
 	}
 
 	~Protected() {
