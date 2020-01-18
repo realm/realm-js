@@ -56,7 +56,7 @@ stage('check') {
 
 stage('pretest') {
   parallelExecutors = [:]
-  parallelExecutors["eslint"] = testLinux('eslint-ci', 10, {
+  parallelExecutors["eslint"] = testLinux('eslint-ci', 12, {
     step([
       $class: 'CheckStylePublisher',
       canComputeNew: false,
@@ -68,7 +68,7 @@ stage('pretest') {
       maxWarnings: 0,
       ignoreFailures: false])
   })
-  parallelExecutors["jsdoc"] = testLinux('jsdoc', 10, {
+  parallelExecutors["jsdoc"] = testLinux('jsdoc', 12, {
     publishHTML([
       allowMissing: false,
       alwaysLinkToLastBuild: false,
@@ -110,8 +110,8 @@ stage('test') {
   for (def nodeVersion in nodeVersions) {
     parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
     parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("Debug", nodeVersion)
-    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("Release", nodeVersion)
+    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug", nodeVersion)
+    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release", nodeVersion)
     parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', nodeVersion)
     //parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
@@ -528,7 +528,7 @@ def testLinux(target, nodeVersion = 12, postStep = null) {
         image.inside('-e HOME=/tmp') {
           timeout(time: 1, unit: 'HOURS') {
             withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} Release ${nodeVersion}"
+              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} ${nodeVersion}"
             }
           }
           if (postStep) {
