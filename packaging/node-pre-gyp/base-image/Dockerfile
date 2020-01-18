@@ -34,4 +34,4 @@ RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.31.4/install.s
 RUN . $NVM_DIR/nvm.sh \
     && nvm install 10.18.1 \
     && nvm install 12.14.1 \
-    && nvm install 13.6.1
+    && nvm install 13.6.0
