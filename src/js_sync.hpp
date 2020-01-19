@@ -1007,6 +1007,9 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 #if REALM_PLATFORM_NODE
     Object::set_property(ctx, sync_constructor, "Adapter", ObjectWrap<T, AdapterClass<T>>::create_constructor(ctx), attributes);
+
+	GlobalNotifierClass<T>::create_constructor(ctx);
+	ChangeObject<T>::create_constructor(ctx);
 #endif
 
     return sync_constructor;

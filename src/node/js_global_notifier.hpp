@@ -37,9 +37,12 @@ class ChangeObject : public ClassDefinition<T, GlobalNotifier::ChangeNotificatio
     using Object = js::Object<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+	using FunctionType = typename T::Function;
 
 public:
     std::string const name = "ChangeObject";
+
+	static FunctionType create_constructor(ContextType);
 
     static void get_path(ContextType, ObjectType, ReturnValue &);
     static void get_event(ContextType, ObjectType, ReturnValue &);
@@ -67,6 +70,11 @@ public:
         {"serialize", wrap<serialize>},
     };
 };
+
+template<typename T>
+typename T::Function ChangeObject<T>::create_constructor(ContextType ctx) {
+	return ObjectWrap<T, ChangeObject<T>>::create_constructor(ctx);
+}
 
 template<typename T>
 GlobalNotifier::ChangeNotification& ChangeObject<T>::validated_get(ObjectType object) {
@@ -200,9 +208,12 @@ class GlobalNotifierClass : public ClassDefinition<T, GlobalNotifier> {
     using Object = js::Object<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+	using FunctionType = typename T::Function;
 
 public:
     std::string const name = "GlobalNotifier";
+
+	static FunctionType create_constructor(ContextType);
 
     static ObjectType create_instance(ContextType, realm::List);
 
@@ -216,6 +227,11 @@ public:
         {"close", wrap<close>},
     };
 };
+
+template<typename T>
+typename T::Function GlobalNotifierClass<T>::create_constructor(ContextType ctx) {
+	return ObjectWrap<T, GlobalNotifierClass<T>>::create_constructor(ctx);
+}
 
 template<typename T>
 void GlobalNotifierClass<T>::start(ContextType, ObjectType object, Arguments &, ReturnValue &) {
