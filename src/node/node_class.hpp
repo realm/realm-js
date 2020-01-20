@@ -518,6 +518,27 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrapInvokeNamedAndIn
 	return scope.Escape(value);
 }
 
+static Napi::Value getPropertyDescriptor(Napi::Env env, const Napi::Object& target, const Napi::Value property) {
+	if (target.IsNull() || target.IsUndefined()) {
+		return env.Undefined();
+	}
+
+	if (!target.HasOwnProperty(property)) {
+		napi_value napi_proto;
+		napi_status status = napi_get_prototype(env, target, &napi_proto);
+		if (status != napi_ok) {
+			throw Napi::Error::New(env, "Invalid object. Couldn't get prototype of object");
+		}
+		Napi::Object prototypeObject = Napi::Object(env, napi_proto);
+
+		return getPropertyDescriptor(env, prototypeObject, property);
+	}
+
+	Napi::Function getOwnPropertyDescriptorFunc = env.Global().Get("Object").As<Napi::Object>().Get("getOwnPropertyDescriptor").As<Napi::Function>();
+	Napi::Object propertyDescriptor = getOwnPropertyDescriptorFunc.Call({ target, property }).As<Napi::Object>();
+	return propertyDescriptor;
+}
+
 template<typename ClassType>
 Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
@@ -593,8 +614,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::Cal
 
 			std::string propertyName = property.As<Napi::String>();
 
-			Napi::Function getOwnPropertyDescriptorFunc = env.Global().Get("Object").As<Napi::Object>().Get("getOwnPropertyDescriptor").As<Napi::Function>();
-			Napi::Object propertyDescriptor = getOwnPropertyDescriptorFunc.Call({ proto, property }).As<Napi::Object>();
+			Napi::Object propertyDescriptor = getPropertyDescriptor(env, proto, property).As<Napi::Object>();
 			if (propertyDescriptor.IsUndefined()) {
 				//if no descriptor then return undefined as the value of the property
 				return scope.Escape(env.Undefined());
@@ -686,8 +706,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 		if (proto.Has(property)) {
 
 			//get the property descritpor
-			Napi::Function getOwnPropertyDescriptorFunc = env.Global().Get("Object").As<Napi::Object>().Get("getOwnPropertyDescriptor").As<Napi::Function>();
-			Napi::Object propertyDescriptor = getOwnPropertyDescriptorFunc.Call({ proto, property }).As<Napi::Object>();
+			Napi::Object propertyDescriptor = getPropertyDescriptor(env, proto, property).As<Napi::Object>();
 			if (propertyDescriptor.IsUndefined()) {
 				//if no descriptor then return undefined as per JS spec
 				return scope.Escape(env.Undefined());
