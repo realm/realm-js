@@ -16,7 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Updated Realm Object Store to commit 973e596f556bcae9ef29d5d712d8a8752f681047.
+* Updated Realm Object Store to commit e3ac880ea2a6d1ea52d93f072ea8542a2ffaf9f9.
 
 4.0.0-beta.1 Release notes (2020-1-7)
 =============================================================
