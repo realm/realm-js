@@ -80,6 +80,16 @@ inline bool node::Value::is_number(v8::Isolate* isolate, const v8::Local<v8::Val
 }
 
 template<>
+inline bool node::Value::is_decimal128(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    return true; // FIXME: must be an instance of Decimal128 from BSON
+}
+
+template<>
+inline bool node::Value::is_objectId(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    return true; // FIXME: must be an instance of ObjectId from BSON
+}
+
+template<>
 inline bool node::Value::is_object(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return value->IsObject();
 }
@@ -118,6 +128,16 @@ inline v8::Local<v8::Value> node::Value::from_null(v8::Isolate* isolate) {
 template<>
 inline v8::Local<v8::Value> node::Value::from_number(v8::Isolate* isolate, double number) {
     return Nan::New(number);
+}
+
+template<>
+inline v8::Local<v8::Value> node::Value::from_decimal128(v8::Isolate* isolate, Decimal128 number) {
+    return Nan::Undefined(); // FIXME: Create a Decimal128 object
+}
+
+template<>
+inline v8::Local<v8::Value> node::Value::from_objectId(v8::Isolate* isolate, ObjectId objectId) {
+    return Nan::Undefined(); // FIXME: Create an ObjectId object
 }
 
 template<>
@@ -160,6 +180,16 @@ inline double node::Value::to_number(v8::Isolate* isolate, const v8::Local<v8::V
                                                  (std::string)to_string(isolate, value)));
     }
     return number;
+}
+
+template<>
+inline Decimal128 node::Value::to_decimal128(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    return Decimal128(0); // FIXME: pull value out of BSON.Decimal128 object
+}
+
+template<>
+inline ObjectId node::Value::to_objectId(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    return ObjectId("foobar"); // FIXME: pull value out of BSON.ObjectId object
 }
 
 template<>
