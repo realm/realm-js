@@ -550,6 +550,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::Cal
 #if DEBUG
 	std::string _debugproperty = property.IsString() ? (std::string)property.As<Napi::String>() : "";
 	const char* _debugPropertyName = _debugproperty.c_str();
+	(void)_debugPropertyName; //disable unused variable warning
 #endif
 
 	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
@@ -673,8 +674,10 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 	Napi::Value value = info[2];
 
 	std::string propertyName = property;
+
 #if DEBUG
 	const char* _debugPropertyName = propertyName.c_str();
+	(void)_debugPropertyName; //disable unused variable warning
 #endif
 
 	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
