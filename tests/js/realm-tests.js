@@ -53,6 +53,23 @@ module.exports = {
         TestCase.assertTrue(Realm instanceof Function);
     },
 
+    testOverwriteOfNativeFucntionSupport: function() {
+        const realm = new Realm({schema: []});
+        var oldClose = realm.close.bind(realm);
+        var newCloseCalled = false;
+        realm.close = () => {
+            newCloseCalled = true;
+        };
+        realm.close();
+        TestCase.assertTrue(newCloseCalled, "The new function should be called");
+
+        TestCase.assertFalse(realm.isClosed, "The realm should not be closed");
+
+        oldClose();
+
+        TestCase.assertTrue(realm.isClosed, "The realm should be closed");
+    },
+
     testRealmConstructorPath: function() {
         TestCase.assertThrows(() => new Realm('')); // the message for this error is platform-specific
         TestCase.assertThrowsContaining(() => new Realm('test1.realm', 'invalidArgument'),

@@ -547,6 +547,11 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::Cal
 	Napi::Object target = info[0].As<Napi::Object>();
 	Napi::Value property = info[1];
 
+#if DEBUG
+	std::string _debugproperty = property.IsString() ? (std::string)property.As<Napi::String>() : "";
+	const char* _debugPropertyName = _debugproperty.c_str();
+#endif
+
 	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
 	if (instance.IsUndefined() || instance.IsNull()) {
 		throw Napi::Error::New(env, "Invalid object. No _instance member");
@@ -668,6 +673,9 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 	Napi::Value value = info[2];
 
 	std::string propertyName = property;
+#if DEBUG
+	const char* _debugPropertyName = propertyName.c_str();
+#endif
 
 	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
 	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
@@ -699,6 +707,13 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 			return scope.Escape(result);
 		}
 	}
+
+	//check target. It has all native bound functions set on it.
+	if (target.HasOwnProperty(property)) {
+		target.Set(property, value);
+		return scope.Escape(Napi::Boolean::New(env, true));
+	}
+
 
 	if (target.HasOwnProperty("_proto")) {
 		Napi::Object proto = target.Get("_proto").As<Napi::Object>();
