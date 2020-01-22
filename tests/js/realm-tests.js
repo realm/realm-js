@@ -1182,9 +1182,14 @@ module.exports = {
     },
 
     testCopyBundledRealmFiles: function() {
+        let config = {path: 'realm-bundle.realm', schema: [schemas.DateObject]};
+        if (Realm.exists(config)) {
+            Realm.deleteFile(config);
+        }
         Realm.copyBundledRealmFiles();
+        TestCase.assertTrue(Realm.exists(config));
 
-        let realm = new Realm({path: 'realm-bundle.realm', schema: [schemas.DateObject]});
+        let realm = new Realm(config);
         TestCase.assertEqual(realm.objects('Date').length, 2);
         TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1462500087955);
 
@@ -1196,7 +1201,7 @@ module.exports = {
 
         // copy should not overwrite existing files
         Realm.copyBundledRealmFiles();
-        realm = new Realm({path: 'realm-bundle.realm', schema: [schemas.DateObject]});
+        realm = new Realm(config);
         TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1);
     },
 
@@ -1529,10 +1534,15 @@ module.exports = {
     },
 
     testDisableFileFormatUpgrade: function() {
+        let config = { path: 'realm-bundle.realm' };
+        if (Realm.exists(config)) {
+            Realm.deleteFile(config);
+        }
         Realm.copyBundledRealmFiles();
+        TestCase.assertTrue(Realm.exists(config));
 
         TestCase.assertThrowsContaining(() => {
-            new Realm({ path: 'realm-bundle.realm', disableFormatUpgrade: true } );
+            new Realm({ path: 'realm-bundle.realm', disableFormatUpgrade: true });
         }, 'The Realm file format must be allowed to be upgraded in order to proceed.');
     },
 

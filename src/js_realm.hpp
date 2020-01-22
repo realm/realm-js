@@ -42,6 +42,7 @@
 #include "thread_safe_reference.hpp"
 
 #include <realm/disable_sync_to_disk.hpp>
+#include <realm/global_key.hpp>
 #include <realm/util/file.hpp>
 #include <realm/util/scope_exit.hpp>
 

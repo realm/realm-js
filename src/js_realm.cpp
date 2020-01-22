@@ -76,7 +76,10 @@ void clear_test_state() {
     }
     s_test_files_path = util::make_temp_dir();
 #endif
-    SyncManager::shared().configure(s_test_files_path, SyncManager::MetadataMode::NoEncryption);
+    SyncClientConfig client_config;
+    client_config.base_file_path = s_test_files_path;
+    client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
+    SyncManager::shared().configure(client_config);
 #endif
 }
 
