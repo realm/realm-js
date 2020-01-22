@@ -86,7 +86,7 @@ private:
 		
 		private:
 			static Napi::Value bindNativeFunction(Napi::Env env, const std::string& functionName, const Napi::Function& function, const Napi::Object& thisObject);
-		
+			static Napi::ObjectReference m_proxyHandler;
 			
 
 			static Napi::Value getProxyTrap(const Napi::CallbackInfo& info);
@@ -424,10 +424,15 @@ void WrappedObject<ClassType>::readonly_static_setter_callback(const Napi::Callb
 }
 
 template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(Napi::Env env) {
-	Napi::EscapableHandleScope scope(env);
+Napi::ObjectReference WrappedObject<ClassType>::ProxyHandler::m_proxyHandler;
 
-	Napi::Object proxyObj = Napi::Object::New(env);
+template<typename ClassType>
+Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(Napi::Env env) {
+	if (!m_proxyHandler.IsEmpty()) {
+		return m_proxyHandler.Value();
+	}
+
+	Napi::Object proxyObject = Napi::Object::New(env);
 	Napi::PropertyDescriptor instanceGetTrapFunc = Napi::PropertyDescriptor::Function("get", &WrappedObject<ClassType>::ProxyHandler::getProxyTrap);
 	Napi::PropertyDescriptor instanceSetTrapFunc = Napi::PropertyDescriptor::Function("set", &WrappedObject<ClassType>::ProxyHandler::setProxyTrap);
 	Napi::PropertyDescriptor ownKeysTrapFunc = Napi::PropertyDescriptor::Function("ownKeys", &WrappedObject<ClassType>::ProxyHandler::ownKeysProxyTrap);
@@ -436,9 +441,10 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(N
 	Napi::PropertyDescriptor getPrototypeOfFunc = Napi::PropertyDescriptor::Function("getPrototypeOf", &WrappedObject<ClassType>::ProxyHandler::getPrototypeofProxyTrap);
 	Napi::PropertyDescriptor setPrototypeOfFunc = Napi::PropertyDescriptor::Function("setPrototypeOf", &WrappedObject<ClassType>::ProxyHandler::setPrototypeofProxyTrap);
 	
-	proxyObj.DefineProperties({ instanceGetTrapFunc, instanceSetTrapFunc, ownKeysTrapFunc, hasTrapFunc, getOwnPropertyDescriptorTrapFunc, getPrototypeOfFunc, setPrototypeOfFunc });
+	proxyObject.DefineProperties({ instanceGetTrapFunc, instanceSetTrapFunc, ownKeysTrapFunc, hasTrapFunc, getOwnPropertyDescriptorTrapFunc, getPrototypeOfFunc, setPrototypeOfFunc });
 	
-	return scope.Escape(proxyObj);
+	m_proxyHandler = Napi::Persistent(proxyObject);
+	return proxyObject;
 }
 
 static Napi::Value bindFunction(Napi::Env env, const std::string& functionName, const Napi::Function& function, const Napi::Object& thisObject) {
