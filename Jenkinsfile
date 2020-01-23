@@ -54,48 +54,48 @@ stage('check') {
   }
 }
 
-stage('pretest') {
-  parallelExecutors = [:]
-    parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}", { // "Release" is not used
-    step([
-      $class: 'CheckStylePublisher',
-      canComputeNew: false,
-      canRunOnFailed: true,
-      defaultEncoding: '',
-      healthy: '',
-      pattern: 'eslint.xml',
-      unHealthy: '',
-      maxWarnings: 0,
-      ignoreFailures: false])
-  })
-    parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
-    publishHTML([
-      allowMissing: false,
-      alwaysLinkToLastBuild: false,
-      keepAll: false,
-      reportDir: 'docs/output',
-      reportFiles: 'index.html',
-      reportName: 'Docs'
-    ])
-  })
-  parallel parallelExecutors
-}
+// stage('pretest') {
+//   parallelExecutors = [:]
+//     parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}", { // "Release" is not used
+//     step([
+//       $class: 'CheckStylePublisher',
+//       canComputeNew: false,
+//       canRunOnFailed: true,
+//       defaultEncoding: '',
+//       healthy: '',
+//       pattern: 'eslint.xml',
+//       unHealthy: '',
+//       maxWarnings: 0,
+//       ignoreFailures: false])
+//   })
+//     parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
+//     publishHTML([
+//       allowMissing: false,
+//       alwaysLinkToLastBuild: false,
+//       keepAll: false,
+//       reportDir: 'docs/output',
+//       reportFiles: 'index.html',
+//       reportName: 'Docs'
+//     ])
+//   })
+//   parallel parallelExecutors
+// }
 
 stage('build') {
   parallelExecutors = [:]
   nodeVersions.each { nodeVersion ->
-    parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
+    // parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
     parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-    parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
-    parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
+  //   parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
+  //   parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
   }
-  electronVersions.each { electronVersion ->
-    parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
-    parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
-    parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
-    parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
-  }
-  parallelExecutors["Android React Native"] = buildAndroid()
+  // electronVersions.each { electronVersion ->
+  //   parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
+  //   parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
+  //   parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
+  //   parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
+  // }
+  // parallelExecutors["Android React Native"] = buildAndroid()
   parallel parallelExecutors
 }
 
@@ -108,20 +108,20 @@ if (gitTag) {
 stage('test') {
   parallelExecutors = [:]
   for (def nodeVersion in nodeVersions) {
-    parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
-    parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
-    parallelExecutors["macOS test runners ${nodeVersion}"] = testMacOS("test-runners Release ${nodeVersion}")
+    // parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
+    // parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
+    // parallelExecutors["macOS test runners ${nodeVersion}"] = testMacOS("test-runners Release ${nodeVersion}")
     // parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release ${nodeVersion}")
-    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux("test-runners Release ${nodeVersion}")
-    parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
+    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux(${nodeVersion})
+    // parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux("test-runners Release ${nodeVersion}")
+    // parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
   // parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
-  parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
+  // parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
   // parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
-  parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
-  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
+  // parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
+  // parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
+  // parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
   //android_react_tests: testAndroid('react-tests-android', {
   //  junit 'tests/react-test-app/tests.xml'
   //}),
@@ -513,7 +513,7 @@ def testAndroid(target, postStep = null) {
   }
 }
 
-def testLinux(target, postStep = null) {
+def testLinux(nodeVersion, postStep = null) {
   return {
       node('docker') {
       def reportName = "Linux ${target}"
@@ -537,11 +537,21 @@ def testLinux(target, postStep = null) {
 
       try {
         reportStatus(reportName, 'PENDING', 'Build has started')
-        image.inside('-e HOME=/tmp ' +
-          "--network container:${rosContainer.id}") {
-          timeout(time: 1, unit: 'HOURS') {
-            withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target}"
+          withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
+          image.inside('-e HOME=/tmp ' +
+            "--network container:${rosContainer.id} " +
+            "-e ROS_IP=${containerIp(rosContainer)} " +
+            "-e SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} " +
+            "-e REALM_FEATURE_TOKEN=${realmFeatureToken}")) {
+            timeout(time: 1, unit: 'HOURS') {
+              sh '''curl -s http://\${ROS_IP}:8888/start"
+              ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm --realm_enable_sync=1
+              pushd tests
+              ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci
+              ./scripts/nvm-wrapper.sh ${nodeVersion} npm run test
+              popd
+              curl -s http://\${ROS_IP}:8888/stop
+              '''
             }
           }
           if (postStep) {
@@ -591,4 +601,9 @@ def testWindows(nodeVersion) {
       }
     }
   }
+}
+
+def containerIp(container) {
+  sh "docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${container.id} > container.ip"
+  readFile('container.ip').trim()
 }
