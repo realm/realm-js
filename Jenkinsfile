@@ -544,7 +544,7 @@ def testLinux(nodeVersion, postStep = null) {
             "-e REALM_FEATURE_TOKEN=${realmFeatureToken}") {
             timeout(time: 1, unit: 'HOURS') {
               sh """
-              curl -s http://${containerIp(rosContainer)}:8888/start"
+              curl -s http://${containerIp(rosContainer)}:8888/start
               ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm --realm_enable_sync=1
               pushd tests
               ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci
