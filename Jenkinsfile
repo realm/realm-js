@@ -215,13 +215,16 @@ def reactNativeIntegrationTests(targetPlatform) {
   def nvm
   if (targetPlatform == "android") {
     nvm = ""
-  }
-  else {
+  } else {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
   }
 
   dir('integration-tests') {
-    unstash 'android'
+    if (targetPlatform == "android") {
+      unstash 'android'
+    } else {
+      sh "${nvm} npm pack .."
+    }
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
     // Package up the integration tests
