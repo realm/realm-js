@@ -543,15 +543,11 @@ def testLinux(nodeVersion, postStep = null) {
             "-e SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} " +
             "-e REALM_FEATURE_TOKEN=${realmFeatureToken}") {
             timeout(time: 1, unit: 'HOURS') {
-              sh """
-              curl -s http://${containerIp(rosContainer)}:8888/start
-              ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm --realm_enable_sync=1
-              pushd tests
-              ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci
-              ./scripts/nvm-wrapper.sh ${nodeVersion} npm run test
-              popd
-              curl -s http://${containerIp(rosContainer)}:8888/stop
-              """
+              sh "curl -s http://${containerIp(rosContainer)}:8888/start"
+              sh "bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm --realm_enable_sync=1"
+              sh "cd tests && bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
+              sh "cd tests && bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm run test"
+              sh "curl -s http://${containerIp(rosContainer)}:8888/stop"
             }
           }
           if (postStep) {
