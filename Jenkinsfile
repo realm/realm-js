@@ -54,6 +54,7 @@ stage('check') {
   }
 }
 
+/*
 stage('pretest') {
   parallelExecutors = [:]
     parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}", { // "Release" is not used
@@ -127,21 +128,26 @@ stage('test') {
   //}),
   parallel parallelExecutors
 }
+*/
 
 stage('integration tests') {
   parallel(
+    /*
     'React Native on Android':  inAndroidContainer {
       // Locking the Android device to prevent other jobs from interfering
       lock("${NODE_NAME}-android") {
         reactNativeIntegrationTests('android')
       }
     },
+    */
     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
+    /*
     'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
     'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests('10.15.1', it) },
     'Node.js v8 on Linux':      buildLinux { nodeIntegrationTests('8.15.0', it) },
     'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests('10.15.1', it) }
+    */
   )
 }
 
