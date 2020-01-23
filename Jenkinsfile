@@ -516,7 +516,7 @@ def testAndroid(target, postStep = null) {
 def testLinux(nodeVersion, postStep = null) {
   return {
       node('docker') {
-      def reportName = "Linux ${target}"
+      def reportName = "Linux ${nodeVersion}"
       deleteDir()
       unstash 'source'
 
@@ -537,7 +537,7 @@ def testLinux(nodeVersion, postStep = null) {
 
       try {
         reportStatus(reportName, 'PENDING', 'Build has started')
-          withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
+        withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
           image.inside('-e HOME=/tmp ' +
             "--network container:${rosContainer.id} " +
             "-e SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} " +
