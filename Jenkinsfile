@@ -537,7 +537,7 @@ def testLinux(target, postStep = null) {
 
       try {
         reportStatus(reportName, 'PENDING', 'Build has started')
-        image.inside('-e HOME=/tmp' +
+        image.inside('-e HOME=/tmp ' +
           "--network container:${rosContainer.id}") {
           timeout(time: 1, unit: 'HOURS') {
             withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
