@@ -519,6 +519,16 @@ def testLinux(target, postStep = null) {
       def reportName = "Linux ${target}"
       deleteDir()
       unstash 'source'
+
+      // Docker image for testing Realm Object Server
+      def rosEnv
+      def dependProperties = readProperties file: 'dependencies.list'
+      def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
+      withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
+        rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} --build-arg REALM_FEATURE_TOKEN=${realmFeatureToken} tools/sync_test_server"
+      }
+      rosContainer = rosEnv.run()
+
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
         image = buildDockerEnv('ci/realm-js:build')
@@ -527,7 +537,8 @@ def testLinux(target, postStep = null) {
 
       try {
         reportStatus(reportName, 'PENDING', 'Build has started')
-        image.inside('-e HOME=/tmp') {
+        image.inside('-e HOME=/tmp' +
+          "--network container:${rosContainer.id}") {
           timeout(time: 1, unit: 'HOURS') {
             withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
               sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target}"
@@ -542,6 +553,9 @@ def testLinux(target, postStep = null) {
       } catch(Exception e) {
         reportStatus(reportName, 'FAILURE', e.toString())
         throw e
+      }
+      finally {
+        rosContainer.stop()
       }
     }
   }
