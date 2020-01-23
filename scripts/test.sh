@@ -362,7 +362,7 @@ case "$TARGET" in
   fi
   npm run check-environment
   npm ci --build-from-source=realm --realm_enable_sync --use_realm_debug=${USE_REALM_DEBUG}
-  #start_server
+  start_server
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
@@ -372,7 +372,7 @@ case "$TARGET" in
   npm ci
   npm run test
   popd
-  #stop_server
+  stop_server
   ;;
 "electron")
   npm ci

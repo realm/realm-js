@@ -540,17 +540,17 @@ def testLinux(nodeVersion, postStep = null) {
           withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
           image.inside('-e HOME=/tmp ' +
             "--network container:${rosContainer.id} " +
-            "-e ROS_IP=${containerIp(rosContainer)} " +
             "-e SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} " +
             "-e REALM_FEATURE_TOKEN=${realmFeatureToken}") {
             timeout(time: 1, unit: 'HOURS') {
-              sh """curl -s http://\${ROS_IP}:8888/start"
+              sh """
+              curl -s http://${containerIp(rosContainer)}:8888/start"
               ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm --realm_enable_sync=1
               pushd tests
               ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci
               ./scripts/nvm-wrapper.sh ${nodeVersion} npm run test
               popd
-              curl -s http://\${ROS_IP}:8888/stop
+              curl -s http://${containerIp(rosContainer)}:8888/stop
               """
             }
           }
