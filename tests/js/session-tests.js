@@ -577,7 +577,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmConstructor() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
