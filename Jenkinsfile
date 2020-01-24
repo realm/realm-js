@@ -520,6 +520,8 @@ def testLinux(nodeVersion, postStep = null) {
       deleteDir()
       unstash 'source'
 
+      reportStatus(reportName, 'PENDING', 'Build has started')
+
       // Docker image for testing Realm Object Server
       def rosEnv
       def dependProperties = readProperties file: 'dependencies.list'
@@ -528,6 +530,7 @@ def testLinux(nodeVersion, postStep = null) {
         rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} --build-arg REALM_FEATURE_TOKEN=${realmFeatureToken} tools/sync_test_server"
       }
       def rosContainer = rosEnv.run()
+      def rosIp = containerIp(rosContainer)
 
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
@@ -536,18 +539,17 @@ def testLinux(nodeVersion, postStep = null) {
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
       try {
-        reportStatus(reportName, 'PENDING', 'Build has started')
         withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
           image.inside('-e HOME=/tmp ' +
             "--network container:${rosContainer.id} " +
             "-e SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} " +
             "-e REALM_FEATURE_TOKEN=${realmFeatureToken}") {
             timeout(time: 1, unit: 'HOURS') {
-              sh "curl -s http://${containerIp(rosContainer)}:8888/start"
+              sh "curl -s http://${rosIp}:8888/start"
               sh "bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm --realm_enable_sync=1"
               sh "cd tests && bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
               sh "cd tests && bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm run test"
-              sh "curl -s http://${containerIp(rosContainer)}:8888/stop"
+              sh "curl -s http://${rosIp}:8888/stop"
             }
           }
           if (postStep) {
