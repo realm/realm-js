@@ -95,6 +95,15 @@ function launch(device, appBundleIdentifier) {
     return simctl("launch", device, appBundleIdentifier);
 }
 
+/**
+ * Opens a URL in the device browser
+ * @param {string} device 
+ * @param {string} url 
+ */
+function openUrl(device, url) {
+    return simctl("openurl", device, url);
+}
+
 module.exports = {
     xcrun,
     simctl: {
@@ -106,5 +115,6 @@ module.exports = {
         shutdown,
         terminate,
         launch,
+        openUrl,
     }
 };

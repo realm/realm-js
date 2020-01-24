@@ -114,6 +114,8 @@ async function runApp(platform, junitFilePath) {
         const deviceName = "realm-js-integration-tests";
         ensureSimulator(deviceName, 'com.apple.CoreSimulator.SimDeviceType.iPhone-11');
         console.log("Simulator is ready 🚀");
+        // Open the bundle URL (ensures that the simulator can connect to the Metro server, when the app loads)
+        xcode.simctl.openUrl(deviceName, 'http://localhost:8081');
         // Ask React Native to run the ios app
         rn.sync("run-ios", "--no-packager", "--simulator", deviceName);
     } else {
