@@ -344,9 +344,7 @@ inline typename ClassType::Internal* WrappedObject<ClassType>::get_internal() {
 
 template<typename ClassType>
 inline void WrappedObject<ClassType>::set_internal(Internal* internal) {
-	if (internal != nullptr) {
-		m_internal = std::unique_ptr<Internal>(internal);
-	}
+	m_internal = std::unique_ptr<Internal>(internal);
 }
 
 template<typename ClassType>
