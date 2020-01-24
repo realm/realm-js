@@ -1,5 +1,7 @@
-x.x.x Release notes (yyyy-MM-dd)
+3.7.0-alpha.2 Release notes (2020-1-24)
 =============================================================
+NOTE 1: This is an easy pre-release. It contains bugs, it might crash and corrupt data. On other words, please use this release carefully.
+
 ### Enhancements
 * None.
 
