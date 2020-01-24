@@ -539,17 +539,17 @@ def testLinux(nodeVersion, postStep = null) {
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
       try {
-        withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-          image.inside('-e HOME=/tmp ' +
-            "--network container:${rosContainer.id} " +
-            "-e SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} " +
-            "-e REALM_FEATURE_TOKEN=${realmFeatureToken}") {
-            timeout(time: 1, unit: 'HOURS') {
-              sh "curl -s http://${rosIp}:8888/start"
-              sh "bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm --realm_enable_sync=1"
-              sh "cd tests && bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
-              sh "cd tests && bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm run test"
-              sh "curl -s http://${rosIp}:8888/stop"
+        timeout(time: 1, unit: 'HOURS') {
+          withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
+            image.inside('-e HOME=/tmp ' +
+              "--network container:${rosContainer.id} " +
+              "-e SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} " +
+              "-e REALM_FEATURE_TOKEN=${realmFeatureToken}") {
+                sh "curl -s http://${rosIp}:8888/start"
+                sh "bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm --realm_enable_sync=1"
+                sh "cd tests && bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
+                sh "cd tests && bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm run test"
+                sh "curl -s http://${rosIp}:8888/stop"
             }
           }
           if (postStep) {
