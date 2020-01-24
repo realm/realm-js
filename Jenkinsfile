@@ -223,6 +223,7 @@ def reactNativeIntegrationTests(targetPlatform) {
     if (targetPlatform == "android") {
       unstash 'android'
     } else {
+      // Pack up Realm JS into a .tar
       sh "${nvm} npm pack .."
     }
     // Renaming the package to avoid having to specify version in the apps package.json
@@ -242,7 +243,7 @@ def reactNativeIntegrationTests(targetPlatform) {
       sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
     } else if (targetPlatform == "ios") {
       dir('ios') {
-        sh 'pod install'
+        sh 'pod install --verbose'
       }
     }
 
