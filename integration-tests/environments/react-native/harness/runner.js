@@ -62,9 +62,11 @@ function ensureSimulator(deviceName, deviceTypeId) {
     const deviceId = stdout.trim();
     console.log(`Created simulator device (id = ${deviceId})`);
     // Boot up the device
-    console.log(`Booting simulator`);
+    console.log('Booting simulator');
     xcode.simctl.boot(deviceId);
-    console.log(`Simulator booted`);
+    console.log('Simulator is booting');
+    xcode.simctl.bootstatus(deviceId);
+    console.log('Simulator is booted');
     return deviceId;
 }
 
