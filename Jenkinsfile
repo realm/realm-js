@@ -4,7 +4,7 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js' // This is a global variable
 
-def nodeVersions = ['10.18.1'/*, '12.14.1'*/]
+def nodeVersions = ['10.18.1', '12.14.1']
 def electronVersions = ['3.1.13', '4.2.12', '5.0.13', '6.1.7', '7.1.9']
 def gitTag = null
 def formattedVersion = null
@@ -105,6 +105,7 @@ if (gitTag) {
   }
 }
 
+/*
 stage('test') {
   parallelExecutors = [:]
   for (def nodeVersion in nodeVersions) {
@@ -143,7 +144,7 @@ stage('integration tests') {
     'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests('10.15.1', it) }
   )
 }
-
+*/
 // == Methods
 
 def nodeIntegrationTests(nodeVersion, platform) {
