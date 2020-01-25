@@ -548,6 +548,7 @@ def testLinux(nodeVersion, postStep = null) {
                 sh "curl -s http://${rosIp}:8888/start"
                 sh "mkdir -p realm-object-server-data/keys"
                 sh "curl -s http://${rosIp}:8888/admin > realm-object-server-data/keys/admin.json"
+                sh "curl -s http://${rosIp}:8888/jwt   > realm-object-server-data/keys/jwt.pem"
                 sh "bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm --realm_enable_sync=1"
                 sh "cd tests && bash ../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
                 sh "cd tests && bash ../scripts/nvm-wrapper.sh ${nodeVersion} npm run test"

@@ -204,6 +204,13 @@ dispatcher.onGet("/admin", function(req, res) {
     res.end(fs.readFileSync(`/ros/data/keys/admin.json`, 'utf8'));
 });
 
+// Command Server endpoint: Download jwt from ROS
+dispatcher.onGet("/jwt", function(req, res) {
+    winston.info("command-server: Download JWT");
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end(fs.readFileSync(`/ros/data/keys/jwt.pem`, 'utf8'));
+});
+
 function handleRequest(request, response) {
     try {
         winston.info('command-server: ' + request.url);
