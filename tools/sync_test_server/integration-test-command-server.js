@@ -197,6 +197,13 @@ dispatcher.onGet("/stop", function(req, res) {
       });
 });
 
+// Command Server endpoint: Download admin token from ROS
+dispatcher.onGet("/admin", function(req, res) {
+    winston.info("command-server: Download admin token");
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end(fs.readFileSync(`/ros/realm-object-server/data/keys/admin.json`, 'utf8'));
+});
+
 function handleRequest(request, response) {
     try {
         winston.info('command-server: ' + request.url);
