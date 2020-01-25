@@ -112,7 +112,7 @@ stage('test') {
     // parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
     // parallelExecutors["macOS test runners ${nodeVersion}"] = testMacOS("test-runners Release ${nodeVersion}")
     // parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux(${nodeVersion})
+    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux(nodeVersion)
     // parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux("test-runners Release ${nodeVersion}")
     // parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
@@ -547,8 +547,8 @@ def testLinux(nodeVersion, postStep = null) {
               "-e REALM_FEATURE_TOKEN=${realmFeatureToken}") {
                 sh "curl -s http://${rosIp}:8888/start"
                 sh "bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm --realm_enable_sync=1"
-                sh "cd tests && bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
-                sh "cd tests && bash ./scripts/nvm-wrapper.sh ${nodeVersion} npm run test"
+                sh "cd tests && bash ../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
+                sh "cd tests && bash ../scripts/nvm-wrapper.sh ${nodeVersion} npm run test"
                 sh "curl -s http://${rosIp}:8888/stop"
             }
           }

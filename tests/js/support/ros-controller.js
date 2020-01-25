@@ -14,9 +14,8 @@ const rosDataDir = process.env.ROS_DATA_DIR || '../realm-object-server-data';
 global.RosController = module.exports = class RosController {
     constructor() {
         this.httpPort = 9080;
-        this.adminToken = JSON.parse(fs.readFileSync(`${rosDataDir}/keys/admin.json`, 'utf8'))['ADMIN_TOKEN'];
         this.adminUser = Realm.Sync.User.login(`http://127.0.0.1:${this.httpPort}`,
-                                               Realm.Sync.Credentials.adminToken(this.adminToken));
+                                               Realm.Sync.Credentials.usernamePassword('realm-admin', ''));
         this._temp = tmp.dirSync({ unsafeCleanup: true});
     }
 
