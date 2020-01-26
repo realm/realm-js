@@ -850,7 +850,7 @@ module.exports = {
 
         const username = Utils.uuid();
         const path = `/~/testPartialSync`;
-        const credentials = Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password);
+        const credentials = Realm.Sync.Credentials.nickname(username, true);
         await runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH, path)
         const user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
 
