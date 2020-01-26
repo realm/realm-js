@@ -20,7 +20,7 @@
 /* eslint-disable no-console */
 
 'use strict';
-const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
+const isNodeProcess = (typeof process === 'object' && process + '' === '[object process]');
 
 const fs = require('fs');
 const path = require('path');
@@ -57,7 +57,7 @@ const RealmTests = require('../js');
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
 let isDebuggerAttached = typeof v8debug === 'object';
-if (!isDebuggerAttached && isNodeProccess) {
+if (!isDebuggerAttached && isNodeProcess) {
     isDebuggerAttached = /--debug|--inspect/.test(process.execArgv.join(' '));
 }
 
