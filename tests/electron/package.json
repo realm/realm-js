@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "electron ./app/main.js",
-    "test": "node --expose_gc ./runner.js"
+    "test": "node ./runner.js --js-flags=\"--expose-gc\""
   },
   "devDependencies": {
     "electron": "^4.0.6",
