@@ -105,6 +105,12 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     else if (type == "data") {
         prop.type |= PropertyType::Data;
     }
+    else if (type == "Decimal128") {
+        prop.type |= PropertyType::Decimal;
+    }
+    else if (type == "ObjectId") {
+        prop.type |= PropertyType::ObjectId;
+    }
     else if (type == "list") {
         if (prop.object_type == "bool") {
             prop.type |= PropertyType::Bool | PropertyType::Array;
@@ -132,6 +138,10 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         }
         else if (prop.object_type == "data") {
             prop.type |= PropertyType::Data | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "Decimal128") {
+            prop.type |= PropertyType::Decimal | PropertyType::Array;
             prop.object_type = "";
         }
         else {
