@@ -137,6 +137,28 @@ module.exports = {
         TestCase.assertEqual(realm.schema.length, 1);
     },
 
+    testStackTrace: function() {
+        let realm = new Realm({schema: []});
+        function failingFunction() { 
+            throw new Error('not implemented'); 
+        }
+
+        try {
+            realm.write(() => {
+                failingFunction();
+            });
+        }
+        catch(e) {
+            TestCase.assertNotEqual(e.stack, undefined, "e.stack should not be undefined");
+            TestCase.assertNotEqual(e.stack, null, "e.stack should not be null");
+            TestCase.assertTrue(e.stack.indexOf("at failingFunction (") !== -1, "failingfunction should be on the stack");
+            TestCase.assertTrue(e.stack.indexOf("not implemented") !== -1, "the error message should be present");
+            console.error(e);
+        }
+
+        realm.close();
+    },
+
     testRealmConstructorDynamicSchema: function() {
         let realm = new Realm({schema: [schemas.TestObject]});
         realm.write(() => {
