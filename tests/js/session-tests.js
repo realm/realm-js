@@ -32,7 +32,7 @@ const Utils = require('./test-utils');
 let schemas = require('./schemas');
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-const isElectronProcess = isNodeProcess && (process.type === 'renderer' || (process.versions && process.versions.electron));
+const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
 
 const platofrmSupported = isNodeProcess && !isElectronProcess;
 
@@ -1109,6 +1109,7 @@ module.exports = {
         if (!platofrmSupported) {
             return;
         }
+
         const fetch = require('node-fetch');
 
         const realmUrl = 'realm://127.0.0.1:9080/~/myrealm';
