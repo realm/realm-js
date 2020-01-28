@@ -130,12 +130,7 @@ stage('test') {
 
 stage('integration tests') {
   parallel(
-    'React Native on Android':  inAndroidContainer {
-      // Locking the Android device to prevent other jobs from interfering
-      lock("${NODE_NAME}-android") {
-        reactNativeIntegrationTests('android')
-      }
-    },
+    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
     'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
     'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
