@@ -27,6 +27,13 @@ exports.TestObject = {
     }
 };
 
+exports.DecimalObject = {
+    name: 'DecimalObject',
+    properties: {
+        decimalCol: 'decimal'
+    }
+};
+
 function PersonObject() {}
 PersonObject.schema = {
     name: 'PersonObject',

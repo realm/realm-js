@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <iostream>
 #include "node_types.hpp"
 
 namespace realm {
@@ -85,7 +86,7 @@ inline bool node::Value::is_decimal128(v8::Isolate* isolate, const v8::Local<v8:
 }
 
 template<>
-inline bool node::Value::is_objectId(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+inline bool node::Value::is_object_id(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return true; // FIXME: must be an instance of ObjectId from BSON
 }
 
@@ -131,12 +132,7 @@ inline v8::Local<v8::Value> node::Value::from_number(v8::Isolate* isolate, doubl
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_decimal128(v8::Isolate* isolate, Decimal128 number) {
-    return Nan::Undefined(); // FIXME: Create a Decimal128 object
-}
-
-template<>
-inline v8::Local<v8::Value> node::Value::from_objectId(v8::Isolate* isolate, ObjectId objectId) {
+inline v8::Local<v8::Value> node::Value::from_object_id(v8::Isolate* isolate, ObjectId objectId) {
     return Nan::Undefined(); // FIXME: Create an ObjectId object
 }
 
@@ -183,12 +179,7 @@ inline double node::Value::to_number(v8::Isolate* isolate, const v8::Local<v8::V
 }
 
 template<>
-inline Decimal128 node::Value::to_decimal128(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return Decimal128(0); // FIXME: pull value out of BSON.Decimal128 object
-}
-
-template<>
-inline ObjectId node::Value::to_objectId(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+inline ObjectId node::Value::to_object_id(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return ObjectId("foobar"); // FIXME: pull value out of BSON.ObjectId object
 }
 
@@ -252,6 +243,22 @@ inline v8::Local<v8::Object> node::Value::to_date(v8::Isolate* isolate, const v8
         return node::Function::construct(isolate, date_constructor, args.size(), args.data());
     }
     return to_object(isolate, value);
+}
+
+template<>
+inline v8::Local<v8::Value> node::Value::from_decimal128(v8::Isolate* isolate, Decimal128 number) {
+    auto realm_constructor = Value::validated_to_object(isolate, node::Object::get_global(isolate, "Realm"));
+    auto decimal_constructor = to_constructor(isolate, node::Object::get_property(isolate, realm_constructor, "_Decimal128"));
+    v8::Local<v8::Function> fromString = to_function(isolate, node::Object::get_property(isolate, decimal_constructor, "fromString"));
+    std::array<v8::Local<v8::Value>, 1> args { {from_nonnull_string(isolate, number.to_string())} };
+    return node::Function::call(isolate, fromString, args.size(), args.data());
+}
+
+template<>
+inline Decimal128 node::Value::to_decimal128(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    // v8::Local<v8::Function> toString = to_function(isolate, node::Object::get_property(isolate, to_object(isolate, value), "toString"));
+    auto as_string = node::Object::call_method(isolate, to_object(isolate, value), "toString", 0, nullptr);
+    return Decimal128(to_string(isolate, as_string));
 }
 
 } // js

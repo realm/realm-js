@@ -35,6 +35,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
+const Decimal128 = require('bson').Decimal128;
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -1756,6 +1757,24 @@ module.exports = {
 //            });
         });
         realm.objects(schemas.ObjectWithoutProperties.name);
+        realm.close();
+    },
+
+    testDecimal128: function() {
+        const realm = new Realm({schema: [schemas.DecimalObject]});
+
+        let d = Decimal128.fromString("42");
+        realm.write(() => {
+            realm.create(schemas.DecimalObject.name, { decimalCol: d});
+        });
+
+        let objects = realm.objects(schemas.DecimalObject.name);
+        TestCase.assertEqual(objects.length, 1);
+
+        let d128 = objects[0]['decimalCol'];
+        TestCase.assertTrue(d128 instanceof Decimal128);
+        TestCase.assertEqual(d128.toString(), "42");
+
         realm.close();
     }
 

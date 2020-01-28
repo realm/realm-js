@@ -104,7 +104,7 @@ std::string TypeErrorException::type_string(Property const& prop)
             ret = "binary";
             break;
         case PropertyType::Decimal:
-            ret = "Decimal128";
+            ret = "decimal128";
             break;
         case PropertyType::ObjectId:
             ret = "ObjectId";

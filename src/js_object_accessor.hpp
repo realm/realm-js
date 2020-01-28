@@ -108,7 +108,7 @@ public:
     ValueType box(double number)     { return Value::from_number(m_ctx, number); }
     ValueType box(StringData string) { return Value::from_string(m_ctx, string.data()); }
     ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
-    ValueType box(ObjectId objectId) { return Value::from_objectId(m_ctx, objectId); }
+    ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
     ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
     ValueType box(Mixed)             { throw std::runtime_error("'Any' type is unsupported"); }
 
@@ -216,7 +216,7 @@ struct Unbox<JSEngine, Decimal128> {
 template<typename JSEngine>
 struct Unbox<JSEngine, ObjectId> {
     static ObjectId call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        return js::Value<JSEngine>::validated_to_objectId(ctx->m_ctx, value, "Property");
+        return js::Value<JSEngine>::validated_to_object_id(ctx->m_ctx, value, "Property");
     }
 };
 
