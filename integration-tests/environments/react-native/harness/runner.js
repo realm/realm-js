@@ -120,6 +120,7 @@ async function runApp(platform, junitFilePath) {
     // Ensure the simulator is booted and ready for the app to start
     ensureSimulator(platform);
 
+    console.log("Starting the app");
     if (platform === "android") {
         // Ask React Native to run the android app
         rn.sync("run-android", "--no-packager");
@@ -133,6 +134,7 @@ async function runApp(platform, junitFilePath) {
     // Set an interval that calls "react-native run-ios" every minute to make it refetch the bundle if it fails
     const retryInterval = setInterval(() => {
         if (platform === "ios") {
+            console.log("Retrying starting the iOS app");
             // Ask React Native to re-run the ios app
             rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
         }
