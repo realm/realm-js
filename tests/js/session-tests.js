@@ -31,8 +31,10 @@ const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
 
-const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isElectronProcess = isNodeProcess && (process.type === 'renderer' || (process.versions && process.versions.electron));
+
+const platofrmSupported = isNodeProcess && !isElectronProcess;
 
 const require_method = require;
 function node_require(module) {
@@ -167,7 +169,7 @@ module.exports = {
     },
 
     testRealmOpen() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -203,7 +205,7 @@ module.exports = {
     },
 
     testRealmOpenWithExistingLocalRealm() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -245,7 +247,7 @@ module.exports = {
     },
 
     testRealmOpenAsync() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -294,7 +296,7 @@ module.exports = {
     },
 
     testRealmOpenAsyncNoSchema() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -423,7 +425,7 @@ module.exports = {
     },
 
     testListNestedSync() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -464,6 +466,10 @@ module.exports = {
 
     testIncompatibleSyncedRealmOpen() {
         let realm = "sync-v1.realm";
+        if (isElectronProcess) {
+            return;
+        }
+
         if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
@@ -498,6 +504,10 @@ module.exports = {
 
     testIncompatibleSyncedRealmOpenAsync() {
         let realm = "sync-v1.realm";
+        if (isElectronProcess) {
+            return;
+        }
+
         if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
@@ -539,6 +549,10 @@ module.exports = {
 
     testIncompatibleSyncedRealmConsructor() {
         let realm = "sync-v1.realm";
+        if (isElectronProcess) {
+            return;
+        }
+
         if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
@@ -577,7 +591,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmConstructor() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -612,7 +626,7 @@ module.exports = {
     },
 
     testProgressNotificationsUnregisterForRealmConstructor() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -679,7 +693,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpen() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -707,7 +721,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpenAsync() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -844,7 +858,7 @@ module.exports = {
     },
 
     async testPartialSync() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -928,7 +942,7 @@ module.exports = {
     },
 
     testPartialSyncWithDynamicSchema() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
         const username = Utils.uuid();
@@ -975,7 +989,7 @@ module.exports = {
     },
 
     testRoleClassWithPartialSyncCanCoexistWithPermissionsClass() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -1001,7 +1015,7 @@ module.exports = {
 
     testClientReset() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -1042,7 +1056,7 @@ module.exports = {
 
     testClientResyncIncorrectMode() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -1064,7 +1078,7 @@ module.exports = {
 
     testClientResyncIncorrectModeForQueryBasedSync() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -1092,7 +1106,7 @@ module.exports = {
 
     async testClientResyncDiscard() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
         const fetch = require('node-fetch');
@@ -1190,7 +1204,7 @@ module.exports = {
     },
 
     testConnectionState() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -1351,7 +1365,7 @@ module.exports = {
     },
 
     testDownloadAllServerChangesTimeout() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -1383,7 +1397,7 @@ module.exports = {
     },
 
     testUploadAllLocalChangesTimeout() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
@@ -1516,7 +1530,7 @@ module.exports = {
     },
 
     testDeleteModelThrowsWhenSync() {
-        if (!isNodeProcess) {
+        if (!platofrmSupported) {
             return;
         }
 
