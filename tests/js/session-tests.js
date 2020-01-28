@@ -45,13 +45,14 @@ let tmp;
 let fs;
 let execFile;
 let path;
-
+let URL;
 if (isNodeProcess) {
     tmp = node_require('tmp');
     fs = node_require('fs');
     execFile = node_require('child_process').execFile;
     tmp.setGracefulCleanup();
     path = node_require("path");
+    URL = node_require('url').URL;
 }
 
 function copyFileToTempDir(filename) {
@@ -1130,7 +1131,6 @@ module.exports = {
         realm1.close();
 
         // delete Realm on server
-        var URL = require('url').URL;
         let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
         let url = new URL(`/realms/files/${encodedPath}`, user.server);
         let options = {
