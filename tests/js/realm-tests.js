@@ -1783,7 +1783,6 @@ module.exports = {
         const realm = new Realm({schema: [schemas.ObjectIdObject]});
 
         let oid1 = new ObjectId('0000002a9a7969d24bea4cf2');
-        let hexString = oid1.toHexString();
         realm.write(() => {
             realm.create(schemas.ObjectIdObject.name, { id: oid1 });
         });
@@ -1792,11 +1791,10 @@ module.exports = {
         TestCase.assertEqual(objects.length, 1);
 
         let oid2 = objects[0]['id'];
-        console.log(`oid1 = ${hexString}; oid2 = ${oid2.toHexString()}`);
         TestCase.assertTrue(oid2 instanceof ObjectId, 'instaceof');
         TestCase.assertTrue(oid1.equals(oid2), 'equal');
-        TestCase.assertEqual(oid2.toHexString(), hexString);
-        realm.writeCopyTo('nyt.realm');
+        TestCase.assertEqual(oid2.toHexString(), oid1.toHexString());
+
         realm.close();
     }
 
