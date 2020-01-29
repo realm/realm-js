@@ -153,7 +153,6 @@ module.exports = {
             TestCase.assertNotEqual(e.stack, null, "e.stack should not be null");
             TestCase.assertTrue(e.stack.indexOf("at failingFunction (") !== -1, "failingfunction should be on the stack");
             TestCase.assertTrue(e.stack.indexOf("not implemented") !== -1, "the error message should be present");
-            console.error(e);
         }
 
         realm.close();

@@ -26,7 +26,7 @@ if (typeof Realm.Sync !== 'undefined' && Realm.Sync !== null) {
 }
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-const isElectronProcess = isNodeProcess && (process.type === 'renderer' || (process.versions && process.versions.electron));
+const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
 const require_method = require;
 function node_require(module) { return require_method(module); }
 
@@ -134,12 +134,14 @@ exports.runTest = function(suiteName, testName) {
         var result = testMethod.call(testSuite);
 
         //make sure v8 GC can collect garbage after each test and does not fail
-        if (result instanceof Promise) {
-            result.finally(() => global.gc());
-            return result;
-        }
-        else {
-            global.gc();
+        if (isNodeProcess || isElectronProcess) {
+            if (result instanceof Promise) {
+                result.finally(() => global.gc());
+                return result;
+            }
+            else {
+                global.gc();
+            }
         }
         
         return result;
