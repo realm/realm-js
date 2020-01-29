@@ -381,7 +381,7 @@ def inAndroidContainer(workerFunction) {
       }
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
       // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
-      // @see https://github.com/realm/realm-java/blob/master/Jenkinsfile#L65
+      // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
       lock("${env.NODE_NAME}-android") {
         image.inside(
           // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
