@@ -893,5 +893,5 @@ module.exports = {
         });
 
         realm.close();
-    }
+    },
 };

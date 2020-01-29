@@ -271,7 +271,7 @@ struct Object {
     VALIDATED(ObjectType, Decimal128)
     VALIDATED(ObjectType, object)
     VALIDATED(String<T>, string)
-    // FIXME: Decimal128 and ObjectId
+    VALIDATED(ObjectType, ObjectId)
 
 #undef VALIDATED
 
@@ -356,6 +356,7 @@ struct ReturnValue {
     void set(bool);
     void set(double);
     void set(Decimal128);
+    void set(ObjectId);
     void set(int32_t);
     void set(uint32_t);
     void set_null();
@@ -479,6 +480,8 @@ inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const uti
         return from_number(ctx, value.get<double>());
     case type_Decimal:
         return from_decimal128(ctx, value.get<Decimal128>());
+    case type_ObjectId:
+        return from_object_id(ctx, value.get<ObjectId>());
     case type_Timestamp:
         return from_timestamp(ctx, value.get<Timestamp>());
     case type_String:

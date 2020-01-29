@@ -36,6 +36,7 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
 const Decimal128 = require('bson').Decimal128;
+const ObjectId = require('bson').ObjectId;
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -1776,6 +1777,28 @@ module.exports = {
         TestCase.assertEqual(d128.toString(), "42");
 
         realm.close();
+    },
+
+    testObjectId: function() {
+        const realm = new Realm({schema: [schemas.ObjectIdObject]});
+
+        let oid1 = new ObjectId('0000002a9a7969d24bea4cf2');
+        let hexString = oid1.toHexString();
+        realm.write(() => {
+            realm.create(schemas.ObjectIdObject.name, { id: oid1 });
+        });
+
+        let objects = realm.objects(schemas.ObjectIdObject.name);
+        TestCase.assertEqual(objects.length, 1);
+
+        let oid2 = objects[0]['id'];
+        console.log(`oid1 = ${hexString}; oid2 = ${oid2.toHexString()}`);
+        TestCase.assertTrue(oid2 instanceof ObjectId, 'instaceof');
+        TestCase.assertTrue(oid1.equals(oid2), 'equal');
+        TestCase.assertEqual(oid2.toHexString(), hexString);
+        realm.writeCopyTo('nyt.realm');
+        realm.close();
     }
+
 
 };

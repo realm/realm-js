@@ -34,6 +34,13 @@ exports.DecimalObject = {
     }
 };
 
+exports.ObjectIdObject = {
+    name: 'ObjectIdObject',
+    properties: {
+        id: 'object id'
+    }
+};
+
 function PersonObject() {}
 PersonObject.schema = {
     name: 'PersonObject',

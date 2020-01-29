@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <iostream>
 #include "node_types.hpp"
 
 namespace realm {
@@ -132,11 +131,6 @@ inline v8::Local<v8::Value> node::Value::from_number(v8::Isolate* isolate, doubl
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_object_id(v8::Isolate* isolate, ObjectId objectId) {
-    return Nan::Undefined(); // FIXME: Create an ObjectId object
-}
-
-template<>
 inline v8::Local<v8::Value> node::Value::from_nonnull_string(v8::Isolate* isolate, const node::String &string) {
     return v8::Local<v8::String>(string);
 }
@@ -176,11 +170,6 @@ inline double node::Value::to_number(v8::Isolate* isolate, const v8::Local<v8::V
                                                  (std::string)to_string(isolate, value)));
     }
     return number;
-}
-
-template<>
-inline ObjectId node::Value::to_object_id(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return ObjectId("foobar"); // FIXME: pull value out of BSON.ObjectId object
 }
 
 template<>
@@ -256,9 +245,30 @@ inline v8::Local<v8::Value> node::Value::from_decimal128(v8::Isolate* isolate, D
 
 template<>
 inline Decimal128 node::Value::to_decimal128(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    // v8::Local<v8::Function> toString = to_function(isolate, node::Object::get_property(isolate, to_object(isolate, value), "toString"));
     auto as_string = node::Object::call_method(isolate, to_object(isolate, value), "toString", 0, nullptr);
     return Decimal128(to_string(isolate, as_string));
+}
+
+template<>
+inline v8::Local<v8::Value> node::Value::from_object_id(v8::Isolate* isolate, ObjectId objectId) {
+    auto realm_constructor = Value::validated_to_object(isolate, node::Object::get_global(isolate, "Realm"));
+    auto object_id_constructor = to_constructor(isolate, node::Object::get_property(isolate, realm_constructor, "_ObjectId"));
+    v8::Local<v8::Function> createFromHexString = to_function(isolate, node::Object::get_property(isolate, object_id_constructor, "createFromHexString"));
+
+    std::array<v8::Local<v8::Value>, 1> args { {from_nonnull_string(isolate, objectId.to_string())} };
+    return node::Function::call(isolate, createFromHexString, args.size(), args.data());
+
+    // std::array<v8::Local<v8::Value>, 1> args { {from_string(isolate, objectId.to_string())} };
+    // return node::Function::construct(isolate, object_id_constructor, args.size(), args.data());
+}
+
+template<>
+inline ObjectId node::Value::to_object_id(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    auto as_string = node::Object::call_method(isolate, to_object(isolate, value), "toHexString", 0, nullptr);
+    std::string oid = to_string(isolate, as_string);
+    ObjectId new_oid = ObjectId(oid.c_str());
+
+    return new_oid;
 }
 
 } // js
