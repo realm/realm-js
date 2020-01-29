@@ -38,6 +38,8 @@ const Utils = require('./test-utils');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
+
 if (isNodeProcess && process.platform === 'win32') {
     pathSeparator = '\\';
 }
@@ -54,6 +56,10 @@ module.exports = {
     },
 
     testOverwriteOfNativeFucntionSupport: function() {
+        if (!isNodeProcess && !isElectronProcess) {
+            return;
+        }
+
         const realm = new Realm({schema: []});
         var oldClose = realm.close.bind(realm);
         var newCloseCalled = false;
@@ -138,6 +144,10 @@ module.exports = {
     },
 
     testStackTrace: function() {
+        if (!isNodeProcess && !isElectronProcess) {
+            return;
+        }
+        
         let realm = new Realm({schema: []});
         function failingFunction() { 
             throw new Error('not implemented'); 
