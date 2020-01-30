@@ -1,7 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Add support for the new `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
+* Add support for the new `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -13,7 +14,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* None.
+* Updated Realm Core from ??? to Realm Core ???.
+* Updated Realm Sync from ??? to Realm Sync ???.
+* Updated Realm Object Store to commit 9a0a22b25e93786a61da90e7a9f7e94bb4291000.
 
 4.0.0-beta.1 Release notes (2020-1-7)
 =============================================================

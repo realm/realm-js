@@ -500,7 +500,7 @@ class Realm {
  * use these forms.
  *
  * @typedef Realm~PropertyType
- * @type {("bool"|"int"|"float"|"double"|"string"|"date"|"data"|"list"|"linkingObjects"|"<ObjectType>")}
+ * @type {("bool"|"int"|"float"|"double"|"string"|"decimal"|"object id"|"date"|"data"|"list"|"linkingObjects"|"<ObjectType>")}
  *
  * @property {boolean} "bool" - Property value may either be `true` or `false`.
  * @property {number} "int" - Property may be assigned any number, but will be stored as a
@@ -510,6 +510,8 @@ class Realm {
  * @property {number} "double" - Property may be assigned any number, and will have no loss
  *   of precision.
  * @property {string} "string" - Property value may be any arbitrary string.
+ * @property {Decimal128} "decimal" - Property value may be a `Decimal128` object (see `bson` for details).
+ * @property {ObjectId} "object id" - Property valye may be an `ObjectId` object (see `bson` for details).
  * @property {Date} "date" - Property may be assigned any `Date` instance.
  * @property {ArrayBuffer} "data" - Property may either be assigned an `ArrayBuffer`
  *   or `ArrayBufferView` (e.g. `DataView`, `Int8Array`, `Float32Array`, etc.) instance,
