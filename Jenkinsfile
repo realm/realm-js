@@ -56,7 +56,7 @@ stage('check') {
 
 stage('pretest') {
   parallelExecutors = [:]
-  parallelExecutors["eslint"] = testLinux('eslint-ci', 12, {
+    parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}", { // "Release" is not used
     step([
       $class: 'CheckStylePublisher',
       canComputeNew: false,
@@ -68,7 +68,7 @@ stage('pretest') {
       maxWarnings: 0,
       ignoreFailures: false])
   })
-  parallelExecutors["jsdoc"] = testLinux('jsdoc', 12, {
+    parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
     publishHTML([
       allowMissing: false,
       alwaysLinkToLastBuild: false,
@@ -110,14 +110,15 @@ stage('test') {
   for (def nodeVersion in nodeVersions) {
     parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
     parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug", nodeVersion)
-    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release", nodeVersion)
-    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', nodeVersion)
+    parallelExecutors["macOS test runners ${nodeVersion}"] = testMacOS("test-runners Release ${nodeVersion}")
+    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug ${nodeVersion}")
+    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release ${nodeVersion}")
+    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux("test-runners Release ${nodeVersion}")
     parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
-  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
+  //parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
+  //parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
@@ -129,12 +130,7 @@ stage('test') {
 
 stage('integration tests') {
   parallel(
-    'React Native on Android':  inAndroidContainer {
-      // Locking the Android device to prevent other jobs from interfering
-      lock("${NODE_NAME}-android") {
-        reactNativeIntegrationTests('android')
-      }
-    },
+    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
     'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
     'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
@@ -208,13 +204,17 @@ def reactNativeIntegrationTests(targetPlatform) {
   def nvm
   if (targetPlatform == "android") {
     nvm = ""
-  }
-  else {
+  } else {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
   }
 
   dir('integration-tests') {
-    unstash 'android'
+    if (targetPlatform == "android") {
+      unstash 'android'
+    } else {
+      // Pack up Realm JS into a .tar
+      sh "${nvm} npm pack .."
+    }
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
     // Package up the integration tests
@@ -232,7 +232,7 @@ def reactNativeIntegrationTests(targetPlatform) {
       sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
     } else if (targetPlatform == "ios") {
       dir('ios') {
-        sh 'pod install'
+        sh 'pod install --verbose'
       }
     }
 
@@ -380,17 +380,21 @@ def inAndroidContainer(workerFunction) {
         image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       }
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-      image.inside(
-        // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
-        "-v ${HOME}/.android/adbkey:/home/jenkins/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:/home/jenkins/.android/adbkey.pub:ro " +
-        // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
-        "-v ${HOME}/gradle-cache:/home/jenkins/.gradle " +
-        // Mounting ~/ccache as ~/.ccache to reuse the cache across builds
-        "-v ${HOME}/ccache:/home/jenkins/.ccache " +
-        // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
-        "-v /dev/bus/usb:/dev/bus/usb --privileged"
-      ) {
-        workerFunction()
+      // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
+      // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
+      lock("${env.NODE_NAME}-android") {
+        image.inside(
+          // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
+          "-v ${HOME}/.android/adbkey:/home/jenkins/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:/home/jenkins/.android/adbkey.pub:ro " +
+          // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
+          "-v ${HOME}/gradle-cache:/home/jenkins/.gradle " +
+          // Mounting ~/ccache as ~/.ccache to reuse the cache across builds
+          "-v ${HOME}/ccache:/home/jenkins/.ccache " +
+          // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
+          "-v /dev/bus/usb:/dev/bus/usb --privileged"
+        ) {
+          workerFunction()
+        }
       }
     }
   }
@@ -512,9 +516,10 @@ def testAndroid(target, postStep = null) {
   }
 }
 
-def testLinux(target, nodeVersion = 12, postStep = null) {
+def testLinux(target, postStep = null) {
   return {
-    node('docker') {
+      node('docker') {
+      def reportName = "Linux ${target}"
       deleteDir()
       unstash 'source'
       def image
@@ -524,21 +529,21 @@ def testLinux(target, nodeVersion = 12, postStep = null) {
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
       try {
-        reportStatus(target, 'PENDING', 'Build has started')
+        reportStatus(reportName, 'PENDING', 'Build has started')
         image.inside('-e HOME=/tmp') {
           timeout(time: 1, unit: 'HOURS') {
             withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} ${nodeVersion}"
+              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target}"
             }
           }
           if (postStep) {
             postStep.call()
           }
           deleteDir()
-          reportStatus(target, 'SUCCESS', 'Success!')
+          reportStatus(reportName, 'SUCCESS', 'Success!')
         }
       } catch(Exception e) {
-        reportStatus(target, 'FAILURE', e.toString())
+        reportStatus(reportName, 'FAILURE', e.toString())
         throw e
       }
     }

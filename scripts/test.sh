@@ -112,7 +112,7 @@ cleanup() {
   if [ -n "$nvm_old_default" ]; then
     echo Restoring nvm default to $nvm_old_default
     nvm alias default $nvm_old_default
-    echo nvm default restored successfully 
+    echo nvm default restored successfully
   fi
 }
 
@@ -233,7 +233,7 @@ fi
 if [[ "$(command -v nvm)" ]]; then
   echo nvm installing $NODE_VERSION
   set +e
-  nvm install $NODE_VERSION 
+  nvm install $NODE_VERSION
   retVal=$?
   if [ $retVal -ne 0 ]; then
       echo "Error while installing $NODE_VERSION $retVal"
@@ -244,7 +244,7 @@ if [[ "$(command -v nvm)" ]]; then
 fi
 set_nvm_default() {
   if [ -n "$REALM_SET_NVM_ALIAS" ] && [[ "$(command -v nvm)" ]]; then
-    echo REALM_SET_NVM_ALIAS is set. 
+    echo REALM_SET_NVM_ALIAS is set.
     nvm_old_default="$(nvm alias default --no-colors | cut -d ' ' -f 3)"
     echo Setting nvm default alias to $(nvm current)
     nvm alias default $(nvm current)
@@ -353,9 +353,15 @@ case "$TARGET" in
 
   check_test_results ReactTests
   ;;
+
 "node")
+  if [ "${CONFIGURATION}" == "Debug" ]; then
+      USE_REALM_DEBUG=1
+  else
+      USE_REALM_DEBUG=0
+  fi
   npm run check-environment
-  npm ci --build-from-source=realm --realm_enable_sync
+  npm ci --build-from-source=realm --realm_enable_sync --use_realm_debug=${USE_REALM_DEBUG}
   start_server
 
   # Change to a temp directory.
@@ -396,7 +402,7 @@ case "$TARGET" in
   ;;
 "test-runners")
   npm run check-environment
-  npm ci
+  npm ci --build-from-source=realm --use_realm_debug=${USE_REALM_DEBUG}
   npm run test-runners
   ;;
 "all")

@@ -470,7 +470,6 @@ module.exports = {
         if (isElectronProcess) {
             return;
         }
-
         if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
@@ -508,7 +507,6 @@ module.exports = {
         if (isElectronProcess) {
             return;
         }
-
         if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
@@ -553,7 +551,6 @@ module.exports = {
         if (isElectronProcess) {
             return;
         }
-
         if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
