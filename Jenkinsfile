@@ -4,12 +4,12 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js' // This is a global variable
 
-def nodeVersions = ['10.18.1'/*, '12.14.1'*/]
-def electronVersions = ['3.1.13', '4.2.12', '5.0.13', '6.1.7', '7.1.9']
+def nodeVersions = ['10']
+def electronVersions = ['3', '4', '5', '6', '7']
 def gitTag = null
 def formattedVersion = null
 dependencies = null
-nodeTestVersion = '10.18.1'
+nodeTestVersion = '10'
 
 // == Stages
 
@@ -131,11 +131,10 @@ stage('integration tests') {
   parallel(
     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
-    'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
-    'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
-    'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests('10.15.1', it) },
-    'Node.js v8 on Linux':      buildLinux { nodeIntegrationTests('8.15.0', it) },
-    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests('10.15.1', it) }
+    'Electron on Mac':          buildMacOS { electronIntegrationTests('4', it) },
+    'Electron on Linux':        buildLinux { electronIntegrationTests('4', it) },
+    'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
+    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
   )
 }
 
@@ -167,7 +166,7 @@ def nodeIntegrationTests(nodeVersion, platform) {
 }
 
 def electronIntegrationTests(electronVersion, platform) {
-  def nodeVersion = '10.15.1'
+  def nodeVersion = nodeTestVersion
   unstash 'source'
   unstash "electron-pre-gyp-${platform}-${electronVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
@@ -197,7 +196,7 @@ def electronIntegrationTests(electronVersion, platform) {
 }
 
 def reactNativeIntegrationTests(targetPlatform) {
-  def nodeVersion = '10.15.1'
+  def nodeVersion = nodeTestVersion
   unstash 'source'
 
   def nvm
