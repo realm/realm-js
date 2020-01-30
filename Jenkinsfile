@@ -9,7 +9,7 @@ def electronVersions = ['3', '4', '5', '6', '7']
 def gitTag = null
 def formattedVersion = null
 dependencies = null
-nodeTestVersion = '10'
+nodeTestVersion = '10.18.1'
 
 // == Stages
 
