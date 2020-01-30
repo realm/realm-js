@@ -5,7 +5,7 @@ import groovy.json.JsonOutput
 repoName = 'realm-js' // This is a global variable
 
 def nodeVersions = ['10']
-def electronVersions = ['3', '4', '5', '6', '7']
+def electronVersions = ['3.1.13', '4.2.12', '5.0.13', '6.1.7', '7.1.9']
 def gitTag = null
 def formattedVersion = null
 dependencies = null
