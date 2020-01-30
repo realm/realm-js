@@ -10,6 +10,7 @@ def gitTag = null
 def formattedVersion = null
 dependencies = null
 nodeTestVersion = '10.18.1'
+electronTestVersion = '4.2.12'
 
 // == Stages
 
@@ -131,8 +132,8 @@ stage('integration tests') {
   parallel(
     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
-    'Electron on Mac':          buildMacOS { electronIntegrationTests('4', it) },
-    'Electron on Linux':        buildLinux { electronIntegrationTests('4', it) },
+    'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
+    'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
     'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
   )
