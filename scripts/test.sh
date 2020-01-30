@@ -14,6 +14,11 @@ if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
 fi
 
+USE_REALM_DEBUG=0
+if [ "${CONFIGURATION}" == "Debug" ]; then
+      USE_REALM_DEBUG=1
+fi
+
 IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set and re-exported
 
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
@@ -355,11 +360,6 @@ case "$TARGET" in
   ;;
 
 "node")
-  if [ "${CONFIGURATION}" == "Debug" ]; then
-      USE_REALM_DEBUG=1
-  else
-      USE_REALM_DEBUG=0
-  fi
   npm run check-environment
   npm ci --build-from-source=realm --realm_enable_sync --use_realm_debug=${USE_REALM_DEBUG}
   start_server
