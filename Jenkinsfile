@@ -130,12 +130,7 @@ stage('test') {
 
 stage('integration tests') {
   parallel(
-    'React Native on Android':  inAndroidContainer {
-      // Locking the Android device to prevent other jobs from interfering
-      lock("${NODE_NAME}-android") {
-        reactNativeIntegrationTests('android')
-      }
-    },
+    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
     'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
     'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
@@ -209,13 +204,17 @@ def reactNativeIntegrationTests(targetPlatform) {
   def nvm
   if (targetPlatform == "android") {
     nvm = ""
-  }
-  else {
+  } else {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
   }
 
   dir('integration-tests') {
-    unstash 'android'
+    if (targetPlatform == "android") {
+      unstash 'android'
+    } else {
+      // Pack up Realm JS into a .tar
+      sh "${nvm} npm pack .."
+    }
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
     // Package up the integration tests
@@ -233,7 +232,7 @@ def reactNativeIntegrationTests(targetPlatform) {
       sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
     } else if (targetPlatform == "ios") {
       dir('ios') {
-        sh 'pod install'
+        sh 'pod install --verbose'
       }
     }
 
@@ -381,17 +380,21 @@ def inAndroidContainer(workerFunction) {
         image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       }
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-      image.inside(
-        // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
-        "-v ${HOME}/.android/adbkey:/home/jenkins/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:/home/jenkins/.android/adbkey.pub:ro " +
-        // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
-        "-v ${HOME}/gradle-cache:/home/jenkins/.gradle " +
-        // Mounting ~/ccache as ~/.ccache to reuse the cache across builds
-        "-v ${HOME}/ccache:/home/jenkins/.ccache " +
-        // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
-        "-v /dev/bus/usb:/dev/bus/usb --privileged"
-      ) {
-        workerFunction()
+      // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
+      // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
+      lock("${env.NODE_NAME}-android") {
+        image.inside(
+          // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
+          "-v ${HOME}/.android/adbkey:/home/jenkins/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:/home/jenkins/.android/adbkey.pub:ro " +
+          // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
+          "-v ${HOME}/gradle-cache:/home/jenkins/.gradle " +
+          // Mounting ~/ccache as ~/.ccache to reuse the cache across builds
+          "-v ${HOME}/ccache:/home/jenkins/.ccache " +
+          // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
+          "-v /dev/bus/usb:/dev/bus/usb --privileged"
+        ) {
+          workerFunction()
+        }
       }
     }
   }
