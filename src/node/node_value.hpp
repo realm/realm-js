@@ -253,13 +253,9 @@ template<>
 inline v8::Local<v8::Value> node::Value::from_object_id(v8::Isolate* isolate, ObjectId objectId) {
     auto realm_constructor = Value::validated_to_object(isolate, node::Object::get_global(isolate, "Realm"));
     auto object_id_constructor = to_constructor(isolate, node::Object::get_property(isolate, realm_constructor, "_ObjectId"));
-    v8::Local<v8::Function> createFromHexString = to_function(isolate, node::Object::get_property(isolate, object_id_constructor, "createFromHexString"));
 
-    std::array<v8::Local<v8::Value>, 1> args { {from_nonnull_string(isolate, objectId.to_string())} };
-    return node::Function::call(isolate, createFromHexString, args.size(), args.data());
-
-    // std::array<v8::Local<v8::Value>, 1> args { {from_string(isolate, objectId.to_string())} };
-    // return node::Function::construct(isolate, object_id_constructor, args.size(), args.data());
+    std::array<v8::Local<v8::Value>, 1> args { {from_string(isolate, objectId.to_string())} };
+    return node::Function::construct(isolate, object_id_constructor, args.size(), args.data());
 }
 
 template<>
