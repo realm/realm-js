@@ -34,7 +34,7 @@ let schemas = require('./schemas');
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
 
-const platofrmSupported = isNodeProcess && !isElectronProcess;
+const platformSupported = isNodeProcess && !isElectronProcess;
 
 const require_method = require;
 function node_require(module) {
@@ -170,7 +170,7 @@ module.exports = {
     },
 
     testRealmOpen() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -206,7 +206,7 @@ module.exports = {
     },
 
     testRealmOpenWithExistingLocalRealm() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -248,7 +248,7 @@ module.exports = {
     },
 
     testRealmOpenAsync() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -297,7 +297,7 @@ module.exports = {
     },
 
     testRealmOpenAsyncNoSchema() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -426,7 +426,7 @@ module.exports = {
     },
 
     testListNestedSync() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -589,7 +589,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmConstructor() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -624,7 +624,7 @@ module.exports = {
     },
 
     testProgressNotificationsUnregisterForRealmConstructor() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -691,7 +691,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpen() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -719,7 +719,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpenAsync() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -856,7 +856,7 @@ module.exports = {
     },
 
     async testPartialSync() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -940,7 +940,7 @@ module.exports = {
     },
 
     testPartialSyncWithDynamicSchema() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
         const username = Utils.uuid();
@@ -987,7 +987,7 @@ module.exports = {
     },
 
     testRoleClassWithPartialSyncCanCoexistWithPermissionsClass() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1013,7 +1013,7 @@ module.exports = {
 
     testClientReset() {
         // FIXME: try to enable for React Native
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1054,7 +1054,7 @@ module.exports = {
 
     testClientResyncIncorrectMode() {
         // FIXME: try to enable for React Native
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1076,7 +1076,7 @@ module.exports = {
 
     testClientResyncIncorrectModeForQueryBasedSync() {
         // FIXME: try to enable for React Native
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1104,7 +1104,7 @@ module.exports = {
 
     async testClientResyncDiscard() {
         // FIXME: try to enable for React Native
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1202,7 +1202,7 @@ module.exports = {
     },
 
     testConnectionState() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1363,7 +1363,7 @@ module.exports = {
     },
 
     testDownloadAllServerChangesTimeout() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1395,7 +1395,7 @@ module.exports = {
     },
 
     testUploadAllLocalChangesTimeout() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1528,7 +1528,7 @@ module.exports = {
     },
 
     testDeleteModelThrowsWhenSync() {
-        if (!platofrmSupported) {
+        if (!platformSupported) {
             return;
         }
 
