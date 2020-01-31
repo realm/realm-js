@@ -23,8 +23,8 @@ stage('check') {
       extensions: scm.extensions + [
         [$class: 'WipeWorkspace'],
         [$class: 'CleanCheckout'],
-        [$class: 'CloneOption', depth: 0, shallow: false, noTags: false],
-        [$class: 'SubmoduleOption', recursiveSubmodules: true]
+        [$class: 'CloneOption', depth: 1, shallow: true, noTags: false],
+        [$class: 'SubmoduleOption', recursiveSubmodules: true, shallow: true, depth: 1]
       ],
       userRemoteConfigs: scm.userRemoteConfigs
     ])
