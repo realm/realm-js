@@ -715,6 +715,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"data", realm_dict}
         };
     }
+#if REALM_ENABLE_SYNC
     else if (jsc::Object::is_instance<js::UserClass<jsc::Types>>(m_context, js_object)) {
         auto user = *jsc::Object::get_internal<js::UserClass<jsc::Types>>(js_object);
         json user_dict {
@@ -757,6 +758,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"id", store_object(js_object)},
         };
     }
+#endif
     else if (jsc::Value::is_array(m_context, js_object)) {
         uint32_t length = jsc::Object::validated_get_length(m_context, js_object);
         std::vector<json> array;

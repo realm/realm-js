@@ -16,7 +16,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
+* Updated Realm Core v6.0.0-beta.3 to v6.0.1.
 * Updated Realm Object Store to commit e3ac880ea2a6d1ea52d93f072ea8542a2ffaf9f9.
+* Switched to Android NDK r21 for Android builds. ([#2229](https://github.com/realm/realm-js/issues/2229))
 
 4.0.0-beta.1 Release notes (2020-1-7)
 =============================================================
