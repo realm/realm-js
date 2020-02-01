@@ -6,6 +6,7 @@
 ### Fixed
 * Added missing `Realm.Sync.ClientResyncMode` constants. ([#2690](https://github.com/realm/realm-js/issues/2690), since v3.1.0)
 * Untrusted SSL certificates were treated as transient rather than fatal errors on Apple platforms. (since v3.6.2)
+* On React Native, when using libraries that define the `atob` global, users would experience our library incorrectly assuming it was running via the remote (Chrome) debugger. ([#2294](https://github.com/realm/realm-js/issues/2294), since v2.0.3)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
