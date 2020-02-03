@@ -38,7 +38,7 @@ static void napi_init(Napi::Env env, Napi::Object exports) {
 } // realm
 
 static Napi::Object NAPI_Init(Napi::Env env, Napi::Object exports) {
-  realm::node::napi_init(env, exports);
+   realm::node::napi_init(env, exports);
   return exports;
 }
 

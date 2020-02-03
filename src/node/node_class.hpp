@@ -25,6 +25,18 @@
 
 #include "napi.h"
 
+//forward declare the types for gcc to compile correctly
+namespace realm {
+	namespace js {
+		template<typename T>
+		struct RealmObjectClass;
+	}
+	namespace node {
+		struct Types;
+	}
+}
+
+
 namespace realm {
 namespace node {
 
@@ -54,7 +66,7 @@ public:
 		const IndexPropertyType* indexPropertyHandlers = nullptr, 
 		const StringPropertyType* namedPropertyHandlers = nullptr);
 
-	static Napi::Object create_instance(Napi::Env env);
+	static Napi::Object create_instance(Napi::Env env, Internal* internal = nullptr);
 	
 	static bool is_instance(Napi::Env env, const Napi::Object& object);
 
@@ -79,6 +91,7 @@ private:
 	static StringPropertyType* m_namedPropertyHandlers;
 	static std::string m_name;
 	static std::function<bool(const std::string&)> m_has_native_methodFunc;
+	static Napi::Reference<Napi::External<Internal>> m_nullExternal;
 
 	class ProxyHandler {
 		public:
@@ -117,6 +130,9 @@ std::string WrappedObject<ClassType>::m_name;
 
 template<typename ClassType>
 std::function<bool(const std::string&)> WrappedObject<ClassType>::m_has_native_methodFunc;
+
+template<typename ClassType>
+Napi::Reference<Napi::External<typename ClassType::Internal>> WrappedObject<ClassType>::m_nullExternal;
 
 template<typename ClassType>
 class ObjectWrap {
@@ -226,7 +242,14 @@ WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::
 	Napi::Env env = info.Env();
 
 	//skip the constructor_callback if create_instance is creating a JS instance only
-	if (info.Length() == 1 && info[0].IsNull())	{
+	if (info.Length() == 1 && info[0].IsExternal())	{
+		Napi::External<Internal> external = info[0].As<Napi::External<Internal>>();
+		if (!external.Data()) {
+			return;
+		}
+
+		Internal* internal = external.Data();
+		set_internal(internal);
 		return;
 	}
 
@@ -252,6 +275,8 @@ Napi::Function WrappedObject<ClassType>::init(Napi::Env env,
 	const std::vector<Napi::ClassPropertyDescriptor<WrappedObject<ClassType>>>& properties, 
 	const IndexPropertyType* indexPropertyHandlers, 
 	const StringPropertyType* namedPropertyHandlers) {
+
+	WrappedObject<ClassType>::m_nullExternal = Napi::Persistent(Napi::External<Internal>::New(env, nullptr));
 
 	Napi::Function ctor = Napi::ObjectWrap<WrappedObject<ClassType>>::DefineClass(env, name.c_str(), properties, (void*)constructor_callback);
 	
@@ -315,7 +340,7 @@ Napi::Value WrappedObject<ClassType>::create_instance_with_proxy(const Napi::Cal
 }
 
 template<typename ClassType>
-Napi::Object WrappedObject<ClassType>::create_instance(Napi::Env env) {
+Napi::Object WrappedObject<ClassType>::create_instance(Napi::Env env, Internal* internal) {
 	if (constructor.IsEmpty() || factory_constructor.IsEmpty()) {
 		std::string typeName(typeid(ClassType).name());
 		std::string errorMessage = "create_instance: Class " + typeName + " not initialized. Call init() first";
@@ -324,7 +349,16 @@ Napi::Object WrappedObject<ClassType>::create_instance(Napi::Env env) {
 	Napi::EscapableHandleScope scope(env);
 
 	//creating a JS instance only. pass null as first and single argument
-	Napi::Object instance = factory_constructor.New({ env.Null() });
+	//Internal intern = &std::shared_ptr<Internal>(internal);
+	Napi::External<Internal> external;
+	if (internal) {
+		external = Napi::External<Internal>::New(env, internal);
+	}
+	else {
+		external = WrappedObject<ClassType>::m_nullExternal.Value();
+	}
+
+	Napi::Object instance = factory_constructor.New({ external });
 	return scope.Escape(instance).As<Napi::Object>();
 }
 
@@ -958,6 +992,14 @@ template<typename ClassType>
 Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
 	Napi::Function ctor = init_class(env);
 	
+	//If the class has no index accessor we can create an instance of the class itself and can skip proxy objects
+	bool has_index_accessor = (s_class.index_accessor.getter || s_class.index_accessor.setter);
+	bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
+	if (!has_index_accessor && !isRealmObjectClass) {
+		WrappedObject<ClassType>::set_factory_constructor(ctor);
+		return ctor;
+	}
+
 	//since NAPI ctors can't change the returned type we need to return a factory func which will be called when 'new ctor()' is called from JS. 
 	//This will create a JS Proxy and return it to the caller. The proxy is needed to support named and index handlers
 	Napi::Function factory = Napi::Function::New(env, WrappedObject<ClassType>::create_instance_with_proxy, s_class.name);
@@ -1040,16 +1082,17 @@ template<typename ClassType>
 Napi::Object ObjectWrap<ClassType>::create_instance(Napi::Env env, Internal* internal) {
 	Napi::EscapableHandleScope scope(env);
 
-	Napi::Object factory = WrappedObject<ClassType>::create_instance(env);
-	Napi::Object instance = factory.Get("_instance").As<Napi::Object>();
+	Napi::Object factory = WrappedObject<ClassType>::create_instance(env, internal);
+	
+	/*Napi::Object instance = factory.Get("_instance").As<Napi::Object>();
 	if (instance.IsUndefined() || instance.IsNull()) {
 		throw Napi::Error::New(env, "Invalid object. No _instance member");
-	}
+	}*/
 
-	if (internal) {
+	/*if (internal) {
 		WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
 		wrappedObject->set_internal(internal);
-	}
+	}*/
 	
     return scope.Escape(factory).As<Napi::Object>();
 }
