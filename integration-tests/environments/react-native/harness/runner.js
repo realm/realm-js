@@ -29,7 +29,7 @@ const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 /**
  * Ensure a simulator is created and booted
  */
-function ensureSimulator(platform) {
+function ensureSimulator(platform, deleteExisting = false) {
     if (platform === "android") {
         const devices = android.adb.devices();
         const activeDevices = devices.filter(({ state }) => state === "device");
@@ -40,7 +40,6 @@ function ensureSimulator(platform) {
             android.adb.reverseServerPort(MochaRemoteServer.DEFAULT_CONFIG.port);
         }
     } else if (platform === "ios") {
-
         const version = xcode.xcrun("--version").stdout.trim();
         console.log(`Using ${version}`);
     
@@ -60,10 +59,15 @@ function ensureSimulator(platform) {
         // Filter devices, so we're only focussing on devices of the expected name
         const devices = availableDevices.filter(({ name }) => name === IOS_DEVICE_NAME);
     
-        // Delete any existing devices with the expected name
-        for (const device of devices) {
-            console.log(`Deleting simulator (id = ${device.udid})`);
-            xcode.simctl.delete(device.udid);
+        if (deleteExisting) {
+            // Delete any existing devices with the expected name
+            for (const device of devices) {
+                console.log(`Deleting simulator (id = ${device.udid})`);
+                xcode.simctl.delete(device.udid);
+            }
+        } else if (devices.length > 0) {
+            // Use the first device with the expected name
+            return devices[0].udid;
         }
     
         const { runtimes } = xcode.simctl.list('runtimes', 'ios');
@@ -111,8 +115,8 @@ async function runApp(platform, junitFilePath) {
     });
     // Close the runner if metro closes unexpectedly
     metro.on("close", (code) => {
+        console.error(`Metro server closed (code = ${code})`);
         if (code !== 0) {
-            console.error(`Metro server unexpectedly closed (code = ${code})`);
             process.exit(code);
         }
     });
@@ -142,7 +146,7 @@ async function runApp(platform, junitFilePath) {
 
     // Run tests with a 5 minute timeout
     return timeout(new Promise((resolve) => {
-        console.log("Running tests 🏃‍♂️");
+        console.log("Running tests 🏃‍");
         server.run(resolve);
     }), 60000 * 5).finally(() => {
         clearInterval(retryInterval);
