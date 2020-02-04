@@ -22,8 +22,8 @@ RUN yum -y install \
   # TODO: install openssl in /usr/local
  && curl -SL https://www.openssl.org/source/openssl-1.1.1b.tar.gz | tar -zxC / \
  && cd /openssl-1.1.1b \
- && ./config -DPIC -fPIC -fvisibility=hidden -fvisibility-inlines-hidden no-zlib-dynamic no-dso --prefix=/usr \
- && make && make install_sw \
+ && ./config --prefix=/usr \
+ && make && make install \
  && rm -rf /openssl-1.1.1b \
  && cd /tmp \
  \
