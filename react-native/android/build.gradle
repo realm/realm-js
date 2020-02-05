@@ -96,14 +96,14 @@ task prepareRealmCore(dependsOn: downloadRealmCore, type:Copy) {
 }
 
 task downloadOpenSSL_x86(type: Download) {
-    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/x86/openssl-release-${openSSLVersion}-Android-x86.tar.gz"
+    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/x86/openssl.tgz"
     onlyIfNewer true
     overwrite true
     dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-x86.tar.gz")
 }
 
 task downloadOpenSSL_x86_64(type: Download) {
-    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/x86_64/openssl-release-${openSSLVersion}-Android-x86_64.tar.gz"
+    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/x86_64/openssl.tgz"
     onlyIfNewer true
     overwrite true
     dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-x86_64.tar.gz")
@@ -112,22 +112,24 @@ task downloadOpenSSL_x86_64(type: Download) {
 task prepareOpenSSL_x86(dependsOn: downloadOpenSSL_x86, type:Copy) {
     from tarTree(downloadOpenSSL_x86.dest)
     into "$coreDownloadDir/core"
+    rename 'lib(.*).a', 'lib$1-x86.a'
 }
 
 task prepareOpenSSL_x86_64(dependsOn: downloadOpenSSL_x86_64, type:Copy) {
     from tarTree(downloadOpenSSL_x86_64.dest)
     into "$coreDownloadDir/core"
+    rename 'lib(.*).a', 'lib$1-x86_64.a'
 }
 
 task downloadOpenSSL_arm(type: Download) {
-    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/armeabi-v7a/openssl-release-${openSSLVersion}-Android-armeabi-v7a.tar.gz"
+    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/armeabi-v7a/openssl.tgz"
     onlyIfNewer true
     overwrite true
     dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-armeabi-v7a.tar.gz")
 }
 
 task downloadOpenSSL_arm_64(type: Download) {
-    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/arm64-v8a/openssl-release-${openSSLVersion}-Android-arm64-v8a.tar.gz"
+    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/arm64-v8a/openssl.tgz"
     onlyIfNewer true
     overwrite true
     dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-arm64-v8a.tar.gz")
@@ -136,17 +138,13 @@ task downloadOpenSSL_arm_64(type: Download) {
 task prepareOpenSSL_arm(dependsOn: downloadOpenSSL_arm, type:Copy) {
     from tarTree(downloadOpenSSL_arm.dest)
     into "$coreDownloadDir/core"
-    rename { String fileName ->
-        fileName.replace("-arm-", "-armeabi-")
-    }
+    rename 'lib(.*).a', 'lib$1-armeabi-v7a.a'
 }
 
 task prepareOpenSSL_arm_64(dependsOn: downloadOpenSSL_arm_64, type:Copy) {
     from tarTree(downloadOpenSSL_arm_64.dest)
     into "$coreDownloadDir/core"
-    rename { String fileName ->
-        fileName.replace("-arm-", "-armeabi-")
-    }
+    rename 'lib(.*).a', 'lib$1-arm64-v8a.a'
 }
 
 
@@ -256,8 +254,7 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
-// task buildReactNdkLib(dependsOn: [downloadJSCHeaders, prepareRealmCore, prepareOpenSSL_x86, prepareOpenSSL_x86_64, prepareOpenSSL_arm, prepareOpenSSL_arm_64], type: Exec) {
-task buildReactNdkLib(dependsOn: [downloadJSCHeaders, prepareRealmCore], type: Exec) {
+task buildReactNdkLib(dependsOn: [downloadJSCHeaders, prepareRealmCore, prepareOpenSSL_x86, prepareOpenSSL_x86_64, prepareOpenSSL_arm, prepareOpenSSL_arm_64], type: Exec) {
     inputs.files('src/main/jni')
     outputs.dir("$buildDir/realm-react-ndk/all")
     commandLine getNdkBuildFullPath(),
