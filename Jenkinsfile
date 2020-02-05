@@ -139,7 +139,6 @@ stage('integration tests') {
     'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
     'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests('10.15.1', it) },
-    'Node.js v8 on Linux':      buildLinux { nodeIntegrationTests('8.15.0', it) },
     'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests('10.15.1', it) }
   )
 }
