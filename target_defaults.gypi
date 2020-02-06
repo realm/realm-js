@@ -32,7 +32,7 @@
           "WIN32=1",
           "_HAS_EXCEPTIONS=1",
           "WIN32_LEAN_AND_MEAN",
-          "_WIN32_WINNT=0x600",
+          "_WIN32_WINNT=0x603", # Build with Windows 8.1 as the minimum supoorted API level
           "_ENABLE_EXTENDED_ALIGNED_STORAGE"
         ]
       }],
@@ -74,7 +74,6 @@
         "ExceptionHandling": 1
       }
     },
-    "msvs_disabled_warnings": [ 4068, 4101, 4244, 4996 ],
-    "msbuild_toolset": "v141"
+    "msvs_disabled_warnings": [ 4068, 4101, 4244, 4996 ]
   }
 }

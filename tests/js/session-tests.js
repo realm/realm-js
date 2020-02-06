@@ -1223,7 +1223,7 @@ module.exports = {
         realm1.close();
 
         // delete Realm on server
-        var URL = require('url').URL;
+        var URL = node_require('url').URL;
         let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
         let url = new URL(`/realms/files/${encodedPath}`, user.server);
         let options = {

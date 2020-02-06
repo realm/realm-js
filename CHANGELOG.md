@@ -1,3 +1,19 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Connecting via SSL would crash on iOS 11.x due to an incorrect version availability check around an API introduced in iOS 12. ([realm/realm-sync#3230](https://github.com/realm/realm-sync/pull/3230), since v3.6.2).
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated Realm Sync from v4.9.4 to v4.9.5.
+
 3.6.3 Release notes (2020-1-17)
 =============================================================
 ### Enhancements
@@ -6,6 +22,7 @@
 ### Fixed
 * Added missing `Realm.Sync.ClientResyncMode` constants. ([#2690](https://github.com/realm/realm-js/issues/2690), since v3.1.0)
 * Untrusted SSL certificates were treated as transient rather than fatal errors on Apple platforms. (since v3.6.2)
+* On React Native, when using libraries that define the `atob` global, users would experience our library incorrectly assuming it was running via the remote (Chrome) debugger. ([#2294](https://github.com/realm/realm-js/issues/2294), since v2.0.3)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
