@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Connecting via SSL would crash on iOS 11.x due to an incorrect version availability check around an API introduced in iOS 12. ([realm/realm-sync#3230](https://github.com/realm/realm-sync/pull/3230), since v3.6.2).
+* Fixed a bug so `Realm.open()` will reject with message `Synchronization no longer possible for client-side file` when a manual client resync has occurred. ([RJS-347](https://jira.mongodb.org/browse/RJS-347), since v3.1.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Updated Realm Sync from v4.9.4 to v4.9.5.
+* Updated Realm Object Store to commit d6be54b000fc9d10945eaec121190d2129bcf495.
 
 3.6.3 Release notes (2020-1-17)
 =============================================================
