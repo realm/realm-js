@@ -40,6 +40,12 @@ function node_require(module) {
     return require_method(module);
 }
 
+let fetch;
+if (isNodeProcess) {
+    fetch = node_require('node-fetch');
+}
+
+
 let tmp;
 let fs;
 let execFile;
@@ -1039,7 +1045,6 @@ module.exports = {
         if (!isNodeProcess) {
             return;
         }
-        const fetch = require('node-fetch');
 
         let called = false;
         let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));
@@ -1089,7 +1094,7 @@ module.exports = {
             Promise.reject();
         }).catch(error => {
             TestCase.assertTrue(called); // the error handler was called
-            TestCase.assertEqual(error.message, 'Synchronization no longer possible for client-side file');
+            TestCase.assertEqual(error.message, 'Bad server version (IDENT, UPLOAD)');
             Promise.resolve();
         })
     },
@@ -1099,7 +1104,6 @@ module.exports = {
         if (!isNodeProcess) {
             return;
         }
-        const fetch = require('node-fetch');
 
         let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));
         const config1 = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
@@ -1202,7 +1206,6 @@ module.exports = {
         if (!isNodeProcess) {
             return;
         }
-        const fetch = require('node-fetch');
 
         const realmUrl = 'realm://127.0.0.1:9080/~/myrealm';
         let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));

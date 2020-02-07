@@ -14,7 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Updated Realm Sync from v4.9.4 to v4.9.5.
-* Updated Realm Object Store to commit d6be54b000fc9d10945eaec121190d2129bcf495.
+* Updated Realm Object Store to commit 160f8348a62b386df8f228144cbcabe94845cde0.
 
 3.6.3 Release notes (2020-1-17)
 =============================================================
