@@ -67,6 +67,10 @@ public:
 	}
 
 	~Protected() {
+		if (m_ref == nullptr) {
+			return;
+		}
+
 		try {
 			uint32_t result;
 			napi_status status = napi_reference_unref(m_env, m_ref, &result);
