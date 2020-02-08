@@ -27,8 +27,13 @@
  namespace realm {
  namespace node {
 
+static node::Protected<Napi::Symbol> externalSymbol;
+
 static void napi_init(Napi::Env env, Napi::Object exports) {
 	Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
+    
+    Napi::Symbol ext = Napi::Symbol::New(env, "_external");
+    externalSymbol = node::Protected<Napi::Symbol>(env, ext);
 
 	std::string name = realm_constructor.Get("name").As<Napi::String>();
 	exports.Set(Napi::String::New(env, name), realm_constructor);
