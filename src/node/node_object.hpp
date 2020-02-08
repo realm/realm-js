@@ -172,6 +172,18 @@ inline Napi::Object node::Object::create_instance(Napi::Env env, typename ClassT
 
 template<>
 template<typename ClassType>
+inline Napi::Object node::Object::create_instance_by_schema(Napi::Env env, Napi::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
+	return node::ObjectWrap<ClassType>::create_instance_by_schema(env, constructor, schema, internal);
+}
+
+template<typename ClassType>
+inline void on_context_destroy(std::string realmPath) {
+	node::ObjectWrap<ClassType>::on_context_destroy(realmPath);
+}
+
+
+template<>
+template<typename ClassType>
 inline bool node::Object::is_instance(Napi::Env env, const Napi::Object& object) {
     return node::ObjectWrap<ClassType>::is_instance(env, object);
 }

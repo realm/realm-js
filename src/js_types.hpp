@@ -40,6 +40,10 @@
 #endif
 
 namespace realm {
+    class ObjectSchema;
+}
+
+namespace realm {
 namespace js {
 
 template<typename>
@@ -289,6 +293,9 @@ struct Object {
     static ObjectType create_instance(ContextType, typename ClassType::Internal*);
 
     template<typename ClassType>
+    static ObjectType create_instance_by_schema(ContextType, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal*);
+    
+    template<typename ClassType>
     static bool is_instance(ContextType, const ObjectType &);
 
     template<typename ClassType>
@@ -357,6 +364,15 @@ REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, typena
 }
 
 template<typename T, typename ClassType>
+REALM_JS_INLINE typename T::Object create_object_by_schema(typename T::Context ctx, typename T::Function& constructor, realm::ObjectSchema schema, typename ClassType::Internal* internal = nullptr) {
+#if REALM_PLATFORM_NODE
+    return Object<T>::template create_instance_by_schema<ClassType>(ctx, constructor, schema, internal);
+#else
+    return Object<T>::template create_instance<ClassType>(ctx, internal);
+#endif
+}
+
+template<typename T, typename ClassType>
 REALM_JS_INLINE typename ClassType::Internal* get_internal(const typename T::Object &object) {
     return Object<T>::template get_internal<ClassType>(object);
 }
@@ -401,6 +417,7 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
                 REALM_UNREACHABLE();
         }
     };
+
     auto check_collection_type = [&](auto&& list) {
         auto list_type = list->get_type();
         return list_type == type

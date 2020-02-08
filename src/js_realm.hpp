@@ -98,9 +98,16 @@ public:
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
-    RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
+    RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) 
+        : m_context(ctx), 
+          m_realm(realm) 
+    {
+        SharedRealm sharedRealm = realm.lock();
+        m_realm_path = sharedRealm->config().path;
+    }
 
     ~RealmDelegate() {
+        on_context_destroy<RealmObjectClass<T>>(m_realm_path);
         // All protected values need to be unprotected while the context is retained.
         m_defaults.clear();
         m_constructors.clear();
@@ -157,6 +164,7 @@ public:
     std::list<Protected<FunctionType>> m_schema_notifications;
     std::list<Protected<FunctionType>> m_before_notify_notifications;
     std::weak_ptr<realm::Realm> m_realm;
+    std::string m_realm_path;
 
     void add(std::list<Protected<FunctionType>>& notifications, FunctionType fn) {
         if (std::find(notifications.begin(), notifications.end(), fn) != notifications.end()) {
