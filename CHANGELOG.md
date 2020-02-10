@@ -13,6 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
+* Added `fullSynchronization` and `clientResyncMode` to `Realm.Session.config` to generate a more complete configuration.
 * Updated Realm Sync from v4.9.4 to v4.9.5.
 * Updated Realm Object Store to commit 160f8348a62b386df8f228144cbcabe94845cde0.
 
@@ -69,7 +70,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Added a couple of options to `Realm.Session.config` to ease debugging.
 * Fixed download URLs to make it possible to build without sync. ([RJS-355](https://jira.mongodb.org/browse/RJS-355))
 * Now explicitly (deleting and re-)creating a "realm-js-integration-tests" simulator when running the React Native iOS integration tests.
 * Updated Realm Core from v5.23.6 to v5.23.7.

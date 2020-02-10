@@ -1091,12 +1091,12 @@ module.exports = {
 
         // open the Realm again and see it fail
         return Realm.open(config).then(realm => {
-            Promise.reject();
+            return Promise.reject();
         }).catch(error => {
             TestCase.assertTrue(called); // the error handler was called
             TestCase.assertEqual(error.message, 'Bad server version (IDENT, UPLOAD)');
-            Promise.resolve();
-        })
+            return Promise.resolve();
+        });
     },
 
     async testClientResyncDiscard() {
