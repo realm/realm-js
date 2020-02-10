@@ -95,6 +95,23 @@ function launch(device, appBundleIdentifier) {
     return simctl("launch", device, appBundleIdentifier);
 }
 
+/**
+ * Opens a URL in the device browser
+ * @param {string} device 
+ * @param {string} url 
+ */
+function openUrl(device, url) {
+    return simctl("openurl", device, url);
+}
+
+/**
+ * An undocumented method that blocks until device is booted.
+ * @param {string} device Device to wait for
+ */
+function bootstatus(device) {
+    return simctl("bootstatus", device);
+}
+
 module.exports = {
     xcrun,
     simctl: {
@@ -106,5 +123,7 @@ module.exports = {
         shutdown,
         terminate,
         launch,
+        openUrl,
+        bootstatus,
     }
 };
