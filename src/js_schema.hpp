@@ -246,6 +246,7 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
     static const String primary_string = "primaryKey";
     static const String properties_string = "properties";
     static const String schema_string = "schema";
+    static const String embedded_string = "embedded";
 
     FunctionType object_constructor = {};
     if (Value::is_constructor(ctx, object_schema_object)) {
@@ -295,6 +296,15 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
             throw std::runtime_error("Schema named '" + object_schema.name + "' specifies primary key of '" + object_schema.primary_key + "' but does not declare a property of that name.");
         }
         property->is_primary = true;
+    }
+
+    ValueType embedded_value = Object::get_property(ctx, object_schema:object, embedded_string);
+    if (!Value::is_undefined(ctx, embedded_value)) {
+        object_schema.embedded = Value::validated_to_boolean(ctx, embedded_value);  // FIXME: is embedded the correct name in Object Store?
+        // FIXME: will Object Store validate or do we need to check if primary key is set?
+    }
+    else {
+        object_schema.embedded = false;
     }
 
     // Store prototype so that objects of this type will have their prototype set to this prototype object.
