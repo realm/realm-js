@@ -81,12 +81,12 @@ inline bool node::Value::is_number(v8::Isolate* isolate, const v8::Local<v8::Val
 
 template<>
 inline bool node::Value::is_decimal128(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return true; // FIXME: must be an instance of Decimal128 from BSON
+    return value->IsObject(); // FIXME: can we do better?
 }
 
 template<>
 inline bool node::Value::is_object_id(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return true; // FIXME: must be an instance of ObjectId from BSON
+    return value->IsObject(); // FIXME: can we do better?
 }
 
 template<>

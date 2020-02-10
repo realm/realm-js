@@ -19,6 +19,8 @@
 
 'use strict';
 
+var Decimal128 = require('bson').Decimal128;
+
 var Realm = require('realm');
 var TestCase = require('./asserts');
 var testCases = require('./query-tests.json');
@@ -144,6 +146,9 @@ module.exports = {
     testBinaryQueries: function() {
         runQuerySuite(testCases.binaryTests);
     },
+    testDecimalQueries: function() {
+        runQuerySuite(testCases.decimalTests);
+    },
     testObjectQueries: function() {
         runQuerySuite(testCases.objectTests);
     },
@@ -233,4 +238,22 @@ module.exports = {
         TestCase.assertEqual(realm.objects(schemas.IntOnly.name).filtered([0, 14].map(v => `intCol == ${v}`).join(' OR ')).length, 0);
         TestCase.assertEqual(realm.objects(schemas.StringOnly.name).filtered([0, 14].map(v => `stringCol == '${v}'`).join(' OR ')).length, 0);
     },
+
+    testQueryDecimal: function() {
+        var realm = new Realm({ schema: [schemas.DecimalObject] });
+        realm.write(function () {
+            [0, 1, 2].forEach(v => {
+                realm.create(schemas.DecimalObject.name, { decimalCol: Decimal128.fromString(`1000${v}`) });
+            });
+        });
+
+        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol <  10002").length, 2);
+        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol <= 10002").length, 3);
+        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol >  10001").length, 1);
+        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol >= 10001").length, 2);
+        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol == 10002").length, 1);
+        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol != 10002").length, 2);
+
+        realm.close();
+    }
 };

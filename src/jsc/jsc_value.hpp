@@ -125,12 +125,12 @@ inline bool jsc::Value::is_valid(const JSValueRef &value) {
 
 template<>
 inline bool jsc::Value::is_decimal128(JSContextRef ctx, const JSValueRef &value) {
-    return true; // FIXME: must be an instance of Decimal128 from BSON
+    return JSValueIsObject(ctx, value); // FIXME: can we do better?
 }
 
 template<>
 inline bool jsc::Value::is_object_id(JSContextRef ctx, const JSValueRef &value) {
-    return true; // FIXME: must be an instance of ObjectId from BSON
+    return JSValueIsObject(ctx, value); // FIXME: can we do better?
 }
 
 template<>
