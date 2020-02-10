@@ -30,7 +30,7 @@ import { MochaRemoteClient } from "mocha-remote-client";
 
 type Props = {};
 export class App extends Component<Props> {
-    state = { status: "waiting" };
+    state = { status: "disconnected" };
 
     componentDidMount() {
         this.prepareTests();
@@ -52,7 +52,9 @@ export class App extends Component<Props> {
     }
 
     getStatusMessage() {
-        if (this.state.status === "waiting") {
+        if (this.state.status === "disconnected") {
+            return "Disconnected from mocha-remote-server";
+        } else if (this.state.status === "waiting") {
             return "Waiting for server to start tests";
         } else if (this.state.status === "running") {
             return "Running the tests";
@@ -67,6 +69,10 @@ export class App extends Component<Props> {
         if (this.state.status === "running") {
             const progress = `${this.state.currentTestIndex + 1}/${this.state.totalTests}`;
             return `${progress}: ${this.state.currentTest}`;
+        } else if (typeof this.state.reason === 'string') {
+            return this.state.reason;
+        } else if (typeof this.state.failures === 'number') {
+            return `${this.state.failures} failures`;
         } else {
             return null;
         }
@@ -75,6 +81,13 @@ export class App extends Component<Props> {
     prepareTests() {
         this.client = new MochaRemoteClient({
             id: Platform.OS,
+            whenConnected: () => {
+                console.log("Connected to mocha-remote-server");
+                this.setState({ status: "waiting" });
+            },
+            whenDisconnected: ({ reason }) => {
+                this.setState({ status: "disconnected", reason });
+            },
             whenInstrumented: (mocha) => {
                 // Setting the title of the root suite
                 global.title = `React-Native on ${Platform.OS}`;
@@ -88,9 +101,14 @@ export class App extends Component<Props> {
                     ios: Platform.OS === "ios"
                 };
                 // Require in the tests
+                console.log(require.cache);
                 require("realm-integration-tests");
             },
             whenRunning: (runner) => {
+                this.setState({
+                    status: "running",
+                    failures: 0,
+                });
                 runner.on("test", (test) => {
                     // Compute the current test index - incrementing it if we're running
                     const currentTestIndex =
@@ -104,7 +122,13 @@ export class App extends Component<Props> {
                     });
                 });
                 runner.on("end", () => {
-                    this.setState({ status: "ended" });
+                    this.setState({
+                        status: "ended",
+                        failures: runner.failures,
+                    });
+                    // Stop trying to connect to the remote server
+                    this.client.disconnect();
+                    delete this.client;
                 });
             },
         });
