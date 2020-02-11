@@ -30,6 +30,7 @@ const URL = require('url-parse');
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
+const createAndLoginAdminUser = require('./admin-user-helper').createAndLoginAdminUser;
 let schemas = require('./schemas');
 
 const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
@@ -1047,7 +1048,7 @@ module.exports = {
         }
 
         let called = false;
-        let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));
+        let user = await createAndLoginAdminUser();
         var realm;
         const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
         config.schema = [schemas.IntOnly];
