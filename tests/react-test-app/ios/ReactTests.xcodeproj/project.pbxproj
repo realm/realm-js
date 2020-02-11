@@ -16,11 +16,9 @@
 		2AE23CE52CB77C91684FCAE2 /* libPods-ReactTestApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EC2D7E24C5A46A53987AB428 /* libPods-ReactTestApp.a */; };
 		3F02502D21FA75B2004DF36F /* libRealmReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 855301951E1FF78600FF108E /* libRealmReact.a */; };
 		3F2785FE21F94A1E00D243F3 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E45185577984C00AA740BFE /* libz.tbd */; };
+		4243377F23F2B02F00257BF1 /* realm-bundle.realm in Resources */ = {isa = PBXBuildFile; fileRef = 4243377E23F2B02F00257BF1 /* realm-bundle.realm */; };
 		8553016B1E1FF6D500FF108E /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8553016A1E1FF6D500FF108E /* RealmJSTests.mm */; };
-		855301CF1E20069D00FF108E /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 855301CD1E20069D00FF108E /* dates-v3.realm */; };
-		855301D01E20069D00FF108E /* dates-v5.realm in Resources */ = {isa = PBXBuildFile; fileRef = 855301CE1E20069D00FF108E /* dates-v5.realm */; };
 		855301D31E2006F700FF108E /* RealmReactTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 855301D11E2006F400FF108E /* RealmReactTests.m */; };
-		A4CEF4BB1F7F862D00BA3B26 /* sync-v1.realm in Resources */ = {isa = PBXBuildFile; fileRef = A4CEF4BA1F7F862D00BA3B26 /* sync-v1.realm */; };
 		E2050A7A5BE14CEA9A9E0722 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B37A7097A134D5CBB4C462A /* libc++.tbd */; };
 /* End PBXBuildFile section */
 
@@ -59,15 +57,13 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ReactTests/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ReactTests/main.m; sourceTree = "<group>"; };
 		193A0C4F1D2C485DBE5ACC72 /* RealmReact.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RealmReact.xcodeproj; path = "../node_modules/realm/react-native/ios/RealmReact.xcodeproj"; sourceTree = "<group>"; };
+		4243377E23F2B02F00257BF1 /* realm-bundle.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "realm-bundle.realm"; sourceTree = "<group>"; };
 		4E45185577984C00AA740BFE /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		5D0E6A5E310181A4243DC976 /* Pods-RealmReactTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RealmReactTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-RealmReactTests/Pods-RealmReactTests.debug.xcconfig"; sourceTree = SOURCE_ROOT; };
 		62CE006B73F93219175A513E /* Pods-RealmReactTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RealmReactTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-RealmReactTests/Pods-RealmReactTests.release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		8553016A1E1FF6D500FF108E /* RealmJSTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmJSTests.mm; path = ../../ios/RealmJSTests.mm; sourceTree = "<group>"; };
-		855301CD1E20069D00FF108E /* dates-v3.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v3.realm"; sourceTree = "<group>"; };
-		855301CE1E20069D00FF108E /* dates-v5.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v5.realm"; sourceTree = "<group>"; };
 		855301D11E2006F400FF108E /* RealmReactTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmReactTests.m; path = ReactTests/RealmReactTests.m; sourceTree = "<group>"; };
 		8B37A7097A134D5CBB4C462A /* libc++.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
-		A4CEF4BA1F7F862D00BA3B26 /* sync-v1.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "sync-v1.realm"; sourceTree = "<group>"; };
 		B4AD696A6981CCCB8562CA07 /* Pods-ReactTestApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactTestApp.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ReactTestApp/Pods-ReactTestApp.debug.xcconfig"; sourceTree = SOURCE_ROOT; };
 		CEC170030BD878AC562D7038 /* Pods-ReactTestApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactTestApp.release.xcconfig"; path = "Pods/Target Support Files/Pods-ReactTestApp/Pods-ReactTestApp.release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		EC2D7E24C5A46A53987AB428 /* libPods-ReactTestApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactTestApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -165,9 +161,7 @@
 		855301CC1E20069D00FF108E /* data */ = {
 			isa = PBXGroup;
 			children = (
-				855301CD1E20069D00FF108E /* dates-v3.realm */,
-				855301CE1E20069D00FF108E /* dates-v5.realm */,
-				A4CEF4BA1F7F862D00BA3B26 /* sync-v1.realm */,
+				4243377E23F2B02F00257BF1 /* realm-bundle.realm */,
 			);
 			name = data;
 			path = ../../data;
@@ -246,6 +240,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -288,11 +283,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				855301CF1E20069D00FF108E /* dates-v3.realm in Resources */,
-				855301D01E20069D00FF108E /* dates-v5.realm in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				4243377F23F2B02F00257BF1 /* realm-bundle.realm in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
-				A4CEF4BB1F7F862D00BA3B26 /* sync-v1.realm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
