@@ -298,7 +298,7 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         property->is_primary = true;
     }
 
-    ValueType embedded_value = Object::get_property(ctx, object_schema:object, embedded_string);
+    ValueType embedded_value = Object::get_property(ctx, object_schema_object, embedded_string);
     if (!Value::is_undefined(ctx, embedded_value)) {
         object_schema.embedded = Value::validated_to_boolean(ctx, embedded_value);  // FIXME: is embedded the correct name in Object Store?
         // FIXME: will Object Store validate or do we need to check if primary key is set?
@@ -366,6 +366,9 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
     if (object_schema.primary_key.size()) {
         Object::set_property(ctx, object, primary_key_string, Value::from_string(ctx, object_schema.primary_key));
     }
+
+    static const String embedded_string = "embedded";
+    Object::set_property(ctx, object, embedded_string, Value::from_boolean(ctx, object_schema.embedded));
 
     return object;
 }
