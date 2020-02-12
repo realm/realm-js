@@ -1394,7 +1394,6 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 
 template<typename ClassType>
 inline void ObjectWrap<ClassType>::on_context_destroy(std::string realmPath) {
-	//printf("on_context_destroy %s", realmPath.c_str());
 	std::unordered_map<std::string, SchemaObjectType*>* schemaObjects = nullptr;
 	if (!s_schemaObjectTypes.count(realmPath)) {
 		return;

@@ -119,6 +119,10 @@ inline JSObjectRef jsc::Object::create_instance(JSContextRef ctx, typename Class
     return jsc::ObjectWrap<ClassType>::create_instance(ctx, internal);
 }
 
+template<typename ClassType>
+inline void on_context_destroy(std::string realmPath) {
+}
+
 template<>
 template<typename ClassType>
 inline bool jsc::Object::is_instance(JSContextRef ctx, const JSObjectRef &object) {
