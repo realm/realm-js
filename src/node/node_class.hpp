@@ -1017,6 +1017,45 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setPrototypeofProxyTrap(cons
 	return scope.Escape(Napi::Boolean::New(env, true));
 }
 
+static Napi::Value property_getter_callback(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	try {
+		PropertyType* propertyType = (PropertyType*)info.Data();
+		Napi::Value result = propertyType->getter(info);
+		return result;
+	}
+	catch (const Napi::Error & e) {
+		e.ThrowAsJavaScriptException();
+		return env.Undefined();
+	}
+}
+
+template<typename ClassType>
+Napi::Value ObjectWrap<ClassType>::property_getter(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	try {
+		auto propertyName = (node::String*)info.Data();
+		return s_class.string_accessor.getter(info, info.This().As<Napi::Object>(), propertyName->ToString(env));
+	}
+	catch (const Napi::Error & e) {
+		e.ThrowAsJavaScriptException();
+		return env.Undefined();
+	}
+}
+
+template<typename ClassType>
+void ObjectWrap<ClassType>::property_setter(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	try {
+		auto propertyName = (node::String*)info.Data();
+		auto value = info[0];
+		s_class.string_accessor.setter(info, info.This().As<Napi::Object>(), propertyName->ToString(env), value);
+	}
+	catch (const Napi::Error & e) {
+		e.ThrowAsJavaScriptException();
+	}
+}
+
 template<typename ClassType>
 Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
 	Napi::Function ctor = init_class(env);
@@ -1140,45 +1179,6 @@ Napi::Object ObjectWrap<ClassType>::create_instance(Napi::Env env, Internal* int
 }
 
 inline static void schema_object_type_constructor(const Napi::CallbackInfo& info) {
-}
-
-static Napi::Value property_getter_callback(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-	try {
-		PropertyType* propertyType = (PropertyType*)info.Data();
-		Napi::Value result = propertyType->getter(info);
-		return result;
-	}
-	catch (const Napi::Error& e) {
-		e.ThrowAsJavaScriptException();
-		return env.Undefined();
-	}
-}
-
-template<typename ClassType>
-Napi::Value ObjectWrap<ClassType>::property_getter(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-	try {
-		auto propertyName = (node::String*)info.Data();
-		return s_class.string_accessor.getter(info, info.This().As<Napi::Object>(), propertyName->ToString(env));
-	}
-	catch (const Napi::Error& e) {
-		e.ThrowAsJavaScriptException();
-		return env.Undefined();
-	}
-}
-
-template<typename ClassType>
-void ObjectWrap<ClassType>::property_setter(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-	try {
-		auto propertyName = (node::String*)info.Data();
-		auto value = info[0];
-		s_class.string_accessor.setter(info, info.This().As<Napi::Object>(), propertyName->ToString(env), value);
-	}
-	catch (const Napi::Error & e) {
-		e.ThrowAsJavaScriptException();
-	}
 }
 
 static inline void remove_schema_object(std::unordered_map<std::string, SchemaObjectType*>* schemaObjects, const std::string& schemaName) {

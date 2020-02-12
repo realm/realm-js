@@ -126,25 +126,15 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
     auto delegate = get_delegate<T>(realm_object.realm().get());
     auto schema = realm_object.get_object_schema();
     auto name = schema.name;
-    //auto object = create_object<T, RealmObjectClass<T>>(ctx, new realm::js::RealmObject<T>(std::move(realm_object)));
-    
 
     if (!delegate || !delegate->m_constructors.count(name)) {
         FunctionType constructor;
-        auto object = create_object_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, new realm::js::RealmObject<T>(std::move(realm_object)));
+        auto object = create_instance_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, new realm::js::RealmObject<T>(std::move(realm_object)));
         return object;
     }
 
     FunctionType constructor = delegate->m_constructors.at(name);
-    auto object = create_object_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, new realm::js::RealmObject<T>(std::move(realm_object)));
-
-    //ObjectType prototype = Object::validated_get_object(ctx, constructor, prototype_string);
-    //Object::set_prototype(ctx, object, prototype);
-
-    //ValueType result = Function::call(ctx, constructor, object, 0, NULL);
-    //if (result != object && !Value::is_null(ctx, result) && !Value::is_undefined(ctx, result)) {
-    //    throw std::runtime_error("Realm object constructor must not return another value");
-    //}
+    auto object = create_instance_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, new realm::js::RealmObject<T>(std::move(realm_object)));
 
     return object;
 }

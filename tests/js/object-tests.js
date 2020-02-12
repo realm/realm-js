@@ -379,7 +379,7 @@ module.exports = {
         TestCase.assertTrue(Realm.Object instanceof Function);
     },
 
-    testIsValid: function() {
+    testObjectIsValid: function() {
         const realm = new Realm({schema: [schemas.TestObject]});
         var obj;
         realm.write(function() {

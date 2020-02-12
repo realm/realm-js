@@ -364,7 +364,7 @@ REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, typena
 }
 
 template<typename T, typename ClassType>
-REALM_JS_INLINE typename T::Object create_object_by_schema(typename T::Context ctx, typename T::Function& constructor, realm::ObjectSchema schema, typename ClassType::Internal* internal = nullptr) {
+REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context ctx, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr) {
 #if REALM_PLATFORM_NODE
     return Object<T>::template create_instance_by_schema<ClassType>(ctx, constructor, schema, internal);
 #else

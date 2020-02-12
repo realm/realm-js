@@ -323,7 +323,7 @@ module.exports = {
                             TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
 
                             let firstDog = realm.objects('Dog')[0];
-                            TestCase.assertTrue(({}).hasOwnProperty.call(firstDog, 'name'), "Synced realm does not have an inffered schema");
+                            TestCase.assertTrue(({}).hasOwnProperty.call(Object.getPrototypeOf(firstDog), 'name'), "Synced realm does not have an inffered schema");
                             TestCase.assertTrue(firstDog.name, "Synced realm object's property should have a value");
                             TestCase.assertTrue(firstDog.name.indexOf('Lassy') !== -1, "Synced realm object's property should contain the actual written value");
 
