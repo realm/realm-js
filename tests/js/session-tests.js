@@ -30,7 +30,6 @@ const URL = require('url-parse');
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
-const loginAdminUser = require('./admin-user-helper').loginAdminUser;
 let schemas = require('./schemas');
 
 const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
@@ -41,9 +40,10 @@ function node_require(module) {
     return require_method(module);
 }
 
-let fetch;
+let fetch, loginAdminUser;
 if (isNodeProcess) {
     fetch = node_require('node-fetch');
+    loginAdminUser = node_require('./admin-user-helper').loginAdminUser;
 }
 
 
