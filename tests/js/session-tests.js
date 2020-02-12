@@ -30,7 +30,7 @@ const URL = require('url-parse');
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
-const createAndLoginAdminUser = require('./admin-user-helper').createAndLoginAdminUser;
+const loginAdminUser = require('./admin-user-helper').loginAdminUser;
 let schemas = require('./schemas');
 
 const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
@@ -1048,7 +1048,7 @@ module.exports = {
         }
 
         let called = false;
-        let user = await createAndLoginAdminUser();
+        let user = await loginAdminUser();
         var realm;
         const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
         config.schema = [schemas.IntOnly];
@@ -1088,7 +1088,7 @@ module.exports = {
             },
             method: 'DELETE',
         };
-        await fetch(url, options);
+        await fetch(url.toString(), options);
 
         // open the Realm again and see it fail
         return Realm.open(config).then(realm => {
