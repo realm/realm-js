@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Connecting via SSL would crash on iOS 11.x due to an incorrect version availability check around an API introduced in iOS 12. ([realm/realm-sync#3230](https://github.com/realm/realm-sync/pull/3230), since v3.6.2).
-* Fixed a bug so `Realm.open()` will reject with message `Synchronization no longer possible for client-side file` when a manual client resync has occurred. ([RJS-347](https://jira.mongodb.org/browse/RJS-347), since v3.1.0)
+* Fixed a bug so `Realm.open()` will reject with error message instead of `Operation canceled` when a manual client resync has occurred. ([RJS-347](https://jira.mongodb.org/browse/RJS-347), since v3.1.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -43,7 +43,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Fixed a bug that prevented `ClientResyncMode.Discard` to discard the local changes. ([#2664](https://github.com/realm/realm-js/issues/2664), since v3.1.0)
 * Fixed a bug where properties with float and double values would not be sorted correctly. ([realm/realm-core#3520](https://github.com/realm/realm-core/pull/3520), since v3.6.0)
-  * Fixed a bug where a `NOT` query on a list would incorrectly match objects which have an object index one less than a correctly matching object which appeared earlier in the list. ([realm/realm-cocoa#6289](https://github.com/realm/realm-cocoa/issues/6289), since v1.0.0)
+* Fixed a bug where a `NOT` query on a list would incorrectly match objects which have an object index one less than a correctly matching object which appeared earlier in the list. ([realm/realm-cocoa#6289](https://github.com/realm/realm-cocoa/issues/6289), since v1.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
