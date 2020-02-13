@@ -23,17 +23,3 @@ exports.createAdminUser = function () {
         };
     });
 }
-
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-let fs, jwt, rosDataDir;
-if (isNodeProcess) {
-    fs = node_require('fs');
-    jwt = node_require('jsonwebtoken');
-    rosDataDir = process.env.ROS_DATA_DIR || '../realm-object-server-data';
-}
-
-exports.loginAdminUser = function () {
-    const adminToken = JSON.parse(fs.readFileSync(`${rosDataDir}/keys/admin.json`, 'utf8'))['ADMIN_TOKEN'];
-    const credentials = Realm.Sync.Credentials.adminToken(adminToken);
-    return Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
-}

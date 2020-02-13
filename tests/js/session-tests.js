@@ -40,12 +40,10 @@ function node_require(module) {
     return require_method(module);
 }
 
-let fetch, loginAdminUser;
+let fetch;
 if (isNodeProcess) {
     fetch = node_require('node-fetch');
-    loginAdminUser = node_require('./admin-user-helper').loginAdminUser;
 }
-
 
 let tmp;
 let fs;
@@ -1047,8 +1045,13 @@ module.exports = {
             return;
         }
 
+        if (!global.testAdminUserInfo) {
+            throw new Error("Test requires an admin user");
+        }
+
         let called = false;
-        let user = await loginAdminUser();
+        const credentials = Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password);
+        let user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
         var realm;
         const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
         config.schema = [schemas.IntOnly];
