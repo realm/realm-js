@@ -137,6 +137,18 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 
         FunctionType constructor = delegate->m_constructors.at(name);
         auto object = create_instance_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, internal);
+
+#ifndef REALM_PLATFORM_NODE
+        //TODO: for RN user supplied constructors in the schema are still called as functions and not as constructors
+        ObjectType prototype = Object::validated_get_object(ctx, constructor, prototype_string);
+        Object::set_prototype(ctx, object, prototype);
+
+        ValueType result = Function::call(ctx, constructor, object, 0, NULL);
+        if (result != object && !Value::is_null(ctx, result) && !Value::is_undefined(ctx, result)) {
+            throw std::runtime_error("Realm object constructor must not return another value");
+        }
+#endif
+
         return object;
     }
     catch (const std::exception& e) {
