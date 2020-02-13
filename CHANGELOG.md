@@ -4,8 +4,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Add support for the new `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
-* Add support for the new `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
+* Add support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
+* Add support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
+* Add support for embedded objects. ([#2676](https://github.com/realm/realm-js/issues/2675))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
