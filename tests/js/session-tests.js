@@ -1098,7 +1098,7 @@ module.exports = {
             return Promise.reject();
         }).catch(error => {
             TestCase.assertTrue(called); // the error handler was called
-            TestCase.assertEqual(error.message, 'Bad server version (IDENT, UPLOAD)');
+            TestCase.assertEqual(error.message, 'Diverging histories (IDENT)');
             return Promise.resolve();
         });
     },
