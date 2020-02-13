@@ -64,7 +64,12 @@ inline realm::SyncManager& syncManagerShared(typename T::Context &ctx) {
             user_agent_binding_info = js::Value<T>::validated_to_string(ctx, result);
         }
         ensure_directory_exists_for_file(default_realm_file_directory());
-        SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption, user_agent_binding_info);
+
+        SyncClientConfig config;
+        config.base_file_path = default_realm_file_directory();
+        config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
+        config.user_agent_binding_info = user_agent_binding_info;
+        SyncManager::shared().configure(config);
     });
     return SyncManager::shared();
 }
@@ -1010,7 +1015,12 @@ void SyncClass<T>::initialize_sync_manager(ContextType ctx, ObjectType this_obje
     args.validate_count(1);
     std::string user_agent_binding_info = Value::validated_to_string(ctx, args[0]);
     ensure_directory_exists_for_file(default_realm_file_directory());
-    SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption, user_agent_binding_info);
+
+    SyncClientConfig config;
+    config.base_file_path = default_realm_file_directory();
+    config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
+    config.user_agent_binding_info = user_agent_binding_info;
+    SyncManager::shared().configure(config);
 }
 
 template<typename T>
