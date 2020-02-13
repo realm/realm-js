@@ -330,7 +330,7 @@ describe('Adapter', () => {
 
                 expect(actual_object).toBeDefined();
 
-                expect(Object.keys(change_object).sort()).toEqual(Object.keys(actual_object).sort());
+                expect(Object.keys(change_object.__proto__).sort()).toEqual(Object.keys(actual_object.__proto__).sort());
                 for (var key in change_object) {
                     var val = change_object[key];
                     var actual_val = actual_object[key];
