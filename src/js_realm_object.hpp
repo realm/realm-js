@@ -127,16 +127,22 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
     auto schema = realm_object.get_object_schema();
     auto name = schema.name;
 
-    if (!delegate || !delegate->m_constructors.count(name)) {
-        FunctionType constructor;
-        auto object = create_instance_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, new realm::js::RealmObject<T>(std::move(realm_object)));
+    auto internal = new realm::js::RealmObject<T>(std::move(realm_object));
+    try {
+        if (!delegate || !delegate->m_constructors.count(name)) {
+            FunctionType constructor;
+            auto object = create_instance_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, internal);
+            return object;
+        }
+
+        FunctionType constructor = delegate->m_constructors.at(name);
+        auto object = create_instance_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, internal);
         return object;
     }
-
-    FunctionType constructor = delegate->m_constructors.at(name);
-    auto object = create_instance_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, new realm::js::RealmObject<T>(std::move(realm_object)));
-
-    return object;
+    catch (const std::exception& e) {
+        delete internal;
+        throw;
+    }
 }
 
 template<typename T>
