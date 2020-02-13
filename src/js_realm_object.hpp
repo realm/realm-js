@@ -152,7 +152,7 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
         return object;
     }
     catch (const std::exception& e) {
-        delete internal;
+        //delete internal;
         throw;
     }
 }
