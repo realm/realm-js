@@ -15,7 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Updated Realm Core from ??? to Realm Core v6.1.0-alpha.3.
 * Updated Realm Sync from ??? to Realm Sync v5.1.0-alpha.1.
-* Updated Realm Object Store to commit 9a0a22b25e93786a61da90e7a9f7e94bb4291000.
+* Updated Realm Object Store to commit 98dda2dadbfb1fa9eb76e41b2f09ae7755e627e0.
 
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
