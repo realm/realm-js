@@ -108,6 +108,8 @@ public:
     ValueType box(double number)     { return Value::from_number(m_ctx, number); }
     ValueType box(StringData string) { return Value::from_string(m_ctx, string.data()); }
     ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
+    ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
+    ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
     ValueType box(Mixed)             { throw std::runtime_error("'Any' type is unsupported"); }
 
     ValueType box(Timestamp ts) {
@@ -205,31 +207,59 @@ struct Unbox<JSEngine, double> {
 };
 
 template<typename JSEngine>
+struct Unbox<JSEngine, Decimal128> {
+    static Decimal128 call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        return js::Value<JSEngine>::validated_to_decimal128(ctx->m_ctx, value, "Property");
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, ObjectId> {
+    static ObjectId call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        return js::Value<JSEngine>::validated_to_object_id(ctx->m_ctx, value, "Property");
+    }
+};
+
+template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<bool>> {
     static util::Optional<bool> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<bool>(value);
-}
+    }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<int64_t>> {
     static util::Optional<int64_t> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<int64_t>(value);
-}
+    }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<float>> {
     static util::Optional<float> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<float>(value);
-}
+    }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<double>> {
     static util::Optional<double> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<double>(value);
-}
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, util::Optional<Decimal128>> {
+    static util::Optional<Decimal128> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        return ctx->template unbox_optional<Decimal128>(value);
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, util::Optional<ObjectId>> {
+    static util::Optional<ObjectId> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        return ctx->template unbox_optional<ObjectId>(value);
+    }
 };
 
 template<typename JSEngine>

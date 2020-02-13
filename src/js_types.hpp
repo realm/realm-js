@@ -118,6 +118,8 @@ struct Value {
     static bool is_function(ContextType, const ValueType &);
     static bool is_null(ContextType, const ValueType &);
     static bool is_number(ContextType, const ValueType &);
+    static bool is_decimal128(ContextType, const ValueType &);
+    static bool is_object_id(ContextType, const ValueType &);
     static bool is_object(ContextType, const ValueType &);
     static bool is_string(ContextType, const ValueType &);
     static bool is_undefined(ContextType, const ValueType &);
@@ -130,6 +132,8 @@ struct Value {
     static ValueType from_boolean(ContextType, bool);
     static ValueType from_null(ContextType);
     static ValueType from_number(ContextType, double);
+    static ValueType from_decimal128(ContextType, Decimal128);
+    static ValueType from_object_id(ContextType, ObjectId);
     static ValueType from_string(ContextType ctx, const char *s) { return s ? from_nonnull_string(ctx, s) : from_null(ctx); }
     static ValueType from_string(ContextType ctx, StringData s) { return s ? from_nonnull_string(ctx, s) : from_null(ctx); }
     static ValueType from_string(ContextType ctx, const std::string& s) { return from_nonnull_string(ctx, s.c_str()); }
@@ -146,6 +150,8 @@ struct Value {
     static ObjectType to_date(ContextType, const ValueType &);
     static FunctionType to_function(ContextType, const ValueType &);
     static double to_number(ContextType, const ValueType &);
+    static Decimal128 to_decimal128(ContextType, const ValueType &);
+    static ObjectId to_object_id(ContextType, const ValueType &);
     static ObjectType to_object(ContextType, const ValueType &);
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, ValueType);
@@ -168,6 +174,8 @@ struct Value {
     VALIDATED(ObjectType, object)
     VALIDATED(String<T>, string)
     VALIDATED(OwnedBinaryData, binary)
+    VALIDATED(Decimal128, decimal128)
+    VALIDATED(ObjectId, object_id)
 
 #undef VALIDATED
 };
@@ -260,8 +268,10 @@ struct Object {
     VALIDATED(ObjectType, date)
     VALIDATED(FunctionType, function)
     VALIDATED(double, number)
+    VALIDATED(ObjectType, Decimal128)
     VALIDATED(ObjectType, object)
     VALIDATED(String<T>, string)
+    VALIDATED(ObjectType, ObjectId)
 
 #undef VALIDATED
 
@@ -345,6 +355,8 @@ struct ReturnValue {
     void set(const std::string &);
     void set(bool);
     void set(double);
+    void set(Decimal128);
+    void set(ObjectId);
     void set(int32_t);
     void set(uint32_t);
     void set_null();
@@ -385,6 +397,10 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
             case PropertyType::Float:
             case PropertyType::Double:
                 return is_number(context, value);
+            case PropertyType::Decimal:
+                return is_decimal128(context, value);
+            case PropertyType::ObjectId:
+                return is_object_id(context, value);
             case PropertyType::Bool:
                 return is_boolean(context, value);
             case PropertyType::String:
@@ -462,6 +478,10 @@ inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const uti
         return from_number(ctx, value.get<float>());
     case type_Double:
         return from_number(ctx, value.get<double>());
+    case type_Decimal:
+        return from_decimal128(ctx, value.get<Decimal128>());
+    case type_ObjectId:
+        return from_object_id(ctx, value.get<ObjectId>());
     case type_Timestamp:
         return from_timestamp(ctx, value.get<Timestamp>());
     case type_String:

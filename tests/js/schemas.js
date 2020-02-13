@@ -27,6 +27,20 @@ exports.TestObject = {
     }
 };
 
+exports.DecimalObject = {
+    name: 'DecimalObject',
+    properties: {
+        decimalCol: 'decimal'
+    }
+};
+
+exports.ObjectIdObject = {
+    name: 'ObjectIdObject',
+    properties: {
+        id: 'object id'
+    }
+};
+
 function PersonObject() {}
 PersonObject.schema = {
     name: 'PersonObject',
@@ -58,13 +72,15 @@ exports.PersonList = {
 exports.BasicTypes = {
     name: 'BasicTypesObject',
     properties: {
-        boolCol:   'bool',
-        intCol:    'int',
-        floatCol:  'float',
-        doubleCol: 'double',
-        stringCol: 'string',
-        dateCol:   'date',
-        dataCol:   'data',
+        boolCol:     'bool',
+        intCol:      'int',
+        floatCol:    'float',
+        doubleCol:   'double',
+        stringCol:   'string',
+        dateCol:     'date',
+        dataCol:     'data',
+        decimalCol:  'decimal',
+        objectIdCol: 'object id',
     }
 };
 
@@ -168,6 +184,8 @@ exports.PrimitiveArrays = {
         string: 'string[]',
         date:   'date[]',
         data:   'data[]',
+        decimal: 'decimal[]',
+        oid:    'object id[]',
 
         optBool:   'bool?[]',
         optInt:    'int?[]',
@@ -176,6 +194,8 @@ exports.PrimitiveArrays = {
         optString: 'string?[]',
         optDate:   'date?[]',
         optData:   'data?[]',
+        optDecimal: 'decimal?[]',
+        optOid:    'object id?[]'
     }
 };
 
@@ -358,4 +378,3 @@ exports.ObjectWithoutProperties = {
     name: 'ObjectWithoutProperties',
     properties: {}
 };
-

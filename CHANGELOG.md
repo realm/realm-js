@@ -1,10 +1,28 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Add support for the new `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
+* Add support for the new `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
+* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
+
+### Internal
+* Updated Realm Core from ??? to Realm Core v6.1.0-alpha.3.
+* Updated Realm Sync from ??? to Realm Sync v5.1.0-alpha.1.
+* Updated Realm Object Store to commit 9a0a22b25e93786a61da90e7a9f7e94bb4291000.
+
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
 ### Breaking changes
 * The notification callbacks from Realm.Sync.addListener have changed the format of ChangeEvent.changes() to pass out Realm objects instead of just the internal object ids. The objects associated with the `ChangeEvent.newRealm()` are `insertions`, and `newModifications` while the objects from `ChangeEvent.oldRealm()` are `deletions`, and `oldModifications`. The ambiguous `modifications` has been removed.
 
 ### Enhancements
-* None.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
