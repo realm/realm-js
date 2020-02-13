@@ -378,3 +378,39 @@ exports.ObjectWithoutProperties = {
     name: 'ObjectWithoutProperties',
     properties: {}
 };
+
+exports.EmbeddedObjectSchemas = [
+    {
+        name: 'Person',
+        properties: {
+            id: 'int',
+            dog: {
+                name: 'Dog',
+                properties: {
+                    'name': 'string',
+                    'color': 'string'
+                }
+            },
+            cars: 'Car[]',
+            truck: 'Car',
+            vans: { type: 'list', objectType: 'Car' },
+            cat: {
+                type: 'list',
+                name: 'Cat',
+                properties: {
+                    name: 'string'
+                }
+            }
+        }
+    },
+    {
+        name: 'Car',
+        primaryKey: 'id',
+        properties: {
+            id: 'int',
+            model: 'string',
+            mileage: { type: 'int', optional: true, indexed: true },
+            owners: { type: 'linkingObjects', objectType: 'Person', property: 'cars' }
+        }
+    }
+];

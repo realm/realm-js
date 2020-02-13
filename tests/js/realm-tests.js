@@ -1806,7 +1806,41 @@ module.exports = {
         TestCase.assertEqual(oid2.toHexString(), oid1.toHexString());
 
         realm.close();
+    },
+
+    testExpandEmbeddedObjectSchemas: function() {
+        const realm = new Realm({schema: schemas.EmbeddedObjectSchemas});
+
+        const schema = realm.schema;
+
+        TestCase.assertArrayLength(schema, 4);
+
+        let tableNames = [];
+        schema.forEach(os => tableNames.push(os.name));
+        tableNames.sort();
+        TestCase.assertArraysEqual(tableNames, ['Car', 'Cat', 'Dog', 'Person']);
+
+        schema.forEach(os => {
+            switch (os.name) {
+                case 'Car':
+                    TestCase.assertFalse(os.embedded);
+                    TestCase.assertEqual(os.primaryKey, 'id');
+                    break;
+                case 'Cat':
+                    TestCase.assertTrue(os.embedded);
+                    TestCase.assertUndefined(os.primaryKey);
+                    break;
+                case 'Dog':
+                    TestCase.assertTrue(os.embedded);
+                    TestCase.assertUndefined(os.primaryKey);
+                    break;
+                case 'Person':
+                    TestCase.assertFalse(os.embedded);
+                    TestCase.assertUndefined(os.primaryKey);
+                    break;
+            }
+        });
+
+        realm.close();
     }
-
-
 };

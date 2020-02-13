@@ -462,6 +462,8 @@ class Realm {
  * @property {string} name - Represents the object type.
  * @property {string} [primaryKey] - The name of a `"string"` or `"int"` property
  *   that must be unique across all objects of this type within the same Realm.
+ * @property {boolean} [embedded] - True if the object type is embedded. An embedded object
+ *   can be linked to by at most one parent object. Default value: false.
  * @property {Object<string, (Realm~PropertyType|Realm~ObjectSchemaProperty)>} properties -
  *   An object where the keys are property names and the values represent the property type.
  *
