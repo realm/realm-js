@@ -156,7 +156,7 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 #ifdef REALM_PLATFORM_NODE    
     }
     catch (const std::exception& e) {
-        //delete internal;
+        delete internal;
         throw;
     }
 #endif
