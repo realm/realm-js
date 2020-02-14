@@ -146,9 +146,6 @@ module.exports = {
     testBinaryQueries: function() {
         runQuerySuite(testCases.binaryTests);
     },
-    testDecimalQueries: function() {
-        runQuerySuite(testCases.decimalTests);
-    },
     testObjectQueries: function() {
         runQuerySuite(testCases.objectTests);
     },

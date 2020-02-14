@@ -36,10 +36,10 @@ if (isNodeProcess && process.platform === 'win32') {
 
 // catching segfaults during testing can help debugging
 // uncomment to enable segfault handler
-// if (isNodeProcess) {
-//     const SegfaultHandler = node_require('segfault-handler');
-//     SegfaultHandler.registerHandler("crash.log");
-// }
+if (isNodeProcess) {
+    const SegfaultHandler = node_require('segfault-handler');
+    SegfaultHandler.registerHandler("crash.log");
+}
 
 var TESTS = {
     ListTests: require('./list-tests'),
