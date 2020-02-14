@@ -414,3 +414,20 @@ exports.EmbeddedObjectSchemas = [
         }
     }
 ];
+
+exports.ContactSchema = {
+    name: 'Contact',
+    properties: {
+        name: 'string',
+        address: 'Address'
+    }
+};
+
+exports.AddressSchema = {
+    name: 'Address',
+    embedded: true,
+    properties: {
+        street: 'string',
+        city: 'string'
+    }
+};
