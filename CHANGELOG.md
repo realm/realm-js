@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+3.6.4 Release notes (2020-2-14)
 =============================================================
 ### Enhancements
 * None.
