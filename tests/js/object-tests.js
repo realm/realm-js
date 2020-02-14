@@ -264,7 +264,31 @@ module.exports = {
         TestCase.assertEqual(obj.objectCol.doubleCol, 3);
     },
 
-    testEnumerablePropertyNames: function() {
+    testEnumerablePropertyNamesRN: function() {
+        if (isNodeProcess) {
+            return;
+        }
+
+        const realm = new Realm({schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
+        let object;
+
+        realm.write(() => object = realm.create('AllTypesObject', allTypesValues));
+
+        const propNames = Object.keys(schemas.AllTypes.properties);
+        TestCase.assertArraysEqual(Object.keys(object), propNames, 'Object.keys');
+
+        for (let key in object) {
+            TestCase.assertEqual(key, propNames.shift());
+        }
+
+        TestCase.assertEqual(propNames.length, 0);
+    },
+
+    testEnumerablePropertyNamesNODE: function() {
+        if (!isNodeProcess) {
+            return;
+        }
+
         const realm = new Realm({schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
         let object;
 
