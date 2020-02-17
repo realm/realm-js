@@ -12,7 +12,7 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Realm Javascript](https://realm.io/docs/javascript/latest/#getting-started). Please notice that currently only node.js version 8 and 10 are supported.
+Please see the detailed instructions in our docs to use [Realm JavaScript](https://realm.io/docs/javascript/latest/#getting-started). Please notice that currently only node.js version 8 and 10 are supported.
 
 ## Documentation
 
