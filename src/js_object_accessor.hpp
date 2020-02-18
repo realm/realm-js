@@ -73,6 +73,10 @@ public:
 		}
 	}
 
+    bool is_embedded() const {
+        return m_object_schema ? bool(m_object_schema->is_embedded) : false;
+    }
+
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
         ValueType value = Object::get_property(m_ctx, object, !prop.public_name.empty() ? prop.public_name : prop.name);
@@ -93,6 +97,11 @@ public:
 
     template<typename T>
     T unbox(ValueType value, realm::CreatePolicy policy = realm::CreatePolicy::Skip, ObjKey current_obj = ObjKey());
+
+    Obj unbox_embedded(ValueType value, CreatePolicy policy, Obj& parent, ColKey col, size_t ndx) {
+        return realm::Object::create_embedded(*this, m_realm, *m_object_schema, value, policy, parent, col, ndx).obj();
+    }
+
 
     template<typename T>
     util::Optional<T> unbox_optional(ValueType value) {

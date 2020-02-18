@@ -1413,14 +1413,11 @@ module.exports = {
     testCreateEmbeddedObjects: function() {
         const realm = new Realm({schema: [schemas.ContactSchema, schemas.AddressSchema]});
         realm.write(() => {
-            let address = realm.create(schemas.AddressSchema.name, { street: 'Baker Street', city: 'London '});
-            realm.create(schemas.ContactSchema.name, { name: 'Sherlock Holmes', address: address });
-
             realm.create(schemas.ContactSchema.name, { name: 'Freddy Krueger', address: { street: 'Elm Street', city: 'Springwood' }} );
         });
 
-        TestCase.assertEqual(realm.objects(schemas.ContactSchema.name).length, 2);
-        TestCase.assertEqual(realm.objects(schemas.AddressSchema.name).length, 2);
+        TestCase.assertEqual(realm.objects(schemas.ContactSchema.name).length, 1);
+        TestCase.assertEqual(realm.objects(schemas.AddressSchema.name).length, 1);
 
         realm.close();
     }
