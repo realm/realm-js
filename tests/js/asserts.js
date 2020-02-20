@@ -117,7 +117,13 @@ module.exports = {
             compare = (i, a, b) => a >= b - 0.000001 && a <= b + 0.000001;
         }
         else if (val1.type === 'object') {
-            compare = (i, a, b) => Object.keys(a).every(key => a[key] === b[key]);
+            //HACK: do this instead of requiring Realm module here 
+            compare = (i, a, b) => {
+                if (a.constructor.prototype.__proto__.constructor.name == "RealmObject") {
+                    a = a.__proto__;
+                }
+                return Object.keys(a).every(key => a[key] === b[key]);
+            }
         }
         else {
             compare = (i, a, b) => a === b;

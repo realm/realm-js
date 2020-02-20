@@ -96,8 +96,15 @@ module.exports = {
                 continue;
             }
 
-            TestCase.assertSimilar(type, object[name], allTypesValues[name]);
-            TestCase.assertSimilar(type, nullObject[name], nullPropertyValues[name]);
+            let objectTarget = object[name];
+            let nullObjectTarget = nullObject[name];
+            if (type === "object") {
+                objectTarget = Object.getPrototypeOf(objectTarget);
+                nullObjectTarget = Object.getPrototypeOf(nullObjectTarget)
+            }
+
+            TestCase.assertSimilar(type, objectTarget, allTypesValues[name]);
+            TestCase.assertSimilar(type, nullObjectTarget, nullPropertyValues[name]);
         }
 
         TestCase.assertEqual(object.nonexistent, undefined);
