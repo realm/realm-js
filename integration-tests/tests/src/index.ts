@@ -16,24 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-if (!global.Realm) {
-    throw new Error("Expected 'Realm' to be available as a global");
-}
+const EXPECTED_GLOBALS = {
+    Realm: "function",
+    title: "string",
+    fs: "object",
+    path: "object",
+    environment: "object",
+    setTimeout: "function",
+    clearTimeout: "function"
+};
 
-if (!global.title) {
-    throw new Error("Expected 'title' to be available as a global");
-}
-
-if (!global.fs) {
-    throw new Error("Expected 'fs' to be available as a global");
-}
-
-if (!global.path) {
-    throw new Error("Expected 'path' to be available as a global");
-}
-
-if (!global.environment || typeof global.environment !== "object") {
-    throw new Error("Expected 'environment' to be available as a global");
+for (const [p, expectedType] of Object.entries(EXPECTED_GLOBALS)) {
+    if (typeof (global as any)[p] !== expectedType) {
+        throw new Error(`Expected '${p}' of type ${expectedType} on global`);
+    }
 }
 
 // Patch in a function that can skip running tests in specific environments
@@ -44,6 +40,7 @@ describe(global.title, () => {
     require("./realm-constructor");
     require("./iterators");
     require("./dynamic-schema-updates");
+    require("./results-listeners");
 });
 
 beforeEach(() => {
