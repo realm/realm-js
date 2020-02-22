@@ -552,21 +552,6 @@ static inline Napi::Object GetPrototype(Napi::Env env, const Napi::Object& objec
 	return prototypeObject;
 }
 
-
-static Napi::Value getPropertyDescriptor(Napi::Env env, const Napi::Object& target, const Napi::Value property) {
-	if (target.IsNull() || target.IsUndefined()) {
-		return env.Undefined();
-	}
-
-	if (!target.HasOwnProperty(property)) {
-		Napi::Object prototypeObject = GetPrototype(env, target);
-		return getPropertyDescriptor(env, prototypeObject, property);
-	}
-
-	Napi::Object propertyDescriptor = ObjectGetOwnPropertyDescriptor.Call({ target, property }).As<Napi::Object>();
-	return propertyDescriptor;
-}
-
 template<typename ClassType>
 Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
