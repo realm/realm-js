@@ -1,3 +1,27 @@
+X.Y.Z Release notes (YYYY-MM-DD)
+=============================================================
+### Enhancements
+* Realm JS now supports all Nodejs versions above Node 10.
+* Helper methods 'myinstance.keys()', 'myinstance.entries()' are now available to return the properties of that instance including the realm properties from the prototype.
+* An instance method 'toJSON()' is implemented on every Realm Object class to support 'JSON.stringify()' to work as expected on every instance
+
+### Breaking changes
+* Nodejs 8 is not supported anymore.
+* Realm objects properties are now defined as accessors on the instance prototype. (Previously they were defined as values on the instance)
+* Due to accessor properties change 'Object.keys()', 'Object.entries()', 'Object.getOwnPropertyDescriptors()' will not return the realm schema properties.
+
+
+### Fixed
+* ECMAScript 2015 Class syntax is fully supported now by moving all properties to be accessors on the instance prototype allowing Realm JS to invoke class constructors as constructors (using 'new' instead of previously calling them as functions with 'call')
+
+### Compatibility
+* None.
+
+### Internal
+* Complete rewrite of Realm JS for Nodejs on top of Node NAPI. 
+* Realm JS is now binary compatible between Nodejs versions. (due to NAPI API stability and backward compatibility)
+
+
 3.6.3 Release notes (2020-1-17)
 =============================================================
 ### Enhancements
