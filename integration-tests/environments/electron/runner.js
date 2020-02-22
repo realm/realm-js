@@ -127,6 +127,6 @@ Promise.race([
     process.exit(failures > 0 ? 1 : 0);
 }, (error) => {
     // Log any failures
-    console.error("Test harness failure:", error.stack);
+    console.error("Test harness failure:", error);
     process.exit(1);
 });
