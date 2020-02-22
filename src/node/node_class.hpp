@@ -24,6 +24,7 @@
 #include "js_util.hpp"
 
 #include "napi.h"
+#include <ctype.h>
 
 //forward declare the types for gcc to compile correctly
 namespace realm {
@@ -643,106 +644,186 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::Cal
 		throw Napi::Error::New(env, "Invalid object. No _instance member");
 	}
 
-	//Order of execution
-	//1.Consult target own properties
-	//2.Consult instance own properties
-	//3.Consult _proto chain
-	//4.Consult target chain
-	//5.Consult named/index handlers
-
-	//1.Consult target own properties
-	//this checks for property existence without going up the proptotype chain.
-	bool targetHasOwnProperty = target.HasOwnProperty(property);
-	if (targetHasOwnProperty) {
-		std::string propertyName = property.As<Napi::String>();
-		Napi::Value propertyValue = target.Get(property);
-		return scope.Escape(propertyValue);
-	}
-
-	//2.Consult instance prototype own properties. Handles native functions
-	Napi::Object instancePrototype = GetPrototype(env, instance);
-	bool instanceHasOwnProperty = instancePrototype.HasOwnProperty(property);
-	
-	if (instanceHasOwnProperty) {
+	//skip Symbols
+	if (!property.IsString()) {
 		Napi::Value propertyValue = instance.Get(property);
-		if (!property.IsString()) {
-			return scope.Escape(propertyValue);
-		}
-
-		std::string propertyName = property.As<Napi::String>();
-
-		//bind the function from the instance and set it on the target object. Napi does not work if a function is invoked with 'this' instance different than the class it is defined onto
-		if (propertyValue.IsFunction()) {
-			Napi::Value boundFunc = bindNativeFunction(env, propertyName, propertyValue.As<Napi::Function>(), instance);
-			if (boundFunc.IsUndefined()) {
-				return scope.Escape(propertyValue.As<Napi::Function>());
-			}
-
-			target.Set(propertyName, boundFunc);
-			return scope.Escape(boundFunc);
-		}
-
 		return scope.Escape(propertyValue);
 	}
 
-	//3.Consult _proto chain
-	if (target.HasOwnProperty("_proto")) {
-		Napi::Object proto = target.Get("_proto").As<Napi::Object>();
-		
-		//if the _proto prototype chain has the property return it
-		if (proto.Has(property)) {
+	Napi::String propertyName = property.As<Napi::String>();
+	std::string propertyText = propertyName;
 
-			//handle Symbol properties
-			if (!property.IsString()) {
-				Napi::Value propertyValue = proto.Get(property);
-				return scope.Escape(propertyValue);
-			}
+	if (propertyText == "_instance") {
+		return scope.Escape(instance);
+	}
+	
+	//Order of execution
+	//1.check for number and call index handlers
+	//2.check if its a native function
+	//3.get any other property name from the instance
 
-			std::string propertyName = property.As<Napi::String>();
 
-			Napi::Object propertyDescriptor = getPropertyDescriptor(env, proto, property).As<Napi::Object>();
-			if (propertyDescriptor.IsUndefined()) {
-				//if no descriptor then return undefined as the value of the property
-				return scope.Escape(env.Undefined());
-			}
+	//1.Check property is number and call index handler
+	char firstChar = *propertyText.c_str();
 
-			Napi::Value propertyValue = env.Undefined();
-			Napi::Function getValueFunc = propertyDescriptor.Get("get").As<Napi::Function>();
-			if (!getValueFunc.IsUndefined()) {
-			    //if there property getter bind the getter function to the instanceProxy and call it to get the value. 
-				Napi::Object instanceProxy = instance.Get("_instanceProxy").As<Napi::Object>();
-				Napi::Function boundGetValueFunc = bindFunction(env, propertyName, getValueFunc, instanceProxy).As<Napi::Function>();
-				propertyValue = boundGetValueFunc.Call({});
-			}
-			else {
-				//this is a data property. Get the value directly from property descriptor
-				propertyValue = propertyDescriptor.Get("value");
-			}
-
-			//if propertyValue is a function, bind it to the instanceProxy and set it as a function on the target
-			if (propertyValue.IsFunction()) {
-				Napi::Object instanceProxy = instance.Get("_instanceProxy").As<Napi::Object>();
-				Napi::Value boundFunc = bindFunction(env, propertyName, propertyValue.As<Napi::Function>(), instanceProxy);
-				target.Set(propertyName, boundFunc);
-				return scope.Escape(boundFunc);
-			}
-
-			return scope.Escape(propertyValue);
-		}
+	//myobject[""] and negative indexes return undefined in JavaScript
+	if (propertyText.length() == 0 || firstChar == '-') {
+		return scope.Escape(env.Undefined());
 	}
 
-	//5.Consult named/index handlers
-	//if the target prototype chain don't have the property invoke the named and index handlers to handle the get property call
-	if (!instance.Has(property)) {
-		Napi::Value result = getProxyTrapInvokeNamedAndIndexHandlers(info);
+	bool isNumber = isdigit(firstChar) || firstChar == '+';
+	if (isNumber) {
+		int32_t index = 0;
+		try {
+			index = std::stoi(propertyText);
+		}
+		catch (const std::exception & e) {
+			throw Napi::Error::New(env, "Invalid number " + propertyText);
+		}
+
+		WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
+		Napi::Value result = wrappedObject->m_indexPropertyHandlers->getter(info, instance, index);
 		return scope.Escape(result);
 	}
 
-	//4.Consult instance chain. (this will go up to isntance prototype Object which is Object for members like toString etc)
-	Napi::Value propertyValue = instance.Get(property);
 
+	//2. Check if its a native function
+	if (m_has_native_methodFunc(propertyText)) {
+		//TODO: cache this function in the wrappedObject of this instance
+		Napi::Value propertyValue = instance.Get(property);
+		Napi::Value result = bindFunction(env, propertyText, propertyValue.As<Napi::Function>(), instance);
+		return scope.Escape(result);
+	}
+
+	//return all other properties from the instance
+	Napi::Value propertyValue = instance.Get(property);
 	return scope.Escape(propertyValue);
 }
+
+
+//template<typename ClassType>
+//Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::CallbackInfo& info) {
+//	Napi::Env env = info.Env();
+//	Napi::EscapableHandleScope scope(env);
+//
+//	Napi::Object target = info[0].As<Napi::Object>();
+//	Napi::Value property = info[1];
+//
+//#if DEBUG
+//	std::string _debugproperty = property.IsString() ? (std::string)property.As<Napi::String>() : "";
+//	const char* _debugPropertyName = _debugproperty.c_str();
+//	(void)_debugPropertyName; //disable unused variable warning
+//#endif
+//
+//	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
+//	if (instance.IsUndefined() || instance.IsNull()) {
+//		throw Napi::Error::New(env, "Invalid object. No _instance member");
+//	}
+//
+//	
+//	//Order of execution
+//	//1.Consult target own properties
+//	//2.Consult instance own properties
+//	//3.Consult _proto chain
+//	//4.Consult target chain
+//	//5.Consult named/index handlers
+//
+//	//1.Consult target own properties
+//	//this checks for property existence without going up the proptotype chain.
+//	bool targetHasOwnProperty = target.HasOwnProperty(property);
+//	if (targetHasOwnProperty) {
+//		std::string propertyName = property.As<Napi::String>();
+//		Napi::Value propertyValue = target.Get(property);
+//		return scope.Escape(propertyValue);
+//	}
+//	
+//
+//
+//	//2.Consult instance prototype own properties. Handles native functions
+//	Napi::Object instancePrototype = GetPrototype(env, instance);
+//	bool instanceHasOwnProperty = instancePrototype.HasOwnProperty(property);
+//	
+//	if (instanceHasOwnProperty) {
+//		Napi::Value propertyValue = instance.Get(property);
+//		if (!property.IsString()) {
+//			return scope.Escape(propertyValue);
+//		}
+//
+//		std::string propertyName = property.As<Napi::String>();
+//
+//		//bind the function from the instance and set it on the target object. Napi does not work if a function is invoked with 'this' instance different than the class it is defined onto
+//		if (propertyValue.IsFunction()) {
+//			Napi::Value boundFunc = bindNativeFunction(env, propertyName, propertyValue.As<Napi::Function>(), instance);
+//			if (boundFunc.IsUndefined()) {
+//				return scope.Escape(propertyValue.As<Napi::Function>());
+//			}
+//
+//			target.Set(propertyName, boundFunc);
+//			return scope.Escape(boundFunc);
+//		}
+//
+//		return scope.Escape(propertyValue);
+//	}
+//	/*
+//	//3.Consult _proto chain
+//	if (target.HasOwnProperty("_proto")) {
+//		Napi::Object proto = target.Get("_proto").As<Napi::Object>();
+//		
+//		//if the _proto prototype chain has the property return it
+//		if (proto.Has(property)) {
+//
+//			//handle Symbol properties
+//			if (!property.IsString()) {
+//				Napi::Value propertyValue = proto.Get(property);
+//				return scope.Escape(propertyValue);
+//			}
+//
+//			std::string propertyName = property.As<Napi::String>();
+//
+//			Napi::Object propertyDescriptor = getPropertyDescriptor(env, proto, property).As<Napi::Object>();
+//			if (propertyDescriptor.IsUndefined()) {
+//				//if no descriptor then return undefined as the value of the property
+//				return scope.Escape(env.Undefined());
+//			}
+//
+//			Napi::Value propertyValue = env.Undefined();
+//			Napi::Function getValueFunc = propertyDescriptor.Get("get").As<Napi::Function>();
+//			if (!getValueFunc.IsUndefined()) {
+//			    //if there property getter bind the getter function to the instanceProxy and call it to get the value. 
+//				Napi::Object instanceProxy = instance.Get("_instanceProxy").As<Napi::Object>();
+//				Napi::Function boundGetValueFunc = bindFunction(env, propertyName, getValueFunc, instanceProxy).As<Napi::Function>();
+//				propertyValue = boundGetValueFunc.Call({});
+//			}
+//			else {
+//				//this is a data property. Get the value directly from property descriptor
+//				propertyValue = propertyDescriptor.Get("value");
+//			}
+//
+//			//if propertyValue is a function, bind it to the instanceProxy and set it as a function on the target
+//			if (propertyValue.IsFunction()) {
+//				Napi::Object instanceProxy = instance.Get("_instanceProxy").As<Napi::Object>();
+//				Napi::Value boundFunc = bindFunction(env, propertyName, propertyValue.As<Napi::Function>(), instanceProxy);
+//				target.Set(propertyName, boundFunc);
+//				return scope.Escape(boundFunc);
+//			}
+//
+//			return scope.Escape(propertyValue);
+//		}
+//	}
+//	/**/
+//
+//	//5.Consult named/index handlers
+//	//if the target prototype chain don't have the property invoke the named and index handlers to handle the get property call
+//	if (!instance.Has(property)) {
+//		Napi::Value result = getProxyTrapInvokeNamedAndIndexHandlers(info);
+//		return scope.Escape(result);
+//	}
+//
+//	//4.Consult instance chain. (this will go up to isntance prototype Object which is Object for members like toString etc)
+//	Napi::Value propertyValue = instance.Get(property);
+//
+//	return scope.Escape(propertyValue);
+//}
 
 template<typename ClassType>
 Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::CallbackInfo& info) {
