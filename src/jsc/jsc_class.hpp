@@ -244,7 +244,7 @@ inline JSValueRef ObjectWrap<ClassType>::call(JSContextRef ctx, JSObjectRef func
 template<typename ClassType>
 inline JSObjectRef ObjectWrap<ClassType>::construct(JSContextRef ctx, JSObjectRef constructor, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
     if (!reinterpret_cast<void*>(s_class.constructor)) {
-        *exception = jsc::Exception::value(ctx, s_class.name + " is not a constructor");
+        *exception = jsc::Exception::value(ctx, "Illegal constructor");
         return nullptr;
     }
 
