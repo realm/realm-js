@@ -38,7 +38,7 @@ module.exports = {
             TestCase.assertInstanceOf(obj.list, Realm.Collection);
         });
 
-        TestCase.assertThrowsContaining(() => new Realm.List(), 'Illegal constructor');
+        TestCase.assertThrowsContaining(() => new Realm.List(), 'constructor');
         TestCase.assertInstanceOf(Realm.List, Function);
     },
 
