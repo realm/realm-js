@@ -6,7 +6,7 @@ repoName = 'realm-js' // This is a global variable
 
 def nodeVersions = ['10.18.1']
 //changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version. For more see https://www.npmjs.com/package/spectron 
-def electronVersions = ['3.1.13']
+def electronVersions = ['5.0.13']
 def gitTag = null
 def formattedVersion = null
 dependencies = null
