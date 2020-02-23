@@ -21,7 +21,7 @@
     "command-line-args": "^4.0.6",
     "decompress": "^4.2.0",
     "electron": "^5.0.13",
-    "electron-builder": "^20.40.2",
+    "electron-builder": "^22.3.2",
     "https-proxy-agent": "^2.2.1",
     "mocha-junit-reporter": "^1.18.0",
     "mocha-remote-cli": "^0.9.1",
