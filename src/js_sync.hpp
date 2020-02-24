@@ -1019,7 +1019,6 @@ void SyncClass<T>::initialize_sync_manager(ContextType ctx, ObjectType this_obje
     client_config.user_agent_binding_info = user_agent_binding_info;
     SyncManager::shared().configure(client_config);
 }
-}
 
 template<typename T>
 void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
