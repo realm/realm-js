@@ -130,7 +130,8 @@ NOTE: The following methods have been removed in later versions.
 * None.
 
 ### Fixed
-* Connecting via SSL would crash on iOS 11.x due to an incorrect version availability check around an API introduced in iOS 12. ([realm/realm-sync#3230](https://github.com/realm/realm-sync/pull/3230), since v3.6.2).
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -138,6 +139,24 @@ NOTE: The following methods have been removed in later versions.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
+* None.
+
+3.6.4 Release notes (2020-2-14)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Connecting via SSL would crash on iOS 11.x due to an incorrect version availability check around an API introduced in iOS 12. ([realm/realm-sync#3230](https://github.com/realm/realm-sync/pull/3230), since v3.6.2).
+* Fix a bug which to lead to a fatal error when deleting a non-existing file. ([realm/realm-object-store#913](https://github.com/realm/realm-object-store/pull/913), since v1.0.0)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated Realm Object Store to commit 49458da2447499c370da0000c3b47c76e9ce9421.
 * Updated Realm Sync from v4.9.4 to v4.9.5.
 
 3.6.3 Release notes (2020-1-17)

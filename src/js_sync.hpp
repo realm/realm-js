@@ -1019,14 +1019,6 @@ void SyncClass<T>::initialize_sync_manager(ContextType ctx, ObjectType this_obje
     client_config.user_agent_binding_info = user_agent_binding_info;
     SyncManager::shared().configure(client_config);
 }
-
-template<typename T>
-void SyncClass<T>::initiate_client_reset(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
-    args.validate_count(1);
-    std::string path = Value::validated_to_string(ctx, args[0]);
-    if (!SyncManager::shared().immediately_run_file_actions(std::string(path))) {
-        throw std::runtime_error(util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
-    }
 }
 
 template<typename T>
