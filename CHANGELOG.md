@@ -16,9 +16,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Updated Realm Core v6.0.0-beta.3 to v6.0.1.
-* Updated Realm Sync v5.0.0-beta.2 to v5.0.0.
-* Updated Realm Object Store to commit e3ac880ea2a6d1ea52d93f072ea8542a2ffaf9f9.
+* Updated Realm Core v6.0.0-beta.3 to v6.0.3.
+* Updated Realm Sync v5.0.0-beta.2 to v5.0.1.
+* Updated Realm Object Store to commit 9ff26c32d4053193b51e9b0ec2b07ce08ff599ae.
 * Updated OpenSSL from v1.0.2k to v1.1.1b (ReactNative Android).
 * Switched to Android NDK r21 for Android builds. ([#2229](https://github.com/realm/realm-js/issues/2229))
 
