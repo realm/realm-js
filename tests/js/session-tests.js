@@ -1040,11 +1040,6 @@ module.exports = {
     },
 
     async testClientResetAtOpen() {
-        // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
-            return;
-        }
-
         if (!global.testAdminUserInfo) {
             throw new Error("Test requires an admin user");
         }
@@ -1059,17 +1054,12 @@ module.exports = {
         config.sync.fullSynchronization = true;
         config.sync.error = (sender, error) => {
             called = true;
-            try {
-                TestCase.assertEqual(error.name, 'ClientReset');
-                TestCase.assertDefined(error.config);
-                TestCase.assertNotEqual(error.config.path, '');
-                const path = realm.path;
-                realm.close();
-                Realm.Sync.initiateClientReset(path);
-                // open Realm with error.config, and copy required objects a Realm at `path`
-            }
-            catch (e) {
-            }
+            TestCase.assertEqual(error.name, 'ClientReset');
+            TestCase.assertDefined(error.config);
+            TestCase.assertNotEqual(error.config.path, '');
+            const path = realm.path;
+            realm.close();
+            Realm.Sync.initiateClientReset(path);
         };
 
         // open, download, create an object, upload and close
@@ -1095,11 +1085,10 @@ module.exports = {
 
         // open the Realm again and see it fail
         return Realm.open(config).then(realm => {
-            return Promise.reject();
+            throw new Error('Realm.open() should fail.');
         }).catch(error => {
             TestCase.assertTrue(called); // the error handler was called
             TestCase.assertEqual(error.message, 'Diverging histories (IDENT)');
-            return Promise.resolve();
         });
     },
 
