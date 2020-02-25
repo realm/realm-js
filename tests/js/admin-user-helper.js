@@ -9,7 +9,6 @@ const Realm = node_require('realm');
 const adminName = "realm-admin"
 const password = '';
 
-
 exports.createAdminUser = function () {
     const credentials = Realm.Sync.Credentials.usernamePassword(adminName, password);
     return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then((user) => {

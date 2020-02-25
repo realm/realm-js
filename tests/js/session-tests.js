@@ -1040,6 +1040,10 @@ module.exports = {
     },
 
     async testClientResetAtOpen() {
+        if (!isNodeProcess) {
+            return;
+        }
+
         if (!global.testAdminUserInfo) {
             throw new Error("Test requires an admin user");
         }
