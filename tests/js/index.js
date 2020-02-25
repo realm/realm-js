@@ -107,6 +107,11 @@ exports.registerTests = function (tests) {
 };
 
 exports.prepare = function (done) {
+    if (!global.enableSyncTests || !isNodeProcess || global.testAdminUserInfo) {
+        done();
+        return;
+    }
+
     require('./admin-user-helper')
         .createAdminUser()
         .then(userInfo => {
