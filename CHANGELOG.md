@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* It was not possible to make client resync if a table contained binary data.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,7 +12,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* None.
+* Updated Realm Core v6.0.3 to v6.0.4
+* Updated Realm Sync v5.0.1 to v5.0.2.
 
 4.0.0-beta.2 Release notes (2020-2-24)
 =============================================================
