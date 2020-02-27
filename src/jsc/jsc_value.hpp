@@ -124,6 +124,16 @@ inline bool jsc::Value::is_valid(const JSValueRef &value) {
 }
 
 template<>
+inline bool jsc::Value::is_decimal128(JSContextRef ctx, const JSValueRef &value) {
+    return JSValueIsObject(ctx, value); // FIXME: can we do better?
+}
+
+template<>
+inline bool jsc::Value::is_object_id(JSContextRef ctx, const JSValueRef &value) {
+    return JSValueIsObject(ctx, value); // FIXME: can we do better?
+}
+
+template<>
 inline JSValueRef jsc::Value::from_boolean(JSContextRef ctx, bool boolean) {
     return JSValueMakeBoolean(ctx, boolean);
 }
@@ -150,6 +160,12 @@ inline JSValueRef jsc::Value::from_undefined(JSContextRef ctx) {
 
 template<>
 JSValueRef jsc::Value::from_nonnull_binary(JSContextRef ctx, BinaryData data);
+
+template<>
+JSValueRef jsc::Value::from_decimal128(JSContextRef ctx, Decimal128 value);
+
+template<>
+JSValueRef jsc::Value::from_object_id(JSContextRef ctx, ObjectId value);
 
 template<>
 inline bool jsc::Value::to_boolean(JSContextRef ctx, const JSValueRef &value) {
@@ -225,6 +241,12 @@ inline JSObjectRef jsc::Value::to_function(JSContextRef ctx, const JSValueRef &v
 
 template<>
 OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, JSValueRef value);
+
+template<>
+Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, const JSValueRef& value);
+
+template<>
+ObjectId jsc::Value::to_object_id(JSContextRef ctx, const JSValueRef& value);
 
 } // js
 } // realm

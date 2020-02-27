@@ -21,6 +21,8 @@
 var Realm = require('realm');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
+var Decimal128 = require('bson').Decimal128;
+var ObjectId = require('bson').ObjectId;
 
 module.exports = {
     testResultsConstructor: function() {
@@ -263,10 +265,17 @@ module.exports = {
         var realm = new Realm({schema: [schemas.BasicTypes]});
         var objects = realm.objects('BasicTypesObject');
 
+        var decimals = [];
+        var oids = [];
+        for (var i = 0; i < 3; i++) {
+            decimals.push(Decimal128.fromString(`${i}`));
+            oids.push(new ObjectId(`0000002a9a7969d24bea4cf${i}`));
+        }
+
         realm.write(function() {
-            realm.create('BasicTypesObject', [false, 0, 0, 0, '0', new Date(0), new ArrayBuffer()]);
-            realm.create('BasicTypesObject', [true, 2, 2, 2, '2', new Date(2), new ArrayBuffer()]);
-            realm.create('BasicTypesObject', [false, 1, 1, 1, '1', new Date(1), new ArrayBuffer()]);
+            realm.create('BasicTypesObject', [false, 0, 0, 0, '0', new Date(0), new ArrayBuffer(), decimals[0], oids[0]]);
+            realm.create('BasicTypesObject', [true, 2, 2, 2, '2', new Date(2), new ArrayBuffer(), decimals[1], oids[1]]);
+            realm.create('BasicTypesObject', [false, 1, 1, 1, '1', new Date(1), new ArrayBuffer(), decimals[2], oids[2]]);
         });
 
         var numberProps = ['intCol', 'floatCol', 'doubleCol', 'stringCol'];
@@ -299,6 +308,16 @@ module.exports = {
         TestCase.assertEqual(objects[0].boolCol, true, 'first element descending for boolCol');
         TestCase.assertEqual(objects[1].boolCol, false, 'second element descending for boolCol');
         TestCase.assertEqual(objects[2].boolCol, false, 'third element descending for boolCol');
+
+        objects = objects.sorted('decimalCol', true);
+        for (var i = 0; i < 3; i++) {
+            TestCase.assertEqual(objects[i].decimalCol.toString(), decimals[i].toString(), `element ${i} ascending for decimal`);
+        }
+
+        objects = objects.sorted('decimalCol', false);
+        for (var i = 0; i < 3; i++) {
+            TestCase.assertEqual(objects[i].decimalCol.toString(), decimals[2-i].toString(), `element ${i} descending for decimal`);
+        }
     },
 
     testResultsInvalidation: function() {
@@ -893,5 +912,5 @@ module.exports = {
         });
 
         realm.close();
-    }
+    },
 };

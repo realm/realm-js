@@ -77,6 +77,7 @@ declare namespace Realm {
     interface ObjectSchema {
         name: string;
         primaryKey?: string;
+        embedded?: boolean;
         properties: PropertiesTypes;
     }
 

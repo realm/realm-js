@@ -9,6 +9,7 @@ export NPM_CONFIG_PROGRESS=false
 TARGET=$1
 CONFIGURATION=${2:-Release}
 NODE_VERSION=${3:-v8.15.0}
+USE_REALM_SYNC=${4:-1}
 
 if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
@@ -361,7 +362,7 @@ case "$TARGET" in
       USE_REALM_DEBUG=0
   fi
   npm run check-environment
-  npm ci --build-from-source=realm --realm_enable_sync --use_realm_debug=${USE_REALM_DEBUG}
+  npm ci --build-from-source=realm --realm_enable_sync=${USE_REALM_SYNC} --use_realm_debug=${USE_REALM_DEBUG}
   start_server
 
   # Change to a temp directory.

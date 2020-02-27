@@ -1,5 +1,27 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+NOTE 1: Requires MacOS v10.14 (Mojave) to build.
+
+### Enhancements
+* Add support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
+* Add support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
+* Add support for embedded objects. ([#2676](https://github.com/realm/realm-js/issues/2676))
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
+* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
+
+### Internal
+* Updated Realm Core from ??? to Realm Core v10.0.0-alpha.1.
+* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.1.
+* Updated Realm Object Store to commit f5003ce365757bb2106ba4c317d98fd83b7f6c4e.
+
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
 ### Breaking changes
 * `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([RJS-434](https://jira.mongodb.org/browse/RJS-434))
 
@@ -39,7 +61,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * The notification callbacks from Realm.Sync.addListener have changed the format of ChangeEvent.changes() to pass out Realm objects instead of just the internal object ids. The objects associated with the `ChangeEvent.newRealm()` are `insertions`, and `newModifications` while the objects from `ChangeEvent.oldRealm()` are `deletions`, and `oldModifications`. The ambiguous `modifications` has been removed.
 
 ### Enhancements
-* None.
 
 ### Fixed
 * None.
