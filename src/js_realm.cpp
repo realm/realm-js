@@ -106,6 +106,12 @@ std::string TypeErrorException::type_string(Property const& prop)
         case PropertyType::Data:
             ret = "binary";
             break;
+        case PropertyType::Decimal:
+            ret = "decimal128";
+            break;
+        case PropertyType::ObjectId:
+            ret = "ObjectId";
+            break;
         case PropertyType::LinkingObjects:
         case PropertyType::Object:
             ret = prop.object_type;

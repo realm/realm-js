@@ -516,16 +516,18 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             static const String schema_string = "schema";
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
-                ObjectType schema_object = Value::validated_to_array(ctx, schema_value, "schema");
+                auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
 #if REALM_ENABLE_SYNC
                 // Ensure that the permissions and ResultSets object definitions
                 // are present in the schema for query-based sync
                 if (config.sync_config && config.sync_config->is_partial) {
-                    auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
                     Object::call_method(ctx, realm_constructor, "_extendQueryBasedSchema", 1, &schema_value);
                 }
 #endif
-                config.schema.emplace(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors));
+                // embedded object schemas need to expanded into regular object schemas
+                ObjectType expanded_schema_object = Value::validated_to_array(ctx, Object::call_method(ctx, realm_constructor, "_expandEmbeddedObjectSchemas", 1, &schema_value));
+
+                config.schema.emplace(Schema<T>::parse_schema(ctx, expanded_schema_object, defaults, constructors));
                 schema_updated = true;
             }
 

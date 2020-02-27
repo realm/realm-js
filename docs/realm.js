@@ -462,6 +462,8 @@ class Realm {
  * @property {string} name - Represents the object type.
  * @property {string} [primaryKey] - The name of a `"string"` or `"int"` property
  *   that must be unique across all objects of this type within the same Realm.
+ * @property {boolean} [embedded] - True if the object type is embedded. An embedded object
+ *   can be linked to by at most one parent object. Default value: false.
  * @property {Object<string, (Realm~PropertyType|Realm~ObjectSchemaProperty)>} properties -
  *   An object where the keys are property names and the values represent the property type.
  *
@@ -527,7 +529,7 @@ class Realm {
  * use these forms.
  *
  * @typedef Realm~PropertyType
- * @type {("bool"|"int"|"float"|"double"|"string"|"date"|"data"|"list"|"linkingObjects"|"<ObjectType>")}
+ * @type {("bool"|"int"|"float"|"double"|"string"|"decimal"|"object id"|"date"|"data"|"list"|"linkingObjects"|"<ObjectType>")}
  *
  * @property {boolean} "bool" - Property value may either be `true` or `false`.
  * @property {number} "int" - Property may be assigned any number, but will be stored as a
@@ -537,6 +539,8 @@ class Realm {
  * @property {number} "double" - Property may be assigned any number, and will have no loss
  *   of precision.
  * @property {string} "string" - Property value may be any arbitrary string.
+ * @property {Decimal128} "decimal" - Property value may be a `Decimal128` object (see `bson` for details).
+ * @property {ObjectId} "object id" - Property valye may be an `ObjectId` object (see `bson` for details).
  * @property {Date} "date" - Property may be assigned any `Date` instance.
  * @property {ArrayBuffer} "data" - Property may either be assigned an `ArrayBuffer`
  *   or `ArrayBufferView` (e.g. `DataView`, `Int8Array`, `Float32Array`, etc.) instance,

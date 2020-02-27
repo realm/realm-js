@@ -80,6 +80,16 @@ inline bool node::Value::is_number(v8::Isolate* isolate, const v8::Local<v8::Val
 }
 
 template<>
+inline bool node::Value::is_decimal128(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    return value->IsObject(); // FIXME: can we do better?
+}
+
+template<>
+inline bool node::Value::is_object_id(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    return value->IsObject(); // FIXME: can we do better?
+}
+
+template<>
 inline bool node::Value::is_object(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return value->IsObject();
 }
@@ -222,6 +232,39 @@ inline v8::Local<v8::Object> node::Value::to_date(v8::Isolate* isolate, const v8
         return node::Function::construct(isolate, date_constructor, args.size(), args.data());
     }
     return to_object(isolate, value);
+}
+
+template<>
+inline v8::Local<v8::Value> node::Value::from_decimal128(v8::Isolate* isolate, Decimal128 number) {
+    auto realm_constructor = Value::validated_to_object(isolate, node::Object::get_global(isolate, "Realm"));
+    auto decimal_constructor = to_constructor(isolate, node::Object::get_property(isolate, realm_constructor, "_Decimal128"));
+    v8::Local<v8::Function> fromString = to_function(isolate, node::Object::get_property(isolate, decimal_constructor, "fromString"));
+    std::array<v8::Local<v8::Value>, 1> args { {from_nonnull_string(isolate, number.to_string())} };
+    return node::Function::call(isolate, fromString, args.size(), args.data());
+}
+
+template<>
+inline Decimal128 node::Value::to_decimal128(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    auto as_string = node::Object::call_method(isolate, to_object(isolate, value), "toString", 0, nullptr);
+    return Decimal128(to_string(isolate, as_string));
+}
+
+template<>
+inline v8::Local<v8::Value> node::Value::from_object_id(v8::Isolate* isolate, ObjectId objectId) {
+    auto realm_constructor = Value::validated_to_object(isolate, node::Object::get_global(isolate, "Realm"));
+    auto object_id_constructor = to_constructor(isolate, node::Object::get_property(isolate, realm_constructor, "_ObjectId"));
+
+    std::array<v8::Local<v8::Value>, 1> args { {from_string(isolate, objectId.to_string())} };
+    return node::Function::construct(isolate, object_id_constructor, args.size(), args.data());
+}
+
+template<>
+inline ObjectId node::Value::to_object_id(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    auto as_string = node::Object::call_method(isolate, to_object(isolate, value), "toHexString", 0, nullptr);
+    std::string oid = to_string(isolate, as_string);
+    ObjectId new_oid = ObjectId(oid.c_str());
+
+    return new_oid;
 }
 
 } // js

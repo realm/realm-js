@@ -27,6 +27,20 @@ exports.TestObject = {
     }
 };
 
+exports.DecimalObject = {
+    name: 'DecimalObject',
+    properties: {
+        decimalCol: 'decimal'
+    }
+};
+
+exports.ObjectIdObject = {
+    name: 'ObjectIdObject',
+    properties: {
+        id: 'object id'
+    }
+};
+
 function PersonObject() {}
 PersonObject.schema = {
     name: 'PersonObject',
@@ -58,13 +72,15 @@ exports.PersonList = {
 exports.BasicTypes = {
     name: 'BasicTypesObject',
     properties: {
-        boolCol:   'bool',
-        intCol:    'int',
-        floatCol:  'float',
-        doubleCol: 'double',
-        stringCol: 'string',
-        dateCol:   'date',
-        dataCol:   'data',
+        boolCol:     'bool',
+        intCol:      'int',
+        floatCol:    'float',
+        doubleCol:   'double',
+        stringCol:   'string',
+        dateCol:     'date',
+        dataCol:     'data',
+        decimalCol:  'decimal',
+        objectIdCol: 'object id',
     }
 };
 
@@ -168,6 +184,8 @@ exports.PrimitiveArrays = {
         string: 'string[]',
         date:   'date[]',
         data:   'data[]',
+        decimal: 'decimal[]',
+        oid:    'object id[]',
 
         optBool:   'bool?[]',
         optInt:    'int?[]',
@@ -176,6 +194,8 @@ exports.PrimitiveArrays = {
         optString: 'string?[]',
         optDate:   'date?[]',
         optData:   'data?[]',
+        optDecimal: 'decimal?[]',
+        optOid:    'object id?[]'
     }
 };
 
@@ -359,3 +379,55 @@ exports.ObjectWithoutProperties = {
     properties: {}
 };
 
+exports.EmbeddedObjectSchemas = [
+    {
+        name: 'Person',
+        properties: {
+            id: 'int',
+            dog: {
+                name: 'Dog',
+                properties: {
+                    'name': 'string',
+                    'color': 'string'
+                }
+            },
+            cars: 'Car[]',
+            truck: 'Car',
+            vans: { type: 'list', objectType: 'Car' },
+            cat: {
+                type: 'list',
+                name: 'Cat',
+                properties: {
+                    name: 'string'
+                }
+            }
+        }
+    },
+    {
+        name: 'Car',
+        primaryKey: 'id',
+        properties: {
+            id: 'int',
+            model: 'string',
+            mileage: { type: 'int', optional: true, indexed: true },
+            owners: { type: 'linkingObjects', objectType: 'Person', property: 'cars' }
+        }
+    }
+];
+
+exports.ContactSchema = {
+    name: 'Contact',
+    properties: {
+        name: 'string',
+        address: 'Address'
+    }
+};
+
+exports.AddressSchema = {
+    name: 'Address',
+    embedded: true,
+    properties: {
+        street: 'string',
+        city: 'string'
+    }
+};

@@ -66,6 +66,36 @@ JSValueRef jsc::Value::from_nonnull_binary(JSContextRef ctx, BinaryData data)
 }
 
 template<>
+JSValueRef jsc::Value::from_decimal128(JSContextRef ctx, Decimal128 value)
+{
+    static jsc::String s_realm = "Realm";
+    static jsc::String s_decimal = "_Decimal128";
+    static jsc::String s_from_string = "fromString";
+
+    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(ctx, global_object, s_realm);
+    JSObjectRef decimal_constructor = jsc::Object::validated_get_constructor(ctx, realm_constructor, s_decimal);
+
+    std::array<JSValueRef, 1> args = { {jsc::Value::from_nonnull_string(ctx, jsc::String(value.to_string()))} };
+
+    return jsc::Object::call_method(ctx, decimal_constructor, s_from_string, args.size(), args.data());
+}
+
+template<>
+JSValueRef jsc::Value::from_object_id(JSContextRef ctx, ObjectId value)
+{
+    static jsc::String s_realm = "Realm";
+    static jsc::String s_object_id = "_ObjectId";
+
+    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(ctx, global_object, s_realm);
+    JSObjectRef object_id_constructor = jsc::Object::validated_get_constructor(ctx, realm_constructor, s_object_id);
+
+    std::array<JSValueRef, 1> args { {from_nonnull_string(isolate, objectId.to_string())} };
+    return jsc::Function::construct(ctx, object_id_constructor, args.size(), args.data());
+}
+
+template<>
 OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, JSValueRef value)
 {
     static jsc::String s_array_buffer = "ArrayBuffer";
@@ -112,6 +142,44 @@ OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, JSValueRef value)
     }
 
     return OwnedBinaryData(std::move(buffer), byte_count);
+}
+
+template<>
+Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, JSValueRef value)
+{
+    static jsc::String s_realm = "Realm";
+    static jsc::String s_decimal = "_Decimal128";
+    static jsc::String s_to_string = "toString";
+
+    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(ctx, global_object, s_realm);
+    JSObjectRef decimal_constructor = jsc::Object::validated_get_constructor(ctx, realm_constructor, s_decimal);
+
+    if (!JSValueIsInstanceOfConstructor(ctx, value, decimal_constructor, nullptr)) {
+        throw std::runtime_error("Can only convert Decimal128")
+    }
+
+    JSValueRef as_string = jsc::Object::call_method(ctx, value, s_to_string, 0, nullptr);
+    return Decimal128(jsc::Value::to_string(ctx, as_string).c_str());
+}
+
+template<>
+ObjectId jsc::Value::to_object_id(JSContextRef ctx, JSValueRef value)
+{
+    static jsc::String s_realm = "Realm";
+    static jsc::String s_object_id = "_ObjectId";
+    static jsc::String s_to_hex_string = "toHexString";
+
+    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(ctx, global_object, s_realm);
+    JSObjectRef object_id_constructor = jsc::Object::validated_get_constructor(ctx, realm_constructor, s_object_id);
+
+    if (!JSValueIsInstanceOfConstructor(ctx, value, object_id_constructor, nullptr)) {
+        throw std::runtime_error("Can only convert ObjectId");
+    }
+
+    JSValueRef as_string = jsc::Object::call_method(ctx, value, s_to_hex_string, 0, nullptr);
+    return ObjectId(jsc::Value::to_string(ctx, as_string).c_str());
 }
 
 } // namespace js
