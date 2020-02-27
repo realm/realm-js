@@ -3,7 +3,11 @@ x.x.x Release notes (yyyy-MM-dd)
 NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 
 ### Breaking changes
+* `Realm.Sync.User` has been replaced by `Realm.User`.
 * `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([RJS-434](https://jira.mongodb.org/browse/RJS-434))
+* Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`, `Realm.Sync.User.isAdmin()`, `Realm.Sync.User.isAdminToken()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partionKey` has been added to the `sync` configuration as a replacement. Read more [here](XXX). ([]())
+* Permissions has been removed. You need to configure permissions through Stitch.
+* Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.adminUser()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`
 
 ### Enhancements
 * Add support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))

@@ -36,24 +36,11 @@
  * accept or reject the server's SSL certificate.
  *
  * @property {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration.
- * @deprecated
- * @property {boolean} [partial] - Whether this Realm should be opened in 'query-based synchronization' mode.
- *    Query-based synchronisation only synchronizes those objects that match the query specified in contrast
- *    to the normal mode of operation that synchronises all objects in a remote Realm.
- * @property {boolean} [fullSynchronization] - Whether this Realm should be opened in query-based or full
- *    synchronization mode. The default is query-based mode which only synchronizes objects that have been subscribed to.
- *    A fully synchronized Realm will synchronize the entire Realm in the background, irrespectively of the data being
- *    used or not.
  * @property {Object} [custom_http_headers] - A map (string, string) of custom HTTP headers.
- * @property {string} [customQueryBasedSyncIdentifier] - A custom identifier to append to the Realm url rather than the default
- *    identifier which is comprised of the user id and a random string. It allows you to reuse query based Realms across
- *    different devices.
  * @property {string} [clientResyncMode] A Client Resync is triggered if the device and server cannot agree on a common shared history
  *     for the Realm file, thus making it impossible for the device to upload or receive any changes.
  *     This can happen if the server is rolled back or restored from backup. Just having the device offline will not trigger a Client Resync.
- *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'manual'` as the default value for
- *     query-based sync and `'recover'` for full sync.
- *     Query-based synced Realm only support `'manual'`.
+ *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'recover'` as the default value.
  * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
        If not set, the Realm will be downloaded before opened.
  * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
@@ -467,17 +454,6 @@ class User {
     get token() { }
 
     /**
-     * Returns true if this user is an administrator.
-     * @type {bool}
-     */
-    get isAdmin() { }
-
-    /**
-     * Returns true if the token is an administrator token.
-     */
-    get isAdminToken() { }
-
-    /**
      * Creates the configuration object required to open a synchronized Realm.
      *
      * @param {Realm.PartialConfiguration} config - optional parameters that should override any default settings.
@@ -509,7 +485,6 @@ class User {
      * @example
      * {
      *   "user_id": "f7a8d2ad9768d73d9d161723935f6f95",
-     *   "is_admin": false,
      *   "accounts": [
      *     {
      *       "provider": "password",
@@ -520,86 +495,6 @@ class User {
      * }
      */
     retrieveAccount(provider, username) { }
-
-    /**
-     * Asynchronously retrieves all permissions associated with the user calling this method.
-     * @param {string} recipient the optional recipient of the permission. Can be either
-     * 'any', which is the default, 'currentUser', or 'otherUser' if you want only permissions
-     * belonging to the user or *not* belonging to the user.
-     * @returns {Promise} a Promise with a collection of permission objects that provides detailed
-     * information regarding the granted access.
-     */
-    getGrantedPermissions(recipient) { }
-
-    /**
-     * Changes the permissions of a Realm.
-     * @param {object} condition - A condition that will be used to match existing users against.
-     * This should be an object, containing either the key 'userId', or 'metadataKey' and 'metadataValue'.
-     * @param {string} realmUrl - The path to the Realm that you want to apply permissions to.
-     * @param {string} accessLevel - The access level you want to set: 'none', 'read', 'write' or 'admin'.
-     * @returns {Promise} a Promise that, upon completion, indicates that the permissions have been
-     * successfully applied by the server.
-     */
-    applyPermissions(condition, realmUrl, accessLevel) { }
-
-    /**
-     * Generates a token that can be used for sharing a Realm.
-     * @param {string} realmUrl - The Realm URL whose permissions settings should be changed. Use * to change
-     * the permissions of all Realms managed by this user.
-     * @param {string} accessLevel - The access level to grant matching users. Note that the access level
-     * setting is additive, i.e. you cannot revoke permissions for users who previously had a higher access level.
-     * Can be 'read', 'write' or 'admin'.
-     * @param {Date} [expiresAt] - Optional expiration date of the offer. If set to null, the offer doesn't expire.
-     * @returns {Promise} A Promise that, upon completion, contains a token that can be shared with another user,
-     * e.g. via email or message and then consumed by {@link Realm#Sync#User#.acceptPermissionOffer} to obtain
-     * permissions to a Realm.
-     */
-    offerPermissions(realmUrl, accessLevel, expiresAt) { }
-
-    /**
-     * Consumes a token generated by {@link Realm#Sync#User#offerPermissions offerPermissions} to obtain permissions to a shared Realm.
-     * @param {string} token - The token, generated by User.offerPermissions
-     * @returns {Promise} A Promise that, upon completion, contains the url of the Realm that the token has granted permissions to.
-     */
-    acceptPermissionOffer(token) { }
-
-    /**
-     * Invalidates a permission offer.
-     * Invalidating an offer prevents new users from consuming its token. It doesn't revoke any permissions that have
-     * already been granted.
-     * @param {string|PermissionOffer} permissionOfferOrToken - Either the token or the entire
-     * {@link PermissionOffer PermissionOffer} object that was generated with
-     * {@link Realm#Sync#User#offerPermissions offerPermissions}.
-     */
-    invalidatePermissionOffer(permissionOfferOrToken) { }
-
-    /**
-     * Asynchronously retrieve the permission offers that this user has created by invoking
-     * {@link Realm#Sync#User#offerPermissions offerPermissions}.
-     * @returns {Promise} A promise that, upon completion, contains a collection of {@link PermissionOffer PermissionOffer} objects.
-     */
-    getPermissionOffers() { }
-
-    // Deprecated
-    /**
-     * @deprecated to be removed in future versions. Use User.login(server, Credentials.usernamePassword) instead.
-     */
-    static register(server, username, password) { }
-
-    /**
-     * @deprecated to be removed in future versions. Use User.login(server, Credentials.adminToken) instead.
-     */
-    static adminUser(adminToken, server) { }
-
-    /**
-     * @deprecated to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
-     */
-    static registerWithProvider(server, options) { }
-
-    /**
-     * @deprecated to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
-     */
-    static authenticate(server, provider, options) { }
 }
 
 /**
@@ -745,138 +640,6 @@ class Session {
      * is specified the method will wait forever.
      */
     downloadAllServerChanges(timeoutMs) { }
-}
-
-/**
- * A managed Realm object representing a subscription. Subscriptions are used by Query-based Realms to define which
- * data should be available on the device.
- *
- * @property {string|Realm.Results} query - Defines the query handled by this subscription. A string representation
- *   is always returned. When setting the query either a string representation of the query or the
- *   {@link Realm.Results} directly can can be used. It is possible to get the string representation of a query
- *   using {@link Realm.Results.description()}.
- * @property {number} timeToLive - Defines, in milliseconds, for how long the subscription should be kept alive after
- *   last being used. If `null` the subscription is kept alive indefinitely. If set to a value
- *   {@link Subscription.expiresAt} returns the date after which Realm automatically will delete the subscription.
- *   Deleting the subscription implies the data covered by it are removed locally from the device, but not deleted on
- *   the server.
- * @memberOf Realm.Sync
- * @extends Realm.Object
- */
-class NamedSubscription {
-
-    /**
-     * Gets the current state of the subscription.
-     * Can be either:
-     *  - Realm.Sync.SubscriptionState.Error: An error occurred while creating or processing the query-based sync subscription.
-     *  - Realm.Sync.SubscriptionState.Creating: The subscription is being created.
-     *  - Realm.Sync.SubscriptionState.Pending: The subscription was created, but has not yet been processed by the sync server.
-     *  - Realm.Sync.SubscriptionState.Complete: The subscription has been processed by the sync server and data is being synced to the device.
-     *  - Realm.Sync.SubscriptionState.Invalidated: The subscription has been removed.
-     * @type {number}
-     */
-    get state() {}
-
-    /**
-     * Returns the error message if  the server encountered an error when evaluating the query covered by this
-     * subscription. `undefined` is returned if `state != Realm.Sync.SubscriptionState.Error`.
-     * @readonly
-     * @type {string}
-     */
-    get error() {}
-
-    /**
-     * Returns the date for when this subscription was first created.
-     */
-    get createdAt() {}
-
-    /**
-     * Returns when this subscription was last used or updated.
-     *
-     * "Used" in this context means that someone resubscribed to the subscription.
-     *
-     * "Updated" means that someone updated the {@link Subscription.query} or some other field part of this class.
-     *
-     * This field is NOT updated whenever the results of the query changes.
-     *
-     * This field plus {@link Subscription.timeToLive} defines {@link Subscription.expiresAt}.
-     */
-    get updatedAt() {}
-
-    /**
-     * Returns the point in time from which Realm can safely delete this subscription. This will
-     * happen automatically.
-     *
-     * Realm will attempt to cleanup expired subscriptions when the app is started or whenever
-     * any subscription is modified, there is no guarantee it will happen immediately after it
-     * expires.
-     */
-    get expiresAt() {}
-}
-
-/**
- * An immutable object encapsulating a snapshot of the state of a query-based sync subscriptions.
- *
- * @memberof Realm.Sync
- */
-class Subscription {
-    /**
-     * Gets the current state of the subscription.
-     * Can be either:
-     *  - Realm.Sync.SubscriptionState.Error: An error occurred while creating or processing the query-based sync subscription.
-     *  - Realm.Sync.SubscriptionState.Creating: The subscription is being created.
-     *  - Realm.Sync.SubscriptionState.Pending: The subscription was created, but has not yet been processed by the sync server.
-     *  - Realm.Sync.SubscriptionState.Complete: The subscription has been processed by the sync server and data is being synced to the device.
-     *  - Realm.Sync.SubscriptionState.Invalidated: The subscription has been removed.
-     * @type {number}
-     */
-    get state() { }
-
-    /**
-     * Returns the error message if  the server encountered an error when evaluating the query covered by this
-     * subscription. `undefined` is returned if `state != Realm.Sync.SubscriptionState.Error`.
-     * @type {string}
-     */
-    get error() { }
-
-    /**
-     * Unsubscribe a query-based synced `Realm.Results`. The state will change to `Realm.Sync.SubscriptionState.Invalidated`.
-     * The `Realm.Results` will not produce any meaningful values. Moreover, any objects matching the query will be
-     * removed if they are not matched by any other query. The object removal is done asynchronously.
-     */
-    unsubscribe() { }
-
-    /**
-     * Adds a listener `callback` which will be called when the state of the subscription changes.
-     * @param {function(subscription, state)} callback - A function to be called when changes to the subscription occur.
-     * @throws {Error} If `callback` is not a function.
-     * @example
-     * let subscription = results.subscribe();
-     * subscription.addListener((subscription, state) => {
-     *     switch (state) {
-     *     case Realm.Sync.SubscriptionState.Complete:
-     *         // results is ready to be consumed
-     *         break;
-     *     case Realm.Sync.SubscriptionState.Error:
-     *         console.log('An error occurred: ', subscription.error);
-     *         break;
-     *     }
-     * }
-     */
-    addListener(callback) { }
-
-    /**
-     * Remove the listener `callback` from the subscription instance.
-     * @param {function(subscription, state)} callback - Callback function that was previously
-     *   added as a listener through the {@link Subscription#addListener addListener} method.
-     * @throws {Error} If `callback` is not a function.
-     */
-    removeListener(callback) { }
-
-    /**
-     * Remove all listeners from the subscription instance.
-     */
-    removeAllListeners() { }
 }
 
 /**

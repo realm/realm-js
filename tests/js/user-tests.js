@@ -333,8 +333,6 @@ module.exports = {
       return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
           let config = user.createConfiguration();
           TestCase.assertEqual(config.sync.url, "realm://127.0.0.1:9080/default");
-          TestCase.assertUndefined(config.sync.partial);
-          TestCase.assertFalse(config.sync.fullSynchronization);
       });
   },
 
@@ -381,38 +379,6 @@ module.exports = {
       return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
           let config = user.createConfiguration({ sync: { url: 'http://127.0.0.1:9080/other_realm', partial: true }});
           TestCase.assertEqual(config.sync.url, 'http://127.0.0.1:9080/other_realm');
-          TestCase.assertUndefined(config.sync.fullSynchronization);
-          TestCase.assertTrue(config.sync.partial);
-      });
-  },
-
-  testCreateConfiguration_settingPartialAndFullSynchronizationThrows() {
-      return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
-          TestCase.assertThrowsContaining(() => {
-                  let config = {
-                    sync: {
-                      url: 'http://127.0.0.1:9080/~/default',
-                      partial: true,
-                      fullSynchronization: false
-                    }
-                  };
-                  user.createConfiguration(config);
-          }, "'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
-      });
-  },
-
-  testOpen_partialAndFullSynchronizationSetThrows() {
-      return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
-          TestCase.assertThrowsContaining(() => {
-              new Realm({
-                  sync: {
-                    user: user,
-                    url: 'http://127.0.0.1:9080/~/default',
-                    partial: false,
-                    fullSynchronization: true
-                  }
-              })
-          }, "'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
       });
   },
 
@@ -433,7 +399,6 @@ module.exports = {
           schema: [{ name: 'Dog', properties: { name: 'string' } }],
           sync: {
             url: 'realm://127.0.0.1:9080/~/foo',
-            fullSynchronization: true,
           }
         });
 
@@ -462,7 +427,6 @@ module.exports = {
           schema: [{ name: 'Dog', properties: { name: 'string' } }],
           sync: {
             url: 'realm://127.0.0.1:9080/~/foo',
-            fullSynchronization: true,
           }
         });
 

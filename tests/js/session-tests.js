@@ -121,7 +121,6 @@ module.exports = {
                 sync: {
                     user,
                     url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
-                    fullSynchronization: true,
                     custom_http_headers: {
                         'X-Foo': 'Bar'
                     }
@@ -153,7 +152,7 @@ module.exports = {
             // Tell refreshAccessToken to call our error handler after successfully getting a token
             postTokenRefreshChecks._notifyOnAccessTokenRefreshed = true;
 
-            const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm', error: postTokenRefreshChecks, fullSynchronization: true } });
+            const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm', error: postTokenRefreshChecks } });
             const realm = new Realm(config);
             const session = realm.syncSession;
             TestCase.assertInstanceOf(session, Realm.Sync.Session);
@@ -184,7 +183,7 @@ module.exports = {
                 user = u;
 
                 config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
+                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
 
@@ -218,7 +217,7 @@ module.exports = {
             .then(u => {
                 user = u;
                 config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
+                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                     schemaVersion: 1,
                 };
@@ -258,7 +257,7 @@ module.exports = {
             .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
                 let config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
+                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
                 return new Promise((resolve, reject) => {
@@ -307,7 +306,7 @@ module.exports = {
             .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
                 let config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true }
+                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` }
                 };
                 return new Promise((resolve, reject) => {
                     Realm.openAsync(config, (error, realm) => {
@@ -341,11 +340,7 @@ module.exports = {
     },
 
     testRealmOpenLocalRealm() {
-        const username = Utils.uuid();
         const expectedObjectsCount = 3;
-
-        const accessTokenRefreshed = this;
-        let successCounter = 0;
 
         let config = {
             schema: [{ name: 'Dog', properties: { name: 'string' } }],
@@ -364,14 +359,10 @@ module.exports = {
     },
 
     testRealmOpenAsyncLocalRealm() {
-        const username = Utils.uuid();
         const expectedObjectsCount = 3;
 
 
         return new Promise((resolve, reject) => {
-            const accessTokenRefreshed = this;
-            let successCounter = 0;
-
             let config = {
                 schema: [{ name: 'Dog', properties: { name: 'string' } }],
             };
@@ -403,7 +394,7 @@ module.exports = {
         return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
             return new Promise((resolve, _reject) => {
                 const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
-                config.sync.error = (sender, error) => {
+                config.sync.error = (_, error) => {
                     try {
                         TestCase.assertEqual(error.message, 'simulated error');
                         TestCase.assertEqual(error.code, 123);
@@ -436,7 +427,7 @@ module.exports = {
             .then(user => {
                 let config = {
                     schema: [schemas.ParentObject, schemas.NameObject],
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true }
+                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` }
                 };
                 return Realm.open(config)
             }).then(realm => {
@@ -601,254 +592,9 @@ module.exports = {
             });
     },
 
-    testDisableUrlCheck() {
-        const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
-            let config = {
-                sync: {
-                    user: user,
-                    url: `realm://127.0.0.1:9080/default/__partial/`,
-                    _disableQueryBasedSyncUrlChecks: true,
-                    fullSynchronization: false,
-                    error: () => {},
-                },
-                schema: [ { name: 'Dog', properties: { name: 'string' } } ]
-            };
-            const realm = new Realm(config);
-            TestCase.assertFalse(realm.isClosed);
-            realm.close();
-        });
-    },
-
-    testPartialUrlCheck() {
-        const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
-            let config = {
-                sync: {
-                    user: user,
-                    url: `realm://127.0.0.1:9080/default/__partial/`,  // <--- not allowed URL
-                    fullSynchronization: false,
-                }
-            };
-            TestCase.assertThrows(() => new Realm(config));
-        });
-    },
-
-    async testCustomPartialSyncIdentifier() {
-        const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username, true);
-        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
-        const customRealm = await Realm.open({
-            schema: [ { name: 'Dog', properties: { name: 'string' } } ],
-            sync: {
-                user: user,
-                url: 'realm://127.0.0.1:9080/default',
-                fullSynchronization: false,
-                customQueryBasedSyncIdentifier: "foo/bar",
-            }
-        });
-
-        // Ensure that the custom partial sync identifier was picked up and appended to the url
-        TestCase.assertTrue(customRealm.path.endsWith(encodeURIComponent("default/__partial/foo/bar")));
-        customRealm.close();
-
-        const basicRealm = await Realm.open({
-            schema: [ { name: 'Dog', properties: { name: 'string' } } ],
-            sync: {
-                user,
-                url: 'realm://127.0.0.1:9080/default',
-                fullSynchronization: false,
-            }
-        });
-
-        // Sanity check - when there's no custom identifier, it should not end in /foo/bar
-        TestCase.assertFalse(basicRealm.path.endsWith(encodeURIComponent("default/__partial/foo/bar")));
-        basicRealm.close();
-    },
-
-    testSubscribeInFullRealm() {
-        const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
-            let config = {
-                sync: {
-                    user: user,
-                    url: 'realm://127.0.0.1:9080/~/default',
-                    fullSynchronization: true, // <---- calling subscribe should fail
-                    error: (session, error) => console.log(error)
-                },
-                schema: [{ name: 'Dog', properties: { name: 'string' } }]
-            };
-
-            Realm.deleteFile(config);
-            const realm = new Realm(config);
-            TestCase.assertEqual(realm.objects('Dog').length, 0);
-            TestCase.assertThrows(() => realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe());
-            realm.close();
-        });
-    },
-
     testInvalidArugmentsToAutomaticSyncConfiguration() {
         TestCase.assertThrows(() => Realm.automaticSyncConfiguration('foo', 'bar')); // too many arguments
     },
-
-    async testPartialSync() {
-        if (!isNodeProcess) {
-            return;
-        }
-
-        const username = Utils.uuid();
-        const path = `/~/testPartialSync`;
-        const credentials = Realm.Sync.Credentials.nickname(username, true);
-        await runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH, path)
-        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
-
-        let config = Realm.Sync.User.current.createConfiguration({sync: {url: `realm://127.0.0.1:9080${path}`}});
-        config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
-        const realm = await Realm.open(config);
-
-        const session = realm.syncSession;
-        TestCase.assertInstanceOf(session, Realm.Sync.Session);
-        TestCase.assertEqual(session.user.identity, user.identity);
-        TestCase.assertEqual(session.state, 'active');
-
-        TestCase.assertEqual(realm.objects('Dog').length, 0);
-        const results1 = realm.objects('Dog').filtered("name == 'Lassy 1'");
-        const results2 = realm.objects('Dog').filtered("name == 'Lassy 2'");
-
-        const subscription1 = results1.subscribe();
-        TestCase.assertEqual(subscription1.state, Realm.Sync.SubscriptionState.Creating);
-
-        const subscription2 = results2.subscribe('foobar');
-        TestCase.assertEqual(subscription2.state, Realm.Sync.SubscriptionState.Creating);
-
-        const waitForSubscription = (results, subscription, subName, dogName) => {
-            return new Promise((resolve, reject) => {
-                subscription.addListener((subscription, state) => {
-                    if (state !== Realm.Sync.SubscriptionState.Complete) {
-                        return;
-                    }
-                    try {
-                        subscription.removeAllListeners();
-                        results.addListener((collection, changeset) => {
-                            TestCase.assertEqual(collection.length, 1);
-                            TestCase.assertEqual(collection[0].name, dogName);
-                            results.removeAllListeners();
-                            TestCase.assertEqual(subscription.name, subName);
-                            resolve();
-                        });
-                    }
-                    catch (e) {
-                        reject(e);
-                    }
-                });
-            });
-        };
-        await waitForSubscription(results1, subscription1, undefined, 'Lassy 1');
-        await waitForSubscription(results2, subscription2, 'foobar', 'Lassy 2');
-
-        let listOfSubscriptions = realm.subscriptions();
-        TestCase.assertEqual(listOfSubscriptions.length, 2 + 5); // 2 = the two subscriptions, 5 = the permissions classes
-        TestCase.assertEqual(listOfSubscriptions[0]['name'], '[Dog] name == "Lassy 1"'); // the query is the default name; notice the trailing whitespace!
-        TestCase.assertEqual(listOfSubscriptions[0]['query'], 'name == "Lassy 1"'); // notice the trailing whitespace!
-        TestCase.assertEqual(listOfSubscriptions[0]['objectType'], 'Dog');
-        TestCase.assertEqual(listOfSubscriptions[1]['name'], 'foobar');
-        TestCase.assertEqual(listOfSubscriptions[1]['query'], 'name == "Lassy 2"'); // notice the trailing whitespace!
-        TestCase.assertEqual(listOfSubscriptions[1]['objectType'], 'Dog');
-
-        listOfSubscriptions = realm.subscriptions('*bar');
-        TestCase.assertEqual(listOfSubscriptions.length, 1);
-
-        listOfSubscriptions = realm.subscriptions('RABOOF');
-        TestCase.assertEqual(listOfSubscriptions.length, 0);
-
-        subscription1.unsubscribe();
-        realm.unsubscribe('foobar');
-
-        await new Promise(resolve => {
-            realm.objects('__ResultSets').addListener((subscriptions) => {
-                if (subscriptions.length === 5) {
-                    resolve();
-                }
-            });
-        });
-
-        TestCase.assertEqual(realm.subscriptions().length, 5); // the 5 permissions classes
-    },
-
-    testPartialSyncWithDynamicSchema() {
-        if (!isNodeProcess) {
-            return;
-        }
-        const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        let user;
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(u => {
-            user = u;
-            let config = {
-                sync: {
-                    user: user,
-                    url: 'realm://127.0.0.1:9080/~/dynamicSchema',
-                    fullSynchronization: false,
-                    error: (session, error) => console.log(error)
-                }
-            };
-            return Realm.open(config);
-        }).then(realm => {
-            // Dog type shouldn't exist in the schema yet
-            TestCase.assertThrows(() => realm.objects('Dog'));
-            return new Promise(resolve => {
-                realm.addListener('schema', () => {
-                    if (realm.schema.find(s => s.name === 'Dog')) {
-                        setTimeout(() => resolve(realm), 0);
-                        realm.removeAllListeners();
-                    }
-                });
-                runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH, '/~/dynamicSchema');
-            });
-        }).then(realm => {
-            // Should now have Dog type in the schema, but no objects
-            TestCase.assertEqual(0, realm.objects('Dog').length);
-            return new Promise(resolve => {
-                realm.objects('Dog').subscribe().addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Complete) {
-                        subscription.removeAllListeners();
-                        resolve(realm);
-                    }
-                });
-            });
-        }).then(realm => {
-            // Should now have objects
-            TestCase.assertEqual(3, realm.objects('Dog').length);
-        });
-    },
-
-    // testRoleClassWithPartialSyncCanCoexistWithPermissionsClass() {
-    //     if (!isNodeProcess) {
-    //         return;
-    //     }
-
-    //     const username = Utils.uuid();
-    //     const credentials = Realm.Sync.Credentials.nickname(username);
-    //     return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
-    //         let config = {
-    //             schema: [{name: 'Role', properties: {name: 'string'}}],
-    //             sync: {
-    //                 user: user,
-    //                 url: 'realm://127.0.0.1:9080/~/roleClass',
-    //                 fullSynchronization: false,
-    //                 error: (session, error) => console.log(error)
-    //             }
-    //         };
-    //         return Realm.open(config);
-    //     }).then(realm => {
-    //         // verify that these don't throw
-    //         realm.objects('Role');
-    //         realm.objects('__Role');
-    //     });
-    // },
 
     testClientReset() {
         // FIXME: try to enable for React Native
@@ -913,34 +659,6 @@ module.exports = {
         });
     },
 
-    testClientResyncIncorrectModeForQueryBasedSync() {
-        // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
-            return;
-        }
-
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-            return new Promise((resolve, reject) => {
-                var realm;
-                let config = {
-                    sync: {
-                        user: user,
-                        url: 'realm://127.0.0.1:9080/~/dynamicSchema',
-                        fullSynchronization: false,
-                        clientResyncMode: 'recover'
-                    }
-                };
-                try {
-                    new Realm(config);
-                    reject('Should have failed if incorrect resync mode.');
-                }
-                catch (e) {
-                    resolve();
-                }
-            });
-        });
-    },
-
     async testClientResyncDiscard() {
         // FIXME: try to enable for React Native
         if (!isNodeProcess) {
@@ -953,7 +671,6 @@ module.exports = {
         const config1 = user.createConfiguration({ sync: { url: realmUrl } });
         config1.schema = [schemas.IntOnly];
         config1.sync.clientResyncMode = 'discard';
-        config1.sync.fullSynchronization = true;
         config1._cache = false;
 
         // open, download, create an object, upload and close
@@ -981,7 +698,6 @@ module.exports = {
         // open the Realm again without schema and download
         const config2 = user.createConfiguration({ sync: { url: realmUrl } });
         config2.sync.clientResyncMode = 'discard';
-        config2.sync.fullSynchronization = true;
         config2._cache = false;
         let realm2 = await Realm.open(config2);
         await realm2.syncSession.downloadAllServerChanges();
@@ -995,7 +711,6 @@ module.exports = {
                 sync: {
                     user: u,
                     url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
-                    fullSynchronization: true,
                 }
             };
             return Realm.open(config);
@@ -1017,7 +732,6 @@ module.exports = {
                 sync: {
                     user: u,
                     url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
-                    fullSynchronization: true,
                 }
             };
             return Realm.open(config);
@@ -1050,7 +764,6 @@ module.exports = {
                 sync: {
                     user: u,
                     url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
-                    fullSynchronization: true,
                 }
             };
             return Realm.open(config);
@@ -1061,7 +774,7 @@ module.exports = {
             TestCase.assertFalse(session.isConnected());
 
             return new Promise((resolve, reject) => {
-                session.addConnectionNotification((newState, oldState) => {
+                session.addConnectionNotification((newState, _) => {
                     let state = session.connectionState;
                     let isConnected = session.isConnected();
                     switch (newState) {
@@ -1097,7 +810,6 @@ module.exports = {
             sync: {
                 user: user,
                 url: 'realm://127.0.0.1:9080/~/testResumePause',
-                fullSynchronization: true,
             }
         };
 
@@ -1118,7 +830,6 @@ module.exports = {
             sync: {
                 user: user,
                 url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
-                fullSynchronization: true,
             }
         };
 
@@ -1140,7 +851,6 @@ module.exports = {
             sync: {
                 user: user,
                 url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
-                fullSynchronization: true,
             }
         };
 
@@ -1173,7 +883,6 @@ module.exports = {
                     schema: [schema],
                     sync:  {
                         url: REALM_URL,
-                        fullSynchronization: true
                     }
                 });
                 return Realm.open(admin1Config);
@@ -1190,7 +899,6 @@ module.exports = {
                     schema: [schema],
                     sync:  {
                         url: REALM_URL,
-                        fullSynchronization: true
                     }
                 });
                 return Realm.open(admin2Config).then(r => {
@@ -1224,7 +932,6 @@ module.exports = {
                     schema: [schema],
                     sync: {
                         url: REALM_URL,
-                        fullSynchronization: true
                     }
                 });
                 realm = new Realm(admin1Config);
@@ -1248,7 +955,6 @@ module.exports = {
                 const admin1Config = admin1.createConfiguration({
                     sync: {
                         url: REALM_URL,
-                        fullSynchronization: true
                     }
                 });
                 realm = new Realm(admin1Config);
@@ -1267,7 +973,6 @@ module.exports = {
                 const admin1Config = admin1.createConfiguration({
                     sync: {
                         url: REALM_URL,
-                        fullSynchronization: true
                     }
                 });
                 let realm = new Realm(admin1Config);
@@ -1288,7 +993,6 @@ module.exports = {
                 const admin1Config = admin1.createConfiguration({
                     sync: {
                         url: REALM_URL,
-                        fullSynchronization: true
                     }
                 });
                 let realm = new Realm(admin1Config);
@@ -1322,7 +1026,6 @@ module.exports = {
                 const config1 = admin1.createConfiguration({
                     sync: {
                         url: REALM_URL,
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'after-upload'
                     }
                 });
@@ -1352,7 +1055,6 @@ module.exports = {
                 const config1 = admin1.createConfiguration({
                     sync: {
                         url: REALM_URL,
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'immediately'
                     }
                 });
@@ -1379,7 +1081,6 @@ module.exports = {
                 sync: {
                     user: u,
                     url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
-                    fullSynchronization: true,
                 }
             };
             return Realm.open(config);

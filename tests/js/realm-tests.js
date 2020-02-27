@@ -255,26 +255,15 @@ module.exports = {
         }
         return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
             .then(user => {
-                const fullSyncConfig = user.createConfiguration({
-                    schema: [schemas.TestObject],
-                    sync: {
-                        url: `realm://127.0.0.1:9080/testRealmExists_${Utils.uuid()}`,
-                        fullSynchronization: true,
-                    },
-                });
-                TestCase.assertFalse(Realm.exists(fullSyncConfig));
-                new Realm(fullSyncConfig).close();
-                TestCase.assertTrue(Realm.exists(fullSyncConfig));
-
-                const queryBasedConfig = user.createConfiguration({
+                const config = user.createConfiguration({
                     schema: [schemas.TestObject],
                     sync: {
                         url: `realm://127.0.0.1:9080/testRealmExists_${Utils.uuid()}`,
                     },
                 });
-                TestCase.assertFalse(Realm.exists(queryBasedConfig));
-                new Realm(queryBasedConfig).close();
-                TestCase.assertTrue(Realm.exists(queryBasedConfig));
+                TestCase.assertFalse(Realm.exists(config));
+                new Realm(config).close();
+                TestCase.assertTrue(Realm.exists(config));
             });
     },
 
@@ -1384,7 +1373,7 @@ module.exports = {
             .then(user => {
                 const config = {
                     schema: [schemas.TestObject],
-                    sync: {user, url: 'realm://127.0.0.1:9080/~/test', fullSynchronization: true },
+                    sync: {user, url: 'realm://127.0.0.1:9080/~/test' },
                 };
 
                 const realm = new Realm(config);
@@ -1602,7 +1591,6 @@ module.exports = {
             schema: [schemas.TestObject],
             sync: {
                 url: `realm://127.0.0.1:9080/${realmId}`,
-                fullSynchronization: false,
             },
         };
 
@@ -1619,7 +1607,7 @@ module.exports = {
                 return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
             }).then((user2) => {
                 const dynamicConfig = {
-                    sync: { user: user2, url: `realm://127.0.0.1:9080/${realmId}`, fullSynchronization: false },
+                    sync: { user: user2, url: `realm://127.0.0.1:9080/${realmId}` },
                 };
                 return Realm.open(dynamicConfig);
             }).then(r => {
