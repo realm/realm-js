@@ -976,11 +976,12 @@ void SyncClass<T>::initialize_sync_manager(ContextType ctx, ObjectType this_obje
     args.validate_count(1);
     std::string user_agent_binding_info = Value::validated_to_string(ctx, args[0]);
     ensure_directory_exists_for_file(default_realm_file_directory());
-    SyncClientConfig client_config;
-    client_config.base_file_path = default_realm_file_directory();
-    client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
-    client_config.user_agent_binding_info = user_agent_binding_info;
-    SyncManager::shared().configure(client_config);
+
+    SyncClientConfig config;
+    config.base_file_path = default_realm_file_directory();
+    config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
+    config.user_agent_binding_info = user_agent_binding_info;
+    SyncManager::shared().configure(config);
 }
 
 template<typename T>
@@ -990,6 +991,11 @@ void SyncClass<T>::initiate_client_reset(ContextType ctx, ObjectType this_object
     if (!SyncManager::shared().immediately_run_file_actions(std::string(path))) {
         throw std::runtime_error(util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
     }
+
+    SyncClientConfig client_config;
+    client_config.base_file_path = default_realm_file_directory();
+    client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
+    SyncManager::shared().configure(client_config);
 }
 
 template<typename T>

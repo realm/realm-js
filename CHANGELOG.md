@@ -7,8 +7,23 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
+* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
+
+### Internal
+* Updated Realm Core v6.0.3 to v6.0.4
+* Updated Realm Sync v5.0.1 to v5.0.2.
+
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
 * None.
+
+### Fixed
+* It was not possible to make client resync if a table contained binary data.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -18,7 +33,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * None.
 
-x.x.x Release notes (yyyy-MM-dd)
+4.0.0-beta.2 Release notes (2020-2-24)
 =============================================================
 ### Breaking changes
 * The notification callbacks from Realm.Sync.addListener have changed the format of ChangeEvent.changes() to pass out Realm objects instead of just the internal object ids. The objects associated with the `ChangeEvent.newRealm()` are `insertions`, and `newModifications` while the objects from `ChangeEvent.oldRealm()` are `deletions`, and `oldModifications`. The ambiguous `modifications` has been removed.
@@ -27,7 +42,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
@@ -36,9 +50,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Updated Realm Core v6.0.0-beta.3 to v6.0.1.
-* Updated Realm Sync v5.0.0-beta.2 to v5.0.0.
-* Updated Realm Object Store to commit e3ac880ea2a6d1ea52d93f072ea8542a2ffaf9f9.
+* Updated Realm Core v6.0.0-beta.3 to v6.0.3.
+* Updated Realm Sync v5.0.0-beta.2 to v5.0.1.
+* Updated Realm Object Store to commit 9ff26c32d4053193b51e9b0ec2b07ce08ff599ae.
 * Updated OpenSSL from v1.0.2k to v1.1.1b (ReactNative Android).
 * Switched to Android NDK r21 for Android builds. ([#2229](https://github.com/realm/realm-js/issues/2229))
 
@@ -150,7 +164,8 @@ NOTE: The following methods have been removed in later versions.
 * None.
 
 ### Fixed
-* Connecting via SSL would crash on iOS 11.x due to an incorrect version availability check around an API introduced in iOS 12. ([realm/realm-sync#3230](https://github.com/realm/realm-sync/pull/3230), since v3.6.2).
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -158,6 +173,24 @@ NOTE: The following methods have been removed in later versions.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
+* None.
+
+3.6.4 Release notes (2020-2-14)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Connecting via SSL would crash on iOS 11.x due to an incorrect version availability check around an API introduced in iOS 12. ([realm/realm-sync#3230](https://github.com/realm/realm-sync/pull/3230), since v3.6.2).
+* Fix a bug which to lead to a fatal error when deleting a non-existing file. ([realm/realm-object-store#913](https://github.com/realm/realm-object-store/pull/913), since v1.0.0)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated Realm Object Store to commit 49458da2447499c370da0000c3b47c76e9ce9421.
 * Updated Realm Sync from v4.9.4 to v4.9.5.
 
 3.6.3 Release notes (2020-1-17)
