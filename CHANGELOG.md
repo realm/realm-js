@@ -2,6 +2,9 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 
+### Breaking changes
+* `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([RJS-434](https://jira.mongodb.org/browse/RJS-434))
+
 ### Enhancements
 * Add support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
 * Add support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
@@ -20,24 +23,6 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.1.
 * Updated Realm Object Store to commit f5003ce365757bb2106ba4c317d98fd83b7f6c4e.
 
-x.x.x Release notes (yyyy-MM-dd)
-=============================================================
-### Breaking changes
-* `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([RJS-434](https://jira.mongodb.org/browse/RJS-434))
-
-### Enhancements
-* None.
-
-### Fixed
-
-### Compatibility
-* Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
-* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
-
-### Internal
-* Updated Realm Core v6.0.3 to v6.0.4
-* Updated Realm Sync v5.0.1 to v5.0.2.
 
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
