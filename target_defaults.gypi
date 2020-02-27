@@ -17,7 +17,7 @@
     "cflags_cc": [
       "-fexceptions",
       "-frtti",
-      "-std=c++14",
+      "-std=c++17",
       "-fvisibility=hidden",
       "<@(warning-flags)"
     ],
@@ -38,12 +38,12 @@
       }],
       ["OS=='mac'", {
         "xcode_settings": {
-          "CLANG_CXX_LANGUAGE_STANDARD": "c++14",
+          "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
           "CLANG_CXX_LIBRARY": "libc++",
           "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
           "GCC_ENABLE_CPP_RTTI": "YES",
           "GCC_SYMBOLS_PRIVATE_EXTERN": "YES",
-          "MACOSX_DEPLOYMENT_TARGET": "10.9",
+          "MACOSX_DEPLOYMENT_TARGET": "10.14",
           "OTHER_LDFLAGS": ["-framework Foundation"],
           "WARNING_CFLAGS": [ "<@(warning-flags)" ]
         }

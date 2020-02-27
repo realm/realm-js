@@ -1,5 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+NOTE 1: Requires MacOS v10.14 (Mojave) to build.
+
 ### Enhancements
 * Add support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
 * Add support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
