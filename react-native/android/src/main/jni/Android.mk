@@ -73,15 +73,12 @@ LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
 LOCAL_SRC_FILES += src/object-store/src/thread_safe_reference.cpp
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_SRC_FILES += src/object-store/src/sync/async_open_task.cpp
-LOCAL_SRC_FILES += src/object-store/src/sync/partial_sync.cpp
-LOCAL_SRC_FILES += src/object-store/src/sync/sync_config.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_manager.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_session.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_user.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_permission.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_file.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_metadata.cpp
-LOCAL_SRC_FILES += src/object-store/src/sync/impl/work_queue.cpp
 endif
 
 LOCAL_C_INCLUDES := src
