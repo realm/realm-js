@@ -103,9 +103,6 @@
         "src/object-store/src/sync/impl/sync_file.hpp",
         "src/object-store/src/sync/impl/sync_metadata.hpp",
         "src/object-store/src/sync/impl/work_queue.hpp",
-        "src/object-store/src/server/adapter.hpp",
-        "src/object-store/src/server/admin_realm.hpp",
-        "src/object-store/src/server/global_notifier.hpp",
         "src/object-store/src/util/aligned_union.hpp",
         "src/object-store/src/util/atomic_shared_ptr.hpp",
         "src/object-store/src/util/event_loop_dispatcher.hpp",
@@ -139,9 +136,6 @@
         ["realm_enable_sync", {
           "dependencies": [ "realm-sync" ],
           "sources": [
-            "src/object-store/src/server/adapter.cpp",
-            "src/object-store/src/server/admin_realm.cpp",
-            "src/object-store/src/server/global_notifier.cpp",
             "src/object-store/src/sync/impl/sync_file.cpp",
             "src/object-store/src/sync/impl/sync_metadata.cpp",
             "src/object-store/src/sync/impl/work_queue.cpp",
