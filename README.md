@@ -34,11 +34,11 @@ In case you don't want to use the precompiled version on npm, you can build Real
 
 Prerequisites:
 * Xcode 9.4+
-* node.js version 8 or 10
+* node.js version 10
 * nvm (on Mac)
 * cocoapods (on Mac)
 * Android SDK 23+
-* [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases)
+* [Android NDK 21](https://developer.android.com/ndk/downloads/index.html)
 
 Clone RealmJS repository:
 

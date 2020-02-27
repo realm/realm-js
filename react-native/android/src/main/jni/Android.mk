@@ -9,8 +9,8 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := crypto-$(TARGET_ARCH_ABI)
-LOCAL_EXPORT_C_INCLUDES := core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/include
-LOCAL_SRC_FILES := core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/lib/libcrypto.a
+LOCAL_EXPORT_C_INCLUDES := core/include/openssl
+LOCAL_SRC_FILES := core/lib/libcrypto-$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 endif
 
@@ -32,8 +32,8 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := ssl-$(TARGET_ARCH_ABI)
-LOCAL_EXPORT_C_INCLUDES := core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/include
-LOCAL_SRC_FILES := core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/lib/libssl.a
+LOCAL_EXPORT_C_INCLUDES := core/include
+LOCAL_SRC_FILES := core/lib/libssl-$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -90,7 +90,7 @@ LOCAL_C_INCLUDES += src/object-store/src
 LOCAL_C_INCLUDES += src/object-store/external/json
 LOCAL_C_INCLUDES += vendor
 LOCAL_C_INCLUDES += core/include
-LOCAL_C_INCLUDES += core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/include
+LOCAL_C_INCLUDES += core/include/openssl
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_C_INCLUDES += src/object-store/src/sync
 endif
