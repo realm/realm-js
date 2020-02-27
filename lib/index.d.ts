@@ -616,26 +616,6 @@ declare namespace Realm.Sync {
         readonly type: string;
     }
 
-    /**
-     * ChangeEvent
-     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.ChangeEvent.html }
-     */
-    interface ChangeEvent {
-        readonly changes: { [object_type: string]: ObjectChanges };
-        readonly oldRealm: Realm;
-        readonly path: string;
-        readonly realm: Realm;
-    }
-
-    type RealmListenerEventName = 'available' | 'change' | 'delete';
-
-    interface RealmListenerConfiguration {
-        serverUrl: string;
-        adminUser: User;
-        filterRegex: string;
-        sslConfiguration?: SSLConfiguration;
-    }
-
     type LogLevel = 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off';
 
     enum NumericLogLevel {
@@ -650,74 +630,17 @@ declare namespace Realm.Sync {
         Off,
     }
 
-    /**
-     * LocalRealm
-     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.LocalRealm.html }
-     */
-    interface LocalRealm {
-        readonly path: string;
-        realm(): Realm;
-    }
-
-    type RealmWatchPredicate = (realmPath: string) => boolean;
-
-    /**
-     * @deprecated, to be removed in future versions
-     */
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
-    /**
-     * @deprecated, to be removed in future versions
-     */
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): Promise<void>;
-    function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
-    function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): Promise<void>;
-    function removeAllListeners(): Promise<void>;
-    function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     function setLogLevel(logLevel: LogLevel): void;
     function setLogger(callback: (level: NumericLogLevel, message: string) => void): void;
     function setUserAgent(userAgent: string): void;
     function initiateClientReset(path: string): void;
     function _hasExistingSessions(): boolean;
     function reconnect(): void;
-    function localListenerRealms(regex: string): Array<LocalRealm>;
 
     /**
      * @deprecated, to be removed in future versions
      */
     function setFeatureToken(token: string): void;
-
-    type Instruction = {
-        type: 'INSERT' | 'SET' | 'DELETE' | 'CLEAR' | 'LIST_SET' | 'LIST_INSERT' | 'LIST_ERASE' | 'LIST_CLEAR' | 'ADD_TYPE' | 'ADD_PROPERTIES' | 'CHANGE_IDENTITY' | 'SWAP_IDENTITY'
-        object_type: string,
-        identity: string,
-        values: any | undefined
-        list_index: any | undefined
-        object_identity: any | undefined
-        new_identity: any | undefined,
-        property: any | undefined,
-        properties: any | undefined,
-        primary_key: string | undefined
-    }
-
-    class Adapter {
-        constructor(
-            local_path: string,
-            server_url: string,
-            admin_user: User,
-            filter: string | RealmWatchPredicate,
-            change_callback: Function,
-            ssl?: SSLConfiguration
-        )
-
-        /**
-         * Advance the to the next transaction indicating that you are done processing the current instructions for the given Realm.
-         * @param path the path for the Realm to advance
-         */
-        advance(path: string): void;
-        close(): void;
-        current(path: string): Array<Instruction>;
-        realmAtPath(path: string, schema?: ObjectSchema[]): Realm
-    }
 }
 
 declare namespace Realm.Permissions {
