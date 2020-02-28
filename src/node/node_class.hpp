@@ -1060,16 +1060,14 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 			for (auto& property : schema.persisted_properties) {
 				std::string propName = property.public_name.empty() ? property.name : property.public_name;
 				node::String* name = getCachedPropertyName(propName);
-				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), (napi_property_attributes)(napi_writable | napi_enumerable), 
-					(void*)name);
+				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), napi_enumerable, (void*)name);
 				properties.push_back(descriptor);
 			}
 
 			for (auto& property : schema.computed_properties) {
 				std::string propName = property.public_name.empty() ? property.name : property.public_name;
 				node::String* name = getCachedPropertyName(propName);
-				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), (napi_property_attributes)(napi_writable | napi_enumerable),
-					(void*)name);
+				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), napi_enumerable, (void*)name);
 				properties.push_back(descriptor);
 			}
 
@@ -1137,7 +1135,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 			std::string propName = property.public_name.empty() ? property.name : property.public_name;
 			if (!constructorPrototype.HasOwnProperty(propName)) {
 				node::String* name = getCachedPropertyName(propName);
-				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), (napi_property_attributes)(napi_writable | napi_enumerable), (void*)name);
+				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), napi_enumerable, (void*)name);
 				properties.push_back(descriptor);
 			}
 		}
@@ -1147,7 +1145,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 			//don't redefine if exists
 			if (!constructorPrototype.HasOwnProperty(propName)) {
 				node::String* name = getCachedPropertyName(propName);
-				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), (napi_property_attributes)(napi_writable | napi_enumerable), (void*)name);
+				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), napi_enumerable, (void*)name);
 				properties.push_back(descriptor);
 			}
 		}
