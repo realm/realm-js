@@ -22,10 +22,10 @@
         ["realm_enable_sync", {
           "sources": [
             "src/js_sync.hpp",
+            "src/js_app.hpp",
+            "src/js_app_credentials.hpp",
             "src/node/sync_logger.cpp",
             "src/node/sync_logger.hpp",
-            "src/node/js_adapter.hpp",
-            "src/node/js_global_notifier.hpp",
           ]
         }]
       ],

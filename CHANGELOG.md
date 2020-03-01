@@ -10,9 +10,10 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.adminUser()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`
 
 ### Enhancements
-* Add support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
-* Add support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
-* Add support for embedded objects. ([#2676](https://github.com/realm/realm-js/issues/2676))
+* Added support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
+* Added support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
+* Added support for embedded objects. ([#2676](https://github.com/realm/realm-js/issues/2676))
+* Added `Realm.App`.
 
 ### Fixed
 * None.
