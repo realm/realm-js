@@ -55,11 +55,14 @@ public:
     static void get_server(ContextType, ObjectType, ReturnValue &);
     static void get_identity(ContextType, ObjectType, ReturnValue &);
     static void get_token(ContextType, ObjectType, ReturnValue &);
+    static void get_profile(ContextType, ObjectType, ReturnValue &);
+    static void set_profile(ContextType, ObjectType, ValueType);
 
     PropertyMap<T> const properties = {
         {"server", {wrap<get_server>, nullptr}},
         {"identity", {wrap<get_identity>, nullptr}},
         {"token", {wrap<get_token>, nullptr}},
+        {"profile", {wrap<get_profile>, wrap<set_profile>}},
     };
 
     static void create_user(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -102,6 +105,41 @@ template<typename T>
 void UserClass<T>::get_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string token = get_internal<T, UserClass<T>>(object)->get()->refresh_token();
     return_value.set(token);
+}
+
+template<typename T>
+void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& return_value) {
+    static const String string_name        = "name";
+    static const String string_email       = "email";
+    static const String string_picture_url = "pictureUrl";
+    static const String string_first_name  = "firstName";
+    static const String string_last_name   = "lastName";
+    static const String string_gender      = "gender";
+    static const String string_birthday    = "birthday";
+    static const String string_min_age     = "minAge";
+    static const String string_max_age     = "maxAge";
+
+    auto user_profile = get_internal<T, UserClass<T>>(object)->get()->user_profile();
+
+    auto profile_object = Object::create_empty(ctx);
+#define STRING_TO_PROP(propname) \
+    util::Optional<std::string> optional_##propname = user_profile->propname(); \
+    if (optional_##propname ) { \
+        Object::set_property(ctx, profile_object, string_##propname, Value::from_string(ctx, *optional_##propname)); \
+    }
+
+    STRING_TO_PROP(name)
+    STRING_TO_PROP(email)
+    STRING_TO_PROP(picture_url)
+    STRING_TO_PROP(first_name)
+    STRING_TO_PROP(last_name)
+    STRING_TO_PROP(gender)
+    STRING_TO_PROP(birthday)
+    STRING_TO_PROP(min_age)
+    STRING_TO_PROP(max_age)
+#undef STRING_TO_PROP
+
+    return_value.set(profile_object);
 }
 
 template<typename T>
