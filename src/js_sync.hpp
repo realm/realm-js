@@ -20,6 +20,9 @@
 
 #include "js_class.hpp"
 #include "js_collection.hpp"
+#include "js_user.hpp"
+#include "js_sync_util.hpp"
+
 #include "platform.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
@@ -47,142 +50,9 @@ extern jclass ssl_helper_class;
 #include <condition_variable>
 
 namespace realm {
-
 namespace js {
-template<typename T>
-inline realm::SyncManager& syncManagerShared(typename T::Context &ctx) {
-    static std::once_flag flag;
-    std::call_once(flag, [ctx] {
-        auto realm_constructor = js::Value<T>::validated_to_object(ctx, js::Object<T>::get_global(ctx, "Realm"));
-        std::string user_agent_binding_info;
-        auto user_agent_function = js::Object<T>::get_property(ctx, realm_constructor, "_createUserAgentDescription");
-        if (js::Value<T>::is_function(ctx, user_agent_function)) {
-            auto result = js::Function<T>::call(ctx, js::Value<T>::to_function(ctx, user_agent_function), realm_constructor, 0, nullptr);
-            user_agent_binding_info = js::Value<T>::validated_to_string(ctx, result);
-        }
-        ensure_directory_exists_for_file(default_realm_file_directory());
-        SyncClientConfig client_config;
-        client_config.base_file_path = default_realm_file_directory();
-        client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
-        client_config.user_agent_binding_info = user_agent_binding_info;
-        SyncManager::shared().configure(client_config);
-    });
-    return SyncManager::shared();
-}
 
-using SharedUser = std::shared_ptr<realm::SyncUser>;
 using WeakSession = std::weak_ptr<realm::SyncSession>;
-
-template<typename T>
-class UserClass : public ClassDefinition<T, SharedUser> {
-    using GlobalContextType = typename T::GlobalContext;
-    using ContextType = typename T::Context;
-    using FunctionType = typename T::Function;
-    using ObjectType = typename T::Object;
-    using ValueType = typename T::Value;
-    using String = js::String<T>;
-    using Object = js::Object<T>;
-    using Value = js::Value<T>;
-    using Function = js::Function<T>;
-    using ReturnValue = js::ReturnValue<T>;
-    using Arguments = js::Arguments<T>;
-
-public:
-    std::string const name = "User";
-
-    static FunctionType create_constructor(ContextType);
-
-    static void get_server(ContextType, ObjectType, ReturnValue &);
-    static void get_identity(ContextType, ObjectType, ReturnValue &);
-    static void get_token(ContextType, ObjectType, ReturnValue &);
-
-    PropertyMap<T> const properties = {
-        {"server", {wrap<get_server>, nullptr}},
-        {"identity", {wrap<get_identity>, nullptr}},
-        {"token", {wrap<get_token>, nullptr}},
-    };
-
-    static void create_user(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void admin_user(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void get_existing_user(ContextType, ObjectType, Arguments &, ReturnValue&);
-
-    MethodMap<T> const static_methods = {
-        {"createUser", wrap<create_user>},
-        {"_getExistingUser", wrap<get_existing_user>},
-    };
-
-    static void all_users(ContextType ctx, ObjectType object, ReturnValue &);
-
-    PropertyMap<T> const static_properties = {
-        {"all", {wrap<all_users>, nullptr}},
-    };
-
-    static void logout(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void session_for_on_disk_path(ContextType, ObjectType, Arguments &, ReturnValue &);
-
-    MethodMap<T> const methods = {
-        {"_logout", wrap<logout>},
-        {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>}
-    };
-};
-
-template<typename T>
-void UserClass<T>::get_server(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::string server = get_internal<T, UserClass<T>>(object)->get()->server_url();
-    return_value.set(server);
-}
-
-template<typename T>
-void UserClass<T>::get_identity(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::string identity = get_internal<T, UserClass<T>>(object)->get()->identity();
-    return_value.set(identity);
-}
-
-template<typename T>
-void UserClass<T>::get_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::string token = get_internal<T, UserClass<T>>(object)->get()->refresh_token();
-    return_value.set(token);
-}
-
-template<typename T>
-void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_between(3, 4);
-    SyncUserIdentifier userIdentifier {
-        Value::validated_to_string(ctx, args[1], "identity"),
-        Value::validated_to_string(ctx, args[0], "authServerUrl")
-     };
-    SharedUser *user = new SharedUser(syncManagerShared<T>(ctx).get_user(
-        userIdentifier,
-        Value::validated_to_string(ctx, args[2], "refreshToken"),
-        Value::validated_to_string(ctx, args[3], "accessToken")
-    ));
-
-    return_value.set(create_object<T, UserClass<T>>(ctx, user));
-}
-
-template<typename T>
-void UserClass<T>::get_existing_user(ContextType ctx, ObjectType, Arguments &args, ReturnValue &return_value) {
-    args.validate_count(2);
-    if (auto user = syncManagerShared<T>(ctx).get_existing_logged_in_user(SyncUserIdentifier{
-            Value::validated_to_string(ctx, args[1], "identity"),
-            Value::validated_to_string(ctx, args[0], "authServerUrl")})) {
-        return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(std::move(user))));
-    }
-}
-
-template<typename T>
-void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto users = Object::create_empty(ctx);
-    for (auto user : syncManagerShared<T>(ctx).all_logged_in_users()) {
-        Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
-    }
-    return_value.set(users);
-}
-
-template<typename T>
-void UserClass<T>::logout(ContextType, ObjectType this_object, Arguments &, ReturnValue &) {
-    get_internal<T, UserClass<T>>(this_object)->get()->log_out();
-}
 
 template<typename T>
 class SessionClass : public ClassDefinition<T, WeakSession> {
@@ -784,7 +654,6 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     FunctionType sync_constructor = ObjectWrap<T, SyncClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
-    Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 
     return sync_constructor;

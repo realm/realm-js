@@ -18,12 +18,14 @@
 
 #pragma once
 
-#include "sync/app.hpp"
-#include "sync/app_credentials.hpp"
 #include "sync/generic_network_transport.hpp"
 #include "sync/sync_user.hpp"
+#include "sync/app.hpp"
+#include "sync/app_credentials.hpp"
+
 #include "util/event_loop_dispatcher.hpp"
 
+#include "js_user.hpp"
 #include "js_app_credentials.hpp"
 
 using SharedUser = std::shared_ptr<realm::SyncUser>;
