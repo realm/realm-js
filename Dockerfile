@@ -25,7 +25,7 @@ RUN apt-get update \
 
 # Setup the LLVM repository
 RUN echo deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main > /etc/apt/sources.list.d/clang.list
-# Download the GBG key to use the LLVM repo
+# Download the GPG key to use the LLVM repo
 ADD https://apt.llvm.org/llvm-snapshot.gpg.key /tmp/llvm.key
 
 # Add the key
