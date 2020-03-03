@@ -305,7 +305,7 @@ def buildLinux(workerFunction) {
         image = buildDockerEnv('ci/realm-js:build')
       }
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-      image.inside('-e HOME=/tmp -e CC=clang -e CXX=clang++') {
+      image.inside('-e HOME=/tmp') {
         workerFunction('linux')
       }
     }
