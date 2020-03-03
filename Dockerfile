@@ -23,6 +23,7 @@ RUN apt-get update \
        gnupg \
        perl \
        tar \
+       python \
        wget
 
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 20
