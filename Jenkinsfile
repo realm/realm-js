@@ -85,7 +85,7 @@ stage('build') {
   parallelExecutors = [:]
   nodeVersions.each { nodeVersion ->
     parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
-    parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildLinux(nodeVersion, it) }
+    parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
 //    parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
     parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
   }
