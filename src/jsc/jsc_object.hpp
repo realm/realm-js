@@ -119,8 +119,15 @@ inline JSObjectRef jsc::Object::create_instance(JSContextRef ctx, typename Class
     return jsc::ObjectWrap<ClassType>::create_instance(ctx, internal);
 }
 
+template<>
 template<typename ClassType>
-inline void on_context_destroy(std::string realmPath) {
+inline JSObjectRef jsc::Object::create_instance_by_schema(JSContextRef ctx, JSObjectRef& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
+	return jsc::ObjectWrap<ClassType>::create_instance_by_schema(ctx, constructor, schema, internal);
+}
+
+template<typename ClassType>
+inline void on_context_destroy(JSContextRef ctx, std::string realmPath) {
+    jsc::ObjectWrap<ClassType>::on_context_destroy(ctx, realmPath);
 }
 
 template<>
@@ -132,7 +139,13 @@ inline bool jsc::Object::is_instance(JSContextRef ctx, const JSObjectRef &object
 template<>
 template<typename ClassType>
 inline typename ClassType::Internal* jsc::Object::get_internal(const JSObjectRef &object) {
-    return *static_cast<jsc::ObjectWrap<ClassType> *>(JSObjectGetPrivate(object));
+    return jsc::ObjectWrap<ClassType>::get_internal(object);
+}
+
+template<>
+template<typename ClassType>
+inline typename ClassType::Internal* jsc::Object::get_internal(JSContextRef ctx, const JSObjectRef &object) {
+    return jsc::ObjectWrap<ClassType>::get_internal(ctx, object);
 }
 
 template<>

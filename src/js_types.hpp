@@ -302,6 +302,9 @@ struct Object {
     static typename ClassType::Internal* get_internal(const ObjectType &);
 
     template<typename ClassType>
+    static typename ClassType::Internal* get_internal(ContextType ctx, const ObjectType &);
+
+    template<typename ClassType>
     static void set_internal(const ObjectType &, typename ClassType::Internal*);
 };
 
@@ -365,16 +368,17 @@ REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, typena
 
 template<typename T, typename ClassType>
 REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context ctx, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr) {
-#if REALM_PLATFORM_NODE
     return Object<T>::template create_instance_by_schema<ClassType>(ctx, constructor, schema, internal);
-#else
-    return Object<T>::template create_instance<ClassType>(ctx, internal);
-#endif
 }
 
 template<typename T, typename ClassType>
 REALM_JS_INLINE typename ClassType::Internal* get_internal(const typename T::Object &object) {
     return Object<T>::template get_internal<ClassType>(object);
+}
+
+template<typename T, typename ClassType>
+REALM_JS_INLINE typename ClassType::Internal* get_internal(typename T::Context ctx, const typename T::Object &object) {
+    return Object<T>::template get_internal<ClassType>(ctx, object);
 }
 
 template<typename T, typename ClassType>

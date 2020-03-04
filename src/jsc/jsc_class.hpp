@@ -24,7 +24,36 @@
 #include "js_util.hpp"
 
 namespace realm {
+	namespace js {
+		template<typename T>
+		struct RealmObjectClass;
+	}
+	namespace node {
+		struct Types;
+	}
+}
+
+namespace realm {
 namespace jsc {
+
+static JSObjectRef ObjectDefineProperty = nullptr;
+static JSObjectRef FunctionPrototype = nullptr;
+
+static void cacheGlobalFunctions(JSContextRef ctx, JSObjectRef globalObject) {
+    JSValueRef value = nullptr;
+    value = jsc::Object::get_property(ctx, globalObject, "Object");
+    JSObjectRef objectClass = jsc::Value::to_object(ctx, value);
+
+    value = jsc::Object::get_property(ctx, objectClass, "defineProperty");
+    ObjectDefineProperty = jsc::Value::to_object(ctx, value);
+    JSValueProtect(ctx, ObjectDefineProperty);
+
+    value = jsc::Object::get_property(ctx, globalObject, "Function");
+    JSObjectRef globalFunction = jsc::Value::to_object(ctx, value);
+    value = jsc::Object::get_property(ctx, globalFunction, "prototype");
+    FunctionPrototype = jsc::Value::to_object(ctx, value);
+    JSValueProtect(ctx, FunctionPrototype);
+}
 
 template<typename T>
 using ClassDefinition = js::ClassDefinition<Types, T>;
@@ -38,6 +67,10 @@ using StringPropertyType = js::StringPropertyType<Types>;
 using MethodMap = js::MethodMap<Types>;
 using PropertyMap = js::PropertyMap<Types>;
 
+struct SchemaObjectType {
+	JSObjectRef constructor;
+};
+
 template<typename ClassType>
 class ObjectWrap {
     using Internal = typename ClassType::Internal;
@@ -48,26 +81,34 @@ class ObjectWrap {
         return JSObjectMake(ctx, get_class(), new ObjectWrap<ClassType>(internal));
     }
 
+    static JSObjectRef create_instance_by_schema(JSContextRef ctx, JSObjectRef& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr);
+
     static JSObjectRef create_constructor(JSContextRef ctx) {
-        return JSObjectMake(ctx, get_constructor_class(), nullptr);
+        return JSObjectMake(ctx, get_constructor_class(ctx), nullptr);
     }
 
     static JSClassRef get_class() {
-        static JSClassRef js_class = create_class();
-        return js_class;
+         if (m_Class != nullptr) {
+            return m_Class;
+        }
+
+        JSClassRef js_class = create_class();
+        m_Class = JSClassRetain(js_class);
+        return m_Class;
     }
 
-    static JSClassRef get_constructor_class() {
-        static JSClassRef js_class = create_constructor_class();
-        return js_class;
+    static JSClassRef get_constructor_class(JSContextRef ctx) {
+        if (m_constructorClass != nullptr) {
+            return m_constructorClass;
+        }
+
+        JSClassRef js_class = create_constructor_class();
+        m_constructorClass = JSClassRetain(js_class);
+        return m_constructorClass;
     }
 
     static bool has_instance(JSContextRef ctx, JSValueRef value) {
         return JSValueIsObjectOfClass(ctx, value, get_class());
-    }
-
-    operator Internal*() const {
-        return m_object.get();
     }
 
     ObjectWrap<ClassType>& operator=(Internal* object) {
@@ -77,10 +118,23 @@ class ObjectWrap {
         return *this;
     }
 
+    static Internal* get_internal(const JSObjectRef &object);
+    static Internal* get_internal(JSContextRef ctx, const JSObjectRef &object);
+
+    static void on_context_destroy(JSContextRef ctx, std::string realmPath);
+
   private:
     static ClassType s_class;
+    static std::unordered_map<std::string, std::unordered_map<std::string, SchemaObjectType*>*> s_schemaObjectTypes;
 
     std::unique_ptr<Internal> m_object;
+    static JSObjectRef m_constructor;
+    static JSClassRef m_constructorClass;
+    static JSClassRef m_Class;
+    static JSClassRef m_internalValueClass;
+    static JSClassRef m_getterAccessorClass;
+    static JSClassRef m_setterAccessorClass;
+    static JSClassRef m_NativePropertyGetterClass;
 
     ObjectWrap(Internal* object = nullptr) : m_object(object) {}
 
@@ -106,6 +160,14 @@ class ObjectWrap {
     static bool has_instance(JSContextRef ctx, JSObjectRef constructor, JSValueRef value, JSValueRef* exception) {
         return has_instance(ctx, value);
     }
+
+    static void setInternalProperty(JSContextRef ctx, JSObjectRef &instance, typename ClassType::Internal* internal);
+    
+    static void defineAccessorForSchemaProperty(JSContextRef ctx, JSObjectRef& target, jsc::String* name);
+    static void defineNativePropertyAccessor(JSContextRef ctx, JSObjectRef& target, jsc::String* name, JSObjectGetPropertyCallback getCallback);
+    static  JSValueRef nativePropertyGetterCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
+    static JSValueRef accessorGetter(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception);
+    static JSValueRef accessorSetter(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception);
 };
 
 template<>
@@ -121,6 +183,31 @@ public:
 // The static class variable must be defined as well.
 template<typename ClassType>
 ClassType ObjectWrap<ClassType>::s_class;
+
+template<typename ClassType>
+std::unordered_map<std::string, std::unordered_map<std::string, SchemaObjectType*>*> ObjectWrap<ClassType>::s_schemaObjectTypes;
+
+template<typename ClassType>
+JSClassRef ObjectWrap<ClassType>::m_getterAccessorClass = nullptr;
+
+template<typename ClassType>
+JSClassRef ObjectWrap<ClassType>::m_setterAccessorClass = nullptr;
+
+template<typename ClassType>
+JSClassRef ObjectWrap<ClassType>::m_NativePropertyGetterClass = nullptr;
+
+template<typename ClassType>
+JSClassRef ObjectWrap<ClassType>::m_internalValueClass = nullptr;
+
+template<typename ClassType>
+JSClassRef ObjectWrap<ClassType>::m_Class = nullptr;
+
+template<typename ClassType>
+JSClassRef ObjectWrap<ClassType>::m_constructorClass = nullptr;
+
+template<typename ClassType>
+JSObjectRef ObjectWrap<ClassType>::m_constructor = nullptr;
+
 
 template<typename ClassType>
 inline JSClassRef ObjectWrap<ClassType>::create_class() {
@@ -182,6 +269,38 @@ inline JSClassRef ObjectWrap<ClassType>::create_constructor_class() {
         definition.staticValues = properties.data();
     }
 
+    bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
+    if (isRealmObjectClass) {
+        if (m_internalValueClass == nullptr) {
+            JSClassDefinition internalValueClassDefinition = kJSClassDefinitionEmpty;
+            internalValueClassDefinition.className = "Internal";
+            internalValueClassDefinition.finalize = finalize;
+            m_internalValueClass = JSClassCreate(&internalValueClassDefinition);
+            m_internalValueClass = JSClassRetain(m_internalValueClass);
+        }
+
+        if (m_getterAccessorClass == nullptr) {
+            JSClassDefinition definition = kJSClassDefinitionEmpty;
+            definition.callAsFunction = accessorGetter;
+            m_getterAccessorClass = JSClassCreate(&definition);
+            m_getterAccessorClass = JSClassRetain(m_getterAccessorClass);
+        }
+
+        if (m_setterAccessorClass == nullptr) {
+            JSClassDefinition definition = kJSClassDefinitionEmpty;
+            definition.callAsFunction = accessorSetter;
+            m_setterAccessorClass = JSClassCreate(&definition);
+            m_setterAccessorClass = JSClassRetain(m_setterAccessorClass);
+        }
+
+        if (m_NativePropertyGetterClass == nullptr) {
+            JSClassDefinition definition = kJSClassDefinitionEmpty;
+            definition.callAsFunction = nativePropertyGetterCallback;
+            m_NativePropertyGetterClass = JSClassCreate(&definition);
+            m_NativePropertyGetterClass = JSClassRetain(m_NativePropertyGetterClass);
+        }
+    }
+
     return JSClassCreate(&definition);
 }
 
@@ -216,6 +335,414 @@ inline std::vector<JSStaticValue> ObjectWrap<ClassType>::get_properties(const Pr
 
     values[index] = {0};
     return values;
+}
+
+template<typename ClassType>
+inline void ObjectWrap<ClassType>::on_context_destroy(JSContextRef ctx, std::string realmPath) {
+	std::unordered_map<std::string, SchemaObjectType*>* schemaObjects = nullptr;
+	if (!s_schemaObjectTypes.count(realmPath)) {
+		return;
+	}
+	
+	schemaObjects = s_schemaObjectTypes.at(realmPath);
+	for (auto it = schemaObjects->begin(); it != schemaObjects->end(); ++it) {
+        JSValueUnprotect(ctx, it->second->constructor);
+        it->second->constructor = nullptr;
+		SchemaObjectType* schemaObjecttype = it->second;
+		delete schemaObjecttype;
+	}
+	s_schemaObjectTypes.erase(realmPath);
+
+	delete schemaObjects;
+}
+
+template<typename ClassType>
+inline JSValueRef ObjectWrap<ClassType>::accessorGetter(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
+    bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
+    REALM_ASSERT(isRealmObjectClass);
+
+    void* data = JSObjectGetPrivate(function);
+    jsc::String* propertyName = (jsc::String*)data;
+#ifdef DEBUG
+    std::string debugName = *propertyName;
+#endif
+    return s_class.string_accessor.getter(ctx, this_object, *propertyName, exception);
+}
+
+template<typename ClassType>
+inline JSValueRef ObjectWrap<ClassType>::accessorSetter(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
+    bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
+    REALM_ASSERT(isRealmObjectClass);
+
+    void* data = JSObjectGetPrivate(function);
+    jsc::String* propertyName = (jsc::String*)data;
+#ifdef DEBUG
+    std::string debugName = *propertyName;
+#endif
+    bool result = s_class.string_accessor.setter(ctx, this_object, *propertyName, arguments[0], exception);
+    return Value::from_boolean(ctx, result);
+}
+
+template<typename ClassType>
+inline JSValueRef ObjectWrap<ClassType>::nativePropertyGetterCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+    bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
+    REALM_ASSERT(isRealmObjectClass);
+
+    JSValueRef error = nullptr;
+
+    void* data = JSObjectGetPrivate(function);
+    JSValueRef value = JSObjectGetProperty(ctx, function, JSStringCreateWithUTF8CString("propertyName"), &error);
+    if (error) {
+        *exception = error;
+        return nullptr;
+    }
+    jsc::String propertyName = Value::to_string(ctx, value);
+#ifdef DEBUG
+    std::string debugName = propertyName;
+#endif    
+
+    JSObjectGetPropertyCallback getterCallback = (JSObjectGetPropertyCallback)data;
+
+    JSValueRef result = getterCallback(ctx, thisObject, propertyName, &error);
+    if (error) {
+        *exception = error;
+        return nullptr;
+    }
+
+    return result;
+}
+
+template<typename ClassType>
+void ObjectWrap<ClassType>::defineAccessorForSchemaProperty(JSContextRef ctx, JSObjectRef& target, jsc::String* name) {
+    JSObjectRef descriptor = Object::create_empty(ctx);
+    JSValueRef exception = nullptr;
+
+    //create an object with attached function callback. This is to be able to set private data on the function. 
+    //Use this function as the 'get' function in the property descriptor
+    //set the property name as private data. In the future this could be the realm::Property or the table index to speed up the get operation
+    JSObjectRef getter = JSObjectMake(ctx, m_getterAccessorClass, name);
+    JSObjectSetPrototype(ctx, getter, FunctionPrototype);
+
+    JSObjectSetProperty(ctx, descriptor, JSStringCreateWithUTF8CString("get"), getter, kJSPropertyAttributeReadOnly, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+    
+    JSObjectRef setter = JSObjectMake(ctx, m_setterAccessorClass, name);
+    JSObjectSetProperty(ctx, descriptor, JSStringCreateWithUTF8CString("set"), setter, kJSPropertyAttributeReadOnly, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+
+    JSObjectSetProperty(ctx, descriptor, JSStringCreateWithUTF8CString("enumerable"), Value::from_boolean(ctx, true), kJSPropertyAttributeReadOnly, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+
+    //call Object.defineProperty
+    JSValueRef arguments[] = { target, Value::from_string(ctx, *name), descriptor };
+    Function::call(ctx, ObjectDefineProperty, nullptr /*this*/, 3, arguments);
+}
+
+template<typename ClassType>
+void ObjectWrap<ClassType>::defineNativePropertyAccessor(JSContextRef ctx, 
+        JSObjectRef& target, 
+        jsc::String* name,
+        JSObjectGetPropertyCallback getCallback) {
+
+    JSObjectRef descriptor = Object::create_empty(ctx);
+    JSValueRef exception = nullptr;
+
+    JSObjectRef getter = JSObjectMake(ctx, m_NativePropertyGetterClass, (void*)getCallback);
+    JSObjectSetPrototype(ctx, getter, FunctionPrototype);
+    JSObjectSetProperty(ctx, getter, JSStringCreateWithUTF8CString("propertyName"), Value::from_string(ctx, *name), kJSPropertyAttributeReadOnly, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+
+    JSObjectSetProperty(ctx, descriptor, JSStringCreateWithUTF8CString("get"), getter, kJSPropertyAttributeReadOnly, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+    
+
+    //call Object.defineProperty
+    JSValueRef arguments[] = { target, Value::from_string(ctx, *name), descriptor };
+    Function::call(ctx, ObjectDefineProperty, nullptr /*this*/, 3, arguments);
+}
+
+//A cache for property names. The pair is property name and a node::String* to the same string representation.
+//The cache is persisted throughout the process life time to preseve property names between constructor cache invalidations (on_destory_context is called) 
+//Since RealmObjectClass instances may be used after context is destroyed, their property names should be valid
+static std::unordered_map<std::string, jsc::String*> propertyNamesCache;
+
+static jsc::String* getCachedPropertyName(const std::string& name) {
+	if (propertyNamesCache.count(name)) {
+		jsc::String* cachedName = propertyNamesCache.at(name);
+		return cachedName;
+	}
+
+	jsc::String* result = new jsc::String(name);
+	propertyNamesCache.emplace(name, result);
+	return result;
+}
+
+static void defineFunctionProperty(JSContextRef ctx, JSObjectRef& target, const char* name, const JSObjectCallAsFunctionCallback& callback) {
+    JSObjectRef descriptor = Object::create_empty(ctx);
+    
+    JSObjectRef functionValue = JSObjectMakeFunctionWithCallback(ctx, JSStringCreateWithUTF8CString(name), callback);
+
+    JSValueRef exception = nullptr;
+    JSObjectSetProperty(ctx, descriptor, JSStringCreateWithUTF8CString("value"), functionValue, kJSPropertyAttributeNone, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+
+    JSObjectSetProperty(ctx, descriptor, JSStringCreateWithUTF8CString("writable"), Value::from_boolean(ctx, true), kJSPropertyAttributeNone, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+
+    JSObjectSetProperty(ctx, descriptor, JSStringCreateWithUTF8CString("configurable"), Value::from_boolean(ctx, true), kJSPropertyAttributeNone, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+
+    JSValueRef arguments[] = { target, Value::from_string(ctx, name), descriptor };
+    Function::call(ctx, ObjectDefineProperty, nullptr /*this*/, 3, arguments);
+}
+
+static inline void remove_schema_object(JSContextRef ctx, std::unordered_map<std::string, SchemaObjectType*>* schemaObjects, const std::string& schemaName) {
+	bool schemaExists = schemaObjects->count(schemaName);
+	if (!schemaExists) {
+		return;
+	}
+
+	SchemaObjectType* schemaObjectType = schemaObjects->at(schemaName);
+	schemaObjects->erase(schemaName);
+    JSValueUnprotect(ctx, schemaObjectType->constructor);
+	delete schemaObjectType;
+}
+
+template<typename ClassType>
+typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(const JSObjectRef &object) {
+        JSObjectRef instance = object;
+        
+        //Can't get the internal object of a RealmObjectClass without using a context.
+        bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
+        REALM_ASSERT(!isRealmObjectClass);
+
+        ObjectWrap<ClassType>* realmObjectInstance = static_cast<ObjectWrap<ClassType>*>(JSObjectGetPrivate(instance));
+        return realmObjectInstance->m_object.get();
+}
+
+template<typename ClassType>
+typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(JSContextRef ctx, const JSObjectRef &object) {
+        JSObjectRef instance = object;
+        bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
+        if (isRealmObjectClass) {
+            const jsc::String* externalName = getCachedPropertyName("_external");
+            JSValueRef value = Object::get_property(ctx, object, *externalName);
+            instance = Value::to_object(ctx, value);
+        }
+
+        ObjectWrap<ClassType>* realmObjectInstance = static_cast<ObjectWrap<ClassType>*>(JSObjectGetPrivate(instance));
+        return realmObjectInstance->m_object.get();
+}
+
+template<typename ClassType>
+void ObjectWrap<ClassType>::setInternalProperty(JSContextRef ctx, JSObjectRef &instance, typename ClassType::Internal* internal) {
+    //create a JS object that has a finializer to delete the internal reference
+    JSObjectRef internalObject = JSObjectMake(ctx, m_internalValueClass, new ObjectWrap<ClassType>(internal));
+
+    const jsc::String *externalName = getCachedPropertyName("_external");
+    auto attributes = realm::js::PropertyAttributes::ReadOnly | realm::js::PropertyAttributes::DontDelete | realm::js::PropertyAttributes::DontEnum;
+    Object::set_property(ctx, instance, *externalName, internalObject, attributes);
+
+
+    JSValueRef value = JSObjectGetPrototype(ctx, instance);
+    JSObjectRef proto = Value::to_object(ctx, value);
+    Object::set_property(ctx, proto, *externalName, internalObject, attributes);
+}
+
+template<typename ClassType>
+inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef ctx, JSObjectRef& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
+    bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
+    if (!isRealmObjectClass) {
+        JSValueRef exception = jsc::Exception::value(ctx, "Creating instances by schema is supported for RealmObjectClass only");
+        throw jsc::Exception(ctx, exception);
+	}
+
+	if (isRealmObjectClass && !internal) {
+        JSValueRef exception = jsc::Exception::value(ctx, "RealmObjectClass requires an internal realm object when creating instances by schema");
+        throw jsc::Exception(ctx, exception);
+	}
+
+    JSObjectRef instance;
+    JSValueRef value;
+
+    auto config = internal->realm()->config();
+	std::string path = config.path;
+	auto version = internal->realm()->schema_version();
+	std::string schemaName = schema.name + ":" + std::to_string(version); 
+
+	std::unordered_map<std::string, SchemaObjectType*>* schemaObjects = nullptr;
+	if (!s_schemaObjectTypes.count(path)) {
+		schemaObjects = new std::unordered_map<std::string, SchemaObjectType*>();
+		s_schemaObjectTypes.emplace(path, schemaObjects);
+	}
+	else {
+		schemaObjects = s_schemaObjectTypes.at(path);
+	}
+    
+    JSObjectRef schemaObjectConstructor;
+    SchemaObjectType* schemaObjectType;
+    JSObjectRef constructorPrototype;
+    JSValueRef exception = nullptr;
+
+    //if we are creating a RealmObject from schema with no user defined constructor
+	if (constructor == nullptr) {
+        if (!schemaObjects->count(schemaName)) {
+            
+            JSClassDefinition definition = kJSClassDefinitionEmpty;
+            definition.className = schema.name.c_str();
+            JSClassRef schemaClass = JSClassCreate(&definition);
+            schemaObjectConstructor = JSObjectMakeConstructor(ctx, schemaClass, nullptr);
+            value = Object::get_property(ctx, schemaObjectConstructor, "prototype");
+            constructorPrototype = Value::to_object(ctx, value);
+
+            JSObjectRef realmObjectClassConstructor = ObjectWrap<ClassType>::create_constructor(ctx);
+            value = Object::get_property(ctx, realmObjectClassConstructor, "prototype");
+            JSObjectRef parentCtorPrototypeProperty = Value::to_object(ctx, value);
+
+            JSObjectSetPrototype(ctx, constructorPrototype, parentCtorPrototypeProperty);
+            JSObjectSetPrototype(ctx, schemaObjectConstructor, realmObjectClassConstructor);
+
+            //get all properties from the schema 
+            for (auto& property : schema.persisted_properties) {
+                std::string propName = property.public_name.empty() ? property.name : property.public_name;
+                jsc::String* name = getCachedPropertyName(propName);
+                defineAccessorForSchemaProperty(ctx, constructorPrototype, name);
+            }
+
+            for (auto& property : schema.computed_properties) {
+                std::string propName = property.public_name.empty() ? property.name : property.public_name;
+                jsc::String* name = getCachedPropertyName(propName);
+                defineAccessorForSchemaProperty(ctx, constructorPrototype, name);
+            }
+
+            schemaObjectType = new SchemaObjectType();
+            schemaObjects->emplace(schemaName, schemaObjectType);
+            JSValueProtect(ctx, schemaObjectConstructor);
+            schemaObjectType->constructor = schemaObjectConstructor;
+        }
+        else {
+            //hot path. The constructor for this schema object is already cached.
+            schemaObjectType = schemaObjects->at(schemaName);
+            schemaObjectConstructor = schemaObjectType->constructor;
+        }
+
+        instance = Function::construct(ctx, schemaObjectConstructor, 0, {});
+
+        //save the internal object on the instance
+        setInternalProperty(ctx, instance, internal);
+
+        return instance; 
+    }
+    else {
+        //creating a RealmObject with user defined constructor
+        bool schemaExists = schemaObjects->count(schemaName);
+		if (schemaExists) {
+			schemaObjectType = schemaObjects->at(schemaName);
+			schemaObjectConstructor = schemaObjectType->constructor;
+			
+			//check if constructors have changed for the same schema object and name
+			if (!JSValueIsStrictEqual(ctx, schemaObjectConstructor, constructor)) {
+				schemaExists = false;
+				remove_schema_object(ctx, schemaObjects, schemaName);
+			}
+		}
+
+		//hot path. The constructor for this schema object is already cached. use it and return a new instance
+		if (schemaExists) {
+			schemaObjectType = schemaObjects->at(schemaName);
+			schemaObjectConstructor = schemaObjectType->constructor;
+
+            instance = Function::construct(ctx, schemaObjectConstructor, 0, {});
+            setInternalProperty(ctx, instance, internal);
+			return instance;
+		}
+
+        schemaObjectConstructor = constructor;
+        value = Object::get_property(ctx, constructor, "prototype");
+        constructorPrototype = Value::to_object(ctx, value);
+
+        for (auto& property : schema.persisted_properties) {
+			//don't redefine if exists
+			std::string propName = property.public_name.empty() ? property.name : property.public_name;
+			if (!JSObjectHasProperty(ctx, constructorPrototype, JSStringCreateWithUTF8CString(propName.c_str()))) {
+				jsc::String* name = getCachedPropertyName(propName);
+                defineAccessorForSchemaProperty(ctx, constructorPrototype, name);
+			}
+		}
+
+		for (auto& property : schema.computed_properties) {
+			std::string propName = property.public_name.empty() ? property.name : property.public_name;
+			//don't redefine if exists
+			if (!JSObjectHasProperty(ctx, constructorPrototype, JSStringCreateWithUTF8CString(propName.c_str()))) {
+				jsc::String* name = getCachedPropertyName(propName);
+                defineAccessorForSchemaProperty(ctx, constructorPrototype, name);
+			}
+		}
+
+        JSObjectRef realmObjectClassConstructor = ObjectWrap<ClassType>::create_constructor(ctx);
+        JSValueRef exception = nullptr;
+        bool isInstanceOfRealmObjectClass = JSValueIsInstanceOfConstructor(ctx, constructorPrototype, realmObjectClassConstructor, &exception);
+        if (exception) {
+            throw jsc::Exception(ctx, exception);
+        }
+        
+        //Skip if the user defined constructor inherited the RealmObjectClass. All RealmObjectClass members are available already.
+        if (!isInstanceOfRealmObjectClass) {
+			//setup all RealmObjectClass<T> methods to the prototype of the object
+			for (auto& pair : s_class.methods) {
+				//don't redefine if exists
+                if (!JSObjectHasProperty(ctx, constructorPrototype, JSStringCreateWithUTF8CString(pair.first.c_str()))) {
+                    defineFunctionProperty(ctx, constructorPrototype, pair.first.c_str(), pair.second);
+				}
+			}
+
+			for (auto& pair : s_class.properties) {
+				//don't redefine if exists
+				if (!JSObjectHasProperty(ctx, constructorPrototype, JSStringCreateWithUTF8CString(pair.first.c_str()))) {
+                    jsc::String* name = getCachedPropertyName(pair.first);
+                    JSObjectGetPropertyCallback getterCallback = pair.second.getter;
+                    defineNativePropertyAccessor(ctx, constructorPrototype, name, getterCallback);
+				}
+			}
+		}
+
+        //create the instance
+        instance = Function::construct(ctx, schemaObjectConstructor, 0, {});
+        bool instanceOfSchemaConstructor = JSValueIsInstanceOfConstructor(ctx, instance, schemaObjectConstructor, &exception);
+        if (exception) {
+            throw jsc::Exception(ctx, exception);
+        }
+
+        if (!instanceOfSchemaConstructor) {
+            throw jsc::Exception(ctx, "Realm object constructor must not return another value");
+        }
+
+        //save the internal object on the instance
+        setInternalProperty(ctx, instance, internal);
+
+        schemaObjectType = new SchemaObjectType();
+        schemaObjects->emplace(schemaName, schemaObjectType);
+        JSValueProtect(ctx, schemaObjectConstructor);
+        schemaObjectType->constructor = schemaObjectConstructor;
+        
+        return instance; 
+    }
 }
 
 template<typename ClassType>

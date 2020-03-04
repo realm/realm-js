@@ -364,7 +364,7 @@ void NativeAccessor<T>::print(std::string& str, ValueType const& value) {
     else if (Value::is_object(m_ctx, value)) {
         auto object = Value::to_object(m_ctx, value);
         if (Object::template is_instance<RealmObjectClass<T>>(m_ctx, object)) {
-            auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(m_ctx, object);
             auto& object_schema = realm_object->get_object_schema();
             str += object_schema.name;
             str += "{";

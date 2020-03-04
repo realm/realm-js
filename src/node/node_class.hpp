@@ -152,10 +152,11 @@ class ObjectWrap {
 	static Napi::Object create_instance_by_schema(Napi::Env env, Napi::Function& constructor, const realm::ObjectSchema& schema, Internal* internal = nullptr);
 	static void internalFinalizer(Napi::Env, typename ClassType::Internal* internal);
 
-	static void on_context_destroy(std::string realmPath);
+	static void on_context_destroy(Napi::Env env, std::string realmPath);
 	static bool is_instance(Napi::Env env, const Napi::Object& object);
 	
 	static Internal* get_internal(const Napi::Object& object);
+	static Internal* get_internal(Napi::Env env, const Napi::Object& object);
 	static void set_internal(const Napi::Object& object, Internal* data);
 
 	static Napi::Value constructor_callback(const Napi::CallbackInfo& info);
@@ -1206,7 +1207,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 }
 
 template<typename ClassType>
-inline void ObjectWrap<ClassType>::on_context_destroy(std::string realmPath) {
+inline void ObjectWrap<ClassType>::on_context_destroy(Napi::Env env, std::string realmPath) {
 	std::unordered_map<std::string, SchemaObjectType*>* schemaObjects = nullptr;
 	if (!s_schemaObjectTypes.count(realmPath)) {
 		return;
@@ -1230,11 +1231,16 @@ inline bool ObjectWrap<ClassType>::is_instance(Napi::Env env, const Napi::Object
 
 template<typename ClassType>
 typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(const Napi::Object& object) {
+	return ObjectWrap<ClassType>::get_internal(object.Env(), object);
+}
+
+template<typename ClassType>
+typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(Napi::Env env, const Napi::Object& object) {
 	bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
 	if (isRealmObjectClass) {
 		Napi::External<typename ClassType::Internal> external = object.Get(ExternalSymbol).As<Napi::External<typename ClassType::Internal>>();
 		if (external.IsUndefined()) {
-			throw Napi::Error::New(object.Env(), "RealmObjectClass is invalid. No _external defined");
+			throw Napi::Error::New(env, "RealmObjectClass is invalid. No _external defined");
 		}
 
 		return external.Data();
@@ -1331,7 +1337,7 @@ template<node::ArgumentsMethodType F>
 Napi::Value wrap(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	auto arguments = node::get_arguments(info);
-	node::Arguments args { info.Env(), arguments.size(), arguments.data() };
+	node::Arguments args{ info.Env(), arguments.size(), arguments.data() };
 	node::ReturnValue result(env);
 
 	Napi::Object instanceProxy = info.This().As<Napi::Object>().Get("_instanceProxy").As<Napi::Object>();
@@ -1343,15 +1349,15 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 		F(env, instanceProxy, args, result);
 		return result.ToValue();
 	}
-	catch (const Napi::Error& e) {
+	catch (const Napi::Error & e) {
 		throw;
 	}
-	catch (const node::Exception& e) {
+	catch (const node::Exception & e) {
 		Napi::Error error = Napi::Error::New(info.Env(), e.what());
 		copyObject(env, e.m_value, error);
 		throw error;
 	}
-	catch (const std::exception& e) {
+	catch (const std::exception & e) {
 		throw Napi::Error::New(info.Env(), e.what());
 	}
 }

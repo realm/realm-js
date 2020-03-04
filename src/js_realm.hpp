@@ -107,7 +107,7 @@ public:
     }
 
     ~RealmDelegate() {
-        on_context_destroy<RealmObjectClass<T>>(m_realm_path);
+        on_context_destroy<RealmObjectClass<T>>(m_context, m_realm_path);
         // All protected values need to be unprotected while the context is retained.
         m_defaults.clear();
         m_constructors.clear();
@@ -1059,7 +1059,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
     ObjectType arg = Value::validated_to_object(ctx, args[0], "object");
 
     if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
-        auto object = get_internal<T, RealmObjectClass<T>>(arg);
+        auto object = get_internal<T, RealmObjectClass<T>>(ctx, arg);
         if (!object->is_valid()) {
             throw std::runtime_error("Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.");
         }
@@ -1076,7 +1076,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
                 throw std::runtime_error("Argument to 'delete' must be a Realm object or a collection of Realm objects.");
             }
 
-            auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
             realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
             table->move_last_over(realm_object->row().get_index());
         }
@@ -1349,7 +1349,7 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
     if (Value::is_object(ctx, args[0])) {
         auto arg = Value::to_object(ctx, args[0]);
         if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
-            auto obj = get_internal<T, RealmObjectClass<T>>(arg);
+            auto obj = get_internal<T, RealmObjectClass<T>>(ctx, arg);
             auto p = realm->get_privileges(obj->row());
 
             ObjectType object = Object::create_empty(ctx);
