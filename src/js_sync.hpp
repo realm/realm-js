@@ -1308,7 +1308,7 @@ void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType conf
 template<typename T>
 void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue &return_value) {
     arguments.validate_count(0);
-    SyncManager::shared().enable_session_multiplexing();
+    syncManagerShared<T>(ctx).enable_session_multiplexing();
 }
 
 #if REALM_PLATFORM_NODE
