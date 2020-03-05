@@ -42,6 +42,7 @@ if (isNodeProcess) {
 }
 
 var TESTS = {
+    AppTests: require('./app-tests'),
     ListTests: require('./list-tests'),
     LinkingObjectsTests: require('./linkingobjects-tests'),
     ObjectTests: require('./object-tests'),
@@ -60,12 +61,6 @@ if (global.enableSyncTests) {
     TESTS.OpenBehaviorTests = require('./open-behavior-tests');
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
-    TESTS.SubscriptionTests = require('./subscription-tests');
-
-    if (isNodeProcess && !isElectronProcess) {
-        // FIXME: Permission tests currently fail in react native
-        TESTS.PermissionTests = require('./permission-tests');
-    }
 }
 
 // If on node, run the async tests
@@ -76,7 +71,7 @@ if (isNodeProcess && process.platform !== 'win32') {
 if (global.enableSyncTests) {
     // Ensure that the sync manager is initialized as initializing it
     // after calling clearTestState() doesn't work
-    Realm.Sync.User.all;
+    // Realm.Sync.User.all;
 }
 
 var SPECIAL_METHODS = {
@@ -127,7 +122,7 @@ exports.runTest = function (suiteName, testName) {
     const testMethod = testSuite && testSuite[testName];
 
     if (testMethod) {
-        Realm.clearTestState();
+        // Realm.clearTestState();
         return testMethod.call(testSuite);
     }
     if (!testSuite || !(testName in SPECIAL_METHODS)) {

@@ -16,27 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+#pragma once
 
-const instanceMethods = {
-    login(credentials) {
-        return new Promise((resolve, reject) => {
-            this._login(credentials, (user, error) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(user);
-                }
-            });
-        });
+#include "sync/generic_network_transport.hpp"
+
+#include "js_types.hpp"
+
+namespace realm {
+
+struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
+    // FIXME: constructor
+
+    void send_request_to_sender(const app::Request request, std::function<void(const app::Response)> completion_callback) {
+        auto ctx = Object::get_
+        m_realm_constructor = js::Value::validated_to_object(isolate, node::Object::get_global(isolate, "Realm"));
+
+
+        node::Object::call_method(isolate, to_object(isolate, value), "_sendRequstToServer", 0, nullptr);
+
     }
+
 };
 
-const staticMethods = {
-    // none
-};
-
-module.exports = {
-    static: staticMethods,
-    instance: instanceMethods,
-};
+}

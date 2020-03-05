@@ -264,6 +264,7 @@ private:
     std::shared_ptr<std::condition_variable> m_cond_var;
 };
 
+// TODO: We should move this function to js_user.hpp but hard due to circular dependency
 template<typename T>
 void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);

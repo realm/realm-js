@@ -91,14 +91,12 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     static const String config_app_name = "name";
     static const String config_app_version = "version";
 
+    args.validate_between(1, 2);
+
     set_internal<T, AppClass<T>>(this_object, nullptr);
 
     std::string id;
     realm::app::App::Config config;
-
-    if (args.count < 2) {
-        throw std::runtime_error("Invalid arguments when constructing 'Realm.App'.");
-    }
 
     ValueType app_id = args[0];
     if (Value::is_string(ctx, app_id)) {

@@ -90,6 +90,12 @@ public:
 };
 
 template<typename T>
+inline typename T::Function UserClass<T>::create_constructor(ContextType ctx) {
+    FunctionType user_constructor = ObjectWrap<T, UserClass<T>>::create_constructor(ctx);
+    return user_constructor;
+}
+
+template<typename T>
 void UserClass<T>::get_server(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string server = get_internal<T, UserClass<T>>(object)->get()->server_url();
     return_value.set(server);
