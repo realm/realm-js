@@ -4,7 +4,7 @@
 		"target": "es6",
 		"noEmit": true,
 		"forceConsistentCasingInFileNames": true,
-		"types": ["mocha", "chai", "node"],
+		"types": ["mocha", "chai", "express", "node"],
 		"lib": ["ES2015", "DOM"]
 	},
 	"include": ["src/**/*.ts", "types/app.d.ts"]
