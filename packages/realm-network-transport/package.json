@@ -1,0 +1,41 @@
+{
+  "name": "realm-network-transport",
+  "version": "0.1.0",
+  "description": "Implements cross-platform fetching used by Realm JS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "../../node_modules/.bin/tsc -p tsconfig.build.json",
+    "tslint": "../../node_modules/.bin/tslint -p .",
+    "test": "ts-mocha src/**/*.test.ts",
+    "prepack": "rm -rf dist && npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/realm/realm-js/issues"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "abort-controller": "^3.0.0",
+    "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.10",
+    "@types/mocha": "^5",
+    "abort-controller": "^3.0.0",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "ts-mocha": "^6.0.0"
+  }
+}
