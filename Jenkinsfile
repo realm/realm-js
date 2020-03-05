@@ -14,7 +14,7 @@ nodeTestVersion = '8.15.0'
 // == Stages
 
 stage('check') {
-  node('docker && !aws') {
+  rlmNode('docker') {
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
@@ -122,9 +122,9 @@ stage('test') {
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
-  //android_react_tests: testAndroid('react-tests-android', {
-  //  junit 'tests/react-test-app/tests.xml'
-  //}),
+  parallelExecutors["React Native Android"] = testAndroid('react-tests-android') {
+    junit 'tests/react-test-app/tests.xml'
+  }
   parallel parallelExecutors
 }
 
@@ -253,24 +253,6 @@ def reactNativeIntegrationTests(targetPlatform) {
   }
 }
 
-def myNode(nodeSpec, block) {
-  node(nodeSpec) {
-    echo "Running job on ${env.NODE_NAME}"
-    try {
-      block.call()
-    } finally {
-      deleteDir()
-    }
-  }
-}
-
-def buildDockerEnv(name, extra_args='') {
-  docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
-    sh "sh ./scripts/docker_build_wrapper.sh $name . ${extra_args}"
-  }
-  return docker.image(name)
-}
-
 def buildCommon(nodeVersion, platform) {
   sshagent(credentials: ['realm-ci-ssh']) {
     sh "mkdir -p ~/.ssh"
@@ -299,12 +281,9 @@ def buildElectronCommon(electronVersion, platform) {
 
 def buildLinux(workerFunction) {
   return {
-    myNode('docker') {
+    rlmNode('docker') {
       unstash 'source'
-      def image
-      withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-        image = buildDockerEnv('ci/realm-js:build')
-      }
+      def image = buildDockerEnv "ci/realm-js:${env.BRANCH_NAME}-build"
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
       image.inside('-e HOME=/tmp') {
         workerFunction('linux')
@@ -315,7 +294,7 @@ def buildLinux(workerFunction) {
 
 def buildMacOS(workerFunction) {
   return {
-    myNode('osx_vegas') {
+    rlmNode('osx_vegas') {
       withEnv([
         "DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer",
       ]) {
@@ -329,7 +308,7 @@ def buildMacOS(workerFunction) {
 
 def buildWindows(nodeVersion, arch) {
   return {
-    myNode('windows && nodejs') {
+    rlmNode('windows && nodejs') {
       unstash 'source'
 
       bat 'npm install --ignore-scripts --production'
@@ -349,7 +328,7 @@ def buildWindows(nodeVersion, arch) {
 
 def buildWindowsElectron(electronVersion, arch) {
   return {
-    myNode('windows && nodejs') {
+    rlmNode('windows && nodejs') {
       unstash 'source'
       bat 'npm install --ignore-scripts --production'
       withEnv([
@@ -373,12 +352,9 @@ def buildWindowsElectron(electronVersion, arch) {
 
 def inAndroidContainer(workerFunction) {
   return {
-    myNode('docker && android') {
+    rlmNode('docker && android') {
       unstash 'source'
-      def image
-      withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-        image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
-      }
+      def image = buildDockerEnv([extra_args: '-f Dockerfile.android'], "ci/realm-js:${env.BRANCH_NAME}-android-build")
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
       // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
       // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
@@ -410,7 +386,7 @@ def buildAndroid() {
 }
 
 def publish(nodeVersions, electronVersions, dependencies, tag) {
-  myNode('docker') {
+  rlmNode('docker') {
     for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
       for (def version in nodeVersions) {
         unstash "pre-gyp-${platform}-${version}"
@@ -479,17 +455,14 @@ def doInside(script, target, postStep = null) {
       }
     }
     wrap([$class: 'AnsiColorBuildWrapper']) {
-      withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
+      withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'SYNC_WORKER_FEATURE_TOKEN')]) {
         timeout(time: 1, unit: 'HOURS') {
-          sh "SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} bash ${script} ${target}"
+          sh "bash ${script} ${target}"
         }
       }
     }
     if (postStep) {
        postStep.call()
-    }
-    dir(env.WORKSPACE) {
-      deleteDir() // solving realm/realm-js#734
     }
     reportStatus(target, 'SUCCESS', 'Success!')
   } catch(Exception e) {
@@ -500,32 +473,20 @@ def doInside(script, target, postStep = null) {
   }
 }
 
-def doDockerInside(script, target, postStep = null) {
-  docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
-    doInside(script, target, postStep)
-  }
-}
-
 def testAndroid(target, postStep = null) {
   return {
-    node('docker && android && !aws') {
-        timeout(time: 1, unit: 'HOURS') {
-            doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
-        }
+    inAndroidContainer {
+      doInside('./scripts/test.sh', target, postStep)
     }
   }
 }
 
 def testLinux(target, postStep = null) {
   return {
-      node('docker') {
+      rlmNode('docker') {
       def reportName = "Linux ${target}"
-      deleteDir()
       unstash 'source'
-      def image
-      withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-        image = buildDockerEnv('ci/realm-js:build')
-      }
+      def image = buildDockerEnv "ci/realm-js:${env.BRANCH_NAME}-build"
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
       try {
@@ -539,7 +500,6 @@ def testLinux(target, postStep = null) {
           if (postStep) {
             postStep.call()
           }
-          deleteDir()
           reportStatus(reportName, 'SUCCESS', 'Success!')
         }
       } catch(Exception e) {
@@ -552,7 +512,7 @@ def testLinux(target, postStep = null) {
 
 def testMacOS(target, postStep = null) {
   return {
-    node('osx_vegas') {
+    rlmNode('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1']) {
         doInside('./scripts/test.sh', target, postStep)
@@ -563,7 +523,7 @@ def testMacOS(target, postStep = null) {
 
 def testWindows(nodeVersion) {
   return {
-    node('windows && nodist') {
+    rlmNode('windows && nodist') {
       unstash 'source'
       bat "nodist add ${nodeVersion}"
       try {
