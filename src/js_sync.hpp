@@ -95,11 +95,15 @@ public:
     static void get_server(ContextType, ObjectType, ReturnValue &);
     static void get_identity(ContextType, ObjectType, ReturnValue &);
     static void get_token(ContextType, ObjectType, ReturnValue &);
+    static void is_admin(ContextType, ObjectType, ReturnValue &);
+    static void is_admin_token(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"server", {wrap<get_server>, nullptr}},
         {"identity", {wrap<get_identity>, nullptr}},
         {"token", {wrap<get_token>, nullptr}},
+        {"isAdmin", {wrap<is_admin>, nullptr}},
+        {"isAdminToken", {wrap<is_admin_token>, nullptr}},
     };
 
     static void create_user(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -108,6 +112,7 @@ public:
 
     MethodMap<T> const static_methods = {
         {"createUser", wrap<create_user>},
+        {"_adminUser", wrap<admin_user>},
         {"_getExistingUser", wrap<get_existing_user>},
     };
 
@@ -145,18 +150,41 @@ void UserClass<T>::get_token(ContextType ctx, ObjectType object, ReturnValue &re
 }
 
 template<typename T>
+void UserClass<T>::is_admin(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(get_internal<T, UserClass<T>>(object)->get()->is_admin());
+}
+
+template<typename T>
+void UserClass<T>::is_admin_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(get_internal<T, UserClass<T>>(object)->get()->token_type() == SyncUser::TokenType::Admin);
+}
+
+template<typename T>
 void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_between(3, 4);
+    args.validate_between(3, 5);
     SyncUserIdentifier userIdentifier {
         Value::validated_to_string(ctx, args[1], "identity"),
         Value::validated_to_string(ctx, args[0], "authServerUrl")
      };
     SharedUser *user = new SharedUser(syncManagerShared<T>(ctx).get_user(
         userIdentifier,
-        Value::validated_to_string(ctx, args[2], "refreshToken"),
-        Value::validated_to_string(ctx, args[3], "accessToken")
+        Value::validated_to_string(ctx, args[2], "refreshToken")
     ));
 
+    if (args.count == 5) {
+        (*user)->set_is_admin(Value::validated_to_boolean(ctx, args[4], "isAdmin"));
+    }
+
+    return_value.set(create_object<T, UserClass<T>>(ctx, user));
+}
+
+template<typename T>
+void UserClass<T>::admin_user(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(2);
+    SharedUser *user = new SharedUser(syncManagerShared<T>(ctx).get_admin_token_user(
+        Value::validated_to_string(ctx, args[0], "authServerUrl"),
+        Value::validated_to_string(ctx, args[1], "refreshToken")
+    ));
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
 }
 
@@ -174,7 +202,9 @@ template<typename T>
 void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto users = Object::create_empty(ctx);
     for (auto user : syncManagerShared<T>(ctx).all_logged_in_users()) {
-        Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
+        if (user->token_type() == SyncUser::TokenType::Normal) {
+            Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
+        }
     }
     return_value.set(users);
 }

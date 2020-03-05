@@ -454,6 +454,17 @@ class User {
     get token() { }
 
     /**
+     * Returns true if this user is an administrator.
+     * @type {bool}
+     */
+    get isAdmin() { }
+
+    /**
+     * Returns true if the token is an administrator token.
+     */
+    get isAdminToken() { }
+
+    /**
      * Creates the configuration object required to open a synchronized Realm.
      *
      * @param {Realm.PartialConfiguration} config - optional parameters that should override any default settings.
@@ -485,6 +496,7 @@ class User {
      * @example
      * {
      *   "user_id": "f7a8d2ad9768d73d9d161723935f6f95",
+     *   "is_admin": false,
      *   "accounts": [
      *     {
      *       "provider": "password",

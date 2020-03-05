@@ -60,12 +60,6 @@ if (global.enableSyncTests) {
     TESTS.OpenBehaviorTests = require('./open-behavior-tests');
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
-    TESTS.SubscriptionTests = require('./subscription-tests');
-
-    if (isNodeProcess && !isElectronProcess) {
-        // FIXME: Permission tests currently fail in react native
-        TESTS.PermissionTests = require('./permission-tests');
-    }
 }
 
 // If on node, run the async tests

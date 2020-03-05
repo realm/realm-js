@@ -358,38 +358,6 @@ module.exports = {
         });
     },
 
-    testRealmOpenAsyncLocalRealm() {
-        const expectedObjectsCount = 3;
-
-
-        return new Promise((resolve, reject) => {
-            let config = {
-                schema: [{ name: 'Dog', properties: { name: 'string' } }],
-            };
-
-            Realm.openAsync(config, (error, realm) => {
-                try {
-                    if (error) {
-                        reject(error);
-                    }
-
-                    realm.write(() => {
-                        for (let i = 1; i <= 3; i++) {
-                            realm.create('Dog', { name: `Lassy ${i}` });
-                        }
-                    });
-
-                    let actualObjectsCount = realm.objects('Dog').length;
-                    TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Local realm does not contain the expected objects count");
-                    resolve();
-                }
-                catch (e) {
-                    reject(e);
-                }
-            });
-        });
-    },
-
     testErrorHandling() {
         return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
             return new Promise((resolve, _reject) => {
@@ -805,7 +773,7 @@ module.exports = {
     },
 
     async testResumePause() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password');
+        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
         const config = {
             sync: {
                 user: user,
@@ -825,7 +793,7 @@ module.exports = {
     },
 
     async testMultipleResumes() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password');
+        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
         const config = {
             sync: {
                 user: user,
@@ -846,7 +814,7 @@ module.exports = {
     },
 
     async testMultiplePauses() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password');
+        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
         const config = {
             sync: {
                 user: user,
