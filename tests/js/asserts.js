@@ -36,7 +36,9 @@ module.exports = {
             this.assertEqual(val1 && val1.getTime(), val2.getTime(), errorMessage, depth + 1);
         }
         else if (type === 'object') {
-            for (const key of Object.keys(val1)) {
+            var keys = val1.keys !== undefined ? val1.keys() : Object.keys(val1);
+
+            for (const key of keys) {
                 const message = errorMessage ? `${errorMessage}: ${key}` : key;
                 this.assertEqual(val1[key], val2[key], message, depth + 1);
             }
@@ -117,12 +119,9 @@ module.exports = {
             compare = (i, a, b) => a >= b - 0.000001 && a <= b + 0.000001;
         }
         else if (val1.type === 'object') {
-            //HACK: do this instead of requiring Realm module here 
             compare = (i, a, b) => {
-                if (a.constructor.prototype.__proto__.constructor.name == "RealmObject") {
-                    a = a.__proto__;
-                }
-                return Object.keys(a).every(key => a[key] === b[key]);
+                var keys = a.keys !== undefined ? a.keys() : Object.keys(a);
+                return keys.every(key => a[key] === b[key]);
             }
         }
         else {

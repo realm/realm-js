@@ -1089,9 +1089,6 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 		Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internalFinalizer);
 		instance = schemaObjectConstructor.New({});
 		instance.Set(externalSymbol, externalValue);
-		
-		Napi::Object proto = GetPrototype(env, instance);
-		proto.Set(externalSymbol, externalValue);
 	}
 	else {
 		//creating a RealmObject with user defined constructor
@@ -1118,9 +1115,6 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 
 			Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internalFinalizer);
 			instance.Set(externalSymbol, externalValue);
-
-			Napi::Object proto = GetPrototype(env, instance);
-			proto.Set(externalSymbol, externalValue);
 
 			return scope.Escape(instance).As<Napi::Object>();
 		}
@@ -1175,11 +1169,6 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 			}
 		}
 
-		if (!constructorPrototype.HasOwnProperty(externalSymbol)) {
-			Napi::PropertyDescriptor descriptor = Napi::PropertyDescriptor::Value(externalSymbol, env.Undefined(), napi_writable);
-			properties.push_back(descriptor);
-		}
-
 		//define the properties on the prototype of the schema object constructor
 		if (properties.size() > 0) {
 			constructorPrototype.DefineProperties(properties);
@@ -1192,10 +1181,6 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 
 		Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internalFinalizer);
 		instance.Set(externalSymbol, externalValue);
-
-		Napi::Object proto = GetPrototype(env, instance);
-		proto.Set(externalSymbol, externalValue);
-
 
 		schemaObjectType = new SchemaObjectType();
 		schemaObjects->emplace(schemaName, schemaObjectType);
@@ -1240,7 +1225,7 @@ typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(Napi::Env env,
 	if (isRealmObjectClass) {
 		Napi::External<typename ClassType::Internal> external = object.Get(ExternalSymbol).As<Napi::External<typename ClassType::Internal>>();
 		if (external.IsUndefined()) {
-			throw Napi::Error::New(env, "RealmObjectClass is invalid. No _external defined");
+			return nullptr;
 		}
 
 		return external.Data();

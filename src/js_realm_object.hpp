@@ -110,13 +110,20 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
 
 template<typename T>
 void RealmObjectClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &return_value) {
-    return_value.set(get_internal<T, RealmObjectClass<T>>(ctx, this_object)->is_valid());
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+    return_value.set(realm_object->is_valid());
 }
 
 template<typename T>
 void RealmObjectClass<T>::get_object_schema(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &return_value) {
-    auto object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
-    return_value.set(Schema<T>::object_for_object_schema(ctx, object->get_object_schema()));
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+    return_value.set(Schema<T>::object_for_object_schema(ctx, realm_object->get_object_schema()));
 }
 
 template<typename T>
@@ -128,6 +135,7 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
     auto name = schema.name;
 
     auto internal = new realm::js::RealmObject<T>(std::move(realm_object));
+
     try {
         if (!delegate || !delegate->m_constructors.count(name)) {
             #ifdef REALM_PLATFORM_NODE 
@@ -152,8 +160,12 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 
 template<typename T>
 void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const String &property_name, ReturnValue &return_value) {
-    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
     std::string prop_name = property_name;
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+    if (!realm_object) {
+        return;
+    }
+
     const Property* prop = realm_object->get_object_schema().property_for_public_name(prop_name);
     if (prop) {
         NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
@@ -165,6 +177,10 @@ void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const
 template<typename T>
 bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const String &property_name, ValueType value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+    if (!realm_object) {
+        return false;
+    }
+
     std::string prop_name = property_name;
     const Property* prop = realm_object->get_object_schema().property_for_public_name(prop_name);
     if (!prop) {
@@ -185,6 +201,10 @@ void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments
     args.validate_count(2);
 
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+
     realm_object->realm()->verify_in_write();
 
     NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
@@ -231,18 +251,24 @@ template<typename T>
 void RealmObjectClass<T>::get_realm(ContextType ctx, ObjectType object, ReturnValue& return_value) {
     return_value.set_undefined();
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
-    if (realm_object) {
-        ObjectType realm_obj = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm_object->realm()));
-        return_value.set(realm_obj);
+    if (!realm_object) {
+        return;
     }
+
+    ObjectType realm_obj = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm_object->realm()));
+    return_value.set(realm_obj);
 }
 
 template<typename T>
 std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, ObjectType object) {
+    std::vector<String> names;
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+    if (!realm_object) {
+        return names;
+    }
+
     auto &object_schema = realm_object->get_object_schema();
 
-    std::vector<String> names;
     names.reserve(object_schema.persisted_properties.size() + object_schema.computed_properties.size());
 
     for (auto &prop : object_schema.persisted_properties) {
@@ -261,6 +287,10 @@ void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Argu
 
 #if REALM_ENABLE_SYNC
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+
     const Group& group = realm_object->realm()->read_group();
     if (!sync::has_object_ids(group))
         throw std::logic_error("_objectId() can only be used with objects from synced Realms.");
@@ -284,7 +314,14 @@ void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arg
     }
 
     auto self = get_internal<T, RealmObjectClass<T>>(ctx, object);
+    if (!self) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+
     auto other = get_internal<T, RealmObjectClass<T>>(ctx, otherObject);
+    if (!other) {
+        throw std::runtime_error("Invalid argument at index 0");
+    }
 
     if (!self->realm() || self->realm() != other->realm()) {
         return_value.set(false);
@@ -303,6 +340,10 @@ void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arg
 template<typename T>
 void RealmObjectClass<T>::linking_objects_count(ContextType ctx, ObjectType object, Arguments &, ReturnValue &return_value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+
     const Row& row = realm_object->row();
 
     return_value.set((uint32_t)row.get_backlink_count());
@@ -314,6 +355,9 @@ void RealmObjectClass<T>::add_listener(ContextType ctx, ObjectType this_object, 
     args.validate_maximum(1);
 
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
 
     auto callback = Value::validated_to_function(ctx, args[0]);
     Protected<FunctionType> protected_callback(ctx, callback);
@@ -360,6 +404,9 @@ void RealmObjectClass<T>::remove_listener(ContextType ctx, ObjectType this_objec
     auto protected_function = Protected<FunctionType>(ctx, callback);
 
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
 
     auto& tokens = realm_object->m_notification_tokens;
     auto compare = [&](auto&& token) {
@@ -373,6 +420,10 @@ void RealmObjectClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_
     args.validate_maximum(0);
 
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+    
     realm_object->m_notification_tokens.clear();
 }
 
@@ -391,10 +442,13 @@ void realm::js::RealmObjectClass<T>::linking_objects(ContextType ctx, ObjectType
     std::string object_type = Value::validated_to_string(ctx, args[0], "objectType");
     std::string property_name = Value::validated_to_string(ctx, args[1], "property");
 
-    auto object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
 
-    auto target_object_schema = object->realm()->schema().find(object_type);
-    if (target_object_schema == object->realm()->schema().end()) {
+    auto target_object_schema = realm_object->realm()->schema().find(object_type);
+    if (target_object_schema == realm_object->realm()->schema().end()) {
         throw std::logic_error(util::format("Could not find schema for type '%1'", object_type));
     }
 
@@ -403,13 +457,13 @@ void realm::js::RealmObjectClass<T>::linking_objects(ContextType ctx, ObjectType
         throw std::logic_error(util::format("Type '%1' does not contain property '%2'", object_type, property_name));
     }
 
-    if (link_property->object_type != object->get_object_schema().name) {
-        throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", object_type, property_name, object->get_object_schema().name));
+    if (link_property->object_type != realm_object->get_object_schema().name) {
+        throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", object_type, property_name, realm_object->get_object_schema().name));
     }
 
-    realm::TableRef table = ObjectStore::table_for_object_type(object->realm()->read_group(), target_object_schema->name);
-    auto row = object->row();
+    realm::TableRef table = ObjectStore::table_for_object_type(realm_object->realm()->read_group(), target_object_schema->name);
+    auto row = realm_object->row();
     auto tv = row.get_table()->get_backlink_view(row.get_index(), table.get(), link_property->table_column);
 
-    return_value.set(ResultsClass<T>::create_instance(ctx, realm::Results(object->realm(), std::move(tv))));
+    return_value.set(ResultsClass<T>::create_instance(ctx, realm::Results(realm_object->realm(), std::move(tv))));
 }

@@ -1059,13 +1059,17 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
     ObjectType arg = Value::validated_to_object(ctx, args[0], "object");
 
     if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
-        auto object = get_internal<T, RealmObjectClass<T>>(ctx, arg);
-        if (!object->is_valid()) {
+        auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, arg);
+        if (!realm_object) {
+            throw std::runtime_error("Invalid argument at index 0");
+        }
+
+        if (!realm_object->is_valid()) {
             throw std::runtime_error("Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.");
         }
 
-        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
-        table->move_last_over(object->row().get_index());
+        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
+        table->move_last_over(realm_object->row().get_index());
     }
     else if (Value::is_array(ctx, arg)) {
         uint32_t length = Object::validated_get_length(ctx, arg);
@@ -1077,6 +1081,11 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
             }
 
             auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+            if (!realm_object) {
+               std::string message = "Invalid argument at index %d" + std::to_string(i); 
+               throw std::runtime_error(message);
+            }
+
             realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
             table->move_last_over(realm_object->row().get_index());
         }
@@ -1349,8 +1358,12 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
     if (Value::is_object(ctx, args[0])) {
         auto arg = Value::to_object(ctx, args[0]);
         if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
-            auto obj = get_internal<T, RealmObjectClass<T>>(ctx, arg);
-            auto p = realm->get_privileges(obj->row());
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, arg);
+            if (!realm_object) {
+                throw std::runtime_error("Invalid argument at index 0");
+            }
+
+            auto p = realm->get_privileges(realm_object->row());
 
             ObjectType object = Object::create_empty(ctx);
             Object::set_property(ctx, object, "read", Value::from_boolean(ctx, has_privilege(p, Privilege::Read)));

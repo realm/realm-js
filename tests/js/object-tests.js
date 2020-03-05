@@ -98,10 +98,6 @@ module.exports = {
 
             let objectTarget = object[name];
             let nullObjectTarget = nullObject[name];
-            if (type === "object") {
-                objectTarget = Object.getPrototypeOf(objectTarget);
-                nullObjectTarget = Object.getPrototypeOf(nullObjectTarget)
-            }
 
             TestCase.assertSimilar(type, objectTarget, allTypesValues[name]);
             TestCase.assertSimilar(type, nullObjectTarget, nullPropertyValues[name]);

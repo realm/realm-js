@@ -88,7 +88,7 @@ class ObjectWrap {
     }
 
     static JSClassRef get_class() {
-         if (m_Class != nullptr) {
+        if (m_Class != nullptr) {
             return m_Class;
         }
 
@@ -176,6 +176,7 @@ public:
     using Internal = void;
     
     static JSClassRef get_class() {
+        (void)cacheGlobalFunctions; //disable unused warning
         return nullptr;
     }
 };
@@ -366,6 +367,7 @@ inline JSValueRef ObjectWrap<ClassType>::accessorGetter(JSContextRef ctx, JSObje
 #ifdef DEBUG
     std::string debugName = *propertyName;
 #endif
+
     return s_class.string_accessor.getter(ctx, this_object, *propertyName, exception);
 }
 
@@ -379,6 +381,7 @@ inline JSValueRef ObjectWrap<ClassType>::accessorSetter(JSContextRef ctx, JSObje
 #ifdef DEBUG
     std::string debugName = *propertyName;
 #endif
+
     bool result = s_class.string_accessor.setter(ctx, this_object, *propertyName, arguments[0], exception);
     return Value::from_boolean(ctx, result);
 }
@@ -543,6 +546,10 @@ typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(JSContextRef c
         if (isRealmObjectClass) {
             const jsc::String* externalName = getCachedPropertyName("_external");
             JSValueRef value = Object::get_property(ctx, object, *externalName);
+            if (Value::is_undefined(ctx, value)) {
+                return nullptr;
+            }
+
             instance = Value::to_object(ctx, value);
         }
 
@@ -558,11 +565,6 @@ void ObjectWrap<ClassType>::setInternalProperty(JSContextRef ctx, JSObjectRef &i
     const jsc::String *externalName = getCachedPropertyName("_external");
     auto attributes = realm::js::PropertyAttributes::ReadOnly | realm::js::PropertyAttributes::DontDelete | realm::js::PropertyAttributes::DontEnum;
     Object::set_property(ctx, instance, *externalName, internalObject, attributes);
-
-
-    JSValueRef value = JSObjectGetPrototype(ctx, instance);
-    JSObjectRef proto = Value::to_object(ctx, value);
-    Object::set_property(ctx, proto, *externalName, internalObject, attributes);
 }
 
 template<typename ClassType>
@@ -598,7 +600,6 @@ inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef
     JSObjectRef schemaObjectConstructor;
     SchemaObjectType* schemaObjectType;
     JSObjectRef constructorPrototype;
-    JSValueRef exception = nullptr;
 
     //if we are creating a RealmObject from schema with no user defined constructor
 	if (constructor == nullptr) {
