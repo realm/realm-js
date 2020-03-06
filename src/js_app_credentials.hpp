@@ -24,10 +24,8 @@
 namespace realm {
 namespace js {
 
-using SharedAppCredentials = std::shared_ptr<realm::app::AppCredentials>;
-
 template<typename T>
-class CredentialsClass : public ClassDefinition<T, SharedAppCredentials> {
+class CredentialsClass : public ClassDefinition<T, realm::app::AppCredentials> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -72,7 +70,7 @@ void CredentialsClass<T>::facebook(ContextType ctx, ObjectType, Arguments& argum
     realm::app::AppCredentialsToken token = Value::validated_to_string(ctx, arguments[0]);
 
     auto credentials = realm::app::AppCredentials::facebook(token);
-    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new SharedAppCredentials(credentials)));
+    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 
 template<typename T>
@@ -80,7 +78,7 @@ void CredentialsClass<T>::anonymous(ContextType ctx, ObjectType this_object, Arg
     arguments.validate_maximum(0);
 
     auto credentials = realm::app::AppCredentials::anonymous();
-    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new SharedAppCredentials(credentials)));
+    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 
 template<typename T>
@@ -90,7 +88,7 @@ void CredentialsClass<T>::apple(ContextType ctx, ObjectType this_object, Argumen
     realm::app::AppCredentialsToken token = Value::validated_to_string(ctx, arguments[0]);
 
     auto credentials = realm::app::AppCredentials::apple(token);
-    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new SharedAppCredentials(credentials)));
+    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 
 template<typename T>
@@ -101,7 +99,7 @@ void CredentialsClass<T>::username_password(ContextType ctx, ObjectType this_obj
     const std::string password = Value::validated_to_string(ctx, arguments[1], "password");
 
     auto credentials = realm::app::AppCredentials::username_password(username, password);
-    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new SharedAppCredentials(credentials)));
+    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 
 

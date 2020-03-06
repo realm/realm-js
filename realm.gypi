@@ -94,6 +94,8 @@
         "src/object-store/src/sync/sync_permission.hpp",
         "src/object-store/src/sync/sync_session.hpp",
         "src/object-store/src/sync/sync_user.hpp",
+        "src/object-store/src/sync/app.hpp",
+        "src/object-store/src/sync/app_credentials.hpp",
         "src/object-store/src/sync/impl/apple/network_reachability_observer.hpp",
         "src/object-store/src/sync/impl/apple/system_configuration.hpp",
         "src/object-store/src/sync/impl/network_reachability.hpp",

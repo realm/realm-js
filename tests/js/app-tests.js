@@ -14,12 +14,17 @@ const TestCase = require('./asserts');
 
 module.exports = {
     testNewApp: function () {
-        let app = new Realm.App('my-awesone-app');
+        const config = {
+            id: 'my-awesome-app'
+        };
+
+        let app = new Realm.App(config);
         TestCase.assertTrue(app instanceof Realm.App);
     },
 
     testNewAppWithConfig: function () {
         const config = {
+            id: 'my-awesome-app',
             url: 'http://localhost:9090',
             timeout: 1000,
             app: {
@@ -28,7 +33,7 @@ module.exports = {
             }
         };
 
-        let app = new Realm.App('my-awesome-app', config);
+        let app = new Realm.App(config);
         TestCase.assertTrue(app instanceof Realm.App);
 
         let credentials = Realm.Credentials.anonymous();

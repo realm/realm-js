@@ -43,7 +43,7 @@ public:
 
 template<typename T>
 class AppClass : public ClassDefinition<T, realm::js::App<T>> {
-    using AppLoginHandler = std::function<void(std::shared_ptr<realm::SyncUser> user, std::unique_ptr<realm::app::error::AppError> error)>;
+    using AppLoginHandler = std::function<void(std::shared_ptr<realm::SyncUser> user, util::Optional<realm::app::AppError> error)>;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -85,29 +85,31 @@ inline typename T::Function AppClass<T>::create_constructor(ContextType ctx) {
 
 template<typename T>
 void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args) {
+    static const String config_id = "id";
     static const String config_url = "url";
     static const String config_timeout = "timeout";
     static const String config_app = "app";
     static const String config_app_name = "name";
     static const String config_app_version = "version";
 
-    args.validate_between(1, 2);
+    args.validate_count(1);
 
     set_internal<T, AppClass<T>>(this_object, nullptr);
 
     std::string id;
     realm::app::App::Config config;
 
-    ValueType app_id = args[0];
-    if (Value::is_string(ctx, app_id)) {
-        id = Value::validated_to_string(ctx, app_id, "id");
-    }
-    else {
-        throw std::runtime_error("Expected argument 1 to be a string.");
-    }
-
     if (Value::is_object(ctx, args[1])) {
         ObjectType config_object = Value::validated_to_object(ctx, args[1]);
+
+        ValueType config_id_value = Object::get_property(ctx, config_object, config_id);
+        if (!Value::is_undefined(ctx, config_id_value)) {
+            config.app_id = Value::validated_to_string(ctx, config_id_value, "id");
+        }
+        else {
+            throw runtime_error("App configuration must have an id.");
+        }
+
         ValueType config_url_value = Object::get_property(ctx, config_object, config_url);
         if (!Value::is_undefined(ctx, config_url_value)) {
             config.base_url = util::Optional<std::string>(Value::validated_to_string(ctx, config_url_value, "url"));
@@ -134,7 +136,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         }
     }
 
-    auto app = new realm::app::App(id, config);
+    auto app = new realm::app::App(config);
     set_internal<T, AppClass<T>>(this_object, new App<T>(app));
 }
 
@@ -161,20 +163,19 @@ void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args
     auto credentials_object = Value::validated_to_object(ctx, args[0]);
     auto callback_function = Value::validated_to_function(ctx, args[1]);
 
-    SharedAppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(credentials_object);
+    app::AppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(credentials_object);
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<FunctionType> protected_callback(ctx, callback_function);
     Protected<ObjectType> protected_this(ctx, this_object);
 
     // FIXME: should we use EventLoopDispatcher?
-    auto callback_handler([=](std::shared_ptr<realm::SyncUser> user, std::unique_ptr<realm::app::error::AppError> error) {
+    auto callback_handler([=](std::shared_ptr<realm::SyncUser> user, util::Optional<realm::app::AppError> error) {
         HANDLESCOPE
         if (error) {
             ObjectType object = Object::create_empty(protected_ctx);
-            Object::set_property(protected_ctx, object, "category", Value::from_string(protected_ctx, error->category()));
-            Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error->what()));
-            Object::set_property(protected_ctx, object, "code", Value::from_number(protected_ctx, error->code()));
+            Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error->message));
+            Object::set_property(protected_ctx, object, "code", Value::from_number(protected_ctx, error->error_code.value()));
 
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_undefined(protected_ctx);
