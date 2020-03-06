@@ -155,7 +155,6 @@ class ObjectWrap {
 	static void on_context_destroy(Napi::Env env, std::string realmPath);
 	static bool is_instance(Napi::Env env, const Napi::Object& object);
 	
-	static Internal* get_internal(const Napi::Object& object);
 	static Internal* get_internal(Napi::Env env, const Napi::Object& object);
 	static void set_internal(Napi::Env env, const Napi::Object& object, Internal* data);
 
@@ -1255,6 +1254,11 @@ Napi::Value ObjectWrap<ClassType>::constructor_callback(const Napi::CallbackInfo
 		return scope.Escape(env.Null()); //return a value to comply with Napi::FunctionCallback
 	}
 	else {
+		bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
+		if (isRealmObjectClass) {
+			return scope.Escape(env.Null()); //return a value to comply with Napi::FunctionCallback
+		}
+
 		throw Napi::Error::New(env, "Illegal constructor");
 	}
 }
