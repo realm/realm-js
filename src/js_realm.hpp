@@ -1082,7 +1082,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
 
             auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
             if (!realm_object) {
-               std::string message = "Invalid argument at index " + util::to_string(index); 
+               std::string message = "Invalid argument at index " + util::to_string(i); 
                throw std::runtime_error(message);
             }
 
