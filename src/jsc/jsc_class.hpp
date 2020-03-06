@@ -652,7 +652,7 @@ inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef
     auto config = internal->realm()->config();
 	std::string path = config.path;
 	auto version = internal->realm()->schema_version();
-	std::string schemaName = schema.name + ":" + std::to_string(version); 
+	std::string schemaName = schema.name + ":" + util::to_string(version); 
 
 	std::unordered_map<std::string, SchemaObjectType*>* schemaObjects = nullptr;
 	if (!s_schemaObjectTypes.count(path)) {
