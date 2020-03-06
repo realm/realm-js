@@ -140,7 +140,6 @@ class ObjectWrap {
         return *this;
     }
 
-    static Internal* get_internal(const JSObjectRef &object);
     static Internal* get_internal(JSContextRef ctx, const JSObjectRef &object);
 
     static void on_context_destroy(JSContextRef ctx, std::string realmPath);
