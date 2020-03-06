@@ -14,7 +14,7 @@ nodeTestVersion = '8.15.0'
 // == Stages
 
 stage('check') {
-  node('docker && !aws') {
+  node('docker') {
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
