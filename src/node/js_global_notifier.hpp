@@ -54,7 +54,7 @@ public:
     static void close(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void serialize(ContextType, ObjectType, Arguments &, ReturnValue &);
 
-    static GlobalNotifier::ChangeNotification& validated_get(ObjectType object);
+    static GlobalNotifier::ChangeNotification& validated_get(ContextType ctx, ObjectType object);
 
     PropertyMap<T> const properties = {
         {"path", {wrap<get_path>, nullptr}},
@@ -77,8 +77,8 @@ typename T::Function ChangeObject<T>::create_constructor(ContextType ctx) {
 }
 
 template<typename T>
-GlobalNotifier::ChangeNotification& ChangeObject<T>::validated_get(ObjectType object) {
-    auto changes = get_internal<T, ChangeObject<T>>(object);
+GlobalNotifier::ChangeNotification& ChangeObject<T>::validated_get(ContextType ctx, ObjectType object) {
+    auto changes = get_internal<T, ChangeObject<T>>(ctx, object);
     if (!changes) {
         throw std::runtime_error("Can only access notification changesets within a notification callback");
     }
@@ -87,31 +87,31 @@ GlobalNotifier::ChangeNotification& ChangeObject<T>::validated_get(ObjectType ob
 
 template<typename T>
 void ChangeObject<T>::get_path(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set(validated_get(object).realm_path);
+    return_value.set(validated_get(ctx, object).realm_path);
 }
 
 template<typename T>
 void ChangeObject<T>::get_event(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set(validated_get(object).type == GlobalNotifier::ChangeNotification::Type::Change ? "onchange" : "ondelete");
+    return_value.set(validated_get(ctx, object).type == GlobalNotifier::ChangeNotification::Type::Change ? "onchange" : "ondelete");
 }
 
 template<typename T>
 void ChangeObject<T>::get_realm(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto realm = validated_get(object).get_new_realm();
+    auto realm = validated_get(ctx, object).get_new_realm();
     realm->m_binding_context.reset(new RealmDelegate<T>(realm, Context<T>::get_global_context(ctx)));
     return_value.set(create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm)));
 }
 
 template<typename T>
 void ChangeObject<T>::get_old_realm(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto realm = validated_get(object).get_old_realm();
+    auto realm = validated_get(ctx, object).get_old_realm();
     realm->m_binding_context.reset(new RealmDelegate<T>(realm, Context<T>::get_global_context(ctx)));
     return_value.set(create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm)));
 }
 
 template<typename T>
 void ChangeObject<T>::get_changes(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto& changes = validated_get(object);
+    auto& changes = validated_get(ctx, object);
     auto& change_set = changes.get_changes();
     ObjectType change_object = Object::create_empty(ctx);
     for (auto& pair : change_set) {
@@ -122,17 +122,17 @@ void ChangeObject<T>::get_changes(ContextType ctx, ObjectType object, ReturnValu
 
 template<typename T>
 void ChangeObject<T>::get_empty(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set(validated_get(object).get_changes().empty());
+    return_value.set(validated_get(ctx, object).get_changes().empty());
 }
 
 template<typename T>
-void ChangeObject<T>::close(ContextType, ObjectType object, Arguments &, ReturnValue &) {
-    set_internal<T, ChangeObject<T>>(object, nullptr);
+void ChangeObject<T>::close(ContextType ctx, ObjectType object, Arguments &, ReturnValue &) {
+    set_internal<T, ChangeObject<T>>(ctx, object, nullptr);
 }
 
 template<typename T>
-void ChangeObject<T>::serialize(ContextType, ObjectType object, Arguments &, ReturnValue &return_value) {
-    return_value.set(validated_get(object).serialize());
+void ChangeObject<T>::serialize(ContextType ctx, ObjectType object, Arguments &, ReturnValue &return_value) {
+    return_value.set(validated_get(ctx, object).serialize());
 }
 
 template<typename T>
@@ -234,13 +234,13 @@ typename T::Function GlobalNotifierClass<T>::create_constructor(ContextType ctx)
 }
 
 template<typename T>
-void GlobalNotifierClass<T>::start(ContextType, ObjectType object, Arguments &, ReturnValue &) {
-    get_internal<T, GlobalNotifierClass<T>>(object)->start();
+void GlobalNotifierClass<T>::start(ContextType ctx, ObjectType object, Arguments &, ReturnValue &) {
+    get_internal<T, GlobalNotifierClass<T>>(ctx, object)->start();
 }
 
 template<typename T>
 void GlobalNotifierClass<T>::next(ContextType ctx, ObjectType object, Arguments &, ReturnValue &return_value) {
-    auto self = get_internal<T, GlobalNotifierClass<T>>(object);
+    auto self = get_internal<T, GlobalNotifierClass<T>>(ctx, object);
     if (!self) {
         return;
     }
@@ -250,8 +250,8 @@ void GlobalNotifierClass<T>::next(ContextType ctx, ObjectType object, Arguments 
 }
 
 template<typename T>
-void GlobalNotifierClass<T>::close(ContextType, ObjectType object, Arguments &, ReturnValue &) {
-    set_internal<T, GlobalNotifierClass<T>>(object, nullptr);
+void GlobalNotifierClass<T>::close(ContextType ctx, ObjectType object, Arguments &, ReturnValue &) {
+    set_internal<T, GlobalNotifierClass<T>>(ctx, object, nullptr);
 }
 
 } // js

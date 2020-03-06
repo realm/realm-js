@@ -149,7 +149,7 @@ public:
     bool is_same_list(realm::List const& list, ValueType const& value) const noexcept {
         auto object = Value::validated_to_object(m_ctx, value);
         if (js::Object<JSEngine>::template is_instance<ListClass<JSEngine>>(m_ctx, object)) {
-            return list == *get_internal<JSEngine, ListClass<JSEngine>>(object);
+            return list == *get_internal<JSEngine, ListClass<JSEngine>>(m_ctx, object);
         }
         return false;
     }
@@ -304,7 +304,7 @@ struct Unbox<JSEngine, RowExpr> {
 
         auto object = Value::validated_to_object(ctx->m_ctx, value);
         if (js::Object<JSEngine>::template is_instance<RealmObjectClass<JSEngine>>(ctx->m_ctx, object)) {
-            auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(object);
+            auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(ctx->m_ctx, object);
             if (realm_object->realm() == ctx->m_realm) {
                 return realm_object->row();
             }

@@ -305,7 +305,7 @@ struct Object {
     static typename ClassType::Internal* get_internal(ContextType ctx, const ObjectType &);
 
     template<typename ClassType>
-    static void set_internal(const ObjectType &, typename ClassType::Internal*);
+    static void set_internal(ContextType ctx, const ObjectType &, typename ClassType::Internal*);
 };
 
 template<typename ValueType>
@@ -372,18 +372,13 @@ REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context
 }
 
 template<typename T, typename ClassType>
-REALM_JS_INLINE typename ClassType::Internal* get_internal(const typename T::Object &object) {
-    return Object<T>::template get_internal<ClassType>(object);
-}
-
-template<typename T, typename ClassType>
 REALM_JS_INLINE typename ClassType::Internal* get_internal(typename T::Context ctx, const typename T::Object &object) {
     return Object<T>::template get_internal<ClassType>(ctx, object);
 }
 
 template<typename T, typename ClassType>
-REALM_JS_INLINE void set_internal(const typename T::Object &object, typename ClassType::Internal* ptr) {
-    Object<T>::template set_internal<ClassType>(object, ptr);
+REALM_JS_INLINE void set_internal(typename T::Context ctx, const typename T::Object &object, typename ClassType::Internal* ptr) {
+    Object<T>::template set_internal<ClassType>(ctx, object, ptr);
 }
 
 template<typename T>
@@ -436,10 +431,10 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
     if (is_object(context, value)) {
         auto object = to_object(context, value);
         if (Object<T>::template is_instance<ResultsClass<T>>(context, object)) {
-            return check_collection_type(get_internal<T, ResultsClass<T>>(object));
+            return check_collection_type(get_internal<T, ResultsClass<T>>(context, object));
         }
         if (Object<T>::template is_instance<ListClass<T>>(context, object)) {
-            return check_collection_type(get_internal<T, ListClass<T>>(object));
+            return check_collection_type(get_internal<T, ListClass<T>>(context, object));
         }
     }
 

@@ -74,7 +74,7 @@ void AdapterClass<T>::constructor(ContextType ctx, ObjectType this_object, Argum
     if (!Object::template is_instance<UserClass<T>>(ctx, user)) {
         throw std::runtime_error("object must be of type Sync.User");
     }
-    auto shared_user = *get_internal<T, UserClass<T>>(user);
+    auto shared_user = *get_internal<T, UserClass<T>>(ctx, user);
     if (shared_user->state() != SyncUser::State::Active) {
         throw std::runtime_error("User is no longer valid.");
     }
@@ -114,7 +114,7 @@ void AdapterClass<T>::constructor(ContextType ctx, ObjectType this_object, Argum
         ValueType arguments[1] = { Value::from_string(ctx, realm_path) };
         Function::callback(protected_ctx, user_callback, protected_this, 1, arguments);
     }), std::move(predicate), path, std::move(sync_config_template));
-    set_internal<T, AdapterClass<T>>(this_object, adapter);
+    set_internal<T, AdapterClass<T>>(ctx, this_object, adapter);
 }
 
 namespace {
@@ -273,7 +273,7 @@ private:
 template<typename T>
 void AdapterClass<T>::current(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue &ret) {
     arguments.validate_count(1);
-    auto adapter = get_internal<T, AdapterClass<T>>(this_object);
+    auto adapter = get_internal<T, AdapterClass<T>>(ctx, this_object);
     auto change_set = adapter->current(Value::validated_to_string(ctx, arguments[0]));
     if (!change_set) {
         ret.set_undefined();
@@ -288,14 +288,14 @@ void AdapterClass<T>::current(ContextType ctx, ObjectType this_object, Arguments
 template<typename T>
 void AdapterClass<T>::advance(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue &ret) {
     arguments.validate_count(1);
-    auto adapter = get_internal<T, AdapterClass<T>>(this_object);
+    auto adapter = get_internal<T, AdapterClass<T>>(ctx, this_object);
     adapter->advance(Value::validated_to_string(ctx, arguments[0]));
 }
 
 template<typename T>
 void AdapterClass<T>::realm_at_path(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue &ret) {
     arguments.validate_between(1, 2);
-    auto adapter = get_internal<T, AdapterClass<T>>(this_object);
+    auto adapter = get_internal<T, AdapterClass<T>>(ctx, this_object);
     auto path = Value::validated_to_string(ctx, arguments[0]);
 
     typename Schema<T>::ObjectDefaultsMap defaults;
@@ -317,7 +317,7 @@ void AdapterClass<T>::realm_at_path(ContextType ctx, ObjectType this_object, Arg
 template<typename T>
 void AdapterClass<T>::close(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue &ret) {
     arguments.validate_count(0);
-    get_internal<T, AdapterClass<T>>(this_object)->close();
+    get_internal<T, AdapterClass<T>>(ctx, this_object)->close();
 }
 
 } // js

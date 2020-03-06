@@ -157,7 +157,7 @@ class ObjectWrap {
 	
 	static Internal* get_internal(const Napi::Object& object);
 	static Internal* get_internal(Napi::Env env, const Napi::Object& object);
-	static void set_internal(const Napi::Object& object, Internal* data);
+	static void set_internal(Napi::Env env, const Napi::Object& object, Internal* data);
 
 	static Napi::Value constructor_callback(const Napi::CallbackInfo& info);
 	static bool has_native_method(const std::string& name);
@@ -1215,11 +1215,6 @@ inline bool ObjectWrap<ClassType>::is_instance(Napi::Env env, const Napi::Object
 }
 
 template<typename ClassType>
-typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(const Napi::Object& object) {
-	return ObjectWrap<ClassType>::get_internal(object.Env(), object);
-}
-
-template<typename ClassType>
 typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(Napi::Env env, const Napi::Object& object) {
 	bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
 	if (isRealmObjectClass) {
@@ -1236,11 +1231,11 @@ typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(Napi::Env env,
 }
 
 template<typename ClassType>
-void ObjectWrap<ClassType>::set_internal(const Napi::Object& object, typename ClassType::Internal* internal) {
+void ObjectWrap<ClassType>::set_internal(Napi::Env env, const Napi::Object& object, typename ClassType::Internal* internal) {
 	bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
 	if (isRealmObjectClass) {
 		Napi::Object& obj = const_cast<Napi::Object&>(object);
-		obj.Set(ExternalSymbol, Napi::External<typename ClassType::Internal>::New(object.Env(), internal));
+		obj.Set(ExternalSymbol, Napi::External<typename ClassType::Internal>::New(env, internal));
 		return;
 	}
 

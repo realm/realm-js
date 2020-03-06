@@ -543,18 +543,6 @@ static inline void remove_schema_object(JSContextRef ctx, std::unordered_map<std
 }
 
 template<typename ClassType>
-typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(const JSObjectRef &object) {
-        JSObjectRef instance = object;
-        
-        //Can't get the internal object of a RealmObjectClass without using a context.
-        bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
-        REALM_ASSERT(!isRealmObjectClass);
-
-        ObjectWrap<ClassType>* realmObjectInstance = static_cast<ObjectWrap<ClassType>*>(JSObjectGetPrivate(instance));
-        return realmObjectInstance->m_object.get();
-}
-
-template<typename ClassType>
 typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(JSContextRef ctx, const JSObjectRef &object) {
         JSObjectRef instance = object;
         bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;

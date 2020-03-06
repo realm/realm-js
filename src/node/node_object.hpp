@@ -189,20 +189,14 @@ inline bool node::Object::is_instance(Napi::Env env, const Napi::Object& object)
 
 template<>
 template<typename ClassType>
-inline typename ClassType::Internal* node::Object::get_internal(const Napi::Object& object) {
-    return node::ObjectWrap<ClassType>::get_internal(object);
-}
-
-template<>
-template<typename ClassType>
 inline typename ClassType::Internal* node::Object::get_internal(Napi::Env env, const Napi::Object& object) {
 	return node::ObjectWrap<ClassType>::get_internal(env, object);
 }
 
 template<>
 template<typename ClassType>
-inline void node::Object::set_internal(const Napi::Object& object, typename ClassType::Internal* internal) {
-	return node::ObjectWrap<ClassType>::set_internal(object, internal);
+inline void node::Object::set_internal(Napi::Env env, const Napi::Object& object, typename ClassType::Internal* internal) {
+	return node::ObjectWrap<ClassType>::set_internal(env, object, internal);
 }
 
 template<>
