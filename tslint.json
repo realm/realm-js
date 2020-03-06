@@ -1,0 +1,17 @@
+{
+    "extends": [
+      "tslint:latest",
+      "tslint-eslint-rules",
+      "tslint-config-prettier"
+    ],
+    "rulesDirectory": [
+      "tslint-plugin-prettier"
+    ],
+    "rules": {
+      "prettier": [
+        true,
+        { "tabWidth": 4 }
+      ],
+      "object-literal-sort-keys": false
+    }
+  }
