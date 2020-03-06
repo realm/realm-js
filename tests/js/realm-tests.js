@@ -1580,67 +1580,6 @@ module.exports = {
         });
     },
 
-    testSchemaUpdatesPartialRealm: function() {
-        if (!global.enableSyncTests) {
-            return;
-        }
-
-        const realmId = Utils.uuid();
-        let realm2 = null, called = false;
-        const config = {
-            schema: [schemas.TestObject],
-            sync: {
-                url: `realm://127.0.0.1:9080/${realmId}`,
-            },
-        };
-
-        // We need an admin user to create the reference Realm
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword("realm-admin", ""))
-            .then(user1 => {
-                config.sync.user = user1;
-                return Realm.open(config);
-            }).then(realm => {
-                TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                return closeAfterUpload(realm);
-            })
-            .then(() => {
-                return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
-            }).then((user2) => {
-                const dynamicConfig = {
-                    sync: { user: user2, url: `realm://127.0.0.1:9080/${realmId}` },
-                };
-                return Realm.open(dynamicConfig);
-            }).then(r => {
-                realm2 = r;
-                TestCase.assertEqual(realm2.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                realm2.addListener('schema', (realm, event, schema) => {
-                    TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
-                    called = true;
-                });
-            }).then(() => {
-                config.schema.push({
-                    name: 'Foo',
-                    properties: {
-                        doubleCol: 'double',
-                    }
-                });
-                return Realm.open(config);
-            }).then((realm3) => {
-                return closeAfterUpload(realm3);
-            }).then(() => {
-                return new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        realm2.close();
-                        if (called) {
-                            resolve();
-                        } else {
-                            reject('listener never called');
-                        }
-                    }, 1000);
-                });
-            });
-    },
-
     testCreateTemplateObject: function() {
         var realm = new Realm({schema: [
             schemas.AllTypes,
@@ -1672,7 +1611,6 @@ module.exports = {
         TestCase.assertEqual(managedObj.nullObjectCol, null);
         TestCase.assertEqual(managedObj.arrayCol[0].doubleCol, 2);
     },
-
 
     testWriteCopyTo: function() {
         const realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
@@ -1721,33 +1659,6 @@ module.exports = {
 
         realm.close();
     },
-
-
-    testQueryBasedOnlyMethods: function() {
-        if (!global.enableSyncTests) {
-            return;
-        }
-
-        const realm = new Realm({sync: true});
-        TestCase.assertThrowsContaining(() =>  {
-            realm.privileges();
-        }, 'Wrong Realm type');
-        TestCase.assertThrowsContaining(() =>  {
-            realm.privileges('__Role');
-        }, 'Wrong Realm type');
-        TestCase.assertThrowsContaining(() =>  {
-            realm.permissions();
-        }, 'Wrong Realm type');
-        TestCase.assertThrowsContaining(() =>  {
-            realm.permissions('__Class');
-        }, 'Wrong Realm type');
-        TestCase.assertThrowsContaining(() =>  {
-            realm.subscriptions();
-        }, 'Wrong Realm type');
-        TestCase.assertThrowsContaining(() =>  {
-            realm.unsubscribe('foo');
-        }, 'Wrong Realm type');
-    } ,
 
     testObjectWithoutProperties: function() {
         const realm = new Realm({schema: [schemas.ObjectWithoutProperties]});

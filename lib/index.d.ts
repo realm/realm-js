@@ -114,7 +114,7 @@ declare namespace Realm {
         inMemory?: boolean;
         schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
-        sync?: Partial<Realm.Sync.SyncConfiguration>;
+        sync?: Realm.Sync.SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
         disableFormatUpgrade?: boolean;
     }
@@ -135,6 +135,9 @@ declare namespace Realm {
     }
 
     type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
+
+    interface PartialConfiguration extends Partial<Realm.Configuration> {
+    }
 
     /**
      * Object
@@ -329,6 +332,9 @@ declare namespace Realm.Sync {
         adminToken: string;
     }
 
+    class AdminCredentials extends Credentials {
+        identityProvider: "adminToken";
+    }
     class Credentials {
         static usernamePassword(username: string, password: string, createUser?: boolean): Credentials;
         static facebook(token: string): Credentials;
@@ -338,6 +344,7 @@ declare namespace Realm.Sync {
         static azureAD(token: string): Credentials;
         static jwt(token: string, providerName?: string): Credentials;
         static custom(providerName: string, token: string, userInfo?: { [key: string]: any }): Credentials;
+        static adminToken(token: string): AdminCredentials;
 
         readonly identityProvider: string;
         readonly token: string;
