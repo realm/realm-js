@@ -138,12 +138,6 @@ inline bool jsc::Object::is_instance(JSContextRef ctx, const JSObjectRef &object
 
 template<>
 template<typename ClassType>
-inline typename ClassType::Internal* jsc::Object::get_internal(const JSObjectRef &object) {
-    return jsc::ObjectWrap<ClassType>::get_internal(object);
-}
-
-template<>
-template<typename ClassType>
 inline typename ClassType::Internal* jsc::Object::get_internal(JSContextRef ctx, const JSObjectRef &object) {
     return jsc::ObjectWrap<ClassType>::get_internal(ctx, object);
 }
