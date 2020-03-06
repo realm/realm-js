@@ -1,0 +1,43 @@
+{
+  "name": "realm-web",
+  "version": "3.6.4",
+  "description": "Authenticate and communicate with the MongoDB Realm platform, from your web-browser",
+  "main": "dist/index.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "../../node_modules/.bin/tsc -p tsconfig.build.json",
+    "lint": "../../node_modules/.bin/tslint -p .",
+    "test": "ts-mocha src/**/*.test.ts"
+  },
+  "keywords": [
+    "realm",
+    "browser"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/realm/realm-js/issues"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "realm-network-transport": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.9",
+    "@types/mocha": "^7.0.1",
+    "@types/node": "^13.7.6",
+    "abort-controller": "^3.0.0",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "node-fetch": "^2.6.0",
+    "ts-mocha": "^6.0.0"
+  }
+}

@@ -1,0 +1,8 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"types": ["realm-web", "mocha", "chai", "webpack-env"],
+		"lib": ["ES5", "ES6", "DOM"]
+	},
+	"include": ["src/**/*.ts"]
+}

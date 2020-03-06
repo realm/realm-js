@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"module": "CommonJS",
+		"target": "es5",
+		"lib": ["ES5", "DOM"],
+		"types": ["mocha", "puppeteer", "realm-web", "node-fetch"],
+		"allowJs": true,
+		"esModuleInterop": true
+	},
+	"include": ["src/**/*.ts", "harness/**/*.ts"]
+}

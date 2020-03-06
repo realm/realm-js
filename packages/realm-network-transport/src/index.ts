@@ -4,4 +4,6 @@ export {
     Request,
     Response,
     Method,
+    SuccessCallback,
+    ErrorCallback,
 } from "./NetworkTransport";
