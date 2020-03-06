@@ -904,6 +904,10 @@ static inline bool try_get_int(JSStringRef property, int64_t& value) {
 
 template<typename ClassType>
 inline JSValueRef ObjectWrap<ClassType>::get_property(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef* exception) {
+    if (JSStringGetLength(property) == 0) {
+        return Value::from_undefined(ctx);
+    }
+
     if (auto index_getter = s_class.index_accessor.getter) {
         int64_t num;
         if (try_get_int(property, num)) {
@@ -912,17 +916,24 @@ inline JSValueRef ObjectWrap<ClassType>::get_property(JSContextRef ctx, JSObject
                 // Out-of-bounds index getters should just return undefined in JS.
                 return Value::from_undefined(ctx);
             }
+
             return index_getter(ctx, object, index, exception);
         }
     }
+
     if (auto string_getter = s_class.string_accessor.getter) {
         return string_getter(ctx, object, property, exception);
     }
+
     return nullptr;
 }
 
 template<typename ClassType>
 inline bool ObjectWrap<ClassType>::set_property(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef value, JSValueRef* exception) {
+    if (JSStringGetLength(property) == 0) {
+        return false;
+    }
+
     auto index_setter = s_class.index_accessor.setter;
 
     if (index_setter || s_class.index_accessor.getter) {
@@ -932,22 +943,27 @@ inline bool ObjectWrap<ClassType>::set_property(JSContextRef ctx, JSObjectRef ob
                 *exception = Exception::value(ctx, util::format("Index %1 cannot be less than zero.", num));
                 return false;
             }
+
             int32_t index;
             if (util::int_cast_with_overflow_detect(num, index)) {
                 *exception = Exception::value(ctx, util::format("Index %1 cannot be greater than %2.",
                                                                 num, std::numeric_limits<uint32_t>::max()));
                 return false;
             }
+
             if (index_setter) {
                 return index_setter(ctx, object, index, value, exception);
             }
+
             *exception = Exception::value(ctx, util::format("Cannot assign to read only index %1", index));
             return false;
         }
     }
+
     if (auto string_setter = s_class.string_accessor.setter) {
         return string_setter(ctx, object, property, value, exception);
     }
+
     return false;
 }
 
