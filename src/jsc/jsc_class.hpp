@@ -36,23 +36,32 @@ namespace realm {
 namespace realm {
 namespace jsc {
 
-static JSObjectRef ObjectDefineProperty = nullptr;
-static JSObjectRef FunctionPrototype = nullptr;
+static js::Protected<JSObjectRef> ObjectDefineProperty;
+static js::Protected<JSObjectRef> FunctionPrototype;
+static js::Protected<JSObjectRef> RealmObjectClassConstructor;
+static js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
 
-static void cacheGlobalFunctions(JSContextRef ctx, JSObjectRef globalObject) {
+static inline void jsc_class_init(JSContextRef ctx, JSObjectRef globalObject) {
+    //handle ReactNative app refresh by reseting the cached constructor values
+    if (RealmObjectClassConstructor) {
+        RealmObjectClassConstructor = js::Protected<JSObjectRef>();
+    }
+
+    if (RealmObjectClassConstructorPrototype) {
+        RealmObjectClassConstructorPrototype = js::Protected<JSObjectRef>();
+    }
+
     JSValueRef value = nullptr;
     value = jsc::Object::get_property(ctx, globalObject, "Object");
     JSObjectRef objectClass = jsc::Value::to_object(ctx, value);
 
     value = jsc::Object::get_property(ctx, objectClass, "defineProperty");
-    ObjectDefineProperty = jsc::Value::to_object(ctx, value);
-    JSValueProtect(ctx, ObjectDefineProperty);
+    ObjectDefineProperty = js::Protected<JSObjectRef>(ctx, Value::to_object(ctx, value));
 
     value = jsc::Object::get_property(ctx, globalObject, "Function");
     JSObjectRef globalFunction = jsc::Value::to_object(ctx, value);
     value = jsc::Object::get_property(ctx, globalFunction, "prototype");
-    FunctionPrototype = jsc::Value::to_object(ctx, value);
-    JSValueProtect(ctx, FunctionPrototype);
+    FunctionPrototype = js::Protected<JSObjectRef>(ctx, Value::to_object(ctx, value));
 }
 
 template<typename T>
@@ -84,6 +93,21 @@ class ObjectWrap {
     static JSObjectRef create_instance_by_schema(JSContextRef ctx, JSObjectRef& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr);
 
     static JSObjectRef create_constructor(JSContextRef ctx) {
+        bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
+        if (isRealmObjectClass) {
+             if (RealmObjectClassConstructor) {
+                 return RealmObjectClassConstructor;
+             }
+
+            JSObjectRef constructor = JSObjectMake(ctx, get_constructor_class(ctx), nullptr);
+            RealmObjectClassConstructor = js::Protected<JSObjectRef>(ctx, constructor);
+            
+            JSValueRef value = Object::get_property(ctx, RealmObjectClassConstructor, "prototype");
+            RealmObjectClassConstructorPrototype = js::Protected<JSObjectRef>(ctx, Value::to_object(ctx, value));
+
+            return RealmObjectClassConstructor;
+        }
+        
         return JSObjectMake(ctx, get_constructor_class(ctx), nullptr);
     }
 
@@ -107,9 +131,7 @@ class ObjectWrap {
         return m_constructorClass;
     }
 
-    static bool has_instance(JSContextRef ctx, JSValueRef value) {
-        return JSValueIsObjectOfClass(ctx, value, get_class());
-    }
+    static bool has_instance(JSContextRef ctx, JSValueRef value);
 
     ObjectWrap<ClassType>& operator=(Internal* object) {
         if (m_object.get() != object) {
@@ -128,7 +150,7 @@ class ObjectWrap {
     static std::unordered_map<std::string, std::unordered_map<std::string, SchemaObjectType*>*> s_schemaObjectTypes;
 
     std::unique_ptr<Internal> m_object;
-    static JSObjectRef m_constructor;
+    
     static JSClassRef m_constructorClass;
     static JSClassRef m_Class;
     static JSClassRef m_internalValueClass;
@@ -152,13 +174,11 @@ class ObjectWrap {
     static JSValueRef get_property(JSContextRef, JSObjectRef, JSStringRef, JSValueRef*);
     static bool set_property(JSContextRef, JSObjectRef, JSStringRef, JSValueRef, JSValueRef*);
 
+    static bool has_instance(JSContextRef ctx, JSObjectRef constructor, JSValueRef value, JSValueRef* exception);
+
     static bool set_readonly_property(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef value, JSValueRef* exception) {
         *exception = Exception::value(ctx, std::string("Cannot assign to read only property '") + std::string(String(property)) + "'");
         return false;
-    }
-
-    static bool has_instance(JSContextRef ctx, JSObjectRef constructor, JSValueRef value, JSValueRef* exception) {
-        return has_instance(ctx, value);
     }
 
     static void setInternalProperty(JSContextRef ctx, JSObjectRef &instance, typename ClassType::Internal* internal);
@@ -176,7 +196,6 @@ public:
     using Internal = void;
     
     static JSClassRef get_class() {
-        (void)cacheGlobalFunctions; //disable unused warning
         return nullptr;
     }
 };
@@ -205,10 +224,6 @@ JSClassRef ObjectWrap<ClassType>::m_Class = nullptr;
 
 template<typename ClassType>
 JSClassRef ObjectWrap<ClassType>::m_constructorClass = nullptr;
-
-template<typename ClassType>
-JSObjectRef ObjectWrap<ClassType>::m_constructor = nullptr;
-
 
 template<typename ClassType>
 inline JSClassRef ObjectWrap<ClassType>::create_class() {
@@ -567,6 +582,57 @@ void ObjectWrap<ClassType>::setInternalProperty(JSContextRef ctx, JSObjectRef &i
     Object::set_property(ctx, instance, *externalName, internalObject, attributes);
 }
 
+static inline JSObjectRef tryGetPrototype(JSContextRef ctx, JSObjectRef object) {
+    JSValueRef exception = nullptr;
+    JSValueRef protoValue = JSObjectGetPrototype(ctx, object);
+    JSObjectRef proto = JSValueToObject(ctx, protoValue, &exception);
+    if (exception) {
+        return nullptr;
+    }
+
+    return proto;
+}
+
+//This is called from realm's abstraction layer and by JSValueIsInstanceOfConstructor
+template<typename ClassType>
+bool ObjectWrap<ClassType>::has_instance(JSContextRef ctx, JSValueRef value) {
+    bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
+    if (isRealmObjectClass) {
+        //Can't use JSValueIsObjectOfClass for RealmObjectClass instances created from a user defined constructor in the schema.
+        //Can't use JSValueIsInstanceOfConstructor with the RealmObjectClass constructor since it will recursively call this method again
+        //Check if the object has RealmObjectClassConstructorPrototype in its proto chain (the definition of JS 'instanceof')
+        if (!JSValueIsObject(ctx, value)) {
+            return false;
+        }
+         
+        JSValueRef error = nullptr;
+        JSObjectRef object = JSValueToObject(ctx, value, &error);
+        if (error) {
+            //do not throw exceptions in 'instanceof' calls
+            return false;
+        }
+
+        JSObjectRef proto = tryGetPrototype(ctx, object);
+        while (proto != nullptr && !JSValueIsNull(ctx, proto)) {
+            if (JSValueIsStrictEqual(ctx, proto, RealmObjectClassConstructorPrototype)) {
+                return true;
+            }
+
+            proto = tryGetPrototype(ctx, proto);
+        }
+
+        return false;
+    }
+
+    return JSValueIsObjectOfClass(ctx, value, get_class());
+}
+
+//JavaScriptCore calls this private method when doing 'instanceof' from JS
+template<typename ClassType>
+bool ObjectWrap<ClassType>::has_instance(JSContextRef ctx, JSObjectRef constructor, JSValueRef value, JSValueRef* exception) {
+    return has_instance(ctx, value);
+} 
+
 template<typename ClassType>
 inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef ctx, JSObjectRef& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
     bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
@@ -612,12 +678,8 @@ inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef
             value = Object::get_property(ctx, schemaObjectConstructor, "prototype");
             constructorPrototype = Value::to_object(ctx, value);
 
-            JSObjectRef realmObjectClassConstructor = ObjectWrap<ClassType>::create_constructor(ctx);
-            value = Object::get_property(ctx, realmObjectClassConstructor, "prototype");
-            JSObjectRef parentCtorPrototypeProperty = Value::to_object(ctx, value);
-
-            JSObjectSetPrototype(ctx, constructorPrototype, parentCtorPrototypeProperty);
-            JSObjectSetPrototype(ctx, schemaObjectConstructor, realmObjectClassConstructor);
+            JSObjectSetPrototype(ctx, constructorPrototype, RealmObjectClassConstructorPrototype);
+            JSObjectSetPrototype(ctx, schemaObjectConstructor, RealmObjectClassConstructor);
 
             //get all properties from the schema 
             for (auto& property : schema.persisted_properties) {
@@ -696,9 +758,8 @@ inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef
 			}
 		}
 
-        JSObjectRef realmObjectClassConstructor = ObjectWrap<ClassType>::create_constructor(ctx);
         JSValueRef exception = nullptr;
-        bool isInstanceOfRealmObjectClass = JSValueIsInstanceOfConstructor(ctx, constructorPrototype, realmObjectClassConstructor, &exception);
+        bool isInstanceOfRealmObjectClass = JSValueIsInstanceOfConstructor(ctx, constructorPrototype, RealmObjectClassConstructor, &exception);
         if (exception) {
             throw jsc::Exception(ctx, exception);
         }

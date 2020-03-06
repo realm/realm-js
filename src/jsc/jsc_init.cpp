@@ -35,8 +35,8 @@ void RJSInitializeInContext(JSContextRef ctx) {
     static const jsc::String realm_string = "Realm";
 
     JSObjectRef global_object = JSContextGetGlobalObject(ctx);
-    
-    cacheGlobalFunctions(ctx, global_object);
+
+    jsc_class_init(ctx, global_object);
 
     JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
 
