@@ -26,10 +26,6 @@
 #include "object.hpp"
 #include "object_changeset.hpp"
 
-#if REALM_ENABLE_SYNC
-#include "sync/subscription_state.hpp"
-#endif
-
 namespace realm {
 namespace js {
 

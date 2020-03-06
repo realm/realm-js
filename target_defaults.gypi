@@ -71,7 +71,10 @@
     },
     "msvs_settings": {
       "VCCLCompilerTool": {
-        "ExceptionHandling": 1
+        "ExceptionHandling": 1,
+        "AdditionalOptions": [
+         "/std:c++17"
+        ]
       }
     },
     "msvs_disabled_warnings": [ 4068, 4101, 4244, 4996 ]

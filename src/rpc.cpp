@@ -45,7 +45,6 @@ static const char * const RealmObjectTypesResults = "results";
 static const char * const RealmObjectTypesRealm = "realm";
 static const char * const RealmObjectTypesUser = "user";
 static const char * const RealmObjectTypesSession = "session";
-static const char * const RealmObjectTypesSubscription = "subscription";
 static const char * const RealmObjectTypesAsyncOpenTask = "asyncopentask";
 static const char * const RealmObjectTypesUndefined = "undefined";
 
@@ -291,24 +290,6 @@ RPCServer::RPCServer() {
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
         JSObjectRef create_user_method = (JSObjectRef)jsc::Object::get_property(m_context, user_constructor, "createUser");
-
-        json::array_t args = dict["arguments"];
-        size_t arg_count = args.size();
-        JSValueRef arg_values[arg_count];
-
-        for (size_t i = 0; i < arg_count; i++) {
-            arg_values[i] = deserialize_json_value(args[i]);
-        }
-
-        JSObjectRef user_object = (JSObjectRef)jsc::Function::call(m_context, create_user_method, arg_count, arg_values);
-        return (json){{"result", serialize_json_value(user_object)}};
-    };
-    m_requests["/_adminUser"] = [this](const json dict) {
-        JSObjectRef realm_constructor = get_realm_constructor();
-
-        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
-        JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
-        JSObjectRef create_user_method = (JSObjectRef)jsc::Object::get_property(m_context, user_constructor, "_adminUser");
 
         json::array_t args = dict["arguments"];
         size_t arg_count = args.size();
@@ -720,8 +701,6 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         auto user = *jsc::Object::get_internal<js::UserClass<jsc::Types>>(js_object);
         json user_dict {
             {"identity", user->identity()},
-            {"isAdmin", user->is_admin()},
-            {"isAdminToken", user->token_type() == SyncUser::TokenType::Admin},
             {"server", user->server_url()},
         };
         return {
@@ -739,17 +718,6 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"type", RealmObjectTypesSession},
             {"id", store_object(js_object)},
             {"data", session_dict}
-        };
-    }
-    else if (jsc::Object::is_instance<js::SubscriptionClass<jsc::Types>>(m_context, js_object)) {
-        json subscription_dict {
-            {"state", serialize_json_value(jsc::Object::get_property(m_context, js_object, "state"))},
-            {"error", serialize_json_value(jsc::Object::get_property(m_context, js_object, "error"))}
-        };
-        return {
-            {"type", RealmObjectTypesSubscription},
-            {"id", store_object(js_object)},
-            {"data", subscription_dict}
         };
     }
     else if (jsc::Object::is_instance<js::AsyncOpenTaskClass<jsc::Types>>(m_context, js_object)) {

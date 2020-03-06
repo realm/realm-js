@@ -248,7 +248,6 @@ public:
     static void writeCopyTo(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void delete_model(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void object_for_object_id(ContextType, ObjectType, Arguments &, ReturnValue&);
-    static void privileges(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void update_schema(ContextType, ObjectType, Arguments &, ReturnValue&);
 
@@ -267,7 +266,6 @@ public:
     static void get_is_closed(ContextType, ObjectType, ReturnValue &);
 #if REALM_ENABLE_SYNC
     static void get_sync_session(ContextType, ObjectType, ReturnValue &);
-    static void get_is_partial_realm(ContextType, ObjectType, ReturnValue &);
 #endif
 
     // static methods
@@ -283,7 +281,6 @@ public:
     static void realm_file_exists(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     static void create_user_agent_description(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void extend_query_based_schema(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
@@ -298,7 +295,6 @@ public:
         {"deleteFile", wrap<delete_file>},
         {"exists", wrap<realm_file_exists>},
         {"_createUserAgentDescription", wrap<create_user_agent_description>},
-        {"_extendQueryBasedSchema", wrap<extend_query_based_schema>},
 #if REALM_ENABLE_SYNC
         {"_asyncOpen", wrap<async_open_realm>},
 #endif
@@ -325,7 +321,6 @@ public:
         {"compact", wrap<compact>},
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
-        {"privileges", wrap<privileges>},
         {"_updateSchema", wrap<update_schema>},
         {"_objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
@@ -342,7 +337,6 @@ public:
         {"isClosed", {wrap<get_is_closed>, nullptr}},
 #if REALM_ENABLE_SYNC
         {"syncSession", {wrap<get_sync_session>, nullptr}},
-        {"_isPartialRealm", {wrap<get_is_partial_realm>, nullptr}},
 #endif
     };
 
@@ -517,13 +511,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
                 auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
-#if REALM_ENABLE_SYNC
-                // Ensure that the permissions and ResultSets object definitions
-                // are present in the schema for query-based sync
-                if (config.sync_config && config.sync_config->is_partial) {
-                    Object::call_method(ctx, realm_constructor, "_extendQueryBasedSchema", 1, &schema_value);
-                }
-#endif
+
                 // embedded object schemas need to expanded into regular object schemas
                 ObjectType expanded_schema_object = Value::validated_to_array(ctx, Object::call_method(ctx, realm_constructor, "_expandEmbeddedObjectSchemas", 1, &schema_value));
 
@@ -657,18 +645,6 @@ void RealmClass<T>::set_binding_context(ContextType ctx, std::shared_ptr<Realm> 
         js_binding_context->m_defaults = std::move(defaults);
         js_binding_context->m_constructors = std::move(constructors);
     }
-#if REALM_ENABLE_SYNC
-    // For query-based Realms we need to register the constructors for the
-    // permissions types even if a schema isn't specified
-    else if (realm->is_partial() && js_binding_context->m_constructors.empty()) {
-        ValueType schema_value = Object::create_array(ctx);
-        auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
-        Object::call_method(ctx, realm_constructor, "_extendQueryBasedSchema", 1, &schema_value);
-        Schema<T>::parse_schema(ctx, Value::to_object(ctx, schema_value), defaults, constructors);
-        js_binding_context->m_defaults = std::move(defaults);
-        js_binding_context->m_constructors = std::move(constructors);
-    }
-#endif
 }
 
 template<typename T>
@@ -821,14 +797,6 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
     }
 
 }
-
-template<typename T>
-void RealmClass<T>::get_is_partial_realm(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto realm = *get_internal<T, RealmClass<T>>(object);
-    auto config = realm->config();
-    return_value.set(config.sync_config && config.sync_config->is_partial);
-}
-
 #endif
 
 #if REALM_ENABLE_SYNC
@@ -1034,12 +1002,7 @@ void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, Argument
 
     for (auto objectSchema : realm->schema()) {
         auto table = ObjectStore::table_for_object_type(realm->read_group(), objectSchema.name);
-        if (realm->is_partial()) {
-            realm::Results(realm, table).clear();
-        }
-        else {
-            table->clear();
-        }
+        table->clear();
     }
 }
 
@@ -1241,62 +1204,6 @@ void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this
     return_value.set(object_schema.name);
 }
 
-template<typename T>
-void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_maximum(1);
-
-#if REALM_ENABLE_SYNC
-    using Privilege = realm::ComputedPrivileges;
-    auto has_privilege = [](Privilege actual, Privilege expected) {
-        return (static_cast<int>(actual) & static_cast<int>(expected)) == static_cast<int>(expected);
-    };
-
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    auto config = realm->config();
-    if (!(config.sync_config && config.sync_config->is_partial)) {
-        throw std::runtime_error("Wrong Realm type. 'privileges()' is only available for Query-based Realms.");
-    }
-    if (args.count == 0) {
-        auto p = realm->get_privileges();
-        ObjectType object = Object::create_empty(ctx);
-        Object::set_property(ctx, object, "read", Value::from_boolean(ctx, has_privilege(p, Privilege::Read)));
-        Object::set_property(ctx, object, "update", Value::from_boolean(ctx,has_privilege(p, Privilege::Update)));
-        Object::set_property(ctx, object, "modifySchema", Value::from_boolean(ctx, has_privilege(p, Privilege::ModifySchema)));
-        Object::set_property(ctx, object, "setPermissions", Value::from_boolean(ctx, has_privilege(p, Privilege::SetPermissions)));
-        return_value.set(object);
-        return;
-    }
-
-    if (Value::is_object(ctx, args[0])) {
-        auto arg = Value::to_object(ctx, args[0]);
-        if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
-            auto obj = get_internal<T, RealmObjectClass<T>>(arg);
-            auto p = realm->get_privileges(obj->obj());
-
-            ObjectType object = Object::create_empty(ctx);
-            Object::set_property(ctx, object, "read", Value::from_boolean(ctx, has_privilege(p, Privilege::Read)));
-            Object::set_property(ctx, object, "update", Value::from_boolean(ctx,has_privilege(p, Privilege::Update)));
-            Object::set_property(ctx, object, "delete", Value::from_boolean(ctx,has_privilege(p, Privilege::Delete)));
-            Object::set_property(ctx, object, "setPermissions", Value::from_boolean(ctx, has_privilege(p, Privilege::SetPermissions)));
-            return_value.set(object);
-            return;
-        }
-    }
-
-    auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
-    auto p = realm->get_privileges(object_schema.name);
-    ObjectType object = Object::create_empty(ctx);
-    Object::set_property(ctx, object, "read", Value::from_boolean(ctx, has_privilege(p, Privilege::Read)));
-    Object::set_property(ctx, object, "update", Value::from_boolean(ctx,has_privilege(p, Privilege::Update)));
-    Object::set_property(ctx, object, "create", Value::from_boolean(ctx, has_privilege(p, Privilege::Create)));
-    Object::set_property(ctx, object, "subscribe", Value::from_boolean(ctx, has_privilege(p, Privilege::Query)));
-    Object::set_property(ctx, object, "setPermissions", Value::from_boolean(ctx, has_privilege(p, Privilege::SetPermissions)));
-    return_value.set(object);
-#else
-    throw std::logic_error("Realm.privileges() can only be used with Query-based Realms.");
-#endif
-}
-
 /**
  * Updates the schema.
  *
@@ -1333,11 +1240,6 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
 template<typename T>
 void RealmClass<T>::create_user_agent_description(ContextType, ObjectType, Arguments&, ReturnValue &return_value) {
     return_value.set("RealmJS/RPC");
-}
-
-template<typename T>
-void RealmClass<T>::extend_query_based_schema(ContextType, ObjectType, Arguments&, ReturnValue &) {
-    // don't need to do anything
 }
 
 #if REALM_ENABLE_SYNC
