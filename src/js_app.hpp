@@ -27,6 +27,7 @@
 
 #include "js_user.hpp"
 #include "js_app_credentials.hpp"
+#include "js_network_transport.hpp"
 
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 
@@ -54,6 +55,8 @@ class AppClass : public ClassDefinition<T, realm::js::App<T>> {
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+
+    using NetworkTransport = JavaScriptNetworkTransport<T>;
 
 public:
     const std::string name = "App";
@@ -99,8 +102,8 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     std::string id;
     realm::app::App::Config config;
 
-    if (Value::is_object(ctx, args[1])) {
-        ObjectType config_object = Value::validated_to_object(ctx, args[1]);
+    if (Value::is_object(ctx, args[0])) {
+        ObjectType config_object = Value::validated_to_object(ctx, args[0]);
 
         ValueType config_id_value = Object::get_property(ctx, config_object, config_id);
         if (!Value::is_undefined(ctx, config_id_value)) {
@@ -135,6 +138,11 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
             }
         }
     }
+
+    // FIXME: should we use a protected ctx?
+    config.transport_generator = [=] {
+        return std::make_unique<NetworkTransport>(ctx);
+    };
 
     auto app = new realm::app::App(config);
     set_internal<T, AppClass<T>>(this_object, new App<T>(app));
