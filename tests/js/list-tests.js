@@ -150,7 +150,7 @@ module.exports = {
         TestCase.assertEqual(obj.arrayCol1[-1], undefined);
         TestCase.assertEqual(obj.arrayCol1['foo'], undefined);
 
-        for (let field of Object.keys(Object.getPrototypeOf(prim))) {
+        for (let field of prim.keys()) {
             TestCase.assertEqual(prim[field][2], undefined);
             TestCase.assertEqual(prim[field][-1], undefined);
             TestCase.assertEqual(prim[field]['foo'], undefined);

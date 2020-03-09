@@ -46,6 +46,28 @@ static Napi::FunctionReference ObjectSetPrototypeOf;
 static Napi::FunctionReference GlobalProxy;
 static Napi::FunctionReference FunctionBind;
 
+static inline void node_class_init(Napi::Env env) {
+	auto setPrototypeOf = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
+	ObjectSetPrototypeOf = Napi::Persistent(setPrototypeOf);
+	ObjectSetPrototypeOf.SuppressDestruct();
+
+	auto getOwnPropertyDescriptor = env.Global().Get("Object").As<Napi::Object>().Get("getOwnPropertyDescriptor").As<Napi::Function>();
+	ObjectGetOwnPropertyDescriptor = Napi::Persistent(getOwnPropertyDescriptor);
+	ObjectGetOwnPropertyDescriptor.SuppressDestruct();
+
+	auto proxy = env.Global().Get("Proxy").As<Napi::Function>();
+	GlobalProxy = Napi::Persistent(proxy);
+	GlobalProxy.SuppressDestruct();
+
+
+	auto bind = env.Global().Get("Function").As<Napi::Function>().Get("prototype").As<Napi::Object>().Get("bind").As<Napi::Function>();
+	FunctionBind = Napi::Persistent(bind);
+	FunctionBind.SuppressDestruct();
+
+	Napi::Symbol ext = Napi::Symbol::New(env, "_external");
+	ExternalSymbol = node::Protected<Napi::Symbol>(env, ext);
+}
+
 template<typename T>
 using ClassDefinition = js::ClassDefinition<Types, T>;
 
@@ -136,7 +158,6 @@ Napi::Reference<Napi::External<typename ClassType::Internal>> WrappedObject<Clas
 
 
 struct SchemaObjectType {
-	//realm path + type name from the schema 
 	Napi::FunctionReference constructor;
 };
 
@@ -180,6 +201,7 @@ class ObjectWrap {
 	
 	static Napi::Value property_getter(const Napi::CallbackInfo& info);
 	static void property_setter(const Napi::CallbackInfo& info);
+	static std::vector<Napi::PropertyDescriptor> create_napi_property_descriptors(Napi::Env env, const Napi::Object& constructorPrototype, const realm::ObjectSchema& schema, bool redefine = true);
 };
 
 template<>
@@ -330,7 +352,7 @@ Napi::Value WrappedObject<ClassType>::create_instance_with_proxy(const Napi::Cal
 
 	if (constructor.IsEmpty()) {
 		std::string typeName(typeid(ClassType).name());
-		std::string errorMessage = "create_instance_with_proxy: Class " + typeName + " not initialized. Call init() first";
+		std::string errorMessage = util::format("create_instance_with_proxy: Class %s not initialized. Call init() first", typeName);
 		throw Napi::Error::New(env, errorMessage);
 	}
 
@@ -368,7 +390,7 @@ template<typename ClassType>
 Napi::Object WrappedObject<ClassType>::create_instance(Napi::Env env, Internal* internal) {
 	if (constructor.IsEmpty() || factory_constructor.IsEmpty()) {
 		std::string typeName(typeid(ClassType).name());
-		std::string errorMessage = "create_instance: Class " + typeName + " not initialized. Call init() first";
+		std::string errorMessage = util::format("create_instance: Class %s not initialized. Call init() first", typeName);
 		throw Napi::Error::New(env, errorMessage);
 	}
 	Napi::EscapableHandleScope scope(env);
@@ -435,7 +457,7 @@ template<typename ClassType>
 inline bool WrappedObject<ClassType>::is_instance(Napi::Env env, const Napi::Object& object) {
 	if (constructor.IsEmpty()) {
 		std::string typeName(typeid(ClassType).name());
-		std::string errorMessage = "is_instance: Class " + typeName + " not initialized. Call init() first";
+		std::string errorMessage = util::format("is_instance: Class %s not initialized. Call init() first", typeName);
 		throw Napi::Error::New(env, errorMessage);
 	}
 
@@ -765,7 +787,6 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::hasProxyTrap(const Napi::Cal
 		return scope.Escape(Napi::Boolean::From(env, true));
 	}
 
-
 	//Property should be a number from here on
 	char firstChar = *propertyText.c_str();
 	bool isNumber = isdigit(firstChar) || firstChar == '+';
@@ -775,21 +796,18 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::hasProxyTrap(const Napi::Cal
 		return scope.Escape(Napi::Boolean::From(env, false));
 	}
 
-	bool success = false;
 	int32_t index = 0;
 	try {
 		index = std::stoi(propertyText);
-		success = true;
 	}
-	catch (const std::exception& e) {}
-
-	if (success) {
-		int32_t length = instance.Get("length").As<Napi::Number>();
-		bool hasIndex = index >= 0 && index < length;
-		return scope.Escape(Napi::Boolean::From(env, hasIndex));
+	catch (const std::exception& e) {
+		//not a number. return false;
+		return scope.Escape(Napi::Boolean::From(env, false));
 	}
-
-	return scope.Escape(Napi::Boolean::From(env, false));
+	
+	int32_t length = instance.Get("length").As<Napi::Number>();
+	bool hasIndex = index >= 0 && index < length;
+	return scope.Escape(Napi::Boolean::From(env, hasIndex));
 }
 
 template<typename ClassType>
@@ -935,7 +953,7 @@ Napi::Function ObjectWrap<ClassType>::init_class(Napi::Env env) {
 
 	auto ctorPrototypeProperty = ctor.Get("prototype");
 	if (ctorPrototypeProperty.IsUndefined()) {
-		throw std::runtime_error("undefined 'prototype' on construtor");
+		throw std::runtime_error("undefined 'prototype' on constructor");
 	}
 
 	Napi::Function parentCtor = ObjectWrapAccessor<ParentClassType>::init_class(env);
@@ -943,7 +961,7 @@ Napi::Function ObjectWrap<ClassType>::init_class(Napi::Env env) {
 
 		auto parentCtorPrototypeProperty = parentCtor.Get("prototype");
 		if (parentCtorPrototypeProperty.IsUndefined()) {
-			throw std::runtime_error("undefined 'prototype' on parent construtor");
+			throw std::runtime_error("undefined 'prototype' on parent constructor");
 		}
 
 		ObjectSetPrototypeOf.Call({ ctorPrototypeProperty, parentCtorPrototypeProperty });
@@ -1007,6 +1025,31 @@ static inline void remove_schema_object(std::unordered_map<std::string, SchemaOb
 }
 
 template<typename ClassType>
+inline std::vector<Napi::PropertyDescriptor> ObjectWrap<ClassType>::create_napi_property_descriptors(Napi::Env env, const Napi::Object& constructorPrototype, const realm::ObjectSchema& schema, bool redefine) {
+	std::vector<Napi::PropertyDescriptor> properties;
+
+	for (auto& property : schema.persisted_properties) {
+		std::string propName = property.public_name.empty() ? property.name : property.public_name;
+		if (redefine || !constructorPrototype.HasOwnProperty(propName)) {
+			node::String* name = getCachedPropertyName(propName);
+			auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), napi_enumerable, (void*)name);
+			properties.push_back(descriptor);
+		}
+	}
+
+	for (auto& property : schema.computed_properties) {
+		std::string propName = property.public_name.empty() ? property.name : property.public_name;
+		if (redefine || !constructorPrototype.HasOwnProperty(propName)) {
+			node::String* name = getCachedPropertyName(propName);
+			auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), napi_enumerable, (void*)name);
+			properties.push_back(descriptor);
+		}
+	}
+
+	return properties;
+}
+
+template<typename ClassType>
 Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Napi::Function& constructor, const realm::ObjectSchema& schema, Internal* internal) {
 	Napi::EscapableHandleScope scope(env);
 
@@ -1056,20 +1099,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 			ObjectSetPrototypeOf.Call({ schemaObjectConstructor, realmObjectClassConstructor });
 
 			//get all properties from the schema 
-			std::vector<Napi::PropertyDescriptor> properties;
-			for (auto& property : schema.persisted_properties) {
-				std::string propName = property.public_name.empty() ? property.name : property.public_name;
-				node::String* name = getCachedPropertyName(propName);
-				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), napi_enumerable, (void*)name);
-				properties.push_back(descriptor);
-			}
-
-			for (auto& property : schema.computed_properties) {
-				std::string propName = property.public_name.empty() ? property.name : property.public_name;
-				node::String* name = getCachedPropertyName(propName);
-				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), napi_enumerable, (void*)name);
-				properties.push_back(descriptor);
-			}
+			std::vector<Napi::PropertyDescriptor> properties = create_napi_property_descriptors(env, childPrototypeProperty, schema, true /*redefine*/);
 
 			//define the properties on the prototype of the schema object constructor
 			childPrototypeProperty.DefineProperties(properties);
@@ -1122,27 +1152,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 		Napi::Object constructorPrototype = constructor.Get("prototype").As<Napi::Object>();
 
 		//get all properties from the schema 
-		std::vector<Napi::PropertyDescriptor> properties;
-
-		for (auto& property : schema.persisted_properties) {
-			//don't redefine if exists
-			std::string propName = property.public_name.empty() ? property.name : property.public_name;
-			if (!constructorPrototype.HasOwnProperty(propName)) {
-				node::String* name = getCachedPropertyName(propName);
-				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), napi_enumerable, (void*)name);
-				properties.push_back(descriptor);
-			}
-		}
-
-		for (auto& property : schema.computed_properties) {
-			std::string propName = property.public_name.empty() ? property.name : property.public_name;
-			//don't redefine if exists
-			if (!constructorPrototype.HasOwnProperty(propName)) {
-				node::String* name = getCachedPropertyName(propName);
-				auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(name->ToString(env), napi_enumerable, (void*)name);
-				properties.push_back(descriptor);
-			}
-		}
+		std::vector<Napi::PropertyDescriptor> properties = create_napi_property_descriptors(env, constructorPrototype, schema, false /*redefine*/);
 
 		Napi::Function realmObjectClassConstructor = ObjectWrap<ClassType>::create_constructor(env);
 		bool isInstanceOfRealmObjectClass = constructorPrototype.InstanceOf(realmObjectClassConstructor);

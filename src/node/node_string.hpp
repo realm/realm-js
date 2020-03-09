@@ -31,9 +31,9 @@ class String<node::Types> {
 
   public:
     String(const char* s) : m_str(s) {}
-    String(const std::string &s) : m_str(s) {}
-    String(const Napi::String &s);
-    String(Napi::String &&s) : String(s) {}
+    String(const std::string& s) : m_str(s) {}
+    String(const Napi::String& s);
+    String(Napi::String&& s) : String(s) {}
 
     operator std::string() const& {
         return m_str;
@@ -48,7 +48,7 @@ class String<node::Types> {
     }
 };
 
-inline String<node::Types>::String(const Napi::String &s) {
+inline String<node::Types>::String(const Napi::String& s) {
 	m_str = s.Utf8Value();
 }
 

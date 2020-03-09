@@ -44,7 +44,7 @@ app.on("ready", () => {
             show: false, 
             webPreferences: {
                 nodeIntegration: true
-              }
+            }
         });
         
         // Load the index.html of the app.

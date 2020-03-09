@@ -71,8 +71,7 @@ protected:
 
 void SyncLoggerQueue::log_uv_callback()
 {
-	// This function is always executed by the Node.js event loop
-	// thread.
+	// This function is always executed by the Node.js event loop thread.
 	Napi::HandleScope scope(m_env);
 
 	std::queue<SyncLoggerMessage> popped;

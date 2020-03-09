@@ -28,29 +28,7 @@
  namespace node {
 
 static void napi_init(Napi::Env env, Napi::Object exports) {
-
-	auto setPrototypeOf = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
-	ObjectSetPrototypeOf = Napi::Persistent(setPrototypeOf);
-	ObjectSetPrototypeOf.SuppressDestruct();
-
-	auto getOwnPropertyDescriptor = env.Global().Get("Object").As<Napi::Object>().Get("getOwnPropertyDescriptor").As<Napi::Function>();
-	ObjectGetOwnPropertyDescriptor = Napi::Persistent(getOwnPropertyDescriptor);
-	ObjectGetOwnPropertyDescriptor.SuppressDestruct();
-
-	auto proxy = env.Global().Get("Proxy").As<Napi::Function>();
-	GlobalProxy = Napi::Persistent(proxy);
-	GlobalProxy.SuppressDestruct();
-
-
-	auto bind = env.Global().Get("Function").As<Napi::Function>().Get("prototype").As<Napi::Object>().Get("bind").As<Napi::Function>();
-	FunctionBind = Napi::Persistent(bind);
-	FunctionBind.SuppressDestruct();
-
-
-	Napi::Symbol ext = Napi::Symbol::New(env, "_external");
-	ExternalSymbol = node::Protected<Napi::Symbol>(env, ext);
-
-
+	node_class_init(env);
 
 	Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
 
