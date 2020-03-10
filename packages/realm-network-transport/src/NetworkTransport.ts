@@ -23,14 +23,18 @@ export type SuccessCallback = (response: Response) => void;
 
 export type ErrorCallback = (err: Error) => void;
 
+export interface ResponseHandler {
+    onSuccess: SuccessCallback;
+    onError: ErrorCallback;
+}
+
 export interface NetworkTransport {
     fetchAndParse<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>
     ): Promise<ResponseBody>;
     fetchWithCallbacks<RequestBody extends any>(
         request: Request<RequestBody>,
-        successCallback: SuccessCallback,
-        errorCallback: ErrorCallback
+        handler: ResponseHandler
     ): void;
 }
 
@@ -114,9 +118,9 @@ export class DefaultNetworkTransport implements NetworkTransport {
 
     public fetchWithCallbacks<RequestBody extends any>(
         request: Request<RequestBody>,
-        successCallback: SuccessCallback,
-        errorCallback: ErrorCallback
+        handler: ResponseHandler
     ) {
+        // tslint:disable-next-line: no-console
         this.fetch(request)
             .then(async response => {
                 const decodedBody = await response.text();
@@ -131,7 +135,8 @@ export class DefaultNetworkTransport implements NetworkTransport {
                     body: decodedBody
                 };
             })
-            .then(successCallback, errorCallback);
+            .then(r => handler.onSuccess(r))
+            .catch(e => handler.onError(e));
     }
 
     private async fetch<RequestBody extends any>(
@@ -161,7 +166,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
 
     private createTimeoutSignal(timeoutMs: number | undefined) {
         if (typeof timeoutMs === "number") {
-            const controller = new AbortController();
+            const controller = new DefaultNetworkTransport.AbortController();
             // Call abort after a specific number of milliseconds
             const timeout = setTimeout(() => {
                 controller.abort();

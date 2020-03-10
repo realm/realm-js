@@ -442,6 +442,9 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
 
     FunctionType user_constructor = UserClass<T>::create_constructor(ctx);
     Object::set_property(ctx, realm_constructor, "User", user_constructor, attributes);
+
+    FunctionType response_handler_constructor = ResponseHandlerClass<T>::create_constructor(ctx);
+    Object::set_property(ctx, realm_constructor, "ResponseHandler", response_handler_constructor, attributes);
 #endif
 
     if (getenv("REALM_DISABLE_SYNC_TO_DISK")) {

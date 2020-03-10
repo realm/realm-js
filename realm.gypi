@@ -143,7 +143,8 @@
             "src/object-store/src/sync/sync_session.cpp",
             "src/object-store/src/sync/sync_user.cpp",
             "src/object-store/src/sync/app.cpp",
-            "src/object-store/src/sync/app_credentials.cpp"
+            "src/object-store/src/sync/app_credentials.cpp",
+            "src/object-store/src/sync/generic_network_transport.cpp"
           ],
         }, {
           "dependencies": [ "realm-core" ]
