@@ -48,7 +48,7 @@ function determineSpawnParameters(processType, serverUrl) {
         console.warn("🚧 Running an unpackaged version of the app 🚧");
         return {
             command: require("electron"),
-            args: [".", "--no-sandbox", processType, serverUrl],
+            args: [".", processType, serverUrl],
         };
     }
 }
@@ -56,7 +56,9 @@ function determineSpawnParameters(processType, serverUrl) {
 function runElectron(processType, serverUrl) {
     const { command, args } = determineSpawnParameters(processType, serverUrl);
     // Spawn the Electron app
-    const appProcess = spawn(command, args, { stdio: "inherit" });
+    let env = Object.create(process.env);
+    env.ELECTRON_DISABLE_SANDBOX = 1;
+    const appProcess = spawn(command, args, { stdio: "inherit", env : env });
     // If the runner closes, we should kill the Electron app
     process.on("exit", () => {
         appProcess.kill("SIGHUP");
