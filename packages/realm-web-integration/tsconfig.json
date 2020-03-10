@@ -4,7 +4,7 @@
 		"module": "CommonJS",
 		"target": "es5",
 		"lib": ["ES5", "DOM"],
-		"types": ["mocha", "puppeteer", "realm-web", "node-fetch"],
+		"types": ["mocha", "puppeteer", "realm-web", "node-fetch", "fs-extra"],
 		"allowJs": true,
 		"esModuleInterop": true
 	},

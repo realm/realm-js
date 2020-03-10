@@ -4,5 +4,6 @@ const mochaClient = new MochaRemoteClient({
     whenInstrumented: () => {
         require("./constructor");
         require("./credentials");
+        require("./functions");
     }
 });

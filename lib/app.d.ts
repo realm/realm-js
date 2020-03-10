@@ -20,7 +20,7 @@ declare namespace Realm {
     /**
      * The constructor of MongoDB Realm App.
      */
-    type AppConstructor = new <FF extends FunctionFactory>(
+    type AppConstructor = new <FF extends FunctionsFactory>(
         id: string,
         configuration?: Partial<AppConfiguration>,
     ) => App<FF>;
@@ -28,7 +28,7 @@ declare namespace Realm {
     /**
      * A MongoDB Realm App.
      */
-    interface App<FF extends FunctionFactory = FunctionFactory> {
+    interface App<FF extends FunctionsFactory = FunctionsFactory> {
         /**
          * The id of this Realm app.
          */
@@ -40,10 +40,10 @@ declare namespace Realm {
         functions: FF;
 
         /**
-         * Login a user using a specific credential
+         * Log in a user using a specific credential
          * @param credentials the credentials to use when logging in
          */
-        login(credentials: Credentials): Promise<Realm.User>;
+        logIn(credentials: Credentials): Promise<Realm.User>;
     }
 
     interface AppConfiguration {
@@ -101,7 +101,7 @@ declare namespace Realm {
     /**
      * A collection of functions as defined on the MongoDB Server.
      */
-    interface FunctionFactory {
+    interface FunctionsFactory {
         /**
          * Call a remote MongoDB Realm function by it's name.
          * Consider using `functions[name]()` instead of calling this method.

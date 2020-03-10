@@ -1,4 +1,4 @@
-import type { NetworkTransport } from "realm-network-transport";
+import type { AuthenticatedNetworkTransport } from "./AuthenticatedNetworkTransport";
 
 /**
  * A list of names that functions cannot have to be callable through the functions proxy.
@@ -11,12 +11,12 @@ interface CallFunctionBody {
     service?: string;
 }
 
-export class FunctionFactory {
-    private readonly transport: NetworkTransport;
+export class FunctionsFactory {
+    private readonly transport: AuthenticatedNetworkTransport;
     private readonly appUrl: string;
     private readonly serviceName?: string;
 
-    constructor(transport: NetworkTransport, appUrl: string, serviceName?: string) {
+    constructor(transport: AuthenticatedNetworkTransport, appUrl: string, serviceName?: string) {
         this.transport = transport;
         this.appUrl = appUrl;
         this.serviceName = serviceName;
@@ -33,7 +33,7 @@ export class FunctionFactory {
         if (this.serviceName) {
             body.service = this.serviceName;
         }
-        return this.transport.fetchAndParse({
+        return this.transport.fetchAuthenticated({
             method: "POST",
             url: `${this.appUrl}/functions/call`,
             body,
@@ -46,10 +46,10 @@ export class FunctionFactory {
  * @param fetcher The object used to perform HTTP fetching
  * @param serviceName An optional name of the service to call functions on
  */
-export function create<FF extends Realm.FunctionFactory>(transport: NetworkTransport, appUrl: string, serviceName?: string): FF {
+export function create<FF extends Realm.FunctionsFactory>(transport: AuthenticatedNetworkTransport, appUrl: string, serviceName?: string): FF {
     // Create a proxy, wrapping a simple object returning methods that calls functions
     // TODO: Lazily fetch available functions and return these from the ownKeys() trap
-    const factory = new FunctionFactory(transport, appUrl, serviceName);
+    const factory = new FunctionsFactory(transport, appUrl, serviceName);
     // Wrap the factory in a promise that calls the internal call method
     return new Proxy(factory as any as FF, {
         get(target, p, receiver) {

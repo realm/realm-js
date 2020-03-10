@@ -8,7 +8,12 @@ import { Credentials } from "./Credentials";
  */
 export class AnonymousCredentials extends Credentials
     implements Realm.Credentials {
-    public readonly providerName = "anon-user";
+    public static DEFAULT_PROVIDER_NAME = "anon-user";
+
+    constructor(providerName = AnonymousCredentials.DEFAULT_PROVIDER_NAME) {
+        super(providerName);
+    }
+
     public readonly providerType = "anon-user";
     public readonly material = {};
 }

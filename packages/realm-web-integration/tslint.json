@@ -1,6 +1,6 @@
 {
   "extends": "../../tslint.json",
   "rules": {
-    "no-implicit-dependencies": [true, ["node-fetch"]]
+    "no-implicit-dependencies": [true, ["node-fetch", "fs-extra"]]
   }
 }

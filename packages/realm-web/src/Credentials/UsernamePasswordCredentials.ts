@@ -10,14 +10,18 @@ import { Credentials } from "./Credentials";
  */
 export class UsernamePasswordCredentials extends Credentials
     implements Realm.Credentials {
-    public readonly providerName = "local-userpass";
+    public static DEFAULT_PROVIDER_NAME = "local-userpass";
     public readonly providerType = "local-userpass";
 
     public readonly username: string;
     public readonly password: string;
 
-    constructor(username: string, password: string) {
-        super();
+    constructor(
+        username: string,
+        password: string,
+        providerName = UsernamePasswordCredentials.DEFAULT_PROVIDER_NAME
+    ) {
+        super(providerName);
         this.username = username;
         this.password = password;
     }

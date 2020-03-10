@@ -1,18 +1,18 @@
 import { expect } from "chai";
-import type { NetworkTransport } from "realm-network-transport";
 
-import { create as createFunctionsFactory, FunctionFactory } from "./FunctionsFactory";
+import { create as createFunctionsFactory, FunctionsFactory } from "./FunctionsFactory";
+import type { AuthenticatedNetworkTransport } from "./AuthenticatedNetworkTransport";
 
 describe("FunctionsFactory", () => {
     it("can be created", () => {
-        const transport: NetworkTransport = {} as any;
+        const transport: AuthenticatedNetworkTransport = {} as any;
         const factory = createFunctionsFactory(transport, 'http://localhost:1337');
-        expect(factory).to.be.instanceOf(FunctionFactory);
+        expect(factory).to.be.instanceOf(FunctionsFactory);
     });
 
     it("calls the network transport correctly", async () => {
         class MockNetworkTransport {
-            fetchAndParse({ url, body }: any) {
+            fetchAuthenticated({ url, body }: any) {
                 expect(this).to.equal(fetcher);
                 expect(url).to.equal("http://localhost:1337/functions/call"); // TODO: Fix this to include the base URL
                 expect(typeof body).to.equal("object");

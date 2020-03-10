@@ -5,11 +5,17 @@ export abstract class Credentials {
     static AnonymousCredentials: typeof AnonymousCredentials;
     static UsernamePasswordCredentials: typeof UsernamePasswordCredentials;
 
-    static anonymous() {
-        return new Credentials.AnonymousCredentials();
+    public readonly providerName: string;
+
+    constructor(providerName: string) {
+        this.providerName = providerName;
     }
 
-    static usernamePassword(username: string, password: string) {
-        return new Credentials.UsernamePasswordCredentials(username, password);
+    static anonymous(providerName?: string) {
+        return new Credentials.AnonymousCredentials(providerName);
+    }
+
+    static usernamePassword(username: string, password: string, providerName?: string) {
+        return new Credentials.UsernamePasswordCredentials(username, password, providerName);
     }
 }
