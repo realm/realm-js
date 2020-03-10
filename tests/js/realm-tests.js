@@ -216,7 +216,7 @@ module.exports = {
         });
     },
 
-    testOverwriteOfNativeFucntionSupport: function() {
+    testNativeFunctionOverwrite: function() {
         if (!isNodeProcess && !isElectronProcess) {
             return;
         }
