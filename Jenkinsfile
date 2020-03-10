@@ -527,7 +527,7 @@ def testAndroid(target, postStep = null) {
 
 def testLinux(target, postStep = null) {
   return {
-      node('docker') {
+      node('docker && !aws') {
       def reportName = "Linux ${target}"
       deleteDir()
       unstash 'source'
