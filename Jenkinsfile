@@ -16,6 +16,11 @@ dependencies = null
 nodeTestVersion = nodeVersions[0]
 electronTestVersion = electronVersions[0]
 
+environment {
+  GIT_COMMITTER_NAME=ci
+  GIT_COMMITTER_EMAIL=ci@localhost
+}
+
 // == Stages
 
 stage('check') {

@@ -3,8 +3,8 @@ FROM centos/devtoolset-7-toolchain-centos7
 USER root
 
 # workaround for https://github.com/jenkinsci/docker/issues/519
-ENV GIT_COMMITTER_NAME=unknown
-ENV GIT_COMMITTER_EMAIL=unknown@localhost
+ENV GIT_COMMITTER_NAME=ci
+ENV GIT_COMMITTER_EMAIL=ci@localhost
 
 ENV NPM_CONFIG_UNSAFE_PERM true
 ENV NVM_DIR /tmp/.nvm
