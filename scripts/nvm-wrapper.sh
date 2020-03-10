@@ -37,4 +37,4 @@ if [ "$yarn" = "" ]; then
   npm install -g yarn || die "Could not install yarn"
 fi
 
-exec env GIT_COMMITTER_NAME=ci env GIT_COMMITTER_EMAIL=ci@localhost $@
+exec $@

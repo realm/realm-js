@@ -92,21 +92,23 @@ stage('pretest') {
 }
 
 stage('build') {
-  parallelExecutors = [:]
-  nodeVersions.each { nodeVersion ->
-    parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
-    parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-    parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
-    parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
+  node('docker && !aws') {
+    parallelExecutors = [:]
+    nodeVersions.each { nodeVersion ->
+      parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
+      parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
+      parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
+      parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
+    }
+    electronVersions.each { electronVersion ->
+      parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
+      parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
+      parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
+      parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
+    }
+    parallelExecutors["Android React Native"] = buildAndroid()
+    parallel parallelExecutors
   }
-  electronVersions.each { electronVersion ->
-    parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
-    parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
-    parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
-    parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
-  }
-  parallelExecutors["Android React Native"] = buildAndroid()
-  parallel parallelExecutors
 }
 
 if (gitTag) {
@@ -284,7 +286,7 @@ def buildCommon(nodeVersion, platform) {
     sh "mkdir -p ~/.ssh"
     sh "ssh-keyscan github.com >> ~/.ssh/known_hosts"
     sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
-    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package-from-jenkins"
+    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package"
   }
   dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
     stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"

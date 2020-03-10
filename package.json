@@ -50,7 +50,6 @@
     "set-version": "scripts/set-version.sh",
     "lint": "eslint",
     "test": "scripts/test.sh",
-    "package-from-jenkins": "export GIT_COMMITTER_NAME=ci && export GIT_COMMITTER_EMAIL=ci@localhost && npm ci --build-from-source=realm && node-pre-gyp package",
     "package": "npm ci --build-from-source=realm && node-pre-gyp package",
     "install": "node-pre-gyp install --fallback-to-build -j 8",
     "rebuild": "npm run isWin -s && SET REALMJS_USE_DEBUG_CORE=1 && npm run rebuild-changes || REALMJS_USE_DEBUG_CORE=1 && npm run rebuild-changes",
