@@ -92,7 +92,6 @@ stage('pretest') {
 }
 
 stage('build') {
-  node('docker && !aws') {
     parallelExecutors = [:]
     nodeVersions.each { nodeVersion ->
       parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
@@ -108,7 +107,6 @@ stage('build') {
     }
     parallelExecutors["Android React Native"] = buildAndroid()
     parallel parallelExecutors
-  }
 }
 
 if (gitTag) {
@@ -309,7 +307,7 @@ def buildElectronCommon(electronVersion, platform) {
 
 def buildLinux(workerFunction) {
   return {
-    myNode('docker') {
+    myNode('docker && !aws') {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
