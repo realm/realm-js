@@ -1327,6 +1327,21 @@ namespace js {
 template<typename ClassType>
 class ObjectWrap<node::Types, ClassType> : public node::ObjectWrap<ClassType> {};
 
+
+#define HANDLE_WRAP_EXCEPTION           \
+catch (const Napi::Error & e) { \
+	throw;\
+}\
+catch (const node::Exception & e) {\
+	Napi::Error error = Napi::Error::New(info.Env(), e.what());\
+	copyObject(env, e.m_value, error);\
+	throw error;\
+}\
+catch (const std::exception & e) {\
+	throw Napi::Error::New(info.Env(), e.what());\
+}
+
+
 template<node::ArgumentsMethodType F>
 Napi::Value wrap(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
@@ -1343,17 +1358,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 		F(env, instanceProxy, args, result);
 		return result.ToValue();
 	}
-	catch (const Napi::Error & e) {
-		throw;
-	}
-	catch (const node::Exception & e) {
-		Napi::Error error = Napi::Error::New(info.Env(), e.what());
-		copyObject(env, e.m_value, error);
-		throw error;
-	}
-	catch (const std::exception & e) {
-		throw Napi::Error::New(info.Env(), e.what());
-	}
+	HANDLE_WRAP_EXCEPTION
 }
 
 template<node::PropertyType::GetterType F>
@@ -1364,17 +1369,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 		F(env, info.This().As<Napi::Object>(), result);
 		return result.ToValue();
 	}
-	catch (const Napi::Error& e) {
-		throw;
-	}
-	catch (const node::Exception& e) {
-		Napi::Error error = Napi::Error::New(info.Env(), e.what());
-		copyObject(env, e.m_value, error);
-		throw error;
-	}
-	catch (const std::exception& e) {
-		throw Napi::Error::New(info.Env(), e.what());
-	}
+	HANDLE_WRAP_EXCEPTION
 }
 
 template<node::PropertyType::SetterType F>
@@ -1384,17 +1379,7 @@ void wrap(const Napi::CallbackInfo& info, const Napi::Value& value) {
 	try {
 		F(env, info.This().As<Napi::Object>(), value);
 	}
-	catch (const Napi::Error& e) {
-		throw;
-	}
-	catch (const node::Exception& e) {
-		Napi::Error error = Napi::Error::New(info.Env(), e.what());
-		copyObject(env, e.m_value, error);
-		throw error;
-	}
-	catch (const std::exception& e) {
-		throw Napi::Error::New(info.Env(), e.what());
-	}
+	HANDLE_WRAP_EXCEPTION
 }
 
 template<node::IndexPropertyType::GetterType F>
@@ -1413,17 +1398,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, u
 			return result.ToValue();
 		}
 	}
-	catch (const Napi::Error& e) {
-		throw;
-	}
-	catch (const node::Exception& e) {
-		Napi::Error error = Napi::Error::New(info.Env(), e.what());
-		copyObject(env, e.m_value, error);
-		throw error;
-	}
-	catch (const std::exception& e) {
-		throw Napi::Error::New(info.Env(), e.what());
-	}
+	HANDLE_WRAP_EXCEPTION
 }
 
 template<node::IndexPropertyType::SetterType F>
@@ -1436,17 +1411,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, u
 		// Indicate that the property was intercepted.
 		return Napi::Value::From(env, success);
 	}
-	catch (const Napi::Error& e) {
-		throw;
-	}
-	catch (const node::Exception& e) {
-		Napi::Error error = Napi::Error::New(info.Env(), e.what());
-		copyObject(env, e.m_value, error);
-		throw error;
-	}
-	catch (const std::exception& e) {
-		throw Napi::Error::New(info.Env(), e.what());
-	}
+	HANDLE_WRAP_EXCEPTION
 }
 
 template<node::StringPropertyType::GetterType F>
@@ -1458,17 +1423,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, c
 		F(env, instance, property, result);
 		return result.ToValue();
 	}
-	catch (const Napi::Error& e) {
-		throw;
-	}
-	catch (const node::Exception& e) {
-		Napi::Error error = Napi::Error::New(info.Env(), e.what());
-		copyObject(env, e.m_value, error);
-		throw error;
-	}
-	catch (const std::exception& e) {
-		throw Napi::Error::New(info.Env(), e.what());
-	}
+	HANDLE_WRAP_EXCEPTION
 }
 
 template<node::StringPropertyType::SetterType F>
@@ -1478,17 +1433,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, c
 		bool success = F(env, instance, property, value);
 		return Napi::Value::From(env, success);
 	}
-	catch (const Napi::Error& e) {
-		throw;
-	}
-	catch (const node::Exception& e) {
-		Napi::Error error = Napi::Error::New(info.Env(), e.what());
-		copyObject(env, e.m_value, error);
-		throw error;
-	}
-	catch (const std::exception& e) {
-		throw Napi::Error::New(info.Env(), e.what());
-	}
+	HANDLE_WRAP_EXCEPTION
 }
 
 template<node::StringPropertyType::EnumeratorType F>
@@ -1506,17 +1451,7 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance) {
 
 		return array;
 	}
-	catch (const Napi::Error& e) {
-		throw;
-	}
-	catch (const node::Exception& e) {
-		Napi::Error error = Napi::Error::New(info.Env(), e.what());
-		copyObject(env, e.m_value, error);
-		throw error;
-	}
-	catch (const std::exception& e) {
-		throw Napi::Error::New(info.Env(), e.what());
-	}
+	HANDLE_WRAP_EXCEPTION
 }
 
 } // js
