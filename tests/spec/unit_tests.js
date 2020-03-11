@@ -25,28 +25,6 @@ const isNodeProcess = (typeof process === 'object' && process + '' === '[object 
 const fs = require('fs');
 const path = require('path');
 
-//NAPI: Enable debugging in VS Studio. 
-//NAPI: FIXME: remove when NAPI complete
-/////////////////////
-const mockery = require('mockery');
-
-function mockRealm(realmModulePath) {
-    if (typeof REALM_MODULE_PATH !== 'undefined')
-        return;
-
-    global.REALM_MODULE_PATH = realmModulePath;
-
-    mockery.enable({
-        warnOnReplace: false,
-        warnOnUnregistered: false
-    });
-    mockery.registerSubstitute('realm', REALM_MODULE_PATH); // eslint-disable-line no-undef
-}   
-
-mockRealm(path.resolve(__dirname, '../..'))
-////////////////
-
-
 const Realm = require('realm');
 
 // Setup a Realm logger
