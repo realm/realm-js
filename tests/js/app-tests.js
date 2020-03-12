@@ -12,6 +12,16 @@ function nodeRequire(module) {
 const Realm = require('realm');
 const TestCase = require('./asserts');
 
+const config = {
+    id: 'realm-sdk-integration-tests-etyyr',
+    url: 'http://localhost:9090',
+    timeout: 1000,
+    app: {
+        name: 'realm-sdk-integration-tests',
+        version: '42'
+    }
+};
+
 module.exports = {
     testNewApp() {
         const config = {
@@ -23,16 +33,6 @@ module.exports = {
     },
 
     async testLogIn() {
-        const config = {
-            id: 'realm-sdk-integration-tests-etyyr',
-            url: 'http://localhost:9090',
-            timeout: 1000,
-            app: {
-                name: 'realm-sdk-integration-tests',
-                version: '42'
-            }
-        };
-
         let app = new Realm.App(config);
         TestCase.assertTrue(app instanceof Realm.App);
 
@@ -42,16 +42,6 @@ module.exports = {
     },
 
     async testLogoutAndAllUsers() {
-        const config = {
-            id: 'realm-sdk-integration-tests-etyyr',
-            url: 'http://localhost:9090',
-            timeout: 1000,
-            app: {
-                name: 'realm-sdk-integration-tests',
-                version: '42'
-            }
-        };
-
         let app = new Realm.App(config);
         let credentials = Realm.Credentials.anonymous();
         let users = app.allUsers();
@@ -64,5 +54,16 @@ module.exports = {
 
         users = app.allUsers();
         TestCase.assertEqual(Object.keys(users).length, nUsers);
+    },
+
+    async testCurrentUser() {
+        let app = new Realm.App(config);
+        let credentials = Realm.Credentials.anonymous();
+
+        let user1 = await app.logIn(credentials);
+        let user2 = app.currentUser();
+
+        TestCase.assertEqual(user1.identity, user2.identity);
+        user1.logOut();
     },
 };

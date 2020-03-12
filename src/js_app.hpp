@@ -74,11 +74,13 @@ public:
     static void login(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void all_users(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void current_user(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
         {"logout", wrap<logout>},
         {"allUsers", wrap<all_users>},
+        {"currentUser", wrap<current_user>}
     };
 };
 
@@ -225,6 +227,15 @@ void AppClass<T>::all_users(ContextType ctx, ObjectType this_object, Arguments& 
         Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
     }
     return_value.set(users);
+}
+
+template<typename T>
+void AppClass<T>::current_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+    args.validate_count(0);
+
+    realm::app::App& app = *get_internal<T, AppClass<T>>(this_object);
+    auto user = app.current_user();
+    return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(user)));
 }
 
 }
