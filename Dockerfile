@@ -37,5 +37,5 @@ RUN yum -y install \
  && . $NVM_DIR/nvm.sh \
  && nvm install 10.19.0 \
  && nvm install 12.16.1 \
- && nvm install 13.11.0 \
+ && nvm install 13.0.0 \
  && chmod a+rwX -R $NVM_DIR \
