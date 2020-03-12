@@ -74,17 +74,11 @@ public:
         // {"_getExistingUser", wrap<get_existing_user>},
     };
 
-    static void all_users(ContextType ctx, ObjectType object, ReturnValue &);
-
-    PropertyMap<T> const static_properties = {
-        {"all", {wrap<all_users>, nullptr}},
-    };
-
-    static void logout(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void session_for_on_disk_path(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void session_for_on_disk_path(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
-        {"_logout", wrap<logout>},
+        {"logOut", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>}
     };
 };
@@ -175,16 +169,8 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
 // }
 
 template<typename T>
-void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto users = Object::create_empty(ctx);
-    for (auto user : syncManagerShared<T>(ctx).all_users()) {
-        Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
-    }
-    return_value.set(users);
-}
-
-template<typename T>
-void UserClass<T>::logout(ContextType, ObjectType this_object, Arguments &, ReturnValue &) {
+void UserClass<T>::logout(ContextType, ObjectType this_object, Arguments& args, ReturnValue &) {
+    args.validate_count(0);
     get_internal<T, UserClass<T>>(this_object)->get()->log_out();
 }
 

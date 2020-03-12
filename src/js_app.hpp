@@ -71,12 +71,14 @@ public:
         {"id", {wrap<get_app_id>, nullptr}},
     };
 
-    static void login(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void logout(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void login(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void all_users(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
         {"logout", wrap<logout>},
+        {"allUsers", wrap<all_users>},
     };
 };
 
@@ -210,6 +212,19 @@ void AppClass<T>::logout(ContextType ctx, ObjectType this_object, Arguments &arg
     auto user_object = Value::validated_to_object(ctx, args[0]);
     auto user = *get_internal<T, UserClass<T>>(user_object);
     user->log_out();
+}
+
+template<typename T>
+void AppClass<T>::all_users(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+    args.validate_count(0);
+
+    realm::app::App& app = *get_internal<T, AppClass<T>>(this_object);
+
+    auto users = Object::create_empty(ctx);
+    for (auto user : app.all_users()) {
+        Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
+    }
+    return_value.set(users);
 }
 
 }

@@ -13,16 +13,16 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 
 module.exports = {
-    testNewApp: function () {
+    testNewApp() {
         const config = {
             id: 'realm-sdk-integration-tests-pwjzl'
         };
 
         let app = new Realm.App(config);
-        TestCase.assertTrue(app instanceof Realm.App);
+        TestCase.assertInstanceOf(app, Realm.App);
     },
 
-    testLogin: function () {
+    async testLogIn() {
         const config = {
             id: 'realm-sdk-integration-tests-etyyr',
             url: 'http://localhost:9090',
@@ -37,6 +37,32 @@ module.exports = {
         TestCase.assertTrue(app instanceof Realm.App);
 
         let credentials = Realm.Credentials.anonymous();
-        return app.login(credentials);
+        let user = await app.logIn(credentials);
+        TestCase.assertInstanceOf(user, Realm.User);
+    },
+
+    async testLogoutAndAllUsers() {
+        const config = {
+            id: 'realm-sdk-integration-tests-etyyr',
+            url: 'http://localhost:9090',
+            timeout: 1000,
+            app: {
+                name: 'realm-sdk-integration-tests',
+                version: '42'
+            }
+        };
+
+        let app = new Realm.App(config);
+        let credentials = Realm.Credentials.anonymous();
+        let users = app.allUsers();
+        const nUsers = Object.keys(users).length;
+
+        let user = await app.logIn(credentials);
+        users = app.allUsers();
+        TestCase.assertEqual(Object.keys(users).length, nUsers + 1)
+        user.logOut();
+
+        users = app.allUsers();
+        TestCase.assertEqual(Object.keys(users).length, nUsers);
     },
 };
