@@ -310,7 +310,7 @@ WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::
 	}
 
 	try {
-		node::Types::FunctionCallback constructor_callback = (node::Types::FunctionCallback)info.Data();
+		node::Types::FunctionCallback constructor_callback = static_cast<node::Types::FunctionCallback>(info.Data());
 		constructor_callback(info);
 	}
 	catch (const node::Exception& e) {
@@ -482,25 +482,25 @@ inline bool WrappedObject<ClassType>::is_instance(Napi::Env env, const Napi::Obj
 
 
 static inline Napi::Value method_callback(const Napi::CallbackInfo& info) {
-	node::Types::FunctionCallback method = (node::Types::FunctionCallback)info.Data();
+	node::Types::FunctionCallback method = static_cast<node::Types::FunctionCallback>(info.Data());
 	return method(info);
 }
 
 template<typename ClassType>
 Napi::Value WrappedObject<ClassType>::method_callback(const Napi::CallbackInfo& info) {
-	node::Types::FunctionCallback method = (node::Types::FunctionCallback)info.Data();
+	node::Types::FunctionCallback method = static_cast<node::Types::FunctionCallback>(info.Data());
 	return method(info);
 }
 
 template<typename ClassType>
 Napi::Value WrappedObject<ClassType>::getter_callback(const Napi::CallbackInfo& info) {
-	PropertyType* propertyType = (PropertyType*)info.Data();
+	PropertyType* propertyType = static_cast<PropertyType*>(info.Data());
 	return propertyType->getter(info);
 }
 
 template<typename ClassType>
 void WrappedObject<ClassType>::setter_callback(const Napi::CallbackInfo& info, const Napi::Value& value) {
-	PropertyType* propertyType = (PropertyType*)info.Data();
+	PropertyType* propertyType = static_cast<PropertyType*>(info.Data());
 	propertyType->setter(info, value);
 }
 
@@ -846,7 +846,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::set_prototype_of_proxy_trap(
 static Napi::Value property_getter_callback(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	try {
-		PropertyType* propertyType = (PropertyType*)info.Data();
+		PropertyType* propertyType = static_cast<PropertyType*>(info.Data());
 		Napi::Value result = propertyType->getter(info);
 		return result;
 	}
@@ -860,7 +860,7 @@ template<typename ClassType>
 Napi::Value ObjectWrap<ClassType>::property_getter(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	try {
-		auto propertyName = (node::String*)info.Data();
+		auto propertyName = static_cast<node::String*>(info.Data());
 		return s_class.string_accessor.getter(info, info.This().As<Napi::Object>(), propertyName->ToString(env));
 	}
 	catch (const Napi::Error & e) {
@@ -873,7 +873,7 @@ template<typename ClassType>
 void ObjectWrap<ClassType>::property_setter(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	try {
-		auto propertyName = (node::String*)info.Data();
+		auto propertyName = static_cast<node::String*>(info.Data());
 		auto value = info[0];
 		s_class.string_accessor.setter(info, info.This().As<Napi::Object>(), propertyName->ToString(env), value);
 	}
@@ -1282,7 +1282,7 @@ bool ObjectWrap<ClassType>::has_native_method(const std::string& name) {
 
 template<typename ClassType>
 Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> ObjectWrap<ClassType>::setup_method(Napi::Env env, const std::string& name, node::Types::FunctionCallback callback) {
-	auto methodCallback = (typename WrappedObject<ClassType>::InstanceMethodCallback)(&WrappedObject<ClassType>::method_callback);
+	auto methodCallback = static_cast<typename WrappedObject<ClassType>::InstanceMethodCallback>(&WrappedObject<ClassType>::method_callback);
 	s_nativeMethods.insert(name);
 	return WrappedObject<ClassType>::InstanceMethod(name.c_str(), methodCallback, napi_default | realm::js::PropertyAttributes::DontEnum, (void*)callback);
 }
@@ -1296,10 +1296,10 @@ template<typename ClassType>
 Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> ObjectWrap<ClassType>::setup_property(Napi::Env env, const std::string& name, const PropertyType& property) {
 	napi_property_attributes napi_attributes = napi_default | (realm::js::PropertyAttributes::DontEnum | realm::js::PropertyAttributes::DontDelete);
 	
-	auto getterCallback = (typename WrappedObject<ClassType>::InstanceGetterCallback)(&WrappedObject<ClassType>::getter_callback);
-	auto setterCallback = (typename WrappedObject<ClassType>::InstanceSetterCallback)(&WrappedObject<ClassType>::readonly_setter_callback);
+	auto getterCallback = static_cast<typename WrappedObject<ClassType>::InstanceGetterCallback>(&WrappedObject<ClassType>::getter_callback);
+	auto setterCallback = static_cast<typename WrappedObject<ClassType>::InstanceSetterCallback>(&WrappedObject<ClassType>::readonly_setter_callback);
 	if (property.setter) {
-		setterCallback = (typename WrappedObject<ClassType>::InstanceSetterCallback)(&WrappedObject<ClassType>::setter_callback);
+		setterCallback = static_cast<typename WrappedObject<ClassType>::InstanceSetterCallback>(&WrappedObject<ClassType>::setter_callback);
 	}
 
 	return WrappedObject<ClassType>::InstanceAccessor(name.c_str(), getterCallback, setterCallback, napi_attributes, (void*)&property);
@@ -1309,10 +1309,10 @@ template<typename ClassType>
 Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> ObjectWrap<ClassType>::setup_static_property(Napi::Env env, const std::string& name, const PropertyType& property) {
 	napi_property_attributes napi_attributes = napi_static | (realm::js::PropertyAttributes::DontEnum | realm::js::PropertyAttributes::DontDelete);
 
-	auto getterCallback = (typename WrappedObject<ClassType>::StaticGetterCallback)(property.getter);
+	auto getterCallback = static_cast<typename WrappedObject<ClassType>::StaticGetterCallback>(property.getter);
 	typename WrappedObject<ClassType>::StaticSetterCallback setterCallback = &WrappedObject<ClassType>::readonly_static_setter_callback;
 	if (property.setter) {
-		setterCallback = (typename WrappedObject<ClassType>::StaticSetterCallback)(property.setter);
+		setterCallback = static_cast<typename WrappedObject<ClassType>::StaticSetterCallback>(property.setter);
 	}
 
 	return WrappedObject<ClassType>::StaticAccessor(name.c_str(), getterCallback, setterCallback, napi_attributes, nullptr);
@@ -1441,9 +1441,9 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance) {
 	try {
 		auto names = F(env, instance);
 
-		int count = (int)names.size();
+		size_t count = names.size();
 		Napi::Array array = Napi::Array::New(env, count);
-		for (int i = 0; i < count; i++) {
+		for (size_t i = 0; i < count; i++) {
 			array.Set(i, names[i]);
 		}
 
