@@ -4,7 +4,7 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js' // This is a global variable
 
-def nodeVersions = ['10.19.0', "12.16.1", "13.0.0"]
+def nodeVersions = ['10.19.0', "12.16.1", "13.11.0"]
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version. 
 //For more see https://www.npmjs.com/package/spectron 
@@ -118,14 +118,15 @@ if (gitTag) {
 
 stage('test') {
   parallelExecutors = [:]
-  for (def nodeVersion in nodeVersions) {
-    parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
-    parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
-    parallelExecutors["macOS test runners ${nodeVersion}"] = testMacOS("test-runners Release ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release ${nodeVersion}")
-    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux("test-runners Release ${nodeVersion}")
-    parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
-  }
+  
+  parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
+  parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
+  parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
+  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}")
+  parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
+  parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
+
+
   //parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
   //parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
