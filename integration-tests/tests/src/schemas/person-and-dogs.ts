@@ -23,11 +23,18 @@ export interface IPerson {
     age: number;
 }
 
+export type Person = {
+    friends: Realm.List<Person>;
+    dogs: Realm.Collection<Dog>;
+} & IPerson &
+    Realm.Object;
+
 export const PersonSchema: Realm.ObjectSchema = {
     name: "Person",
     properties: {
         age: "int",
-        name: "string"
+        name: "string",
+        friends: "Person[]"
     }
 };
 
@@ -36,6 +43,11 @@ export interface IDog {
     age: number;
     owner: IPerson;
 }
+
+export type Dog = {
+    owner: Person;
+} & IDog &
+    Realm.Object;
 
 export const DogSchema: Realm.ObjectSchema = {
     name: "Dog",

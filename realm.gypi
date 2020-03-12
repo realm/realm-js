@@ -204,13 +204,7 @@
           "libraries": [ "-lrealm-sync<(debug_library_suffix)" ],
           "conditions": [
               ["OS=='win'", {
-                "conditions": [
-                  ["target_arch=='ia32'", {
-                    "libraries": [ "C:\\Program Files (x86)\\Windows Kits\\8.1\\Lib\\winv6.3\\um\\x86\\mincore.lib" ]
-                  }, {
-                    "libraries": [ "C:\\Program Files (x86)\\Windows Kits\\8.1\\Lib\\winv6.3\\um\\x64\\mincore.lib" ]
-                  }]
-                ]
+                "libraries": [ "Mincore.lib" ]
               }]
           ]
       },
