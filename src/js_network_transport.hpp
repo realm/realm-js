@@ -56,7 +56,6 @@ public:
     static FunctionType create_constructor(ContextType);
     static ObjectType create_instance(ContextType, ResponseHandlerCompletionCallback);
 
-
     static void on_success(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void on_error(ContextType, ObjectType, Arguments &, ReturnValue &);
 
@@ -114,7 +113,6 @@ void ResponseHandlerClass<T>::on_success(ContextType ctx, ObjectType this_object
     if (!Value::is_undefined(ctx, body_value)) {
         body = Value::validated_to_string(ctx, body_value);
     }
-
     response_handler->m_completion_callback(app::Response{http_status_code, custom_status_code, headers, body});
 }
 
@@ -127,8 +125,8 @@ void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, 
     ObjectType error_object = Value::validated_to_object(ctx, args[0]);
 
     // Copy the error from JavaScript to an Object Store response object
-    int http_status_code = 0;
-    int custom_status_code = 1;
+    int http_status_code = 200; // FIXME
+    int custom_status_code = 0;
     std::map<std::string, std::string> headers;
     std::string body;
 
@@ -171,7 +169,9 @@ struct JavaScriptNetworkTransport : public JavaScriptNetworkTransportWrapper<T> 
         Object::set_property(m_ctx, request_object, "method", Value::from_string(m_ctx, fromHttpMethod(request.method)));
         Object::set_property(m_ctx, request_object, "url", Value::from_string(m_ctx, request.url));
         Object::set_property(m_ctx, request_object, "timeoutMs", Value::from_number(m_ctx, request.timeout_ms));
-        Object::set_property(m_ctx, request_object, "body", Value::from_string(m_ctx, request.body));
+        if (!request.body.empty()) {
+            Object::set_property(m_ctx, request_object, "body", Value::from_string(m_ctx, request.body));
+        }
         ObjectType headers_object = Object::create_empty(m_ctx);
         for (auto header : request.headers) {
             Object::set_property(m_ctx, headers_object, header.first, Value::from_string(m_ctx, header.second));

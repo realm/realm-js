@@ -140,8 +140,9 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     }
 
     // FIXME: should we use a protected ctx?
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     config.transport_generator = [=] {
-        return std::make_unique<NetworkTransport>(ctx);
+        return std::make_unique<NetworkTransport>(protected_ctx);
     };
 
     auto app = new realm::app::App(config);
@@ -198,7 +199,7 @@ void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });
 
-    app.login_with_credentials(app_credentials, std::move(callback_handler));
+    app.log_in_with_credentials(app_credentials, std::move(callback_handler));
 }
 
 template<typename T>

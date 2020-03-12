@@ -15,20 +15,20 @@ const TestCase = require('./asserts');
 module.exports = {
     testNewApp: function () {
         const config = {
-            id: 'my-awesome-app'
+            id: 'realm-sdk-integration-tests-pwjzl'
         };
 
         let app = new Realm.App(config);
         TestCase.assertTrue(app instanceof Realm.App);
     },
 
-    testNewAppWithConfig: function () {
+    testLogin: function () {
         const config = {
-            id: 'my-awesome-app',
+            id: 'realm-sdk-integration-tests-etyyr',
             url: 'http://localhost:9090',
             timeout: 1000,
             app: {
-                name: 'My Awesome App',
+                name: 'realm-sdk-integration-tests',
                 version: '42'
             }
         };

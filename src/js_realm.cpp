@@ -53,7 +53,7 @@ void clear_test_state() {
     realm::_impl::RealmCoordinator::clear_all_caches();
     realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
 #if REALM_ENABLE_SYNC
-    for(auto &user : SyncManager::shared().all_logged_in_users()) {
+    for(auto &user : SyncManager::shared().all_users()) {
         user->log_out();
     }
     SyncManager::shared().reset_for_testing();
