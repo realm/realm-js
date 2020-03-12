@@ -32,5 +32,7 @@ RUN touch /var/lib/rpm/* \
 ENV NVM_DIR /root/.nvm
 RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.31.4/install.sh | bash
 RUN . $NVM_DIR/nvm.sh \
-    && nvm install 10.19.0
+    && nvm install 10.19.0 \
+    && nvm install 12.16.1 \
+    && nvm install 13.11.0
 

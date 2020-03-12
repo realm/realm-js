@@ -36,4 +36,6 @@ RUN yum -y install \
  && curl -s https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash \
  && . $NVM_DIR/nvm.sh \
  && nvm install 10.19.0 \
+ && nvm install 12.16.1 \
+ && nvm install 13.11.0 \
  && chmod a+rwX -R $NVM_DIR \
