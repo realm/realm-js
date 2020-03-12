@@ -4,7 +4,7 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js' // This is a global variable
 
-def nodeVersions = ['10.19.0', "12.16.1", "13.10.1"]
+def nodeVersions = ['10.19.0', "12.16.1", "13.0.0"]
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version. 
 //For more see https://www.npmjs.com/package/spectron 
