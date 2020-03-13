@@ -46,6 +46,12 @@ Options:
 
 Besides the `<template-path>` the CLI takes a few optional runtime parameters, most of which should be self-explainatory and set to defaults that should ease the usecase of integration tests agains local deployments.
 
+When using this for integration tests, there exists a couple of ways to get a hold of the id of the app, once it's imported:
+
+1. the consuming test harness can use the package programically, instantiating the `RealmAppImporter` class and calling its `importApp` method, which returns a `Promise<{ appId: string }>`.
+2. the `--app-id-path` runtime option saves the app id to a file, which can be read by the test harness.
+3. the `--app-id-port` runtime option starts up a web-server on the specified port and serves the app id as a text response.
+
 ## Exporting an app
 
 Ensure you have the official Stitch CLI installed in your project as a dev-dependency,
