@@ -33,6 +33,7 @@
 #include "js_app.hpp"
 #include "js_app_credentials.hpp"
 #include "js_username_password_provider.hpp"
+#include "js_user_apikey_provider.hpp"
 #include "sync/async_open_task.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
@@ -450,6 +451,8 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType username_password_provider_client_constructor = UsernamePasswordProviderClientClass<T>::create_constructor(ctx);
     Object::set_property(ctx, app_constructor, "UsernamePasswordProvider", username_password_provider_client_constructor, attributes);
 
+    FunctionType user_apikey_provider_client_constructor = UserAPIKeyProviderClientClass<T>::create_constructor(ctx);
+    Object::set_property(ctx, app_constructor, "UserAPIKeyProvider", user_apikey_provider_client_constructor, attributes);
 #endif
 
     if (getenv("REALM_DISABLE_SYNC_TO_DISK")) {
