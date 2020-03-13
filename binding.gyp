@@ -27,6 +27,7 @@
             "src/js_app_credentials.hpp",
             "src/js_user.hpp",
             "src/js_network_transport.hpp",
+            "src/js_username_password_provider.hpp",
             "src/node/sync_logger.cpp",
             "src/node/sync_logger.hpp",
           ]
