@@ -26,6 +26,7 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * Updated Realm Core from ??? to Realm Core v10.0.0-alpha.2.
 * Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.4.
 * Updated Realm Object Store to commit f5003ce365757bb2106ba4c317d98fd83b7f6c4e.
+* Created a package named "realm-app-importer", to be used by integration tests (ideally by other SDKs too).
 
 
 x.x.x Release notes (yyyy-MM-dd)
