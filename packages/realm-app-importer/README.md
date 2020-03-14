@@ -2,7 +2,7 @@
 
 Imports an app directory into MongoDB Realm (formerly known as Stitch).
 
-This CLI works around a few shortcomings of the official Stitch CLI - most notably around import of apps referencing secrets. When importing an app, the server creates an app id based on the apps name. This tool also helps you inject this id into other tools by either saving it to a file or serving it over HTTP.
+This CLI works around a few shortcomings of the official Stitch CLI - most notably around import of apps referencing secrets. When importing an app, the server creates an app id based on the apps name. This package also helps you inject this id into other tools by either saving it to a file or serving it over HTTP.
 
 ## Importing an app
 
@@ -15,6 +15,14 @@ Ensure you have this CLI installed in your project as a dev-dependency.
 When you have a templated app that you want to download (stored in ./my-app-template for example), run
 
     npx realm-app-importer ./my-app-template
+
+To import secrets add a secrets.json to the template directory, containing a single JSON object with keys and string values:
+
+```json
+{
+	"my-secret": "v3ry-s3cr3t"
+}
+```
 
 ### Runtime options
 

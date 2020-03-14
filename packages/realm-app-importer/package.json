@@ -4,7 +4,7 @@
     "description": "Implements cross-platform fetching used by Realm JS",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
-    "bin": "realm-app-importer.js",
+    "bin": "realm-app-importer",
     "scripts": {
       "build": "../../node_modules/.bin/tsc -p tsconfig.build.json",
       "tslint": "../../node_modules/.bin/tslint -p .",
@@ -23,10 +23,14 @@
     },
     "repository": {
       "type": "git",
-      "url": "https://github.com/realm/realm-js.git"
+      "url": "https://github.com/realm/realm-js.git",
+      "directory": "packages/realm-app-importer"
     },
     "bugs": {
       "url": "https://github.com/realm/realm-js/issues"
+    },
+    "publishConfig": {
+      "registry": "https://npm.pkg.github.com/"
     },
     "license": "SEE LICENSE IN LICENSE",
     "dependencies": {
