@@ -10,7 +10,7 @@ nodeTestVersion = nodeVersions[0]
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version. 
 //For more see https://www.npmjs.com/package/spectron 
-def electronVersions = ['5.0.13']
+def electronVersions = ['8.1.1']
 electronTestVersion = electronVersions[0]
 
 def gitTag = null

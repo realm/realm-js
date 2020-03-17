@@ -381,7 +381,7 @@ case "$TARGET" in
   pushd "$SRCROOT/tests/electron"
   # Build Realm and runtime deps for electron
   export npm_config_build_from_source=realm
-  export npm_config_target=5.0.13
+  export npm_config_target=8.1.1
   export npm_config_runtime=electron
   export npm_config_disturl=https://atom.io/download/electron
   npm ci --realm_enable_sync
