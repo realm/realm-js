@@ -24,7 +24,7 @@
 
 #include "js_types.hpp"
 
-#define HANDLESCOPE
+#define HANDLESCOPE(context)
 
 namespace realm {
 namespace jsc {

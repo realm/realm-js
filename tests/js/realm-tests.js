@@ -38,6 +38,8 @@ const Utils = require('./test-utils');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
+
 if (isNodeProcess && process.platform === 'win32') {
     pathSeparator = '\\';
 }
@@ -45,12 +47,194 @@ if (isNodeProcess && process.platform === 'win32') {
 const fs = isNodeProcess ? nodeRequire('fs-extra') : require('react-native-fs');
 
 module.exports = {
-    testRealmConstructor: function() {
+    testRealmConstructorTest: function() {
         const realm = new Realm({schema: []});
         TestCase.assertTrue(realm instanceof Realm);
 
         TestCase.assertEqual(typeof Realm, 'function');
         TestCase.assertTrue(Realm instanceof Function);
+    },
+    
+    testRealmObjectCreationByObject: function () {
+        const CarSchema = {
+            name: 'Car',
+            properties: {
+                make: 'string',
+                model: 'string',
+                kilometers: { type: 'int', default: 0 },
+            }
+        };
+
+        let realm = new Realm({ schema: [CarSchema] });
+        realm.write(() => {
+            let car = realm.create('Car', { make: 'Audi', model: 'A4', kilometers: 24 });
+            TestCase.assertEqual(car.make, "Audi");
+            TestCase.assertEqual(car.model, "A4");
+            TestCase.assertEqual(car.kilometers, 24);
+            TestCase.assertTrue(car instanceof Realm.Object);
+
+            let cars = realm.objects("Car");
+            TestCase.assertUndefined(cars[""]);
+            let carZero = cars[0];
+            TestCase.assertEqual(carZero.make, "Audi");
+            TestCase.assertEqual(carZero.model, "A4");
+            TestCase.assertEqual(carZero.kilometers, 24);
+            
+            let car2 = realm.create('Car', { make: 'VW', model: 'Touareg', kilometers: 13 });
+            TestCase.assertEqual(car2.make, "VW");
+            TestCase.assertEqual(car2.model, "Touareg");
+            TestCase.assertEqual(car2.kilometers, 13);
+            TestCase.assertTrue(car2 instanceof Realm.Object);
+        });
+    },
+
+    testRealmObjectCreationByConstructor: function () {
+        let constructorCalled = false;
+        //test class syntax support
+        class Car extends Realm.Object {
+            constructor() {
+                super();
+                constructorCalled = true;
+            }
+        }
+
+        Car.schema = {
+            name: 'Car',
+            properties: {
+                make: 'string',
+                model: 'string',
+                otherType: { type: 'string', mapTo: "type", optional: true},
+                kilometers: { type: 'int', default: 0 },
+            }
+        };
+
+        let calledAsConstructor = false;
+
+        //test constructor function support
+        function Car2 () {
+            if (new.target) {
+                calledAsConstructor = true;
+            }
+        }
+
+        Car2.schema = {
+            name: 'Car2',
+            properties: {
+                make: 'string',
+                model: 'string',
+                kilometers: { type: 'int', default: 0 },
+            }
+        };
+
+        Object.setPrototypeOf(Car2.prototype, Realm.Object.prototype);
+        Object.setPrototypeOf(Car2, Realm.Object);
+
+        //test class syntax support without extending Realm.Object
+        let car3ConstructorCalled = true;
+        class Car3 {
+            constructor() {
+                car3ConstructorCalled = true;
+            }
+        }
+
+        Car3.schema = {
+            name: 'Car3',
+            properties: {
+                make: 'string',
+                model: 'string',
+                otherType: { type: 'string', mapTo: "type", optional: true},
+                kilometers: { type: 'int', default: 0 },
+            }
+        };
+
+        let realm = new Realm({ schema: [Car, Car2, Car3] });
+        realm.write(() => {
+            let car = realm.create('Car', { make: 'Audi', model: 'A4', kilometers: 24 });
+            TestCase.assertTrue(constructorCalled);
+            TestCase.assertEqual(car.make, "Audi");
+            TestCase.assertEqual(car.model, "A4");
+            TestCase.assertEqual(car.kilometers, 24);
+            TestCase.assertTrue(car instanceof Realm.Object);
+            
+            let cars = realm.objects("Car");
+            TestCase.assertUndefined(cars[""]);
+            let carZero = cars[0];
+            TestCase.assertEqual(carZero.make, "Audi");
+            TestCase.assertEqual(carZero.model, "A4");
+            TestCase.assertEqual(carZero.kilometers, 24);
+            TestCase.assertTrue(carZero instanceof Realm.Object);
+
+            constructorCalled = false;
+            let car1 = realm.create('Car', { make: 'VW', model: 'Touareg', kilometers: 13 });
+            TestCase.assertTrue(constructorCalled);
+            TestCase.assertEqual(car1.make, "VW");
+            TestCase.assertEqual(car1.model, "Touareg");
+            TestCase.assertEqual(car1.kilometers, 13);
+            TestCase.assertTrue(car1 instanceof Realm.Object);
+
+            let car2 = realm.create('Car2', { make: 'Audi', model: 'A4', kilometers: 24 });
+            TestCase.assertTrue(calledAsConstructor);
+            TestCase.assertEqual(car2.make, "Audi");
+            TestCase.assertEqual(car2.model, "A4");
+            TestCase.assertEqual(car2.kilometers, 24);
+            TestCase.assertTrue(car2 instanceof Realm.Object);
+
+            let car2_1 = realm.create('Car2', { make: 'VW', model: 'Touareg', kilometers: 13 });
+            TestCase.assertTrue(calledAsConstructor);
+            TestCase.assertEqual(car2_1.make, "VW");
+            TestCase.assertEqual(car2_1.model, "Touareg");
+            TestCase.assertEqual(car2_1.kilometers, 13);
+            TestCase.assertTrue(car2_1 instanceof Realm.Object);
+
+            let car3 = realm.create('Car3', { make: 'Audi', model: 'A4', kilometers: 24 });
+            TestCase.assertTrue(car3ConstructorCalled);
+            TestCase.assertEqual(car3.make, "Audi");
+            TestCase.assertEqual(car3.model, "A4");
+            TestCase.assertEqual(car3.kilometers, 24);
+            TestCase.assertFalse(car3 instanceof Realm.Object);
+            //methods from Realm.Objects should be present
+            TestCase.assertDefined(car3.addListener);
+            
+        });
+        realm.close();
+    },
+
+    testRealmObjectCreationByPrimitiveArray: function () {
+        const Primitive = {
+            name: 'Primitive',
+            properties: {
+                intArray: 'int[]'
+            }
+        };
+
+        var realm = new Realm({ schema: [Primitive] });
+        realm.write(() => {
+            var primitive = realm.create(Primitive.name, { intArray: [1, 2, 3] });
+            TestCase.assertEqual(primitive.intArray[0], 1);
+            primitive.intArray[0] = 5;
+            TestCase.assertEqual(primitive.intArray[0], 5);
+        });
+    },
+
+    testNativeFunctionOverwrite: function() {
+        if (!isNodeProcess && !isElectronProcess) {
+            return;
+        }
+
+        const realm = new Realm({schema: []});
+        var oldClose = realm.close.bind(realm);
+        var newCloseCalled = false;
+        realm.close = () => {
+            newCloseCalled = true;
+        };
+        realm.close();
+        TestCase.assertTrue(newCloseCalled, "The new function should be called");
+
+        TestCase.assertFalse(realm.isClosed, "The realm should not be closed");
+
+        oldClose();
+
+        TestCase.assertTrue(realm.isClosed, "The realm should be closed");
     },
 
     testRealmConstructorPath: function() {
@@ -118,6 +302,31 @@ module.exports = {
         TestCase.assertEqual(realm.objects('TestObject')[0].doubleCol, 1);
         TestCase.assertEqual(realm.schemaVersion, 2);
         TestCase.assertEqual(realm.schema.length, 1);
+    },
+
+    testStackTrace: function() {
+        if (!isNodeProcess && !isElectronProcess) {
+            return;
+        }
+        
+        let realm = new Realm({schema: []});
+        function failingFunction() { 
+            throw new Error('not implemented'); 
+        }
+
+        try {
+            realm.write(() => {
+                failingFunction();
+            });
+        }
+        catch(e) {
+            TestCase.assertNotEqual(e.stack, undefined, "e.stack should not be undefined");
+            TestCase.assertNotEqual(e.stack, null, "e.stack should not be null");
+            TestCase.assertTrue(e.stack.indexOf("at failingFunction (") !== -1, "failingfunction should be on the stack");
+            TestCase.assertTrue(e.stack.indexOf("not implemented") !== -1, "the error message should be present");
+        }
+
+        realm.close();
     },
 
     testRealmConstructorDynamicSchema: function() {

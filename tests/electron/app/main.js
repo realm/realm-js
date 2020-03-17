@@ -36,7 +36,10 @@ let mainWindow;
 app.on("ready", () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    show: false
+    show: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
   });
 
   global.options = {

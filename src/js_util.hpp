@@ -87,7 +87,7 @@ template<typename T, AggregateFunc func>
 void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::ObjectType this_object,
                                      typename T::Arguments &args, typename T::ReturnValue &return_value) {
 
-    auto list = get_internal<typename T::Type, T>(this_object);
+    auto list = get_internal<typename T::Type, T>(ctx, this_object);
 
     size_t column = 0;
     if (list->get_type() == realm::PropertyType::Object) {

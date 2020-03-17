@@ -23,8 +23,8 @@
 class Worker {
     constructor(script, args) {
         let options;
-        if (process.execArgv.find(arg => arg.indexOf("--debug="))) {
-            options = { execArgv: ['--debug=44725'] };
+        if (process.execArgv.find(arg => arg.indexOf("--debug=")) || process.execArgv.find(arg => arg.indexOf("--inspect="))) {
+            options = { execArgv: ['--inspect=44725'] };
         }
 
         this._process = require('child_process').fork(script, args, options);
