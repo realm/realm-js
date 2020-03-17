@@ -4,7 +4,7 @@ USER root
 
 # workaround for https://github.com/jenkinsci/docker/issues/519
 ENV GIT_COMMITTER_NAME=ci
-ENV GIT_COMMITTER_EMAIL=ci@localhost
+ENV GIT_COMMITTER_EMAIL=ci@realm.io
 
 ENV NPM_CONFIG_UNSAFE_PERM true
 ENV NVM_DIR /tmp/.nvm

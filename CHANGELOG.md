@@ -2,7 +2,7 @@ X.Y.Z Release notes (YYYY-MM-DD)
 =============================================================
 ### Enhancements
 * Realm JS now supports all Node.js versions above Node 10.
-* Helper methods 'myinstance.keys()', 'myinstance.entries()' are now available to return the properties of that instance including the realm properties from the prototype.
+* Helper methods 'obj.keys()', 'obj.entries()' are now available to return the properties of that Realm Object, including the Realm properties defined by the schema.
 * An instance method 'toJSON()' is implemented on every Realm Object class to support 'JSON.stringify()' to work as expected on every instance
 
 ### Breaking changes

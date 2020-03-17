@@ -4,21 +4,22 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js' // This is a global variable
 
+// These versions must be written in ascending order (lowest version is used when testing)
 def nodeVersions = ['10.19.0', "12.16.1", "13.0.0"]
+nodeTestVersion = nodeVersions[0]
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version. 
 //For more see https://www.npmjs.com/package/spectron 
 def electronVersions = ['5.0.13']
+electronTestVersion = electronVersions[0]
 
 def gitTag = null
 def formattedVersion = null
 dependencies = null
-nodeTestVersion = nodeVersions[0]
-electronTestVersion = electronVersions[0]
 
 environment {
   GIT_COMMITTER_NAME="ci"
-  GIT_COMMITTER_EMAIL="ci@localhost"
+  GIT_COMMITTER_EMAIL="ci@realm.io"
   ELECTRON_DISABLE_SANDBOX=1
 }
 
