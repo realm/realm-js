@@ -188,7 +188,11 @@ export class RealmAppImporter {
         const response = await fetch(url, {
             headers: { Authorization: `Bearer ${this.accessToken}` }
         });
-        return response.json();
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error("Failed to get users profile");
+        }
     }
 
     private async getGroupId() {
@@ -214,7 +218,13 @@ export class RealmAppImporter {
             },
             body
         });
-        return response.json();
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error(
+                `Failed to create app named '${name}' in group '${groupId}'`
+            );
+        }
     }
 
     private async createSecret(
@@ -237,10 +247,8 @@ export class RealmAppImporter {
             },
             body
         });
-        if (response.ok) {
-            return true;
-        } else {
-            return false;
+        if (!response.ok) {
+            throw new Error(`Failed to create secred '${name}'`);
         }
     }
 }
