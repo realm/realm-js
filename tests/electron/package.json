@@ -11,7 +11,7 @@
     "electron": "^8.1.1",
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
-    "spectron": "^7.0.0"
+    "spectron": "^10.0.1"
   },
   "dependencies": {
     "install-local": "^1.0.0",
