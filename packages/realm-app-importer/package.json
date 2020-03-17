@@ -21,6 +21,9 @@
       "email": "help@realm.io",
       "url": "https://realm.io"
     },
+    "contributors": [
+      "Kræn Hansen <kraen.hansen@mongodb.com> (https://github.com/kraenhansen)"
+    ],
     "repository": {
       "type": "git",
       "url": "https://github.com/realm/realm-js.git",
