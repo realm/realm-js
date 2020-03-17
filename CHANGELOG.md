@@ -13,7 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Updated Realm Core v6.0.3 to v6.0.4
-* Updated Realm Sync v5.0.1 to v5.0.2.
+* Updated Realm Sync v5.0.1 to v5.0.3.
 
 4.0.0-beta.2 Release notes (2020-2-24)
 =============================================================
