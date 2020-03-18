@@ -106,7 +106,6 @@ module.exports = {
             .then(user => {
                 const config = user.createConfiguration({
                     sync: {
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         newRealmFileBehavior: {
                             type: 'downloadBeforeOpen'
@@ -133,7 +132,6 @@ module.exports = {
                 const config = user.createConfiguration({
                     schema: [schemas.TestObject],
                     sync: {
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         url: 'realm://127.0.0.1:9080/' + realmName
                     }
@@ -148,7 +146,6 @@ module.exports = {
                 const config = otherUser.createConfiguration({
                     schema: [schemas.TestObject],
                     sync: {
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         url: 'realm://127.0.0.1:9080/' + realmName
                     }
@@ -170,7 +167,6 @@ module.exports = {
                 const config = user.createConfiguration({
                     schema: [schemas.TestObject],
                     sync: {
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         existingRealmBehavior: {
                             type: 'downloadBeforeOpen'
@@ -190,7 +186,6 @@ module.exports = {
             .then(user => {
                 const config = user.createConfiguration({
                     sync: {
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         newRealmFileBehavior: {
                             type: 'downloadBeforeOpen',
@@ -217,7 +212,6 @@ module.exports = {
             .then(user => {
                 const config = user.createConfiguration({
                     sync: {
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         url: 'realm://127.0.0.1:9080/' + realmName
                     }
@@ -228,7 +222,6 @@ module.exports = {
                 realm.close();
                 const config = Realm.Sync.User.current.createConfiguration({
                     sync: {
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         existingRealmFileBehavior: {
                             type: 'downloadBeforeOpen',
@@ -254,7 +247,6 @@ module.exports = {
         // 3. Timeout and check that the returned Realm is empty.
         const realmName = 'sync_timeout_open_' + Utils.uuid();
         const syncConfig = {
-            fullSynchronization: true,
             _sessionStopPolicy: 'immediately',
             url: 'realm://127.0.0.1:9080/' + realmName,
         };
@@ -309,7 +301,6 @@ module.exports = {
         // 4. Re-open empty Realm with timeOut and localOpen, Realm should still be empty.
         const realmName = 'existing_realm_' + Utils.uuid();
         const syncConfig = {
-            fullSynchronization: true,
             _sessionStopPolicy: 'immediately',
             url: 'realm://127.0.0.1:9080/' + realmName,
         };
@@ -373,7 +364,6 @@ module.exports = {
             .then(user => {
                 const config = user.createConfiguration({
                     sync: {
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         newRealmFileBehavior: {
                             type: 'downloadBeforeOpen'
@@ -406,7 +396,6 @@ module.exports = {
         .then(user => {
             const config = user.createConfiguration({
                 sync: {
-                    fullSynchronization: true,
                     _sessionStopPolicy: 'immediately',
                     newRealmFileBehavior: {
                         type: 'downloadBeforeOpen'
@@ -425,36 +414,12 @@ module.exports = {
         })
     },
 
-    // testDownloadListener: function() {
-    //     return new Promise(resolve => {
-    //         return getLoggedInUser().then(user => {
-    //             const config = user.createConfiguration({
-    //                 sync: {
-    //                     fullSynchronization: true,
-    //                     _sessionStopPolicy: 'immediately',
-    //                     newRealmFileBehavior: {
-    //                         type: 'downloadBeforeOpen'
-    //                     },
-    //                     url: 'realm://127.0.0.1:9080/downloadlistener_' + Utils.uuid()
-    //                 }
-    //             });
-    //             return Realm.open(config).progress((transferred, transferable) => {
-    //                 console.log(transferred + ", " + transferable);
-    //                 if (transferred > 0 && transferred === transferable) {
-    //                     resolve();
-    //                 }
-    //             });
-    //         })
-    //     });
-    // },
-
     testDownloadListener_whenCanceled: function() {
         let openPromise = new Promise((resolve, reject) => {
             return getLoggedInUser()
             .then(user => {
                 const config = user.createConfiguration({
                     sync: {
-                        fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         newRealmFileBehavior: {
                             type: 'downloadBeforeOpen',

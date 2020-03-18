@@ -19,8 +19,6 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
-import SubscriptionState = Realm.Sync.SubscriptionState;
-
 declare namespace Realm {
     interface CollectionChangeSet {
         insertions: number[];
@@ -116,7 +114,7 @@ declare namespace Realm {
         inMemory?: boolean;
         schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
-        sync?: Partial<Realm.Sync.SyncConfiguration>;
+        sync?: Realm.Sync.SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
         disableFormatUpgrade?: boolean;
     }
@@ -125,8 +123,6 @@ declare namespace Realm {
      * realm configuration used for overriding default configuration values.
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
      */
-    interface PartialConfiguration extends Partial<Realm.Configuration> {
-    }
 
     // object props type
     interface ObjectPropsType {
@@ -139,6 +135,9 @@ declare namespace Realm {
     }
 
     type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
+
+    interface PartialConfiguration extends Partial<Realm.Configuration> {
+    }
 
     /**
      * Object
@@ -222,12 +221,6 @@ declare namespace Realm {
         sorted(reverse?: boolean): Results<T>;
         sorted(descriptor: SortDescriptor[]): Results<T>;
         sorted(descriptor: string, reverse?: boolean): Results<T>;
-
-        /**
-         * @returns Results<T>
-         */
-        subscribe(subscriptionName?: string): Realm.Sync.Subscription;
-        subscribe(options?: Realm.Sync.SubscriptionOptions): Realm.Sync.Subscription;
 
         /**
          * @returns Results
@@ -339,17 +332,9 @@ declare namespace Realm.Sync {
         adminToken: string;
     }
 
-    interface SubscriptionOptions {
-        name?: string;
-        update?: boolean;
-        timeToLive?: number;
-        includeLinkingObjects?: string[];
-    }
-
     class AdminCredentials extends Credentials {
         identityProvider: "adminToken";
     }
-
     class Credentials {
         static usernamePassword(username: string, password: string, createUser?: boolean): Credentials;
         static facebook(token: string): Credentials;
@@ -358,8 +343,8 @@ declare namespace Realm.Sync {
         static nickname(value: string, isAdmin?: boolean): Credentials;
         static azureAD(token: string): Credentials;
         static jwt(token: string, providerName?: string): Credentials;
-        static adminToken(token: string): AdminCredentials;
         static custom(providerName: string, token: string, userInfo?: { [key: string]: any }): Credentials;
+        static adminToken(token: string): AdminCredentials;
 
         readonly identityProvider: string;
         readonly token: string;
@@ -395,78 +380,6 @@ declare namespace Realm.Sync {
         serialize(): SerializedUser | SerializedTokenUser;
         logout(): Promise<void>;
         retrieveAccount(provider: string, username: string): Promise<Account>;
-
-        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Promise<Permission[]>;
-        applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<void>;
-        offerPermissions(realmUrl: string, accessLevel: AccessLevel, expiresAt?: Date): Promise<string>;
-        acceptPermissionOffer(token: string): Promise<string>
-        invalidatePermissionOffer(permissionOfferOrToken: PermissionOffer | string): Promise<void>;
-        getPermissionOffers(): Promise<PermissionOffer[]>;
-
-        // Deprecated
-
-        /** @deprecated, to be removed in future versions */
-        static adminUser(adminToken: string, server?: string): User;
-        /** @deprecated, to be removed in future versions */
-        static login(server: string, username: string, password: string): Promise<Realm.Sync.User>;
-        /** @deprecated, to be removed in future versions */
-        static register(server: string, username: string, password: string): Promise<Realm.Sync.User>;
-        /** @deprecated, to be removed in future versions */
-        static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }): Promise<Realm.Sync.User>;
-        /** @deprecated, to be removed in future versions */
-        static authenticate(server: string, provider: string, options: any): Promise<Realm.Sync.User>;
-    }
-
-    interface _PermissionConditionUserId {
-        userId: string
-    }
-
-    interface _PermissionConditionMetadata {
-        metadataKey: string
-        metadataValue: string
-    }
-
-    type PermissionCondition = _PermissionConditionUserId | _PermissionConditionMetadata
-
-    type AccessLevel = 'none' | 'read' | 'write' | 'admin';
-
-    class Permission {
-        readonly id: string;
-        readonly updatedAt: Date;
-        readonly userId: string;
-        readonly path: string;
-        readonly mayRead?: boolean;
-        readonly mayWrite?: boolean;
-        readonly mayManage?: boolean;
-    }
-
-    class PermissionChange {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        statusCode?: number;
-        statusMessage?: string;
-        userId: string;
-        metadataKey?: string;
-        metadataValue?: string;
-        realmUrl: string;
-        mayRead?: boolean;
-        mayWrite?: boolean;
-        mayManage?: boolean;
-    }
-
-    class PermissionOffer {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        statusCode?: number;
-        statusMessage?: string;
-        token?: string;
-        realmUrl: string;
-        mayRead?: boolean;
-        mayWrite?: boolean;
-        mayManage?: boolean;
-        expiresAt?: Date;
     }
 
     interface SyncError {
@@ -516,12 +429,8 @@ declare namespace Realm.Sync {
         open_ssl_verify_callback?: SSLVerifyCallback;
         ssl?: SSLConfiguration;
         error?: ErrorCallback;
-        partial?: boolean;
-        fullSynchronization?: boolean;
-        _disableQueryBasedSyncUrlChecks?: boolean;
         _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
-        customQueryBasedSyncIdentifier?: string;
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         clientResyncMode?: ClientResyncMode;
@@ -584,29 +493,6 @@ declare namespace Realm.Sync {
         uploadAllLocalChanges(timeoutMs?: number): Promise<void>;
     }
 
-    type SubscriptionNotificationCallback = (subscription: Subscription, state: SubscriptionState) => void;
-
-    /**
-     * Subscription
-     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.Subscription.html }
-     */
-    class Subscription {
-        readonly state: SubscriptionState;
-        readonly error: string;
-
-        unsubscribe(): void;
-        addListener(subscriptionCallback: SubscriptionNotificationCallback): void;
-        removeListener(subscriptionCallback: SubscriptionNotificationCallback): void;
-        removeAllListeners(): void;
-    }
-
-    enum SubscriptionState {
-        Error,
-        Creating,
-        Pending,
-        Complete,
-        Invalidated,
-    }
 
     /**
     * AuthError
@@ -644,85 +530,9 @@ declare namespace Realm.Sync {
     function setFeatureToken(token: string): void;
 }
 
-declare namespace Realm.Permissions {
-    class Permission {
-        static schema: ObjectSchema;
-
-        role: Role;
-        canCreate: boolean;
-        canRead: boolean;
-        canUpdate: boolean;
-        canDelete: boolean;
-        canQuery: boolean;
-        canModifySchema: boolean;
-        canSetPermissions: boolean;
-    }
-
-    class User {
-        static schema: ObjectSchema;
-        id: string;
-    }
-
-    class Role {
-        static schema: ObjectSchema;
-        name: string;
-        members: User[];
-    }
-
-    class Class {
-        static schema: ObjectSchema;
-        class_name: string;
-        name: string;
-        permissions: Permission[];
-        findOrCreate(roleName: string): Permission;
-    }
-
-    class Realm {
-        static schema: ObjectSchema;
-        id: number;
-        permissions: Permission[];
-        findOrCreate(roleName: string): Permission;
-    }
-
-    class RealmPrivileges {
-        canRead: boolean;
-        canUpdate: boolean;
-        canModifySchema: boolean;
-        canSetPermissions: boolean;
-    }
-
-    class ClassPrivileges {
-        canCreate: boolean;
-        canRead: boolean;
-        canUpdate: boolean;
-        canQuery: boolean;
-        canModifySchema: boolean;
-        canSetPermissions: boolean;
-    }
-
-    class ObjectPrivileges {
-        canRead: boolean;
-        canUpdate: boolean;
-        canDelete: boolean;
-        canSetPermissions: boolean;
-    }
-}
-
 interface ProgressPromise extends Promise<Realm> {
     cancel(): void;
     progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>;
-}
-
-interface NamedSubscription {
-    readonly name: string,
-    readonly objectType: string,
-    query: string
-    readonly state: SubscriptionState;
-    readonly error: string;
-    readonly createdAt: Date;
-    readonly updatedAt: Date;
-    readonly expiresAt: Date;
-    timeToLive: number;
 }
 
 declare class Realm {
@@ -919,16 +729,6 @@ declare class Realm {
      * @returns void
      */
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
-
-    privileges(): Realm.Permissions.RealmPrivileges;
-    privileges(objectType: string | Realm.ObjectSchema | Function): Realm.Permissions.ClassPrivileges;
-    privileges(obj: Realm.Object): Realm.Permissions.ObjectPrivileges;
-
-    permissions(): Realm.Permissions.Realm;
-    permissions(objectType: string | Realm.ObjectSchema | Function): Realm.Permissions.Class;
-
-    subscriptions(name?: string): Realm.Results<NamedSubscription>;
-    unsubscribe(name: string): void;
 
     /**
      * Update the schema of the Realm.

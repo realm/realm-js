@@ -118,17 +118,6 @@ class Realm {
     static open(config) { }
 
     /**
-     * Open a Realm asynchronously with a callback. If the Realm is synced, it will be fully
-     * synchronized before it is available.
-     * @param {Realm~Configuration} config
-     * @param  {callback(error, realm)} - will be called when the Realm is ready.
-     * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
-     * @throws {Error} If anything in the provided `config` is invalid
-     * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
-     */
-    static openAsync(config, callback, progressCallback) { }
-
-    /**
      * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
      * the URL for the synced Realm. If no user is supplied, the current user will be used.
      * @param {Realm.Sync.User} - an optional sync user
@@ -154,39 +143,6 @@ class Realm {
      * The method is idempotent.
      */
     close() { }
-
-    /**
-     * Returns the granted privileges.
-     *
-     * This combines all privileges granted on the Realm/Class/Object by all Roles which
-     * the current User is a member of into the final privileges which will
-     * be enforced by the server.
-     *
-     * The privilege calculation is done locally using cached data, and inherently may
-     * be stale. It is possible that this method may indicate that an operation is
-     * permitted but the server will still reject it if permission is revoked before
-     * the changes have been integrated on the server.
-     *
-     * Non-synchronized Realms always have permission to perform all operations.
-     *
-     * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute privileges from. If no
-     *   argument is given, the privileges for the Realm is returned.
-     * @returns {Realm.Permissions.RealmPrivileges|Realm.Permissions.ClassPrivileges|Realm.Permissions.ObjectPrivileges} as the computed privileges as properties
-     * @since 2.3.0
-     * @see {Realm.Permissions} for details of privileges and roles.
-     */
-    privileges(arg) { }
-
-    /**
-     * Returns the fine-grained permissions object associated with either the Realm itself or a Realm model class.
-     *
-     * @param {Realm~ObjectType} [arg] - If no argument is provided, the Realm-level permissions are returned.
-     *   Otherwise, the Class-level permissions for the provided type is returned.
-     * @returns {Realm.Permissions.Realm|Realm.Permissions.Class} The permissions object
-     * @since 2.18.0
-     * @see {Realm.Permissions} for details of priviliges and roles.
-     */
-    permissions(arg) { }
 
     /**
      * Create a new Realm object of the given type and with the specified properties.
@@ -275,7 +231,7 @@ class Realm {
 
     /**
      * Synchronously call the provided `callback` inside a write transaction. If an exception happens inside a transaction,
-     * you’ll lose the changes in that transaction, but the Realm itself won’t be affected (or corrupted). 
+     * you’ll lose the changes in that transaction, but the Realm itself won’t be affected (or corrupted).
      * More precisely, {@link Realm#beginTransaction beginTransaction()} and {@link Realm#commitTransaction commitTransaction()} will be called
      * automatically. If any exception is thrown during the transaction {@link Realm#cancelTransaction cancelTransaction()} will
      * be called instead of {@link Realm#commitTransaction commitTransaction()} and the exception will be re-thrown to the caller of `write()`.
@@ -384,22 +340,6 @@ class Realm {
      * @throws {Error} If an I/O error occured or method is not implemented.
      */
     static copyBundledRealmFiles() { }
-
-    /**
-     * Get a list of subscriptions. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
-     * @param {string} name - Optional parameter to query for either a specific name or pattern (using
-     *   cards `?` and `*`).
-     * @throws {Error} If `name` is not a string.
-     * @returns {Realm.Results} containing all current {@link Realm.Sync.NamedSubscription}s.
-     */
-    subscriptions(name) { }
-
-    /**
-     * Unsubscribe a named subscription. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
-     * @param {string} name - The name of the subscription.
-     * @throws {Error} If `name` is not a string or an empty string.
-     */
-    unsubscribe(name) { }
 }
 /**
  * This describes the different options used to create a {@link Realm} instance.

@@ -38,8 +38,6 @@
 		3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A911F58BDFF00D4855B /* uuid.cpp */; };
 		3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */; };
 		3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */; };
-		420FB79F1F7FBFE900D43D0F /* partial_sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 423737AF1F7E333400FAEDFF /* partial_sync.cpp */; };
-		4261AF8E203C42000052450D /* work_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425A120F20235A1400C2F932 /* work_queue.cpp */; };
 		4BA4036023C6664700DE6856 /* object_changeset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4BA4035F23C6664700DE6856 /* object_changeset.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
 		504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */; };
@@ -48,7 +46,6 @@
 		50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
 		5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
-		5D97DC4E1F7DAB1400B856A4 /* sync_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 426FCDFF1F7DA2F9005565DC /* sync_config.cpp */; };
 		832C1D2F229D3035001A20C1 /* async_open_task.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 832C1D2E229D3035001A20C1 /* async_open_task.cpp */; };
 		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
@@ -179,13 +176,7 @@
 		3FCE2A941F58BE1D00D4855B /* sync_permission.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_permission.hpp; path = src/sync/sync_permission.hpp; sourceTree = "<group>"; };
 		3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_permission.cpp; path = src/sync/sync_permission.cpp; sourceTree = "<group>"; };
 		3FCE2A991F58BE3600D4855B /* feature_checks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = feature_checks.hpp; path = "object-store/src/feature_checks.hpp"; sourceTree = SOURCE_ROOT; };
-		423737AF1F7E333400FAEDFF /* partial_sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = partial_sync.cpp; path = src/sync/partial_sync.cpp; sourceTree = "<group>"; };
-		423737B01F7E333400FAEDFF /* partial_sync.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = partial_sync.hpp; path = src/sync/partial_sync.hpp; sourceTree = "<group>"; };
-		425A120F20235A1400C2F932 /* work_queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = work_queue.cpp; sourceTree = "<group>"; };
-		425A121020235A1400C2F932 /* work_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = work_queue.hpp; sourceTree = "<group>"; };
-		426FCDFF1F7DA2F9005565DC /* sync_config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_config.cpp; path = src/sync/sync_config.cpp; sourceTree = "<group>"; };
 		4BA4035F23C6664700DE6856 /* object_changeset.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object_changeset.cpp; path = "object-store/src/object_changeset.cpp"; sourceTree = "<group>"; };
-		4BC5E2F623A2E7DD0044BEBD /* object_changeset.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = object_changeset.cpp; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
 		504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = network_reachability_observer.cpp; sourceTree = "<group>"; };
@@ -394,6 +385,7 @@
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
 				02B58CC01AE99CEC009B348C /* RealmJSTests */,
 				F6C3FBB41BF680D000E6FFD4 /* Vendor */,
+				424B66B12408619D0065F963 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -451,10 +443,7 @@
 			isa = PBXGroup;
 			children = (
 				504CF8521EBCAE3600A9A4B6 /* impl */,
-				423737AF1F7E333400FAEDFF /* partial_sync.cpp */,
-				423737B01F7E333400FAEDFF /* partial_sync.hpp */,
 				02E315CD1DB80DF200555337 /* sync_client.hpp */,
-				426FCDFF1F7DA2F9005565DC /* sync_config.cpp */,
 				02E315C21DB80DDD00555337 /* sync_config.hpp */,
 				02E315C31DB80DDD00555337 /* sync_manager.cpp */,
 				02E315C41DB80DDD00555337 /* sync_manager.hpp */,
@@ -468,6 +457,14 @@
 			name = sync;
 			sourceTree = "<group>";
 		};
+		424B66B12408619D0065F963 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				4BA4035F23C6664700DE6856 /* object_changeset.cpp */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		504CF8521EBCAE3600A9A4B6 /* impl */ = {
 			isa = PBXGroup;
 			children = (
@@ -478,8 +475,6 @@
 				504CF85B1EBCAE3600A9A4B6 /* sync_file.hpp */,
 				504CF85C1EBCAE3600A9A4B6 /* sync_metadata.cpp */,
 				504CF85D1EBCAE3600A9A4B6 /* sync_metadata.hpp */,
-				425A120F20235A1400C2F932 /* work_queue.cpp */,
-				425A121020235A1400C2F932 /* work_queue.hpp */,
 			);
 			name = impl;
 			path = src/sync/impl;
@@ -570,10 +565,10 @@
 		F63117EA1CEB0BFA00ECB2DE /* impl */ = {
 			isa = PBXGroup;
 			children = (
+				02414B991CE6AAEF00A8669F /* collection_change_builder.cpp */,
 				F63118421CEBA7A100ECB2DE /* android */,
 				F63117EB1CEB0C1B00ECB2DE /* apple */,
 				F63118491CEBA7BD00ECB2DE /* generic */,
-				02414B991CE6AAEF00A8669F /* collection_change_builder.cpp */,
 				02414B9A1CE6AAEF00A8669F /* collection_change_builder.hpp */,
 				02414B9B1CE6AAEF00A8669F /* collection_notifier.cpp */,
 				02414B9C1CE6AAEF00A8669F /* collection_notifier.hpp */,
@@ -891,7 +886,6 @@
 				8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */,
 				02F59EC11C88F17D007F774C /* object_schema.cpp in Sources */,
 				02F59EC21C88F17D007F774C /* object_store.cpp in Sources */,
-				420FB79F1F7FBFE900D43D0F /* partial_sync.cpp in Sources */,
 				02022A5B1DA476CD000F0C4F /* placeholder.cpp in Sources */,
 				F63FF2E81C159C4B00B3B8E0 /* platform.mm in Sources */,
 				02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */,
@@ -900,7 +894,6 @@
 				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
 				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
 				02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */,
-				5D97DC4E1F7DAB1400B856A4 /* sync_config.cpp in Sources */,
 				02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */,
 				504CF8611EBCAE3600A9A4B6 /* sync_metadata.cpp in Sources */,
 				3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */,
@@ -911,7 +904,6 @@
 				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
 				3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */,
 				02022A5A1DA476CD000F0C4F /* weak_realm_notifier.cpp in Sources */,
-				4261AF8E203C42000052450D /* work_queue.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -943,7 +935,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CC = "$(SRCROOT)/../scripts/ccache-clang.sh";
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -996,7 +988,7 @@
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/realm-ios/include",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
@@ -1016,7 +1008,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CC = "$(SRCROOT)/../scripts/ccache-clang.sh";
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -1064,7 +1056,7 @@
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/realm-ios/include",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
