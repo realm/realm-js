@@ -10,7 +10,7 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 ### Breaking changes
 * Node.js 8 is not supported anymore.
 * Realm objects properties are now defined as accessors on the instance prototype. Previously they were defined as values on the instance.
-* Due to accessor properties change above calling `Object.keys()`, `Object.entries()`, and `Object.getOwnPropertyDescriptors()` on a Realm.Object instances (objects from a Realm) will not return the Realm schema properties.
+* Due to the accessor properties change above, calling `Object.keys()`, `Object.entries()`, and `Object.getOwnPropertyDescriptors()` on Realm.Object instances (objects from a Realm) will no longer return the Realm schema properties.
 
 ### Fixed
 * ECMAScript 2015 Class syntax is fully supported by moving all properties to be accessors on the instance prototype allowing Realm JavaScript to invoke class constructors as constructors (using `new` instead of previously calling them as functions with 'call'). ([#998](https://github.com/realm/realm-js/issues/998))
