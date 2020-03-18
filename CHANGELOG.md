@@ -1,26 +1,28 @@
 X.Y.Z Release notes (YYYY-MM-DD)
 =============================================================
+NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. We have bumped major version due to removing functionality. Unfortunately, we also have an series of pre-releases of v4.0.0 which are incompatible with this version as the Realm file format is changed. We have decided to skip version v4.0.0, and the next major version (expected to be v6.0.0) will change file format.
+
 ### Enhancements
-* Realm JS now supports all Node.js versions from and above version 10
-* Helper methods 'obj.keys()', 'obj.entries()' are now available to return the properties of that Realm Object, including the Realm properties defined by the schema.
-* An instance method 'toJSON()' is implemented on every Realm Object class to support 'JSON.stringify()' to work as expected on every instance
+* Added support for all Node.js versions from and above version 10. ([#2516](https://github.com/realm/realm-js/issues/2516))
+* Helper methods `obj.keys()`, `obj.entries()` are now available to return the properties of that Realm Object, including the Realm properties defined by the schema.
+* An instance method `toJSON()` is implemented on every Realm Object class to support `JSON.stringify()` to work as expected on every instance.
 
 ### Breaking changes
 * Node.js 8 is not supported anymore.
-* Realm objects properties are now defined as accessors on the instance prototype. (Previously they were defined as values on the instance)
-* Due to accessor properties change above calling 'Object.keys()', 'Object.entries()', 'Object.getOwnPropertyDescriptors()' on a Realm.Object instance (objects from a Realm) will not return the realm schema properties.
+* Realm objects properties are now defined as accessors on the instance prototype. Previously they were defined as values on the instance.
+* Due to accessor properties change above calling `Object.keys()`, `Object.entries()`, and `Object.getOwnPropertyDescriptors()` on a Realm.Object instances (objects from a Realm) will not return the Realm schema properties.
 
 ### Fixed
-* ECMAScript 2015 Class syntax is fully supported now by moving all properties to be accessors on the instance prototype allowing Realm JS to invoke class constructors as constructors (using 'new' instead of previously calling them as functions with 'call')
+* ECMAScript 2015 Class syntax is fully supported by moving all properties to be accessors on the instance prototype allowing Realm JavaScript to invoke class constructors as constructors (using `new` instead of previously calling them as functions with 'call'). ([#998](https://github.com/realm/realm-js/issues/998))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
-* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+* File format: Generates Realms with format v9 (reads and upgrades all previous formats).
 
 ### Internal
-* Complete rewrite of Realm JS for Node.js on top of [Node.js N-API](https://nodejs.org/api/n-api.html)
-* Realm JS is now binary compatible between Node.js versions. (due to NAPI API stability and backward compatibility)
+* Complete rewrite of Realm JavaScript for Node.js on top of [Node.js N-API](https://nodejs.org/api/n-api.html)
+* Realm JavaScript is now binary compatible between Node.js versions (due to NAPI API stability and backward compatibility).
 
 3.6.5 Release notes (2020-3-4)
 =============================================================
