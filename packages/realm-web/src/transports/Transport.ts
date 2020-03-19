@@ -1,14 +1,18 @@
 import { Method } from "realm-network-transport";
 
 export interface Request<RequestBody> {
+    /** HTTP method used when fetching */
     method: Method;
+    /** Path of the resource to fetch */
     path: string;
+    /** Body to send when fetching */
     body?: RequestBody | string;
+    /** Headers to send when fetching */
     headers?: { [name: string]: string };
 }
 
 /**
- * A transport takes care of fetching resources.
+ * A transport takes care of fetching resources, more specialized than the `realm-network-transport`
  */
 export interface Transport {
     /**

@@ -12,6 +12,7 @@ export class PrefixedTransport implements Transport {
         this.pathPrefix = pathPrefix;
     }
 
+    /** @inheritdoc */
     fetch<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>,
         user?: Realm.User | null
@@ -23,6 +24,7 @@ export class PrefixedTransport implements Transport {
         return this.fetcher.fetch(prefixedRequest, user);
     }
 
+    /** @inheritdoc */
     prefix(pathPrefix: string): Transport {
         return new PrefixedTransport(this, pathPrefix);
     }

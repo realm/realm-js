@@ -31,9 +31,10 @@ export class BaseTransport implements Transport {
                 "BaseTransport doesn't support fetching as a particular user"
             );
         }
+        const { path, ...restOfRequest } = request;
         return this.networkTransport.fetchAndParse({
-            ...request,
-            url: `${this.baseUrl}${request.path}`
+            ...restOfRequest,
+            url: this.baseUrl + request.path
         });
     }
 

@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { App } from "./App";
 import { User, UserState } from "./User";
 import { Credentials } from "./Credentials/index";
-import { MockTransport } from "./test/MockTransport";
+import { MockNetworkTransport } from "./test/MockNetworkTransport";
 
 describe("App", () => {
     it("can call the App as a constructor", () => {
@@ -48,7 +48,7 @@ describe("App", () => {
     });
 
     it("can log in a user", async () => {
-        const transport = new MockTransport([
+        const transport = new MockNetworkTransport([
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
@@ -93,7 +93,7 @@ describe("App", () => {
     });
 
     it("can log out a user", async () => {
-        const transport = new MockTransport([
+        const transport = new MockNetworkTransport([
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
@@ -134,7 +134,7 @@ describe("App", () => {
     });
 
     it("can remove an active user", async () => {
-        const transport = new MockTransport([
+        const transport = new MockNetworkTransport([
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
@@ -175,7 +175,7 @@ describe("App", () => {
     });
 
     it("expose a callable functions factory", async () => {
-        const transport = new MockTransport([
+        const transport = new MockNetworkTransport([
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",

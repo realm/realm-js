@@ -12,16 +12,10 @@ interface UserContext {
 export class AuthenticatedTransport implements Transport {
     private readonly userContext: UserContext;
     private readonly transport: Transport;
-    private readonly baseUrl: string;
 
-    public constructor(
-        userContext: UserContext,
-        transport: Transport,
-        baseUrl: string
-    ) {
+    public constructor(userContext: UserContext, transport: Transport) {
         this.userContext = userContext;
         this.transport = transport;
-        this.baseUrl = baseUrl;
     }
 
     /** @inheritdoc */
