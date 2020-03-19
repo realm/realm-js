@@ -1,6 +1,19 @@
 {
   "extends": "../../tslint.json",
   "rules": {
-    "no-implicit-dependencies": [true, ["chai"]]
+    "no-implicit-dependencies": [true, ["chai"]],
+    "completed-docs": [true, {
+      "classes": { "visibilities": ["exported"] },
+      "methods": {
+        "locations": ["all"],
+        "privacies": ["public"],
+        "tags": { "existence": ["inheritdoc", "hidden"] }
+      },
+      "properties": {
+        "locations": ["all"],
+        "privacies": ["public"],
+        "tags": { "existence": ["inheritdoc", "hidden"] }
+      }
+    }]
   }
 }

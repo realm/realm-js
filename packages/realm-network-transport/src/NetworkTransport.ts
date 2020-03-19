@@ -1,7 +1,7 @@
 declare const process: any;
 declare const require: ((id: string) => any) | undefined;
 
-export type Method = "GET" | "POST";
+export type Method = "GET" | "POST" | "DELETE";
 
 export type Headers = { [name: string]: string };
 
@@ -96,8 +96,10 @@ export class DefaultNetworkTransport implements NetworkTransport {
                 if (contentType && contentType.startsWith("application/json")) {
                     // Awaiting the response to ensure we'll throw our own error
                     return await response.json();
+                } else if (contentType === null) {
+                    return null as any;
                 } else {
-                    throw new Error("Expected a JSON response");
+                    throw new Error("Expected an empty or a JSON response");
                 }
             } else {
                 // TODO: Check if a message can be extracted from the response

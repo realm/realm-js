@@ -1,13 +1,14 @@
-import type { NetworkTransport } from "realm-network-transport";
+import { App } from "../App";
+import { MockTransport } from "./MockTransport";
 
-import { App } from "../App"
-import { MockNetworkTransport } from "./MockNetworkTransport";
-
+/**
+ * An App using the MockTransport
+ */
 export class MockApp extends App<any> {
     constructor(id: string, requests: object[] = []) {
         super(id, {
-            baseUrl: "http://fake-mongodb-realm-server:1337",
-            transport: new MockNetworkTransport(requests),
+            baseUrl: "http://localhost:1337",
+            transport: new MockTransport(requests)
         });
     }
 }

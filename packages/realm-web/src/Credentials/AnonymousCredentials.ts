@@ -8,12 +8,13 @@ import { Credentials } from "./Credentials";
  */
 export class AnonymousCredentials extends Credentials
     implements Realm.Credentials {
-    public static DEFAULT_PROVIDER_NAME = "anon-user";
-
-    constructor(providerName = AnonymousCredentials.DEFAULT_PROVIDER_NAME) {
+    constructor(providerName = "anon-user") {
         super(providerName);
     }
 
+    /** @inheritdoc */
     public readonly providerType = "anon-user";
+
+    /** @inheritdoc */
     public readonly material = {};
 }

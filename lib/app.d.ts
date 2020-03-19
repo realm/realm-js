@@ -40,10 +40,30 @@ declare namespace Realm {
         functions: FF;
 
         /**
+         * The last user to log in or being switched to.
+         */
+        currentUser: Realm.User | null;
+
+        /**
+         * All authenticated users.
+         */
+        allUsers: Readonly<Realm.User[]>;
+
+        /**
          * Log in a user using a specific credential
          * @param credentials the credentials to use when logging in
          */
         logIn(credentials: Credentials): Promise<Realm.User>;
+
+        /**
+         * Log out the currently authenticated user and clear any persisted authentication information.
+         */
+        logOut(): Promise<void>;
+
+        /**
+         * Switch current user, from an instance of `Realm.User` or the string id of the user.
+         */
+        switchUser(user: User | string): void;
     }
 
     interface AppConfiguration {
@@ -70,9 +90,18 @@ declare namespace Realm {
     }
 
     interface User {
+        id: string;
+        state: UserState;
         identities: UserIdentity[];
-        accessToken: string;
+        accessToken: string | null;
+        refreshToken: string | null;
         profile: UserProfile;
+    }
+
+    enum UserState {
+        Active = "active",
+        LoggedOut = "logged-out",
+        Removed = "removed"
     }
 
     interface UserIdentity {

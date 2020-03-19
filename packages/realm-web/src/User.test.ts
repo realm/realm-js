@@ -8,10 +8,13 @@ describe("User", () => {
         const app = new MockApp("my-mocked-app");
         const user = new User({
             app,
+            id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing"
         });
         // Assume that the user has an access token
         expect(user.accessToken).to.equal("deadbeef");
     });
+
+    // TODO: Test the controller pattern
 });

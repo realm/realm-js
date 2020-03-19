@@ -1,4 +1,4 @@
-import type { AuthenticatedNetworkTransport } from "./AuthenticatedNetworkTransport";
+import { Transport } from "./transports/Transport";
 
 /**
  * A list of names that functions cannot have to be callable through the functions proxy.
@@ -11,14 +11,23 @@ interface CallFunctionBody {
     service?: string;
 }
 
+export interface FunctionsFactoryConfiguration {
+    transport: Transport;
+    serviceName?: string;
+}
+
+/**
+ * Defines how functions are called
+ */
 export class FunctionsFactory {
-    private readonly transport: AuthenticatedNetworkTransport;
-    private readonly appUrl: string;
+    private readonly transport: Transport;
     private readonly serviceName?: string;
 
-    constructor(transport: AuthenticatedNetworkTransport, appUrl: string, serviceName?: string) {
+    constructor({
+        transport,
+        serviceName = ""
+    }: FunctionsFactoryConfiguration) {
         this.transport = transport;
-        this.appUrl = appUrl;
         this.serviceName = serviceName;
     }
 
@@ -33,10 +42,10 @@ export class FunctionsFactory {
         if (this.serviceName) {
             body.service = this.serviceName;
         }
-        return this.transport.fetchAuthenticated({
+        return this.transport.fetch({
             method: "POST",
-            url: `${this.appUrl}/functions/call`,
-            body,
+            path: "/functions/call",
+            body
         });
     }
 }
@@ -46,18 +55,20 @@ export class FunctionsFactory {
  * @param fetcher The object used to perform HTTP fetching
  * @param serviceName An optional name of the service to call functions on
  */
-export function create<FF extends Realm.FunctionsFactory>(transport: AuthenticatedNetworkTransport, appUrl: string, serviceName?: string): FF {
+export function create<FF extends Realm.FunctionsFactory>(
+    config: FunctionsFactoryConfiguration
+): FF {
     // Create a proxy, wrapping a simple object returning methods that calls functions
     // TODO: Lazily fetch available functions and return these from the ownKeys() trap
-    const factory = new FunctionsFactory(transport, appUrl, serviceName);
+    const factory = new FunctionsFactory(config);
     // Wrap the factory in a promise that calls the internal call method
-    return new Proxy(factory as any as FF, {
+    return new Proxy((factory as any) as FF, {
         get(target, p, receiver) {
             if (typeof p === "string" && RESERVED_NAMES.indexOf(p) === -1) {
                 return target.callFunction.bind(target, p);
             } else {
                 return Reflect.get(target, p, receiver);
             }
-        },
+        }
     });
 }

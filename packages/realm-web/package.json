@@ -8,7 +8,7 @@
     "prebuild": "rm -rf dist",
     "build": "../../node_modules/.bin/tsc -p tsconfig.build.json",
     "lint": "../../node_modules/.bin/tslint -p .",
-    "test": "ts-mocha src/**/*.test.ts"
+    "test": "ts-mocha 'src/**/*.test.ts'"
   },
   "keywords": [
     "realm",

@@ -1,32 +1,39 @@
 import { expect } from "chai";
 
-import { create as createFunctionsFactory, FunctionsFactory } from "./FunctionsFactory";
-import type { AuthenticatedNetworkTransport } from "./AuthenticatedNetworkTransport";
+import {
+    create as createFunctionsFactory,
+    FunctionsFactory
+} from "./FunctionsFactory";
+import { MockTransport } from "./test/MockTransport";
 
 describe("FunctionsFactory", () => {
     it("can be created", () => {
-        const transport: AuthenticatedNetworkTransport = {} as any;
-        const factory = createFunctionsFactory(transport, 'http://localhost:1337');
+        const factory = createFunctionsFactory({ transport: {} as any });
         expect(factory).to.be.instanceOf(FunctionsFactory);
     });
 
     it("calls the network transport correctly", async () => {
-        class MockNetworkTransport {
-            fetchAuthenticated({ url, body }: any) {
-                expect(this).to.equal(fetcher);
-                expect(url).to.equal("http://localhost:1337/functions/call"); // TODO: Fix this to include the base URL
-                expect(typeof body).to.equal("object");
-                expect(body.name).to.equal("hello");
-                expect(body.service).to.equal("custom-service");
-                expect(body.arguments).to.deep.equal(["friendly"]);
-                return Promise.resolve({ message: `hello ${body.arguments[0]} world!` }) as Promise<any>;
-            }
-        }
-        const fetcher = new MockNetworkTransport() as NetworkTransport;
-        const factory = createFunctionsFactory(fetcher, 'http://localhost:1337', 'custom-service');
+        const transport = new MockTransport([
+            { message: `hello friendly world!` }
+        ]);
+        const factory = createFunctionsFactory({
+            transport,
+            serviceName: "custom-service"
+        });
         const response = factory.hello("friendly");
         expect(response).to.be.instanceOf(Promise);
         const { message } = await response;
         expect(message).to.equal("hello friendly world!");
+        expect(transport.requests).deep.equals([
+            {
+                url: "http://localhost:1337/functions/call",
+                method: "POST",
+                body: {
+                    name: "hello",
+                    service: "custom-service",
+                    arguments: ["friendly"]
+                }
+            }
+        ]);
     });
 });
