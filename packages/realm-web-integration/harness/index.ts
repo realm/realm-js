@@ -3,7 +3,7 @@ import WebpackDevServer from "webpack-dev-server";
 import webpack from "webpack";
 import { MochaRemoteServer } from "mocha-remote";
 
-import { MDBRealmWrapper } from "./MDBRealmWrapper";
+import { importRealmApp } from "./import-realm-app";
 
 import WEBPACK_CONFIG = require("../webpack.config");
 
@@ -13,7 +13,6 @@ async function run() {
     let devServer: WebpackDevServer | null = null;
     let mochaServer: MochaRemoteServer | null = null;
     let browser: puppeteer.Browser | null = null;
-    let mdbRealm: MDBRealmWrapper | null = null;
 
     async function shutdown() {
         if (browser && !devtools) {
@@ -27,10 +26,6 @@ async function run() {
         await new Promise(resolve =>
             devServer ? devServer.close(resolve) : resolve()
         );
-        // Clean up the MongoDB Realm service
-        if (mdbRealm) {
-            mdbRealm.cleanup();
-        }
     }
 
     process.once("exit", () => {
@@ -41,9 +36,7 @@ async function run() {
     });
 
     // Prepare
-    // Create a new MongoDBRealmService
-    mdbRealm = new MDBRealmWrapper();
-    await mdbRealm.importApp();
+    const { appId, baseUrl } = await importRealmApp();
     // Start up the Webpack Dev Server
     const compiler = webpack({
         ...(WEBPACK_CONFIG as webpack.Configuration),
@@ -51,15 +44,15 @@ async function run() {
         plugins: [
             ...WEBPACK_CONFIG.plugins,
             new webpack.DefinePlugin({
-                // This must match the ID stored in ../my-test-app/stitch.json
-                APP_ID: JSON.stringify(mdbRealm.getAppId())
+                APP_ID: JSON.stringify(appId),
+                // Uses the webpack dev servers proxy
+                BASE_URL: JSON.stringify("http://localhost:8080")
             })
         ]
     });
-    const mdbRealmBaseUrl = mdbRealm.getBaseUrl();
     await new Promise((resolve, reject) => {
         devServer = new WebpackDevServer(compiler, {
-            proxy: { "/api": mdbRealmBaseUrl }
+            proxy: { "/api": baseUrl }
         });
         devServer.listen(8080, "localhost", err => {
             if (err) {

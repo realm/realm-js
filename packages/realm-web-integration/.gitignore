@@ -1,3 +1,5 @@
-apps/
 dist/
-stitch-cli-config.json
+
+# Generated during test runs
+imported-apps/
+stitch-config.json

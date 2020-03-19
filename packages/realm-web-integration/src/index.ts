@@ -2,8 +2,8 @@ import { MochaRemoteClient } from "mocha-remote-client";
 
 const mochaClient = new MochaRemoteClient({
     whenInstrumented: () => {
-        require("./constructor");
-        require("./credentials");
-        require("./functions");
+        require("./app.test");
+        require("./credentials.test");
+        require("./functions.test");
     }
 });
