@@ -46,7 +46,7 @@ static Napi::FunctionReference ObjectSetPrototypeOf;
 static Napi::FunctionReference GlobalProxy;
 static Napi::FunctionReference FunctionBind;
 
-static inline void node_class_init(Napi::Env env) {
+static void node_class_init(Napi::Env env) {
 	auto setPrototypeOf = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
 	ObjectSetPrototypeOf = Napi::Persistent(setPrototypeOf);
 	ObjectSetPrototypeOf.SuppressDestruct();
@@ -66,6 +66,7 @@ static inline void node_class_init(Napi::Env env) {
 
 	Napi::Symbol ext = Napi::Symbol::New(env, "_external");
 	ExternalSymbol = node::Protected<Napi::Symbol>(env, ext);
+	ExternalSymbol.SuppressDestruct();
 }
 
 template<typename T>
@@ -334,6 +335,7 @@ Napi::Function WrappedObject<ClassType>::init(Napi::Env env,
 	m_name = name;
 	m_has_native_methodFunc = has_native_method_callback;
 	WrappedObject<ClassType>::m_nullExternal = Napi::Persistent(Napi::External<Internal>::New(env, nullptr));
+	WrappedObject<ClassType>::m_nullExternal.SuppressDestruct();
 
 	Napi::Function ctor = Napi::ObjectWrap<WrappedObject<ClassType>>::DefineClass(env, name.c_str(), properties, (void*)constructor_callback);
 	
@@ -539,6 +541,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(N
 	proxyObject.DefineProperties({ instanceGetTrapFunc, instanceSetTrapFunc, ownKeysTrapFunc, hasTrapFunc, getOwnPropertyDescriptorTrapFunc, getPrototypeOfFunc, setPrototypeOfFunc });
 	
 	m_proxyHandler = Napi::Persistent(proxyObject);
+	m_proxyHandler.SuppressDestruct();
 	return proxyObject;
 }
 
@@ -1007,7 +1010,10 @@ inline static void schema_object_type_constructor(const Napi::CallbackInfo& info
 
 template<typename ClassType>
 void ObjectWrap<ClassType>::internal_finalizer(Napi::Env, typename ClassType::Internal* internal) {
-	delete internal;
+	if (internal) {
+		delete internal;
+		internal = nullptr;
+	}
 }
 
 static inline void remove_schema_object(std::unordered_map<std::string, SchemaObjectType*>* schemaObjects, const std::string& schemaName) {
