@@ -24,9 +24,6 @@ function trySetElectronVersion() {
 }
 
 // Ensure node-pre-gyp uses the correct binary
-// if (process.env.REALM_ELECTRON_VERSION) {
-//     process.versions.electron = process.env.REALM_ELECTRON_VERSION;
-// }
 trySetElectronVersion();
 
 const Realm = require(realmModule);

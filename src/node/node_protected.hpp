@@ -29,6 +29,7 @@ protected:
 	Napi::Env m_env;
 	napi_ref m_ref;
 	bool m_isValue;
+	bool m_suppressDestruct = false;
 public:
 	Protected() : m_env(nullptr), m_ref(nullptr), m_isValue(false) {}
 
@@ -44,7 +45,6 @@ public:
 		if (status != napi_ok) {
 			throw std::runtime_error(util::format("Can't create protected reference: napi_status %1", status));
 		}
-
 	}
 
 	Protected(const Protected& other) : m_env(other.m_env), m_ref(other.m_ref), m_isValue(other.m_isValue) {
@@ -55,19 +55,26 @@ public:
 		}
 	}
 
+	Protected(Protected&& other) : Protected() {
+		swap(*this, other);
+	}
+
 	friend void swap(Protected& first, Protected& second) {
 		std::swap(first.m_env, second.m_env);
 		std::swap(first.m_ref, second.m_ref);
 		std::swap(first.m_isValue, second.m_isValue);
+		std::swap(first.m_isValue, second.m_isValue);
+		std::swap(first.m_suppressDestruct, second.m_suppressDestruct);
 	}
 
+	//uses the copy and swap idiom
 	Protected& operator=(Protected other) {
 		swap(*this, other);
 		return *this;
 	}
 
 	~Protected() {
-		if (m_ref == nullptr) {
+		if (m_ref == nullptr || m_suppressDestruct) {
 			return;
 		}
 
@@ -80,6 +87,8 @@ public:
 				napi_status status = napi_delete_reference(m_env, m_ref);
 				REALM_ASSERT((status == napi_ok) && "~Protected: Can't unallocate protected reference");
 			}
+
+			m_ref = nullptr;
 		}
 		catch (...) {}
 	}
@@ -139,6 +148,10 @@ public:
 		MemberType thisValue = *this;
 		MemberType otherValue = *other;
 		return thisValue != otherValue;
+	}
+
+	void SuppressDestruct() {
+		m_suppressDestruct = true;
 	}
 
 	struct Comparator {
