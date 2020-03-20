@@ -10,7 +10,8 @@
 			"realm-network-transport",
 			"mocha",
 			"chai",
-			"node"
+			"node",
+			"bson"
 		],
 		"lib": [
 			"ES2015",

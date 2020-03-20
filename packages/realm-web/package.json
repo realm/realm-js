@@ -27,9 +27,11 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
+    "bson": "^4.0.3",
     "realm-network-transport": "^0.1.0"
   },
   "devDependencies": {
+    "@types/bson": "^4.0.2",
     "@types/chai": "^4.2.9",
     "@types/mocha": "^7.0.1",
     "@types/node": "^13.7.6",
