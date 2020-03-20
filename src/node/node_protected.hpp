@@ -63,7 +63,6 @@ public:
 		std::swap(first.m_env, second.m_env);
 		std::swap(first.m_ref, second.m_ref);
 		std::swap(first.m_isValue, second.m_isValue);
-		std::swap(first.m_isValue, second.m_isValue);
 		std::swap(first.m_suppressDestruct, second.m_suppressDestruct);
 	}
 
