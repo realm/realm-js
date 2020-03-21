@@ -4,8 +4,7 @@
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed a bug in Realm JS v5.0.0 and v5.0.1 in how the destruction of global objects was handled. This could lead to segfaults on Node.js version 12 and 13. (#2759)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
