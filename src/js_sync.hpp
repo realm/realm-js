@@ -734,16 +734,9 @@ std::function<SyncBindSessionHandler> SyncClass<T>::session_bind_callback(Contex
 {
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<ObjectType> protected_sync_constructor(ctx, sync_constructor);
-    return util::EventLoopDispatcher<SyncBindSessionHandler>([protected_ctx, protected_sync_constructor](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
-        HANDLESCOPE
-        ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync_constructor, "User");
-        FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, "_refreshAccessToken");
-
-        ValueType arguments[3];
-        arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
-        arguments[1] = Value::from_string(protected_ctx, path);
-        arguments[2] = Value::from_string(protected_ctx, config.realm_url);
-        Function::call(protected_ctx, refreshAccessToken, 3, arguments);
+    return util::EventLoopDispatcher<SyncBindSessionHandler>([protected_ctx, protected_sync_constructor](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session) {
+        auto token = config.user->access_token();
+        session->refresh_access_token(std::move(token), config.realm_url);
     });
 }
 
@@ -774,6 +767,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             throw std::runtime_error("User is no longer valid.");
         }
 
+        std::string app_id = Object::validated_get_string(ctx, sync_config_object, "appId");
         std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
 
         bool client_validate_ssl = true;
@@ -846,6 +840,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         config.schema_mode = SchemaMode::Additive;
         config.path = syncManagerShared<T>(ctx).path_for_realm(*shared_user, config.sync_config->realm_url);
+        config.sync_config->url_prefix = util::format("/api/client/v2.0/app/%1/realm-sync", app_id);
+
+        std::cerr << "config.path = " << config.path << "\n";
+        std::cerr << "config.sync_config->realm_url = " << config.sync_config->realm_url << "\n";
+        std::cerr << "config.sync_config->url_prefix = " << config.sync_config->url_prefix << "\n";
 
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();
