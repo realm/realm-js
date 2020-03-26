@@ -249,7 +249,7 @@ def reactNativeIntegrationTests(targetPlatform) {
 
     timeout(30) { // minutes
       try {
-        sh "${nvm} npm run test/${targetPlatform} -- test-results.xml"
+        sh "${nvm} npm run test/${targetPlatform} -- --junit-output-path test-results.xml"
       } finally {
         junit(
           allowEmptyResults: true,
