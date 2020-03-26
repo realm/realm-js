@@ -146,7 +146,7 @@ module.exports = {
             }
         };
 
-        let realm = new Realm(realmConfig);
+        let realm = await Realm.open(realmConfig);
         realm.write(() => {
             realm.create("Person", { "_id": new ObjectId('0000002a9a7969d24bea4cf2'), name: "Ib" });
         });
@@ -161,7 +161,7 @@ module.exports = {
 
         Realm.deleteFile(realmConfig);
         console.log('HEST 3');
-        let realm2 = new Realm(realmConfig);
+        let realm2 = await Realm.open(realmConfig);
         await new Promise((resolve, reject) => {
             setTimeout(() => resolve(), 10000);
         });
