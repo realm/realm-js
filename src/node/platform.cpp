@@ -18,6 +18,8 @@
 
 #include <stdexcept>
 #include <vector>
+#include <stdarg.h>
+#include <stdio.h>
 #include <uv.h>
 
 #include "../platform.hpp"
@@ -183,6 +185,16 @@ void remove_file(const std::string &path)
     if (uv_fs_unlink(uv_default_loop(), &delete_req, path.c_str(), nullptr) != 0) {
         throw UVException(static_cast<uv_errno_t>(delete_req.result));
     }
+}
+
+void print(const char* fmt, ...)
+{
+    va_list vl;
+    va_start(vl, fmt);
+    std::string format(fmt);
+    format.append("\n");
+    vprintf(format.c_str(), vl);
+    va_end(vl);
 }
 
 } // realm

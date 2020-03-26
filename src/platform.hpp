@@ -47,4 +47,7 @@ void remove_file(const std::string &path);
 // remove directory at the given path
 void remove_directory(const std::string &path);
 
+// print something
+void print(const char* fmt, ...);
+
 }
