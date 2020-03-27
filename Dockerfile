@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:19.10
 
 ENV NPM_CONFIG_UNSAFE_PERM true
 ENV NVM_DIR /tmp/.nvm
@@ -12,22 +12,18 @@ RUN echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache
 # Install clang and everything needed to build core
 RUN apt-get update \
     && apt-get install -y \
+       build-essential \
        curl \
        jq \
        libprocps-dev \
        libconfig-dev \
        ninja-build \
-       gcc-8 \
-       g++-8 \
        git \
        gnupg \
        perl \
        tar \
        python \
        wget
-
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 20
-RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 20
 
 RUN cd /opt \
     && wget -nv https://cmake.org/files/v3.15/cmake-3.15.2-Linux-x86_64.tar.gz \
