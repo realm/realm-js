@@ -75,14 +75,14 @@ public:
     static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void all_users(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void current_user(ContextType, ObjectType, Arguments&, ReturnValue&);
-    // static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
         {"logout", wrap<logout>},
         {"allUsers", wrap<all_users>},
         {"currentUser", wrap<current_user>},
-        // {"switchUser", wrap<switch_user>},
+        {"switchUser", wrap<switch_user>},
     };
 };
 
@@ -239,16 +239,17 @@ void AppClass<T>::current_user(ContextType ctx, ObjectType this_object, Argument
     return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(user)));
 }
 
-/*
+
 template<typename T>
 void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(1);
 
-    realm::app:App& app = *get_internal<T, AppClass<T>>(this_object);
-    auto new_user_identity = Value::validated_from_string(ctx, args[0], "user identity");
-    app.switch_user(new_user_identity);
+    realm::app::App& app = *get_internal<T, AppClass<T>>(this_object);
+    auto user = *get_internal<T, UserClass<T>>(Value::validated_to_object(ctx, args[1], "user"));
+
+    app.switch_user(user);
     return_value.set(Value::from_undefined(ctx));
 }
-*/
+
 }
 }
