@@ -58,7 +58,6 @@ public:
     static void set_profile(ContextType, ObjectType, ValueType);
 
     PropertyMap<T> const properties = {
-        {"server", {wrap<get_server>, nullptr}},
         {"identity", {wrap<get_identity>, nullptr}},
         {"token", {wrap<get_token>, nullptr}},
         {"profile", {wrap<get_profile>, wrap<set_profile>}},
