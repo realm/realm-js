@@ -5,6 +5,7 @@
 
 ### Fixed
 * Fixes Realm Object properties not working when accessed, returning undefined on React Native for Android in Realm JS v5.0.2  ([#2763](https://github.com/realm/realm-js/issues/2763))
+* Replace `decompress` with `node-tar` to avoid using vulnerable dependencies ([#2773](https://github.com/realm/realm-js/issues/2773))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
