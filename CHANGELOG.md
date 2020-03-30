@@ -1,11 +1,10 @@
-x.x.x Release notes (yyyy-MM-dd)
+5.0.2 Release notes (2020-3-21)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed a bug in how destruction of global objects was handled. This could lead to a segmentation fault on Node.js version 12 and 13 when the application terminated. ([#2759](https://github.com/realm/realm-js/issues/2759))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* None. 
 
 5.0.1 Release notes (2020-3-20)
 =============================================================
@@ -21,7 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed a bug in how the destruction of global objects was handled. This could lead to segfaults on Node.js version 12 and 13. ([#2759](https://github.com/realm/realm-js/issues/2759)
+* Fixed a bug in how the destruction of global objects was handled. This could lead to segfaults on Node.js version 12 and 13. ([#2759](https://github.com/realm/realm-js/issues/2759))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
