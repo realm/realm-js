@@ -75,14 +75,16 @@ public:
     static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void all_users(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void current_user(ContextType, ObjectType, Arguments&, ReturnValue&);
-    // static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void delete_user(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
         {"logout", wrap<logout>},
         {"allUsers", wrap<all_users>},
         {"currentUser", wrap<current_user>},
-        // {"switchUser", wrap<switch_user>},
+        {"switchUser", wrap<switch_user>},
+        {"_deleteUser", wrap<delete_user>},
     };
 };
 
@@ -239,16 +241,46 @@ void AppClass<T>::current_user(ContextType ctx, ObjectType this_object, Argument
     return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(user)));
 }
 
-/*
+
 template<typename T>
 void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(1);
 
-    realm::app:App& app = *get_internal<T, AppClass<T>>(this_object);
-    auto new_user_identity = Value::validated_from_string(ctx, args[0], "user identity");
-    app.switch_user(new_user_identity);
+    realm::app::App& app = *get_internal<T, AppClass<T>>(this_object);
+    auto user = *get_internal<T, UserClass<T>>(Value::validated_to_object(ctx, args[0], "user"));
+
+    app.switch_user(user);
     return_value.set(Value::from_undefined(ctx));
 }
-*/
+
+template<typename T>
+void AppClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+    args.validate_count(2);
+
+    realm::app::App& app = *get_internal<T, AppClass<T>>(this_object);
+    auto user = *get_internal<T, UserClass<T>>(Value::validated_to_object(ctx, args[0], "user"));
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
+
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+
+    auto callback_handler([=](util::Optional<app::AppError> error) {
+        HANDLESCOPE
+        ObjectType error_object = Object::create_empty(protected_ctx);
+        if (error) {
+            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
+            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
+        }
+
+        ValueType callback_arguments[1];
+        callback_arguments[0] = error_object;
+        Function::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+    });
+
+    app.remove_user(user, callback_handler);
+    return_value.set(Value::from_undefined(ctx));
+}
+
 }
 }
