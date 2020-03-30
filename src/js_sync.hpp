@@ -770,7 +770,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");
         SharedUser shared_user = *get_internal<T, UserClass<T>>(user);
-        if (shared_user->state() != SyncUser::State::Active) {
+        if (shared_user->state() != SyncUser::State::LoggedIn) {
             throw std::runtime_error("User is no longer valid.");
         }
 
