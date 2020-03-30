@@ -117,7 +117,7 @@ module.exports = {
 
         Realm.Sync.setLogLevel('all');
         Realm.Sync.setLogger((level, message) => console.log(message));
-        const appId = 'default-hwhmx';
+        const appId = 'default-qfdxz';
         const appConfig = {
             id: appId,
             url: 'http://localhost:9090',
