@@ -21,6 +21,14 @@
 
 #include "jsc_init.hpp"
 #include "platform.hpp"
+namespace realm {
+namespace jsc {
+    js::Protected<JSObjectRef> ObjectDefineProperty;
+    js::Protected<JSObjectRef> FunctionPrototype;
+    js::Protected<JSObjectRef> RealmObjectClassConstructor;
+    js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
+}
+}
 
 extern "C" {
 
