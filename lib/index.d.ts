@@ -138,12 +138,12 @@ declare namespace Realm {
      */
     interface Object {
         /**
-         * @returns returns an array of a given Realm Object property names
+         * @returns An array of the names of the object's properties.
          */
         keys(): string[];
 
         /**
-         * @returns Returns an array of key/value pairs of a given Realm Object properties
+         * @returns An array of key/value pairs of the object's properties.
          */
         entries(): [string, any][];
 
