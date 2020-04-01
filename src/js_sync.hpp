@@ -842,10 +842,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         config.path = syncManagerShared<T>(ctx).path_for_realm(*shared_user, config.sync_config->realm_url);
         config.sync_config->url_prefix = util::format("/api/client/v2.0/app/%1/realm-sync", app_id);
 
-        std::cerr << "config.path = " << config.path << "\n";
-        std::cerr << "config.sync_config->realm_url = " << config.sync_config->realm_url << "\n";
-        std::cerr << "config.sync_config->url_prefix = " << config.sync_config->url_prefix << "\n";
-
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();
             std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
