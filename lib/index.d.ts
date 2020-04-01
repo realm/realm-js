@@ -677,6 +677,7 @@ declare namespace Realm.Sync {
     function setLogLevel(logLevel: LogLevel): void;
     function setLogger(callback: (level: NumericLogLevel, message: string) => void): void;
     function setUserAgent(userAgent: string): void;
+    function enableSessionMultiplexing(): void;
     function initiateClientReset(path: string): void;
     function _hasExistingSessions(): boolean;
     function reconnect(): void;
