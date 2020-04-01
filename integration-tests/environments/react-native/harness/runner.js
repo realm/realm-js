@@ -202,8 +202,6 @@ yargs
         });
     },
     args => {
-      console.log(args);
-
       runApp(args['platform'], args['junit-output-path'], args['watch']).then(
         failures => {
           if (isWatching) {
