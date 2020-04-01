@@ -1,3 +1,19 @@
+5.0.3 Release notes (2020-4-01)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixes Realm Object properties not working on React Native for Android 
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None. 
+
 5.0.2 Release notes (2020-3-21)
 =============================================================
 ### Enhancements
