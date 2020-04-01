@@ -1,11 +1,11 @@
-5.0.3 Release notes (2020-4-01)
+x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* Fixes Realm Object properties not working when accessed, returning undefined on React Native for Android in Realm JS v5.0.2  ([#2763](https://github.com/realm/realm-js/issues/2763))
 * Replace `decompress` with `node-tar` to avoid using vulnerable dependencies ([#2773](https://github.com/realm/realm-js/issues/2773))
+* None.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,7 +13,24 @@
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None. 
+* None.
+
+5.0.3 Release notes (2020-4-01)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Realm Object properties not working when accessed, returning `undefined` on React Native for Android in Realm JS v5.0.2  ([#2763](https://github.com/realm/realm-js/issues/2763))
+* Using `obj.keys()` or `obj.entries()` caused TypeScript error "Property 'keys' does not exist on type 'Object'". ([#2778](https://github.com/realm/realm-js/issues/2778), since v5.0.0)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
 
 5.0.2 Release notes (2020-3-21)
 =============================================================
@@ -29,7 +46,7 @@
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None. 
+* None.
 
 5.0.1 Release notes (2020-3-20)
 =============================================================
