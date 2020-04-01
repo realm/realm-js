@@ -4,7 +4,7 @@
 * None.
 
 ### Fixed
-* Fixes Realm Object properties not working when accessed, returning undefined on React Native for Android in Realm JS v5.2  (https://github.com/realm/realm-js/issues/2763)
+* Fixes Realm Object properties not working when accessed, returning undefined on React Native for Android in Realm JS v5.0.2  (https://github.com/realm/realm-js/issues/2763)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
