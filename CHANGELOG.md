@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Ability to enable multiplex sync (`Realm.Sync.enableSessionMultiplexing()`)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
