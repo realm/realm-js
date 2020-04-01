@@ -77,6 +77,7 @@ public:
     static void current_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void delete_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void link_user(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
@@ -85,6 +86,7 @@ public:
         {"currentUser", wrap<current_user>},
         {"switchUser", wrap<switch_user>},
         {"_deleteUser", wrap<delete_user>},
+        {"_linkUser", wrap<link_user>}
     };
 };
 
@@ -281,6 +283,44 @@ void AppClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments
     app.remove_user(user, callback_handler);
     return_value.set(Value::from_undefined(ctx));
 }
+
+template<typename T>
+void AppClass<T>::link_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
+    args.validate_count(3);
+    auto app = *get_internal<T, AppClass<T>>(this_object);
+
+    auto user = *get_internal<T, UserClass<T>>(Value::validated_to_object(ctx, args[0], "user"));
+    auto credentials = *get_internal<T, CredentialsClass<T>>(Value::validated_to_object(ctx, args[1], "credentials"));
+    auto callback = Value::validated_to_function(ctx, args[2], "callback");
+
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+
+    auto callback_handler([=](SharedUser user, util::Optional<app::AppError> error) {
+        HANDLESCOPE
+
+        if (error) {
+            ObjectType error_object = Object::create_empty(protected_ctx);
+            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
+            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
+
+            ValueType callback_arguments[2];
+            callback_arguments[0] = Value::from_undefined(protected_ctx);
+            callback_arguments[1] = error_object;
+            Function::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
+            return;
+        }
+
+        ValueType callback_arguments[2];
+        callback_arguments[0] = create_object<T, UserClass<T>>(ctx, new SharedUser(user));
+        callback_arguments[1] = Value::from_undefined(protected_ctx);
+        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+    });
+
+    app.link_user(user, credentials, callback_handler);
+}
+
 
 }
 }
