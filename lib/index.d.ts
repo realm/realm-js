@@ -143,7 +143,7 @@ declare namespace Realm {
         keys(): string[];
 
         /**
-         * @returns Returns an array of key/value pairs of the given Realm Object properties
+         * @returns Returns an array of key/value pairs of a given Realm Object properties
          */
         entries(): [string, any][];
 
