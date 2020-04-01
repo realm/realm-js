@@ -36,10 +36,10 @@ namespace realm {
 namespace realm {
 namespace jsc {
 
-static js::Protected<JSObjectRef> ObjectDefineProperty;
-static js::Protected<JSObjectRef> FunctionPrototype;
-static js::Protected<JSObjectRef> RealmObjectClassConstructor;
-static js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
+extern js::Protected<JSObjectRef> ObjectDefineProperty;
+extern js::Protected<JSObjectRef> FunctionPrototype;
+extern js::Protected<JSObjectRef> RealmObjectClassConstructor;
+extern js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
 
 static inline void jsc_class_init(JSContextRef ctx, JSObjectRef globalObject) {
     //handle ReactNative app refresh by reseting the cached constructor values
