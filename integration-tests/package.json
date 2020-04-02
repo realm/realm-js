@@ -9,7 +9,7 @@
     "lint": "npm run tests/lint && npm run environments/lint",
     "test": "npm run environments/test",
     "tests/install": "cd tests && npm ci",
-    "tests/lint": "cd tests && tslint **/*.ts",
+    "tests/lint": "npm run lint --prefix tests",
     "tests/pack": "npm pack ./tests && mv realm-integration-tests-*.tgz realm-integration-tests.tgz",
     "realm/pack": "REALM_BUILD_ANDROID=1 npm pack .. && mv realm-*.*.*.tgz realm.tgz",
     "environments/install": "node environments 'npm install'",
@@ -17,12 +17,7 @@
     "environments/test": "node environments 'npm test'"
   },
   "devDependencies": {
-    "babel-eslint": "^8.2.6",
     "concurrently": "^4.1.0",
-    "eslint": "^5.1.0",
-    "eslint-plugin-flowtype": "^2.50.0",
-    "eslint-plugin-react": "^7.10.0",
-    "eslint-plugin-react-native": "^3.2.1",
     "segfault-handler": "^1.3.0"
   }
 }
