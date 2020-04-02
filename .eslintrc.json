@@ -15,6 +15,9 @@
     "quotes": [1, "double", "avoid-escape"],
     "indent": [1, 4]
   },
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
   "settings": {
     "react": {
       "version": "16.6.3"
