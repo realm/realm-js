@@ -20,11 +20,11 @@ interface Global extends NodeJS.Global {
     require: Require;
 }
 
-declare var global: Global;
-declare var fs: fs;
-declare var path: path;
-declare var require: Require;
-declare var environment: Environment;
+declare const global: Global;
+declare const fs: fs;
+declare const path: path;
+declare const require: Require;
+declare const environment: Environment;
 
 // Extend the mocha test function with the skipIf that we patch in from index.ts
 declare namespace Mocha {

@@ -19,5 +19,6 @@
 // Require this file to get the segfault handler registered
 // - this produce prettier stacktraces when a segfault is experienced.
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const SegfaultHandler = require("segfault-handler");
 SegfaultHandler.registerHandler("crash.log");

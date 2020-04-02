@@ -4,16 +4,17 @@
     "es2017": true,
     "node": true
   },
-  "extends": "eslint:recommended",
+  "extends": [
+    "eslint:recommended",
+    "plugin:prettier/recommended"
+  ],
   "rules": {
     "no-unused-vars": [
         "warn", {
             "varsIgnorePattern": "^_",
             "args": "none"
         }
-    ],
-    "quotes": [1, "double", "avoid-escape"],
-    "indent": [1, 4]
+    ]
   },
   "parserOptions": {
     "ecmaVersion": 2018
