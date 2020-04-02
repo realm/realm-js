@@ -21,19 +21,19 @@ const cp = require("child_process");
 function async(...args) {
     return cp.spawn(
         "node",
-        [ require.resolve("react-native/local-cli/cli.js"), ...args ],
-        { stdio: ["inherit", "inherit", "inherit"] }
+        [require.resolve("react-native/local-cli/cli.js"), ...args],
+        { stdio: ["inherit", "inherit", "inherit"] },
     );
 }
 
 function sync(...args) {
     const process = cp.spawnSync(
         "node",
-        [ require.resolve("react-native/local-cli/cli.js"), ...args ],
-        { stdio: ["inherit", "inherit", "inherit"] }
+        [require.resolve("react-native/local-cli/cli.js"), ...args],
+        { stdio: ["inherit", "inherit", "inherit"] },
     );
     if (process.status !== 0) {
-        throw new Error(`Failed running "react-native ${args.join(' ')}"`);
+        throw new Error(`Failed running "react-native ${args.join(" ")}"`);
     }
     return process;
 }

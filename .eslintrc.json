@@ -1,7 +1,7 @@
 {
   "root": true,
   "env": {
-    "es6": true,
+    "es2017": true,
     "node": true
   },
   "extends": "eslint:recommended",
@@ -15,7 +15,8 @@
         "args": "none"
       }
     ],
-    "strict": [2, "global"]
+    "strict": [2, "global"],
+    "quotes": [1, "double"]
   },
   "settings": {
     "react": {
