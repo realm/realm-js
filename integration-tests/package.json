@@ -13,7 +13,7 @@
     "tests/pack": "npm pack ./tests && mv realm-integration-tests-*.tgz realm-integration-tests.tgz",
     "realm/pack": "REALM_BUILD_ANDROID=1 npm pack .. && mv realm-*.*.*.tgz realm.tgz",
     "environments/install": "node environments 'npm install'",
-    "environments/lint": "node environments 'eslint **/*.js'",
+    "environments/lint": "node environments 'npm run lint'",
     "environments/test": "node environments 'npm test'"
   },
   "devDependencies": {

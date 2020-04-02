@@ -15,7 +15,8 @@
     "start": "electron ./app/main.js",
     "test": "npm run test/main && npm run test/renderer",
     "test/main": "node runner.js main",
-    "test/renderer": "node runner.js renderer"
+    "test/renderer": "node runner.js renderer",
+    "lint": "../../../node_modules/.bin/eslint ."
   },
   "devDependencies": {
     "command-line-args": "^4.0.6",

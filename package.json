@@ -48,7 +48,7 @@
   "scripts": {
     "get-version": "node -p process.env.npm_package_version",
     "set-version": "scripts/set-version.sh",
-    "lint": "eslint",
+    "lint": "eslint .",
     "test": "scripts/test.sh",
     "package": "npm ci --build-from-source=realm && node-pre-gyp package",
     "install": "node-pre-gyp install --fallback-to-build -j 8",

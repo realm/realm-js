@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "preinstall": "npm install ../../realm-integration-tests.tgz ../../realm.tgz --no-save",
-    "test": "mocha --exit index.js"
+    "test": "mocha --exit index.js",
+    "lint": "../../../node_modules/.bin/eslint ."
   },
   "dependencies": {
     "command-line-args": "^4.0.6",
