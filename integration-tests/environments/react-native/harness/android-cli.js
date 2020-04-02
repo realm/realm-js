@@ -33,11 +33,11 @@ function getEmulatorPath() {
 function execSync(path, args, returnStdOut) {
     if (returnStdOut) {
         return cp.execFileSync(path, args, {
-            encoding: "utf8"
+            encoding: "utf8",
         });
     } else {
         cp.execFileSync(path, args, {
-            stdio: ["inherit", "inherit", "inherit"]
+            stdio: ["inherit", "inherit", "inherit"],
         });
     }
 }
@@ -54,13 +54,13 @@ const adb = {
     devices() {
         const output = adb.exec(["devices"]).trim().split("\n");
         // Remove the "List of devices attached"
-        const [ intro, ...lines ] = output;
+        const [intro, ...lines] = output;
         if (intro !== "List of devices attached") {
             throw new Error("Unexpected output from ADB");
         }
         // Return the list of devices
-        return lines.map(line => {
-            const [ id, state ] = line.split("\t");
+        return lines.map((line) => {
+            const [id, state] = line.split("\t");
             return { id, state };
         });
     },
@@ -77,8 +77,8 @@ const emulator = {
     },
     start(avd) {
         const path = getEmulatorPath();
-        return cp.spawn(path, [ "-avd", avd, "-verbose" ]);
-    }
+        return cp.spawn(path, ["-avd", avd, "-verbose"]);
+    },
 };
 
 module.exports = { adb, emulator };

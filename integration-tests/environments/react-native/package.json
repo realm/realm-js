@@ -7,7 +7,8 @@
     "update-tests": "npm run tests/pack --prefix ../.. && npm install ../../realm-integration-tests.tgz --no-save",
     "test": "npm run test/android && npm run test/ios",
     "test/android": "node harness/runner.js android",
-    "test/ios": "node harness/runner.js ios"
+    "test/ios": "node harness/runner.js ios",
+    "lint": "../../../node_modules/.bin/eslint ."
   },
   "peerDependencies": {
     "realm-integration-tests": "*"
@@ -26,7 +27,6 @@
   "devDependencies": {
     "@babel/core": "^7.5.0",
     "@babel/runtime": "^7.5.0",
-    "@react-native-community/eslint-config": "^0.0.3",
     "fs-extra": "^8.1.0",
     "metro-react-native-babel-preset": "^0.51.1",
     "mocha-remote-server": "^0.16.0",
