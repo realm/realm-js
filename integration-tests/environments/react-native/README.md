@@ -28,15 +28,21 @@ To avoid integrity checks failing when NPM compares the SHA of the `realm` and `
 
 To run tests on Android, start an emulator and run:
 
-    npm run test/android
+```bash
+npm run test/android
+```
 
 To run tests on iOS:
 
-    npm run test/ios
+```bash
+npm run test/ios
+```
 
 To run tests in both processes in sequence, start an Android emulator and run:
 
-    npm test
+```bash
+npm test
+```
 
 ## Running the tests in "watch mode"
 
@@ -46,16 +52,22 @@ To run the tests in watch mode, prepend the `--watch` runtime option when starti
 
 On Android
 
-    npm run test/android -- --watch
+```bash
+npm run test/android -- --watch
+```
 
 On iOS
 
-    npm run test/ios -- --watch
+```bash
+npm run test/ios -- --watch
+```
 
 This will keep the harness, metro server and mocha-remote servers running and connected to the device. When hot reloading (from an update to Realm JS, the tests or the app itself) the app will re-connect and rerun the tests.
 
 While in watch mode, you can rebuild, repackage and reinstall the tests by running
 
-    npm run update-tests
+```bash
+npm run update-tests
+```
 
 Because of https://github.com/facebook/metro/issues/1 we need this extra repackaging step.
