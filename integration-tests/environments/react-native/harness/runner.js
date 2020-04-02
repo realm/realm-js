@@ -18,7 +18,7 @@
 
 const { MochaRemoteServer } = require("mocha-remote-server");
 const { timeout, TimeoutError } = require("promise-timeout");
-const yargs = require("yargs");
+const Yargs = require("yargs");
 const path = require("path");
 
 const rn = require("./react-native-cli");
@@ -69,7 +69,7 @@ function ensureSimulator(platform, deleteExisting = false) {
             "available",
         );
         const availableDevices = [].concat(
-            ...Object.keys(devicesByType).map((type) => devicesByType[type]),
+            ...Object.keys(devicesByType).map(type => devicesByType[type]),
         );
         // Filter devices, so we're only focussing on devices of the expected name
         const devices = availableDevices.filter(
@@ -88,7 +88,7 @@ function ensureSimulator(platform, deleteExisting = false) {
         }
 
         const { runtimes } = xcode.simctl.list("runtimes", "ios");
-        const [runtime] = runtimes.filter((runtime) => runtime.isAvailable);
+        const [runtime] = runtimes.filter(r => r.isAvailable);
         if (!runtime) {
             throw new Error("No available iOS runtimes");
         }
@@ -137,11 +137,11 @@ async function runApp(platform, junitFilePath, isWatching) {
     // Spawn a react-native metro server
     const metro = rn.async("start" /*"--verbose", "--reset-cache"*/);
     // Kill metro when the process is killed
-    process.on("exit", (code) => {
+    process.on("exit", code => {
         metro.kill("SIGHUP");
     });
     // Close the runner if metro closes unexpectedly
-    metro.on("close", (code) => {
+    metro.on("close", code => {
         console.error(`Metro server closed (code = ${code})`);
         if (code !== 0) {
             process.exit(code);
@@ -176,7 +176,7 @@ async function runApp(platform, junitFilePath, isWatching) {
     } else {
         // Run tests with a 5 minute timeout
         return timeout(
-            new Promise((resolve) => {
+            new Promise(resolve => {
                 console.log("Running tests 🏃‍");
                 server.run(resolve);
             }),
@@ -187,48 +187,44 @@ async function runApp(platform, junitFilePath, isWatching) {
     }
 }
 
-yargs
-    .command(
-        "$0 <platform>",
-        "Run the integration tests",
-        (yargs) => {
-            return yargs
-                .positional("platform", {
-                    type: "string",
-                    choices: ["ios", "android"],
-                })
-                .option("junit-output-path", {
-                    type: "string",
-                    coerce: path.resolve,
-                })
-                .option("watch", {
-                    alias: "w",
-                    type: "boolean",
-                });
-        },
-        (args) => {
-            const isWatching = args.watch;
-            runApp(args.platform, args["junit-output-path"], isWatching).then(
-                (failures) => {
-                    if (isWatching) {
-                        console.log(
-                            "Waiting for mocha-remote-client to connect",
-                        );
-                    } else {
-                        console.log(`Completed running (${failures} failures)`);
-                        // Exit with a non-zero code if we had failures
-                        process.exit(failures > 0 ? 1 : 0);
-                    }
-                },
-                (err) => {
-                    if (err instanceof TimeoutError) {
-                        console.error("Timed out running tests");
-                    } else {
-                        console.error(err.stack);
-                    }
-                    process.exit(2);
-                },
-            );
-        },
-    )
-    .help().argv;
+Yargs.command(
+    "$0 <platform>",
+    "Run the integration tests",
+    yargs => {
+        return yargs
+            .positional("platform", {
+                type: "string",
+                choices: ["ios", "android"],
+            })
+            .option("junit-output-path", {
+                type: "string",
+                coerce: path.resolve,
+            })
+            .option("watch", {
+                alias: "w",
+                type: "boolean",
+            });
+    },
+    args => {
+        const isWatching = args.watch;
+        runApp(args.platform, args["junit-output-path"], isWatching).then(
+            failures => {
+                if (isWatching) {
+                    console.log("Waiting for mocha-remote-client to connect");
+                } else {
+                    console.log(`Completed running (${failures} failures)`);
+                    // Exit with a non-zero code if we had failures
+                    process.exit(failures > 0 ? 1 : 0);
+                }
+            },
+            err => {
+                if (err instanceof TimeoutError) {
+                    console.error("Timed out running tests");
+                } else {
+                    console.error(err.stack);
+                }
+                process.exit(2);
+            },
+        );
+    },
+).help().argv;

@@ -97,7 +97,7 @@ export class App extends Component {
                 console.error(`Disconnected: ${reason}`);
                 this.setState({ status: "disconnected", reason });
             },
-            onInstrumented: (mocha) => {
+            onInstrumented: mocha => {
                 // Setting the title of the root suite
                 global.title = `React-Native on ${Platform.OS}`;
                 // Provide the global Realm constructor to the tests
@@ -125,16 +125,16 @@ export class App extends Component {
                 /* global beforeEach */
                 beforeEach(() => {
                     // Adding an async task before each, allowing the UI to update
-                    return new Promise((resolve) => setTimeout(resolve, 0));
+                    return new Promise(resolve => setTimeout(resolve, 0));
                 });
             },
-            onRunning: (runner) => {
+            onRunning: runner => {
                 this.setState({
                     status: "running",
                     failures: 0,
                     currentTestIndex: 0,
                 });
-                runner.on("test", (test) => {
+                runner.on("test", test => {
                     // Compute the current test index - incrementing it if we're running
                     // Set the state to update the UI
                     this.setState({

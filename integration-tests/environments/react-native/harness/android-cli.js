@@ -52,14 +52,17 @@ const adb = {
         adb.exec(["reverse", `tcp:${port}`, `tcp:${port}`], false);
     },
     devices() {
-        const output = adb.exec(["devices"]).trim().split("\n");
+        const output = adb
+            .exec(["devices"])
+            .trim()
+            .split("\n");
         // Remove the "List of devices attached"
         const [intro, ...lines] = output;
         if (intro !== "List of devices attached") {
             throw new Error("Unexpected output from ADB");
         }
         // Return the list of devices
-        return lines.map((line) => {
+        return lines.map(line => {
             const [id, state] = line.split("\t");
             return { id, state };
         });
@@ -73,7 +76,10 @@ const emulator = {
         return execSync(path, args, returnStdOut);
     },
     devices() {
-        return emulator.exec(["-list-avds"]).trim().split("\n");
+        return emulator
+            .exec(["-list-avds"])
+            .trim()
+            .split("\n");
     },
     start(avd) {
         const path = getEmulatorPath();
