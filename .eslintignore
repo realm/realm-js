@@ -6,6 +6,7 @@
 build/
 node_modules/
 vendor/
+dist/
 
 /tests/test-runners/
 /object-server-for-testing/
