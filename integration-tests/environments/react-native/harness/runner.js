@@ -202,7 +202,8 @@ yargs
         });
     },
     args => {
-      runApp(args['platform'], args['junit-output-path'], args['watch']).then(
+      const isWatching = args['watch'];
+      runApp(args['platform'], args['junit-output-path'], isWatching).then(
         failures => {
           if (isWatching) {
             console.log('Waiting for mocha-remote-client to connect');

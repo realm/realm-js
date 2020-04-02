@@ -37,6 +37,7 @@ export class App extends Component {
 
   componentWillUnmount() {
     if (this.client) {
+      console.log('Disconnecting from the mocha-remote server');
       this.client.disconnect();
     }
   }
@@ -65,15 +66,21 @@ export class App extends Component {
   }
 
   getStatusDetails() {
-    if (this.state.status === 'running') {
-      const progress = `${this.state.currentTestIndex + 1}/${
-        this.state.totalTests
-      }`;
-      return `${progress}: ${this.state.currentTest}`;
-    } else if (typeof this.state.reason === 'string') {
-      return this.state.reason;
-    } else if (typeof this.state.failures === 'number') {
-      return `${this.state.failures} failures`;
+    const {
+      status,
+      totalTests,
+      currentTestIndex,
+      currentTest,
+      failures,
+      reason,
+    } = this.state;
+    if (status === 'running') {
+      const progress = `${currentTestIndex + 1}/${totalTests}`;
+      return `${progress}: ${currentTest}`;
+    } else if (typeof reason === 'string') {
+      return reason;
+    } else if (typeof failures === 'number') {
+      return `Ran ${totalTests} tests, with ${failures} failures`;
     } else {
       return null;
     }
@@ -82,19 +89,21 @@ export class App extends Component {
   prepareTests() {
     this.client = new MochaRemoteClient({
       id: Platform.OS,
-      whenConnected: () => {
+      onConnected: () => {
         console.log('Connected to mocha-remote-server');
         this.setState({status: 'waiting'});
       },
-      whenDisconnected: ({reason}) => {
+      onDisconnected: ({reason}) => {
         console.error(`Disconnected: ${reason}`);
         this.setState({status: 'disconnected', reason});
       },
-      whenInstrumented: mocha => {
+      onInstrumented: mocha => {
         // Setting the title of the root suite
         global.title = `React-Native on ${Platform.OS}`;
         // Provide the global Realm constructor to the tests
-        global.Realm = require('realm');
+        // Simply requiring Realm will set the global for us ...
+        // global.Realm = require('realm');
+        require('realm');
         global.fs = require('react-native-fs');
         global.path = require('path-browserify');
         global.environment = {
@@ -102,26 +111,33 @@ export class App extends Component {
           android: Platform.OS === 'android',
           ios: Platform.OS === 'ios',
         };
-        // Require in the tests
-        console.log(require.cache);
+        // Make all test related modules reinitialize
+        const modules = require.getModules();
+        for (const [id, m] of Object.entries(modules)) {
+          if (m.verboseName.indexOf('realm-integration-tests') !== -1) {
+            m.isInitialized = false;
+          }
+        }
+        // Require in the integration tests
         require('realm-integration-tests');
+        beforeEach(() => {
+          // Adding an async task before each, allowing the UI to update
+          return new Promise(resolve => setTimeout(resolve, 0));
+        });
       },
-      whenRunning: runner => {
+      onRunning: runner => {
         this.setState({
           status: 'running',
           failures: 0,
+          currentTestIndex: 0,
         });
         runner.on('test', test => {
           // Compute the current test index - incrementing it if we're running
-          const currentTestIndex =
-            this.state.status === 'running'
-              ? this.state.currentTestIndex + 1
-              : 0;
           // Set the state to update the UI
           this.setState({
             status: 'running',
             currentTest: test.fullTitle(),
-            currentTestIndex,
+            currentTestIndex: this.state.currentTestIndex + 1,
             totalTests: runner.total,
           });
         });
