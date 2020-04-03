@@ -126,33 +126,33 @@ declare namespace Realm {
                 readonly upsertedId: any;
             }
 
-            type Query = object;
+            type Filter = object;
 
             interface RemoteMongoDBCollection<T extends Document> {
                 /**
                  * Finds the documents which match the provided query.
                  */
-                find(query?: Query, options?: FindOptions): Promise<T[]>;
+                find(filter?: Filter, options?: FindOptions): Promise<T[]>;
 
                 /**
                  * Finds a document which matches the provided filter.
                  */
-                findOne(query?: Query, options?: FindOneOptions): Promise<T | null>;
+                findOne(filter?: Filter, options?: FindOneOptions): Promise<T | null>;
 
                 /**
                  * Finds a document which matches the provided query and performs the desired update.
                  */
-                findOneAndUpdate(query: Query, update: Partial<NewDocument<T>>, options?: FindOneAndModifyOptions): Promise<T | null>;
+                findOneAndUpdate(filter: Filter, update: Partial<NewDocument<T>>, options?: FindOneAndModifyOptions): Promise<T | null>;
 
                 /**
                  * Finds a document which matches the provided filter and replaces it with a new document.
                  */
-                findOneAndReplace(query: Query, replacement: NewDocument<T>, options?: FindOneAndModifyOptions): Promise<T | null>;
+                findOneAndReplace(filter: Filter, replacement: NewDocument<T>, options?: FindOneAndModifyOptions): Promise<T | null>;
 
                 /**
                  * Finds a document which matches the provided filter and deletes it
                  */
-                findOneAndDelete(query: Query, options?: FindOneOptions): Promise<T | null>;
+                findOneAndDelete(filter: Filter, options?: FindOneOptions): Promise<T | null>;
 
                 /**
                  * Runs an aggregation framework pipeline against this collection.
@@ -163,7 +163,7 @@ declare namespace Realm {
                 /**
                  * Counts the number of documents in this collection matching the provided filter.
                  */
-                count(query?: Query, options?: CountOptions): Promise<number>;
+                count(filter?: Filter, options?: CountOptions): Promise<number>;
 
                 /**
                  * Encodes the provided value to BSON and inserts it. If the value is missing an identifier, one will be generated for it.
@@ -180,22 +180,22 @@ declare namespace Realm {
                 /**
                  * Deletes a single matching document from the collection.
                  */
-                deleteOne(query: Query): Promise<DeleteResult>;
+                deleteOne(filter: Filter): Promise<DeleteResult>;
 
                 /**
                  * Deletes multiple documents.
                  */
-                deleteMany(query: Query): Promise<DeleteResult>;
+                deleteMany(filter: Filter): Promise<DeleteResult>;
 
                 /**
                  * Updates a single document matching the provided filter in this collection.
                  */
-                updateOne(query: Query, update: Partial<NewDocument<T>>, options?: UpdateOptions): Promise<UpdateResult>;
+                updateOne(filter: Filter, update: Partial<NewDocument<T>>, options?: UpdateOptions): Promise<UpdateResult>;
 
                 /**
                  * Updates multiple documents matching the provided filter in this collection.
                  */
-                updateMany(query: Query, update: Partial<NewDocument<T>>, options?: UpdateOptions): Promise<UpdateResult>;
+                updateMany(filter: Filter, update: Partial<NewDocument<T>>, options?: UpdateOptions): Promise<UpdateResult>;
 
                 /*
                 watch(

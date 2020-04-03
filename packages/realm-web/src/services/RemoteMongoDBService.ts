@@ -65,13 +65,13 @@ export class RemoteMongoDBCollection<
     }
 
     find(
-        query: object = {},
+        filter: Realm.Services.RemoteMongoDB.Filter = {},
         options: Realm.Services.RemoteMongoDB.FindOptions = {}
     ) {
         return this.functions.find({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(query),
+            query: serialize(filter),
             project: options.projection,
             sort: options.sort,
             limit: options.limit
@@ -79,27 +79,27 @@ export class RemoteMongoDBCollection<
     }
 
     findOne(
-        query: object = {},
+        filter: Realm.Services.RemoteMongoDB.Filter = {},
         options: Realm.Services.RemoteMongoDB.FindOneOptions = {}
     ) {
         return this.functions.findOne({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(query),
+            query: serialize(filter),
             project: options.projection,
             sort: options.sort
         });
     }
 
     findOneAndUpdate(
-        query: object = {},
+        filter: Realm.Services.RemoteMongoDB.Filter = {},
         update: object,
         options: Realm.Services.RemoteMongoDB.FindOneAndModifyOptions = {}
     ) {
         return this.functions.findOneAndUpdate({
             database: this.databaseName,
             collection: this.collectionName,
-            filter: serialize(query),
+            filter: serialize(filter),
             update: serialize(update),
             sort: options.sort,
             projection: options.projection,
@@ -109,14 +109,14 @@ export class RemoteMongoDBCollection<
     }
 
     findOneAndReplace(
-        query: object = {},
+        filter: Realm.Services.RemoteMongoDB.Filter = {},
         update: object,
         options: Realm.Services.RemoteMongoDB.FindOneAndModifyOptions = {}
     ) {
         return this.functions.findOneAndReplace({
             database: this.databaseName,
             collection: this.collectionName,
-            filter: serialize(query),
+            filter: serialize(filter),
             update: serialize(update),
             sort: options.sort,
             projection: options.projection,
@@ -126,13 +126,13 @@ export class RemoteMongoDBCollection<
     }
 
     findOneAndDelete(
-        query: object = {},
+        filter: Realm.Services.RemoteMongoDB.Filter = {},
         options: Realm.Services.RemoteMongoDB.FindOneOptions = {}
     ) {
         return this.functions.findOneAndReplace({
             database: this.databaseName,
             collection: this.collectionName,
-            filter: serialize(query),
+            filter: serialize(filter),
             sort: options.sort,
             projection: options.projection
         });
@@ -147,13 +147,13 @@ export class RemoteMongoDBCollection<
     }
 
     count(
-        query: object = {},
+        filter: Realm.Services.RemoteMongoDB.Filter = {},
         options: Realm.Services.RemoteMongoDB.CountOptions = {}
     ) {
         return this.functions.count({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(query),
+            query: serialize(filter),
             limit: options.limit
         });
     }
@@ -174,45 +174,45 @@ export class RemoteMongoDBCollection<
         });
     }
 
-    deleteOne(query: object = {}) {
+    deleteOne(filter: Realm.Services.RemoteMongoDB.Filter = {}) {
         return this.functions.deleteOne({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(query)
+            query: serialize(filter)
         });
     }
 
-    deleteMany(query: object = {}) {
+    deleteMany(filter: Realm.Services.RemoteMongoDB.Filter = {}) {
         return this.functions.deleteMany({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(query)
+            query: serialize(filter)
         });
     }
 
     updateOne(
-        query: object,
+        filter: Realm.Services.RemoteMongoDB.Filter,
         update: object,
         options: Realm.Services.RemoteMongoDB.UpdateOptions = {}
     ) {
         return this.functions.updateOne({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(query),
+            query: serialize(filter),
             update,
             upsert: options.upsert
         });
     }
 
     updateMany(
-        query: object,
+        filter: Realm.Services.RemoteMongoDB.Filter,
         update: object,
         options: Realm.Services.RemoteMongoDB.UpdateOptions = {}
     ) {
         return this.functions.updateMany({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(query),
+            query: serialize(filter),
             update,
             upsert: options.upsert
         });
