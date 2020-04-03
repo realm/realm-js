@@ -20,6 +20,7 @@
 /* eslint-disable @typescript-eslint/triple-slash-reference */
 
 /// <reference path="services.d.ts" />
+/// <reference path="auth-providers.d.ts" />
 
 declare namespace Realm {
     namespace Credentials {
@@ -137,6 +138,11 @@ declare namespace Realm {
          * Use this to call services within by the MongoDB Realm app.
          */
         services: Realm.Services;
+
+        /**
+         * 
+         */
+        auth: Realm.AuthProviders;
 
         /**
          * The last user to log in or being switched to.
