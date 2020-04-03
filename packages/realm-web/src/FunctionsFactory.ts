@@ -42,9 +42,23 @@ export interface FunctionsFactoryConfiguration {
     /** An optional name of the service in which functions are defined */
     serviceName?: string;
     /** Call this function to transform the arguments before they're sent to the service */
-    cleanArgs?: (args: any[]) => any[];
+    argsTransformation?: (args: any[]) => any[];
     /** Call this function to transform a response before it's returned to the caller */
     responseTransformation?: (response: any) => any;
+}
+
+// Remove the key for any fields with undefined values
+function cleanArgs(args: any[]) {
+    for (const arg of args) {
+        if (typeof arg === "object") {
+            for (const [key, value] of Object.entries(arg)) {
+                if (value === undefined) {
+                    delete arg[key];
+                }
+            }
+        }
+    }
+    return args;
 }
 
 /**
@@ -56,13 +70,9 @@ export class FunctionsFactory {
 
     /** An optional name of the service in which functions are defined */
     private readonly serviceName?: string;
-    /**
-     *
-     */
-    private readonly cleanArgs?: (args: any[]) => any[];
-    /**
-     *
-     */
+    /** Call this function to transform the arguments before they're sent to the service */
+    private readonly argsTransformation?: (args: any[]) => any[];
+    /** Call this function to transform a response before it's returned to the caller */
     private readonly responseTransformation?: (response: any) => any;
 
     /**
@@ -77,7 +87,7 @@ export class FunctionsFactory {
     ) {
         this.transport = transport;
         this.serviceName = config.serviceName;
-        this.cleanArgs = config.cleanArgs;
+        this.argsTransformation = config.argsTransformation;
         this.responseTransformation = config.responseTransformation;
     }
 
@@ -92,7 +102,9 @@ export class FunctionsFactory {
         // See https://github.com/mongodb/stitch-js-sdk/blob/master/packages/core/sdk/src/services/internal/CoreStitchServiceClientImpl.ts
         const body: CallFunctionBody = {
             name,
-            arguments: this.cleanArgs ? this.cleanArgs(args) : args,
+            arguments: this.argsTransformation
+                ? this.argsTransformation(args)
+                : args
         };
         if (this.serviceName) {
             body.service = this.serviceName;

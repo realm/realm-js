@@ -251,7 +251,7 @@ describe("App", () => {
             transport,
             baseUrl: "http://localhost:1337"
         });
-        expect(app.services).keys(["mongodb"]);
+        expect(app.services).keys(["mongodb", "http"]);
         expect(typeof app.services.mongodb).equals("function");
     });
 });

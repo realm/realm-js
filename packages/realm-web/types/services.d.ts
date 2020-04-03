@@ -18,15 +18,19 @@
 
 // See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
 type ObjectID = import("bson").ObjectID;
+type Binary = import("bson").Binary;
 
 declare namespace Realm {
 
     namespace Services {
         interface ServicesFactory {
-            mongodb(serviceName?: string): {
-                db(databaseName: string): {
-                    collection<T extends Realm.Services.RemoteMongoDB.Document = any>(collectionName: string): RemoteMongoDB.RemoteMongoDBCollection<T>;
-                };
+            mongodb(serviceName?: string): Realm.Services.RemoteMongoDB;
+            http(serviceName?: string): Realm.Services.HTTP;
+        }
+
+        interface RemoteMongoDB {
+            db(databaseName: string): {
+                collection<T extends Realm.Services.RemoteMongoDB.Document = any>(collectionName: string): RemoteMongoDB.RemoteMongoDBCollection<T>;
             };
         }
 
@@ -201,6 +205,32 @@ declare namespace Realm {
                     ids: any[]
                 ): Promise<Stream<CompactChangeEvent<T>>>;
                 */
+            }
+        }
+
+        interface HTTP {
+            get(url: string, options?: Realm.Services.HTTP.RequestOptions): Promise<Realm.Services.HTTP.Response>; 
+        }
+
+        namespace HTTP {
+
+            interface RequestOptions {
+                authUrl?: string;
+                // TODO: Determine if headers could map to a single string too
+                headers?: { [name: string]: string[] };
+                cookies?: { [name: string]: string };
+                body?: string;
+                encodeBodyAsJSON?: boolean;
+                form?: boolean;
+                followRedirects?: boolean;
+            }
+
+            interface Response {
+                status: string;
+                statusCode: number;
+                contentLength: number;
+                headers: { [name: string]: string[] };
+                body: Binary;
             }
         }
     }

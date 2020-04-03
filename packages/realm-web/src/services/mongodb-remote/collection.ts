@@ -1,7 +1,6 @@
-import { EJSON } from "bson";
-
 import { Transport } from "../../transports";
 import { create as createFunctionsFactory } from "../../FunctionsFactory";
+import { deserialize, serialize } from "../utils";
 
 // This class is implemented to an interface documented in the services.d.ts - no need to duplicate that
 // tslint:disable:completed-docs
@@ -20,32 +19,6 @@ export function create<T extends Realm.Services.RemoteMongoDB.Document = any>(
     );
 }
 
-function serialize(obj: object): any {
-    return EJSON.serialize(obj);
-}
-
-function deserialize(result: object | object[]): any {
-    if (Array.isArray(result)) {
-        return result.map((doc: any) => EJSON.deserialize(doc));
-    } else {
-        return EJSON.deserialize(result);
-    }
-}
-
-// Remove the key for any fields with undefined values
-function cleanArgs(args: any[]) {
-    for (const arg of args) {
-        if (typeof arg === "object") {
-            for (const [key, value] of Object.entries(arg)) {
-                if (value === undefined) {
-                    delete arg[key];
-                }
-            }
-        }
-    }
-    return args;
-}
-
 export class RemoteMongoDBCollection<
     T extends Realm.Services.RemoteMongoDB.Document
 > implements Realm.Services.RemoteMongoDB.RemoteMongoDBCollection<T> {
@@ -60,7 +33,6 @@ export class RemoteMongoDBCollection<
         this.functions = createFunctionsFactory({
             transport,
             serviceName,
-            cleanArgs,
             responseTransformation: deserialize
         });
     }
