@@ -722,7 +722,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         ObjectType app_value = Object::validated_get_object(ctx, sync_config_object, "app");
         std::shared_ptr<app::App> shared_app;
         if (!Value::is_undefined(ctx, app_value)) {
-            shared_app = std::make_shared<app::App>(get_internal<T, AppClass<T>>(app_value));
+            shared_app = *get_internal<T, AppClass<T>>(app_value);
         }
 
         ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
