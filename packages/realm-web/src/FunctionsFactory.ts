@@ -39,10 +39,12 @@ interface CallFunctionBody {
  * Pass an object implementing this interface when constructing a functions factory.
  */
 export interface FunctionsFactoryConfiguration {
-    /** The underlying transport to use when requesting */
-    transport: Transport;
     /** An optional name of the service in which functions are defined */
     serviceName?: string;
+    /** Call this function to transform the arguments before they're sent to the service */
+    cleanArgs?: (args: any[]) => any[];
+    /** Call this function to transform a response before it's returned to the caller */
+    responseTransformation?: (response: any) => any;
 }
 
 /**
@@ -54,16 +56,29 @@ export class FunctionsFactory {
 
     /** An optional name of the service in which functions are defined */
     private readonly serviceName?: string;
+    /**
+     *
+     */
+    private readonly cleanArgs?: (args: any[]) => any[];
+    /**
+     *
+     */
+    private readonly responseTransformation?: (response: any) => any;
 
     /**
      * Construct a functions factory
      *
-     * @param transport The underlying transport to use when requesting
-     * @param serviceName An optional name of the service in which the function is defined
+     * @param transport The underlying transport to use when sending requests
+     * @param config Additional configuration parameters
      */
-    constructor(transport: Transport, serviceName?: string) {
+    constructor(
+        transport: Transport,
+        config: FunctionsFactoryConfiguration = {},
+    ) {
         this.transport = transport;
-        this.serviceName = serviceName;
+        this.serviceName = config.serviceName;
+        this.cleanArgs = config.cleanArgs;
+        this.responseTransformation = config.responseTransformation;
     }
 
     /**
@@ -73,35 +88,44 @@ export class FunctionsFactory {
      * @param args Arguments to pass to the remote function
      * @returns A promise of the value returned when executing the remote function.
      */
-    callFunction(name: string, ...args: any[]): Promise<any> {
+    async callFunction(name: string, ...args: any[]): Promise<any> {
         // See https://github.com/mongodb/stitch-js-sdk/blob/master/packages/core/sdk/src/services/internal/CoreStitchServiceClientImpl.ts
-        const body: CallFunctionBody = { name, arguments: args };
+        const body: CallFunctionBody = {
+            name,
+            arguments: this.cleanArgs ? this.cleanArgs(args) : args,
+        };
         if (this.serviceName) {
             body.service = this.serviceName;
         }
-        return this.transport.fetch({
+        const response = await this.transport.fetch({
             method: "POST",
             path: "/functions/call",
             body,
         });
+        // Transform the response, if needed
+        if (this.responseTransformation) {
+            return this.responseTransformation(response);
+        } else {
+            return response;
+        }
     }
 }
 
 /**
- * Create a factory of functions
+ * Create a factory of functions, wrapped in a Proxy that returns bound copies of `callFunction` on any property.
  *
  * @param transport The underlying transport to use when requesting
- * @param serviceName An optional name of the service in which the function is defined
+ * @param config Additional configuration parameters
  * @returns The newly created factory of functions.
  */
 export function create<
     FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory
->(transport: Transport, serviceName?: string) {
+>(transport: Transport, config: FunctionsFactoryConfiguration = {}) {
     // Create a proxy, wrapping a simple object returning methods that calls functions
     // TODO: Lazily fetch available functions and return these from the ownKeys() trap
     const factory: Realm.BaseFunctionsFactory = new FunctionsFactory(
         transport,
-        serviceName,
+        config,
     );
     // Wrap the factory in a promise that calls the internal call method
     return new Proxy(factory, {

@@ -8,14 +8,14 @@ export function create(
     databaseName: string
 ) {
     return {
+        // 👇 is using "as" since it's too complicated to force the result of bind to remain generic over T
         collection: createCollection.bind(
             null,
             transport,
             serviceName,
             databaseName
-        ) as <T extends object = any>(
+        ) as <T extends Realm.Services.RemoteMongoDB.Document = any>(
             name: string
         ) => Realm.Services.RemoteMongoDB.RemoteMongoDBCollection<T>
-        // Using "as" since it's too complicated to force the result of bind to remain generic over T
     };
 }

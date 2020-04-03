@@ -59,6 +59,61 @@ describe("MongoDB Remote service", () => {
         expect(firstDocument.name).equals("Some document name ...");
     });
 
+    it("can find one document", async () => {
+        const transport = new MockTransport([
+            {
+                _id: {
+                    $oid: "deadbeefdeadbeefdeadbeef"
+                },
+                name: "Some document name ..."
+            }
+        ]);
+        const service = createService(transport, "my-mongodb-service");
+        const result = await service
+            .db("my-database")
+            .collection("my-collection")
+            .findOne(
+                {
+                    _id: ObjectID.createFromHexString(
+                        "deadbeefdeadbeefdeadbeef"
+                    )
+                },
+                {
+                    projection: { name: 1 },
+                    sort: { name: 1 }
+                }
+            );
+        // Expect the service to issue a request via the functions factory
+        expect(transport.requests).deep.equals([
+            {
+                method: "POST",
+                body: {
+                    service: "my-mongodb-service",
+                    name: "findOne",
+                    arguments: [
+                        {
+                            database: "my-database",
+                            collection: "my-collection",
+                            sort: { name: 1 },
+                            project: { name: 1 },
+                            query: {
+                                _id: { $oid: "deadbeefdeadbeefdeadbeef" }
+                            }
+                        }
+                    ]
+                },
+                url: "http://localhost:1337/functions/call"
+            }
+        ]);
+        // TODO: Expect something about the findResult
+        expect(typeof result).equals("object");
+        // Expect that the first document is EJSON deserialized
+        expect(typeof result).equals("object");
+        expect(typeof result._id).equals("object");
+        expect(result._id.constructor.name).equals("ObjectId");
+        expect(result.name).equals("Some document name ...");
+    });
+
     it("can insert a document", async () => {
         const transport = new MockTransport([
             {

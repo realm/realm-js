@@ -6,7 +6,7 @@ import { create as createFunctionsFactory } from "../../FunctionsFactory";
 // This class is implemented to an interface documented in the services.d.ts - no need to duplicate that
 // tslint:disable:completed-docs
 
-export function create<T extends object = any>(
+export function create<T extends Realm.Services.RemoteMongoDB.Document = any>(
     transport: Transport,
     serviceName: string,
     databaseName: string,
@@ -32,8 +32,23 @@ function deserialize(result: object | object[]): any {
     }
 }
 
-export class RemoteMongoDBCollection<T extends object>
-    implements Realm.Services.RemoteMongoDB.RemoteMongoDBCollection<T> {
+// Remove the key for any fields with undefined values
+function cleanArgs(args: any[]) {
+    for (const arg of args) {
+        if (typeof arg === "object") {
+            for (const [key, value] of Object.entries(arg)) {
+                if (value === undefined) {
+                    delete arg[key];
+                }
+            }
+        }
+    }
+    return args;
+}
+
+export class RemoteMongoDBCollection<
+    T extends Realm.Services.RemoteMongoDB.Document
+> implements Realm.Services.RemoteMongoDB.RemoteMongoDBCollection<T> {
     private functions: Realm.FunctionsFactory;
 
     constructor(
@@ -42,64 +57,165 @@ export class RemoteMongoDBCollection<T extends object>
         private readonly databaseName: string,
         private readonly collectionName: string
     ) {
-        this.functions = createFunctionsFactory({ transport, serviceName });
+        this.functions = createFunctionsFactory({
+            transport,
+            serviceName,
+            cleanArgs,
+            responseTransformation: deserialize
+        });
     }
 
-    async find(
+    find(
         query: object = {},
-        options?: Realm.Services.RemoteMongoDB.FindOptions
+        options: Realm.Services.RemoteMongoDB.FindOptions = {}
     ) {
-        const result = await this.functions.find({
-            query: serialize(query),
+        return this.functions.find({
             database: this.databaseName,
             collection: this.collectionName,
-            ...options
+            query: serialize(query),
+            project: options.projection,
+            sort: options.sort,
+            limit: options.limit
         });
-        // Deserialize the result
-        return deserialize(result);
     }
 
-    async findOne(
+    findOne(
         query: object = {},
-        options?: Realm.Services.RemoteMongoDB.FindOneOptions
+        options: Realm.Services.RemoteMongoDB.FindOneOptions = {}
     ) {
-        const result = await this.functions.findOne({
-            query: serialize(query),
+        return this.functions.findOne({
             database: this.databaseName,
             collection: this.collectionName,
-            ...options
+            query: serialize(query),
+            project: options.projection,
+            sort: options.sort
         });
-        return deserialize(result);
     }
 
-    async count(
+    findOneAndUpdate(
         query: object = {},
-        options?: Realm.Services.RemoteMongoDB.CountOptions
+        update: object,
+        options: Realm.Services.RemoteMongoDB.FindOneAndModifyOptions = {}
     ) {
-        const result = await this.functions.count({
-            query: serialize(query),
+        return this.functions.findOneAndUpdate({
             database: this.databaseName,
             collection: this.collectionName,
-            ...options
+            filter: serialize(query),
+            update: serialize(update),
+            sort: options.sort,
+            projection: options.projection,
+            upsert: options.upsert,
+            returnNewDocument: options.returnNewDocument
         });
-        return deserialize(result);
     }
 
-    async insertOne(document: T) {
-        const result = await this.functions.insertOne({
-            document,
+    findOneAndReplace(
+        query: object = {},
+        update: object,
+        options: Realm.Services.RemoteMongoDB.FindOneAndModifyOptions = {}
+    ) {
+        return this.functions.findOneAndReplace({
             database: this.databaseName,
-            collection: this.collectionName
+            collection: this.collectionName,
+            filter: serialize(query),
+            update: serialize(update),
+            sort: options.sort,
+            projection: options.projection,
+            upsert: options.upsert,
+            returnNewDocument: options.returnNewDocument
         });
-        return deserialize(result);
     }
 
-    async insertMany(documents: T[]) {
-        const result = await this.functions.insertMany({
-            documents: documents.map(serialize),
+    findOneAndDelete(
+        query: object = {},
+        options: Realm.Services.RemoteMongoDB.FindOneOptions = {}
+    ) {
+        return this.functions.findOneAndReplace({
             database: this.databaseName,
-            collection: this.collectionName
+            collection: this.collectionName,
+            filter: serialize(query),
+            sort: options.sort,
+            projection: options.projection
         });
-        return deserialize(result);
+    }
+
+    aggregate(pipeline: object[]) {
+        return this.functions.aggregate({
+            database: this.databaseName,
+            collection: this.collectionName,
+            pipeline: pipeline.map(serialize)
+        });
+    }
+
+    count(
+        query: object = {},
+        options: Realm.Services.RemoteMongoDB.CountOptions = {}
+    ) {
+        return this.functions.count({
+            database: this.databaseName,
+            collection: this.collectionName,
+            query: serialize(query),
+            limit: options.limit
+        });
+    }
+
+    insertOne(document: T) {
+        return this.functions.insertOne({
+            database: this.databaseName,
+            collection: this.collectionName,
+            document
+        });
+    }
+
+    insertMany(documents: T[]) {
+        return this.functions.insertMany({
+            database: this.databaseName,
+            collection: this.collectionName,
+            documents: documents.map(serialize)
+        });
+    }
+
+    deleteOne(query: object = {}) {
+        return this.functions.deleteOne({
+            database: this.databaseName,
+            collection: this.collectionName,
+            query: serialize(query)
+        });
+    }
+
+    deleteMany(query: object = {}) {
+        return this.functions.deleteMany({
+            database: this.databaseName,
+            collection: this.collectionName,
+            query: serialize(query)
+        });
+    }
+
+    updateOne(
+        query: object,
+        update: object,
+        options: Realm.Services.RemoteMongoDB.UpdateOptions = {}
+    ) {
+        return this.functions.updateOne({
+            database: this.databaseName,
+            collection: this.collectionName,
+            query: serialize(query),
+            update,
+            upsert: options.upsert
+        });
+    }
+
+    updateMany(
+        query: object,
+        update: object,
+        options: Realm.Services.RemoteMongoDB.UpdateOptions = {}
+    ) {
+        return this.functions.updateMany({
+            database: this.databaseName,
+            collection: this.collectionName,
+            query: serialize(query),
+            update,
+            upsert: options.upsert
+        });
     }
 }

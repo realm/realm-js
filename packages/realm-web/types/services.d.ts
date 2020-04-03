@@ -25,7 +25,7 @@ declare namespace Realm {
         interface ServicesFactory {
             mongodb(serviceName?: string): {
                 db(databaseName: string): {
-                    collection<T extends object = any>(collectionName: string): RemoteMongoDB.RemoteMongoDBCollection<T>;
+                    collection<T extends Realm.Services.RemoteMongoDB.Document = any>(collectionName: string): RemoteMongoDB.RemoteMongoDBCollection<T>;
                 };
             };
         }
@@ -33,10 +33,10 @@ declare namespace Realm {
         namespace RemoteMongoDB {
             interface FindOneOptions {
                 /**
-                 * Limits the fields to return for all matching documents. See
-                 * [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+                 * Limits the fields to return for all matching documents.
+                 * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
                  */
-                readonly project?: object;
+                readonly projection?: object;
             
                 /**
                  * The order in which to return matching documents.
@@ -51,20 +51,7 @@ declare namespace Realm {
                 readonly limit?: number;
             }
 
-            interface FindOneAndModifyOptions {
-                /**
-                 * Optional: Limits the fields to return for all matching documents. See 
-                 */
-                readonly projection?: object;
-            
-                /**
-                 * Optional: Specifies the query sort order. Sort documents specify one or more fields to 
-                 * sort on where the value of each field indicates whether MongoDB should sort it in 
-                 * ascending (1) or descending (0) order. 
-                 * The sort order determines which document collection.findOneAndUpdate() affects.
-                 */
-                readonly sort?: object;
-
+            interface FindOneAndModifyOptions extends FindOneOptions {
                 /* 
                 * Optional. Default: false.
                 * A boolean that, if true, indicates that MongoDB should insert a new document that matches the
@@ -92,11 +79,13 @@ declare namespace Realm {
                  * When true, creates a new document if no document matches the query.
                  */ 
                 readonly upsert?: boolean;
-              }
+            }
             
             interface Document {
                 _id: ObjectID;
             }
+
+            type NewDocument<T extends Document> = Omit<T, "_id"> & { _id?: ObjectID };
 
             interface InsertOneResult {
                 readonly insertedId: ObjectID;
@@ -111,9 +100,9 @@ declare namespace Realm {
                  * The number of documents that were deleted.
                  */
                 readonly deletedCount: number;
-              }
+            }
               
-              interface UpdateResult {
+            interface UpdateResult {
                 /**
                  * The number of documents that matched the filter.
                  */
@@ -130,77 +119,78 @@ declare namespace Realm {
                  * See [[RemoteUpdateOptions.upsert]].
                  */
                 readonly upsertedId: any;
-              }
+            }
 
-            interface RemoteMongoDBCollection<T extends object> {
+            type Query = object;
+
+            interface RemoteMongoDBCollection<T extends Document> {
                 /**
                  * Finds the documents which match the provided query.
                  */
-                find: (query?: object, options?: FindOptions) => Promise<(Document & T)[]>;
+                find(query?: Query, options?: FindOptions): Promise<T[]>;
 
                 /**
                  * Finds a document which matches the provided filter.
                  */
-                findOne: (query?: object, options?: FindOptions) => Promise<Document & T>;
+                findOne(query?: Query, options?: FindOneOptions): Promise<T | null>;
 
                 /**
                  * Finds a document which matches the provided query and performs the desired update.
                  */
-                // findOneAndUpdate(query: object, update: object, options?: FindOneAndModifyOptions): Promise<T | null>;
+                findOneAndUpdate(query: Query, update: Partial<NewDocument<T>>, options?: FindOneAndModifyOptions): Promise<T | null>;
 
                 /**
                  * Finds a document which matches the provided filter and replaces it with a new document.
                  */
-                // findOneAndReplace(query: object, replacement: object, options?: FindOneAndModifyOptions): Promise<T | null>;
+                findOneAndReplace(query: Query, replacement: NewDocument<T>, options?: FindOneAndModifyOptions): Promise<T | null>;
 
                 /**
                  * Finds a document which matches the provided filter and deletes it
-                 * TODO: Verify that the document is never returned upon deletion
                  */
-                // findOneAndDelete(query: object, options?: FindOneAndModifyOptions): Promise<null>;
+                findOneAndDelete(query: Query, options?: FindOneOptions): Promise<T | null>;
 
                 /**
                  * Runs an aggregation framework pipeline against this collection.
                  * TODO: Verify pipeline and return type
                  */
-                // aggregate(pipeline: Document[]): Promise<any>;
+                aggregate(pipeline: object[]): Promise<any>;
 
                 /**
                  * Counts the number of documents in this collection matching the provided filter.
                  */
-                count: (query?: object, options?: CountOptions) => Promise<number>;
+                count(query?: Query, options?: CountOptions): Promise<number>;
 
                 /**
                  * Encodes the provided value to BSON and inserts it. If the value is missing an identifier, one will be generated for it.
                  * @param value 
                  */
-                insertOne(document: T): Promise<InsertOneResult>;
+                insertOne(document: NewDocument<T>): Promise<InsertOneResult>;
 
                 /**
                  * Inserts a collection of documents.
                  * If any values are missing identifiers, they will be generated.
                  */
-                insertMany(documents: T[]): Promise<InsertManyResult>;
+                insertMany(documents: NewDocument<T>[]): Promise<InsertManyResult>;
 
                 /**
                  * Deletes a single matching document from the collection.
                  */
-                // deleteOne(query: object): Promise<DeleteResult>;
+                deleteOne(query: Query): Promise<DeleteResult>;
 
                 /**
                  * Deletes multiple documents.
                  */
-                // deleteMany(query: object): Promise<DeleteResult>;
+                deleteMany(query: Query): Promise<DeleteResult>;
 
                 /**
                  * Updates a single document matching the provided filter in this collection.
                  */
-                // updateOne(query: object, update: object, options?: UpdateOptions): Promise<UpdateResult>;
+                updateOne(query: Query, update: Partial<NewDocument<T>>, options?: UpdateOptions): Promise<UpdateResult>;
 
                 /**
                  * Updates multiple documents matching the provided filter in this collection.
                  */
-                // updateMany(query: object, update: object, options?: UpdateOptions): Promise<UpdateResult>;
+                updateMany(query: Query, update: Partial<NewDocument<T>>, options?: UpdateOptions): Promise<UpdateResult>;
 
                 /*
                 watch(
