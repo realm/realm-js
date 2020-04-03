@@ -133,7 +133,7 @@ declare namespace Realm {
         /**
          * Use this to call services within by the MongoDB Realm app.
          */
-        services: Realm.Services.ServicesFactory;
+        services: Realm.Services;
 
         /**
          * The last user to log in or being switched to.

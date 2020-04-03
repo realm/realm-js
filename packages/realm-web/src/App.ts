@@ -42,7 +42,7 @@ export class App<
     public readonly functions: FunctionsFactoryType;
 
     /** @inheritdoc */
-    public readonly services: Realm.Services.ServicesFactory;
+    public readonly services: Realm.Services;
 
     /** @inheritdoc */
     public readonly id: string;

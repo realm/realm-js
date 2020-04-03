@@ -22,11 +22,12 @@ type Binary = import("bson").Binary;
 
 declare namespace Realm {
 
+    interface Services {
+        mongodb(serviceName?: string): Realm.Services.RemoteMongoDB;
+        http(serviceName?: string): Realm.Services.HTTP;
+    }
+
     namespace Services {
-        interface ServicesFactory {
-            mongodb(serviceName?: string): Realm.Services.RemoteMongoDB;
-            http(serviceName?: string): Realm.Services.HTTP;
-        }
 
         interface RemoteMongoDB {
             db(databaseName: string): {
