@@ -1,11 +1,38 @@
-import { Transport } from "../../transports";
-import { create as createFunctionsFactory } from "../../FunctionsFactory";
-import { deserialize, serialize } from "../utils";
+import { Transport } from "../transports";
+import { create as createFunctionsFactory } from "../FunctionsFactory";
+import { deserialize, serialize } from "./utils";
+
+export function createService(
+    transport: Transport,
+    serviceName: string = "mongo-db"
+) {
+    return { db: createDatabase.bind(null, transport, serviceName) };
+}
+
+export function createDatabase(
+    transport: Transport,
+    serviceName: string,
+    databaseName: string
+) {
+    return {
+        // 👇 is using "as" since it's too complicated to force the result of bind to remain generic over T
+        collection: createCollection.bind(
+            null,
+            transport,
+            serviceName,
+            databaseName
+        ) as <T extends Realm.Services.RemoteMongoDB.Document = any>(
+            name: string
+        ) => Realm.Services.RemoteMongoDB.RemoteMongoDBCollection<T>
+    };
+}
 
 // This class is implemented to an interface documented in the services.d.ts - no need to duplicate that
 // tslint:disable:completed-docs
 
-export function create<T extends Realm.Services.RemoteMongoDB.Document = any>(
+export function createCollection<
+    T extends Realm.Services.RemoteMongoDB.Document = any
+>(
     transport: Transport,
     serviceName: string,
     databaseName: string,

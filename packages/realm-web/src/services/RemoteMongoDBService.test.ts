@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { ObjectID } from "bson";
 
-import { createService } from "./index";
-import { MockTransport } from "../../test/MockTransport";
+import { createService } from "./RemoteMongoDBService";
+import { MockTransport } from "../test/MockTransport";
 
 describe("MongoDB Remote service", () => {
     it("can find documents", async () => {
