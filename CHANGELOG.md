@@ -1,4 +1,4 @@
-10.0.0 Release notes (2020-3-26)
+10.0.0 Release notes (2020-4-4)
 =============================================================
 NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 
