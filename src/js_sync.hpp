@@ -20,6 +20,7 @@
 
 #include "js_class.hpp"
 #include "js_collection.hpp"
+#include "js_app.hpp"
 #include "js_user.hpp"
 #include "js_sync_util.hpp"
 
@@ -77,12 +78,10 @@ public:
 
     static void get_config(ContextType, ObjectType, ReturnValue &);
     static void get_user(ContextType, ObjectType, ReturnValue &);
-    static void get_url(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
     static void get_connection_state(ContextType, ObjectType, ReturnValue &);
 
     static void simulate_error(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void refresh_access_token(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void add_progress_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
     static void remove_progress_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
     static void add_state_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
@@ -97,17 +96,16 @@ public:
     static void wait_for_upload_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
 
 
+    // TODO: add app or appId property
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
         {"user", {wrap<get_user>, nullptr}},
-        {"url", {wrap<get_url>, nullptr}},
         {"state", {wrap<get_state>, nullptr}},
         {"connectionState", {wrap<get_connection_state>, nullptr}},
     };
 
     MethodMap<T> const methods = {
         {"_simulateError", wrap<simulate_error>},
-        {"_refreshAccessToken", wrap<refresh_access_token>},
         {"_overrideServer", wrap<override_server>},
         {"_waitForDownloadCompletion", wrap<wait_for_download_completion>},
         {"_waitForUploadCompletion", wrap<wait_for_upload_completion>},
@@ -281,7 +279,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
-        Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url));
+        // TODO: add app id
         if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());
@@ -307,18 +305,6 @@ void SessionClass<T>::get_user(ContextType ctx, ObjectType object, ReturnValue &
     } else {
         return_value.set_undefined();
     }
-}
-
-template<typename T>
-void SessionClass<T>::get_url(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
-        if (util::Optional<std::string> url = session->full_realm_url()) {
-            return_value.set(*url);
-            return;
-        }
-    }
-
-    return_value.set_undefined();
 }
 
 template<typename T>
@@ -363,25 +349,6 @@ void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Ar
         std::error_code error_code(Value::validated_to_number(ctx, args[0]), realm::sync::protocol_error_category());
         std::string message = Value::validated_to_string(ctx, args[1]);
         SyncSession::OnlyForTesting::handle_error(*session, SyncError(error_code, message, false));
-    }
-}
-
-template<typename T>
-void SessionClass<T>::refresh_access_token(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &) {
-    args.validate_between(3, 4);
-
-    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
-        std::string sync_label = Value::validated_to_string(ctx, args[2], "syncLabel");
-        session->set_multiplex_identifier(std::move(sync_label));
-
-        if (args.count == 4 && !Value::is_undefined(ctx, args[3])) {
-            std::string url_prefix = Value::validated_to_string(ctx, args[3], "urlPrefix");
-            session->set_url_prefix(std::move(url_prefix));
-        }
-
-        std::string access_token = Value::validated_to_string(ctx, args[0], "accessToken");
-        std::string realm_url = Value::validated_to_string(ctx, args[1], "realmUrl");
-        session->refresh_access_token(std::move(access_token), std::move(realm_url));
     }
 }
 
@@ -630,7 +597,6 @@ public:
     static void enable_multiplexing(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
-    static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
     static void populate_sync_config_for_ssl(ContextType, ObjectType config_object, SyncConfig&);
 
@@ -730,17 +696,6 @@ void SyncClass<T>::has_existing_sessions(ContextType ctx, ObjectType this_object
 }
 
 template<typename T>
-std::function<SyncBindSessionHandler> SyncClass<T>::session_bind_callback(ContextType ctx, ObjectType sync_constructor)
-{
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<ObjectType> protected_sync_constructor(ctx, sync_constructor);
-    return util::EventLoopDispatcher<SyncBindSessionHandler>([protected_ctx, protected_sync_constructor](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session) {
-        auto token = config.user->access_token();
-        session->refresh_access_token(std::move(token), config.realm_url);
-    });
-}
-
-template<typename T>
 void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object, Realm::Config& config)
 {
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
@@ -752,9 +707,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     } else if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
-        ObjectType sync_constructor = Object::validated_get_object(ctx, realm_constructor, "Sync");
-        auto bind = session_bind_callback(ctx, sync_constructor);
-
         std::function<SyncSessionErrorHandler> error_handler;
         ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
         if (!Value::is_undefined(ctx, error_func)) {
@@ -763,12 +715,21 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");
         SharedUser shared_user = *get_internal<T, UserClass<T>>(user);
-        if (shared_user->state() != SyncUser::State::Active) {
+        if (shared_user->state() != SyncUser::State::LoggedIn) {
             throw std::runtime_error("User is no longer valid.");
         }
 
-        std::string app_id = Object::validated_get_string(ctx, sync_config_object, "appId");
-        std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
+        ObjectType app_value = Object::validated_get_object(ctx, sync_config_object, "app");
+        std::shared_ptr<app::App> shared_app;
+        if (!Value::is_undefined(ctx, app_value)) {
+            shared_app = *get_internal<T, AppClass<T>>(app_value);
+        }
+
+        ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
+        std::string partition_value;
+        if (!Value::is_undefined(ctx, partition_value_value)) {
+            partition_value = Value::validated_to_string(ctx, partition_value_value, "partitionValue");
+        }
 
         bool client_validate_ssl = true;
         ValueType validate_ssl_temp = Object::get_property(ctx, sync_config_object, "validate_ssl");
@@ -792,8 +753,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ssl_verify_callback = std::move(ssl_verify_functor);
         }
 
-        config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
-        config.sync_config->bind_session_handler = std::move(bind);
+        config.sync_config = std::make_shared<SyncConfig>(shared_app, shared_user, std::move(partition_value));
         config.sync_config->error_handler = std::move(error_handler);
 
         SyncSessionStopPolicy session_stop_policy = SyncSessionStopPolicy::AfterChangesUploaded;
@@ -837,14 +797,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             auto ssl_config_object = Value::to_object(ctx, ssl_config_value);
             populate_sync_config_for_ssl(ctx, ssl_config_object, *config.sync_config);
         }
-
-        config.schema_mode = SchemaMode::Additive;
-        config.path = syncManagerShared<T>(ctx).path_for_realm(*shared_user, config.sync_config->realm_url);
-        config.sync_config->url_prefix = util::format("/api/client/v2.0/app/%1/realm-sync", app_id);
-
-        std::cerr << "config.path = " << config.path << "\n";
-        std::cerr << "config.sync_config->realm_url = " << config.sync_config->realm_url << "\n";
-        std::cerr << "config.sync_config->url_prefix = " << config.sync_config->url_prefix << "\n";
 
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();
@@ -895,6 +847,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             }
         }
         config.sync_config->client_resync_mode = clientResyncMode;
+
+        config.schema_mode = SchemaMode::Additive;
+        config.path = syncManagerShared<T>(ctx).path_for_realm(*(config.sync_config));
     }
 }
 

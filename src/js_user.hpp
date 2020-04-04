@@ -52,26 +52,19 @@ public:
 
     static FunctionType create_constructor(ContextType);
 
-    static void get_server(ContextType, ObjectType, ReturnValue &);
     static void get_identity(ContextType, ObjectType, ReturnValue &);
     static void get_token(ContextType, ObjectType, ReturnValue &);
     static void get_profile(ContextType, ObjectType, ReturnValue &);
     static void set_profile(ContextType, ObjectType, ValueType);
 
     PropertyMap<T> const properties = {
-        {"server", {wrap<get_server>, nullptr}},
         {"identity", {wrap<get_identity>, nullptr}},
         {"token", {wrap<get_token>, nullptr}},
         {"profile", {wrap<get_profile>, wrap<set_profile>}},
     };
 
-    // static void create_user(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void admin_user(ContextType, ObjectType, Arguments &, ReturnValue &);
-    // static void get_existing_user(ContextType, ObjectType, Arguments &, ReturnValue&);
 
     MethodMap<T> const static_methods = {
-        // {"createUser", wrap<create_user>},
-        // {"_getExistingUser", wrap<get_existing_user>},
     };
 
     static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -87,12 +80,6 @@ template<typename T>
 inline typename T::Function UserClass<T>::create_constructor(ContextType ctx) {
     FunctionType user_constructor = ObjectWrap<T, UserClass<T>>::create_constructor(ctx);
     return user_constructor;
-}
-
-template<typename T>
-void UserClass<T>::get_server(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    // std::string server = get_internal<T, UserClass<T>>(object)->get()->server_url();
-    // return_value.set(server);
 }
 
 template<typename T>
@@ -141,32 +128,6 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
 
     return_value.set(profile_object);
 }
-
-// template<typename T>
-// void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-//     args.validate_between(3, 4);
-//     SyncUserIdentifier userIdentifier {
-//         Value::validated_to_string(ctx, args[1], "identity"),
-//         Value::validated_to_string(ctx, args[0], "authServerUrl")
-//      };
-//     SharedUser *user = new SharedUser(syncManagerShared<T>(ctx).get_user(
-//         userIdentifier,
-//         Value::validated_to_string(ctx, args[2], "refreshToken"),
-//         Value::validated_to_string(ctx, args[3], "accessToken")
-//     ));
-
-//     return_value.set(create_object<T, UserClass<T>>(ctx, user));
-// }
-
-// template<typename T>
-// void UserClass<T>::get_existing_user(ContextType ctx, ObjectType, Arguments &args, ReturnValue &return_value) {
-//     args.validate_count(2);
-//     if (auto user = syncManagerShared<T>(ctx).get_existing_logged_in_user(SyncUserIdentifier{
-//             Value::validated_to_string(ctx, args[1], "identity"),
-//             Value::validated_to_string(ctx, args[0], "authServerUrl")})) {
-//         return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(std::move(user))));
-//     }
-// }
 
 template<typename T>
 void UserClass<T>::logout(ContextType, ObjectType this_object, Arguments& args, ReturnValue &) {

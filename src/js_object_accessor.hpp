@@ -62,6 +62,14 @@ public:
     , m_object_schema(collection.get_type() == realm::PropertyType::Object ? &collection.get_object_schema() : nullptr)
     { }
 
+    NativeAccessor(NativeAccessor& na, Obj parent, Property const& prop)
+        : m_ctx(na.m_ctx)
+        , m_realm(na.m_realm)
+        , m_parent(std::move(parent))
+        , m_property(&prop)
+        , m_object_schema(prop.type == realm::PropertyType::Object ? &*m_realm->schema().find(prop.object_type) : na.m_object_schema)
+    { }
+
     NativeAccessor(NativeAccessor& parent, const Property& prop)
 		: m_ctx(parent.m_ctx)
 		, m_realm(parent.m_realm)
@@ -72,10 +80,6 @@ public:
 			m_object_schema = &*schema;
 		}
 	}
-
-    bool is_embedded() const {
-        return m_object_schema ? bool(m_object_schema->is_embedded) : false;
-    }
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
@@ -98,10 +102,13 @@ public:
     template<typename T>
     T unbox(ValueType value, realm::CreatePolicy policy = realm::CreatePolicy::Skip, ObjKey current_obj = ObjKey());
 
-    Obj unbox_embedded(ValueType value, CreatePolicy policy, Obj& parent, ColKey col, size_t ndx) {
-        return realm::Object::create_embedded(*this, m_realm, *m_object_schema, value, policy, parent, col, ndx).obj();
-    }
+    // Obj unbox_embedded(ValueType value, CreatePolicy policy, Obj& parent, ColKey col, size_t ndx) {
+    //     return realm::Object::create_embedded(*this, m_realm, *m_object_schema, value, policy, parent, col, ndx).obj();
+    // }
 
+    Obj create_embedded_object() {
+        return m_parent.create_and_set_linked_object(m_property->column_key);
+    }
 
     template<typename T>
     util::Optional<T> unbox_optional(ValueType value) {
@@ -181,7 +188,8 @@ private:
     const ObjectSchema* m_object_schema;
     std::string m_string_buffer;
     OwnedBinaryData m_owned_binary_data;
-
+    Obj m_parent;
+    const Property* m_property = nullptr;
     template<typename, typename>
     friend struct _impl::Unbox;
 };
@@ -349,11 +357,11 @@ struct Unbox<JSEngine, Obj> {
             if (realm_object->realm() == ctx->m_realm) {
                 return realm_object->obj();
             }
-            if (policy == realm::CreatePolicy::Skip) {
+            if (!policy.create) {
                 throw std::runtime_error("Realm object is from another Realm");
             }
         }
-        if (policy == realm::CreatePolicy::Skip) {
+        if (!policy.create) {
             throw NonRealmObjectException();
         }
 

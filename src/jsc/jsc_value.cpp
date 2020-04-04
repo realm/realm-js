@@ -150,7 +150,8 @@ Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, const JSValueRef& value)
 
     JSValueRef args[] = {};
     JSValueRef as_string = jsc::Object::call_method(ctx, to_object(ctx, value), s_to_string, 0, args);
-    return Decimal128(to_string(ctx, as_string));
+    std::string str = to_string(ctx, as_string);
+    return Decimal128(StringData(str));
 }
 
 template<>

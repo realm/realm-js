@@ -840,7 +840,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     auto& user = config.sync_config->user;
-    if (user && user->state() == SyncUser::State::Error) {
+    if (user && user->state() == SyncUser::State::Removed) {
         ObjectType object = Object::create_empty(protected_ctx);
         Object::set_property(protected_ctx, object, "message",
                              Value::from_string(protected_ctx, "Cannot asynchronously open synced Realm because the associated session previously experienced a fatal error"));
@@ -1209,7 +1209,7 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
     const Group& group = realm->read_group();
     auto table = ObjectStore::table_for_object_type(group, object_schema.name);
     auto object_id = GlobalKey::from_string(object_id_string);
-    auto object_key = table->get_obj_key(object_id);
+    auto object_key = table->get_objkey(object_id);
     if (object_key) {
         return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, object_key)));
     }

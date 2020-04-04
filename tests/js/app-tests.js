@@ -99,25 +99,9 @@ module.exports = {
     },
 
     async testMongoDBRealmSync() {
-        // {
-        //     "bsonType": "object",
-        //     "title": "Person",
-        //     "required": [
-        //       "_id",
-        //       "name"
-        //     ],
-        //     "properties": {
-        //       "name": {
-        //         "bsonType": "string"
-        //       },
-        //       "_id": { "bsonType": "objectId" }
-        //     }
-        //   }
-
-
         Realm.Sync.setLogLevel('all');
         Realm.Sync.setLogger((level, message) => console.log(message));
-        const appId = 'default-hwhmx';
+        const appId = 'aaa-ylosb';
         const appConfig = {
             id: appId,
             url: 'http://localhost:9090',
@@ -132,42 +116,43 @@ module.exports = {
         let user = await app.logIn(credentials);
         const realmConfig = {
             schema: [{
-                name: "Person",
+                name: 'bars',
                 primaryKey: "_id",
                 properties: {
                     "_id": "object id",
-                    name: "string"
+                    "store_id": { type: "string", optional: true }
                 }
             }],
             sync: {
                 user: user,
-                url: "ws://localhost:9090",
-                appId: appId,
+                app: app,
+                partitionValue: "/"
             }
         };
+        Realm.deleteFile(realmConfig);
 
         let realm = await Realm.open(realmConfig);
         realm.write(() => {
-            realm.create("Person", { "_id": new ObjectId('0000002a9a7969d24bea4cf2'), name: "Ib" });
+            realm.deleteAll();
+        });
+        realm.write(() => {
+            realm.create("bars", { "_id": new ObjectId('0000002a9a7969d24bea4cf5') });
         });
 
-        console.log(`HEST 1: ${realm.objects("Person").length}`);
-        await new Promise((resolve, reject) => {
-            setTimeout(() => resolve(), 10000);
-        });
-        console.log(`HEST 2: ${realm.objects("Person").length}`);
-        TestCase.assertEqual(realm.objects("Person").length, 1);
+        console.log(`HEST 1: ${realm.objects("bars").length}`);
+        await realm.syncSession.uploadAllLocalChanges();
+        console.log(`HEST 2: ${realm.objects("bars").length}`);
+        TestCase.assertEqual(realm.objects("bars").length, 1);
         realm.close();
 
         Realm.deleteFile(realmConfig);
+
         console.log('HEST 3');
         let realm2 = await Realm.open(realmConfig);
-        await new Promise((resolve, reject) => {
-            setTimeout(() => resolve(), 10000);
-        });
-
+        await realm2.syncSession.downloadAllServerChanges();
         console.log("HEST 4");
-        TestCase.assertEqual(realm2.objects("Person").length, 1);
+
+        TestCase.assertEqual(realm2.objects("bars").length, 1);
         realm2.close();
         user.logOut();
     }
