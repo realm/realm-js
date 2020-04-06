@@ -24,9 +24,9 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Updated Realm Core from ??? to Realm Core v10.0.0-alpha.2.
-* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.4.
-* Updated Realm Object Store to commit 45b857fb94797258fb8fa5a3c4b13472a6095503.
+* Updated Realm Core from ??? to Realm Core v10.0.0-alpha.4.
+* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.5.
+* Updated Realm Object Store to commit 1577211c1959b60b10a967579dd2aaef2f571149.
 
 
 x.x.x Release notes (yyyy-MM-dd)

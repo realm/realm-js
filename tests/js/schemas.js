@@ -423,6 +423,14 @@ exports.ContactSchema = {
     }
 };
 
+exports.HouseOwnerSchema = {
+    name: 'HouseOwner',
+    properties: {
+        name: 'string',
+        addresses: { type: "list", objectType: "Address" }
+    }
+};
+
 exports.AddressSchema = {
     name: 'Address',
     embedded: true,

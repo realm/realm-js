@@ -1412,12 +1412,71 @@ module.exports = {
 
     testCreateEmbeddedObjects: function() {
         const realm = new Realm({schema: [schemas.ContactSchema, schemas.AddressSchema]});
+        realm.write(() => { // FIXME: This should not be required!
+            realm.deleteAll();
+        });
+
         realm.write(() => {
-            realm.create(schemas.ContactSchema.name, { name: 'Freddy Krueger', address: { street: 'Elm Street', city: 'Springwood' }} );
+            realm.create(schemas.ContactSchema.name, { name: "Freddy Krueger", address: { street: "Elm Street", city: "Springwood" }} );
         });
 
         TestCase.assertEqual(realm.objects(schemas.ContactSchema.name).length, 1);
         TestCase.assertEqual(realm.objects(schemas.AddressSchema.name).length, 1);
+
+        realm.write(() => {
+            realm.create(schemas.ContactSchema.name, { name: "John Doe" } );
+        });
+
+        let contacts = realm.objects(schemas.ContactSchema.name);
+        TestCase.assertEqual(contacts.length, 2);
+        TestCase.assertEqual(realm.objects(schemas.AddressSchema.name).length, 1);
+        TestCase.assertEqual(contacts[0]["address"]["street"], "Elm Street");
+        TestCase.assertNull(contacts[1]["address"]);
+
+        realm.close();
+    },
+
+
+    testCreateMultipleEmbeddedObjects: function() {
+        const realm = new Realm({schema: [schemas.HouseOwnerSchema, schemas.AddressSchema]});
+        realm.write(() => { // FIXME: This should not be required!
+            realm.deleteAll();
+        });
+
+        realm.write(() => {
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Ib", addresses: [
+                { street: "Algade", city: "Nordby" },
+                { street: "Skolevej", city: "Sydpynten" }
+            ]});
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Petra", addresses: [
+                { street: "Algade", city: "Nordby" }
+            ]});
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Hans" });
+        });
+
+        let owners = realm.objects(schemas.HouseOwnerSchema.name).sorted("name");
+        let addresses = realm.objects(schemas.AddressSchema.name).sorted("street");
+        TestCase.assertEqual(owners.length, 3);
+        TestCase.assertEqual(addresses.length, 3);
+
+        const names = ["Hans", "Ib", "Petra"];
+        for (let i = 0; i < names.length; i++) {
+            TestCase.assertEqual(owners[i]["name"], names[i]);
+        }
+
+        let streets = ["Algade", "Algade", "Skolevej"];
+        for (let i = 0; i < streets.length; i++) {
+            TestCase.assertEqual(addresses[i]["street"], streets[i]);
+        }
+
+        realm.write(() => {
+            addresses[0]["street"] = "Strandvejen";
+        });
+
+        streets = ["Algade", "Skolevej", "Strandvejen"];
+        for (let i = 0; i < streets.length; i++) {
+            TestCase.assertEqual(addresses[i]["street"], streets[i]);
+        }
 
         realm.close();
     }
