@@ -1673,37 +1673,112 @@ module.exports = {
 
     testDecimal128: function() {
         const realm = new Realm({schema: [schemas.DecimalObject]});
+        realm.write(() => { // FIXME: This should not be required!
+            realm.deleteAll();
+        });
 
-        let d = Decimal128.fromString("42");
-        realm.write(() => {
-            realm.create(schemas.DecimalObject.name, { decimalCol: d});
+        let numbers = [42, 3.1415, 6.022e23, -7, -100.2, 1.02E9];
+
+        numbers.forEach(number => {
+            let d = Decimal128.fromString(number.toString());
+            realm.write(() => {
+                realm.create(schemas.DecimalObject.name, { decimalCol: d});
+            });
         });
 
         let objects = realm.objects(schemas.DecimalObject.name);
-        TestCase.assertEqual(objects.length, 1);
+        TestCase.assertEqual(objects.length, numbers.length);
 
-        let d128 = objects[0]['decimalCol'];
-        TestCase.assertTrue(d128 instanceof Decimal128);
-        TestCase.assertEqual(d128.toString(), "42");
+        for (let i = 0; i < numbers.length; i++) {
+            let d128 = objects[i]['decimalCol'];
+            TestCase.assertTrue(d128 instanceof Decimal128);
+            TestCase.assertEqual(d128.toString(), numbers[i].toString().toUpperCase());
+        }
+
+        realm.close();
+    },
+
+    testDecimal128_LargeNumbers: function() {
+        const realm = new Realm({schema: [schemas.DecimalObject]});
+        realm.write(() => { // FIXME: This should not be required!
+            realm.deleteAll();
+        });
+        let numbers = ["1.02e6102", "-1.02e6102", "1.02e-6102", "9.99e6143", "1e-6142"];
+
+        numbers.forEach(number => {
+            let d = Decimal128.fromString(number);
+            realm.write(() => {
+                realm.create(schemas.DecimalObject.name, { decimalCol: d});
+            });
+        });
+
+        let objects = realm.objects(schemas.DecimalObject.name);
+        TestCase.assertEqual(objects.length, numbers.length);
+
+        for (let i = 0; i < numbers.length; i++) {
+            let d128 = objects[i]['decimalCol'];
+            TestCase.assertTrue(d128 instanceof Decimal128);
+            TestCase.assertEqual(d128.toString(), numbers[i].toUpperCase());
+        }
 
         realm.close();
     },
 
     testObjectId: function() {
         const realm = new Realm({schema: [schemas.ObjectIdObject]});
+        realm.write(() => { // FIXME: This should not be required!
+            realm.deleteAll();
+        });
+        let values = ["0000002a9a7969d24bea4cf2", "0000002a9a7969d24bea4cf3"];
+        let oids = [];
 
-        let oid1 = new ObjectId('0000002a9a7969d24bea4cf2');
-        realm.write(() => {
-            realm.create(schemas.ObjectIdObject.name, { id: oid1 });
+        values.forEach(v => {
+            let oid = new ObjectId();
+            realm.write(() => {
+                realm.create(schemas.ObjectIdObject.name, { id: oid });
+            });
+            oids.push(oid);
         });
 
         let objects = realm.objects(schemas.ObjectIdObject.name);
-        TestCase.assertEqual(objects.length, 1);
+        TestCase.assertEqual(objects.length, values.length);
 
-        let oid2 = objects[0]['id'];
-        TestCase.assertTrue(oid2 instanceof ObjectId, 'instaceof');
-        TestCase.assertTrue(oid1.equals(oid2), 'equal');
-        TestCase.assertEqual(oid2.toHexString(), oid1.toHexString());
+        for (let i = 0; i < values.length; i++) {
+            let oid2 = objects[i]['id'];
+            TestCase.assertTrue(oid2 instanceof ObjectId, 'instaceof');
+            TestCase.assertTrue(oids[i].equals(oid2), 'equal');
+            TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
+        }
+
+        realm.close();
+    },
+
+    testObjectIdFromTimestamp: function() {
+        const realm = new Realm({schema: [schemas.ObjectIdObject]});
+        realm.write(() => { // FIXME: This should not be required!
+            realm.deleteAll();
+        });
+        let values = [1, 1000000000, 2000000000];
+        let oids = [];
+
+        values.forEach(v => {
+            let oid = ObjectId.createFromTime(v);
+            realm.write(() => {
+                realm.create(schemas.ObjectIdObject.name, { id: oid });
+            });
+            oids.push(oid);
+        });
+
+        let objects = realm.objects(schemas.ObjectIdObject.name);
+        TestCase.assertEqual(objects.length, values.length);
+
+        for (let i = 0; i < values.length; i++) {
+            let oid2 = objects[i]['id'];
+            TestCase.assertTrue(oid2 instanceof ObjectId, 'instaceof');
+            TestCase.assertTrue(oids[i].equals(oid2), 'equal');
+            TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
+            TestCase.assertEqual(oid2.getTimestamp().toISOString(), oids[i].getTimestamp().toISOString());
+        }
 
         realm.close();
     },
