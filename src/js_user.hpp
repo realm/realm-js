@@ -56,13 +56,16 @@ public:
     static void get_token(ContextType, ObjectType, ReturnValue &);
     static void get_profile(ContextType, ObjectType, ReturnValue &);
     static void set_profile(ContextType, ObjectType, ValueType);
+    static void is_logged_in(ContextType, ObjectType, ReturnValue &);
+    static void get_state(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"identity", {wrap<get_identity>, nullptr}},
         {"token", {wrap<get_token>, nullptr}},
         {"profile", {wrap<get_profile>, wrap<set_profile>}},
+        {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
+        {"state", {wrap<get_state>, nullptr}}
     };
-
 
     MethodMap<T> const static_methods = {
     };
@@ -92,6 +95,29 @@ template<typename T>
 void UserClass<T>::get_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string token = get_internal<T, UserClass<T>>(object)->get()->refresh_token();
     return_value.set(token);
+}
+
+template<typename T>
+void UserClass<T>::is_logged_in(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto logged_in = get_internal<T, UserClass<T>>(object)->get()->is_logged_in();
+    return_value.set(logged_in);
+}
+
+template<typename T>
+void UserClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto state = get_internal<T, UserClass<T>>(object)->get()->state();
+
+    switch (state) {
+    case SyncUser::State::LoggedOut:
+        return_value.set("LoggedOut");
+        break;
+    case SyncUser::State::LoggedIn:
+        return_value.set("LoggedIn");
+        break;
+    case SyncUser::State::Removed:
+        return_value.set("Removed");
+        break;
+    }
 }
 
 template<typename T>
