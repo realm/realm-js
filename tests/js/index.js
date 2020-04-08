@@ -26,7 +26,7 @@ if (typeof Realm.Sync !== 'undefined' && Realm.Sync !== null) {
 }
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-const isElectronProcess = isNodeProcess && (process.type === 'renderer' || (process.versions && process.versions.electron));
+const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
 const require_method = require;
 function node_require(module) { return require_method(module); }
 
@@ -86,13 +86,13 @@ var SPECIAL_METHODS = {
     afterEach: true,
 };
 
-exports.getTestNames = function () {
+exports.getTestNames = function() {
     var testNames = {};
 
     for (var suiteName in TESTS) {
         var testSuite = TESTS[suiteName];
 
-        testNames[suiteName] = Object.keys(testSuite).filter(function (testName) {
+        testNames[suiteName] = Object.keys(testSuite).filter(function(testName) {
             return !(testName in SPECIAL_METHODS) && typeof testSuite[testName] == 'function';
         });
     }
@@ -100,13 +100,13 @@ exports.getTestNames = function () {
     return testNames;
 };
 
-exports.registerTests = function (tests) {
+exports.registerTests = function(tests) {
     for (var suiteName in tests) {
         TESTS[suiteName] = tests[suiteName];
     }
 };
 
-exports.prepare = function (done) {
+exports.prepare = function(done) {
     if (!global.enableSyncTests || !isNodeProcess || global.testAdminUserInfo) {
         done();
         return;
@@ -124,14 +124,29 @@ exports.prepare = function (done) {
         });
 };
 
-exports.runTest = function (suiteName, testName) {
+exports.runTest = function(suiteName, testName) {
     const testSuite = TESTS[suiteName];
     const testMethod = testSuite && testSuite[testName];
 
     if (testMethod) {
         Realm.clearTestState();
-        return testMethod.call(testSuite);
+        console.warn("Starting test " + testName);
+        var result = testMethod.call(testSuite);
+
+        //make sure v8 GC can collect garbage after each test and does not fail
+        if (isNodeProcess || isElectronProcess) {
+            if (result instanceof Promise) {
+                result.finally(() => global.gc());
+                return result;
+            }
+            else {
+                global.gc();
+            }
+        }
+        
+        return result;
     }
+
     if (!testSuite || !(testName in SPECIAL_METHODS)) {
         throw new Error(`Missing test: ${suiteName}.${testName}`);
     }

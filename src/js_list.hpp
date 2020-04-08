@@ -122,33 +122,33 @@ typename T::Object ListClass<T>::create_instance(ContextType ctx, realm::List li
 }
 
 template<typename T>
-void ListClass<T>::get_length(ContextType, ObjectType object, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(object);
+void ListClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto list = get_internal<T, ListClass<T>>(ctx, object);
     return_value.set(static_cast<uint32_t>(list->size()));
 }
 
 template<typename T>
 void ListClass<T>::get_type(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(object);
+    auto list = get_internal<T, ListClass<T>>(ctx, object);
     return_value.set(string_for_property_type(list->get_type() & ~realm::PropertyType::Flags));
 }
 
 template<typename T>
-void ListClass<T>::get_optional(ContextType, ObjectType object, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(object);
+void ListClass<T>::get_optional(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto list = get_internal<T, ListClass<T>>(ctx, object);
     return_value.set(is_nullable(list->get_type()));
 }
 
 template<typename T>
 void ListClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(object);
+    auto list = get_internal<T, ListClass<T>>(ctx, object);
     NativeAccessor<T> accessor(ctx, *list);
     return_value.set(list->get(accessor, index));
 }
 
 template<typename T>
 bool ListClass<T>::set_index(ContextType ctx, ObjectType object, uint32_t index, ValueType value) {
-    auto list = get_internal<T, ListClass<T>>(object);
+    auto list = get_internal<T, ListClass<T>>(ctx, object);
     validate_value(ctx, *list, value);
     NativeAccessor<T> accessor(ctx, *list);
     list->set(accessor, index, value);
@@ -157,7 +157,7 @@ bool ListClass<T>::set_index(ContextType ctx, ObjectType object, uint32_t index,
 
 template<typename T>
 void ListClass<T>::push(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     for (size_t i = 0; i < args.count; i++) {
         validate_value(ctx, *list, args[i]);
     }
@@ -174,7 +174,7 @@ template<typename T>
 void ListClass<T>::pop(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     auto size = static_cast<unsigned int>(list->size());
     if (size == 0) {
         list->verify_in_transaction();
@@ -188,7 +188,7 @@ void ListClass<T>::pop(ContextType ctx, ObjectType this_object, Arguments &args,
 
 template<typename T>
 void ListClass<T>::unshift(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     for (size_t i = 0; i < args.count; i++) {
         validate_value(ctx, *list, args[i]);
     }
@@ -205,7 +205,7 @@ template<typename T>
 void ListClass<T>::shift(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     if (list->size() == 0) {
         list->verify_in_transaction();
         return_value.set_undefined();
@@ -218,7 +218,7 @@ void ListClass<T>::shift(ContextType ctx, ObjectType this_object, Arguments &arg
 
 template<typename T>
 void ListClass<T>::splice(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     size_t size = list->size();
     long index = std::min<long>(Value::to_number(ctx, args[0]), size);
     if (index < 0) {
@@ -252,36 +252,36 @@ void ListClass<T>::splice(ContextType ctx, ObjectType this_object, Arguments &ar
 template<typename T>
 void ListClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     return_value.set(ResultsClass<T>::create_instance(ctx, list->snapshot()));
 }
 
 template<typename T>
 void ListClass<T>::filtered(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     return_value.set(ResultsClass<T>::create_filtered(ctx, *list, args));
 }
 
 template<typename T>
 void ListClass<T>::sorted(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     return_value.set(ResultsClass<T>::create_instance(ctx, list->sort(ResultsClass<T>::get_keypaths(ctx, args))));
 }
 
 template<typename T>
 void ListClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    return_value.set(get_internal<T, ListClass<T>>(this_object)->is_valid());
+    return_value.set(get_internal<T, ListClass<T>>(ctx, this_object)->is_valid());
 }
 
 template<typename T>
 void ListClass<T>::is_empty(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    return_value.set(get_internal<T, ListClass<T>>(this_object)->size() == 0);
+    return_value.set(get_internal<T, ListClass<T>>(ctx, this_object)->size() == 0);
 }
 
 template<typename T>
 void ListClass<T>::index_of(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     auto fn = [&](auto&& row) {
-        auto list = get_internal<T, ListClass<T>>(this_object);
+        auto list = get_internal<T, ListClass<T>>(ctx, this_object);
         NativeAccessor<T> accessor(ctx, *list);
         return list->find(accessor, row);
     };
@@ -290,20 +290,20 @@ void ListClass<T>::index_of(ContextType ctx, ObjectType this_object, Arguments &
 
 template<typename T>
 void ListClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     ResultsClass<T>::add_listener(ctx, *list, this_object, args);
 }
 
 template<typename T>
 void ListClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     ResultsClass<T>::remove_listener(ctx, *list, this_object, args);
 }
 
 template<typename T>
 void ListClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
-    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     list->m_notification_tokens.clear();
 }
 

@@ -8,10 +8,15 @@ export NPM_CONFIG_PROGRESS=false
 
 TARGET=$1
 CONFIGURATION=${2:-Release}
-NODE_VERSION=${3:-v8.15.0}
+NODE_VERSION=${3:-v10.19.0}
 
 if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
+fi
+
+USE_REALM_DEBUG=0
+if [ "${CONFIGURATION}" == "Debug" ]; then
+      USE_REALM_DEBUG=1
 fi
 
 IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set and re-exported
@@ -355,11 +360,6 @@ case "$TARGET" in
   ;;
 
 "node")
-  if [ "${CONFIGURATION}" == "Debug" ]; then
-      USE_REALM_DEBUG=1
-  else
-      USE_REALM_DEBUG=0
-  fi
   npm run check-environment
   npm ci --build-from-source=realm --realm_enable_sync --use_realm_debug=${USE_REALM_DEBUG}
   start_server
@@ -381,7 +381,7 @@ case "$TARGET" in
   pushd "$SRCROOT/tests/electron"
   # Build Realm and runtime deps for electron
   export npm_config_build_from_source=realm
-  export npm_config_target=4.0.6
+  export npm_config_target=8.1.1
   export npm_config_runtime=electron
   export npm_config_disturl=https://atom.io/download/electron
   npm ci --realm_enable_sync

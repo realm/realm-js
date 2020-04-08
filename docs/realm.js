@@ -275,7 +275,7 @@ class Realm {
 
     /**
      * Synchronously call the provided `callback` inside a write transaction. If an exception happens inside a transaction,
-     * you’ll lose the changes in that transaction, but the Realm itself won’t be affected (or corrupted). 
+     * you'll lose the changes in that transaction, but the Realm itself won't be affected (or corrupted). 
      * More precisely, {@link Realm#beginTransaction beginTransaction()} and {@link Realm#commitTransaction commitTransaction()} will be called
      * automatically. If any exception is thrown during the transaction {@link Realm#cancelTransaction cancelTransaction()} will
      * be called instead of {@link Realm#commitTransaction commitTransaction()} and the exception will be re-thrown to the caller of `write()`.

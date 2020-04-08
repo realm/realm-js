@@ -5,13 +5,13 @@
   "main": "index.js",
   "scripts": {
     "start": "electron ./app/main.js",
-    "test": "node ./runner.js"
+    "test": "node ./runner.js --js-flags=\"--expose-gc\""
   },
   "devDependencies": {
-    "electron": "^4.0.6",
+    "electron": "^8.1.1",
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
-    "spectron": "^3.7.2"
+    "spectron": "^10.0.1"
   },
   "dependencies": {
     "install-local": "^1.0.0",

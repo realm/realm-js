@@ -31,8 +31,10 @@ const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
 
-const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
+
+const platformSupported = isNodeProcess && !isElectronProcess;
 
 const require_method = require;
 function node_require(module) {
@@ -43,13 +45,14 @@ let tmp;
 let fs;
 let execFile;
 let path;
-
+let URL;
 if (isNodeProcess) {
     tmp = node_require('tmp');
     fs = node_require('fs');
     execFile = node_require('child_process').execFile;
     tmp.setGracefulCleanup();
     path = node_require("path");
+    URL = node_require('url').URL;
 }
 
 function copyFileToTempDir(filename) {
@@ -167,7 +170,7 @@ module.exports = {
     },
 
     testRealmOpen() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -203,7 +206,7 @@ module.exports = {
     },
 
     testRealmOpenWithExistingLocalRealm() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -245,7 +248,7 @@ module.exports = {
     },
 
     testRealmOpenAsync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -294,7 +297,7 @@ module.exports = {
     },
 
     testRealmOpenAsyncNoSchema() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -320,7 +323,7 @@ module.exports = {
                             TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
 
                             let firstDog = realm.objects('Dog')[0];
-                            TestCase.assertTrue(({}).hasOwnProperty.call(firstDog, 'name'), "Synced realm does not have an inffered schema");
+                            TestCase.assertTrue(({}).hasOwnProperty.call(Object.getPrototypeOf(firstDog), 'name'), "Synced realm does not have an inffered schema");
                             TestCase.assertTrue(firstDog.name, "Synced realm object's property should have a value");
                             TestCase.assertTrue(firstDog.name.indexOf('Lassy') !== -1, "Synced realm object's property should contain the actual written value");
 
@@ -423,7 +426,7 @@ module.exports = {
     },
 
     testListNestedSync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -463,7 +466,7 @@ module.exports = {
     },
 
     testProgressNotificationsUnregisterForRealmConstructor() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -530,7 +533,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpen() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -558,7 +561,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpenAsync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -695,7 +698,7 @@ module.exports = {
     },
 
     async testPartialSync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -779,7 +782,7 @@ module.exports = {
     },
 
     testPartialSyncWithDynamicSchema() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
         const username = Utils.uuid();
@@ -852,7 +855,7 @@ module.exports = {
 
     testClientReset() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -893,7 +896,7 @@ module.exports = {
 
     testClientResyncIncorrectMode() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -915,7 +918,7 @@ module.exports = {
 
     testClientResyncIncorrectModeForQueryBasedSync() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -943,9 +946,10 @@ module.exports = {
 
     async testClientResyncDiscard() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
+
         const fetch = require('node-fetch');
 
         const realmUrl = 'realm://127.0.0.1:9080/~/myrealm';
@@ -966,7 +970,6 @@ module.exports = {
         realm1.close();
 
         // delete Realm on server
-        var URL = node_require('url').URL;
         let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
         let url = new URL(`/realms/files/${encodedPath}`, user.server);
         let options = {
@@ -1041,7 +1044,7 @@ module.exports = {
     },
 
     testConnectionState() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1193,10 +1196,8 @@ module.exports = {
                         fullSynchronization: true
                     }
                 });
-                return Realm.open(admin2Config).then(r => {
-                    admin2Realm = r;
-                    return admin2Realm.syncSession.downloadAllServerChanges();
-                });
+                admin2Realm = new Realm(admin2Config);
+                return admin2Realm.syncSession.downloadAllServerChanges();
             })
             .then(() => {
                 TestCase.assertEqual(1,  admin2Realm.objects('CompletionHandlerObject').length);
@@ -1204,7 +1205,7 @@ module.exports = {
     },
 
     testDownloadAllServerChangesTimeout() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1236,7 +1237,7 @@ module.exports = {
     },
 
     testUploadAllLocalChangesTimeout() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1369,7 +1370,7 @@ module.exports = {
     },
 
     testDeleteModelThrowsWhenSync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 

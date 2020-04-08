@@ -74,18 +74,18 @@ template<typename T>
 class RealmDelegate : public BindingContext {
 private:
     void did_change(std::vector<ObserverState> const&, std::vector<void*> const&, bool) override {
-        HANDLESCOPE
+        HANDLESCOPE(m_context)
         notify(m_notifications, "change");
     }
 
     void schema_did_change(realm::Schema const& schema) override {
-        HANDLESCOPE
+        HANDLESCOPE(m_context)
         ObjectType schema_object = Schema<T>::object_for_schema(m_context, schema);
         notify(m_schema_notifications, "schema", schema_object);
     }
 
     void before_notify() override {
-        HANDLESCOPE
+        HANDLESCOPE(m_context)
         notify(m_before_notify_notifications, "beforenotify");
     }
 
@@ -99,9 +99,16 @@ public:
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
-    RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
+    RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) 
+        : m_context(ctx), 
+          m_realm(realm) 
+    {
+        SharedRealm sharedRealm = realm.lock();
+        m_realm_path = sharedRealm->config().path;
+    }
 
     ~RealmDelegate() {
+        on_context_destroy<RealmObjectClass<T>>(m_context, m_realm_path);
         // All protected values need to be unprotected while the context is retained.
         m_defaults.clear();
         m_constructors.clear();
@@ -158,6 +165,7 @@ public:
     std::list<Protected<FunctionType>> m_schema_notifications;
     std::list<Protected<FunctionType>> m_before_notify_notifications;
     std::weak_ptr<realm::Realm> m_realm;
+    std::string m_realm_path;
 
     void add(std::list<Protected<FunctionType>>& notifications, FunctionType fn) {
         if (std::find(notifications.begin(), notifications.end(), fn) != notifications.end()) {
@@ -437,6 +445,9 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
 #if REALM_ENABLE_SYNC
     FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
     Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
+
+	AsyncOpenTaskClass<T>::create_constructor(ctx);
+	SubscriptionClass<T>::create_constructor(ctx);
 #endif
 
     if (getenv("REALM_DISABLE_SYNC_TO_DISK")) {
@@ -616,14 +627,14 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
 
 template<typename T>
 void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args) {
-    set_internal<T, RealmClass<T>>(this_object, nullptr);
+    set_internal<T, RealmClass<T>>(ctx, this_object, nullptr);
     realm::Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
     bool schema_updated = get_realm_config(ctx, args.count, args.value, config, defaults, constructors);
     auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
 
-    set_internal<T, RealmClass<T>>(this_object, new SharedRealm(realm));
+    set_internal<T, RealmClass<T>>(ctx, this_object, new SharedRealm(realm));
 }
 
 template<typename T>
@@ -726,7 +737,7 @@ void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Argume
     args.validate_maximum(1);
     ValueType value = args[0];
 
-    SharedRealm& realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm& realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
 
     auto& config = realm->config();
     if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::Additive || config.schema_mode == SchemaMode::ReadOnlyAlternative) {
@@ -764,54 +775,54 @@ void RealmClass<T>::set_default_path(ContextType ctx, ObjectType object, ValueTy
 
 template<typename T>
 void RealmClass<T>::get_empty(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    SharedRealm& realm = *get_internal<T, RealmClass<T>>(object);
+    SharedRealm& realm = *get_internal<T, RealmClass<T>>(ctx, object);
     bool is_empty = ObjectStore::is_empty(realm->read_group());
     return_value.set(is_empty);
 }
 
 template<typename T>
 void RealmClass<T>::get_path(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::string path = get_internal<T, RealmClass<T>>(object)->get()->config().path;
+    std::string path = get_internal<T, RealmClass<T>>(ctx, object)->get()->config().path;
     return_value.set(path);
 }
 
 template<typename T>
 void RealmClass<T>::get_schema_version(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    double version = get_internal<T, RealmClass<T>>(object)->get()->schema_version();
+    double version = get_internal<T, RealmClass<T>>(ctx, object)->get()->schema_version();
     return_value.set(version);
 }
 
 template<typename T>
 void RealmClass<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto& schema = get_internal<T, RealmClass<T>>(object)->get()->schema();
+    auto& schema = get_internal<T, RealmClass<T>>(ctx, object)->get()->schema();
     ObjectType schema_object = Schema<T>::object_for_schema(ctx, schema);
     return_value.set(schema_object);
 }
 
 template<typename T>
 void RealmClass<T>::get_in_memory(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().in_memory);
+    return_value.set(get_internal<T, RealmClass<T>>(ctx, object)->get()->config().in_memory);
 }
 
 template<typename T>
 void RealmClass<T>::get_read_only(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().immutable());
+    return_value.set(get_internal<T, RealmClass<T>>(ctx, object)->get()->config().immutable());
 }
 
 template<typename T>
 void RealmClass<T>::get_is_in_transaction(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->is_in_transaction());
+    return_value.set(get_internal<T, RealmClass<T>>(ctx, object)->get()->is_in_transaction());
 }
 
 template<typename T>
 void RealmClass<T>::get_is_closed(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->is_closed());
+    return_value.set(get_internal<T, RealmClass<T>>(ctx, object)->get()->is_closed());
 }
 
 #if REALM_ENABLE_SYNC
 template<typename T>
 void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto realm = *get_internal<T, RealmClass<T>>(object);
+    auto realm = *get_internal<T, RealmClass<T>>(ctx, object);
     if (std::shared_ptr<SyncSession> session = SyncManager::shared().get_existing_active_session(realm->config().path)) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
     } else {
@@ -822,7 +833,7 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 
 template<typename T>
 void RealmClass<T>::get_is_partial_realm(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto realm = *get_internal<T, RealmClass<T>>(object);
+    auto realm = *get_internal<T, RealmClass<T>>(ctx, object);
     auto config = realm->config();
     return_value.set(config.sync_config && config.sync_config->is_partial);
 }
@@ -863,8 +874,8 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     task = Realm::get_synchronized_realm(config);
 
     EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults=std::move(defaults),
-                                                               constructors=std::move(constructors)](ThreadSafeReference&& realm_ref, std::exception_ptr error) mutable {
-        HANDLESCOPE
+                                                               constructors=std::move(constructors)](ThreadSafeReference<Realm>&& realm_ref, std::exception_ptr error) mutable {
+        HANDLESCOPE(protected_ctx)
 
         if (error) {
             try {
@@ -900,7 +911,7 @@ template<typename T>
 void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_schema.name));
 }
@@ -909,7 +920,7 @@ template<typename T>
 void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     std::string object_type;
     auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     NativeAccessor accessor(ctx, realm, object_schema);
@@ -957,7 +968,7 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
         }
     }
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->verify_open();
     auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
 
@@ -975,7 +986,7 @@ template<typename T>
 void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->verify_open();
     if (!realm->is_in_transaction()) {
         throw std::runtime_error("Can only delete objects within a transaction.");
@@ -984,13 +995,17 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
     ObjectType arg = Value::validated_to_object(ctx, args[0], "object");
 
     if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
-        auto object = get_internal<T, RealmObjectClass<T>>(arg);
-        if (!object->is_valid()) {
+        auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, arg);
+        if (!realm_object) {
+            throw std::runtime_error("Invalid argument at index 0");
+        }
+
+        if (!realm_object->is_valid()) {
             throw std::runtime_error("Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.");
         }
 
-        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
-        table->remove_object(object->obj().get_key());
+        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
+        table->remove_object(realm_object->obj().get_key());
     }
     else if (Value::is_array(ctx, arg)) {
         uint32_t length = Object::validated_get_length(ctx, arg);
@@ -1001,17 +1016,22 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
                 throw std::runtime_error("Argument to 'delete' must be a Realm object or a collection of Realm objects.");
             }
 
-            auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+            if (!realm_object) {
+               std::string message = "Invalid argument at index " + util::to_string(i); 
+               throw std::runtime_error(message);
+            }
+
             realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
             table->remove_object(realm_object->obj().get_key());
         }
     }
     else if (Object::template is_instance<ResultsClass<T>>(ctx, arg)) {
-        auto results = get_internal<T, ResultsClass<T>>(arg);
+        auto results = get_internal<T, ResultsClass<T>>(ctx, arg);
         results->clear();
     }
     else if (Object::template is_instance<ListClass<T>>(ctx, arg)) {
-        auto list = get_internal<T, ListClass<T>>(arg);
+        auto list = get_internal<T, ListClass<T>>(ctx, arg);
         list->delete_all();
     }
     else {
@@ -1045,7 +1065,7 @@ template<typename T>
 void RealmClass<T>::write(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     FunctionType callback = Value::validated_to_function(ctx, args[0]);
 
     realm->begin_transaction();
@@ -1065,7 +1085,7 @@ template<typename T>
 void RealmClass<T>::begin_transaction(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->begin_transaction();
 }
 
@@ -1073,7 +1093,7 @@ template<typename T>
 void RealmClass<T>::commit_transaction(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->commit_transaction();
 }
 
@@ -1081,7 +1101,7 @@ template<typename T>
 void RealmClass<T>::cancel_transaction(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->cancel_transaction();
 }
 
@@ -1092,7 +1112,7 @@ void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argume
     std::string name = Value::validated_to_string(ctx, args[0], "notification name");
     auto callback = Value::validated_to_function(ctx, args[1]);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->verify_open();
     if (name == "change") {
         get_delegate<T>(realm.get())->add_notification(callback);
@@ -1115,7 +1135,7 @@ void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arg
     std::string name = Value::validated_to_string(ctx, args[0], "notification name");
     auto callback = Value::validated_to_function(ctx, args[1]);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->verify_open();
     if (name == "change") {
         get_delegate<T>(realm.get())->remove_notification(callback);
@@ -1139,7 +1159,7 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object
         name = Value::validated_to_string(ctx, args[0], "notification name");
     }
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->verify_open();
     if (name == "change") {
         get_delegate<T>(realm.get())->remove_all_notifications();
@@ -1159,7 +1179,7 @@ template<typename T>
 void RealmClass<T>::close(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->close();
 }
 
@@ -1167,7 +1187,7 @@ template<typename T>
 void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     if (realm->is_in_transaction()) {
         throw std::runtime_error("Cannot compact a Realm within a transaction.");
     }
@@ -1183,7 +1203,7 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
         throw std::runtime_error("At least path has to be provided for 'writeCopyTo'");
     }
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
 
     ValueType pathValue = args[0];
     if (!Value::is_string(ctx, pathValue)) {
@@ -1214,7 +1234,7 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 template<typename T>
 void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
     args.validate_count(2);
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
 
     auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     std::string object_id_string = Value::validated_to_string(ctx, args[1]);
@@ -1234,7 +1254,7 @@ void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this
 
     // Try to map the input to the internal schema name for the given input. This should work for managed objects and
     // schema objects. Pure strings and functions are expected to return a correct value.
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     return_value.set(object_schema.name);
 }
@@ -1249,7 +1269,7 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
         return (static_cast<int>(actual) & static_cast<int>(expected)) == static_cast<int>(expected);
     };
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     auto config = realm->config();
     if (!(config.sync_config && config.sync_config->is_partial)) {
         throw std::runtime_error("Wrong Realm type. 'privileges()' is only available for Query-based Realms.");
@@ -1268,8 +1288,12 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
     if (Value::is_object(ctx, args[0])) {
         auto arg = Value::to_object(ctx, args[0]);
         if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
-            auto obj = get_internal<T, RealmObjectClass<T>>(arg);
-            auto p = realm->get_privileges(obj->obj());
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, arg);
+            if (!realm_object) {
+                throw std::runtime_error("Invalid argument at index 0");
+            }
+
+            auto p = realm->get_privileges(realm_object->obj());
 
             ObjectType object = Object::create_empty(ctx);
             Object::set_property(ctx, object, "read", Value::from_boolean(ctx, has_privilege(p, Privilege::Read)));
@@ -1312,7 +1336,7 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
     realm::Schema parsed_schema = Schema<T>::parse_schema(ctx, schema, defaults, constructors);
 
     // Get a handle to the Realms group
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     if (!realm->is_in_transaction()) {
         throw std::runtime_error("Can only create object schema within a transaction.");
     }
@@ -1377,7 +1401,7 @@ typename T::Function AsyncOpenTaskClass<T>::create_constructor(ContextType ctx) 
 
 template<typename T>
 void AsyncOpenTaskClass<T>::cancel(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
-    std::shared_ptr<AsyncOpenTask> task = *get_internal<T, AsyncOpenTaskClass<T>>(this_object);
+    std::shared_ptr<AsyncOpenTask> task = *get_internal<T, AsyncOpenTaskClass<T>>(ctx, this_object);
     task->cancel();
 }
 
@@ -1391,14 +1415,14 @@ void AsyncOpenTaskClass<T>::add_download_notification(ContextType ctx, ObjectTyp
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     EventLoopDispatcher<SyncProgressHandler> callback_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) mutable {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
         ValueType callback_arguments[2];
         callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
         callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });
 
-    std::shared_ptr<AsyncOpenTask> task = *get_internal<T, AsyncOpenTaskClass<T>>(this_object);
+    std::shared_ptr<AsyncOpenTask> task = *get_internal<T, AsyncOpenTaskClass<T>>(ctx, this_object);
     task->register_download_progress_notifier(callback_handler); // Ignore token as we don't want to unregister.
 }
 #endif

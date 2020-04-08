@@ -40,6 +40,10 @@
 #endif
 
 namespace realm {
+    class ObjectSchema;
+}
+
+namespace realm {
 namespace js {
 
 template<typename>
@@ -289,13 +293,19 @@ struct Object {
     static ObjectType create_instance(ContextType, typename ClassType::Internal*);
 
     template<typename ClassType>
+    static ObjectType create_instance_by_schema(ContextType, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal*);
+    
+    template<typename ClassType>
     static bool is_instance(ContextType, const ObjectType &);
 
     template<typename ClassType>
     static typename ClassType::Internal* get_internal(const ObjectType &);
 
     template<typename ClassType>
-    static void set_internal(const ObjectType &, typename ClassType::Internal*);
+    static typename ClassType::Internal* get_internal(ContextType ctx, const ObjectType &);
+
+    template<typename ClassType>
+    static void set_internal(ContextType ctx, const ObjectType &, typename ClassType::Internal*);
 };
 
 template<typename ValueType>
@@ -357,13 +367,18 @@ REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, typena
 }
 
 template<typename T, typename ClassType>
-REALM_JS_INLINE typename ClassType::Internal* get_internal(const typename T::Object &object) {
-    return Object<T>::template get_internal<ClassType>(object);
+REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context ctx, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr) {
+    return Object<T>::template create_instance_by_schema<ClassType>(ctx, constructor, schema, internal);
 }
 
 template<typename T, typename ClassType>
-REALM_JS_INLINE void set_internal(const typename T::Object &object, typename ClassType::Internal* ptr) {
-    Object<T>::template set_internal<ClassType>(object, ptr);
+REALM_JS_INLINE typename ClassType::Internal* get_internal(typename T::Context ctx, const typename T::Object &object) {
+    return Object<T>::template get_internal<ClassType>(ctx, object);
+}
+
+template<typename T, typename ClassType>
+REALM_JS_INLINE void set_internal(typename T::Context ctx, const typename T::Object &object, typename ClassType::Internal* ptr) {
+    Object<T>::template set_internal<ClassType>(ctx, object, ptr);
 }
 
 template<typename T>
@@ -401,6 +416,7 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
                 REALM_UNREACHABLE();
         }
     };
+
     auto check_collection_type = [&](auto&& list) {
         auto list_type = list->get_type();
         return list_type == type
@@ -415,10 +431,10 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
     if (is_object(context, value)) {
         auto object = to_object(context, value);
         if (Object<T>::template is_instance<ResultsClass<T>>(context, object)) {
-            return check_collection_type(get_internal<T, ResultsClass<T>>(object));
+            return check_collection_type(get_internal<T, ResultsClass<T>>(context, object));
         }
         if (Object<T>::template is_instance<ListClass<T>>(context, object)) {
-            return check_collection_type(get_internal<T, ListClass<T>>(object));
+            return check_collection_type(get_internal<T, ListClass<T>>(context, object));
         }
     }
 

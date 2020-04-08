@@ -40,7 +40,7 @@ struct JSPredicateFunctor {
 public:
     JSPredicateFunctor(Protected<GlobalContextType> ctx, Protected<ObjectType> this_object, Protected<FunctionType> predicate)
     : m_js_function([ctx, this_object, predicate](std::string realm_path, std::promise<bool>&& result) {
-        HANDLESCOPE
+        HANDLESCOPE(ctx)
         ValueType arguments[1] = { Value::from_string(ctx, realm_path) };
         ValueType js_result = Function::callback(ctx, predicate, this_object, 1, arguments);
         result.set_value(Value::validated_to_boolean(ctx, js_result));
@@ -74,7 +74,7 @@ void AdapterClass<T>::constructor(ContextType ctx, ObjectType this_object, Argum
     if (!Object::template is_instance<UserClass<T>>(ctx, user)) {
         throw std::runtime_error("object must be of type Sync.User");
     }
-    auto shared_user = *get_internal<T, UserClass<T>>(user);
+    auto shared_user = *get_internal<T, UserClass<T>>(ctx, user);
     if (shared_user->state() != SyncUser::State::Active) {
         throw std::runtime_error("User is no longer valid.");
     }
@@ -109,12 +109,12 @@ void AdapterClass<T>::constructor(ContextType ctx, ObjectType this_object, Argum
     }
 
     auto adapter = new Adapter(EventLoopDispatcher<void(std::string)>([=](auto realm_path) {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
 
         ValueType arguments[1] = { Value::from_string(ctx, realm_path) };
         Function::callback(protected_ctx, user_callback, protected_this, 1, arguments);
     }), std::move(predicate), path, std::move(sync_config_template));
-    set_internal<T, AdapterClass<T>>(this_object, adapter);
+    set_internal<T, AdapterClass<T>>(ctx, this_object, adapter);
 }
 
 namespace {
@@ -222,9 +222,7 @@ public:
 
     bool key(string_t& val) override
     {
-        m_key = &m_string_pool[val];
-        if (m_key->IsEmpty())
-            *m_key = node::String(val);
+		m_key = val;
         return true;
     }
 
@@ -235,8 +233,7 @@ public:
 
 private:
     ContextType m_ctx;
-    std::unordered_map<std::string, v8::Local<v8::String>> m_string_pool;
-    v8::Local<v8::String>* m_key = nullptr;
+	std::string m_key;
     std::vector<ObjectType> m_obj_stack;
     enum class ArrayState {
         None,
@@ -250,16 +247,17 @@ private:
 
     bool set_field(ValueType const& value)
     {
-        REALM_ASSERT(m_key);
+        REALM_ASSERT(!m_key.empty());
         REALM_ASSERT(!m_obj_stack.empty());
-        // Use Nan::Set directly because going through Object::set_property()
-        // will create a new v8 string rather than using our interned one
-        Nan::TryCatch trycatch;
-        Nan::Set(m_obj_stack.back(), *m_key, value);
-        m_key = nullptr;
-        if (trycatch.HasCaught()) {
-            throw node::Exception(m_ctx, trycatch.Exception());
-        }
+
+		try {
+			Object::set_property(m_ctx, m_obj_stack.back(), node::String(m_key), value);
+			m_key.clear();
+		}
+		catch (const Napi::Error & e) {
+			throw node::Exception(m_ctx, e.Message());
+		}
+
         return true;
     }
 
@@ -275,7 +273,7 @@ private:
 template<typename T>
 void AdapterClass<T>::current(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue &ret) {
     arguments.validate_count(1);
-    auto adapter = get_internal<T, AdapterClass<T>>(this_object);
+    auto adapter = get_internal<T, AdapterClass<T>>(ctx, this_object);
     auto change_set = adapter->current(Value::validated_to_string(ctx, arguments[0]));
     if (!change_set) {
         ret.set_undefined();
@@ -290,14 +288,14 @@ void AdapterClass<T>::current(ContextType ctx, ObjectType this_object, Arguments
 template<typename T>
 void AdapterClass<T>::advance(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue &ret) {
     arguments.validate_count(1);
-    auto adapter = get_internal<T, AdapterClass<T>>(this_object);
+    auto adapter = get_internal<T, AdapterClass<T>>(ctx, this_object);
     adapter->advance(Value::validated_to_string(ctx, arguments[0]));
 }
 
 template<typename T>
 void AdapterClass<T>::realm_at_path(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue &ret) {
     arguments.validate_between(1, 2);
-    auto adapter = get_internal<T, AdapterClass<T>>(this_object);
+    auto adapter = get_internal<T, AdapterClass<T>>(ctx, this_object);
     auto path = Value::validated_to_string(ctx, arguments[0]);
 
     typename Schema<T>::ObjectDefaultsMap defaults;
@@ -319,7 +317,7 @@ void AdapterClass<T>::realm_at_path(ContextType ctx, ObjectType this_object, Arg
 template<typename T>
 void AdapterClass<T>::close(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue &ret) {
     arguments.validate_count(0);
-    get_internal<T, AdapterClass<T>>(this_object)->close();
+    get_internal<T, AdapterClass<T>>(ctx, this_object)->close();
 }
 
 } // js

@@ -18,9 +18,11 @@
 
 #include <string>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <cstdio>
 #include <android/asset_manager.h>
+#include <android/log.h>
 
 #include "../platform.hpp"
 
@@ -107,5 +109,13 @@ namespace realm {
     {
         std::string cmd = "rm " + path;
         system(cmd.c_str());
+    }
+
+    void print(const char* fmt, ...)
+    {
+        va_list vl;
+        va_start(vl, fmt);
+        __android_log_vprint(ANDROID_LOG_INFO, "RealmJS", fmt, vl);
+        va_end(vl);
     }
 }

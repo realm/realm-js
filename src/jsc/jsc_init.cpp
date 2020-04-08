@@ -21,6 +21,14 @@
 
 #include "jsc_init.hpp"
 #include "platform.hpp"
+namespace realm {
+namespace jsc {
+    js::Protected<JSObjectRef> ObjectDefineProperty;
+    js::Protected<JSObjectRef> FunctionPrototype;
+    js::Protected<JSObjectRef> RealmObjectClassConstructor;
+    js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
+}
+}
 
 extern "C" {
 
@@ -35,6 +43,9 @@ void RJSInitializeInContext(JSContextRef ctx) {
     static const jsc::String realm_string = "Realm";
 
     JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+
+    jsc_class_init(ctx, global_object);
+
     JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
 
     jsc::Object::set_property(ctx, global_object, realm_string, realm_constructor, js::ReadOnly | js::DontEnum | js::DontDelete);
