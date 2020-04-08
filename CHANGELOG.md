@@ -1,11 +1,10 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Ability to enable multiplex sync (`Realm.Sync.enableSessionMultiplexing()`)
+* None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed TypeScript definitions, React Native debugger support and added documentation for Realm.Sync.enableSessionMultiplexing(). (https://github.com/realm/realm-js/issues/2776)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
