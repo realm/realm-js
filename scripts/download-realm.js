@@ -24,7 +24,7 @@ const os = require('os');
 const fetch = require('node-fetch');
 const HttpsProxyAgent = require('https-proxy-agent');
 const ini = require('ini');
-const decompress = require('decompress');
+const tar = require('tar');
 const crypto = require('crypto');
 
 const LOCKFILE_NAME = 'download-realm.lock';
@@ -111,11 +111,13 @@ function download(serverFolder, archive, destination) {
 function extract(downloadedArchive, targetFolder, archiveRootFolder) {
     console.log(`Extracting ${path.basename(downloadedArchive)} => ${targetFolder}`);
     if (!archiveRootFolder) {
-        return decompress(downloadedArchive, targetFolder);
+        ensureDirExists(targetFolder);
+        return tar.extract({ file: downloadedArchive, cwd: targetFolder });
     } else {
         const base = path.basename(downloadedArchive).split('.');
         const tempExtractLocation = path.resolve(getTempDir(), base.slice(0, base.length - 2).join('.'));
-        return decompress(downloadedArchive, tempExtractLocation)
+        ensureDirExists(tempExtractLocation);
+        return tar.extract({ file: downloadedArchive, cwd: tempExtractLocation })
             .then(() => fs.readdir(path.resolve(tempExtractLocation, archiveRootFolder)))
             .then(items => Promise.all(items.map(item => {
                 const source = path.resolve(tempExtractLocation, archiveRootFolder, item);
