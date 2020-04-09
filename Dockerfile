@@ -25,7 +25,7 @@ RUN yum -y install \
  && yum clean all \
  \
   # TODO: install openssl in /usr/local
- && curl -SL https://www.openssl.org/source/openssl-1.0.2k.tar.gz | tar -zxC / \
+ && curl -SL https://www.openssl.org/source/old/1.0.2/openssl-1.0.2k.tar.gz | tar -zxC / \
  && cd /openssl-1.0.2k \
  && ./Configure -DPIC -fPIC -fvisibility=hidden -fvisibility-inlines-hidden no-zlib-dynamic no-dso linux-x86_64 --prefix=/usr \
  && make && make install_sw \
