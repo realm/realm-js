@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Replace `decompress` with `node-tar` to avoid using vulnerable dependencies ([#2773](https://github.com/realm/realm-js/issues/2773))
+* Fixed TypeScript definitions, React Native debugger support and added documentation for Realm.Sync.enableSessionMultiplexing(). (https://github.com/realm/realm-js/issues/2776)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
