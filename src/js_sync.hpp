@@ -268,7 +268,7 @@ private:
 template<typename T>
 void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
-    auto user = *get_internal<T, UserClass<T>>(this_object);
+    auto user = get_internal<T, UserClass<T>>(this_object);
     if (auto session = user->session_for_on_disk_path(Value::validated_to_string(ctx, args[0]))) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
     } else {
@@ -280,7 +280,7 @@ template<typename T>
 void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
         ObjectType config = Object::create_empty(ctx);
-        Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
+        Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
         Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url));
         if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
@@ -303,7 +303,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
 template<typename T>
 void SessionClass<T>::get_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
-        return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
+        return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
     } else {
         return_value.set_undefined();
     }
