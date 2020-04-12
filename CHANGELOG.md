@@ -26,7 +26,11 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 ### Internal
 * Updated Realm Core from ??? to Realm Core v10.0.0-alpha.4.
 * Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.6.
+<<<<<<< HEAD
 * Updated Realm Object Store to commit 0d681e11dadb48718f7175b547e761e5cc6cf42e.
+=======
+* Updated Realm Object Store to commit 7137594a7935545b289f8509a8226ea312727184.
+>>>>>>> 64128affa50a2cdf40a2eba24bde106f8212f6fe
 
 
 x.x.x Release notes (yyyy-MM-dd)
