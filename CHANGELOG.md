@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Replace `decompress` with `node-tar` to avoid using vulnerable dependencies ([#2773](https://github.com/realm/realm-js/issues/2773))
 * It was not possible to make client resync if a table contained binary data.
+* Fixed TypeScript definitions, React Native debugger support and added documentation for Realm.Sync.enableSessionMultiplexing(). (https://github.com/realm/realm-js/issues/2776)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -91,7 +92,6 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 ### Internal
 * Complete rewrite of Realm JavaScript for Node.js on top of [Node.js N-API](https://nodejs.org/api/n-api.html)
 * Realm JavaScript is now binary compatible between Node.js versions (due to NAPI API stability and backward compatibility).
-
 4.0.0-beta.2 Release notes (2020-2-24)
 =============================================================
 ### Breaking changes
@@ -216,6 +216,7 @@ NOTE: The following methods have been removed in later versions.
 ### Internal
 * Updated to Realm Core v6.0.0-alpha.23.
 * Updated to Realm Sync v4.7.1-core6.4.
+
 
 3.6.5 Release notes (2020-3-4)
 =============================================================

@@ -24,7 +24,14 @@
 #include "js_util.hpp"
 
 #include "napi.h"
+
 #include <ctype.h>
+#include <unordered_set>
+#include <vector>
+#include <functional>
+#include <string>
+#include <unordered_map>
+#include <exception>
 
 //forward declare the types for gcc to compile correctly
 namespace realm {
