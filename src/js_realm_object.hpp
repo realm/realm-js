@@ -250,7 +250,7 @@ void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments
 template<typename T>
 void RealmObjectClass<T>::get_realm(ContextType ctx, ObjectType object, ReturnValue& return_value) {
     return_value.set_undefined();
-    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
     if (realm_object) {
         ObjectType realm_obj = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm_object->realm()));
         return_value.set(realm_obj);

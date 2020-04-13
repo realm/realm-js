@@ -872,9 +872,9 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
 
     std::shared_ptr<AsyncOpenTask> task;
     task = Realm::get_synchronized_realm(config);
-
-    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults=std::move(defaults),
-                                                               constructors=std::move(constructors)](ThreadSafeReference<Realm>&& realm_ref, std::exception_ptr error) mutable {
+    
+    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults = std::move(defaults), constructors = std::move(constructors)]
+                                                               (ThreadSafeReference&& realm_ref, std::exception_ptr error) {
         HANDLESCOPE(protected_ctx)
 
         if (error) {
@@ -893,8 +893,10 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
             }
         }
 
-        auto realm = Realm::get_shared_realm(std::move(realm_ref), Context<T>::get_execution_context_id(protected_ctx));
-        set_binding_context(protected_ctx, realm, schema_updated, std::move(defaults), std::move(constructors));
+        auto def = std::move(defaults);
+        auto ctor = std::move(constructors);
+        const SharedRealm realm = Realm::get_shared_realm(std::move(realm_ref), Context<T>::get_execution_context_id(protected_ctx));
+        set_binding_context(protected_ctx, realm, schema_updated, std::move(def), std::move(ctor));
         ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
 
         ValueType callback_arguments[2];
@@ -902,6 +904,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         callback_arguments[1] = Value::from_null(protected_ctx);
         Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });
+
     task->start(callback_handler);
     return_value.set(create_object<T, AsyncOpenTaskClass<T>>(ctx, new std::shared_ptr<AsyncOpenTask>(task)));
 }
@@ -1043,7 +1046,7 @@ template<typename T>
 void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->verify_open();
 
     if (!realm->is_in_transaction()) {

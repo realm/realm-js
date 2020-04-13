@@ -115,8 +115,8 @@ void ChangeObject<T>::get_changes(ContextType ctx, ObjectType object, ReturnValu
     auto& change_set = changes.get_changes();
     ObjectType change_object = Object::create_empty(ctx);
 
-    auto old_realm = validated_get(object).get_old_realm();
-    auto new_realm = validated_get(object).get_new_realm();
+    auto old_realm = validated_get(ctx, object).get_old_realm();
+    auto new_realm = validated_get(ctx, object).get_new_realm();
 
     old_realm->m_binding_context.reset(new RealmDelegate<T>(old_realm, Context<T>::get_global_context(ctx)));
     new_realm->m_binding_context.reset(new RealmDelegate<T>(new_realm, Context<T>::get_global_context(ctx)));

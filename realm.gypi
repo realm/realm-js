@@ -51,7 +51,6 @@
         "src/object-store/src/impl/transact_log_handler.cpp",
         "src/object-store/src/impl/weak_realm_notifier.cpp",
         "src/object-store/src/util/uuid.cpp",
-
         "src/object-store/external/json/json.hpp",
         "src/object-store/src/audit.hpp",
         "src/object-store/src/binding_callback_thread_observer.hpp",
@@ -77,7 +76,6 @@
         "src/object-store/src/impl/notification_wrapper.hpp",
         "src/object-store/src/impl/object_accessor_impl.hpp",
         "src/object-store/src/impl/object_notifier.hpp",
-        "src/object-store/src/impl/primitive_list_notifier.hpp",
         "src/object-store/src/impl/realm_coordinator.hpp",
         "src/object-store/src/impl/results_notifier.hpp",
         "src/object-store/src/impl/transact_log_handler.hpp",
