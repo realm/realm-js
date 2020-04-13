@@ -267,7 +267,7 @@ template<typename T>
 void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
     auto user = get_internal<T, UserClass<T>>(this_object);
-    if (auto session = user->session_for_on_disk_path(Value::validated_to_string(ctx, args[0]))) {
+    if (auto session = (*user)->session_for_on_disk_path(Value::validated_to_string(ctx, args[0]))) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
     } else {
         return_value.set_undefined();
@@ -713,16 +713,10 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
         }
 
-        ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");
-        SharedUser shared_user = *get_internal<T, UserClass<T>>(user);
-        if (shared_user->state() != SyncUser::State::LoggedIn) {
+        ObjectType user_object = Object::validated_get_object(ctx, sync_config_object, "user");
+        auto user = get_internal<T, UserClass<T>>(user_object);
+        if ((*user)->state() != SyncUser::State::LoggedIn) {
             throw std::runtime_error("User is no longer valid.");
-        }
-
-        ObjectType app_value = Object::validated_get_object(ctx, sync_config_object, "app");
-        std::shared_ptr<app::App> shared_app;
-        if (!Value::is_undefined(ctx, app_value)) {
-            shared_app = *get_internal<T, AppClass<T>>(app_value);
         }
 
         ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
@@ -753,7 +747,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ssl_verify_callback = std::move(ssl_verify_functor);
         }
 
-        config.sync_config = std::make_shared<SyncConfig>(shared_app, shared_user, std::move(partition_value));
+        config.sync_config = std::make_shared<SyncConfig>(user->m_app, *user, std::move(partition_value));
         config.sync_config->error_handler = std::move(error_handler);
 
         SyncSessionStopPolicy session_stop_policy = SyncSessionStopPolicy::AfterChangesUploaded;

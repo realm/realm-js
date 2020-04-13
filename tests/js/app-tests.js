@@ -101,7 +101,7 @@ module.exports = {
     async testMongoDBRealmSync() {
         Realm.Sync.setLogLevel('all');
         Realm.Sync.setLogger((level, message) => console.log(message));
-        const appId = 'aaa-ylosb';
+        const appId = 'default-nglub';
         const appConfig = {
             id: appId,
             url: 'http://localhost:9090',
@@ -115,19 +115,22 @@ module.exports = {
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
+        console.log("HEST 0 - logged in");
+
         const realmConfig = {
             schema: [{
-                name: 'bars',
+                name: 'Dog',
                 primaryKey: "_id",
                 properties: {
                     "_id": "object id",
-                    "store_id": { type: "string", optional: true }
+                    "breed": { type: "string", optional: true },
+                    "name": "string",
+                    "realm_id": { type: "string", optional: true }
                 }
             }],
             sync: {
                 user: user,
-                app: app,
-                partitionValue: "/"
+                partitionValue: "Foo"
             }
         };
         Realm.deleteFile(realmConfig);
@@ -137,13 +140,13 @@ module.exports = {
             realm.deleteAll();
         });
         realm.write(() => {
-            realm.create("bars", { "_id": new ObjectId('0000002a9a7969d24bea4cf5') });
+            realm.create("Dog", { "_id": new ObjectId('0000002a9a7969d24bea4cf5'), "name": "King", "realm_id": "Foo" });
         });
 
-        console.log(`HEST 1: ${realm.objects("bars").length}`);
+        console.log(`HEST 1: ${realm.objects("Dog").length}`);
         await realm.syncSession.uploadAllLocalChanges();
-        console.log(`HEST 2: ${realm.objects("bars").length}`);
-        TestCase.assertEqual(realm.objects("bars").length, 1);
+        console.log(`HEST 2: ${realm.objects("Dog").length}`);
+        TestCase.assertEqual(realm.objects("Dog").length, 1);
         realm.close();
 
         Realm.deleteFile(realmConfig);
@@ -153,7 +156,7 @@ module.exports = {
         await realm2.syncSession.downloadAllServerChanges();
         console.log("HEST 4");
 
-        TestCase.assertEqual(realm2.objects("bars").length, 1);
+        TestCase.assertEqual(realm2.objects("Dog").length, 1);
         realm2.close();
         user.logOut();
     }

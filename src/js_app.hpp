@@ -208,7 +208,7 @@ void AppClass<T>::all_users(ContextType ctx, ObjectType this_object, Arguments& 
 
     auto users = Object::create_empty(ctx);
     for (auto user : app->all_users()) {
-        Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
+        Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new User<T>(user, app)), ReadOnly | DontDelete);
     }
     return_value.set(users);
 }
@@ -219,7 +219,7 @@ void AppClass<T>::current_user(ContextType ctx, ObjectType this_object, Argument
 
     auto app = *get_internal<T, AppClass<T>>(this_object);
     auto user = app->current_user();
-    return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(user)));
+    return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(user, app)));
 }
 
 
@@ -228,9 +228,9 @@ void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments
     args.validate_count(1);
 
     auto app = *get_internal<T, AppClass<T>>(this_object);
-    auto user = *get_internal<T, UserClass<T>>(Value::validated_to_object(ctx, args[0], "user"));
+    auto user = get_internal<T, UserClass<T>>(Value::validated_to_object(ctx, args[0], "user"));
 
-    app->switch_user(user);
+    app->switch_user(*user);
     return_value.set(Value::from_undefined(ctx));
 }
 

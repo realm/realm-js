@@ -186,8 +186,6 @@ private:
     const ObjectSchema* m_object_schema;
     std::string m_string_buffer;
     OwnedBinaryData m_owned_binary_data;
-    Obj m_parent;
-    const Property* m_property = nullptr;
     template<typename, typename>
     friend struct _impl::Unbox;
 };

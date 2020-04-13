@@ -33,15 +33,19 @@ namespace realm {
 namespace js {
 
 using SharedUser = std::shared_ptr<realm::SyncUser>;
+using SharedApp = std::shared_ptr<realm::app::App>;
 
 template<typename T>
 class User : public SharedUser {
 public:
-    User(SharedUser user, app::App app) : SharedUser(std::move(user)), m_app(std::move(app)) {}
+    User(SharedUser user, SharedApp app) : SharedUser(std::move(user)), m_app(std::move(app)) {}
     User(SharedUser user) : SharedUser(std::move(user)), m_app(nullptr) {}
     User(User &&) = default;
 
-    app::App m_app;
+    User& operator=(User &&) = default;
+    User& operator=(User const&) = default;
+
+    SharedApp m_app;
 };
 
 template<typename T>
@@ -180,7 +184,7 @@ template<typename T>
 void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(1);
 
-    auto user = *get_internal<T, UserClass<T>>(this_object);
+    auto user = get_internal<T, UserClass<T>>(this_object);
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
@@ -200,13 +204,13 @@ void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Argument
         Function::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
     });
 
-    user.m_app.remove_user(user, callback_handler);
+    user->m_app->remove_user(*user, callback_handler);
 }
 
 template<typename T>
 void UserClass<T>::link_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
     args.validate_count(2);
-    auto user = *get_internal<T, UserClass<T>>(this_object);
+    auto user = get_internal<T, UserClass<T>>(this_object);
 
     auto credentials = *get_internal<T, CredentialsClass<T>>(Value::validated_to_object(ctx, args[0], "credentials"));
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
@@ -231,12 +235,12 @@ void UserClass<T>::link_user(ContextType ctx, ObjectType this_object, Arguments&
         }
 
         ValueType callback_arguments[2];
-        callback_arguments[0] = create_object<T, UserClass<T>>(ctx, new User(shared_user, user.m_app));
+        callback_arguments[0] = create_object<T, UserClass<T>>(ctx, new User<T>(shared_user, user->m_app));
         callback_arguments[1] = Value::from_undefined(protected_ctx);
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });
 
-    user.m_app.link_user(user, credentials, callback_handler);
+    user->m_app->link_user(*user, credentials, callback_handler);
 }
 
 
