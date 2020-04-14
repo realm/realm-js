@@ -21,7 +21,7 @@ RUN yum -y install \
     libXScrnSaver \
     gtk3 \
     alsa-lib \
-    git \
+    #git \
  && yum clean all \
   \
   # TODO: install openssl in /usr/local
@@ -42,12 +42,18 @@ RUN yum -y install \
 
 
 #Install and build git from source
-RUN yum -y remove git* \
-&& yum -y install wget perl-CPAN gettext-devel perl-devel  openssl-devel  zlib-devel expat-devel curl-devel gcc perl-ExtUtils-MakeMaker autoconf automake\
-&& wget https://github.com/git/git/archive/v2.26.0.tar.gz -O git.tar.gz \
-&& tar -xvf git.tar.gz \
-&& cd git-* \
-#RUN make configure ./configure --prefix=/usr/local
-&& make prefix=/usr/local configure ./configure \ 
-&& make prefix=/usr/local/git install \ 
-&& git --version
+# RUN yum -y remove git* \
+# && yum -y install wget perl-CPAN gettext-devel perl-devel  openssl-devel  zlib-devel expat-devel curl-devel gcc perl-ExtUtils-MakeMaker autoconf automake\
+# && wget https://github.com/git/git/archive/v2.26.0.tar.gz -O git.tar.gz \
+# && tar -xvf git.tar.gz \
+# && cd git-* \
+# #RUN make configure ./configure --prefix=/usr/local
+# && make prefix=/usr/local configure ./configure \ 
+# && make prefix=/usr/local/git install \ 
+# && git --version
+
+
+#Install git from scl
+RUN yum -y install centos-release-scl && \
+    sudo yum install rh-git29 && \
+    scl enable rh-git29 echo which git
