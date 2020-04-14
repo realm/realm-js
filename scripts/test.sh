@@ -260,6 +260,7 @@ set_nvm_default() {
 rm -rf ~/.yarn-cache/npm-realm-*
 
 echo $(git --version)
+git -c user.name=ci -c user.email=ci@realm.io
 
 case "$TARGET" in
 "check-environment")
