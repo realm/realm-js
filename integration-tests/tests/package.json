@@ -5,10 +5,10 @@
   "main": "dist/index.js",
   "private": true,
   "scripts": {
-    "build": "../../node_modules/.bin/tsc -p .",
+    "build": "tsc -p .",
     "start": "ts-mocha --project ./tsconfig.json --require src/utils/segfault-handler.js --require src/utils/inject-globals.js --watch-extensions ts,js --watch src/index.ts",
     "prepack": "npm ci --ignore-scripts && npm run build",
-    "lint": "../../node_modules/.bin/tslint -p ."
+    "lint": "tslint -p ."
   },
   "peerDependencies": {
     "mocha": "^5.2.0",
@@ -21,7 +21,9 @@
     "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
     "realm": "../..",
-    "ts-mocha": "^6.0.0"
+    "ts-mocha": "^6.0.0",
+    "tslint": "../../node_modules/tslint",
+    "typescript": "../../node_modules/typescript"
   },
   "dependencies": {
     "chai": "^4.2.0"
