@@ -1,14 +1,14 @@
 FROM centos:7
 ​
 USER root
-​
+
 RUN yum install -y centos-release-scl \
  && yum-config-manager --enable rhel-server-rhscl-7-rpms \
  && yum install -y yum install devtoolset-9 python27 rh-git218
-​
+
 ENV NPM_CONFIG_UNSAFE_PERM true
 ENV NVM_DIR /tmp/.nvm
-​
+
 RUN yum -y install \
     chrpath \
     jq \
@@ -35,7 +35,7 @@ RUN yum -y install \
  && nvm install 12 \
  && nvm install 13 \
  && chmod a+rwX -R $NVM_DIR
-​
+
 ENTRYPOINT ["scl", "enable", "devtoolset-9", "python27", "rh-git29", "--"]
 
 RUN git --version
