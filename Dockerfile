@@ -1,5 +1,5 @@
 FROM centos:7
-​
+
 USER root
 
 RUN yum install -y centos-release-scl \
@@ -36,6 +36,4 @@ RUN yum -y install \
  && nvm install 13 \
  && chmod a+rwX -R $NVM_DIR
 
-ENTRYPOINT ["scl", "enable", "devtoolset-9", "python27", "rh-git29", "--"]
-
-RUN git --version
+ENTRYPOINT ["scl", "enable", "devtoolset-9", "python27", "rh-git218", "--"]
