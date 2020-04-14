@@ -10,9 +10,8 @@ ENV NPM_CONFIG_UNSAFE_PERM true
 ENV NVM_DIR /tmp/.nvm
 
 #Install git from scl
-RUN yum -y install centos-release-scl && \
-    yum -y install rh-git29 && \
-    scl enable rh-git29 echo which git
+RUN yum -y install centos-release-scl &&  rh-git29 && \
+    scl enable rh-git29 echo $(which git && git --version)
 
 
 RUN yum -y install \
