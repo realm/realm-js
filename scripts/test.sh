@@ -259,9 +259,6 @@ set_nvm_default() {
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
 
-export GIT_COMMITTER_NAME="ci"
-export GIT_COMMITTER_EMAIL="ci@realm.io"
-
 case "$TARGET" in
 "check-environment")
   npm run check-environment
