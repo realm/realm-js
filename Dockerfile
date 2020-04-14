@@ -1,7 +1,5 @@
 FROM centos:7
 
-USER root
-
 RUN yum install -y centos-release-scl \
  && yum-config-manager --enable rhel-server-rhscl-7-rpms \
  && yum install -y yum install devtoolset-9 python27 rh-git218
@@ -36,4 +34,4 @@ RUN yum -y install \
  && nvm install 13 \
  && chmod a+rwX -R $NVM_DIR
 
-ENTRYPOINT ["scl", "enable", "devtoolset-9", "python27", "rh-git218", "--"]
+ENV PATH /opt/rh/rh-git218/root/usr/bin:/opt/rh/python27/root/usr/bin:/opt/rh/devtoolset-9/root/usr/bin:$PATH
