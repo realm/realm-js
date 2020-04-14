@@ -45,6 +45,6 @@ export class MockNetworkTransport implements NetworkTransport {
         successCallback: SuccessCallback,
         errorCallback: ErrorCallback
     ) {
-        this.fetc;
+        return this.fetchAndParse(request).then(successCallback, errorCallback);
     }
 }
