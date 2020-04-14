@@ -42,13 +42,13 @@ RUN yum -y install \
 
 
 #Install and build git from source
-RUN sudo yum remove git*
-RUN sudo yum groupinstall "Development Tools"
-RUN sudo yum -y install wget perl-CPAN gettext-devel perl-devel  openssl-devel  zlib-devel
+RUN yum remove git*
+RUN yum groupinstall "Development Tools"
+RUN yum -y install wget perl-CPAN gettext-devel perl-devel  openssl-devel  zlib-devel
 RUN export VER="2.26.0"
 RUN wget https://github.com/git/git/archive/v2.26.0.tar.gz
 RUN tar -xvf v${VER}.tar.gz
 RUN rm -f v${VER}.tar.gz
 RUN cd git-*
-RUN sudo make install
+RUN make install
 RUN git --version
