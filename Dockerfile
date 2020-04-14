@@ -21,7 +21,8 @@ RUN yum -y install \
     libXScrnSaver \
     gtk3 \
     alsa-lib \
-    git \
+  #  git \
+    rpm -U https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/git2u-all-2.16.2-1.ius.centos7.noarch.rpm && yum install -y git \
  && yum clean all \
   \
   # TODO: install openssl in /usr/local
