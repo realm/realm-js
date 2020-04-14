@@ -21,8 +21,9 @@ RUN yum -y install \
     libXScrnSaver \
     gtk3 \
     alsa-lib \
-    git \
+  #  git \
  && yum clean all \
+ && dnf install git \
  \
   # TODO: install openssl in /usr/local
  && curl -SL https://www.openssl.org/source/openssl-1.0.2k.tar.gz | tar -zxC / \
