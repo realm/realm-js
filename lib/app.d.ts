@@ -82,9 +82,9 @@ declare namespace Realm {
         readonly providerType: string;
     
         /**
-         * The contents of this credential as they will be passed to the server.
+         * Creates a simple object which can be passed to the server as the body of a request to authenticate.
          */
-        readonly material: { [key: string]: string };
+        toJSON(): { [key: string]: string };
     
         // TODO: Add providerCapabilities?
     }

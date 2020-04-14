@@ -16,5 +16,7 @@ export class AnonymousCredentials extends Credentials
     public readonly providerType = "anon-user";
 
     /** @inheritdoc */
-    public readonly material = {};
+    public toJSON() {
+        return {};
+    }
 }

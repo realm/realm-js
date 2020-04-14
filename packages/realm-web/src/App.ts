@@ -109,7 +109,7 @@ export class App<FunctionsFactoryType extends Realm.FunctionsFactory>
             {
                 method: "POST",
                 path: `/auth/providers/${credentials.providerName}/login`,
-                body: credentials.material
+                body: credentials.toJSON()
             },
             null
         );

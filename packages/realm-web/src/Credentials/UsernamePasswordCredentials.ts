@@ -29,7 +29,7 @@ export class UsernamePasswordCredentials extends Credentials
     }
 
     /** @inheritdoc */
-    public get material() {
+    public toJSON() {
         return {
             username: this.username,
             password: this.password
