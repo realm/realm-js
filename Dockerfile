@@ -45,10 +45,9 @@ RUN yum -y install \
 RUN yum -y remove git*
 RUN yum -y groupinstall "Development Tools"
 RUN yum -y install wget perl-CPAN gettext-devel perl-devel  openssl-devel  zlib-devel
-RUN export VER="2.26.0"
-RUN wget https://github.com/git/git/archive/v2.26.0.tar.gz
-RUN tar -xvf v2.26.0.tar.gz
-RUN rm -f v2.26.0.tar.gz
+RUN wget https://github.com/git/git/archive/v2.26.0.tar.gz -O git.tar.gz
+RUN tar -xvf git.tar.gz
 RUN cd git-*
+RUN make configure ./configure --prefix=/usr/local
 RUN make install
 RUN git --version
