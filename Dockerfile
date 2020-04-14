@@ -11,7 +11,7 @@ ENV NVM_DIR /tmp/.nvm
 
 #Install git from scl
 RUN yum -y install centos-release-scl rh-git29 && \
-    scl enable rh-git29 echo $(which git && git --version)
+    scl enable rh-git29 bash which git && git --version
 
 
 RUN yum -y install \
