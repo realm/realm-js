@@ -4,11 +4,11 @@ import { Transport, Request } from "./Transport";
  * Prefixes all request with a path prefix
  */
 export class PrefixedTransport implements Transport {
-    private readonly fetcher: Transport;
+    private readonly transport: Transport;
     private readonly pathPrefix: string;
 
-    constructor(fetcher: Transport, pathPrefix: string) {
-        this.fetcher = fetcher;
+    constructor(transport: Transport, pathPrefix: string) {
+        this.transport = transport;
         this.pathPrefix = pathPrefix;
     }
 
@@ -21,7 +21,7 @@ export class PrefixedTransport implements Transport {
             ...request,
             path: `${this.pathPrefix}${request.path}`
         };
-        return this.fetcher.fetch(prefixedRequest, user);
+        return this.transport.fetch(prefixedRequest, user);
     }
 
     /** @inheritdoc */

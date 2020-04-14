@@ -52,8 +52,7 @@ export class FunctionsFactory {
 
 /**
  * Create a factory of functions
- * @param fetcher The object used to perform HTTP fetching
- * @param serviceName An optional name of the service to call functions on
+ * @param config the configuration passed to the factory.
  */
 export function create<FunctionsFactoryType extends Realm.FunctionsFactory>(
     config: FunctionsFactoryConfiguration

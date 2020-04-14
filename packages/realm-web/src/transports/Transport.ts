@@ -27,7 +27,7 @@ export interface Transport {
     ): Promise<ResponseBody>;
 
     /**
-     * Creates another fetcher from this instance, adding a prefix to its path.
+     * Creates another transport from this instance, adding a prefix to its path.
      * @param pathPrefix Path to prefix
      */
     prefix(pathPrefix: string): Transport;
