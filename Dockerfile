@@ -43,7 +43,7 @@ RUN yum -y install \
 
 #Install and build git from source
 RUN yum -y remove git* \
-&& yum -y install wget perl-CPAN gettext-devel perl-devel  openssl-devel  zlib-devel \
+&& yum -y install wget perl-CPAN gettext-devel perl-devel  openssl-devel  zlib-devel expat-devel curl-devel gcc perl-ExtUtils-MakeMaker autoconf automake\
 && wget https://github.com/git/git/archive/v2.26.0.tar.gz -O git.tar.gz \
 && tar -xvf git.tar.gz \
 && cd git-* \
