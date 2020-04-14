@@ -192,7 +192,7 @@ void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args
         }
 
         ValueType callback_arguments[2];
-        callback_arguments[0] = create_object<T, UserClass<T>>(ctx, new User<T>(user, app));
+        callback_arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new User<T>(user, app));
         callback_arguments[1] = Value::from_undefined(protected_ctx);
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });
