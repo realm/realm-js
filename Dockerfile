@@ -9,11 +9,6 @@ ENV GIT_COMMITTER_EMAIL=ci@realm.io
 ENV NPM_CONFIG_UNSAFE_PERM true
 ENV NVM_DIR /tmp/.nvm
 
-#Install git from scl
-RUN yum -y install centos-release-scl rh-git29 && \
-    scl enable rh-git29 bash which git && git --version
-
-
 RUN yum -y install \
     chrpath \
     jq \
@@ -56,3 +51,7 @@ RUN yum -y install \
 # && make prefix=/usr/local configure ./configure \ 
 # && make prefix=/usr/local/git install \ 
 # && git --version
+
+#Install git from scl
+RUN yum -y install centos-release-scl rh-git29 && \
+    scl enable rh-git29 bash which git && git --version
