@@ -259,6 +259,8 @@ set_nvm_default() {
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
 
+echo $(git --version)
+
 case "$TARGET" in
 "check-environment")
   npm run check-environment
