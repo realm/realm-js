@@ -23,6 +23,10 @@
 /// <reference path="auth-providers.d.ts" />
 
 declare namespace Realm {
+    // See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
+    type ObjectId = import("bson").ObjectId;
+    type Binary = import("bson").Binary;
+    
     namespace Credentials {
         /**
          * Payload sent when authenticating using the [Email/Password Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
@@ -140,7 +144,7 @@ declare namespace Realm {
         services: Realm.Services;
 
         /**
-         * 
+         * Perform operations on an apps authentication providers.
          */
         auth: Realm.AuthProviders;
 

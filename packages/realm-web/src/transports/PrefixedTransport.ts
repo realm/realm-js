@@ -50,7 +50,7 @@ export class PrefixedTransport implements Transport {
     ): Promise<ResponseBody> {
         const prefixedRequest = {
             ...request,
-            path: `${this.pathPrefix}${request.path}`,
+            path: `${this.pathPrefix}${request.path || ""}`,
         };
         return this.transport.fetch(prefixedRequest, user);
     }

@@ -1,0 +1,161 @@
+import { expect } from "chai";
+import { ObjectId } from "bson";
+
+import { ApiKeyAuthProvider } from "./ApiKeyAuthProvider";
+import { MockTransport } from "../test/MockTransport";
+
+describe("ApiKeyAuthProvider", () => {
+    it("can create an api key", async () => {
+        const transport = new MockTransport([
+            {
+                _id: {
+                    $oid: "deadbeefdeadbeefdeadbeef"
+                },
+                name: "my-key-name",
+                key: "super-secret-key",
+                disabled: true
+            }
+        ]);
+        const provider = new ApiKeyAuthProvider(transport);
+        const apiKey = await provider.create("my-key-name");
+        // Expect something of the newly created key
+        expect(typeof apiKey._id).equals("object");
+        expect(apiKey._id.constructor.name).equals("ObjectId");
+        expect(apiKey.name).equals("my-key-name");
+        expect(apiKey.key).equals("super-secret-key");
+        expect(apiKey.disabled).equals(true);
+        // Expect something of the request
+        expect(transport.requests).deep.equals([
+            {
+                method: "POST",
+                url: "http://localhost:1337/auth/api_keys",
+                body: {
+                    name: "my-key-name"
+                }
+            }
+        ]);
+    });
+
+    it("can get an api key", async () => {
+        const transport = new MockTransport([
+            {
+                _id: {
+                    $oid: "deadbeefdeadbeefdeadbeef"
+                },
+                name: "my-key-name",
+                key: "super-secret-key",
+                disabled: true
+            }
+        ]);
+        const provider = new ApiKeyAuthProvider(transport);
+        const apiKey = await provider.get(
+            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef")
+        );
+        // Expect something of the key
+        expect(typeof apiKey._id).equals("object");
+        expect(apiKey._id.constructor.name).equals("ObjectId");
+        expect(apiKey._id.toHexString()).equals("deadbeefdeadbeefdeadbeef");
+        expect(apiKey.name).equals("my-key-name");
+        expect(apiKey.key).equals("super-secret-key");
+        expect(apiKey.disabled).equals(true);
+        // Expect something of the request
+        expect(transport.requests).deep.equals([
+            {
+                method: "GET",
+                url:
+                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef"
+            }
+        ]);
+    });
+
+    it("can list all api keys", async () => {
+        const transport = new MockTransport([
+            [
+                {
+                    _id: {
+                        $oid: "deadbeefdeadbeefdeadbee1"
+                    },
+                    name: "my-key-name-1",
+                    key: "super-secret-key-1",
+                    disabled: true
+                },
+                {
+                    _id: {
+                        $oid: "deadbeefdeadbeefdeadbee2"
+                    },
+                    name: "my-key-name-2",
+                    key: "super-secret-key-2",
+                    disabled: true
+                }
+            ]
+        ]);
+        const provider = new ApiKeyAuthProvider(transport);
+        const apiKeys = await provider.list();
+        // Expect something of the first key
+        const [firstKey, secondKey] = apiKeys;
+        expect(firstKey._id.toHexString()).equals("deadbeefdeadbeefdeadbee1");
+        expect(firstKey.name).equals("my-key-name-1");
+        expect(firstKey.key).equals("super-secret-key-1");
+        expect(firstKey.disabled).equals(true);
+        // Expect something of the second key
+        expect(secondKey._id.toHexString()).equals("deadbeefdeadbeefdeadbee2");
+        expect(secondKey.name).equals("my-key-name-2");
+        expect(secondKey.key).equals("super-secret-key-2");
+        expect(secondKey.disabled).equals(true);
+        // Expect something of the request
+        expect(transport.requests).deep.equals([
+            {
+                method: "GET",
+                url: "http://localhost:1337/auth/api_keys"
+            }
+        ]);
+    });
+
+    it("can delete a key", async () => {
+        const transport = new MockTransport([{}]);
+        const provider = new ApiKeyAuthProvider(transport);
+        await provider.delete(
+            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef")
+        );
+        // Expect something of the request
+        expect(transport.requests).deep.equals([
+            {
+                method: "DELETE",
+                url:
+                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef"
+            }
+        ]);
+    });
+
+    it("can enable a key", async () => {
+        const transport = new MockTransport([{}]);
+        const provider = new ApiKeyAuthProvider(transport);
+        await provider.enable(
+            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef")
+        );
+        // Expect something of the request
+        expect(transport.requests).deep.equals([
+            {
+                method: "PUT",
+                url:
+                    "http://localhost:1337/auth/api_keys/enable/deadbeefdeadbeefdeadbeef"
+            }
+        ]);
+    });
+
+    it("can disable a key", async () => {
+        const transport = new MockTransport([{}]);
+        const provider = new ApiKeyAuthProvider(transport);
+        await provider.disable(
+            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef")
+        );
+        // Expect something of the request
+        expect(transport.requests).deep.equals([
+            {
+                method: "PUT",
+                url:
+                    "http://localhost:1337/auth/api_keys/disable/deadbeefdeadbeefdeadbeef"
+            }
+        ]);
+    });
+});
