@@ -20,15 +20,15 @@ declare namespace Realm {
     /**
      * The constructor of MongoDB Realm App.
      */
-    type AppConstructor = new <FF extends FunctionsFactory>(
+    type AppConstructor = new <FunctionsFactoryType extends FunctionsFactory>(
         id: string,
         configuration?: Partial<AppConfiguration>,
-    ) => App<FF>;
+    ) => App<FunctionsFactoryType>;
 
     /**
      * A MongoDB Realm App.
      */
-    interface App<FF extends FunctionsFactory = FunctionsFactory> {
+    interface App<FunctionsFactoryType extends FunctionsFactory = FunctionsFactory> {
         /**
          * The id of this Realm app.
          */
@@ -37,7 +37,7 @@ declare namespace Realm {
         /**
          * Use this to call functions defined on the MongoDB Realm server.
          */
-        functions: FF;
+        functions: FunctionsFactoryType;
 
         /**
          * The last user to log in or being switched to.

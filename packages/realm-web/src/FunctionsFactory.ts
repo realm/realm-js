@@ -55,14 +55,14 @@ export class FunctionsFactory {
  * @param fetcher The object used to perform HTTP fetching
  * @param serviceName An optional name of the service to call functions on
  */
-export function create<FF extends Realm.FunctionsFactory>(
+export function create<FunctionsFactoryType extends Realm.FunctionsFactory>(
     config: FunctionsFactoryConfiguration
-): FF {
+): FunctionsFactoryType {
     // Create a proxy, wrapping a simple object returning methods that calls functions
     // TODO: Lazily fetch available functions and return these from the ownKeys() trap
     const factory = new FunctionsFactory(config);
     // Wrap the factory in a promise that calls the internal call method
-    return new Proxy((factory as any) as FF, {
+    return new Proxy((factory as any) as FunctionsFactoryType, {
         get(target, p, receiver) {
             if (typeof p === "string" && RESERVED_NAMES.indexOf(p) === -1) {
                 return target.callFunction.bind(target, p);

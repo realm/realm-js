@@ -11,8 +11,9 @@ export interface AppConfiguration extends Realm.AppConfiguration {
 /**
  * MongoDB Realm App
  */
-export class App<FF extends Realm.FunctionsFactory> implements Realm.App {
-    public readonly functions: FF;
+export class App<FunctionsFactoryType extends Realm.FunctionsFactory>
+    implements Realm.App {
+    public readonly functions: FunctionsFactoryType;
     public readonly id: string;
     public readonly baseRoute = "/api/client/v2.0";
 
@@ -61,7 +62,7 @@ export class App<FF extends Realm.FunctionsFactory> implements Realm.App {
         this.baseTransport = authTransport.prefix(this.baseRoute);
         this.appTransport = this.baseTransport.prefix(`/app/${this.id}`);
         // Construct the functions factory
-        this.functions = createFunctionsFactory<FF>({
+        this.functions = createFunctionsFactory<FunctionsFactoryType>({
             transport: this.appTransport
         });
     }
