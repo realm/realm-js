@@ -13,6 +13,9 @@ export function app(id: string) {
 }
 
 // Ensure the App has the correct constructor type signature
+/**
+ * The constructor of MongoDB Realm App.
+ */
 const AppConstructor = App as Realm.AppConstructor;
 export { AppConstructor as App };
 

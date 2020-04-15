@@ -12,7 +12,8 @@ describe("App", () => {
     });
 
     it("can call the App as a constructor with options", () => {
-        const app = new App("default-app-id", {
+        const app = new App({
+            id: "default-app-id",
             baseUrl: "http://localhost:3000"
         });
         expect(app).to.be.instanceOf(App);
@@ -27,7 +28,7 @@ describe("App", () => {
 
     it("throws if an object is provided instead of an id", () => {
         expect(() => {
-            // Call the constructor providing a non-string as id
+            // Call the constructor providing no string nor object as id / configuration
             const app = new (App as any)({});
         }).to.throw("Missing a MongoDB Realm app-id");
     });
@@ -59,7 +60,8 @@ describe("App", () => {
                 last_name: "Doe"
             }
         ]);
-        const app = new App("default-app-id", {
+        const app = new App({
+            id: "default-app-id",
             transport,
             baseUrl: "http://localhost:1337"
         });
@@ -101,7 +103,8 @@ describe("App", () => {
             },
             {}
         ]);
-        const app = new App("default-app-id", {
+        const app = new App({
+            id: "default-app-id",
             transport,
             baseUrl: "http://localhost:1337"
         });
@@ -142,7 +145,8 @@ describe("App", () => {
             },
             {}
         ]);
-        const app = new App("default-app-id", {
+        const app = new App({
+            id: "default-app-id",
             transport,
             baseUrl: "http://localhost:1337"
         });
@@ -183,7 +187,8 @@ describe("App", () => {
             },
             { msg: "hi there!" }
         ]);
-        const app = new App("default-app-id", {
+        const app = new App({
+            id: "default-app-id",
             transport,
             baseUrl: "http://localhost:1337"
         });

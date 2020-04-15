@@ -13,7 +13,8 @@ export function createApp<
     if (typeof BASE_URL !== "string") {
         throw new Error("Expected a global BASE_URL");
     }
-    return new App<FunctionsFactoryType>(APP_ID, {
+    return new App<FunctionsFactoryType>({
+        id: APP_ID,
         baseUrl: BASE_URL
     });
 }

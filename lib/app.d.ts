@@ -20,10 +20,7 @@ declare namespace Realm {
     /**
      * The constructor of MongoDB Realm App.
      */
-    type AppConstructor = new <FunctionsFactoryType extends FunctionsFactory>(
-        id: string,
-        configuration?: Partial<AppConfiguration>,
-    ) => App<FunctionsFactoryType>;
+    type AppConstructor = new <FunctionsFactoryType extends FunctionsFactory>(idOrConfiguration: string | AppConfiguration) => App<FunctionsFactoryType>;
 
     /**
      * A MongoDB Realm App.
@@ -67,7 +64,8 @@ declare namespace Realm {
     }
 
     interface AppConfiguration {
-        baseUrl: string;
+        id: string;
+        baseUrl?: string;
     }
 
     interface Credentials {

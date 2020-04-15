@@ -5,7 +5,7 @@ import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
 
 export interface AppConfiguration extends Realm.AppConfiguration {
     /** Transport to use when fetching resources */
-    transport: NetworkTransport;
+    transport?: NetworkTransport;
 }
 
 /**
@@ -39,15 +39,24 @@ export class App<FunctionsFactoryType extends Realm.FunctionsFactory>
     private readonly users: UserControlHandle[] = [];
 
     /**
-     * Construct a Realm App.
-     * @param id The Realm App id visible from the MongoDB Realm UI
-     * @param configuration A configuration to use for this app.
+     * Construct a Realm App, either from the Realm App id visible from the MongoDB Realm UI or a configuration.
+     * @param idOrConfiguration The Realm App id or a configuration to use for this app.
      */
-    constructor(id: string, configuration: Partial<AppConfiguration> = {}) {
-        if (typeof id !== "string") {
+    constructor(idOrConfiguration: string | AppConfiguration) {
+        // If the argument is a string, convert it to a simple configuration object.
+        const configuration =
+            typeof idOrConfiguration === "string"
+                ? { id: idOrConfiguration }
+                : idOrConfiguration;
+        // Initialize properties from the configuration
+        if (
+            typeof configuration === "object" &&
+            typeof configuration.id === "string"
+        ) {
+            this.id = configuration.id;
+        } else {
             throw new Error("Missing a MongoDB Realm app-id");
         }
-        this.id = id;
         const baseUrl = configuration.baseUrl || App.DEFAULT_BASE_URL;
         // Get or construct the network transport
         const baseUrlTransport = new BaseTransport(
