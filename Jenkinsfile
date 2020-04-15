@@ -26,7 +26,7 @@ environment {
 // == Stages
 
 stage('check') {
-  node('docker && !aws') {
+  node('docker') {
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
@@ -310,7 +310,7 @@ def buildElectronCommon(electronVersion, platform) {
 
 def buildLinux(workerFunction) {
   return {
-    myNode('docker && !aws') {
+    myNode('docker') {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
@@ -519,7 +519,7 @@ def doDockerInside(script, target, postStep = null) {
 
 def testAndroid(target, postStep = null) {
   return {
-    node('docker && android && !aws') {
+    node('docker && android') {
         timeout(time: 1, unit: 'HOURS') {
             doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
         }
@@ -529,7 +529,7 @@ def testAndroid(target, postStep = null) {
 
 def testLinux(target, postStep = null) {
   return {
-      node('docker && !aws') {
+      node('docker') {
       def reportName = "Linux ${target}"
       deleteDir()
       unstash 'source'
