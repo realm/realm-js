@@ -3,5 +3,5 @@ export {
     NetworkTransport,
     Request,
     Response,
-    Method
+    Method,
 } from "./NetworkTransport";

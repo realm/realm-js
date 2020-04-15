@@ -3,9 +3,9 @@ import fetch from "node-fetch";
 import path from "path";
 import fs from "fs-extra";
 
-// tslint:disable:no-console
+/* eslint-disable no-console */
 
-export interface IRealmAppImporterOptions {
+export interface RealmAppImporterOptions {
     baseUrl: string;
     username: string;
     password: string;
@@ -27,8 +27,8 @@ export class RealmAppImporter {
         username,
         password,
         stitchConfigPath,
-        appsDirectoryPath
-    }: IRealmAppImporterOptions) {
+        appsDirectoryPath,
+    }: RealmAppImporterOptions) {
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
@@ -50,7 +50,7 @@ export class RealmAppImporter {
     }
 
     public async importApp(
-        appTemplatePath: string
+        appTemplatePath: string,
     ): Promise<{ appId: string }> {
         const { name: appName } = this.loadStichJson(appTemplatePath);
         await this.login();
@@ -65,11 +65,11 @@ export class RealmAppImporter {
             Object.entries<string>(secrets).map(async ([name, value]) => {
                 if (typeof value !== "string") {
                     throw new Error(
-                        `Expected a secret string value for '${name}'`
+                        `Expected a secret string value for '${name}'`,
                     );
                 }
                 return this.createSecret(groupId, app._id, name, value);
-            })
+            }),
         );
 
         // Determine the path of the new app
@@ -94,7 +94,7 @@ export class RealmAppImporter {
             groupId,
             "--strategy",
             "replace",
-            "--yes" // Bypass prompts
+            "--yes", // Bypass prompts
         );
 
         // Return the app id of the newly created app
@@ -107,7 +107,7 @@ export class RealmAppImporter {
             return JSON.parse(content);
         } catch (err) {
             throw new Error(
-                `Failed to load JSON (${filePath}): ${err.message}`
+                `Failed to load JSON (${filePath}): ${err.message}`,
             );
         }
     }
@@ -131,7 +131,7 @@ export class RealmAppImporter {
         if (!fs.existsSync(appPath)) {
             fs.mkdirpSync(appPath);
             fs.copySync(appTemplatePath, appPath, {
-                recursive: true
+                recursive: true,
             });
         }
     }
@@ -144,12 +144,12 @@ export class RealmAppImporter {
         const url = `${this.baseUrl}/api/admin/v3.0/auth/providers/local-userpass/login`;
         const body = JSON.stringify({
             username: this.username,
-            password: this.password
+            password: this.password,
         });
         const response = await fetch(url, {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body
+            body,
         });
         // Store the access and refresh tokens
         const responseBody = await response.json();
@@ -159,24 +159,24 @@ export class RealmAppImporter {
         this.saveStitchConfig(
             this.username,
             responseBody.refresh_token,
-            responseBody.access_token
+            responseBody.access_token,
         );
     }
 
     private saveStitchConfig(
         username: string,
         refreshToken: string,
-        accessToken: string
+        accessToken: string,
     ) {
         const stitchConfig = [
             `public_api_key: ${username}`,
             `refresh_token: ${refreshToken}`,
-            `access_token: ${accessToken}`
+            `access_token: ${accessToken}`,
         ];
         fs.writeFileSync(
             this.stitchConfigPath,
             stitchConfig.join("\n"),
-            "utf8"
+            "utf8",
         );
     }
 
@@ -186,7 +186,7 @@ export class RealmAppImporter {
         }
         const url = `${this.baseUrl}/api/admin/v3.0/auth/profile`;
         const response = await fetch(url, {
-            headers: { Authorization: `Bearer ${this.accessToken}` }
+            headers: { Authorization: `Bearer ${this.accessToken}` },
         });
         if (response.ok) {
             return response.json();
@@ -214,15 +214,15 @@ export class RealmAppImporter {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${this.accessToken}`,
-                "content-type": "application/json"
+                "content-type": "application/json",
             },
-            body
+            body,
         });
         if (response.ok) {
             return response.json();
         } else {
             throw new Error(
-                `Failed to create app named '${name}' in group '${groupId}'`
+                `Failed to create app named '${name}' in group '${groupId}'`,
             );
         }
     }
@@ -231,7 +231,7 @@ export class RealmAppImporter {
         groupId: string,
         internalAppId: string,
         name: string,
-        value: string
+        value: string,
     ) {
         console.log(`Creating "${name}" secret`);
         if (!this.accessToken) {
@@ -243,9 +243,9 @@ export class RealmAppImporter {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${this.accessToken}`,
-                "content-type": "application/json"
+                "content-type": "application/json",
             },
-            body
+            body,
         });
         if (!response.ok) {
             throw new Error(`Failed to create secred '${name}'`);

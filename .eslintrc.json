@@ -10,12 +10,16 @@
     "no-empty": 0,
     "no-console": 0,
     "no-unused-vars": [
-      "warn", {
+      "warn",
+      {
         "varsIgnorePattern": "^_",
         "args": "none"
       }
     ],
-    "strict": [2, "global"]
+    "strict": [
+      2,
+      "global"
+    ]
   },
   "settings": {
     "react": {
