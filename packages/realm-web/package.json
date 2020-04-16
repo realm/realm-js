@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint --ext .js,.ts .",
-    "test": "ts-mocha 'src/**/*.test.ts'"
+    "test": "mocha 'src/**/*.test.ts'"
   },
   "keywords": [
     "realm",
@@ -38,7 +38,6 @@
     "eslint": "file:../../node_modules/eslint",
     "mocha": "^5.2.0",
     "node-fetch": "^2.6.0",
-    "ts-mocha": "^6.0.0",
     "typescript": "file:../../node_modules/typescript"
   }
 }

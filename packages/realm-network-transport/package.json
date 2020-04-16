@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint --ext .js,.ts .",
-    "test": "ts-mocha src/**/*.test.ts",
+    "test": "mocha 'src/**/*.test.ts'",
     "prepack": "rm -rf dist && npm run build"
   },
   "files": [
@@ -37,7 +37,6 @@
     "chai": "^4.2.0",
     "eslint": "file:../../node_modules/eslint",
     "mocha": "^5.2.0",
-    "ts-mocha": "^6.0.0",
     "typescript": "file:../../node_modules/typescript"
   }
 }
