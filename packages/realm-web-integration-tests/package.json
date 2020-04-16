@@ -1,5 +1,5 @@
 {
-  "name": "realm-web-integration-test",
+  "name": "realm-web-integration-tests",
   "version": "0.1.0",
   "private": true,
   "main": "src/index.ts",
