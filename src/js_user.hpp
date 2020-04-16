@@ -21,6 +21,7 @@
 #include "js_class.hpp"
 #include "js_collection.hpp"
 #include "js_sync_util.hpp"
+#include "js_app_credentials.hpp"
 #include "platform.hpp"
 
 #include "sync/sync_config.hpp"
@@ -32,9 +33,23 @@ namespace realm {
 namespace js {
 
 using SharedUser = std::shared_ptr<realm::SyncUser>;
+using SharedApp = std::shared_ptr<realm::app::App>;
 
 template<typename T>
-class UserClass : public ClassDefinition<T, SharedUser> {
+class User : public SharedUser {
+public:
+    User(SharedUser user, SharedApp app) : SharedUser(std::move(user)), m_app(std::move(app)) {}
+    User(SharedUser user) : SharedUser(std::move(user)), m_app(nullptr) {}
+    User(User &&) = default;
+
+    User& operator=(User &&) = default;
+    User& operator=(User const&) = default;
+
+    SharedApp m_app;
+};
+
+template<typename T>
+class UserClass : public ClassDefinition<T, User<T>> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -56,23 +71,30 @@ public:
     static void get_token(ContextType, ObjectType, ReturnValue &);
     static void get_profile(ContextType, ObjectType, ReturnValue &);
     static void set_profile(ContextType, ObjectType, ValueType);
+    static void is_logged_in(ContextType, ObjectType, ReturnValue &);
+    static void get_state(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"identity", {wrap<get_identity>, nullptr}},
         {"token", {wrap<get_token>, nullptr}},
         {"profile", {wrap<get_profile>, wrap<set_profile>}},
+        {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
+        {"state", {wrap<get_state>, nullptr}}
     };
-
 
     MethodMap<T> const static_methods = {
     };
 
     static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void session_for_on_disk_path(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void delete_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void link_user(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"logOut", wrap<logout>},
-        {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>}
+        {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
+        {"_deleteUser", wrap<delete_user>},
+        {"_linkUser", wrap<link_user>}
     };
 };
 
@@ -92,6 +114,29 @@ template<typename T>
 void UserClass<T>::get_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string token = get_internal<T, UserClass<T>>(object)->get()->refresh_token();
     return_value.set(token);
+}
+
+template<typename T>
+void UserClass<T>::is_logged_in(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto logged_in = get_internal<T, UserClass<T>>(object)->get()->is_logged_in();
+    return_value.set(logged_in);
+}
+
+template<typename T>
+void UserClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto state = get_internal<T, UserClass<T>>(object)->get()->state();
+
+    switch (state) {
+    case SyncUser::State::LoggedOut:
+        return_value.set("LoggedOut");
+        break;
+    case SyncUser::State::LoggedIn:
+        return_value.set("LoggedIn");
+        break;
+    case SyncUser::State::Removed:
+        return_value.set("Removed");
+        break;
+    }
 }
 
 template<typename T>
@@ -134,6 +179,70 @@ void UserClass<T>::logout(ContextType, ObjectType this_object, Arguments& args, 
     args.validate_count(0);
     get_internal<T, UserClass<T>>(this_object)->get()->log_out();
 }
+
+template<typename T>
+void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+    args.validate_count(1);
+
+    auto user = get_internal<T, UserClass<T>>(this_object);
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
+
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+
+    auto callback_handler([=](util::Optional<app::AppError> error) {
+        HANDLESCOPE
+        ObjectType error_object = Object::create_empty(protected_ctx);
+        if (error) {
+            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
+            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
+        }
+
+        ValueType callback_arguments[1];
+        callback_arguments[0] = error_object;
+        Function::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+    });
+
+    user->m_app->remove_user(*user, callback_handler);
+}
+
+template<typename T>
+void UserClass<T>::link_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
+    args.validate_count(2);
+    auto user = get_internal<T, UserClass<T>>(this_object);
+
+    auto credentials = *get_internal<T, CredentialsClass<T>>(Value::validated_to_object(ctx, args[0], "credentials"));
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
+
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+
+    auto callback_handler([=](SharedUser shared_user, util::Optional<app::AppError> error) {
+        HANDLESCOPE
+
+        if (error) {
+            ObjectType error_object = Object::create_empty(protected_ctx);
+            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
+            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
+
+            ValueType callback_arguments[2];
+            callback_arguments[0] = Value::from_undefined(protected_ctx);
+            callback_arguments[1] = error_object;
+            Function::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
+            return;
+        }
+
+        ValueType callback_arguments[2];
+        callback_arguments[0] = create_object<T, UserClass<T>>(ctx, new User<T>(shared_user, user->m_app));
+        callback_arguments[1] = Value::from_undefined(protected_ctx);
+        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+    });
+
+    user->m_app->link_user(*user, credentials, callback_handler);
+}
+
 
 }
 }

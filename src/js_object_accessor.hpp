@@ -102,10 +102,6 @@ public:
     template<typename T>
     T unbox(ValueType value, realm::CreatePolicy policy = realm::CreatePolicy::Skip, ObjKey current_obj = ObjKey());
 
-    // Obj unbox_embedded(ValueType value, CreatePolicy policy, Obj& parent, ColKey col, size_t ndx) {
-    //     return realm::Object::create_embedded(*this, m_realm, *m_object_schema, value, policy, parent, col, ndx).obj();
-    // }
-
     Obj create_embedded_object() {
         return m_parent.create_and_set_linked_object(m_property->column_key);
     }
@@ -185,11 +181,11 @@ public:
 private:
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
+    Obj m_parent;
+    const Property* m_property = nullptr;
     const ObjectSchema* m_object_schema;
     std::string m_string_buffer;
     OwnedBinaryData m_owned_binary_data;
-    Obj m_parent;
-    const Property* m_property = nullptr;
     template<typename, typename>
     friend struct _impl::Unbox;
 };
@@ -360,9 +356,6 @@ struct Unbox<JSEngine, Obj> {
             if (!policy.create) {
                 throw std::runtime_error("Realm object is from another Realm");
             }
-        }
-        if (!policy.create) {
-            throw NonRealmObjectException();
         }
 
         if (Value::is_array(ctx->m_ctx, object)) {
