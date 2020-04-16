@@ -15,6 +15,6 @@ export function createApp<
     }
     return new App<FunctionsFactoryType>({
         id: APP_ID,
-        baseUrl: BASE_URL
+        baseUrl: BASE_URL,
     });
 }

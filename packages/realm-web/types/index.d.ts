@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint-disable @typescript-eslint/triple-slash-reference */
+
 /// <reference path="app.d.ts" />
 
-export * from "../dist"
+export * from "../dist";

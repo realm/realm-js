@@ -5,5 +5,5 @@ const mochaClient = new MochaRemoteClient({
         require("./app.test");
         require("./credentials.test");
         require("./functions.test");
-    }
+    },
 });

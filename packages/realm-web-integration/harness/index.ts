@@ -9,6 +9,8 @@ import WEBPACK_CONFIG = require("../webpack.config");
 
 const devtools = "DEV_TOOLS" in process.env;
 
+/* eslint-disable no-console */
+
 async function run() {
     let devServer: WebpackDevServer | null = null;
     let mochaServer: MochaRemoteServer | null = null;
@@ -24,13 +26,12 @@ async function run() {
         }
         // Shut down the dev server
         await new Promise(resolve =>
-            devServer ? devServer.close(resolve) : resolve()
+            devServer ? devServer.close(resolve) : resolve(),
         );
     }
 
     process.once("exit", () => {
         shutdown().then(null, err => {
-            // tslint:disable-next-line:no-console
             console.error(`Error shutting down: ${err}`);
         });
     });
@@ -46,13 +47,13 @@ async function run() {
             new webpack.DefinePlugin({
                 APP_ID: JSON.stringify(appId),
                 // Uses the webpack dev servers proxy
-                BASE_URL: JSON.stringify("http://localhost:8080")
-            })
-        ]
+                BASE_URL: JSON.stringify("http://localhost:8080"),
+            }),
+        ],
     });
     await new Promise((resolve, reject) => {
         devServer = new WebpackDevServer(compiler, {
-            proxy: { "/api": baseUrl }
+            proxy: { "/api": baseUrl },
         });
         devServer.listen(8080, "localhost", err => {
             if (err) {
@@ -80,10 +81,9 @@ run().then(
         }
     },
     err => {
-        // tslint:disable-next-line:no-console
         console.error(err);
         if (!devtools) {
             process.exit(1);
         }
-    }
+    },
 );

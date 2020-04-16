@@ -3,11 +3,15 @@
 import { Credentials } from "./Credentials";
 
 /**
- * The AnonymousCredential is a [[StitchCredential]] that logs in
- * using the [Anonymous Authentication Provider](https://docs.mongodb.com/stitch/authentication/anonymous/).
+ * Credentials that logs in using the [Anonymous Authentication Provider](https://docs.mongodb.com/stitch/authentication/anonymous/).
  */
 export class AnonymousCredentials extends Credentials
     implements Realm.Credentials {
+    /**
+     * Create credentials to authenticate a user anonymously.
+     *
+     * @param providerName An optional custom name for the authentication provider.
+     */
     constructor(providerName = "anon-user") {
         super(providerName);
     }

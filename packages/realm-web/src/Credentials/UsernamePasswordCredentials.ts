@@ -5,8 +5,7 @@
 import { Credentials } from "./Credentials";
 
 /**
- * The UsernamePasswordCredential is a [[StitchCredential]] that logs in
- * using the [Username Password Authentication Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
+ * Credentials that logs in using the [Username Password Authentication Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
  */
 export class UsernamePasswordCredentials extends Credentials
     implements Realm.Credentials {
@@ -15,13 +14,21 @@ export class UsernamePasswordCredentials extends Credentials
 
     /** Username */
     public readonly username: string;
+
     /** Password */
     public readonly password: string;
 
+    /**
+     * Create credentials to authenticate a user from a username and their password.
+     *
+     * @param username The end-users username.
+     * @param password The end-users password.
+     * @param providerName An optional custom name for the authentication provider.
+     */
     constructor(
         username: string,
         password: string,
-        providerName = "local-userpass"
+        providerName = "local-userpass",
     ) {
         super(providerName);
         this.username = username;
@@ -32,7 +39,7 @@ export class UsernamePasswordCredentials extends Credentials
     public toJSON() {
         return {
             username: this.username,
-            password: this.password
+            password: this.password,
         };
     }
 }

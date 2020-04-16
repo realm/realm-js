@@ -1,6 +1,8 @@
 declare const process: any;
 declare const require: ((id: string) => any) | undefined;
 
+const isNodeProcess = typeof process === "object" && "node" in process.versions;
+
 export type Method = "GET" | "POST" | "DELETE";
 
 export type Headers = { [name: string]: string };
@@ -49,11 +51,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
             // Try to get it from the global
             if (typeof fetch === "function" && typeof window === "object") {
                 DefaultNetworkTransport.fetch = fetch.bind(window);
-            } else if (
-                typeof process === "object" &&
-                typeof require === "function" &&
-                "node" in process.versions
-            ) {
+            } else if (isNodeProcess && typeof require === "function") {
                 // Making it harder for the static analyzers see this require call
                 const nodeRequire = require;
                 DefaultNetworkTransport.fetch = nodeRequire("node-fetch");
@@ -67,11 +65,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
         if (!DefaultNetworkTransport.AbortController) {
             if (typeof AbortController !== "undefined") {
                 DefaultNetworkTransport.AbortController = AbortController;
-            } else if (
-                typeof process === "object" &&
-                typeof require === "function" &&
-                "node" in process.versions
-            ) {
+            } else if (isNodeProcess && typeof require === "function") {
                 // Making it harder for the static analyzers see this require call
                 const nodeRequire = require;
                 DefaultNetworkTransport.AbortController = nodeRequire(
@@ -93,11 +87,11 @@ export class DefaultNetworkTransport implements NetworkTransport {
             const response = await this.fetch(request);
             const contentType = response.headers.get("content-type");
             if (response.ok) {
-                if (contentType && contentType.startsWith("application/json")) {
+                if (contentType === null) {
+                    return null as any;
+                } else if (contentType.startsWith("application/json")) {
                     // Awaiting the response to ensure we'll throw our own error
                     return await response.json();
-                } else if (contentType === null) {
-                    return null as any;
                 } else {
                     throw new Error("Expected an empty or a JSON response");
                 }

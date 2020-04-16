@@ -5,6 +5,8 @@ import { User, UserState } from "./User";
 import { Credentials } from "./Credentials/index";
 import { MockNetworkTransport } from "./test/MockNetworkTransport";
 
+/* eslint-disable @typescript-eslint/camelcase */
+
 describe("App", () => {
     it("can call the App as a constructor", () => {
         const app = new App("default-app-id");
@@ -14,7 +16,7 @@ describe("App", () => {
     it("can call the App as a constructor with options", () => {
         const app = new App({
             id: "default-app-id",
-            baseUrl: "http://localhost:3000"
+            baseUrl: "http://localhost:3000",
         });
         expect(app).to.be.instanceOf(App);
     });
@@ -53,21 +55,21 @@ describe("App", () => {
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
-                refresh_token: "very-refreshing"
+                refresh_token: "very-refreshing",
             },
             {
                 first_name: "John",
-                last_name: "Doe"
-            }
+                last_name: "Doe",
+            },
         ]);
         const app = new App({
             id: "default-app-id",
             transport,
-            baseUrl: "http://localhost:1337"
+            baseUrl: "http://localhost:1337",
         });
         const credentials = Credentials.usernamePassword(
             "gilfoil",
-            "v3ry-s3cret"
+            "v3ry-s3cret",
         );
         const user = await app.logIn(credentials);
         // Assume logging in returns a user
@@ -82,15 +84,15 @@ describe("App", () => {
                 method: "POST",
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/local-userpass/login",
-                body: { username: "gilfoil", password: "v3ry-s3cret" }
+                body: { username: "gilfoil", password: "v3ry-s3cret" },
             },
             {
                 method: "GET",
                 url: "http://localhost:1337/api/client/v2.0/auth/profile",
                 headers: {
-                    Authorization: "Bearer deadbeef"
-                }
-            }
+                    Authorization: "Bearer deadbeef",
+                },
+            },
         ]);
     });
 
@@ -99,14 +101,14 @@ describe("App", () => {
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
-                refresh_token: "very-refreshing"
+                refresh_token: "very-refreshing",
             },
-            {}
+            {},
         ]);
         const app = new App({
             id: "default-app-id",
             transport,
-            baseUrl: "http://localhost:1337"
+            baseUrl: "http://localhost:1337",
         });
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials, false);
@@ -124,15 +126,15 @@ describe("App", () => {
                 method: "POST",
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
-                body: {}
+                body: {},
             },
             {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
-                    Authorization: "Bearer very-refreshing"
-                }
-            }
+                    Authorization: "Bearer very-refreshing",
+                },
+            },
         ]);
     });
 
@@ -141,14 +143,14 @@ describe("App", () => {
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
-                refresh_token: "very-refreshing"
+                refresh_token: "very-refreshing",
             },
-            {}
+            {},
         ]);
         const app = new App({
             id: "default-app-id",
             transport,
-            baseUrl: "http://localhost:1337"
+            baseUrl: "http://localhost:1337",
         });
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials, false);
@@ -166,15 +168,15 @@ describe("App", () => {
                 method: "POST",
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
-                body: {}
+                body: {},
             },
             {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
-                    Authorization: "Bearer very-refreshing"
-                }
-            }
+                    Authorization: "Bearer very-refreshing",
+                },
+            },
         ]);
     });
 
@@ -183,14 +185,14 @@ describe("App", () => {
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
-                refresh_token: "very-refreshing"
+                refresh_token: "very-refreshing",
             },
-            { msg: "hi there!" }
+            { msg: "hi there!" },
         ]);
         const app = new App({
             id: "default-app-id",
             transport,
-            baseUrl: "http://localhost:1337"
+            baseUrl: "http://localhost:1337",
         });
         const credentials = Credentials.anonymous();
         await app.logIn(credentials, false);
@@ -202,15 +204,15 @@ describe("App", () => {
                 method: "POST",
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
-                body: {}
+                body: {},
             },
             {
                 method: "POST",
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/functions/call",
                 body: { name: "hello", arguments: [] },
-                headers: { Authorization: "Bearer deadbeef" }
-            }
+                headers: { Authorization: "Bearer deadbeef" },
+            },
         ]);
     });
 });

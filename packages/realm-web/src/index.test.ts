@@ -18,20 +18,20 @@ describe("Realm Web", () => {
             expect(typeof Realm.Credentials.anonymous).to.equal("function");
             const credentials = Realm.Credentials.anonymous();
             expect(credentials).to.be.instanceOf(
-                Realm.Credentials.AnonymousCredentials
+                Realm.Credentials.AnonymousCredentials,
             );
         });
 
         it("expose the username password credential", () => {
             expect(typeof Realm.Credentials.usernamePassword).to.equal(
-                "function"
+                "function",
             );
             const credentials = Realm.Credentials.usernamePassword(
                 "gilfoil",
-                "s3cr3t"
+                "s3cr3t",
             );
             expect(credentials).to.be.instanceOf(
-                Realm.Credentials.UsernamePasswordCredentials
+                Realm.Credentials.UsernamePasswordCredentials,
             );
             expect(credentials.username).to.equal("gilfoil");
             expect(credentials.password).to.equal("s3cr3t");

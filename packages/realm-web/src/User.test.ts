@@ -10,7 +10,7 @@ describe("User", () => {
             app,
             id: "some-user-id",
             accessToken: "deadbeef",
-            refreshToken: "very-refreshing"
+            refreshToken: "very-refreshing",
         });
         // Assume that the user has an access token
         expect(user.accessToken).to.equal("deadbeef");

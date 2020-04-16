@@ -2,7 +2,7 @@ import { expect } from "chai";
 
 import {
     create as createFunctionsFactory,
-    FunctionsFactory
+    FunctionsFactory,
 } from "./FunctionsFactory";
 import { MockTransport } from "./test/MockTransport";
 
@@ -14,11 +14,11 @@ describe("FunctionsFactory", () => {
 
     it("calls the network transport correctly", async () => {
         const transport = new MockTransport([
-            { message: `hello friendly world!` }
+            { message: `hello friendly world!` },
         ]);
         const factory = createFunctionsFactory({
             transport,
-            serviceName: "custom-service"
+            serviceName: "custom-service",
         });
         const response = factory.hello("friendly");
         expect(response).to.be.instanceOf(Promise);
@@ -31,9 +31,9 @@ describe("FunctionsFactory", () => {
                 body: {
                     name: "hello",
                     service: "custom-service",
-                    arguments: ["friendly"]
-                }
-            }
+                    arguments: ["friendly"],
+                },
+            },
         ]);
     });
 });

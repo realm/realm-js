@@ -20,7 +20,7 @@ describe("Realm.Credentials", () => {
             const app = createApp();
             const credentials = Credentials.usernamePassword(
                 "gilfoil",
-                "v3ry-s3cret"
+                "v3ry-s3cret",
             );
             const user = await app.logIn(credentials);
             expect(user).to.be.instanceOf(User);

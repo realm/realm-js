@@ -16,7 +16,7 @@ export async function importRealmApp() {
         username: MDB_REALM_USERNAME,
         password: MDB_REALM_PASSWORD,
         appsDirectoryPath: path.resolve(__dirname, "../imported-apps"),
-        stitchConfigPath: path.resolve(__dirname, "../stitch-config.json")
+        stitchConfigPath: path.resolve(__dirname, "../stitch-config.json"),
     });
     const appTemplatePath = path.resolve(__dirname, "../my-test-app-template");
     const { appId } = await importer.importApp(appTemplatePath);

@@ -27,7 +27,6 @@ function serveAppId(appId: string, port: number, hostname = "0.0.0.0"): void {
     });
 }
 
-// tslint:disable-next-line:no-unused-expression
 yargs
     .command(
         "$0 <template-path>",

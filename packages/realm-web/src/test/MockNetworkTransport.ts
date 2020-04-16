@@ -2,7 +2,7 @@ import {
     NetworkTransport,
     SuccessCallback,
     ErrorCallback,
-    Request
+    Request,
 } from "realm-network-transport";
 
 /**
@@ -11,15 +11,22 @@ import {
 export class MockNetworkTransport implements NetworkTransport {
     /** List of all requests captured */
     public readonly requests: Request<any>[] = [];
+
     /** Responses sent back on each expected request */
     public readonly responses: object[];
 
+    /**
+     * Construct a mocked network transport which returns pre-recorded requests.
+     *
+     * @param responses An array of pre-recorded requests.
+     */
     constructor(responses: object[] = []) {
         this.responses = responses;
     }
 
+    /** @inheritdoc */
     fetchAndParse<RequestBody extends any, ResponseBody extends any>(
-        request: Request<RequestBody>
+        request: Request<RequestBody>,
     ): Promise<ResponseBody> {
         if (!request.headers || Object.keys(request.headers).length === 0) {
             delete request.headers;
@@ -35,16 +42,17 @@ export class MockNetworkTransport implements NetworkTransport {
             throw new Error(
                 `Unexpected request (method = ${request.method}, url = ${
                     request.url
-                }, body = ${JSON.stringify(request.body)})`
+                }, body = ${JSON.stringify(request.body)})`,
             );
         }
     }
 
+    /** @inheritdoc */
     fetchWithCallbacks<RequestBody extends any>(
         request: Request<RequestBody>,
         successCallback: SuccessCallback,
-        errorCallback: ErrorCallback
+        errorCallback: ErrorCallback,
     ) {
-        return this.fetchAndParse(request).then(successCallback, errorCallback);
+        this.fetchAndParse(request).then(successCallback, errorCallback);
     }
 }

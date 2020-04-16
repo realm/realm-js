@@ -1,25 +1,28 @@
-import { Transport, Request, PrefixedTransport } from "../transports";
+import {
+    Transport,
+    Request,
+    PrefixedTransport,
+    BaseTransport,
+} from "../transports";
 import { MockNetworkTransport } from "./MockNetworkTransport";
 
 /**
  * A mocked network transport, which gets created with a list of responses to return in the order it's being requested.
  */
-export class MockTransport implements Transport {
-    private readonly networkTransport: MockNetworkTransport;
-    private readonly baseUrl: string;
+export class MockTransport extends BaseTransport implements Transport {
+    /** Underlying (mocked) network transport */
+    private readonly mockNetworkTransport: MockNetworkTransport;
 
+    /**
+     * Constructs a mocked transport useful when testing.
+     *
+     * @param responses A list of pre-recorded responses that will be returned when fetch is called.
+     * @param baseUrl The base URL to prefix paths with.
+     */
     constructor(responses: object[] = [], baseUrl = "http://localhost:1337") {
-        this.networkTransport = new MockNetworkTransport(responses);
-        this.baseUrl = baseUrl;
-    }
-
-    /** @inheritdoc */
-    public async fetch(request: Request<any>) {
-        const { path, ...restOfRequest } = request;
-        return this.networkTransport.fetchAndParse({
-            ...restOfRequest,
-            url: this.baseUrl + path
-        });
+        const networkTransport = new MockNetworkTransport(responses);
+        super(baseUrl, networkTransport);
+        this.mockNetworkTransport = networkTransport;
     }
 
     /** @inheritdoc */
@@ -27,13 +30,17 @@ export class MockTransport implements Transport {
         return new PrefixedTransport(this, pathPrefix);
     }
 
-    /** Captured requests */
+    /**
+     * @returns An array of requests "sent" by users of the transport.
+     */
     get requests() {
-        return this.networkTransport.requests;
+        return this.mockNetworkTransport.requests;
     }
 
-    /** Outstanding responses */
+    /**
+     * @returns An array of outstanding responses.
+     */
     get responses() {
-        return this.networkTransport.responses;
+        return this.mockNetworkTransport.responses;
     }
 }
