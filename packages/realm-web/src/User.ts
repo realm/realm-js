@@ -8,7 +8,7 @@ interface UserParameters {
     id: string;
     accessToken: string;
     refreshToken: string;
-    controllerReady?: (controller: UserController) => void;
+    onController?: (controller: UserController) => void;
 }
 
 export enum UserState {
@@ -45,19 +45,19 @@ export class User implements Realm.User {
     // public readonly identities: Realm.UserIdentity[] = [];
 
     /**
-     * Create a user, returning both the user and a controller enabling updates to the users internal state.
+     * Create a user, returning both the user and a controller enabling updates to the user's internal state.
      *
      * @param parameters The parameters passed to the constructor.
      * @returns an object containing the new user and its controller.
      */
     public static create(parameters: UserParameters): UserControlHandle {
-        const { controllerReady, ...otherParameters } = parameters;
+        const { onController, ...otherParameters } = parameters;
         let controller: UserController | undefined;
         const user = new User({
             ...otherParameters,
-            controllerReady: c => {
-                if (controllerReady) {
-                    controllerReady(c);
+            onController: c => {
+                if (onController) {
+                    onController(c);
                 }
                 controller = c;
             },
@@ -82,7 +82,7 @@ export class User implements Realm.User {
         id,
         accessToken,
         refreshToken,
-        controllerReady,
+        onController,
     }: UserParameters) {
         this.app = app;
         this._id = id;
@@ -91,16 +91,23 @@ export class User implements Realm.User {
         this._state = UserState.Active;
 
         // Create and expose the controller to the creator
-        if (controllerReady) {
-            controllerReady({
-                setAccessToken: token => (this._accessToken = token),
-                setProfile: profile => (this._profile = profile),
-                setState: state => (this._state = state),
+        if (onController) {
+            const controller: UserController = {
+                setAccessToken: token => {
+                    this._accessToken = token;
+                },
+                setProfile: profile => {
+                    this._profile = profile;
+                },
+                setState: state => {
+                    this._state = state;
+                },
                 forgetTokens: () => {
                     this._accessToken = null;
                     this._refreshToken = null;
                 },
-            });
+            };
+            onController(controller);
         }
     }
 

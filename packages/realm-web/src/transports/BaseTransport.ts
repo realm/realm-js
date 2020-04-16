@@ -11,24 +11,24 @@ import { PrefixedTransport } from "./PrefixedTransport";
  */
 export class BaseTransport implements Transport {
     /**
-     *The base URL to prepend to paths.
-     */
-    private readonly baseUrl: string;
-
-    /**
      * The underlying network transport.
      */
     private readonly networkTransport: NetworkTransport;
 
     /**
+     *The base URL to prepend to paths.
+     */
+    private readonly baseUrl: string;
+
+    /**
      * Constructs a base transport, which takes paths (prepended by a base URL) instead of absolute urls.
      *
-     * @param baseUrl The base URL to prepend to paths.
      * @param networkTransport The underlying network transport.
+     * @param baseUrl The base URL to prepend to paths.
      */
     constructor(
-        baseUrl: string,
         networkTransport: NetworkTransport = new DefaultNetworkTransport(),
+        baseUrl: string,
     ) {
         this.baseUrl = baseUrl;
         this.networkTransport = networkTransport;

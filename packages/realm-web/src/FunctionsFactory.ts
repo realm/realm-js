@@ -40,11 +40,12 @@ export class FunctionsFactory {
     /**
      * Construct a functions factory
      *
-     * @param config The configuration defining transport and service name.
+     * @param transport The underlying transport to use when requesting
+     * @param serviceName An optional name of the service in which the function is defined
      */
-    constructor(config: FunctionsFactoryConfiguration) {
-        this.transport = config.transport;
-        this.serviceName = config.serviceName;
+    constructor(transport: Transport, serviceName?: string) {
+        this.transport = transport;
+        this.serviceName = serviceName;
     }
 
     /**
@@ -71,15 +72,17 @@ export class FunctionsFactory {
 /**
  * Create a factory of functions
  *
- * @param config the configuration passed to the factory.
+ * @param transport The underlying transport to use when requesting
+ * @param serviceName An optional name of the service in which the function is defined
  * @returns The newly created factory of functions.
  */
 export function create<FunctionsFactoryType extends Realm.FunctionsFactory>(
-    config: FunctionsFactoryConfiguration,
+    transport: Transport,
+    serviceName?: string,
 ): FunctionsFactoryType {
     // Create a proxy, wrapping a simple object returning methods that calls functions
     // TODO: Lazily fetch available functions and return these from the ownKeys() trap
-    const factory = new FunctionsFactory(config);
+    const factory = new FunctionsFactory(transport, serviceName);
     // Wrap the factory in a promise that calls the internal call method
     return new Proxy((factory as any) as FunctionsFactoryType, {
         get(target, p, receiver) {

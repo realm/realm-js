@@ -8,7 +8,7 @@ import { MockTransport } from "./test/MockTransport";
 
 describe("FunctionsFactory", () => {
     it("can be created", () => {
-        const factory = createFunctionsFactory({ transport: {} as any });
+        const factory = createFunctionsFactory({} as any);
         expect(factory).to.be.instanceOf(FunctionsFactory);
     });
 
@@ -16,10 +16,7 @@ describe("FunctionsFactory", () => {
         const transport = new MockTransport([
             { message: `hello friendly world!` },
         ]);
-        const factory = createFunctionsFactory({
-            transport,
-            serviceName: "custom-service",
-        });
+        const factory = createFunctionsFactory(transport, "custom-service");
         const response = factory.hello("friendly");
         expect(response).to.be.instanceOf(Promise);
         const { message } = await response;

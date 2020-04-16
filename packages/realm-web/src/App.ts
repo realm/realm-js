@@ -71,20 +71,20 @@ export class App<FunctionsFactoryType extends Realm.FunctionsFactory>
         const baseUrl = configuration.baseUrl || App.DEFAULT_BASE_URL;
         // Get or construct the network transport
         const baseUrlTransport = new BaseTransport(
-            baseUrl,
             configuration.transport,
+            baseUrl,
         );
         // Construct an object, wrapping the network transport, enabling authenticated requests
         const authTransport = new AuthenticatedTransport(
-            this,
             baseUrlTransport,
+            this,
         );
         this.baseTransport = authTransport.prefix(App.BASE_ROUTE);
         this.appTransport = this.baseTransport.prefix(`/app/${this.id}`);
         // Construct the functions factory
-        this.functions = createFunctionsFactory<FunctionsFactoryType>({
-            transport: this.appTransport,
-        });
+        this.functions = createFunctionsFactory<FunctionsFactoryType>(
+            this.appTransport,
+        );
     }
 
     /**
@@ -110,9 +110,7 @@ export class App<FunctionsFactoryType extends Realm.FunctionsFactory>
                 // Insert the user in the beginning of the stack
                 this.users.splice(0, 0, handle);
             } else {
-                throw new Error(
-                    "Cannot switch to a user that was never logged in",
-                );
+                throw new Error("The user was not logged into this app");
             }
         } else {
             throw new Error("Expected a user id or a User instance");
@@ -264,7 +262,7 @@ export class App<FunctionsFactoryType extends Realm.FunctionsFactory>
         if (handle) {
             return handle;
         } else {
-            throw new Error("Unexpected user or user id - did you log in?");
+            throw new Error("Invalid user or user id");
         }
     }
 }

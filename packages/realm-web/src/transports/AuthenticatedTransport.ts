@@ -16,24 +16,24 @@ interface UserContext {
  */
 export class AuthenticatedTransport implements Transport {
     /**
-     * An object controlling which user is currently active.
-     */
-    private readonly userContext: UserContext;
-
-    /**
      * Underlying transport.
      */
     private readonly transport: Transport;
 
     /**
+     * An object controlling which user is currently active.
+     */
+    private readonly userContext: UserContext;
+
+    /**
      * Constructs a transport that injects authorization headers to requests.
      *
-     * @param userContext The context controlling what user is authenticated.
      * @param transport The underlying transport.
+     * @param userContext The context controlling what user is authenticated.
      */
-    public constructor(userContext: UserContext, transport: Transport) {
-        this.userContext = userContext;
+    public constructor(transport: Transport, userContext: UserContext) {
         this.transport = transport;
+        this.userContext = userContext;
     }
 
     /** @inheritdoc */
