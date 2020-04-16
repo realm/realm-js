@@ -5,7 +5,7 @@ import {
     DefaultNetworkTransport,
     Response,
     NetworkTransport,
-    Request
+    Request,
 } from "./NetworkTransport";
 
 function getServerUrl(server: Server) {
@@ -42,7 +42,7 @@ describe("Realm Network Transport", () => {
                 const url = getServerUrl(server);
                 const response = await transport.fetchAndParse({
                     method: "GET",
-                    url
+                    url,
                 });
                 expect(response).deep.equals({ pong: "Hi GET request" });
             } finally {
@@ -59,7 +59,7 @@ describe("Realm Network Transport", () => {
                     const body = chunk.toString("utf8");
                     const parsedBody = JSON.parse(body);
                     const encodedResponseBody = JSON.stringify({
-                        pong: parsedBody.ping + " World"
+                        pong: parsedBody.ping + " World",
                     });
                     res.end(encodedResponseBody);
                 });
@@ -70,7 +70,7 @@ describe("Realm Network Transport", () => {
                 const response = await transport.fetchAndParse({
                     method: "POST",
                     url,
-                    body: { ping: "Hello" }
+                    body: { ping: "Hello" },
                 });
                 expect(response).deep.equals({ pong: "Hello World" });
             } finally {
@@ -82,7 +82,7 @@ describe("Realm Network Transport", () => {
     describe("requesting with fetchWithCallbacks", () => {
         function fetchWithCallbacksPromised(
             transport: NetworkTransport,
-            request: Request<any>
+            request: Request<any>,
         ) {
             return new Promise<Response>((resolve, reject) => {
                 transport.fetchWithCallbacks(request, resolve, reject);
@@ -100,12 +100,12 @@ describe("Realm Network Transport", () => {
                 const url = getServerUrl(server);
                 const response = await fetchWithCallbacksPromised(transport, {
                     url,
-                    method: "GET"
+                    method: "GET",
                 });
                 expect(response.statusCode).equals(200);
                 const decodedBody = JSON.parse(response.body);
                 expect(decodedBody).deep.equals({
-                    pong: "Hi GET request"
+                    pong: "Hi GET request",
                 });
                 // Call the method;
             } finally {
@@ -122,7 +122,7 @@ describe("Realm Network Transport", () => {
                     const body = chunk.toString("utf8");
                     const parsedBody = JSON.parse(body);
                     const encodedResponseBody = JSON.stringify({
-                        pong: parsedBody.ping + " World"
+                        pong: parsedBody.ping + " World",
                     });
                     res.end(encodedResponseBody);
                 });
@@ -133,7 +133,7 @@ describe("Realm Network Transport", () => {
                 const response = await fetchWithCallbacksPromised(transport, {
                     method: "POST",
                     url,
-                    body: { ping: "Hello" }
+                    body: { ping: "Hello" },
                 });
                 const decodedBody = JSON.parse(response.body);
                 expect(decodedBody).deep.equals({ pong: "Hello World" });

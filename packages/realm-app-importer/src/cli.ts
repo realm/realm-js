@@ -5,14 +5,14 @@ import http from "http";
 
 import { RealmAppImporter } from "./RealmAppImporter";
 
-// tslint:disable:no-console
+/* eslint-disable no-console */
 
-function saveAppId(appId: string, filePath: string) {
+function saveAppId(appId: string, filePath: string): void {
     console.log(`Saving app id in "${filePath}"`);
     fs.writeFileSync(filePath, appId, "utf8");
 }
 
-function serveAppId(appId: string, port: number, hostname = "0.0.0.0") {
+function serveAppId(appId: string, port: number, hostname = "0.0.0.0"): void {
     const server = http.createServer((req, res) => {
         res.setHeader("content-type", "text/plain");
         res.end(appId, "utf8");
@@ -38,47 +38,47 @@ yargs
                     type: "string",
                     demandOption: true,
                     coerce: path.resolve,
-                    description: "Path of the application directory to import"
+                    description: "Path of the application directory to import",
                 })
                 .option("base-url", {
                     type: "string",
                     default: "http://localhost:9090",
                     description:
-                        "Base url of the stitch server to import the app into"
+                        "Base url of the stitch server to import the app into",
                 })
                 .option("username", {
                     type: "string",
                     default: "unique_user@domain.com",
-                    description: "Username of an adminstrative user"
+                    description: "Username of an adminstrative user",
                 })
                 .option("password", {
                     type: "string",
                     default: "password",
-                    description: "Password of an adminstrative user"
+                    description: "Password of an adminstrative user",
                 })
                 .option("config", {
                     type: "string",
                     description:
                         "Path for the stitch-cli configuration to temporarily store credentials",
                     coerce: path.resolve,
-                    default: "stitch-config.json"
+                    default: "stitch-config.json",
                 })
                 .option("apps-directory-path", {
                     type: "string",
                     description:
                         "Path to temporarily copy the app while importing it",
                     default: "imported-apps",
-                    coerce: path.resolve
+                    coerce: path.resolve,
                 })
                 .option("app-id-path", {
                     type: "string",
                     coerce: path.resolve,
-                    description: "Saves the app id to a file at this path"
+                    description: "Saves the app id to a file at this path",
                 })
                 .option("app-id-port", {
                     type: "number",
                     description:
-                        "Starts up an HTTP server and serves the app id"
+                        "Starts up an HTTP server and serves the app id",
                 }),
         ({
             "template-path": templatePath,
@@ -88,14 +88,14 @@ yargs
             config: stitchConfigPath,
             "apps-directory-path": appsDirectoryPath,
             "app-id-path": appIdPath,
-            "app-id-port": appIdPort
+            "app-id-port": appIdPort,
         }) => {
             const importer = new RealmAppImporter({
                 baseUrl,
                 username,
                 password,
                 stitchConfigPath,
-                appsDirectoryPath
+                appsDirectoryPath,
             });
             // Perform the import
             importer.importApp(templatePath).then(
@@ -113,8 +113,8 @@ yargs
                 (err: Error) => {
                     console.error(err.stack);
                     process.exit(1);
-                }
+                },
             );
-        }
+        },
     )
     .help().argv;
