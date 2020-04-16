@@ -5,7 +5,7 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 ### Breaking changes
 * `Realm.Sync.User` has been replaced by `Realm.User`.
 * `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([RJS-434](https://jira.mongodb.org/browse/RJS-434))
-* Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partitionKey` has been added to the `sync` configuration as a replacement. Read more [here](XXX). ([]())
+* Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partitionValue` has been added to the `sync` configuration as a replacement. Read more [here](XXX). ([]())
 * Permissions has been removed. You need to configure permissions through Stitch.
 * Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`
 
@@ -19,18 +19,14 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * None.
 
 ### Compatibility
-* Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
+* MongoDB Realm Cloud: vX.Y.Z or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 10.x.y series.
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
 * Updated Realm Core from ??? to Realm Core v10.0.0-alpha.4.
 * Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.6.
-<<<<<<< HEAD
-* Updated Realm Object Store to commit 0d681e11dadb48718f7175b547e761e5cc6cf42e.
-=======
-* Updated Realm Object Store to commit 7137594a7935545b289f8509a8226ea312727184.
->>>>>>> 64128affa50a2cdf40a2eba24bde106f8212f6fe
+* Updated Realm Object Store to commit 5e50011689abfb3184f3d4b9d7e2ab698c0de562.
 
 
 x.x.x Release notes (yyyy-MM-dd)
