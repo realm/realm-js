@@ -13,7 +13,7 @@ export class MockNetworkTransport implements NetworkTransport {
     public readonly requests: Request<any>[] = [];
 
     /** Responses sent back on each expected request */
-    public readonly responses: object[];
+    public readonly responses: any[];
 
     /**
      * Construct a mocked network transport which returns pre-recorded requests.
@@ -37,7 +37,7 @@ export class MockNetworkTransport implements NetworkTransport {
         this.requests.push(request);
         if (this.responses.length > 0) {
             const [response] = this.responses.splice(0, 1);
-            return response as any;
+            return Promise.resolve(response);
         } else {
             throw new Error(
                 `Unexpected request (method = ${request.method}, url = ${
