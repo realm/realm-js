@@ -3,10 +3,22 @@
 	"compilerOptions": {
 		"target": "es6",
 		"moduleResolution": "node",
-		"noEmit": true,
+		"outDir": "./dist",
+		"declaration": true,
 		"forceConsistentCasingInFileNames": true,
-		"types": ["realm-network-transport", "mocha", "chai", "node"],
-		"lib": ["ES2015", "DOM"]
+		"types": [
+			"realm-network-transport",
+			"mocha",
+			"chai",
+			"node"
+		],
+		"lib": [
+			"ES2015",
+			"DOM"
+		]
 	},
-	"include": ["src/**/*.ts", "types/app.d.ts"]
+	"include": [
+		"src/**/*.ts",
+		"types/app.d.ts"
+	]
 }

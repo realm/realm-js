@@ -1,11 +1,12 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"target": "ES5",
-		"types": ["realm-network-transport"],
-		"noEmit": false,
-		"declaration": true,
-		"outDir": "./dist"
+		"types": [
+			"realm-network-transport"
+		]
 	},
-	"exclude": ["src/**/*.test.ts", "src/test/"]
+	"exclude": [
+		"src/**/*.test.ts",
+		"src/test/"
+	]
 }
