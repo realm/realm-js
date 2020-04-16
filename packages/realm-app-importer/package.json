@@ -1,0 +1,53 @@
+{
+  "name": "realm-app-importer",
+  "version": "0.1.0",
+  "description": "Wrapping the Stitch CLI to import an app from a template (w. secrets)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": "realm-app-importer",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint --ext .js,.ts .",
+    "prepack": "rm -rf dist && npm run build",
+    "start": "ts-node src/cli.ts"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "realm-app-importer"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
+  "contributors": [
+    "Kræn Hansen <kraen.hansen@mongodb.com> (https://github.com/kraenhansen)"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git",
+    "directory": "packages/realm-app-importer"
+  },
+  "bugs": {
+    "url": "https://github.com/realm/realm-js/issues"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "yargs": "^15.3.0",
+    "fs-extra": "^8.1.0",
+    "node-fetch": "^2.6.0",
+    "mongodb-stitch-cli": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^8.1.0",
+    "@types/node-fetch": "^2.5.5",
+    "@types/yargs": "^15.0.4",
+    "eslint": "file:../../node_modules/eslint",
+    "ts-node": "^8.6.2",
+    "typescript": "file:../../node_modules/typescript"
+  }
+}

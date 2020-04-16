@@ -1,5 +1,5 @@
-declare var process: any;
-declare var require: ((id: string) => any) | undefined;
+declare const process: any;
+declare const require: ((id: string) => any) | undefined;
 
 export type Method = "GET" | "POST";
 
@@ -30,7 +30,7 @@ export interface ResponseHandler {
 
 export interface NetworkTransport {
     fetchAndParse<RequestBody extends any, ResponseBody extends any>(
-        request: Request<RequestBody>
+        request: Request<RequestBody>,
     ): Promise<ResponseBody>;
     fetchWithCallbacks<RequestBody extends any>(
         request: Request<RequestBody>,
@@ -44,7 +44,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
 
     public static DEFAULT_HEADERS = {
         Accept: "application/json",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     };
 
     constructor() {
@@ -63,7 +63,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
                 DefaultNetworkTransport.fetch = nodeRequire("node-fetch");
             } else {
                 throw new Error(
-                    "DefaultNetworkTransport.fetch must be set before it's used"
+                    "DefaultNetworkTransport.fetch must be set before it's used",
                 );
             }
         }
@@ -79,11 +79,11 @@ export class DefaultNetworkTransport implements NetworkTransport {
                 // Making it harder for the static analyzers see this require call
                 const nodeRequire = require;
                 DefaultNetworkTransport.AbortController = nodeRequire(
-                    "abort-controller"
+                    "abort-controller",
                 );
             } else {
                 throw new Error(
-                    "DefaultNetworkTransport.AbortController must be set before it's used"
+                    "DefaultNetworkTransport.AbortController must be set before it's used",
                 );
             }
         }
@@ -106,12 +106,12 @@ export class DefaultNetworkTransport implements NetworkTransport {
             } else {
                 // TODO: Check if a message can be extracted from the response
                 throw new Error(
-                    `Unexpected status code (${response.status} ${response.statusText})`
+                    `Unexpected status code (${response.status} ${response.statusText})`,
                 );
             }
         } catch (err) {
             throw new Error(
-                `Request failed (${request.method} ${request.url}): ${err.message}`
+                `Request failed (${request.method} ${request.url}): ${err.message}`,
             );
         }
     }
@@ -132,7 +132,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
                 return {
                     statusCode: response.status,
                     headers: responseHeaders,
-                    body: decodedBody
+                    body: decodedBody,
                 };
             })
             .then(r => handler.onSuccess(r))
@@ -140,14 +140,14 @@ export class DefaultNetworkTransport implements NetworkTransport {
     }
 
     private async fetch<RequestBody extends any>(
-        request: Request<RequestBody>
+        request: Request<RequestBody>,
     ) {
         const {
             method,
             url,
             body,
             timeoutMs,
-            headers = DefaultNetworkTransport.DEFAULT_HEADERS
+            headers = DefaultNetworkTransport.DEFAULT_HEADERS,
         } = request;
         const { signal, cancelTimeout } = this.createTimeoutSignal(timeoutMs);
         try {
@@ -156,7 +156,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
                 method,
                 headers,
                 body: typeof body === "string" ? body : JSON.stringify(body),
-                signal // Used to signal timeouts
+                signal, // Used to signal timeouts
             });
         } finally {
             // Whatever happens, cancel any timeout
@@ -175,14 +175,14 @@ export class DefaultNetworkTransport implements NetworkTransport {
                 signal: controller.signal,
                 cancelTimeout: () => {
                     clearTimeout(timeout);
-                }
+                },
             };
         } else {
             return {
                 signal: undefined,
                 cancelTimeout: () => {
                     /* No-op */
-                }
+                },
             };
         }
     }
