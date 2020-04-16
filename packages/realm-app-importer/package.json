@@ -1,7 +1,7 @@
 {
   "name": "realm-app-importer",
   "version": "0.1.0",
-  "description": "Implements cross-platform fetching used by Realm JS",
+  "description": "Wrapping the Stitch CLI to import an app from a template (w. secrets)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": "realm-app-importer",
