@@ -23,31 +23,29 @@ describe("App", () => {
 
     it("throws if no id is provided", () => {
         expect(() => {
-            // Call the constructor without providing an id
-            const app = new (App as any)();
+            new (App as any)();
         }).to.throw("Missing a MongoDB Realm app-id");
     });
 
     it("throws if an object is provided instead of an id", () => {
         expect(() => {
-            // Call the constructor providing no string nor object as id / configuration
-            const app = new (App as any)({});
+            new (App as any)({});
         }).to.throw("Missing a MongoDB Realm app-id");
     });
 
     it("expose the id", () => {
         const app = new App("default-app-id");
-        expect(app.id).to.equal("default-app-id");
+        expect(app.id).equals("default-app-id");
     });
 
     it("expose a functions factory", () => {
         const app = new App("default-app-id");
-        expect(typeof app.functions).to.equal("object");
+        expect(typeof app.functions).equals("object");
     });
 
     it("expose a callable functions factory", () => {
         const app = new App("default-app-id");
-        expect(typeof app.functions.hello).to.equal("function");
+        expect(typeof app.functions.hello).equals("function");
     });
 
     it("can log in a user", async () => {
@@ -72,13 +70,16 @@ describe("App", () => {
             "v3ry-s3cret",
         );
         const user = await app.logIn(credentials);
-        // Assume logging in returns a user
-        expect(user).to.be.instanceOf(User);
-        // Assume that the user has an access token
-        expect(user.id).to.equal("totally-valid-user-id");
-        // Assume that the user has an access token
-        expect(user.accessToken).to.equal("deadbeef");
-        // Assume the request made it to the transport
+        // Expect logging in returns a user
+        expect(user).is.instanceOf(User);
+        // Expect the user has an id
+        expect(user.id).equals("totally-valid-user-id");
+        // Expect the user has an access token
+        expect(user.accessToken).equal("deadbeef");
+        // Expect the user is logged in (active)
+        expect(user.state).equals("active");
+        expect(user.state).equals(UserState.Active);
+        // Expect the request made it to the transport
         expect(transport.requests).deep.equals([
             {
                 method: "POST",
