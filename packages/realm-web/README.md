@@ -2,6 +2,14 @@
 
 Accessing MongoDB Realm from a web-browser.
 
+## Installing this
+
+In its current form, the package has not been published to NPM, instead its distributed using a direct HTTP URL:
+
+```
+npm install https://static.realm.io/downloads/realm-web/realm-web-0.1.0.tgz
+```
+
 ## Caveats / limitations
 
 As this is a *very early* preview release, it comes with a few caveats:
@@ -22,3 +30,11 @@ Some parts of the legacy Stitch SDK is still missing, most notably:
 - Persistance of the users tokens in the browsers local storage (user must reauthenticate after a page reload).
 - The types for the `Realm.Credentials` namespace is not fully implemented.
 - No device information is sent to the service when authenticating a user.
+
+## Using this from Node.js
+
+You must install two additional peer dependencies if importing this from Node.js:
+
+```
+npm install node-fetch abort-controller
+```
