@@ -12,9 +12,10 @@ export class EmailPasswordAuthProvider
      * Construct an interface to the email / password authentication provider.
      *
      * @param transport The underlying transport used to request the services.
+     * @param providerName Optional custom name of the authentication provider.
      */
-    constructor(transport: Transport) {
-        this.transport = transport;
+    constructor(transport: Transport, providerName = "local-userpass") {
+        this.transport = transport.prefix(`/auth/providers/${providerName}`);
     }
 
     /** @inheritdoc */

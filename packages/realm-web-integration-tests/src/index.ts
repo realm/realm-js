@@ -25,5 +25,6 @@ const mochaClient = new MochaRemoteClient({
         require("./functions.test");
         require("./services.test");
         require("./api-key-auth-provider.test");
+        require("./email-password-auth-provider.test");
     },
 });

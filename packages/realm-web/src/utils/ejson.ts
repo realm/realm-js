@@ -34,10 +34,10 @@ export function serialize(obj: object): object {
  * @param obj The object or array of objects in extended-JSON format.
  * @returns The object or array of objects with inflated BSON types.
  */
-export function deserialize(obj: object | object[]): object {
+export function deserialize<R extends any>(obj: object | object[]): R {
     if (Array.isArray(obj)) {
-        return obj.map((doc: any) => EJSON.deserialize(doc));
+        return obj.map(doc => EJSON.deserialize(doc)) as any;
     } else {
-        return EJSON.deserialize(obj);
+        return EJSON.deserialize(obj) as R;
     }
 }
