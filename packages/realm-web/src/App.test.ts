@@ -247,7 +247,8 @@ describe("App", () => {
 
     it("expose a collection of service factories", () => {
         const transport = new MockNetworkTransport([]);
-        const app = new App("default-app-id", {
+        const app = new App({
+            id: "default-app-id",
             transport,
             baseUrl: "http://localhost:1337",
         });

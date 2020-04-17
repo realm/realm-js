@@ -15,13 +15,9 @@ export class ApiKeyAuthProvider
      * @param transport The transport used to send requests to services.
      * @param providerName Optional custom name of the authentication provider.
      */
-    constructor(transport: Transport, providerName = "anon-user") {
+    constructor(transport: Transport, providerName = "api-key") {
         this.transport = transport.prefix("/auth/api_keys");
-        /*
-        this.transport = transport.prefix(
-            `/auth/providers/${providerName}/api_keys`,
-        );
-        */
+        // this.transport = transport.prefix(`/auth/providers/${providerName}`);
     }
 
     /** @inheritdoc */
