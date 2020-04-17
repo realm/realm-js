@@ -1,13 +1,25 @@
 import { EJSON } from "bson";
 
-export function serialize(obj: object): any {
+/**
+ * Serialize an object containing BSON types into extended-JSON.
+ *
+ * @param obj The object containing BSON types.
+ * @returns The document in extended-JSON format.
+ */
+export function serialize(obj: object): object {
     return EJSON.serialize(obj);
 }
 
-export function deserialize(result: object | object[]): any {
-    if (Array.isArray(result)) {
-        return result.map((doc: any) => EJSON.deserialize(doc));
+/**
+ * De-serialize an object or an array of object from extended-JSON into an object or an array of object with BSON types.
+ *
+ * @param obj The object or array of objects in extended-JSON format.
+ * @returns The object or array of objects with inflated BSON types.
+ */
+export function deserialize(obj: object | object[]): object {
+    if (Array.isArray(obj)) {
+        return obj.map((doc: any) => EJSON.deserialize(doc));
     } else {
-        return EJSON.deserialize(result);
+        return EJSON.deserialize(obj);
     }
 }

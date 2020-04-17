@@ -47,7 +47,12 @@ export interface FunctionsFactoryConfiguration {
     responseTransformation?: (response: any) => any;
 }
 
-// Remove the key for any fields with undefined values
+/**
+ * Remove the key for any fields with undefined values
+ *
+ * @param args The arguments to clean
+ * @returns The cleaned arguments
+ */
 function cleanArgs(args: any[]) {
     for (const arg of args) {
         if (typeof arg === "object") {
@@ -87,7 +92,7 @@ export class FunctionsFactory {
     ) {
         this.transport = transport;
         this.serviceName = config.serviceName;
-        this.argsTransformation = config.argsTransformation;
+        this.argsTransformation = config.argsTransformation || cleanArgs;
         this.responseTransformation = config.responseTransformation;
     }
 
@@ -104,7 +109,7 @@ export class FunctionsFactory {
             name,
             arguments: this.argsTransformation
                 ? this.argsTransformation(args)
-                : args
+                : args,
         };
         if (this.serviceName) {
             body.service = this.serviceName;

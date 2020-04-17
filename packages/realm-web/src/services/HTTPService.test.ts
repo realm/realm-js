@@ -7,12 +7,12 @@ describe("HTTP service", () => {
     it("sends a GET request", async () => {
         const transport = new MockTransport([
             {
-                hello: "world"
-            }
+                hello: "world",
+            },
         ]);
         const service = createService(transport, "my-http-service");
         const result = await service.get("http://localhost:1234/some-path", {
-            headers: { "content-type": ["application/json"] }
+            headers: { "content-type": ["application/json"] },
         });
         expect(result).deep.equals({ hello: "world" });
         expect(transport.requests).deep.equals([
@@ -25,11 +25,11 @@ describe("HTTP service", () => {
                     arguments: [
                         {
                             headers: { "content-type": ["application/json"] },
-                            url: "http://localhost:1234/some-path"
-                        }
-                    ]
-                }
-            }
+                            url: "http://localhost:1234/some-path",
+                        },
+                    ],
+                },
+            },
         ]);
     });
 

@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+// As we're writing this declarations file manually, it's okay to use triple slash references
+/* eslint-disable @typescript-eslint/triple-slash-reference */
+
 /// <reference path="services.d.ts" />
 
 declare namespace Realm {

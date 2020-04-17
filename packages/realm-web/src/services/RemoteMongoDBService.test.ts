@@ -10,11 +10,11 @@ describe("MongoDB Remote service", () => {
             [
                 {
                     _id: {
-                        $oid: "deadbeefdeadbeefdeadbeef"
+                        $oid: "deadbeefdeadbeefdeadbeef",
                     },
-                    name: "Some document name ..."
-                }
-            ]
+                    name: "Some document name ...",
+                },
+            ],
         ]);
         const service = createService(transport, "my-mongodb-service");
         const result = await service
@@ -23,10 +23,10 @@ describe("MongoDB Remote service", () => {
             .find(
                 {
                     _id: ObjectID.createFromHexString(
-                        "deadbeefdeadbeefdeadbeef"
-                    )
+                        "deadbeefdeadbeefdeadbeef",
+                    ),
                 },
-                { limit: 10 }
+                { limit: 10 },
             );
         // Expect the service to issue a request via the functions factory
         expect(transport.requests).deep.equals([
@@ -41,13 +41,13 @@ describe("MongoDB Remote service", () => {
                             collection: "my-collection",
                             limit: 10,
                             query: {
-                                _id: { $oid: "deadbeefdeadbeefdeadbeef" }
-                            }
-                        }
-                    ]
+                                _id: { $oid: "deadbeefdeadbeefdeadbeef" },
+                            },
+                        },
+                    ],
                 },
-                url: "http://localhost:1337/functions/call"
-            }
+                url: "http://localhost:1337/functions/call",
+            },
         ]);
         // TODO: Expect something about the findResult
         expect(typeof result).equals("object");
@@ -63,10 +63,10 @@ describe("MongoDB Remote service", () => {
         const transport = new MockTransport([
             {
                 _id: {
-                    $oid: "deadbeefdeadbeefdeadbeef"
+                    $oid: "deadbeefdeadbeefdeadbeef",
                 },
-                name: "Some document name ..."
-            }
+                name: "Some document name ...",
+            },
         ]);
         const service = createService(transport, "my-mongodb-service");
         const result = await service
@@ -75,13 +75,13 @@ describe("MongoDB Remote service", () => {
             .findOne(
                 {
                     _id: ObjectID.createFromHexString(
-                        "deadbeefdeadbeefdeadbeef"
-                    )
+                        "deadbeefdeadbeefdeadbeef",
+                    ),
                 },
                 {
                     projection: { name: 1 },
-                    sort: { name: 1 }
-                }
+                    sort: { name: 1 },
+                },
             );
         // Expect the service to issue a request via the functions factory
         expect(transport.requests).deep.equals([
@@ -97,13 +97,13 @@ describe("MongoDB Remote service", () => {
                             sort: { name: 1 },
                             project: { name: 1 },
                             query: {
-                                _id: { $oid: "deadbeefdeadbeefdeadbeef" }
-                            }
-                        }
-                    ]
+                                _id: { $oid: "deadbeefdeadbeefdeadbeef" },
+                            },
+                        },
+                    ],
                 },
-                url: "http://localhost:1337/functions/call"
-            }
+                url: "http://localhost:1337/functions/call",
+            },
         ]);
         // TODO: Expect something about the findResult
         expect(typeof result).equals("object");
@@ -117,8 +117,8 @@ describe("MongoDB Remote service", () => {
     it("can insert a document", async () => {
         const transport = new MockTransport([
             {
-                insertedId: { $oid: "deadbeefdeadbeefdeadbeef" }
-            }
+                insertedId: { $oid: "deadbeefdeadbeefdeadbeef" },
+            },
         ]);
         const service = createService(transport, "my-mongodb-service");
         const result = await service
@@ -139,12 +139,12 @@ describe("MongoDB Remote service", () => {
                         {
                             database: "my-database",
                             collection: "my-collection",
-                            document: { name: "My awesome new document" }
-                        }
-                    ]
+                            document: { name: "My awesome new document" },
+                        },
+                    ],
                 },
-                url: "http://localhost:1337/functions/call"
-            }
+                url: "http://localhost:1337/functions/call",
+            },
         ]);
     });
 
@@ -153,9 +153,9 @@ describe("MongoDB Remote service", () => {
             {
                 insertedIds: [
                     { $oid: "deadbeefdeadbeefdead0001" },
-                    { $oid: "deadbeefdeadbeefdead0002" }
-                ]
-            }
+                    { $oid: "deadbeefdeadbeefdead0002" },
+                ],
+            },
         ]);
         const service = createService(transport, "my-mongodb-service");
         const result = await service
@@ -163,7 +163,7 @@ describe("MongoDB Remote service", () => {
             .collection("my-collection")
             .insertMany([
                 { name: "My first document" },
-                { name: "My second document" }
+                { name: "My second document" },
             ]);
         expect(typeof result).equals("object");
         expect(Array.isArray(result.insertedIds));
@@ -184,13 +184,13 @@ describe("MongoDB Remote service", () => {
                             collection: "my-collection",
                             documents: [
                                 { name: "My first document" },
-                                { name: "My second document" }
-                            ]
-                        }
-                    ]
+                                { name: "My second document" },
+                            ],
+                        },
+                    ],
                 },
-                url: "http://localhost:1337/functions/call"
-            }
+                url: "http://localhost:1337/functions/call",
+            },
         ]);
     });
 
@@ -213,12 +213,12 @@ describe("MongoDB Remote service", () => {
                             database: "my-database",
                             collection: "my-collection",
                             limit: 9999,
-                            query: {}
-                        }
-                    ]
+                            query: {},
+                        },
+                    ],
                 },
-                url: "http://localhost:1337/functions/call"
-            }
+                url: "http://localhost:1337/functions/call",
+            },
         ]);
     });
 });

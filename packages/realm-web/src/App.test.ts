@@ -249,7 +249,7 @@ describe("App", () => {
         const transport = new MockNetworkTransport([]);
         const app = new App("default-app-id", {
             transport,
-            baseUrl: "http://localhost:1337"
+            baseUrl: "http://localhost:1337",
         });
         expect(app.services).keys(["mongodb", "http"]);
         expect(typeof app.services.mongodb).equals("function");
