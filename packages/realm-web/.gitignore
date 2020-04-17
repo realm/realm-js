@@ -1,1 +1,3 @@
 dist/
+# The types are copied from the root project
+types/

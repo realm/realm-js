@@ -1,14 +1,22 @@
 {
   "name": "realm-web",
-  "version": "3.6.4",
+  "version": "0.1.0",
   "description": "Authenticate and communicate with the MongoDB Realm platform, from your web-browser",
   "main": "dist/index.js",
   "types": "types/index.d.ts",
   "scripts": {
+    "prepack": "npm run build",
+    "postinstall": "npm run update-types",
+    "update-types": "ts-node scripts/update-types.ts",
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha 'src/**/*.test.ts'"
   },
+  "files": [
+    "dist",
+    "types",
+    "LICENSE"
+  ],
   "keywords": [
     "realm",
     "browser"
@@ -33,6 +41,7 @@
   "devDependencies": {
     "@types/bson": "^4.0.2",
     "@types/chai": "^4.2.9",
+    "@types/fs-extra": "^8.1.0",
     "@types/mocha": "^7.0.1",
     "@types/node": "^13.7.6",
     "abort-controller": "^3.0.0",
