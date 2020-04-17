@@ -1,5 +1,5 @@
 import type { AnonymousCredentials } from "./AnonymousCredentials";
-import type { UsernamePasswordCredentials } from "./UsernamePasswordCredentials";
+import type { EmailPasswordCredentials } from "./EmailPasswordCredentials";
 
 /**
  * Abstract base class for credentials.
@@ -9,7 +9,7 @@ export abstract class Credentials {
     /** @static */
     static AnonymousCredentials: typeof AnonymousCredentials;
     /** @static */
-    static UsernamePasswordCredentials: typeof UsernamePasswordCredentials;
+    static EmailPasswordCredentials: typeof EmailPasswordCredentials;
 
     /**
      * The name of the authentication provider used when authenticating
@@ -29,27 +29,27 @@ export abstract class Credentials {
      * Create anonymous credentials.
      *
      * @param providerName Optional custom name of the authentication provider.
-     * @returns A new instance of anonymous credentials.
+     * @returns The newly created credentials.
      */
     static anonymous(providerName?: string) {
         return new Credentials.AnonymousCredentials(providerName);
     }
 
     /**
-     * Create username / password credentials.
+     * Create email / password credentials.
      *
-     * @param username The end-users username.
+     * @param email The end-users email.
      * @param password The end-users password.
      * @param providerName Optional custom name of the authentication provider.
-     * @returns A new instance of username / password credentials.
+     * @returns The newly created credentials.
      */
-    static usernamePassword(
-        username: string,
+    static emailPassword(
+        email: string,
         password: string,
         providerName?: string,
     ) {
-        return new Credentials.UsernamePasswordCredentials(
-            username,
+        return new Credentials.EmailPasswordCredentials(
+            email,
             password,
             providerName,
         );

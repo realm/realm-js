@@ -7,38 +7,38 @@ import { Credentials } from "./Credentials";
 /**
  * Credentials that logs in using the [Username Password Authentication Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
  */
-export class UsernamePasswordCredentials extends Credentials
+export class EmailPasswordCredentials extends Credentials
     implements Realm.Credentials {
     /** @inheritdoc */
     public readonly providerType = "local-userpass";
 
     /** Username */
-    public readonly username: string;
+    public readonly email: string;
 
     /** Password */
     public readonly password: string;
 
     /**
-     * Create credentials to authenticate a user from a username and their password.
+     * Create credentials to authenticate a user from an email and their password.
      *
-     * @param username The end-users username.
+     * @param email The end-users email.
      * @param password The end-users password.
      * @param providerName An optional custom name for the authentication provider.
      */
     constructor(
-        username: string,
+        email: string,
         password: string,
         providerName = "local-userpass",
     ) {
         super(providerName);
-        this.username = username;
+        this.email = email;
         this.password = password;
     }
 
     /** @inheritdoc */
     public toJSON() {
         return {
-            username: this.username,
+            username: this.email,
             password: this.password,
         };
     }

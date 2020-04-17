@@ -14,7 +14,7 @@ describe("Realm Web", () => {
 
         // Check the exposure of all the providers
 
-        it("expose the anonymous credential", () => {
+        it("expose the anonymous credentials", () => {
             expect(typeof Realm.Credentials.anonymous).to.equal("function");
             const credentials = Realm.Credentials.anonymous();
             expect(credentials).to.be.instanceOf(
@@ -22,18 +22,16 @@ describe("Realm Web", () => {
             );
         });
 
-        it("expose the username password credential", () => {
-            expect(typeof Realm.Credentials.usernamePassword).to.equal(
-                "function",
-            );
-            const credentials = Realm.Credentials.usernamePassword(
-                "gilfoil",
+        it("expose the email/password credentials", () => {
+            expect(typeof Realm.Credentials.emailPassword).to.equal("function");
+            const credentials = Realm.Credentials.emailPassword(
+                "gilfoil@testing.mongodb.com",
                 "s3cr3t",
             );
             expect(credentials).to.be.instanceOf(
-                Realm.Credentials.UsernamePasswordCredentials,
+                Realm.Credentials.EmailPasswordCredentials,
             );
-            expect(credentials.username).to.equal("gilfoil");
+            expect(credentials.email).to.equal("gilfoil@testing.mongodb.com");
             expect(credentials.password).to.equal("s3cr3t");
         });
     });

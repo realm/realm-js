@@ -18,8 +18,8 @@ describe("Realm.Credentials", () => {
         // TODO: Re-enable when we have a way to register users
         it.skip("can authenticate", async () => {
             const app = createApp();
-            const credentials = Credentials.usernamePassword(
-                "gilfoil",
+            const credentials = Credentials.emailPassword(
+                "gilfoil@testing.mongodb.com",
                 "v3ry-s3cret",
             );
             const user = await app.logIn(credentials);

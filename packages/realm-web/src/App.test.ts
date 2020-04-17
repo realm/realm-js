@@ -65,8 +65,8 @@ describe("App", () => {
             transport,
             baseUrl: "http://localhost:1337",
         });
-        const credentials = Credentials.usernamePassword(
-            "gilfoil",
+        const credentials = Credentials.emailPassword(
+            "gilfoil@testing.mongodb.com",
             "v3ry-s3cret",
         );
         const user = await app.logIn(credentials);
@@ -85,7 +85,7 @@ describe("App", () => {
                 method: "POST",
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/local-userpass/login",
-                body: { username: "gilfoil", password: "v3ry-s3cret" },
+                body: { username: "gilfoil@testing.mongodb.com", password: "v3ry-s3cret" },
             },
             {
                 method: "GET",

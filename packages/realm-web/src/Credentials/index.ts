@@ -1,9 +1,9 @@
 import { Credentials } from "./Credentials";
-import { UsernamePasswordCredentials } from "./UsernamePasswordCredentials";
+import { EmailPasswordCredentials } from "./EmailPasswordCredentials";
 import { AnonymousCredentials } from "./AnonymousCredentials";
 
 // Setting the static class members of the Credentials base class here, to avoid a cyclic relationship.
 Credentials.AnonymousCredentials = AnonymousCredentials;
-Credentials.UsernamePasswordCredentials = UsernamePasswordCredentials;
+Credentials.EmailPasswordCredentials = EmailPasswordCredentials;
 
-export { Credentials, AnonymousCredentials, UsernamePasswordCredentials };
+export { Credentials, AnonymousCredentials, EmailPasswordCredentials };
