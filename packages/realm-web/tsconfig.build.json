@@ -3,7 +3,8 @@
 	"compilerOptions": {
 		"types": [
 			"realm-network-transport",
-			"bson"
+			"bson",
+			"realm"
 		]
 	},
 	"exclude": [

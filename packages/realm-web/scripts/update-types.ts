@@ -4,7 +4,7 @@ import * as path from "path";
 /* eslint-disable no-console */
 
 const packagePath = path.resolve(__dirname, "..");
-const packageTypesPath = path.resolve(packagePath, "types");
+const packageTypesPath = path.resolve(packagePath, "types/realm");
 const rootPath = path.resolve(packagePath, "../..");
 const rootTypesPath = path.resolve(rootPath, "types");
 
