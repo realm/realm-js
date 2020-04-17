@@ -25,5 +25,5 @@ export function app(id: string) {
 const AppConstructor = App as Realm.AppConstructor;
 export { AppConstructor as App };
 
-export { Credentials } from "./Credentials/index";
+export { Credentials } from "./credentials";
 export { User } from "./User";
