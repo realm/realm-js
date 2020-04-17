@@ -24,6 +24,11 @@ import {
 } from "./FunctionsFactory";
 import { MockTransport } from "./test/MockTransport";
 
+const DEFAULT_HEADERS = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+};
+
 describe("FunctionsFactory", () => {
     it("can be created", () => {
         const factory = createFunctionsFactory({} as any);
@@ -60,6 +65,7 @@ describe("FunctionsFactory", () => {
                     service: "custom-service",
                     arguments: ["friendly"],
                 },
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });

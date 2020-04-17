@@ -28,6 +28,11 @@ interface MyDocument extends Realm.Services.RemoteMongoDB.Document {
     name: string;
 }
 
+const DEFAULT_HEADERS = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+};
+
 describe("MongoDB Remote service", () => {
     it("can find documents", async () => {
         const transport = new MockTransport([
@@ -71,6 +76,7 @@ describe("MongoDB Remote service", () => {
                     ],
                 },
                 url: "http://localhost:1337/functions/call",
+                headers: DEFAULT_HEADERS,
             },
         ]);
         // TODO: Expect something about the findResult
@@ -127,6 +133,7 @@ describe("MongoDB Remote service", () => {
                     ],
                 },
                 url: "http://localhost:1337/functions/call",
+                headers: DEFAULT_HEADERS,
             },
         ]);
         // TODO: Expect something about the findResult
@@ -168,6 +175,7 @@ describe("MongoDB Remote service", () => {
                     ],
                 },
                 url: "http://localhost:1337/functions/call",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
@@ -214,6 +222,7 @@ describe("MongoDB Remote service", () => {
                     ],
                 },
                 url: "http://localhost:1337/functions/call",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
@@ -242,6 +251,7 @@ describe("MongoDB Remote service", () => {
                     ],
                 },
                 url: "http://localhost:1337/functions/call",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });

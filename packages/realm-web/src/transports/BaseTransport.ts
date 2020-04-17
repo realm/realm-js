@@ -29,6 +29,14 @@ import { PrefixedTransport } from "./PrefixedTransport";
  */
 export class BaseTransport implements Transport {
     /**
+     * Default headers that will always be sat on requests
+     */
+    private static readonly DEFAULT_HEADERS = {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+    };
+
+    /**
      * The underlying network transport.
      */
     private readonly networkTransport: NetworkTransport;
@@ -62,10 +70,11 @@ export class BaseTransport implements Transport {
                 "BaseTransport doesn't support fetching as a particular user",
             );
         }
-        const { path, ...restOfRequest } = request;
+        const { path, headers, ...restOfRequest } = request;
         return this.networkTransport.fetchAndParse({
             ...restOfRequest,
             url: this.baseUrl + path,
+            headers: { ...BaseTransport.DEFAULT_HEADERS, ...headers },
         });
     }
 

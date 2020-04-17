@@ -4,6 +4,11 @@ import { ObjectId } from "bson";
 import { ApiKeyAuthProvider } from "./ApiKeyAuthProvider";
 import { MockTransport } from "../test/MockTransport";
 
+const DEFAULT_HEADERS = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+};
+
 describe("ApiKeyAuthProvider", () => {
     it("can create an api key", async () => {
         const transport = new MockTransport([
@@ -32,6 +37,7 @@ describe("ApiKeyAuthProvider", () => {
                 body: {
                     name: "my-key-name",
                 },
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
@@ -64,6 +70,7 @@ describe("ApiKeyAuthProvider", () => {
                 method: "GET",
                 url:
                     "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
@@ -107,6 +114,7 @@ describe("ApiKeyAuthProvider", () => {
             {
                 method: "GET",
                 url: "http://localhost:1337/auth/api_keys",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
@@ -123,6 +131,7 @@ describe("ApiKeyAuthProvider", () => {
                 method: "DELETE",
                 url:
                     "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
@@ -139,6 +148,7 @@ describe("ApiKeyAuthProvider", () => {
                 method: "PUT",
                 url:
                     "http://localhost:1337/auth/api_keys/enable/deadbeefdeadbeefdeadbeef",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
@@ -155,6 +165,7 @@ describe("ApiKeyAuthProvider", () => {
                 method: "PUT",
                 url:
                     "http://localhost:1337/auth/api_keys/disable/deadbeefdeadbeefdeadbeef",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });

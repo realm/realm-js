@@ -23,6 +23,11 @@ import { User, UserState } from "./User";
 import { MockNetworkTransport } from "./test/MockNetworkTransport";
 import { Credentials } from "./Credentials";
 
+const DEFAULT_HEADERS = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+};
+
 /* eslint-disable @typescript-eslint/camelcase */
 
 describe("App", () => {
@@ -114,12 +119,14 @@ describe("App", () => {
                     username: "gilfoil@testing.mongodb.com",
                     password: "v3ry-s3cret",
                 },
+                headers: DEFAULT_HEADERS,
             },
             {
                 method: "GET",
                 url: "http://localhost:1337/api/client/v2.0/auth/profile",
                 headers: {
                     Authorization: "Bearer deadbeef",
+                    ...DEFAULT_HEADERS,
                 },
             },
         ]);
@@ -156,12 +163,14 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
                 body: {},
+                headers: DEFAULT_HEADERS,
             },
             {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
                     Authorization: "Bearer very-refreshing",
+                    ...DEFAULT_HEADERS,
                 },
             },
         ]);
@@ -198,12 +207,14 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
                 body: {},
+                headers: DEFAULT_HEADERS,
             },
             {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
                     Authorization: "Bearer very-refreshing",
+                    ...DEFAULT_HEADERS,
                 },
             },
         ]);
@@ -234,13 +245,17 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
                 body: {},
+                headers: DEFAULT_HEADERS,
             },
             {
                 method: "POST",
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/functions/call",
                 body: { name: "hello", arguments: [] },
-                headers: { Authorization: "Bearer deadbeef" },
+                headers: {
+                    Authorization: "Bearer deadbeef",
+                    ...DEFAULT_HEADERS,
+                },
             },
         ]);
     });
