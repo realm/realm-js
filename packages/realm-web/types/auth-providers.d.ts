@@ -17,17 +17,24 @@
 ////////////////////////////////////////////////////////////////////////////
 
 declare namespace Realm {
-
+    /**
+     * An object with interfaces to all possible authentication provider the app might have.
+     */
     interface AuthProviders {
+        /** Authentication provider where users identify using email and password. */
         emailPassword: Realm.AuthProviders.EmailPasswordAuthProvider;
+        /** Authentication provider where users identify using an API-key. */
         apiKey: Realm.AuthProviders.ApiKeyAuthProvider;
     }
 
     namespace AuthProviders {
-        
+        /**
+         * Authentication provider where users identify using email and password.
+         */
         interface EmailPasswordAuthProvider {
             /**
              * Register a new user.
+             *
              * @param email the new users email.
              * @param password the new users passsword.
              */
@@ -35,6 +42,7 @@ declare namespace Realm {
 
             /**
              * Confirm a user by the token received.
+             *
              * @param token the token received.
              * @param tokenId the id of the token received.
              */
@@ -42,43 +50,77 @@ declare namespace Realm {
 
             /**
              * Resend the confirmation email.
+             *
              * @param email the email associated to resend the confirmation to.
              */
             resendConfirmation(email: string): Promise<void>;
 
             /**
              * Complete resetting the password
+             *
              * @param token the token received.
              * @param tokenId the id of the token received.
              * @param password the new password.
              */
-            resetPassword(token: string, tokenId: string, password: string): Promise<void>;
+            resetPassword(
+                token: string,
+                tokenId: string,
+                password: string,
+            ): Promise<void>;
 
             /**
              * Send an email with tokens to reset the password.
+             *
              * @param email the email to send the tokens to.
              */
             sendResetPasswordEmail(email: string): Promise<void>;
 
             /**
              * Call the custom function to reset the password.
+             *
              * @param email the email associated with the user.
              * @param password the new password.
              * @param args one or more arguments to pass to the function.
              */
-            callResetPasswordFunction(email: string, password: string, args: any[]): Promise<void>;
+            callResetPasswordFunction(
+                email: string,
+                password: string,
+                args: any[],
+            ): Promise<void>;
         }
 
+        /**
+         * The representation of an API-key stored in the service.
+         */
         interface ApiKey {
+            /**
+             * The internal identifier of the key.
+             */
             _id: ObjectId;
+
+            /**
+             * The secret part of the key.
+             */
             key: string;
+
+            /**
+             * A name for the key.
+             */
             name: string;
+
+            /**
+             * When disabled, the key cannot authenticate.
+             */
             disabled: boolean;
         }
 
+        /**
+         * Authentication provider where users identify using an API-key.
+         */
         interface ApiKeyAuthProvider {
             /**
              * Creates an API key that can be used to authenticate as the current user.
+             *
              * @param name the name of the API key to be created.
              */
             create(name: string): Promise<ApiKey>;

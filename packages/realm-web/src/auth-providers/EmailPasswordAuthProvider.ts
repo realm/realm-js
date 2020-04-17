@@ -1,13 +1,20 @@
 import { Transport } from "../transports";
 
+/** @inheritdoc */
 export class EmailPasswordAuthProvider
     implements Realm.AuthProviders.EmailPasswordAuthProvider {
+    /**
+     * The underlying transport.
+     */
     private readonly transport: Transport;
-    private readonly providerName: string;
 
-    constructor(transport: Transport, providerName: string = "local-userpass") {
+    /**
+     * Construct an interface to the email / password authentication provider.
+     *
+     * @param transport The underlying transport used to request the services.
+     */
+    constructor(transport: Transport) {
         this.transport = transport;
-        this.providerName = providerName;
     }
 
     /** @inheritdoc */
@@ -15,7 +22,7 @@ export class EmailPasswordAuthProvider
         return this.transport.fetch({
             method: "POST",
             path: "/register",
-            body: { email, password }
+            body: { email, password },
         });
     }
 
@@ -24,7 +31,7 @@ export class EmailPasswordAuthProvider
         return this.transport.fetch({
             method: "POST",
             path: "/confirm",
-            body: { token, tokenId }
+            body: { token, tokenId },
         });
     }
 
@@ -33,7 +40,7 @@ export class EmailPasswordAuthProvider
         return this.transport.fetch({
             method: "POST",
             path: "/confirm/send",
-            body: { email }
+            body: { email },
         });
     }
 
@@ -41,12 +48,12 @@ export class EmailPasswordAuthProvider
     resetPassword(
         token: string,
         tokenId: string,
-        password: string
+        password: string,
     ): Promise<void> {
         return this.transport.fetch({
             method: "POST",
             path: "/reset",
-            body: { token, tokenId, password }
+            body: { token, tokenId, password },
         });
     }
 
@@ -55,7 +62,7 @@ export class EmailPasswordAuthProvider
         return this.transport.fetch({
             method: "POST",
             path: "/reset/send",
-            body: { email }
+            body: { email },
         });
     }
 
@@ -63,12 +70,12 @@ export class EmailPasswordAuthProvider
     callResetPasswordFunction(
         email: string,
         password: string,
-        args: any[]
+        args: any[],
     ): Promise<void> {
         return this.transport.fetch({
             method: "POST",
             path: "/reset/call",
-            body: { email, password, arguments: args }
+            body: { email, password, arguments: args },
         });
     }
 }

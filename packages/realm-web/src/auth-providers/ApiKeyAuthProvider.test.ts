@@ -9,12 +9,12 @@ describe("ApiKeyAuthProvider", () => {
         const transport = new MockTransport([
             {
                 _id: {
-                    $oid: "deadbeefdeadbeefdeadbeef"
+                    $oid: "deadbeefdeadbeefdeadbeef",
                 },
                 name: "my-key-name",
                 key: "super-secret-key",
-                disabled: true
-            }
+                disabled: true,
+            },
         ]);
         const provider = new ApiKeyAuthProvider(transport);
         const apiKey = await provider.create("my-key-name");
@@ -30,9 +30,9 @@ describe("ApiKeyAuthProvider", () => {
                 method: "POST",
                 url: "http://localhost:1337/auth/api_keys",
                 body: {
-                    name: "my-key-name"
-                }
-            }
+                    name: "my-key-name",
+                },
+            },
         ]);
     });
 
@@ -40,16 +40,16 @@ describe("ApiKeyAuthProvider", () => {
         const transport = new MockTransport([
             {
                 _id: {
-                    $oid: "deadbeefdeadbeefdeadbeef"
+                    $oid: "deadbeefdeadbeefdeadbeef",
                 },
                 name: "my-key-name",
                 key: "super-secret-key",
-                disabled: true
-            }
+                disabled: true,
+            },
         ]);
         const provider = new ApiKeyAuthProvider(transport);
         const apiKey = await provider.get(
-            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef")
+            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         );
         // Expect something of the key
         expect(typeof apiKey._id).equals("object");
@@ -63,8 +63,8 @@ describe("ApiKeyAuthProvider", () => {
             {
                 method: "GET",
                 url:
-                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef"
-            }
+                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef",
+            },
         ]);
     });
 
@@ -73,21 +73,21 @@ describe("ApiKeyAuthProvider", () => {
             [
                 {
                     _id: {
-                        $oid: "deadbeefdeadbeefdeadbee1"
+                        $oid: "deadbeefdeadbeefdeadbee1",
                     },
                     name: "my-key-name-1",
                     key: "super-secret-key-1",
-                    disabled: true
+                    disabled: true,
                 },
                 {
                     _id: {
-                        $oid: "deadbeefdeadbeefdeadbee2"
+                        $oid: "deadbeefdeadbeefdeadbee2",
                     },
                     name: "my-key-name-2",
                     key: "super-secret-key-2",
-                    disabled: true
-                }
-            ]
+                    disabled: true,
+                },
+            ],
         ]);
         const provider = new ApiKeyAuthProvider(transport);
         const apiKeys = await provider.list();
@@ -106,8 +106,8 @@ describe("ApiKeyAuthProvider", () => {
         expect(transport.requests).deep.equals([
             {
                 method: "GET",
-                url: "http://localhost:1337/auth/api_keys"
-            }
+                url: "http://localhost:1337/auth/api_keys",
+            },
         ]);
     });
 
@@ -115,15 +115,15 @@ describe("ApiKeyAuthProvider", () => {
         const transport = new MockTransport([{}]);
         const provider = new ApiKeyAuthProvider(transport);
         await provider.delete(
-            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef")
+            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         );
         // Expect something of the request
         expect(transport.requests).deep.equals([
             {
                 method: "DELETE",
                 url:
-                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef"
-            }
+                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef",
+            },
         ]);
     });
 
@@ -131,15 +131,15 @@ describe("ApiKeyAuthProvider", () => {
         const transport = new MockTransport([{}]);
         const provider = new ApiKeyAuthProvider(transport);
         await provider.enable(
-            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef")
+            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         );
         // Expect something of the request
         expect(transport.requests).deep.equals([
             {
                 method: "PUT",
                 url:
-                    "http://localhost:1337/auth/api_keys/enable/deadbeefdeadbeefdeadbeef"
-            }
+                    "http://localhost:1337/auth/api_keys/enable/deadbeefdeadbeefdeadbeef",
+            },
         ]);
     });
 
@@ -147,15 +147,15 @@ describe("ApiKeyAuthProvider", () => {
         const transport = new MockTransport([{}]);
         const provider = new ApiKeyAuthProvider(transport);
         await provider.disable(
-            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef")
+            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         );
         // Expect something of the request
         expect(transport.requests).deep.equals([
             {
                 method: "PUT",
                 url:
-                    "http://localhost:1337/auth/api_keys/disable/deadbeefdeadbeefdeadbeef"
-            }
+                    "http://localhost:1337/auth/api_keys/disable/deadbeefdeadbeefdeadbeef",
+            },
         ]);
     });
 });

@@ -4,8 +4,16 @@ import { deserialize } from "../utils/ejson";
 /** @inheritdoc */
 export class ApiKeyAuthProvider
     implements Realm.AuthProviders.ApiKeyAuthProvider {
+    /**
+     * The transport used to send requests to services.
+     */
     private readonly transport: Transport;
 
+    /**
+     * Construct an interface to the API-key authentication provider.
+     *
+     * @param transport The transport used to send requests to services.
+     */
     constructor(transport: Transport) {
         this.transport = transport.prefix("/auth/api_keys");
     }
@@ -15,7 +23,7 @@ export class ApiKeyAuthProvider
         return this.transport
             .fetch({
                 method: "POST",
-                body: { name }
+                body: { name },
             })
             .then(deserialize);
     }
@@ -25,7 +33,7 @@ export class ApiKeyAuthProvider
         return this.transport
             .fetch({
                 method: "GET",
-                path: "/" + keyId.toHexString()
+                path: "/" + keyId.toHexString(),
             })
             .then(deserialize);
     }
@@ -40,7 +48,7 @@ export class ApiKeyAuthProvider
         return this.transport
             .fetch({
                 method: "DELETE",
-                path: "/" + keyId.toHexString()
+                path: "/" + keyId.toHexString(),
             })
             .then(deserialize);
     }
@@ -50,7 +58,7 @@ export class ApiKeyAuthProvider
         return this.transport
             .fetch({
                 method: "PUT",
-                path: "/enable/" + keyId.toHexString()
+                path: "/enable/" + keyId.toHexString(),
             })
             .then(deserialize);
     }
@@ -60,7 +68,7 @@ export class ApiKeyAuthProvider
         return this.transport
             .fetch({
                 method: "PUT",
-                path: "/disable/" + keyId.toHexString()
+                path: "/disable/" + keyId.toHexString(),
             })
             .then(deserialize);
     }
