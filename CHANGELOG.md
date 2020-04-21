@@ -1,4 +1,4 @@
-10.0.0-alpha.1 Release notes (2020-4-16)
+v10.0.0 Release notes (2020-4-21)
 =============================================================
 NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 
@@ -24,8 +24,8 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Updated Realm Core from ??? to Realm Core v10.0.0-alpha.4.
-* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.6.
+* Updated Realm Core from ??? to Realm Core v10.0.0-alpha.6.
+* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.8.
 * Updated Realm Object Store to commit 5e50011689abfb3184f3d4b9d7e2ab698c0de562.
 * Created a package named "realm-app-importer", to be used by integration tests (ideally by other SDKs too).
 
