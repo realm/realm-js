@@ -20,7 +20,9 @@ declare namespace Realm {
     /**
      * The constructor of MongoDB Realm App.
      */
-    type AppConstructor = new <FunctionsFactoryType extends FunctionsFactory>(
+    type AppConstructor = new <
+        FunctionsFactoryType extends BaseFunctionsFactory = DefaultFunctionsFactory
+    >(
         idOrConfiguration: string | AppConfiguration,
     ) => App<FunctionsFactoryType>;
 
@@ -28,7 +30,7 @@ declare namespace Realm {
      * A MongoDB Realm App.
      */
     interface App<
-        FunctionsFactoryType extends FunctionsFactory = FunctionsFactory
+        FunctionsFactoryType extends BaseFunctionsFactory = DefaultFunctionsFactory
     > {
         /**
          * The id of this Realm app.
@@ -226,7 +228,7 @@ declare namespace Realm {
     /**
      * A collection of functions as defined on the MongoDB Server.
      */
-    interface FunctionsFactory {
+    interface BaseFunctionsFactory {
         /**
          * Call a remote MongoDB Realm function by it's name.
          * Consider using `functions[name]()` instead of calling this method.
@@ -235,7 +237,12 @@ declare namespace Realm {
          * @param args Arguments passed to the function
          */
         callFunction(name: string, ...args: any[]): Promise<any>;
+    }
 
+    /**
+     * A collection of functions as defined on the MongoDB Server.
+     */
+    interface DefaultFunctionsFactory extends BaseFunctionsFactory {
         /**
          * All the functions are accessable as members on this instance.
          */

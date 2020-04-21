@@ -14,8 +14,9 @@ export interface AppConfiguration extends Realm.AppConfiguration {
 /**
  * MongoDB Realm App
  */
-export class App<FunctionsFactoryType extends Realm.FunctionsFactory>
-    implements Realm.App {
+export class App<
+    FunctionsFactoryType extends Realm.BaseFunctionsFactory = Realm.DefaultFunctionsFactory
+> implements Realm.App<FunctionsFactoryType> {
     /** @inheritdoc */
     public readonly functions: FunctionsFactoryType;
 
