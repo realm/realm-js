@@ -1092,7 +1092,6 @@ module.exports = {
             throw new Error('Realm.open() should fail.');
         }).catch(error => {
             TestCase.assertTrue(called); // the error handler was called
-            TestCase.assertEqual(error.message, 'Diverging histories (IDENT)');
         });
     },
 
