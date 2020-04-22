@@ -26,6 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
+const URL = require('url-parse');
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
@@ -41,18 +42,21 @@ function node_require(module) {
     return require_method(module);
 }
 
+let fetch;
+if (isNodeProcess) {
+    fetch = node_require('node-fetch');
+}
+
 let tmp;
 let fs;
 let execFile;
 let path;
-let URL;
 if (isNodeProcess) {
     tmp = node_require('tmp');
     fs = node_require('fs');
     execFile = node_require('child_process').execFile;
     tmp.setGracefulCleanup();
     path = node_require("path");
-    URL = node_require('url').URL;
 }
 
 function copyFileToTempDir(filename) {
@@ -1043,6 +1047,62 @@ module.exports = {
                 TestCase.assertEqual(session.config.error, config.sync.error);
                 session._simulateError(211, 'ClientReset'); // 211 -> divering histories
             });
+        });
+    },
+
+    async testClientResetAtOpen() {
+        if (!isNodeProcess) {
+            return;
+        }
+
+        if (!global.testAdminUserInfo) {
+            throw new Error("Test requires an admin user");
+        }
+
+        let called = false;
+        const credentials = Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password);
+        let user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
+        var realm;
+        const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
+        config.schema = [schemas.IntOnly];
+        config.sync.clientResyncMode = 'manual';
+        config.sync.fullSynchronization = true;
+        config.sync.error = (sender, error) => {
+            called = true;
+            TestCase.assertEqual(error.name, 'ClientReset');
+            TestCase.assertDefined(error.config);
+            TestCase.assertNotEqual(error.config.path, '');
+            const path = realm.path;
+            realm.close();
+            Realm.Sync.initiateClientReset(path);
+        };
+
+        // open, download, create an object, upload and close
+        realm = await Realm.open(config);
+        await realm.syncSession.downloadAllServerChanges();
+        realm.write(() => {
+            realm.create(schemas.IntOnly.name, { intCol: 1 });
+        });
+        await realm.syncSession.uploadAllLocalChanges();
+        realm.close();
+
+        // delete Realm on server
+        let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
+        let url = new URL(`/realms/files/${encodedPath}`, user.server);
+        let options = {
+            headers: {
+                Authorization: `${user.token}`,
+                'Content-Type': 'application/json',
+            },
+            method: 'DELETE',
+        };
+        await fetch(url.toString(), options);
+
+        // open the Realm again and see it fail
+        return Realm.open(config).then(realm => {
+            throw new Error('Realm.open() should fail.');
+        }).catch(error => {
+            TestCase.assertTrue(called); // the error handler was called
         });
     },
 

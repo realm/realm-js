@@ -477,6 +477,22 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
         Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url()));
+        Object::set_property(ctx, config, "fullSynchronization", Value::from_boolean(ctx, session->config().is_partial));
+
+        std::string clientResyncMode;
+        switch (session->config().client_resync_mode) {
+        case realm::ClientResyncMode::Recover:
+            clientResyncMode = "recover";
+            break;
+        case realm::ClientResyncMode::DiscardLocal:
+            clientResyncMode = "discard";
+            break;
+        case realm::ClientResyncMode::Manual:
+            clientResyncMode = "manual";
+            break;
+        }
+        Object::set_property(ctx, config, "clientResyncMode", Value::from_string(ctx, clientResyncMode));
+
         if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());
