@@ -52,7 +52,6 @@
     "test": "scripts/test.sh",
     "package": "npm ci --build-from-source=realm && node-pre-gyp package",
     "install": "node-pre-gyp install --fallback-to-build",
-    "postinstall": "lerna bootstrap",
     "rebuild": "npm run isWin -s && SET REALMJS_USE_DEBUG_CORE=1 & npm run rebuild-changes || REALMJS_USE_DEBUG_CORE=1 && npm run rebuild-changes",
     "build": "npm run isWin -s && SET REALMJS_USE_DEBUG_CORE=1 & npm run build-changes || REALMJS_USE_DEBUG_CORE=1 && npm run build-changes",
     "build-changes": "node-pre-gyp build --debug",
