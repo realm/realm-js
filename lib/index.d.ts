@@ -138,6 +138,16 @@ declare namespace Realm {
      */
     interface Object {
         /**
+         * @returns An array of the names of the object's properties.
+         */
+        keys(): string[];
+
+        /**
+         * @returns An array of key/value pairs of the object's properties.
+         */
+        entries(): [string, any][];
+
+        /**
          * @returns boolean
          */
         isValid(): boolean;
@@ -667,6 +677,7 @@ declare namespace Realm.Sync {
     function setLogLevel(logLevel: LogLevel): void;
     function setLogger(callback: (level: NumericLogLevel, message: string) => void): void;
     function setUserAgent(userAgent: string): void;
+    function enableSessionMultiplexing(): void;
     function initiateClientReset(path: string): void;
     function _hasExistingSessions(): boolean;
     function reconnect(): void;

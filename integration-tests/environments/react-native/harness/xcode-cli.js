@@ -3,7 +3,11 @@ const cp = require("child_process");
 function xcrun(...args) {
     const p = cp.spawnSync("xcrun", args, { encoding: "utf8" });
     if (p.status !== 0) {
-        throw new Error(`Failed running "xcrun ${args.join(" ")}" (status = ${p.status}):\n${p.stderr.trim()}`);
+        throw new Error(
+            `Failed running "xcrun ${args.join(" ")}" (status = ${
+                p.status
+            }):\n${p.stderr.trim()}`,
+        );
     } else {
         return p;
     }
@@ -18,7 +22,7 @@ function simctl(...args) {
  * @param {string} type One of devices, devicetypes, runtimes or pairs
  */
 function list(type, searchterm, asJson = true) {
-    const args = [ type ];
+    const args = [type];
     if (searchterm && !type) {
         throw new Error("You must provide a type when providing a search term");
     } else if (searchterm) {
@@ -97,8 +101,8 @@ function launch(device, appBundleIdentifier) {
 
 /**
  * Opens a URL in the device browser
- * @param {string} device 
- * @param {string} url 
+ * @param {string} device
+ * @param {string} url
  */
 function openUrl(device, url) {
     return simctl("openurl", device, url);
@@ -125,5 +129,5 @@ module.exports = {
         launch,
         openUrl,
         bootstatus,
-    }
+    },
 };

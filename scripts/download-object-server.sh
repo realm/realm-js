@@ -12,4 +12,5 @@ if [ -f node_modules/realm-object-server/package.json ]; then
 fi
 
 echo "Installing realm-object-server version: " $REALM_OBJECT_SERVER_VERSION
-npm install --no-save realm-object-server@$REALM_OBJECT_SERVER_VERSION
+npm install --no-save realm-object-server@$REALM_OBJECT_SERVER_VERSION 
+

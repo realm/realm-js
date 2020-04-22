@@ -4,7 +4,59 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed a bug so `Realm.open()` will reject with error message `Diverging histories (IDENT)` instead of `Operation canceled` when a manual client resync has occurred. ([RJS-347](https://jira.mongodb.org/browse/RJS-347), since v3.1.0)
+* Fixed a bug so `Realm.open()` will reject with error instead of `Operation canceled` when a manual client resync has occurred. ([RJS-347](https://jira.mongodb.org/browse/RJS-347), since v3.1.0)
+* Replace `decompress` with `node-tar` to avoid using vulnerable dependencies ([#2773](https://github.com/realm/realm-js/issues/2773))
+* Fixed TypeScript definitions, React Native debugger support and added documentation for Realm.Sync.enableSessionMultiplexing(). (https://github.com/realm/realm-js/issues/2776)
+* Fixed obj.entries() to return actual key/value paris. Previously incorrectly returned key/`undefined` for all object keys.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Added a platform independent way of printing to stdout on iOS & Node.js and the log on Android. ([#2789](https://github.com/realm/realm-js/pull/2789))
+
+5.0.3 Release notes (2020-4-01)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Realm Object properties not working when accessed, returning `undefined` on React Native for Android in Realm JS v5.0.2  ([#2763](https://github.com/realm/realm-js/issues/2763))
+* Using `obj.keys()` or `obj.entries()` caused TypeScript error "Property 'keys' does not exist on type 'Object'". ([#2778](https://github.com/realm/realm-js/issues/2778), since v5.0.0)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
+
+5.0.2 Release notes (2020-3-21)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed a bug in how destruction of global objects was handled. This could lead to a segmentation fault on Node.js version 12 and 13 when the application terminated. ([#2759](https://github.com/realm/realm-js/issues/2759))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
+
+5.0.1 Release notes (2020-3-20)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed a bug in how the destruction of global objects was handled. This could lead to segfaults on Node.js version 12 and 13. ([#2759](https://github.com/realm/realm-js/issues/2759))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,6 +65,48 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Added `fullSynchronization` and `clientResyncMode` to `Realm.Session.config` to generate a more complete configuration.
+
+5.0.0 Release notes (2020-3-18)
+=============================================================
+NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. We have bumped the major version due to removed functionality in this release. We are releasing this as v5.0.0 instead of v4.0.0 as we also have an series of pre-releases of v4.0.0 which are incompatible with this version as the Realm file format is upgraded. We have therefore decided to skip version v4.0.0, make this version 5.0.0 and we will then release the 4.0.0 version as the next major version - v6.0.0.
+
+### Enhancements
+* Added support for all Node.js versions from and above version 10. ([#2516](https://github.com/realm/realm-js/issues/2516))
+* Helper methods `obj.keys()`, `obj.entries()` are now available to return the properties of that Realm Object, including the Realm properties defined by the schema.
+* An instance method `toJSON()` is implemented on every Realm Object class to support `JSON.stringify()` to work as expected on every instance.
+
+### Breaking changes
+* Node.js 8 is not supported anymore.
+* Realm objects properties are now defined as accessors on the instance prototype. Previously they were defined as values on the instance.
+* Due to the accessor properties change above, calling `Object.keys()`, `Object.entries()`, and `Object.getOwnPropertyDescriptors()` on Realm.Object instances (objects from a Realm) will no longer return the Realm schema properties.
+
+### Fixed
+* ECMAScript 2015 Class syntax is fully supported by moving all properties to be accessors on the instance prototype allowing Realm JavaScript to invoke class constructors as constructors (using `new` instead of previously calling them as functions with 'call'). ([#998](https://github.com/realm/realm-js/issues/998))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (reads and upgrades all previous formats).
+
+### Internal
+* Complete rewrite of Realm JavaScript for Node.js on top of [Node.js N-API](https://nodejs.org/api/n-api.html)
+* Realm JavaScript is now binary compatible between Node.js versions (due to NAPI API stability and backward compatibility).
+
+3.6.5 Release notes (2020-3-4)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Fixed a bug which prevent session multiplexing if sync log level is set. ([HELP-14004](https://jira.mongodb.org/browse/HELP-14004)
 
 3.6.4 Release notes (2020-2-14)
 =============================================================

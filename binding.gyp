@@ -15,9 +15,9 @@
       "target_name": "realm",
       "conditions": [
         [ "OS!='mac'", {
-          "dependencies": [ "object-store", "OpenSSL" ],
+          "dependencies": [ "object-store", "OpenSSL",  "<!(node -p \"require('node-addon-api').gyp\")"],
         }, {
-          "dependencies": [ "object-store" ],
+          "dependencies": [ "object-store", "<!(node -p \"require('node-addon-api').gyp\")" ],
         }],
         ["realm_enable_sync", {
           "sources": [
@@ -67,6 +67,7 @@
         "src",
         "src/object-store/src",
         "src/object-store/external/json",
+        "<!@(node -p \"require('node-addon-api').include\")"
       ],
     },
     {

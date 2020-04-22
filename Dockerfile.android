@@ -25,6 +25,7 @@ RUN dpkg --add-architecture i386 && \
       curl \
       gnupg \
       unzip \
+      git \
       # Tools ndeed when building Android module
       build-essential \
     && \

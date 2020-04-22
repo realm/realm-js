@@ -32,8 +32,10 @@ const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
 
-const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
+
+const platformSupported = isNodeProcess && !isElectronProcess;
 
 const require_method = require;
 function node_require(module) {
@@ -49,7 +51,6 @@ let tmp;
 let fs;
 let execFile;
 let path;
-
 if (isNodeProcess) {
     tmp = node_require('tmp');
     fs = node_require('fs');
@@ -173,7 +174,7 @@ module.exports = {
     },
 
     testRealmOpen() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -209,7 +210,7 @@ module.exports = {
     },
 
     testRealmOpenWithExistingLocalRealm() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -251,7 +252,7 @@ module.exports = {
     },
 
     testRealmOpenAsync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -300,7 +301,7 @@ module.exports = {
     },
 
     testRealmOpenAsyncNoSchema() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -326,7 +327,7 @@ module.exports = {
                             TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
 
                             let firstDog = realm.objects('Dog')[0];
-                            TestCase.assertTrue(({}).hasOwnProperty.call(firstDog, 'name'), "Synced realm does not have an inffered schema");
+                            TestCase.assertTrue(({}).hasOwnProperty.call(Object.getPrototypeOf(firstDog), 'name'), "Synced realm does not have an inffered schema");
                             TestCase.assertTrue(firstDog.name, "Synced realm object's property should have a value");
                             TestCase.assertTrue(firstDog.name.indexOf('Lassy') !== -1, "Synced realm object's property should contain the actual written value");
 
@@ -429,7 +430,7 @@ module.exports = {
     },
 
     testListNestedSync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -470,6 +471,9 @@ module.exports = {
 
     testIncompatibleSyncedRealmOpen() {
         let realm = "sync-v1.realm";
+        if (isElectronProcess) {
+            return;
+        }
         if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
@@ -504,6 +508,9 @@ module.exports = {
 
     testIncompatibleSyncedRealmOpenAsync() {
         let realm = "sync-v1.realm";
+        if (isElectronProcess) {
+            return;
+        }
         if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
@@ -545,6 +552,9 @@ module.exports = {
 
     testIncompatibleSyncedRealmConsructor() {
         let realm = "sync-v1.realm";
+        if (isElectronProcess) {
+            return;
+        }
         if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
@@ -582,16 +592,17 @@ module.exports = {
         });
     },
 
-/*    testProgressNotificationsForRealmConstructor() {
-        if (!isNodeProccess) {
+    testProgressNotificationsForRealmConstructor() {
+        if (!platformSupported) {
             return;
         }
 
         const username = Utils.uuid();
         const realmName = Utils.uuid();
+        const credentials = Realm.Sync.Credentials.nickname(username);
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', username, 'password'))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080',  credentials))
             .then(user => {
                 let config = {
                     sync: {
@@ -614,10 +625,10 @@ module.exports = {
                     });
                 });
             });
-    },*/
+    },
 
     testProgressNotificationsUnregisterForRealmConstructor() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -684,7 +695,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpen() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -712,7 +723,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpenAsync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -849,7 +860,7 @@ module.exports = {
     },
 
     async testPartialSync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -933,7 +944,7 @@ module.exports = {
     },
 
     testPartialSyncWithDynamicSchema() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
         const username = Utils.uuid();
@@ -980,7 +991,7 @@ module.exports = {
     },
 
     testRoleClassWithPartialSyncCanCoexistWithPermissionsClass() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1006,7 +1017,7 @@ module.exports = {
 
     testClientReset() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1095,52 +1106,6 @@ module.exports = {
         });
     },
 
-    async testClientResyncDiscard() {
-        // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
-            return;
-        }
-
-        let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));
-        const config1 = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
-        config1.schema = [schemas.IntOnly];
-        config1.sync.clientResyncMode = 'discard';
-        config1.sync.fullSynchronization = true;
-        config1._cache = false;
-
-        // open, download, create an object, upload and close
-        let realm1 = await Realm.open(config1);
-        await realm1.syncSession.downloadAllServerChanges();
-        realm1.write(() => {
-            realm1.create(schemas.IntOnly.name, { intCol: 1 });
-        });
-        await realm1.syncSession.uploadAllLocalChanges();
-        realm1.close();
-
-        // delete Realm on server
-        let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
-        let url = new URL(`/realms/files/${encodedPath}`, user.server);
-        let options = {
-            headers: {
-                Authorization: `${user.token}`,
-                'Content-Type': 'application/json',
-            },
-            method: 'DELETE',
-        };
-        await fetch(url, options);
-
-        // open the Realm again without schema and download
-        const config2 = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
-        config2.sync.clientResyncMode = 'discard';
-        config2.sync.fullSynchronization = true;
-        config2._cache = false;
-        let realm2 = await Realm.open(config2);
-        await realm2.syncSession.downloadAllServerChanges();
-        TestCase.assertEqual(realm2.schema.length, 0);
-        realm2.close();
-    },
-
-
     testClientResyncMode() {
         TestCase.assertEqual(Realm.Sync.ClientResyncMode.Discard, 'discard');
         TestCase.assertEqual(Realm.Sync.ClientResyncMode.Manual, 'manual');
@@ -1149,7 +1114,7 @@ module.exports = {
 
     testClientResyncIncorrectMode() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1171,7 +1136,7 @@ module.exports = {
 
     testClientResyncIncorrectModeForQueryBasedSync() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1199,9 +1164,11 @@ module.exports = {
 
     async testClientResyncDiscard() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
+
+        const fetch = require('node-fetch');
 
         const realmUrl = 'realm://127.0.0.1:9080/~/myrealm';
         let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));
@@ -1221,7 +1188,6 @@ module.exports = {
         realm1.close();
 
         // delete Realm on server
-        var URL = node_require('url').URL;
         let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
         let url = new URL(`/realms/files/${encodedPath}`, user.server);
         let options = {
@@ -1296,7 +1262,7 @@ module.exports = {
     },
 
     testConnectionState() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1457,7 +1423,7 @@ module.exports = {
     },
 
     testDownloadAllServerChangesTimeout() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1489,7 +1455,7 @@ module.exports = {
     },
 
     testUploadAllLocalChangesTimeout() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -1622,7 +1588,7 @@ module.exports = {
     },
 
     testDeleteModelThrowsWhenSync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 

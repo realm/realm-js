@@ -7,10 +7,25 @@ const username = process.argv[2];
 const realmName = process.argv[3];
 const realmModule = process.argv[4];
 
-// Ensure node-pre-gyp uses the correct binary
-if (process.env.REALM_ELECTRON_VERSION) {
-    process.versions.electron = process.env.REALM_ELECTRON_VERSION;
+function trySetElectronVersion() {
+    if (!process.versions || !process.env.REALM_ELECTRON_VERSION) {
+        return;
+    }
+
+    const descriptor = Object.getOwnPropertyDescriptor(process.versions, "electron");
+    if (descriptor.writable) {
+            process.versions.electron = process.env.REALM_ELECTRON_VERSION;
+    }
+    
+    
+    if (descriptor.set) {
+            descriptor.set(process.env.REALM_ELECTRON_VERSION);
+    }
 }
+
+// Ensure node-pre-gyp uses the correct binary
+trySetElectronVersion();
+
 const Realm = require(realmModule);
 
 function createObjects(user) {

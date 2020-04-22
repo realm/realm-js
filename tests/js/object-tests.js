@@ -23,6 +23,7 @@ const isNodeProcess = (typeof process === 'object' && process + '' === '[object 
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
+const buffer = require('buffer');
 
 const RANDOM_DATA = new Uint8Array([
     0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15, 0x77, 0x30, 0xac, 0x77, 0x96, 0xd9,
@@ -96,8 +97,11 @@ module.exports = {
                 continue;
             }
 
-            TestCase.assertSimilar(type, object[name], allTypesValues[name]);
-            TestCase.assertSimilar(type, nullObject[name], nullPropertyValues[name]);
+            let objectTarget = object[name];
+            let nullObjectTarget = nullObject[name];
+
+            TestCase.assertSimilar(type, objectTarget, allTypesValues[name]);
+            TestCase.assertSimilar(type, nullObjectTarget, nullPropertyValues[name]);
         }
 
         TestCase.assertEqual(object.nonexistent, undefined);
@@ -265,13 +269,14 @@ module.exports = {
     },
 
     testEnumerablePropertyNames: function() {
+
         const realm = new Realm({schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
         let object;
 
         realm.write(() => object = realm.create('AllTypesObject', allTypesValues));
 
         const propNames = Object.keys(schemas.AllTypes.properties);
-        TestCase.assertArraysEqual(Object.keys(object), propNames, 'Object.keys');
+        TestCase.assertArraysEqual(Object.keys(Object.getPrototypeOf(object)), propNames, 'Object.keys');
 
         for (let key in object) {
             TestCase.assertEqual(key, propNames.shift());
@@ -303,7 +308,7 @@ module.exports = {
             // The base64 decoder comes from realm-sync
             // Should be able to also set a data property to base64-encoded string.
             realm.write(function() {
-                object.dataCol = require('buffer/').Buffer.from(RANDOM_DATA).toString('base64');
+                object.dataCol = buffer.Buffer.from(RANDOM_DATA).toString('base64');
             });
             TestCase.assertArraysEqual(new Uint8Array(object.dataCol), RANDOM_DATA);
         }
@@ -379,7 +384,7 @@ module.exports = {
         TestCase.assertTrue(Realm.Object instanceof Function);
     },
 
-    testIsValid: function() {
+    testObjectIsValid: function() {
         const realm = new Realm({schema: [schemas.TestObject]});
         var obj;
         realm.write(function() {
