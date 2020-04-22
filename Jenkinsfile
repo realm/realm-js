@@ -340,19 +340,22 @@ def buildMacOS(workerFunction) {
 
 def buildWindows(nodeVersion, arch) {
   return {
-    myNode('windows && nodejs') {
+    myNode('windows && nodist') {
       unstash 'source'
+      bat "nodist add ${nodeVersion}"
 
-      bat 'npm install --ignore-scripts --production'
+      withEnv(["NODE_NODIST_VERSION=${nodeVersion}"]) {
+        bat 'npm install --ignore-scripts --production'
 
-      withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
-        retry(3) {
-          bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+        withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
+          retry(3) {
+            bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+          }
         }
-      }
-      bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
-      dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
-        stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
+        bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+        dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+          stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
+        }
       }
     }
   }
