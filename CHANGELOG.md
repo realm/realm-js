@@ -15,6 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Added a platform independent way of printing to stdout on iOS & Node.js and the log on Android. ([#2789](https://github.com/realm/realm-js/pull/2789))
+* Added Electron 7.2.x as a prebuild target. ([#2833](https://github.com/realm/realm-js/pull/2833))
 
 5.0.3 Release notes (2020-4-01)
 =============================================================
