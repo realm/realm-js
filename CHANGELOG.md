@@ -4,6 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
+* Fixed a bug so `Realm.open()` will reject with error instead of `Operation canceled` when a manual client resync has occurred. ([RJS-347](https://jira.mongodb.org/browse/RJS-347), since v3.1.0)
 * Replace `decompress` with `node-tar` to avoid using vulnerable dependencies ([#2773](https://github.com/realm/realm-js/issues/2773))
 * Fixed TypeScript definitions, React Native debugger support and added documentation for Realm.Sync.enableSessionMultiplexing(). (https://github.com/realm/realm-js/issues/2776)
 * Fixed obj.entries() to return actual key/value paris. Previously incorrectly returned key/`undefined` for all object keys.
@@ -64,7 +65,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Added `fullSynchronization` and `clientResyncMode` to `Realm.Session.config` to generate a more complete configuration.
 
 5.0.0 Release notes (2020-3-18)
 =============================================================
@@ -125,6 +126,7 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 ### Internal
 * Updated Realm Object Store to commit 49458da2447499c370da0000c3b47c76e9ce9421.
 * Updated Realm Sync from v4.9.4 to v4.9.5.
+* Updated Realm Object Store to commit fda4afdda8f4325766c13a29c73e9e43e361be98.
 
 3.6.3 Release notes (2020-1-17)
 =============================================================
@@ -152,7 +154,7 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 ### Fixed
 * Fixed a bug that prevented `ClientResyncMode.Discard` to discard the local changes. ([#2664](https://github.com/realm/realm-js/issues/2664), since v3.1.0)
 * Fixed a bug where properties with float and double values would not be sorted correctly. ([realm/realm-core#3520](https://github.com/realm/realm-core/pull/3520), since v3.6.0)
-  * Fixed a bug where a `NOT` query on a list would incorrectly match objects which have an object index one less than a correctly matching object which appeared earlier in the list. ([realm/realm-cocoa#6289](https://github.com/realm/realm-cocoa/issues/6289), since v1.0.0)
+* Fixed a bug where a `NOT` query on a list would incorrectly match objects which have an object index one less than a correctly matching object which appeared earlier in the list. ([realm/realm-cocoa#6289](https://github.com/realm/realm-cocoa/issues/6289), since v1.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
