@@ -347,10 +347,10 @@ def buildWindows(nodeVersion, arch) {
 
       withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
         retry(3) {
-          bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+          bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
         }
       }
-      bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+      bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
       dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
         stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
       }
