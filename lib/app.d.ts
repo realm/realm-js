@@ -17,6 +17,89 @@
 ////////////////////////////////////////////////////////////////////////////
 
 declare namespace Realm {
+    namespace Credentials {
+        /**
+         * Payload sent when authenticating using the [Email/Password Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
+         */
+        type EmailPasswordPayload = {
+            /**
+             * The end-users username.
+             * Note: This currently has to be an email.
+             */
+            username: string;
+
+            /**
+             * The end-users password.
+             */
+            password: string;
+        };
+
+        /**
+         * Payload sent when authenticating using the [API Key Provider](https://docs.mongodb.com/stitch/authentication/api-key/).
+         */
+        type ApiKeyPayload = {
+            /**
+             * The secret content of the API key.
+             */
+            key: string;
+        };
+
+        /**
+         * Payload sent when authenticating using the [Anonymous Provider](https://docs.mongodb.com/stitch/authentication/anonymous/).
+         */
+        type AnonymousPayload = {};
+    }
+
+    /**
+     * End-users enter credentials to authenticate toward your MongoDB Realm App.
+     */
+    class Credentials<PayloadType extends object = object> {
+        /**
+         * Name of the authentication provider.
+         */
+        readonly providerName: string;
+
+        /**
+         * Type of the authentication provider.
+         */
+        readonly providerType: string;
+
+        /**
+         * A simple object which can be passed to the server as the body of a request to authenticate.
+         */
+        readonly payload: PayloadType;
+
+        /**
+         * Creates credentials that logs in using the [Anonymous Provider](https://docs.mongodb.com/stitch/authentication/anonymous/).
+         *
+         * @returns The credentials instance, which can be passed to `app.logIn`.
+         */
+        static anonymous(): Credentials<Credentials.AnonymousPayload>;
+
+        /**
+         * Creates credentials that logs in using the [API Key Provider](https://docs.mongodb.com/stitch/authentication/api-key/).
+         *
+         * @param key The secret content of the API key.
+         * @returns The credentials instance, which can be passed to `app.logIn`.
+         */
+        static apiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
+
+        /**
+         * Creates credentials that logs in using the [Email/Password Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
+         * Note: This was formerly known as the "Username/Password" provider.
+         *
+         * @param email The end-users email address.
+         * @param password The end-users password.
+         * @returns The credentials instance, which can be passed to `app.logIn`.
+         */
+        static emailPassword(
+            email: string,
+            password: string,
+        ): Credentials<Credentials.EmailPasswordPayload>;
+
+        // TODO: Add providerCapabilities?
+    }
+
     /**
      * The constructor of MongoDB Realm App.
      */
@@ -29,28 +112,33 @@ declare namespace Realm {
     /**
      * A MongoDB Realm App.
      */
-    interface App<
+    class App<
         FunctionsFactoryType extends BaseFunctionsFactory = DefaultFunctionsFactory
     > {
         /**
+         *
+         */
+        static readonly Credentials: typeof Credentials;
+
+        /**
          * The id of this Realm app.
          */
-        id: string;
+        readonly id: string;
 
         /**
          * Use this to call functions defined on the MongoDB Realm server.
          */
-        functions: FunctionsFactoryType;
+        readonly functions: FunctionsFactoryType;
 
         /**
          * The last user to log in or being switched to.
          */
-        currentUser: Realm.User | null;
+        readonly currentUser: Realm.User | null;
 
         /**
          * All authenticated users.
          */
-        allUsers: Readonly<Realm.User[]>;
+        readonly allUsers: Readonly<Realm.User[]>;
 
         /**
          * Log in a user using a specific credential
@@ -83,30 +171,6 @@ declare namespace Realm {
          * An optional URL to use as a prefix when requesting the MongoDB Realm services.
          */
         baseUrl?: string;
-    }
-
-    /**
-     * End-users enter credentials to authenticate toward your MongoDB Realm App.
-     */
-    interface Credentials {
-        /**
-         * Name of the authentication provider.
-         */
-        readonly providerName: string;
-
-        /**
-         * Type of the authentication provider.
-         */
-        readonly providerType: string;
-
-        /**
-         * Creates a simple object which can be passed to the server as the body of a request to authenticate.
-         *
-         * @returns A simple, flat object.
-         */
-        toJSON(): { [key: string]: string };
-
-        // TODO: Add providerCapabilities?
     }
 
     /**

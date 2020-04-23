@@ -22,6 +22,10 @@ describe("Realm.Credentials", () => {
                 "gilfoil@testing.mongodb.com",
                 "v3ry-s3cret",
             );
+            expect(credentials.payload.username).equals(
+                "gilfoil@testing.mongodb.com",
+            );
+            expect(credentials.payload.password).equals("v3ry-s3cret");
             const user = await app.logIn(credentials);
             expect(user).to.be.instanceOf(User);
         });

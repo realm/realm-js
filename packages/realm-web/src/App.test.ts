@@ -2,8 +2,8 @@ import { expect } from "chai";
 
 import { App } from "./App";
 import { User, UserState } from "./User";
-import { Credentials } from "./Credentials/index";
 import { MockNetworkTransport } from "./test/MockNetworkTransport";
+import { Credentials } from "./Credentials";
 
 /* eslint-disable @typescript-eslint/camelcase */
 
@@ -48,6 +48,13 @@ describe("App", () => {
         expect(typeof app.functions.hello).equals("function");
     });
 
+    it("expose a static Credentials factory", () => {
+        expect(typeof App.Credentials).not.equals("undefined");
+        expect(typeof App.Credentials.anonymous).equals("function");
+        expect(typeof App.Credentials.apiKey).equals("function");
+        expect(typeof App.Credentials.emailPassword).equals("function");
+    });
+
     it("can log in a user", async () => {
         const transport = new MockNetworkTransport([
             {
@@ -85,7 +92,10 @@ describe("App", () => {
                 method: "POST",
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/local-userpass/login",
-                body: { username: "gilfoil@testing.mongodb.com", password: "v3ry-s3cret" },
+                body: {
+                    username: "gilfoil@testing.mongodb.com",
+                    password: "v3ry-s3cret",
+                },
             },
             {
                 method: "GET",

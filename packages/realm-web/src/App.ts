@@ -2,6 +2,7 @@ import { create as createFunctionsFactory } from "./FunctionsFactory";
 import { User, UserState, UserControlHandle } from "./User";
 import { NetworkTransport } from "realm-network-transport";
 import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
+import { Credentials } from "./Credentials";
 
 /**
  * Configuration to pass as an argument when constructing an app.
@@ -22,6 +23,11 @@ export class App<
 
     /** @inheritdoc */
     public readonly id: string;
+
+    /**
+     * Instances of this class can be passed to the `app.logIn` method to authenticate an end-user.
+     */
+    public static readonly Credentials = Credentials;
 
     /**
      * Default base url to prefix all requests if no baseUrl is specified in the configuration.
@@ -130,7 +136,7 @@ export class App<
             {
                 method: "POST",
                 path: `/auth/providers/${credentials.providerName}/login`,
-                body: credentials.toJSON(),
+                body: credentials.payload,
             },
             null,
         );
