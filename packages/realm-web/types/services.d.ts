@@ -52,11 +52,11 @@ declare namespace Realm {
             /**
              * Get the interface to a remote MongoDB collection.
              *
-             * @param collectionName The name of the collection.
+             * @param name The name of the collection.
              * @returns The remote MongoDB collection.
              */
             collection<T extends Realm.Services.RemoteMongoDB.Document = any>(
-                collectionName: string,
+                name: string,
             ): RemoteMongoDB.RemoteMongoDBCollection<T>;
         }
 
@@ -208,6 +208,11 @@ declare namespace Realm {
             type Filter = object;
 
             /**
+             * A stage of an aggregation pipeline.
+             */
+            type AggregatePipelineStage = object;
+
+            /**
              * A remote collection of documents in a MongoDB database.
              */
             interface RemoteMongoDBCollection<T extends Document> {
@@ -279,7 +284,7 @@ declare namespace Realm {
                  * @param pipeline An array of aggregation pipeline stages.
                  * @returns The result.
                  */
-                aggregate(pipeline: object[]): Promise<any>;
+                aggregate(pipeline: AggregatePipelineStage[]): Promise<any>;
 
                 /**
                  * Counts the number of documents in this collection matching the provided filter.

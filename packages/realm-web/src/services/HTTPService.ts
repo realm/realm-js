@@ -13,7 +13,7 @@ class HTTPService implements Realm.Services.HTTP {
     /**
      * The functions factory interface to use when sending requests.
      */
-    private readonly functions: Realm.FunctionsFactory;
+    private readonly functions: Realm.DefaultFunctionsFactory;
 
     /**
      * Construct an HTTP Service

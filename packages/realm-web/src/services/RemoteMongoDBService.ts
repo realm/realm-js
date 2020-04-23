@@ -2,16 +2,20 @@ import { Transport } from "../transports";
 import { create as createFunctionsFactory } from "../FunctionsFactory";
 import { deserialize, serialize } from "./utils";
 
+type Document = Realm.Services.RemoteMongoDB.Document;
+type NewDocument<T extends Document> = Realm.Services.RemoteMongoDB.NewDocument<
+    T
+>;
+
 /**
  * A remote collection of documents.
  */
-export class RemoteMongoDBCollection<
-    T extends Realm.Services.RemoteMongoDB.Document
-> implements Realm.Services.RemoteMongoDB.RemoteMongoDBCollection<T> {
+class RemoteMongoDBCollection<T extends Document>
+    implements Realm.Services.RemoteMongoDB.RemoteMongoDBCollection<T> {
     /**
      * The function factory to use when sending requests to the service.
      */
-    private functions: Realm.FunctionsFactory;
+    private functions: Realm.DefaultFunctionsFactory;
 
     /** The name of the database */
     private readonly databaseName: string;
@@ -73,7 +77,7 @@ export class RemoteMongoDBCollection<
     /** @inheritdoc */
     findOneAndUpdate(
         filter: Realm.Services.RemoteMongoDB.Filter = {},
-        update: object,
+        update: Partial<NewDocument<T>>,
         options: Realm.Services.RemoteMongoDB.FindOneAndModifyOptions = {},
     ) {
         return this.functions.findOneAndUpdate({
@@ -91,14 +95,14 @@ export class RemoteMongoDBCollection<
     /** @inheritdoc */
     findOneAndReplace(
         filter: Realm.Services.RemoteMongoDB.Filter = {},
-        update: object,
+        replacement: NewDocument<T>,
         options: Realm.Services.RemoteMongoDB.FindOneAndModifyOptions = {},
     ) {
         return this.functions.findOneAndReplace({
             database: this.databaseName,
             collection: this.collectionName,
             filter: serialize(filter),
-            update: serialize(update),
+            update: serialize(replacement),
             sort: options.sort,
             projection: options.projection,
             upsert: options.upsert,
@@ -121,7 +125,7 @@ export class RemoteMongoDBCollection<
     }
 
     /** @inheritdoc */
-    aggregate(pipeline: object[]) {
+    aggregate(pipeline: Realm.Services.RemoteMongoDB.AggregatePipelineStage[]) {
         return this.functions.aggregate({
             database: this.databaseName,
             collection: this.collectionName,
@@ -143,7 +147,7 @@ export class RemoteMongoDBCollection<
     }
 
     /** @inheritdoc */
-    insertOne(document: T) {
+    insertOne(document: NewDocument<T>) {
         return this.functions.insertOne({
             database: this.databaseName,
             collection: this.collectionName,
@@ -152,7 +156,7 @@ export class RemoteMongoDBCollection<
     }
 
     /** @inheritdoc */
-    insertMany(documents: T[]) {
+    insertMany(documents: NewDocument<T>[]) {
         return this.functions.insertMany({
             database: this.databaseName,
             collection: this.collectionName,
@@ -181,7 +185,7 @@ export class RemoteMongoDBCollection<
     /** @inheritdoc */
     updateOne(
         filter: Realm.Services.RemoteMongoDB.Filter,
-        update: object,
+        update: Partial<NewDocument<T>>,
         options: Realm.Services.RemoteMongoDB.UpdateOptions = {},
     ) {
         return this.functions.updateOne({
@@ -196,7 +200,7 @@ export class RemoteMongoDBCollection<
     /** @inheritdoc */
     updateMany(
         filter: Realm.Services.RemoteMongoDB.Filter,
-        update: object,
+        update: Partial<NewDocument<T>>,
         options: Realm.Services.RemoteMongoDB.UpdateOptions = {},
     ) {
         return this.functions.updateMany({
@@ -226,7 +230,7 @@ export function createCollection<
     serviceName: string,
     databaseName: string,
     collectionName: string,
-): Realm.Services.RemoteMongoDB.RemoteMongoDBCollection<T> {
+): RemoteMongoDBCollection<T> {
     return new RemoteMongoDBCollection<T>(
         transport,
         serviceName,
@@ -248,17 +252,14 @@ export function createDatabase(
     transport: Transport,
     serviceName: string,
     databaseName: string,
-) {
+): Realm.Services.RemoteMongoDBDatabase {
     return {
-        // 👇 is using "as" since it's too complicated to force the result of bind to remain generic over T
         collection: createCollection.bind(
             null,
             transport,
             serviceName,
             databaseName,
-        ) as <T extends Realm.Services.RemoteMongoDB.Document = any>(
-            name: string,
-        ) => Realm.Services.RemoteMongoDB.RemoteMongoDBCollection<T>,
+        ),
     };
 }
 
