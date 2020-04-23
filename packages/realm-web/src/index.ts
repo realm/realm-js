@@ -27,7 +27,3 @@ export { AppConstructor as App };
 
 export { Credentials } from "./Credentials";
 export { User } from "./User";
-
-type BaseFunctionsFactory = Realm.BaseFunctionsFactory;
-type DefaultFunctionsFactory = Realm.DefaultFunctionsFactory;
-export type { BaseFunctionsFactory, DefaultFunctionsFactory };

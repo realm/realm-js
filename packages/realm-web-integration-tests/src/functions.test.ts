@@ -4,12 +4,12 @@ import { Credentials } from "realm-web";
 
 import { createApp } from "./utils";
 
-interface TranslateFunctions extends Realm.FunctionsFactory {
+interface TranslateFunctions {
     translate: (sentence: string, languages: string) => Promise<string>;
 }
 
 describe("Realm.FunctionsFactory", () => {
-    it("can be called authenticate", async () => {
+    it("can be called authenticated", async () => {
         const app = createApp<TranslateFunctions>();
         // Login a user
         const credentials = Credentials.anonymous();

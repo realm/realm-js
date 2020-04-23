@@ -12,6 +12,16 @@ describe("FunctionsFactory", () => {
         expect(factory).to.be.instanceOf(FunctionsFactory);
     });
 
+    it("expose a callFunction method", () => {
+        const factory = createFunctionsFactory({} as any);
+        expect(typeof factory.callFunction).equals("function");
+    });
+
+    it("expose an interface that allows calling any function", () => {
+        const factory = createFunctionsFactory({} as any);
+        expect(typeof factory.anyFunction).equals("function");
+    });
+
     it("calls the network transport correctly", async () => {
         const transport = new MockTransport([
             { message: `hello friendly world!` },

@@ -77,13 +77,16 @@ export class FunctionsFactory {
  * @returns The newly created factory of functions.
  */
 export function create<
-    FunctionsFactoryType extends Realm.BaseFunctionsFactory = Realm.DefaultFunctionsFactory
->(transport: Transport, serviceName?: string): FunctionsFactoryType {
+    FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory
+>(transport: Transport, serviceName?: string) {
     // Create a proxy, wrapping a simple object returning methods that calls functions
     // TODO: Lazily fetch available functions and return these from the ownKeys() trap
-    const factory = new FunctionsFactory(transport, serviceName);
+    const factory: Realm.BaseFunctionsFactory = new FunctionsFactory(
+        transport,
+        serviceName,
+    );
     // Wrap the factory in a promise that calls the internal call method
-    return new Proxy<FunctionsFactoryType>(factory as any, {
+    return new Proxy(factory, {
         get(target, p, receiver) {
             if (typeof p === "string" && RESERVED_NAMES.indexOf(p) === -1) {
                 return target.callFunction.bind(target, p);
@@ -91,5 +94,5 @@ export function create<
                 return Reflect.get(target, p, receiver);
             }
         },
-    });
+    }) as FunctionsFactoryType & Realm.BaseFunctionsFactory;
 }

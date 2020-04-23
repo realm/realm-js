@@ -104,7 +104,7 @@ declare namespace Realm {
      * The constructor of MongoDB Realm App.
      */
     type AppConstructor = new <
-        FunctionsFactoryType extends BaseFunctionsFactory = DefaultFunctionsFactory
+        FunctionsFactoryType extends object = DefaultFunctionsFactory
     >(
         idOrConfiguration: string | AppConfiguration,
     ) => App<FunctionsFactoryType>;
@@ -112,9 +112,7 @@ declare namespace Realm {
     /**
      * A MongoDB Realm App.
      */
-    class App<
-        FunctionsFactoryType extends BaseFunctionsFactory = DefaultFunctionsFactory
-    > {
+    class App<FunctionsFactoryType extends object = DefaultFunctionsFactory> {
         /**
          *
          */
@@ -128,7 +126,7 @@ declare namespace Realm {
         /**
          * Use this to call functions defined on the MongoDB Realm server.
          */
-        readonly functions: FunctionsFactoryType;
+        readonly functions: FunctionsFactoryType & BaseFunctionsFactory;
 
         /**
          * The last user to log in or being switched to.
