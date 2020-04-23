@@ -140,9 +140,11 @@ describe("MongoDB Remote service", () => {
         expect(typeof result).equals("object");
         // Expect that the first document is EJSON deserialized
         expect(typeof result).equals("object");
-        expect(typeof result._id).equals("object");
-        expect(result._id.constructor.name).equals("ObjectId");
-        expect(result.name).equals("Some document name ...");
+        if (result) {
+            expect(typeof result._id).equals("object");
+            expect(result._id.constructor.name).equals("ObjectId");
+            expect(result.name).equals("Some document name ...");
+        }
     });
 
     it("can insert a document", async () => {
