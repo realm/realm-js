@@ -17,15 +17,7 @@ RUN yum -y install \
     gtk3 \
     alsa-lib \
  && yum clean all \
- \
-  # TODO: install openssl in /usr/local
- && curl -SL https://www.openssl.org/source/openssl-1.1.1b.tar.gz | tar -zxC / \
- && cd /openssl-1.1.1b \
- && ./config --prefix=/usr \
- && make && make install \
- && rm -rf /openssl-1.1.1b \
- && cd /tmp \
- \
+
  && mkdir -p $NVM_DIR \
  && curl -s https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash \
  && . $NVM_DIR/nvm.sh \

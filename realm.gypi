@@ -230,6 +230,9 @@
     {
       "target_name": "OpenSSL",
       "type": "none",
+      "variables": {
+        "vendor_dir": "<(realm_js_dir)/vendor/realm-<(OS)-<(target_arch)<(debug_library_suffix)"
+      },
       "link_settings": {
         "conditions": [
           ["OS=='win'", {
@@ -242,8 +245,8 @@
             ]
           }],
           ["OS=='linux'", {
-            "libraries": [ "-l:libssl.a", "-l:libcrypto.a" ],
-            "library_dirs": [ "/usr/lib", "/usr/lib64" ],
+            "libraries": [ "<(vendor_dir)/openssl/lib/libssl.a", "<(vendor_dir)/openssl/lib/libcrypto.a" ],
+            "library_dirs": [ "<(vendor_dir)/openssl/lib" ],
           }]
         ]
       }
