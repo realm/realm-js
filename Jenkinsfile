@@ -384,7 +384,7 @@ def buildWindowsElectron(electronVersion, arch) {
 
 def inAndroidContainer(workerFunction) {
   return {
-    myNode('docker') {
+    myNode('android') {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
