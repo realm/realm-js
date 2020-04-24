@@ -72,7 +72,6 @@ function printProgress(input, totalBytes, archive) {
     });
 }
 
-//https://static.realm.io/downloads/openssl/1.1.1b/Linux/x86_64/openssl.tgz
 function download(serverFolder, archive, destination) {
     const url = `https://static.realm.io/downloads/${serverFolder}/${archive}`;
     console.log(`Download url: ${url}`);
@@ -137,13 +136,10 @@ function acquire(desired, target) {
     return fs.emptyDir(target)
         .then(() => corePath && download(desired.CORE_SERVER_FOLDER, desired.CORE_ARCHIVE, corePath))
         .then(() => corePath && extract(corePath, target, desired.CORE_ARCHIVE_ROOT))
-        
         .then(() => syncPath && download(desired.SYNC_SERVER_FOLDER, desired.SYNC_ARCHIVE, syncPath))
         .then(() => syncPath && extract(syncPath, target, desired.SYNC_ARCHIVE_ROOT))
-        
         .then(() => openSSLPath && download("openssl/1.1.1b/Linux/x86_64", "openssl.tgz", openSSLPath))
         .then(() => openSSLPath && extract(openSSLPath, path.resolve(target, "openssl"), ""))
-
         .then(() => writeLockfile(target, desired))
 }
 
@@ -252,8 +248,6 @@ const options = require('command-line-args')(optionDefinitions);
 if (options.platform === '..\\win') {
     options.platform = 'win'; // handle gyp idiocy
 }
-
-
 
 const vendorDir = path.resolve(__dirname, '../vendor');
 
