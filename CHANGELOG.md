@@ -7,7 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed a bug so `Realm.open()` will reject the promise with an error instead of `Operation canceled` when a manual client resync has occurred. ([RJS-347](https://jira.mongodb.org/browse/RJS-347), since v3.1.0)
 * Replaced `decompress` with `node-tar` to avoid using vulnerable dependencies. ([#2773](https://github.com/realm/realm-js/issues/2773))
 * Fixed TypeScript definitions, React Native debugger support and added documentation for `Realm.Sync.enableSessionMultiplexing()`. Thanks to @bimusiek. ([#2776](https://github.com/realm/realm-js/issues/2776))
-* Fixed `obj.entries()` to return actual key/value paris. Previously incorrectly returned key/`undefined` for all object keys. ([#2829](https://github.com/realm/realm-js/pull/2829), since v5.0.3)
+* Fixed `obj.entries()` to return actual key/value pairs. Previously incorrectly returned key/`undefined` for all object keys. ([#2829](https://github.com/realm/realm-js/pull/2829), since v5.0.3)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
