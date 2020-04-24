@@ -152,7 +152,6 @@ stage('integration tests') {
 }
 
 // == Methods
-
 def nodeIntegrationTests(nodeVersion, platform) {
   unstash 'source'
   unstash "pre-gyp-${platform}-${nodeVersion}"
