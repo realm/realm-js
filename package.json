@@ -82,6 +82,7 @@
     "check-environment": "node scripts/check-environment.js"
   },
   "dependencies": {
+    "abort-controller": "^3.0.0",
     "bson": "^4.0.3",
     "command-line-args": "^4.0.6",
     "decompress": "^4.2.0",
@@ -96,7 +97,7 @@
     "node-pre-gyp": "^0.13.0",
     "progress": "^2.0.3",
     "prop-types": "^15.6.2",
-    "realm-network-transport": "file:realm-network-transport-0.1.0.tgz",
+    "realm-network-transport": "file:packages/realm-network-transport/realm-network-transport-0.1.0.tgz",
     "request": "^2.88.0",
     "stream-counter": "^1.0.0",
     "sync-request": "^3.0.1",
