@@ -3,7 +3,8 @@
     "plugins": [
         "@typescript-eslint",
         "jsdoc",
-        "prettier"
+        "prettier",
+        "header"
     ],
     "extends": [
         "eslint:recommended",
@@ -32,6 +33,10 @@
                     "TSEnumMember"
                 ]
             }
+        ],
+        "header/header": [
+            2,
+            "../../header.js"
         ]
     },
     "settings": {

@@ -109,6 +109,7 @@
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-flowtype": "^3.4.2",
+    "eslint-plugin-header": "^3.0.0",
     "eslint-plugin-jasmine": "^2.10.1",
     "eslint-plugin-jsdoc": "^23.0.0",
     "eslint-plugin-prettier": "^3.1.3",
