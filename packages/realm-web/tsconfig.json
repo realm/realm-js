@@ -1,0 +1,24 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"target": "es6",
+		"moduleResolution": "node",
+		"outDir": "./dist",
+		"declaration": true,
+		"forceConsistentCasingInFileNames": true,
+		"types": [
+			"realm-network-transport",
+			"mocha",
+			"chai",
+			"node"
+		],
+		"lib": [
+			"ES2015",
+			"DOM"
+		]
+	},
+	"include": [
+		"src/**/*.ts",
+		"types/app.d.ts"
+	]
+}
