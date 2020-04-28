@@ -160,8 +160,12 @@ def nodeIntegrationTests(nodeVersion, platform) {
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
+
+    //Install typescript
+    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm install -g typescript"
+
     // Package up the integration tests
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm install -g typescript && npm run tests/pack"
+    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
   }
 
   dir('integration-tests/environments/node') {
