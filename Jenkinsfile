@@ -157,11 +157,13 @@ def nodeIntegrationTests(nodeVersion, platform) {
   unstash "pre-gyp-${platform}-${nodeVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
+  dir('integration-tests/tests') {
+    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
+  }
+
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
 
     // Package up the integration tests
     sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
