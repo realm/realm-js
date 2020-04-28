@@ -1,0 +1,12 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"types": [
+			"realm-network-transport"
+		]
+	},
+	"exclude": [
+		"src/**/*.test.ts",
+		"src/test/"
+	]
+}

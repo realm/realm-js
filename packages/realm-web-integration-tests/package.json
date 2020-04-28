@@ -1,0 +1,44 @@
+{
+  "name": "realm-web-integration-tests",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "mocha --file harness/node.ts src/**/*.test.ts --watch",
+    "lint": "eslint --ext .js,.ts .",
+    "build": "webpack --mode production",
+    "test": "ts-node harness/index.ts"
+  },
+  "dependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5",
+    "mocha-remote": "^0.14.1",
+    "puppeteer": "^2.1.1",
+    "realm-app-importer": "^0.1.0",
+    "realm-web": "*",
+    "ts-node": "^8.6.2",
+    "webpack": "^4.41.6",
+    "webpack-dev-server": "^3.10.3"
+  },
+  "peerDependencies": {
+    "mocha-remote-client": "*"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.9",
+    "@types/fs-extra": "^8.1.0",
+    "@types/mocha": "^5",
+    "@types/node-fetch": "^2.5.5",
+    "@types/puppeteer": "^2.0.0",
+    "@types/webpack": "^4.41.6",
+    "@types/webpack-dev-server": "^3.10.0",
+    "@types/webpack-env": "^1.15.1",
+    "eslint": "file:../../node_modules/eslint",
+    "fs-extra": "^8.1.0",
+    "html-webpack-plugin": "^3.2.0",
+    "mongodb-stitch-cli": "^1.10.0",
+    "node-fetch": "^2.6.0",
+    "ts-loader": "^6.2.1",
+    "ts-node": "^8.6.2",
+    "webpack-cli": "^3.3.11"
+  }
+}

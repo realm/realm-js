@@ -2,7 +2,8 @@
     "parser": "@typescript-eslint/parser",
     "plugins": [
         "prettier",
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "header"
     ],
     "extends": [
         "eslint:recommended",
@@ -11,6 +12,10 @@
         "plugin:@typescript-eslint/recommended"
     ],
     "rules": {
-        "@typescript-eslint/explicit-function-return-type": "off"
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "header/header": [
+            2,
+            "../../header.js"
+        ]
     }
 }

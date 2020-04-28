@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"module": "commonjs",
+		"target": "es6",
+		"lib": [
+			"ES5",
+			"DOM"
+		],
+		"types": [
+			"mocha",
+			"puppeteer",
+			"realm-web",
+			"node-fetch",
+			"fs-extra",
+			"mocha-remote-client"
+		],
+		"outDir": "dist",
+		"allowJs": true,
+		"esModuleInterop": true
+	},
+	"include": [
+		"src/**/*.ts",
+		"harness/**/*.ts"
+	]
+}
