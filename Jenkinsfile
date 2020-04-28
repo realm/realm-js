@@ -188,6 +188,10 @@ def electronIntegrationTests(electronVersion, platform) {
   unstash "electron-pre-gyp-${platform}-${electronVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
+  dir('integration-tests/tests') {
+    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
+  }
+
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
@@ -221,6 +225,10 @@ def reactNativeIntegrationTests(targetPlatform) {
     nvm = ""
   } else {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
+  }
+
+  dir('integration-tests/tests') {
+    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
   }
 
   dir('integration-tests') {
