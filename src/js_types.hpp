@@ -183,7 +183,7 @@ struct Value {
     VALIDATED(ObjectType, object)
     VALIDATED(String<T>, string)
     VALIDATED(OwnedBinaryData, binary)
-    VALIDATED(Decimal128, decimal128)
+    VALIDATED(Decimal128, decimal)
     VALIDATED(ObjectId, object_id)
 
 #undef VALIDATED
@@ -443,7 +443,7 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
             case PropertyType::Float:
             case PropertyType::Double:
                 return is_number(context, value);
-            case PropertyType::Decimal:
+            case PropertyType::Decimal128:
                 return is_decimal128(context, value);
             case PropertyType::ObjectId:
                 return is_object_id(context, value);

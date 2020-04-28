@@ -63,8 +63,8 @@ module.exports = {
         TestCase.assertEqual(prim.double.type, 'double');
         TestCase.assertEqual(prim.string.type, 'string');
         TestCase.assertEqual(prim.date.type, 'date');
-        TestCase.assertEqual(prim.decimal.type, 'decimal');
-        TestCase.assertEqual(prim.oid.type, 'object id');
+        TestCase.assertEqual(prim.decimal128.type, 'decimal128');
+        TestCase.assertEqual(prim.objectId.type, 'objectId');
 
         TestCase.assertEqual(prim.optBool.type, 'bool');
         TestCase.assertEqual(prim.optInt.type, 'int');
@@ -72,8 +72,8 @@ module.exports = {
         TestCase.assertEqual(prim.optDouble.type, 'double');
         TestCase.assertEqual(prim.optString.type, 'string');
         TestCase.assertEqual(prim.optDate.type, 'date');
-        TestCase.assertEqual(prim.optDecimal.type, 'decimal');
-        TestCase.assertEqual(prim.optOid.type, 'object id');
+        TestCase.assertEqual(prim.optDecimal128.type, 'decima128');
+        TestCase.assertEqual(prim.optObjectId.type, 'objectId');
 
         TestCase.assertFalse(prim.bool.optional);
         TestCase.assertFalse(prim.int.optional);
@@ -81,8 +81,8 @@ module.exports = {
         TestCase.assertFalse(prim.double.optional);
         TestCase.assertFalse(prim.string.optional);
         TestCase.assertFalse(prim.date.optional);
-        TestCase.assertFalse(prim.decimal.optional);
-        TestCase.assertFalse(prim.oid.optional);
+        TestCase.assertFalse(prim.decimal128.optional);
+        TestCase.assertFalse(prim.objectId.optional);
 
         TestCase.assertTrue(prim.optBool.optional);
         TestCase.assertTrue(prim.optInt.optional);
@@ -90,8 +90,8 @@ module.exports = {
         TestCase.assertTrue(prim.optDouble.optional);
         TestCase.assertTrue(prim.optString.optional);
         TestCase.assertTrue(prim.optDate.optional);
-        TestCase.assertTrue(prim.optDecimal.optional);
-        TestCase.assertTrue(prim.optOid.optional);
+        TestCase.assertTrue(prim.optDecimal128.optional);
+        TestCase.assertTrue(prim.optObjectId.optional);
     },
 
     testListLength: function() {
@@ -140,8 +140,8 @@ module.exports = {
                 string: ['a', 'b'],
                 date:   [new Date(1), new Date(2)],
                 data:   [DATA1, DATA2],
-                decimal: [Decimal128.fromString('1'), Decimal128.fromString('2')],
-                oid:    [new ObjectId('0000002a9a7969d24bea4cf2'), new ObjectId('0000002a9a7969d24bea4cf3')],
+                decimal128: [Decimal128.fromString('1'), Decimal128.fromString('2')],
+                objectId:    [new ObjectId('0000002a9a7969d24bea4cf2'), new ObjectId('0000002a9a7969d24bea4cf3')],
 
                 optBool:   [true, null],
                 optInt:    [1, null],
@@ -150,8 +150,8 @@ module.exports = {
                 optString: ['a', null],
                 optDate:   [new Date(1), null],
                 optData:   [DATA1, null],
-                optDecimal: [Decimal128.fromString('1'), null ],
-                optOid:    [new ObjectId('0000002a9a7969d24bea4cf2'), null]
+                optDecimal: [Decimal128.fromString('1'), null],
+                optObjectId:    [new ObjectId('0000002a9a7969d24bea4cf2'), null]
             });
         });
 
@@ -190,10 +190,10 @@ module.exports = {
         TestCase.assertSimilar('data', prim.data[1], DATA2);
         TestCase.assertSimilar('date', prim.date[0], new Date(1));
         TestCase.assertSimilar('date', prim.date[1], new Date(2));
-        TestCase.assertSimilar('decimal', prim.decimal[0], Decimal128.fromString('1'));
-        TestCase.assertSimilar('decimal', prim.decimal[1], Decimal128.fromString('2'));
-        TestCase.assertSimilar('object id', prim.oid[0], new ObjectId('0000002a9a7969d24bea4cf2'));
-        TestCase.assertSimilar('object id', prim.oid[1], new ObjectId('0000002a9a7969d24bea4cf3'));
+        TestCase.assertSimilar('decimal128', prim.decimal128[0], Decimal128.fromString('1'));
+        TestCase.assertSimilar('decimal128', prim.decimal128[1], Decimal128.fromString('2'));
+        TestCase.assertSimilar('objectId', prim.objectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
+        TestCase.assertSimilar('objectId', prim.objectId[1], new ObjectId('0000002a9a7969d24bea4cf3'));
 
         TestCase.assertSimilar('bool', prim.optBool[0], true);
         TestCase.assertSimilar('int', prim.optInt[0], 1);
@@ -202,8 +202,8 @@ module.exports = {
         TestCase.assertSimilar('string', prim.optString[0], 'a');
         TestCase.assertSimilar('data', prim.optData[0], DATA1);
         TestCase.assertSimilar('date', prim.optDate[0], new Date(1));
-        TestCase.assertSimilar('decimal', prim.optDecimal[0], Decimal128.fromString('1'));
-        TestCase.assertSimilar('object id', prim.optOid[0], new ObjectId('0000002a9a7969d24bea4cf2'));
+        TestCase.assertSimilar('decimal128', prim.optDecimal128[0], Decimal128.fromString('1'));
+        TestCase.assertSimilar('objectId', prim.optObjectId128[0], new ObjectId('0000002a9a7969d24bea4cf2'));
     },
 
     testListSubscriptSetters: function() {
@@ -1348,7 +1348,7 @@ module.exports = {
     testListNestedFromJSON: function() {
         let json = '{"id":1, "name": [{ "family": "Larsen", "given": ["Hans", "Jørgen"], "prefix": [] }, { "family": "Hansen", "given": ["Ib"], "prefix": [] }] }';
         let parent = JSON.parse(json);
-        const realm = new Realm({schema: [schemas.ParentObjectLocal, schemas.NameObjectLocal]});
+        const realm = new Realm({schema: [schemas.ParentObject, schemas.NameObject]});
         realm.write(() => {
             realm.create('ParentObject', parent);
         });
