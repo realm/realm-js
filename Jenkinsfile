@@ -228,7 +228,7 @@ def reactNativeIntegrationTests(targetPlatform) {
   }
 
   dir('integration-tests/tests') {
-    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
+    sh "${nvm} ${nodeVersion} npm ci"
   }
 
   dir('integration-tests') {
@@ -531,7 +531,7 @@ def doDockerInside(script, target, postStep = null) {
 
 def testAndroid(target, postStep = null) {
   return {
-    node('docker && android') {
+    node('android') {
         timeout(time: 1, unit: 'HOURS') {
             doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
         }
