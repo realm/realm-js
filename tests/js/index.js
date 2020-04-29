@@ -122,7 +122,7 @@ exports.runTest = function (suiteName, testName) {
     const testMethod = testSuite && testSuite[testName];
 
     if (testMethod) {
-        // Realm.clearTestState();
+        Realm.clearTestState();
         return testMethod.call(testSuite);
     }
     if (!testSuite || !(testName in SPECIAL_METHODS)) {
