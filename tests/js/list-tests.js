@@ -203,7 +203,7 @@ module.exports = {
         TestCase.assertSimilar('data', prim.optData[0], DATA1);
         TestCase.assertSimilar('date', prim.optDate[0], new Date(1));
         TestCase.assertSimilar('decimal128', prim.optDecimal128[0], Decimal128.fromString('1'));
-        TestCase.assertSimilar('objectId', prim.optObjectId128[0], new ObjectId('0000002a9a7969d24bea4cf2'));
+        TestCase.assertSimilar('objectId', prim.optObjectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
     },
 
     testListSubscriptSetters: function() {
