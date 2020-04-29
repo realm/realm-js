@@ -228,7 +228,7 @@ def reactNativeIntegrationTests(targetPlatform) {
   }
 
   dir('integration-tests/tests') {
-    sh "${nvm} ${nodeVersion} npm ci"
+    sh "${nvm} npm ci"
   }
 
   dir('integration-tests') {
