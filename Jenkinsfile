@@ -158,6 +158,10 @@ def nodeIntegrationTests(nodeVersion, platform) {
   unstash "pre-gyp-${platform}-${nodeVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
+  dir('integration-tests/tests') {
+    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
+  }
+
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
@@ -183,6 +187,10 @@ def electronIntegrationTests(electronVersion, platform) {
   unstash 'source'
   unstash "electron-pre-gyp-${platform}-${electronVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
+
+  dir('integration-tests/tests') {
+    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
+  }
 
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
@@ -217,6 +225,10 @@ def reactNativeIntegrationTests(targetPlatform) {
     nvm = ""
   } else {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
+  }
+
+  dir('integration-tests/tests') {
+    sh "${nvm} npm ci"
   }
 
   dir('integration-tests') {
@@ -519,7 +531,7 @@ def doDockerInside(script, target, postStep = null) {
 
 def testAndroid(target, postStep = null) {
   return {
-    node('docker && android') {
+    node('android') {
         timeout(time: 1, unit: 'HOURS') {
             doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
         }
