@@ -4,10 +4,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed a bug so `Realm.open()` will reject with error instead of `Operation canceled` when a manual client resync has occurred. ([RJS-347](https://jira.mongodb.org/browse/RJS-347), since v3.1.0)
-* Replace `decompress` with `node-tar` to avoid using vulnerable dependencies ([#2773](https://github.com/realm/realm-js/issues/2773))
-* Fixed TypeScript definitions, React Native debugger support and added documentation for Realm.Sync.enableSessionMultiplexing(). (https://github.com/realm/realm-js/issues/2776)
-* Fixed obj.entries() to return actual key/value paris. Previously incorrectly returned key/`undefined` for all object keys.
+* Fixed a bug so `Realm.open()` will reject the promise with an error instead of `Operation canceled` when a manual client resync has occurred. ([#2679](https://github.com/realm/realm-js/pull/2679), since v3.1.0)
+* Replaced `decompress` with `node-tar` to avoid using vulnerable dependencies. ([#2773](https://github.com/realm/realm-js/issues/2773))
+* Fixed TypeScript definitions, React Native debugger support and added documentation for `Realm.Sync.enableSessionMultiplexing()`. Thanks to @bimusiek. ([#2776](https://github.com/realm/realm-js/issues/2776))
+* Fixed `obj.entries()` to return actual key/value pairs. Previously incorrectly returned key/`undefined` for all object keys. ([#2829](https://github.com/realm/realm-js/pull/2829), since v5.0.3)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -16,8 +16,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Added a platform independent way of printing to stdout on iOS & Node.js and the log on Android. ([#2789](https://github.com/realm/realm-js/pull/2789))
-* Added node 14 (ABI v83) to CI and pre-gyp'ed binaries.
-* Added Electron 7.2.x as a prebuild target. ([#2833](https://github.com/realm/realm-js/pull/2833))
+* Added node 14 (ABI v83) to CI and as a prebuild target.
+* Added Electron 7.2.x as a prebuild target. Thanks to @rajivshah3. ([#2833](https://github.com/realm/realm-js/pull/2833))
 
 5.0.3 Release notes (2020-4-01)
 =============================================================
