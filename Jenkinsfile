@@ -4,12 +4,24 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js' // This is a global variable
 
-def nodeVersions = ['10.15.1']
-def electronVersions = ['2.0.18', '3.0.16', '3.1.8', '4.0.8', '4.1.4', '4.2.6']
+// These versions must be written in ascending order (lowest version is used when testing)
+def nodeVersions = ['10.19.0', "11.15.0", "12.16.1", "13.0.0"]
+nodeTestVersion = nodeVersions[0]
+
+//Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version. 
+//For more see https://www.npmjs.com/package/spectron 
+def electronVersions = ['8.1.1']
+electronTestVersion = electronVersions[0]
+
 def gitTag = null
 def formattedVersion = null
 dependencies = null
-nodeTestVersion = '10.15.1'
+
+environment {
+  GIT_COMMITTER_NAME="ci"
+  GIT_COMMITTER_EMAIL="ci@realm.io"
+  ELECTRON_DISABLE_SANDBOX=1
+}
 
 // == Stages
 
@@ -22,8 +34,8 @@ stage('check') {
       extensions: scm.extensions + [
         [$class: 'WipeWorkspace'],
         [$class: 'CleanCheckout'],
-        [$class: 'CloneOption', depth: 0, shallow: false, noTags: false],
-        [$class: 'SubmoduleOption', recursiveSubmodules: true]
+        [$class: 'CloneOption', depth: 1, shallow: true, noTags: false], 
+        [$class: 'SubmoduleOption', recursiveSubmodules: true, shallow: true, depth: 1]
       ],
       userRemoteConfigs: scm.userRemoteConfigs
     ])
@@ -82,21 +94,21 @@ stage('pretest') {
 }
 
 stage('build') {
-  parallelExecutors = [:]
-  nodeVersions.each { nodeVersion ->
-    parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
-    parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-//    parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
-    parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
-  }
-  electronVersions.each { electronVersion ->
-    parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
-    parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
-//    parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
-    parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
-  }
-  parallelExecutors["Android React Native"] = buildAndroid()
-  parallel parallelExecutors
+    parallelExecutors = [:]
+    nodeVersions.each { nodeVersion ->
+      parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
+      parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
+      parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
+      parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
+    }
+    electronVersions.each { electronVersion ->
+      parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
+      parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
+      parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
+      parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
+    }
+    parallelExecutors["Android React Native"] = buildAndroid()
+    parallel parallelExecutors
 }
 
 if (gitTag) {
@@ -107,18 +119,18 @@ if (gitTag) {
 
 stage('test') {
   parallelExecutors = [:]
-  for (def nodeVersion in nodeVersions) {
-    parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
-    parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
-    parallelExecutors["macOS test runners ${nodeVersion}"] = testMacOS("test-runners Release ${nodeVersion}")
-    // parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release ${nodeVersion}")
-    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux("test-runners Release ${nodeVersion}")
-    parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
-  }
-  // parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
+  
+  parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
+  parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
+  parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
+  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}")
+  parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
+  parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
+
+
+  //parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  // parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
+  //parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
@@ -132,23 +144,27 @@ stage('integration tests') {
   parallel(
     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
-    'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
-    'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
-    'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests('10.15.1', it) },
-    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests('10.15.1', it) }
+    'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
+    'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
+    'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
+    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
   )
 }
 
 // == Methods
-
 def nodeIntegrationTests(nodeVersion, platform) {
   unstash 'source'
   unstash "pre-gyp-${platform}-${nodeVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
+  dir('integration-tests/tests') {
+    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
+  }
+
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
+
     // Package up the integration tests
     sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
   }
@@ -167,10 +183,14 @@ def nodeIntegrationTests(nodeVersion, platform) {
 }
 
 def electronIntegrationTests(electronVersion, platform) {
-  def nodeVersion = '10.15.1'
+  def nodeVersion = nodeTestVersion
   unstash 'source'
   unstash "electron-pre-gyp-${platform}-${electronVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
+
+  dir('integration-tests/tests') {
+    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
+  }
 
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
@@ -197,7 +217,7 @@ def electronIntegrationTests(electronVersion, platform) {
 }
 
 def reactNativeIntegrationTests(targetPlatform) {
-  def nodeVersion = '10.15.1'
+  def nodeVersion = nodeTestVersion
   unstash 'source'
 
   def nvm
@@ -205,6 +225,10 @@ def reactNativeIntegrationTests(targetPlatform) {
     nvm = ""
   } else {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
+  }
+
+  dir('integration-tests/tests') {
+    sh "${nvm} npm ci"
   }
 
   dir('integration-tests') {
@@ -237,7 +261,7 @@ def reactNativeIntegrationTests(targetPlatform) {
 
     timeout(30) { // minutes
       try {
-        sh "${nvm} npm run test/${targetPlatform} -- test-results.xml"
+        sh "${nvm} npm run test/${targetPlatform} -- --junit-output-path test-results.xml"
       } finally {
         junit(
           allowEmptyResults: true,
@@ -370,9 +394,10 @@ def buildWindowsElectron(electronVersion, arch) {
   }
 }
 
+
 def inAndroidContainer(workerFunction) {
   return {
-    myNode('docker && android') {
+    myNode('android') {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
@@ -410,8 +435,7 @@ def buildAndroid() {
 
 def publish(nodeVersions, electronVersions, dependencies, tag) {
   myNode('docker') {
-        //for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
-    for (def platform in ['macos', 'linux', 'windows-x64']) {
+    for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
       for (def version in nodeVersions) {
         unstash "pre-gyp-${platform}-${version}"
       }
@@ -508,7 +532,7 @@ def doDockerInside(script, target, postStep = null) {
 
 def testAndroid(target, postStep = null) {
   return {
-    node('docker && android && !aws') {
+    node('android') {
         timeout(time: 1, unit: 'HOURS') {
             doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
         }
