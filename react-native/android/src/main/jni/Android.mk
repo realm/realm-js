@@ -76,9 +76,14 @@ LOCAL_SRC_FILES += src/object-store/src/sync/async_open_task.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_manager.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_session.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_user.cpp
-LOCAL_SRC_FILES += src/object-store/src/sync/sync_permission.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_file.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_metadata.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/app.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/app_credentials.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/generic_network_transport.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/bson/bson.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/bson/regular_expression.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/bson/datetime.cpp
 endif
 
 LOCAL_C_INCLUDES := src
