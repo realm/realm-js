@@ -97,6 +97,7 @@ module.exports = {
     async testMongoDBRealmSync() {
         // Realm.Sync.setLogLevel('all');
         // Realm.Sync.setLogger((level, message) => console.log(message));
+        // Realm.clearTestState();
         const appId = 'default-lnpak';
         const appConfig = {
             id: appId,
@@ -131,9 +132,9 @@ module.exports = {
         Realm.deleteFile(realmConfig);
 
         let realm = await Realm.open(realmConfig);
-        realm.write(() => {
-            realm.deleteAll();
-        });
+        // realm.write(() => {
+        //     realm.deleteAll();
+        // });
         realm.write(() => {
             realm.create("Dog", { "_id": new ObjectId('0000002a9a7969d24bea4cf5'), name: "King" });
             console.log('FISK 1');

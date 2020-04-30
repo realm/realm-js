@@ -212,7 +212,7 @@ module.exports = {
         const expectedObjectsCount = 3;
 
         let user, config;
-        const credentials = Realm.Sync.Credentials.nickname(username);
+        const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(u => {
@@ -253,7 +253,7 @@ module.exports = {
         const realmName = Utils.uuid();
         const expectedObjectsCount = 3;
 
-        const credentials = Realm.Sync.Credentials.nickname(username);
+        const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
@@ -302,7 +302,7 @@ module.exports = {
         const realmName = Utils.uuid();
         const expectedObjectsCount = 3;
 
-        const credentials = Realm.Sync.Credentials.nickname(username);
+        const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
@@ -390,7 +390,7 @@ module.exports = {
         const username = Utils.uuid();
         const realmName = Utils.uuid();
 
-        const credentials = Realm.Sync.Credentials.nickname(username);
+        const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/nested-list-helper.js', __dirname + '/schemas.js', username, realmName, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
@@ -430,7 +430,7 @@ module.exports = {
         const username = Utils.uuid();
         const realmName = Utils.uuid();
 
-        const credentials = Realm.Sync.Credentials.nickname(username);
+        const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
@@ -498,7 +498,7 @@ module.exports = {
         const realmName = Utils.uuid();
         let progressCalled = false;
 
-        const credentials = Realm.Sync.Credentials.nickname(username);
+        const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
@@ -525,7 +525,7 @@ module.exports = {
         const username = Utils.uuid();
         const realmName = Utils.uuid();
 
-        const credentials = Realm.Sync.Credentials.nickname(username);
+        const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {

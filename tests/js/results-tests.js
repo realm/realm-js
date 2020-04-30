@@ -491,7 +491,6 @@ module.exports = {
             }
             first = false;
             realm.objects('TestObject').removeAllListeners();
-            realm.close();
             resolve();
         });
 

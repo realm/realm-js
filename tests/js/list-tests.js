@@ -150,7 +150,7 @@ module.exports = {
                 optString: ['a', null],
                 optDate:   [new Date(1), null],
                 optData:   [DATA1, null],
-                optDecimal: [Decimal128.fromString('1'), null],
+                optDecimal: [Decimal128.fromString('1'), null ],
                 optOid:    [new ObjectId('0000002a9a7969d24bea4cf2'), null]
             });
         });

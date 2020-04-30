@@ -112,7 +112,7 @@ module.exports = {
 
   testUsernamePasswordMissingPassword() {
     const username = Utils.uuid();
-    TestCase.assertThrows(() => Realm.Credentials(username, undefined));
+    TestCase.assertThrows(() => Realm.Credentials.usernamePassword(username, undefined));
   },
 
   testLoginNonExistingUser() {
