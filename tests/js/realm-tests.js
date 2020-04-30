@@ -1610,6 +1610,8 @@ module.exports = {
         TestCase.assertEqual(managedObj.objectCol.doubleCol, 1);
         TestCase.assertEqual(managedObj.nullObjectCol, null);
         TestCase.assertEqual(managedObj.arrayCol[0].doubleCol, 2);
+
+        realm.close();
     },
 
     testWriteCopyTo: function() {

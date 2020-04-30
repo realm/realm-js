@@ -20,7 +20,7 @@
 
 const Realm = require('realm');
 
-if (typeof Realm.Sync !== 'undefined' && Realm.Sync !== null) {
+if (typeof Realm.App !== 'undefined' && Realm.App !== null) {
     global.WARNING = "global is not available in React Native. Use it only in tests";
     global.enableSyncTests = true;
 }
@@ -122,7 +122,7 @@ exports.runTest = function (suiteName, testName) {
     const testMethod = testSuite && testSuite[testName];
 
     if (testMethod) {
-        // Realm.clearTestState();
+        Realm.clearTestState();
         return testMethod.call(testSuite);
     }
     if (!testSuite || !(testName in SPECIAL_METHODS)) {

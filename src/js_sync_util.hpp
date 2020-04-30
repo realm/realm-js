@@ -18,11 +18,16 @@
 
 #pragma once
 
+#include "js_types.hpp"
+#include "object-store/src/sync/app.hpp"
+#include "object-store/src/sync/sync_manager.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/app.hpp"
 #include "platform.hpp"
+
+#include <realm/util/optional.hpp>
 
 namespace realm {
 namespace js {

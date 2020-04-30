@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "js_sync_util.hpp"
 #include "sync/generic_network_transport.hpp"
 #include "sync/sync_user.hpp"
 #include "sync/app.hpp"
@@ -143,14 +144,27 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         }
     }
 
-    // FIXME: should we use a protected ctx?
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     config.transport_generator = [=] {
         return std::make_unique<NetworkTransport>(protected_ctx);
     };
 
-    auto app = std::make_shared<app::App>(realm::app::App(config));
-    set_internal<T, AppClass<T>>(this_object, new SharedApp(app));
+    auto realm_constructor = js::Value<T>::validated_to_object(ctx, js::Object<T>::get_global(ctx, "Realm"));
+    std::string user_agent_binding_info;
+    auto user_agent_function = js::Object<T>::get_property(ctx, realm_constructor, "_createUserAgentDescription");
+    if (js::Value<T>::is_function(ctx, user_agent_function)) {
+        auto result = js::Function<T>::call(ctx, js::Value<T>::to_function(ctx, user_agent_function), realm_constructor, 0, nullptr);
+        user_agent_binding_info = js::Value<T>::validated_to_string(ctx, result);
+    }
+    ensure_directory_exists_for_file(default_realm_file_directory());
+
+    SyncClientConfig client_config;
+    client_config.base_file_path = default_realm_file_directory();
+    client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
+    client_config.user_agent_binding_info = user_agent_binding_info;
+    SyncManager::shared().configure(client_config, config);
+
+    set_internal<T, AppClass<T>>(this_object, new SharedApp(SyncManager::shared().app()));
 }
 
 template<typename T>
@@ -192,7 +206,7 @@ void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args
         }
 
         ValueType callback_arguments[2];
-        callback_arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new User<T>(user, app));
+        callback_arguments[0] = UserClass<T>::create_instance(protected_ctx, std::move(user), std::move(app));
         callback_arguments[1] = Value::from_undefined(protected_ctx);
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });

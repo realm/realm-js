@@ -490,6 +490,7 @@ module.exports = {
                 TestCase.assertEqual(changes.oldModifications.length, 1);
             }
             first = false;
+            realm.objects('TestObject').removeAllListeners();
             resolve();
         });
 

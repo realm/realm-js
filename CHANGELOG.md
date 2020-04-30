@@ -6,8 +6,8 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * `Realm.Sync.User` has been replaced by `Realm.User`.
 * `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([RJS-434](https://jira.mongodb.org/browse/RJS-434))
 * Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partitionValue` has been added to the `sync` configuration as a replacement. Read more [here](XXX). ([]())
-* Permissions has been removed. You need to configure permissions through Stitch.
-* Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`
+* Permissions has been removed. You need to configure permissions through MongoDB Realm.
+* Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`, `Realm.Sync.setSyncLogger()`
 
 ### Enhancements
 * Added support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
@@ -24,9 +24,9 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Updated Realm Core from ??? to Realm Core v10.0.0-alpha.6.
-* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.8.
-* Updated Realm Object Store to commit 5e50011689abfb3184f3d4b9d7e2ab698c0de562.
+* Updated Realm Core from ??? to Realm Core v10.0.0-alpha.7.
+* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.9.
+* Updated Realm Object Store to commit 7f49dbab12de4a8747a5fe7eea19abf83b0f49a1.
 * Created a package named "realm-app-importer", to be used by integration tests (ideally by other SDKs too).
 
 

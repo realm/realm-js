@@ -714,8 +714,8 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         ObjectType user_object = Object::validated_get_object(ctx, sync_config_object, "user");
-        auto user = get_internal<T, UserClass<T>>(user_object);
-        if ((*user)->state() != SyncUser::State::LoggedIn) {
+        SharedUser user = *get_internal<T, UserClass<T>>(user_object);
+        if (user->state() != SyncUser::State::LoggedIn) {
             throw std::runtime_error("User is no longer valid.");
         }
 
@@ -747,7 +747,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ssl_verify_callback = std::move(ssl_verify_functor);
         }
 
-        config.sync_config = std::make_shared<SyncConfig>(user->m_app, *user, std::move(partition_value));
+        config.sync_config = std::make_shared<SyncConfig>(std::move(user), std::move(partition_value));
         config.sync_config->error_handler = std::move(error_handler);
 
         SyncSessionStopPolicy session_stop_policy = SyncSessionStopPolicy::AfterChangesUploaded;
@@ -843,7 +843,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         config.sync_config->client_resync_mode = clientResyncMode;
 
         config.schema_mode = SchemaMode::Additive;
-        config.path = syncManagerShared<T>(ctx).path_for_realm(*(config.sync_config));
+        config.path = SyncManager::shared().path_for_realm(*(config.sync_config));
     }
 }
 

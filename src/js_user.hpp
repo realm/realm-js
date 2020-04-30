@@ -22,6 +22,8 @@
 #include "js_collection.hpp"
 #include "js_sync_util.hpp"
 #include "js_app_credentials.hpp"
+#include "object-store/src/sync/app.hpp"
+#include "object-store/src/sync/sync_user.hpp"
 #include "platform.hpp"
 
 #include "sync/sync_config.hpp"
@@ -66,6 +68,7 @@ public:
     std::string const name = "User";
 
     static FunctionType create_constructor(ContextType);
+    static ObjectType create_instance(ContextType, SharedUser, SharedApp);
 
     static void get_identity(ContextType, ObjectType, ReturnValue &);
     static void get_token(ContextType, ObjectType, ReturnValue &);
@@ -102,6 +105,11 @@ template<typename T>
 inline typename T::Function UserClass<T>::create_constructor(ContextType ctx) {
     FunctionType user_constructor = ObjectWrap<T, UserClass<T>>::create_constructor(ctx);
     return user_constructor;
+}
+
+template<typename T>
+typename T::Object UserClass<T>::create_instance(ContextType ctx, SharedUser user, SharedApp app) {
+    return create_object<T, UserClass<T>>(ctx, new User<T>(user, app));
 }
 
 template<typename T>

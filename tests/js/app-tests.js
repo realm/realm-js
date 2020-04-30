@@ -44,7 +44,7 @@ function runOutOfProcess() {
 }
 
 const config = {
-    id: 'realm-sdk-integration-tests-etyyr',
+    id: 'default-lnpak',
     url: 'http://localhost:9090',
     timeout: 1000,
     app: {
@@ -55,10 +55,6 @@ const config = {
 
 module.exports = {
     testNewApp() {
-        const config = {
-            id: 'realm-sdk-integration-tests-pwjzl'
-        };
-
         let app = new Realm.App(config);
         TestCase.assertInstanceOf(app, Realm.App);
     },
@@ -99,9 +95,10 @@ module.exports = {
     },
 
     async testMongoDBRealmSync() {
-        Realm.Sync.setLogLevel('all');
-        Realm.Sync.setLogger((level, message) => console.log(message));
-        const appId = 'default-njkzt';
+        // Realm.Sync.setLogLevel('all');
+        // Realm.Sync.setLogger((level, message) => console.log(message));
+        // Realm.clearTestState();
+        const appId = 'default-lnpak';
         const appConfig = {
             id: appId,
             url: 'http://localhost:9090',
@@ -111,7 +108,6 @@ module.exports = {
                 version: '0'
             },
         };
-
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
@@ -136,17 +132,20 @@ module.exports = {
         Realm.deleteFile(realmConfig);
 
         let realm = await Realm.open(realmConfig);
-        realm.write(() => {
-            realm.deleteAll();
-        });
+        // realm.write(() => {
+        //     realm.deleteAll();
+        // });
         realm.write(() => {
             realm.create("Dog", { "_id": new ObjectId('0000002a9a7969d24bea4cf5'), name: "King" });
+            console.log('FISK 1');
+            realm.create("Dog", { "_id": new ObjectId('0000002a9a7969d24bea4cf4'), name: "King" });
         });
+        console.log('FISK 2');
 
         console.log(`HEST 1: ${realm.objects("Dog").length}`);
         await realm.syncSession.uploadAllLocalChanges();
         console.log(`HEST 2: ${realm.objects("Dog").length}`);
-        TestCase.assertEqual(realm.objects("Dog").length, 1);
+        TestCase.assertEqual(realm.objects("Dog").length, 2);
         realm.close();
 
         Realm.deleteFile(realmConfig);
@@ -156,7 +155,7 @@ module.exports = {
         await realm2.syncSession.downloadAllServerChanges();
         console.log("HEST 4");
 
-        TestCase.assertEqual(realm2.objects("Dog").length, 1);
+        TestCase.assertEqual(realm2.objects("Dog").length, 2);
         realm2.close();
         user.logOut();
     }
