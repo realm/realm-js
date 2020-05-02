@@ -36,14 +36,6 @@ using SharedUser = std::shared_ptr<realm::SyncUser>;
 namespace realm {
 namespace js {
 
-// template<typename T>
-// class App : public SharedApp {
-// public:
-//     App(App const& obj) : realm::app::App(obj) {};
-//     App(realm::app::App const& obj) : realm::app::App(obj) {};
-//     App(realm::app::App* obj) : realm::app::App(*obj) {};
-// };
-
 template<typename T>
 class AppClass : public ClassDefinition<T, SharedApp> {
     using AppLoginHandler = std::function<void(SharedUser user, util::Optional<realm::app::AppError> error)>;
@@ -170,10 +162,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 template<typename T>
 void AppClass<T>::get_app_id(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
     auto app = *get_internal<T, AppClass<T>>(this_object);
-
-    // TODO: object store doesn't have such a method
-
-    return_value.set(Value::from_string(ctx, app->app_id()));
+    return_value.set(Value::from_string(ctx, app->config().app_id));
 }
 
 template<typename T>
@@ -193,6 +182,7 @@ void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args
 
     auto callback_handler([=](SharedUser user, util::Optional<realm::app::AppError> error) {
         HANDLESCOPE
+
         if (error) {
             ObjectType object = Object::create_empty(protected_ctx);
             Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error->message));

@@ -24,9 +24,9 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Updated Realm Core from ??? to Realm Core v10.0.0-alpha.7.
-* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.9.
-* Updated Realm Object Store to commit 7f49dbab12de4a8747a5fe7eea19abf83b0f49a1.
+* Updated Realm Core from ??? to Realm Core v10.0.0-alpha.8.
+* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.12.
+* Updated Realm Object Store to commit ec6ffd5cc149e403d252e9d615b4e6dab572fa89.
 * Created a package named "realm-app-importer", to be used by integration tests (ideally by other SDKs too).
 
 
