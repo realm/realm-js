@@ -144,7 +144,7 @@ declare namespace Realm {
         services: Realm.Services;
 
         /**
-         * Perform operations on an apps authentication providers.
+         * Perform operations on an app's authentication providers.
          */
         auth: Realm.AuthProviders;
 
