@@ -35,7 +35,7 @@ declare namespace Realm {
             /**
              * Register a new user.
              *
-             * @param email the new users email.
+             * @param email The new users email.
              * @param password the new users passsword.
              */
             registerUser(email: string, password: string): Promise<void>;
