@@ -67,8 +67,18 @@ public:
         , m_realm(na.m_realm)
         , m_parent(std::move(parent))
         , m_property(&prop)
-        , m_object_schema(prop.type == realm::PropertyType::Object ? &*m_realm->schema().find(prop.object_type) : na.m_object_schema)
-    { }
+        , m_object_schema(nullptr)
+    {
+        if (prop.type == realm::PropertyType::Object) {
+            auto schema = m_realm->schema().find(prop.object_type);
+            if (schema != m_realm->schema().end()) {
+			    m_object_schema = &*schema;
+            }
+        }
+        else {
+            m_object_schema = na.m_object_schema;
+        }
+    }
 
     NativeAccessor(NativeAccessor& parent, const Property& prop)
 		: m_ctx(parent.m_ctx)
