@@ -35,7 +35,6 @@ export class ApiKeyAuthProvider
      */
     constructor(transport: Transport, providerName = "api-key") {
         this.transport = transport.prefix("/auth/api_keys");
-        // this.transport = transport.prefix(`/auth/providers/${providerName}`);
     }
 
     /** @inheritdoc */
