@@ -282,7 +282,7 @@ export function createDatabase(
 }
 
 /**
- * Creates an Remote MongoDB Service
+ * Creates a Remote MongoDB Service
  * Note: This method exists to enable function binding.
  *
  * @param transport The underlying transport
