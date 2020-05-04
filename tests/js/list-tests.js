@@ -1412,9 +1412,6 @@ module.exports = {
 
     testCreateEmbeddedObjects: function() {
         const realm = new Realm({schema: [schemas.ContactSchema, schemas.AddressSchema]});
-        realm.write(() => { // FIXME: This should not be required!
-            realm.deleteAll();
-        });
 
         realm.write(() => {
             realm.create(schemas.ContactSchema.name, { name: "Freddy Krueger", address: { street: "Elm Street", city: "Springwood" }} );
@@ -1439,9 +1436,6 @@ module.exports = {
 
     testCreateMultipleEmbeddedObjects: function() {
         const realm = new Realm({schema: [schemas.HouseOwnerSchema, schemas.AddressSchema]});
-        realm.write(() => { // FIXME: This should not be required!
-            realm.deleteAll();
-        });
 
         realm.write(() => {
             realm.create(schemas.HouseOwnerSchema.name, { name: "Ib", addresses: [

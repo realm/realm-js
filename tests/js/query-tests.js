@@ -238,9 +238,6 @@ module.exports = {
 
     testQueryDecimal: function() {
         var realm = new Realm({ schema: [schemas.DecimalObject] });
-        realm.write(() => { // FIXME: This should not be required!
-            realm.deleteAll();
-        });
 
         realm.write(function () {
             [0, 1, 2].forEach(v => {

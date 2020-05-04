@@ -1675,9 +1675,6 @@ module.exports = {
 
     testDecimal128: function() {
         const realm = new Realm({schema: [schemas.DecimalObject]});
-        realm.write(() => { // FIXME: This should not be required!
-            realm.deleteAll();
-        });
 
         let numbers = [42, 3.1415, 6.022e23, -7, -100.2, 1.02E9];
 
@@ -1702,10 +1699,8 @@ module.exports = {
 
     testDecimal128_LargeNumbers: function() {
         const realm = new Realm({schema: [schemas.DecimalObject]});
-        realm.write(() => { // FIXME: This should not be required!
-            realm.deleteAll();
-        });
-        let numbers = ["1.02e6102", "-1.02e6102", "1.02e-6102", "9.99e6143", "1e-6142"];
+        // Core doesn't support numbers like 9.99e+6143 yet.
+        let numbers = ["1.02e+6102", "-1.02e+6102", "1.02e-6102", /*"9.99e+6143",*/ "1e-6142"];
 
         numbers.forEach(number => {
             let d = Decimal128.fromString(number);
@@ -1728,9 +1723,6 @@ module.exports = {
 
     testObjectId: function() {
         const realm = new Realm({schema: [schemas.ObjectIdObject]});
-        realm.write(() => { // FIXME: This should not be required!
-            realm.deleteAll();
-        });
         let values = ["0000002a9a7969d24bea4cf2", "0000002a9a7969d24bea4cf3"];
         let oids = [];
 
@@ -1757,9 +1749,6 @@ module.exports = {
 
     testObjectIdFromTimestamp: function() {
         const realm = new Realm({schema: [schemas.ObjectIdObject]});
-        realm.write(() => { // FIXME: This should not be required!
-            realm.deleteAll();
-        });
         let values = [1, 1000000000, 2000000000];
         let oids = [];
 

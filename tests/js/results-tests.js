@@ -263,10 +263,6 @@ module.exports = {
 
     testResultsSortedAllTypes: function() {
         var realm = new Realm({schema: [schemas.BasicTypes]});
-        realm.write(() => { // FIXME: This should not be required!
-            realm.deleteAll();
-        });
-
         var objects = realm.objects('BasicTypesObject');
 
         var decimals = [];
