@@ -258,7 +258,7 @@ export function createCollection<
 }
 
 /**
- * Creates an Remote MongoDB Database
+ * Creates a Remote MongoDB Database
  * Note: This method exists to enable function binding.
  *
  * @param transport The underlying transport
