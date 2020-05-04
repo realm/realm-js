@@ -2,7 +2,8 @@
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"types": [
-			"realm-network-transport"
+			"realm-network-transport",
+			"bson"
 		]
 	},
 	"exclude": [

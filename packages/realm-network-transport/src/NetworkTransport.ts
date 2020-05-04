@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { MongoDBRealmError } from "./MongoDBRealmError";
+
 declare const process: any;
 declare const require: ((id: string) => any) | undefined;
 
@@ -113,11 +115,29 @@ export class DefaultNetworkTransport implements NetworkTransport {
                 } else {
                     throw new Error("Expected an empty or a JSON response");
                 }
-            } else {
-                // TODO: Check if a message can be extracted from the response
-                throw new Error(
-                    `Unexpected status code (${response.status} ${response.statusText})`,
+            } else if (
+                contentType &&
+                contentType.startsWith("application/json")
+            ) {
+                throw new MongoDBRealmError(
+                    response.status,
+                    response.statusText,
+                    await response.json(),
                 );
+            } else {
+                if (contentType && contentType.startsWith("application/json")) {
+                    // Awaiting the response to ensure we'll throw our own error
+                    const json = await response.json();
+                    throw new MongoDBRealmError(
+                        response.status,
+                        response.statusText,
+                        json,
+                    );
+                } else {
+                    throw new Error(
+                        `Unexpected status code (${response.status} ${response.statusText})`,
+                    );
+                }
             }
         } catch (err) {
             throw new Error(
