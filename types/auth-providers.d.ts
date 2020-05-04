@@ -18,7 +18,7 @@
 
 declare namespace Realm {
     /**
-     * An object with interfaces to all possible authentication provider the app might have.
+     * An object with interfaces to all possible authentication providers the app might have.
      */
     interface AuthProviders {
         /** Authentication provider where users identify using email and password. */
