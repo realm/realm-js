@@ -99,9 +99,9 @@ public:
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
-    RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) 
-        : m_context(ctx), 
-          m_realm(realm) 
+    RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx)
+        : m_context(ctx),
+          m_realm(realm)
     {
         SharedRealm sharedRealm = realm.lock();
         m_realm_path = sharedRealm->config().path;
@@ -640,7 +640,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Argumen
 template<typename T>
 SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Config config, bool schema_updated,
                                                ObjectDefaultsMap&& defaults, ConstructorMap&& constructors) {
-    config.execution_context = Context<T>::get_execution_context_id(ctx);
+    config.scheduler = realm::util::Scheduler::make_default();
 
     SharedRealm realm;
     realm = realm::Realm::get_shared_realm(config);
@@ -872,7 +872,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
 
     std::shared_ptr<AsyncOpenTask> task;
     task = Realm::get_synchronized_realm(config);
-    
+
     EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults = std::move(defaults), constructors = std::move(constructors)]
                                                                (ThreadSafeReference&& realm_ref, std::exception_ptr error) {
         HANDLESCOPE(protected_ctx)
@@ -895,7 +895,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
 
         auto def = std::move(defaults);
         auto ctor = std::move(constructors);
-        const SharedRealm realm = Realm::get_shared_realm(std::move(realm_ref), Context<T>::get_execution_context_id(protected_ctx));
+        const SharedRealm realm = Realm::get_shared_realm(std::move(realm_ref), util::Scheduler::make_default());
         set_binding_context(protected_ctx, realm, schema_updated, std::move(def), std::move(ctor));
         ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
 
@@ -1021,8 +1021,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
 
             auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
             if (!realm_object) {
-               std::string message = "Invalid argument at index " + util::to_string(i); 
-               throw std::runtime_error(message);
+               throw std::runtime_error(util::format("Invalid argument at index %1", i));
             }
 
             realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);

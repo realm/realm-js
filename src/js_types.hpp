@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "execution_context_id.hpp"
 #include "property.hpp"
 
 #include <stdexcept>
@@ -82,7 +81,6 @@ struct Context {
     using GlobalContextType = typename T::GlobalContext;
 
     static GlobalContextType get_global_context(ContextType);
-    static AbstractExecutionContextID get_execution_context_id(ContextType);
 };
 
 class TypeErrorException : public std::invalid_argument {

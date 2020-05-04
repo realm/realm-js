@@ -28,14 +28,5 @@ template<>
 inline Napi::Env node::Context::get_global_context(Napi::Env env) {
 	return env;
 }
-
-template<>
-inline AbstractExecutionContextID node::Context::get_execution_context_id(Napi::Env env)
-{
-	//NAPI: return 1 here since there is no other id available from NAPI
-	return 1;
-
-}
-
 } // js
 } // realm
