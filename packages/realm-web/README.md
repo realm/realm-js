@@ -2,7 +2,7 @@
 
 Accessing MongoDB Realm from a web-browser.
 
-## Installing this
+## Installation
 
 In its current form, the package has not been published to NPM, instead its distributed using a direct HTTP URL:
 
