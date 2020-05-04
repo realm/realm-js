@@ -33,7 +33,7 @@ Some parts of the legacy Stitch SDK is still missing, most notably:
 
 ## Using this from Node.js
 
-You must install two additional peer dependencies if importing this from Node.js:
+You must install two additional peer dependencies when importing this package from Node.js:
 
 ```
 npm install node-fetch abort-controller
