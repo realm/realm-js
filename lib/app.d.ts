@@ -129,7 +129,7 @@ declare namespace Realm {
         readonly id: string;
 
         /**
-         * Use this to call functions within by the MongoDB Realm app.
+         * Use this to call functions defined by the MongoDB Realm app.
          */
         readonly functions: FunctionsFactoryType & BaseFunctionsFactory;
 
