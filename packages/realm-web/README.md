@@ -31,7 +31,7 @@ Some parts of the legacy Stitch SDK is still missing, most notably:
 - The types for the `Realm.Credentials` namespace is not fully implemented.
 - No device information is sent to the service when authenticating a user.
 
-## Using this from Node.js
+## Using Realm Web from Node.js
 
 You must install two additional peer dependencies when importing this package from Node.js:
 
