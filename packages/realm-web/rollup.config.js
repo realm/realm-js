@@ -51,6 +51,5 @@ export default [
             intro: '/// <reference path="../types/realm/index.d.ts" />',
         },
         plugins: [dts(), resolve()],
-        // external: ["realm-network-transport"],
     },
 ];
