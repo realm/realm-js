@@ -880,16 +880,16 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         if (error) {
             try {
                 std::rethrow_exception(error);
-            } catch (const std::exception& e) {
-                 ObjectType object = Object::create_empty(protected_ctx);
-                 Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
-                 Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
+            } catch (const std::system_error& e) {
+                ObjectType object = Object::create_empty(protected_ctx);
+                Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
+                Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
-                 ValueType callback_arguments[2];
-                 callback_arguments[0] = Value::from_undefined(protected_ctx);
-                 callback_arguments[1] = object;
-                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-                 return;
+                ValueType callback_arguments[2];
+                callback_arguments[0] = Value::from_undefined(protected_ctx);
+                callback_arguments[1] = object;
+                Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
+                return;
             }
         }
 

@@ -5,12 +5,12 @@ import groovy.json.JsonOutput
 repoName = 'realm-js' // This is a global variable
 
 // These versions must be written in ascending order (lowest version is used when testing)
-def nodeVersions = ['10.19.0', "11.15.0", "12.16.1", "13.0.0"]
+def nodeVersions = ['10.19.0', "11.15.0", "12.16.1", "13.0.0", "14.0.0"]
 nodeTestVersion = nodeVersions[0]
 
-//Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version. 
-//For more see https://www.npmjs.com/package/spectron 
-def electronVersions = ['8.1.1']
+//Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
+//For more see https://www.npmjs.com/package/spectron
+def electronVersions = ['8.1.1', '7.2.3']
 electronTestVersion = electronVersions[0]
 
 def gitTag = null
@@ -34,7 +34,7 @@ stage('check') {
       extensions: scm.extensions + [
         [$class: 'WipeWorkspace'],
         [$class: 'CleanCheckout'],
-        [$class: 'CloneOption', depth: 1, shallow: true, noTags: false], 
+        [$class: 'CloneOption', depth: 1, shallow: true, noTags: false],
         [$class: 'SubmoduleOption', recursiveSubmodules: true, shallow: true, depth: 1]
       ],
       userRemoteConfigs: scm.userRemoteConfigs
@@ -119,7 +119,7 @@ if (gitTag) {
 
 stage('test') {
   parallelExecutors = [:]
-  
+
   parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
   parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
   parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
@@ -359,10 +359,10 @@ def buildWindows(nodeVersion, arch) {
 
       withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
         retry(3) {
-          bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+          bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
         }
       }
-      bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+      bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
       dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
         stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
       }

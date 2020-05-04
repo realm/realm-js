@@ -4,20 +4,37 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Replace `decompress` with `node-tar` to avoid using vulnerable dependencies ([#2773](https://github.com/realm/realm-js/issues/2773))
-* It was not possible to make client resync if a table contained binary data.
-* Fixed TypeScript definitions, React Native debugger support and added documentation for Realm.Sync.enableSessionMultiplexing(). (https://github.com/realm/realm-js/issues/2776)
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
-* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
+
+5.0.4 Release notes (2020-4-29)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed a bug so `Realm.open()` will reject the promise with an error instead of `Operation canceled` when a manual client resync has occurred. ([#2679](https://github.com/realm/realm-js/pull/2679), since v3.1.0)
+* Replaced `decompress` with `node-tar` to avoid using vulnerable dependencies. ([#2773](https://github.com/realm/realm-js/issues/2773))
+* Fixed TypeScript definitions, React Native debugger support and added documentation for `Realm.Sync.enableSessionMultiplexing()`. Thanks to @bimusiek. ([#2776](https://github.com/realm/realm-js/issues/2776))
+* Fixed `obj.entries()` to return actual key/value pairs. Previously incorrectly returned key/`undefined` for all object keys. ([#2829](https://github.com/realm/realm-js/pull/2829), since v5.0.3)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
 * Added a platform independent way of printing to stdout on iOS & Node.js and the log on Android. ([#2789](https://github.com/realm/realm-js/pull/2789))
-* Updated Realm Core v6.0.3 to v6.0.4
-* Updated Realm Sync v5.0.1 to v5.0.3.
-
+* Added node 14 (ABI v83) to CI and as a prebuild target.
+* Added Electron 7.2.x as a prebuild target. Thanks to @rajivshah3. ([#2833](https://github.com/realm/realm-js/pull/2833))
 5.0.3 Release notes (2020-4-01)
 =============================================================
 ### Enhancements
@@ -92,131 +109,6 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 ### Internal
 * Complete rewrite of Realm JavaScript for Node.js on top of [Node.js N-API](https://nodejs.org/api/n-api.html)
 * Realm JavaScript is now binary compatible between Node.js versions (due to NAPI API stability and backward compatibility).
-4.0.0-beta.2 Release notes (2020-2-24)
-=============================================================
-### Breaking changes
-* The notification callbacks from Realm.Sync.addListener have changed the format of ChangeEvent.changes() to pass out Realm objects instead of just the internal object ids. The objects associated with the `ChangeEvent.newRealm()` are `insertions`, and `newModifications` while the objects from `ChangeEvent.oldRealm()` are `deletions`, and `oldModifications`. The ambiguous `modifications` has been removed.
-
-### Enhancements
-* None.
-
-### Fixed
-* None.
-
-### Compatibility
-* Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
-* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
-
-### Internal
-* Updated Realm Core v6.0.0-beta.3 to v6.0.3.
-* Updated Realm Sync v5.0.0-beta.2 to v5.0.1.
-* Updated Realm Object Store to commit 9ff26c32d4053193b51e9b0ec2b07ce08ff599ae.
-* Updated OpenSSL from v1.0.2k to v1.1.1b (ReactNative Android).
-* Switched to Android NDK r21 for Android builds. ([#2229](https://github.com/realm/realm-js/issues/2229))
-
-4.0.0-beta.1 Release notes (2020-1-7)
-=============================================================
-NOTE 1: Accumulated release notes (including v4.0.0-alpha.1, v4.0.0-alpha.2, and v4.0.0-beta.0).
-NOTE 2: Contains all previous releases up to v3.6.0.
-NOTE 3: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
-
-### Breaking changes
-* Calling `Realm.close()` on a closed Realm will throw an exception.
-* Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
-* `Realm.delete(Realm.Collection)` will conserve the order i.e., if a `Realm.Results` is `[1, 2, 3]` (pseudo-notation), `Realm.delete(2)` will produce `[1, 3]`.
-* It is only possible to compact a Realm when a single instance is open. Consider to use configuration parameter `shouldCompactOnLaunch` in the future.
-* Schemas are not cached but will be reread when opening a Realm. This has an impact of default values as they are not persisted in the Realm files.
-
-### Enhancements
-* None.
-
-### Fixed
-* None.
-
-### Internal
-* Updated Realm Core from v6.0.0-beta.1 to v6.0.0-beta.3.
-* Updated Realm Sync from v5.0.0-beta.0 to v5.0.0-beta.2.
-* Updated Realm Object Store to commit 720c67e9fc0ce98b0a3a6d28c450efc4f89c498c.
-
-4.0.0-beta.0 Release notes (2019-12-5)
-=============================================================
-NOTE 1: Accumulated release notes (including v4.0.0-alpha.1 and v4.0.0-alpha.2).
-NOTE 2: Contains all previous releases up to v3.5.0.
-NOTE 3: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
-
-
-### Breaking changes
-* Calling `Realm.close()` on a closed Realm will throw an exception.
-* Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
-* `Realm.delete(Realm.Collection)` will conserve the order i.e., if a `Realm.Results` is `[1, 2, 3]` (pseudo-notation), `Realm.delete(2)` will produce `[1, 3]`.
-* It is only possible to compact a Realm when a single instance is open. Consider to use configuration parameter `shouldCompactOnLaunch` in the future.
-* Schemas are not cached but will be reread when opening a Realm. This has an impact of default values as they are not persisted in the Realm files.
-
-### Enhancements
-* None.
-
-### Fixed
-* None.
-
-### Compatibility
-* Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
-* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
-
-### Internal
-* Updated from Realm Core v6.0.0-alpha.23 to v6.0.0-beta.0.
-* Updated from Realm Sync v4.7.1-core6.4 to v5.0.0-beta.0.
-* Updated to Realm Object Store commit dc34c655c88a902a66ff407f771efd48e37d29fd.
-
-4.0.0-alpha.2 Release notes (2019-11-27)
-=============================================================
-### Breaking changes
-* Calling `Realm.close()` on a closed Realm will throw an exception.
-
-### Enhancements
-* None.
-
-### Fixed
-* None.
-
-### Compatibility
-* Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
-* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
-
-### Internal
-* Updated Realm Core from v6.0.0-alpha.23 to v6.0.0-alpha.27.
-* Updated Realm Sync from v4.7.1-core6.4 to v4.7.6-core6.0.
-* Updated Realm Object Store to b227d62fdf746793a73941d5e569426eee2dcd62.
-
-4.0.0-alpha.1 Release notes (2019-11-1)
-=============================================================
-NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might to be upgradeable.
-
-### Breaking changes
-* Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
-* `Realm.delete(Realm.Collection)` will conserve the order i.e., if a `Realm.Results` is `[1, 2, 3]` (pseudo-notation), `Realm.delete(2)` will produce `[1, 3]`.
-* It is only possible to compact a Realm when a single instance is open. Consider to use configuration parameter `shouldCompactOnLaunch` in the future.
-* Schemas are not cached but will be reread when opening a Realm. This has an impact of default values as they are not persisted in the Realm files.
-
-### Enhancements
-NOTE: The following methods have been removed in later versions.
-* Added `Realm.objectForObjectId()`. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))
-* Added `Realm.Object.objectId()` which returns a unique identifier for the object. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))
-
-### Fixed
-* None.
-
-### Compatibility
-* Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
-* File format: generates Realms with format v10 (reads and upgrades file format v5 and later).
-
-### Internal
-* Updated to Realm Core v6.0.0-alpha.23.
-* Updated to Realm Sync v4.7.1-core6.4.
-
 
 3.6.5 Release notes (2020-3-4)
 =============================================================
