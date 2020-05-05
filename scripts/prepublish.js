@@ -16,27 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+"use strict";
 
-const fs = require('fs');
-const path = require('path');
-const exec = require('child_process').execFileSync;
+const fs = require("fs");
+const path = require("path");
+const exec = require("child_process").execFileSync;
 
-const dependencies = ini(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
+const dependencies = ini(fs.readFileSync(path.resolve(__dirname, "../dependencies.list"), "utf8"));
 console.log(`Core version: ${dependencies.REALM_CORE_VERSION}`);
 console.log(`Sync version: ${dependencies.REALM_SYNC_VERSION}`);
 
-if ('REALM_BUILD_ANDROID' in process.env) {
-    const gradlew = process.platform === 'win32' ? 'gradlew.bat' : 'gradlew';
-    const androidPath = path.resolve(__dirname, '../react-native/android');
+// Android project will be built if REALM_BUILD_ANDROID is set or an NPM command is run with --realm:build-android
+if ("REALM_BUILD_ANDROID" in process.env || process.env.npm_package_config_build_android === "true") {
+    const gradlew = process.platform === "win32" ? "gradlew.bat" : "gradlew";
+    const androidPath = path.resolve(__dirname, "../react-native/android");
 
-    exec(`${androidPath}/${gradlew}`, ['publishAndroid'], { cwd: androidPath, stdio: 'inherit' });
+    exec(`${androidPath}/${gradlew}`, ["publishAndroid"], { cwd: androidPath, stdio: "inherit" });
 }
 
 function ini(string) {
     const result = Object.create(null);
     for (const line of string.split(/\r?\n/)) {
-        const parts = line.split('=');
+        const parts = line.split("=");
         result[parts[0]] = parts[1];
     }
 
