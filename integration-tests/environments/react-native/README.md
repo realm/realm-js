@@ -71,3 +71,7 @@ npm run update-tests
 ```
 
 Because of https://github.com/facebook/metro/issues/1 we need this extra repackaging step.
+
+## Post-install script and peer dependencies
+
+The `realm` and `realm-integration-tests` packages are listed `*` in `peerDependencies` in the `package.json` and the actual tests are run against an archived package of Realm JS, expected to be stored as `integrations-tests/realm.tgz`. This is installed with `--no-save` as well as `--build-from-source=realm --realm_enable_sync` (to prevent a pre-built binary from being downloaded) to avoid integrity checks failing when NPM compares the SHA of the archives with SHA in the package-lock.json.

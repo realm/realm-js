@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+"use strict";
+
 const { MochaRemoteClient } = require("mocha-remote-client");
 const { platform } = require("os");
 
@@ -23,7 +25,7 @@ module.exports = (serverURL, processType) => {
     return new MochaRemoteClient({
         id: processType,
         url: serverURL,
-        whenInstrumented: mocha => {
+        onInstrumented: mocha => {
             // Set the Realm global for the tests to use
             global.Realm = require("realm");
             global.fs = require("fs-extra");
@@ -35,6 +37,7 @@ module.exports = (serverURL, processType) => {
             };
             // Add the integration test suite
             const testIndexPath = require.resolve("realm-integration-tests");
+            console.log(`Adding test file: ${testIndexPath}`);
             mocha.addFile(testIndexPath);
         },
     });

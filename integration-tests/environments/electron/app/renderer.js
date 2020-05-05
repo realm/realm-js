@@ -1,5 +1,3 @@
-"use strict";
-
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2019 Realm Inc.
@@ -17,6 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+"use strict";
 
 // Disables security warnings which spams the console
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true;

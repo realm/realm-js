@@ -4,7 +4,8 @@
   "description": "Realm JS tests running in a Node.js environment",
   "private": true,
   "scripts": {
-    "preinstall": "npm install ../../realm-integration-tests.tgz ../../realm.tgz --no-save",
+    "postinstall": "npm install ../../realm-integration-tests.tgz ../../realm.tgz --no-save --build-from-source=realm --realm_enable_sync",
+    "update-tests": "npm run tests/pack --prefix ../.. && npm install ../../realm-integration-tests.tgz --no-save",
     "test": "mocha --exit index.js"
   },
   "dependencies": {
@@ -14,8 +15,10 @@
     "https-proxy-agent": "^2.2.3",
     "mocha": "^5.2.0",
     "mocha-cli": "^1.0.1",
-    "mocha-junit-reporter": "^1.18.0",
-    "realm": "file:../../realm.tgz",
-    "realm-integration-tests": "file:../../realm-integration-tests.tgz"
+    "mocha-junit-reporter": "^1.18.0"
+  },
+  "peerDependencies": {
+    "realm": "*",
+    "realm-integration-tests": "*"
   }
 }

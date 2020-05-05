@@ -21,6 +21,9 @@ const { timeout, TimeoutError } = require("promise-timeout");
 const Yargs = require("yargs");
 const path = require("path");
 
+// The peer deps are required as dependencies for Android to include RealmJS in the APK.
+require("../../peer-deps-as-deps");
+
 const rn = require("./react-native-cli");
 const android = require("./android-cli");
 const xcode = require("./xcode-cli");
@@ -69,7 +72,7 @@ function ensureSimulator(platform, deleteExisting = false) {
             "available",
         );
         const availableDevices = [].concat(
-            ...Object.keys(devicesByType).map(type => devicesByType[type]),
+            ...Object.keys(devicesByType).map((type) => devicesByType[type]),
         );
         // Filter devices, so we're only focussing on devices of the expected name
         const devices = availableDevices.filter(
@@ -88,7 +91,7 @@ function ensureSimulator(platform, deleteExisting = false) {
         }
 
         const { runtimes } = xcode.simctl.list("runtimes", "ios");
-        const [runtime] = runtimes.filter(r => r.isAvailable);
+        const [runtime] = runtimes.filter((r) => r.isAvailable);
         if (!runtime) {
             throw new Error("No available iOS runtimes");
         }
@@ -137,11 +140,11 @@ async function runApp(platform, junitFilePath, isWatching) {
     // Spawn a react-native metro server
     const metro = rn.async("start" /*"--verbose", "--reset-cache"*/);
     // Kill metro when the process is killed
-    process.on("exit", code => {
+    process.on("exit", (code) => {
         metro.kill("SIGHUP");
     });
     // Close the runner if metro closes unexpectedly
-    metro.on("close", code => {
+    metro.on("close", (code) => {
         console.error(`Metro server closed (code = ${code})`);
         if (code !== 0) {
             process.exit(code);
@@ -176,7 +179,7 @@ async function runApp(platform, junitFilePath, isWatching) {
     } else {
         // Run tests with a 5 minute timeout
         return timeout(
-            new Promise(resolve => {
+            new Promise((resolve) => {
                 console.log("Running tests 🏃‍");
                 server.run(resolve);
             }),
@@ -190,7 +193,7 @@ async function runApp(platform, junitFilePath, isWatching) {
 Yargs.command(
     "$0 <platform>",
     "Run the integration tests",
-    yargs => {
+    (yargs) => {
         return yargs
             .positional("platform", {
                 type: "string",
@@ -205,10 +208,10 @@ Yargs.command(
                 type: "boolean",
             });
     },
-    args => {
+    (args) => {
         const isWatching = args.watch;
         runApp(args.platform, args["junit-output-path"], isWatching).then(
-            failures => {
+            (failures) => {
                 if (isWatching) {
                     console.log("Waiting for mocha-remote-client to connect");
                 } else {
@@ -217,7 +220,7 @@ Yargs.command(
                     process.exit(failures > 0 ? 1 : 0);
                 }
             },
-            err => {
+            (err) => {
                 if (err instanceof TimeoutError) {
                     console.error("Timed out running tests");
                 } else {

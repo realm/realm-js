@@ -3,10 +3,8 @@
 To install this environment, simply run:
 
 ```bash
-npm install
+npm ci
 ```
-
-The `realm` and `realm-integration-tests` packages are listed as local archive `dependencies` in the `package.json` because `electron-builder` will only include packages listed in `dependencies` in the packaged `app.asar` file. To avoid integrity checks failing when NPM compares the SHA of the archives with SHA in the package-lock.json we `npm install` the archives on `preinstall`.
 
 Currently this directory consists of:
 - `runner.js` which start the Mocha remote server and the Electron app (using the distribution package when available).
@@ -33,3 +31,9 @@ To run tests in both processes in sequence:
 To package the test app for distribution:
 
     npm run package -- [{arguments for electron-builder}](https://www.electron.build/cli).
+
+## Post-install script and peer dependencies
+
+The `realm` and `realm-integration-tests` packages are listed `*` in `peerDependencies` in the `package.json` and to trick `electron-builder` into including them in the packages `app.asar` file, we modify the package.json and restore it again, [when building the package](./package-package-application.js).
+
+The actual tests are run against an archived package of Realm JS, expected to be stored as `integrations-tests/realm.tgz`. This is installed with `--no-save` as well as `--build-from-source=realm --realm_enable_sync` (to prevent a pre-built binary from being downloaded) to avoid integrity checks failing when NPM compares the SHA of the archives with SHA in the package-lock.json.

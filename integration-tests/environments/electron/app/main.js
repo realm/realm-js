@@ -1,5 +1,3 @@
-"use strict";
-
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2019 Realm Inc.
@@ -18,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+"use strict";
+
 // This file is pretty much a copy of https://github.com/electron/electron-quick-start/blob/master/main.js
 const electron = require("electron");
 const { app, BrowserWindow } = electron;
@@ -26,7 +26,7 @@ const { app, BrowserWindow } = electron;
 // app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096');
 
 const path = require("path");
-const url = require("url");
+const url = require("url"); 
 
 // Keep a global reference of the window object, if you don´t, the window will
 // be closed automatically when the JavaScript object is garbage collected.
