@@ -915,7 +915,6 @@ module.exports = {
             TestCase.assertDefined(error.config);
             TestCase.assertNotEqual(error.config.path, '');
             const path = realm.path;
-            realm.close();
             Realm.Sync.initiateClientReset(path);
         };
 
