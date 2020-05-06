@@ -119,8 +119,7 @@ let teens = realm.objects('Contact').filtered('SUBQUERY(friends, $friend, $frien
 ### Queries on lists of primitives
 
 The query syntax for a list of primitive values is mostly the same as querying a list of objects via links or lists.
-There are however, some small differences. To illustrate, let's construct a movie database, where each movie has an anyonomous star rating, and a list of string tags.
-Note that a normal list of objects should be used to model more complex relationships, such as if the start or tags should belong to a specific user.
+However, there are some small differences. To illustrate, let's construct a movie database, where each movie has an anonymous star rating and a list of string tags.
 
 ```JS
 const MovieSchema = {
@@ -147,7 +146,7 @@ realm.write(() => {
 ```
 
 Just like with lists of objects, we can use aggregates: `.@count`, `.@avg`, `.@min`, `.@max`, `.@sum`.
-Collection operators (`ANY`, `ALL`, `NONE`) are also available and if nothing is specified then `ANY` is implied.
+Collection operators (`ANY`, `ALL`, `NONE`) are also available. If nothing is specified, then `ANY` is implied.
 Let's look at some example queries from the movie database:
 
 ```JS
@@ -165,9 +164,9 @@ realm.objects('Movie').filtered('ALL ratings > 1')
 realm.objects('Movie').filtered('ANY tags = name')
 ```
 
-There is one unique operation on lists of primives which is `.length`. This operator will compare the length of
-each individual element of type string or binary. This is because the `.@size` operator is already used to specify
-the number of elements in the list.
+Compared to lists of objects, there is one unique operation on lists of primitves which is `.length`.
+This operator will compare the length of each individual element of type string or binary.
+This is because the `.@size` operator is already used to specify the number of elements in the list.
 
 ```JS
 // Find movies that have over 100 tags
