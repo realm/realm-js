@@ -1,19 +1,29 @@
-x.x.x Release notes (yyyy-MM-dd)
+x.x.x Release notes (YYYY-mm-dd)
 =============================================================
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
+
+### Breaking changes
+* Calling `Realm.close()` on a closed Realm will throw an exception.
+* Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
+* `Realm.delete(Realm.Collection)` will conserve the order i.e., if a `Realm.Results` is [1, 2, 3] (pseudo-notation), `Realm.delete(2)` will produce [1, 3].
+* It is only possible to compact a Realm when a single instance is open. Consider to use configuration parameter `shouldCompactOnLaunch` in the future.
+* Schemas are not cached but will be reread when opening a Realm. This has an impact on default values as they are not persisted in the Realm files.
+
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
-* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+* APIs are backwards compatible with all previous release of realm in the 6.x.y series.
+* File format: Generates Realms with format v10 (reads and upgrades previous formats).
 
 ### Internal
-* None.
+* Updated Realm Core from v5.23.8 to v6.0.4.
+* Updated Realm Sync from v4.9.5 to v5.0.3.
+* Updated Realm Object Store to commit dc03607585fd27cf5afa8060a2d17120e47b9b3e.
 
 5.0.4 Release notes (2020-4-29)
 =============================================================
@@ -35,6 +45,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added a platform independent way of printing to stdout on iOS & Node.js and the log on Android. ([#2789](https://github.com/realm/realm-js/pull/2789))
 * Added node 14 (ABI v83) to CI and as a prebuild target.
 * Added Electron 7.2.x as a prebuild target. Thanks to @rajivshah3. ([#2833](https://github.com/realm/realm-js/pull/2833))
+
 5.0.3 Release notes (2020-4-01)
 =============================================================
 ### Enhancements
