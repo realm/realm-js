@@ -100,6 +100,13 @@ declare namespace Realm {
      */
     type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
+
+    interface SyncConfiguration {
+        user: User;
+        partitionValue: string;
+        // FIXME: add the rest
+    }
+
     /**
      * realm configuration
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
@@ -114,7 +121,7 @@ declare namespace Realm {
         inMemory?: boolean;
         schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
-        sync?: Realm.Sync.SyncConfiguration;
+        sync?: SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
         disableFormatUpgrade?: boolean;
     }
@@ -301,13 +308,6 @@ declare namespace Realm {
     const Results: {
         readonly prototype: Results<any>;
     };
-}
-
-/**
- * Sync
- * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.html }
- */
-declare namespace Realm.Sync {
 
     interface UserInfo {
         id: string;
@@ -336,19 +336,12 @@ declare namespace Realm.Sync {
         identityProvider: "adminToken";
     }
     class Credentials {
-        static usernamePassword(username: string, password: string, createUser?: boolean): Credentials;
+        static emailPassword(email: string, password: string): Credentials;
         static facebook(token: string): Credentials;
-        static google(token: string): Credentials;
+        static apple(token: string): Credentials;
         static anonymous(): Credentials;
-        static nickname(value: string, isAdmin?: boolean): Credentials;
-        static azureAD(token: string): Credentials;
-        static jwt(token: string, providerName?: string): Credentials;
-        static custom(providerName: string, token: string, userInfo?: { [key: string]: any }): Credentials;
-        static adminToken(token: string): AdminCredentials;
-
-        readonly identityProvider: string;
-        readonly token: string;
-        readonly userInfo: { [key: string]: any };
+        static userAPIKey(key: string): Credentials;
+        static serverAPIKey(key: string): Credentials;
     }
 
     /**
@@ -356,27 +349,25 @@ declare namespace Realm.Sync {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.User.html }
      */
     class User {
-        static readonly all: { [identity: string]: User };
-        static readonly current: User | undefined;
         readonly identity: string;
-        readonly server: string;
         readonly token: string;
-        static login(server: string, credentials: Credentials): Promise<User>;
+        readonly isLoggedIn: boolean;
+        readonly state: string;
 
-        static requestPasswordReset(server: string, email: string): Promise<void>;
+        logOut(): void;
+        deleteUser(): Promise<void>;
+        linkCredentials(credentials: Credentials): Promise<void>;
+    }
 
-        static completePasswordReset(server: string, resetToken: string, newPassword: string): Promise<void>;
+    interface UserMap {
+        [identity: string]: User
+    }
+    class App {
 
-        static requestEmailConfirmation(server: string, email: string): Promise<void>;
-
-        static confirmEmail(server: string, confirmationToken: string): Promise<void>;
-
-        static deserialize(serialized: SerializedUser | SerializedTokenUser): Realm.Sync.User;
-
-        createConfiguration(config?: Realm.PartialConfiguration): Realm.Configuration
-        serialize(): SerializedUser | SerializedTokenUser;
-        logout(): Promise<void>;
-        retrieveAccount(provider: string, username: string): Promise<Account>;
+        logIn(credentials: Credentials): Promise<User>;
+        allUsers(): UserMap;
+        currentUser(): User;
+        switchUser(user: User): void;
     }
 
     interface SyncError {
@@ -529,7 +520,7 @@ declare namespace Realm.Sync {
 
 interface ProgressPromise extends Promise<Realm> {
     cancel(): void;
-    progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>;
+    progress(callback: Realm.ProgressNotificationCallback): Promise<Realm>;
 }
 
 declare class Realm {
@@ -543,7 +534,7 @@ declare class Realm {
     readonly isInTransaction: boolean;
     readonly isClosed: boolean;
 
-    readonly syncSession: Realm.Sync.Session | null;
+    readonly syncSession: Realm.Session | null;
 
     /**
      * Get the current schema version of the Realm at the given path.
@@ -572,7 +563,7 @@ declare class Realm {
      * Return a configuration for a default Realm.
      * @param {Realm.Sync.User} optional user.
      */
-    static automaticSyncConfiguration(user?: Realm.Sync.User): string;
+    static automaticSyncConfiguration(user?: Realm.User): string;
 
     /**
      * @param {Realm.ObjectSchema} object schema describing the object that should be created.

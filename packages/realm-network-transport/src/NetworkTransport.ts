@@ -1,3 +1,5 @@
+import { AbortController } from 'abort-controller';
+
 declare const process: any;
 declare const require: ((id: string) => any) | undefined;
 

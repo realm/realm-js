@@ -46,7 +46,7 @@ public:
     static void facebook(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void anonymous(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void apple(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void username_password(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void email_password(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void function(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void user_api_key(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void server_api_key(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -55,7 +55,7 @@ public:
         {"facebook",         wrap<facebook>},
         {"anonymous",        wrap<anonymous>},
         {"apple",            wrap<apple>},
-        {"usernamePassword", wrap<username_password>},
+        {"emailPassword",    wrap<email_password>},
         {"_function",        wrap<function>},
         {"userAPIKey",       wrap<user_api_key>},
         {"serverAPIKey",     wrap<server_api_key>},
@@ -99,13 +99,13 @@ void CredentialsClass<T>::apple(ContextType ctx, ObjectType this_object, Argumen
 }
 
 template<typename T>
-void CredentialsClass<T>::username_password(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
+void CredentialsClass<T>::email_password(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
     arguments.validate_maximum(2);
 
-    const std::string username = Value::validated_to_string(ctx, arguments[0], "username");
+    const std::string email = Value::validated_to_string(ctx, arguments[0], "email");
     const std::string password = Value::validated_to_string(ctx, arguments[1], "password");
 
-    auto credentials = realm::app::AppCredentials::username_password(username, password);
+    auto credentials = realm::app::AppCredentials::username_password(email, password);
     return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 

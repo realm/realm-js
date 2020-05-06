@@ -52,6 +52,41 @@ if (isNodeProcess) {
     path = node_require("path");
 }
 
+
+const appId = 'default-lnpak';
+const appUrl = 'http://localhost:9090';
+// const appId = "realm-demo-gqlrw";
+const appConfig = {
+    id: appId,
+    url: appUrl,
+    // url: 'realm-dev.mongodb.com',
+    timeout: 1000,
+    app: {
+        name: "default",
+        version: '0'
+    },
+};
+
+function getSyncConfiguration(user) {
+    const realmConfig = {
+        schema: [{
+            name: 'Dog',
+            primaryKey: '_id',
+            properties: {
+              _id: 'object id?',
+              breed: 'string?',
+              name: 'string',
+              realm_id: 'string?',
+            }
+          }],
+        sync: {
+            user: user,
+            partitionValue: '"LoLo"'
+        }
+    };
+    return realmConfig;
+}
+
 function copyFileToTempDir(filename) {
     let tmpDir = tmp.dirSync();
     let content = fs.readFileSync(filename);
@@ -134,37 +169,6 @@ module.exports = {
         // });
     },
 
-    testProperties() {
-        let app = new Realm.App(appConfig);
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-            let postTokenRefreshChecks;
-            const gotToken = new Promise((resolve, reject) => {
-                postTokenRefreshChecks = (sender) => {
-                    try {
-                        TestCase.assertEqual(sender.url, `realm://127.0.0.1:9080/${user.identity}/myrealm`);
-                        resolve();
-                    }
-                    catch (e) {
-                        reject(e)
-                    }
-                }
-            });
-
-            // Tell refreshAccessToken to call our error handler after successfully getting a token
-            postTokenRefreshChecks._notifyOnAccessTokenRefreshed = true;
-
-            const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm', error: postTokenRefreshChecks } });
-            const realm = new Realm(config);
-            const session = realm.syncSession;
-            TestCase.assertInstanceOf(session, Realm.Sync.Session);
-            TestCase.assertEqual(session.user.identity, user.identity);
-            TestCase.assertEqual(session.config.url, config.sync.url);
-            TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-            TestCase.assertUndefined(session.url);
-            TestCase.assertEqual(session.state, 'active');
-            return gotToken;
-        });
-    },
 
     testRealmOpen() {
         if (!isNodeProcess) {
@@ -177,17 +181,13 @@ module.exports = {
 
         let user, config;
 
+        let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appId, appUrl, realmName, REALM_MODULE_PATH)
+            .then(() => app.logIn(credentials))
             .then(u => {
                 user = u;
-
-                config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                };
-
+                config = getSyncConfiguration(u);
                 return Realm.open(config)
             }).then(realm => {
                 let actualObjectsCount = realm.objects('Dog').length;
@@ -207,21 +207,18 @@ module.exports = {
             return;
         }
 
-        const username = Utils.uuid();
         const realmName = Utils.uuid();
         const expectedObjectsCount = 3;
 
         let user, config;
+        let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appId, appUrl, realmName, REALM_MODULE_PATH)
+            .then(() => app.logIn(credentials))
             .then(u => {
                 user = u;
-                config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                    schemaVersion: 1,
-                };
+                config = getSyncConfiguration(user);
+                config.schemaVersion = 1;
 
                 // Open the Realm with a schema version of 1, then immediately close it.
                 // This verifies that Realm.open doesn't hit issues when the schema version
@@ -249,18 +246,15 @@ module.exports = {
             return;
         }
 
-        const username = Utils.uuid();
         const realmName = Utils.uuid();
         const expectedObjectsCount = 3;
 
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+        let app = new Realm.App(appConfig);
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appId, appUrl, REALM_MODULE_PATH)
+            .then(() => app.logIn(credentials))
             .then(user => {
-                let config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                };
+                let config = getSyncConfiguration(user);
                 return new Promise((resolve, reject) => {
                     Realm.openAsync(config, (error, realm) => {
                         try {
@@ -293,53 +287,6 @@ module.exports = {
             });
     },
 
-    testRealmOpenAsyncNoSchema() {
-        if (!isNodeProcess) {
-            return;
-        }
-
-        const username = Utils.uuid();
-        const realmName = Utils.uuid();
-        const expectedObjectsCount = 3;
-
-        const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
-            .then(user => {
-                let config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` }
-                };
-                return new Promise((resolve, reject) => {
-                    Realm.openAsync(config, (error, realm) => {
-                        if (error) {
-                            reject(error);
-                            return;
-                        }
-                        try {
-                            let actualObjectsCount = realm.objects('Dog').length;
-                            TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
-
-                            let firstDog = realm.objects('Dog')[0];
-                            TestCase.assertTrue(({}).hasOwnProperty.call(firstDog, 'name'), "Synced realm does not have an inffered schema");
-                            TestCase.assertTrue(firstDog.name, "Synced realm object's property should have a value");
-                            TestCase.assertTrue(firstDog.name.indexOf('Lassy') !== -1, "Synced realm object's property should contain the actual written value");
-
-                            const session = realm.syncSession;
-                            TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                            TestCase.assertEqual(session.user.identity, user.identity);
-                            TestCase.assertEqual(session.config.url, config.sync.url);
-                            TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-                            TestCase.assertEqual(session.state, 'active');
-                            resolve();
-                        }
-                        catch (e) {
-                            reject(e);
-                        }
-                    });
-                });
-            });
-    },
-
     testRealmOpenLocalRealm() {
         const expectedObjectsCount = 3;
 
@@ -360,9 +307,10 @@ module.exports = {
     },
 
     testErrorHandling() {
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        let app = new Realm.App(appConfig);
+        return app.logIn(Realm.Credentials.anonymous()).then(user => {
             return new Promise((resolve, _reject) => {
-                const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
+                const config = getSyncConfiguration(user);
                 config.sync.error = (_, error) => {
                     try {
                         TestCase.assertEqual(error.message, 'simulated error');
@@ -387,14 +335,15 @@ module.exports = {
             return;
         }
 
-        const username = Utils.uuid();
         const realmName = Utils.uuid();
 
+        let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/nested-list-helper.js', __dirname + '/schemas.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+            .then(() => app.logIn(credentials))
             .then(user => {
                 let config = {
+                    // FIXME: schema not working yet
                     schema: [schemas.ParentObject, schemas.NameObject],
                     sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` }
                 };
@@ -427,20 +376,14 @@ module.exports = {
             return;
         }
 
-        const username = Utils.uuid();
         const realmName = Utils.uuid();
 
+        let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appId, appUrl, realmName, REALM_MODULE_PATH)
+            .then(() => app.logIn(credentials))
             .then(user => {
-                let config = {
-                    sync: {
-                        user,
-                        url: `realm://127.0.0.1:9080/~/${realmName}`
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                };
+                let config = getSyncConfiguration(user);
 
                 let realm = new Realm(config);
                 let unregisterFunc;

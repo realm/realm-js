@@ -33,7 +33,6 @@
   "devDependencies": {
     "@types/chai": "^4.2.10",
     "@types/mocha": "^5",
-    "abort-controller": "^3.0.0",
     "chai": "^4.2.0",
     "eslint": "file:../../node_modules/eslint",
     "mocha": "^5.2.0",
