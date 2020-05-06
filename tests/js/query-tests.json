@@ -409,5 +409,32 @@
         ["ObjectSet", [2, 0, 3, 1], "Person", "age > 20 SORT(age ASC, name DESC) DISTINCT(name, age)"],
         ["ObjectSet", [0, 2],       "Person", "age > 20 SORT(age ASC) DISTINCT(age) SORT(name DESC) DISTINCT(name)"]
     ]
+},
+
+"primitiveListTests" : {
+    "schema" : [
+        { "name": "Movie",
+          "properties": [
+              { "name": "name", "type": "string"},
+              { "name": "tags",  "type": "string[]" },
+              { "name": "ratings", "type": "int[]"}
+          ]
+        }
+    ],
+    "objects": [
+        { "type": "Movie", "value": ["Matrix", ["science fiction", "artificial reality"],   [5, 5, 3, 4, 5, 1, 5]]},
+        { "type": "Movie", "value": ["Inception", ["dream", "science fiction", "thriller"], [3, 5, 3, 4, 5, 5]]},
+        { "type": "Movie", "value": ["I, Robot", ["science fiction", "dystopia", "robot"],  [2, 4, 3, 3, 4, 5, 1]]}
+    ],
+    "tests": [
+        ["ObjectSet", [0, 1, 2], "Movie", "tags =[c] 'science fiction'"],
+        ["ObjectSet", [0, 1, 2], "Movie", "tags BEGINSWITH[c] 'science'"],
+        ["ObjectSet", [],        "Movie", "NONE tags CONTAINS ' '"],
+        ["ObjectSet", [0, 1],    "Movie", "ratings.@avg >= 4"],
+        ["ObjectSet", [1],       "Movie", "ALL ratings > 1"],
+        ["ObjectSet", [2],       "Movie", "ANY tags CONTAINS[c] name"],
+        ["ObjectSet", [0, 2],    "Movie", "tags.@size > 6"],
+        ["ObjectSet", [0],       "Movie", "tags.length > 16"]
+    ]
 }
 }
