@@ -91,13 +91,13 @@ public:
     static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void session_for_on_disk_path(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void delete_user(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void link_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void link_credentials(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"logOut", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
         {"_deleteUser", wrap<delete_user>},
-        {"_linkUser", wrap<link_user>}
+        {"_linkCredentials", wrap<link_credentials>}
     };
 };
 
@@ -216,7 +216,7 @@ void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Argument
 }
 
 template<typename T>
-void UserClass<T>::link_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
+void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
     args.validate_count(2);
     auto user = get_internal<T, UserClass<T>>(this_object);
 
