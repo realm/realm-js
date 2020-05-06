@@ -162,6 +162,7 @@ def nodeIntegrationTests(nodeVersion, platform) {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
     // Package up the integration tests
+    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/install"
     sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
   }
 
@@ -188,6 +189,7 @@ def electronIntegrationTests(electronVersion, platform) {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
     // Package up the integration tests
+    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/install"
     sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
   }
 
@@ -229,6 +231,7 @@ def reactNativeIntegrationTests(targetPlatform) {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
     // Package up the integration tests
+    sh "${nvm} npm run tests/install"
     sh "${nvm} npm run tests/pack"
   }
 
