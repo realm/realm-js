@@ -166,7 +166,7 @@ def nodeIntegrationTests(nodeVersion, platform) {
   }
 
   dir('integration-tests/environments/node') {
-    sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
+    sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
     try {
       sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm test -- --reporter mocha-junit-reporter"
     } finally {
@@ -195,7 +195,7 @@ def electronIntegrationTests(electronVersion, platform) {
   def commandPrefix = platform == 'linux' ? 'xvfb-run ' : ''
 
   dir('integration-tests/environments/electron') {
-    sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
+    sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
     try {
       sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} ${commandPrefix} npm run test/main -- main-test-results.xml"
       sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} ${commandPrefix} npm run test/renderer -- renderer-test-results.xml"
@@ -233,7 +233,7 @@ def reactNativeIntegrationTests(targetPlatform) {
   }
 
   dir('integration-tests/environments/react-native') {
-    sh "${nvm} npm install"
+    sh "${nvm} npm ci"
 
     if (targetPlatform == "android") {
       // In case the tests fail, it's nice to have an idea on the devices attached to the machine
@@ -242,9 +242,7 @@ def reactNativeIntegrationTests(targetPlatform) {
       // Uninstall any other installations of this package before trying to install it again
       sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
     } else if (targetPlatform == "ios") {
-      dir('ios') {
-        sh 'pod install --verbose'
-      }
+      sh "${nvm} npm run pod-install"
     }
 
     timeout(30) { // minutes
