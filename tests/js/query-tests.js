@@ -161,6 +161,9 @@ module.exports = {
     testOrderingQueries: function() {
         runQuerySuite(testCases.orderingTests);
     },
+    testListOfPrimitiveQueries: function() {
+        runQuerySuite(testCases.primitiveListTests);
+    },
     testMalformedQueries: function() {
         var realm = new Realm({ schema: [schemas.StringOnly] });
         TestCase.assertThrowsContaining(function() {
