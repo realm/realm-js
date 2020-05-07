@@ -121,19 +121,30 @@ inline JSObjectRef jsc::Object::create_instance(JSContextRef ctx, typename Class
 
 template<>
 template<typename ClassType>
+inline JSObjectRef jsc::Object::create_instance_by_schema(JSContextRef ctx, JSObjectRef& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
+	return jsc::ObjectWrap<ClassType>::create_instance_by_schema(ctx, constructor, schema, internal);
+}
+
+template<typename ClassType>
+inline void on_context_destroy(JSContextRef ctx, std::string realmPath) {
+    jsc::ObjectWrap<ClassType>::on_context_destroy(ctx, realmPath);
+}
+
+template<>
+template<typename ClassType>
 inline bool jsc::Object::is_instance(JSContextRef ctx, const JSObjectRef &object) {
     return jsc::ObjectWrap<ClassType>::has_instance(ctx, object);
 }
 
 template<>
 template<typename ClassType>
-inline typename ClassType::Internal* jsc::Object::get_internal(const JSObjectRef &object) {
-    return *static_cast<jsc::ObjectWrap<ClassType> *>(JSObjectGetPrivate(object));
+inline typename ClassType::Internal* jsc::Object::get_internal(JSContextRef ctx, const JSObjectRef &object) {
+    return jsc::ObjectWrap<ClassType>::get_internal(ctx, object);
 }
 
 template<>
 template<typename ClassType>
-inline void jsc::Object::set_internal(const JSObjectRef &object, typename ClassType::Internal* ptr) {
+inline void jsc::Object::set_internal(JSContextRef ctx, const JSObjectRef &object, typename ClassType::Internal* ptr) {
     auto wrap = static_cast<jsc::ObjectWrap<ClassType> *>(JSObjectGetPrivate(object));
     *wrap = ptr;
 }

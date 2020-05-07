@@ -20,10 +20,27 @@
 /* eslint-disable no-console */
 
 'use strict';
-const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
+const isNodeProcess = (typeof process === 'object' && process + '' === '[object process]');
 
 const fs = require('fs');
 const path = require('path');
+
+const mockery = require('mockery');
+
+function mockRealm(realmModulePath) {
+   if (typeof REALM_MODULE_PATH !== 'undefined')
+       return;
+
+   global.REALM_MODULE_PATH = realmModulePath;
+
+   mockery.enable({
+       warnOnReplace: false,
+       warnOnUnregistered: false
+   });
+   mockery.registerSubstitute('realm', REALM_MODULE_PATH); // eslint-disable-line no-undef
+}   
+
+mockRealm(path.resolve(__dirname, '../..'));
 
 const Realm = require('realm');
 
@@ -35,7 +52,7 @@ const RealmTests = require('../js');
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
 let isDebuggerAttached = typeof v8debug === 'object';
-if (!isDebuggerAttached && isNodeProccess) {
+if (!isDebuggerAttached && isNodeProcess) {
     isDebuggerAttached = /--debug|--inspect/.test(process.execArgv.join(' '));
 }
 

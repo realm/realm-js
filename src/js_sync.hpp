@@ -135,7 +135,7 @@ public:
     typename T::Function func() const { return m_func; }
 
     void operator()(std::shared_ptr<SyncSession> session, SyncError error) {
-        HANDLESCOPE
+        HANDLESCOPE(m_ctx)
 
         std::string name = "Error";
         auto error_object = Object<T>::create_empty(m_ctx);
@@ -221,9 +221,9 @@ public:
                                   int preverify_ok,
                                   int depth)
     {
-        HANDLESCOPE
-
         const Protected<typename T::GlobalContext>& ctx = this_object->m_ctx;
+		HANDLESCOPE(ctx)
+
 
         typename T::Object ssl_certificate_object = Object<T>::create_empty(ctx);
         Object<T>::set_property(ctx, ssl_certificate_object, "serverAddress", Value<T>::from_string(ctx, server_address));
@@ -266,8 +266,8 @@ private:
 template<typename T>
 void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
-    auto user = get_internal<T, UserClass<T>>(this_object);
-    if (auto session = (*user)->session_for_on_disk_path(Value::validated_to_string(ctx, args[0]))) {
+    auto user = *get_internal<T, UserClass<T>>(ctx, this_object);
+    if (auto session = user->session_for_on_disk_path(Value::validated_to_string(ctx, args[0]))) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
     } else {
         return_value.set_undefined();
@@ -276,7 +276,7 @@ void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_obj
 
 template<typename T>
 void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
         // TODO: add app id
@@ -300,8 +300,8 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
 
 template<typename T>
 void SessionClass<T>::get_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
-        return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
+        return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
     } else {
         return_value.set_undefined();
     }
@@ -315,7 +315,7 @@ void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue 
 
     return_value.set(invalid);
 
-    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
         if (session->state() == SyncSession::PublicState::Inactive) {
             return_value.set(inactive);
         } else {
@@ -330,13 +330,15 @@ std::string SessionClass<T>::get_connection_state_value(SyncSession::ConnectionS
         case SyncSession::ConnectionState::Disconnected: return "disconnected";
         case SyncSession::ConnectionState::Connecting: return "connecting";
         case SyncSession::ConnectionState::Connected: return "connected";
+		default:
+			REALM_UNREACHABLE();
     }
 }
 
 template<typename T>
 void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     return_value.set(get_connection_state_value(SyncSession::ConnectionState::Disconnected));
-    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
         return_value.set(get_connection_state_value(session->connection_state()));
     }
 }
@@ -345,7 +347,7 @@ template<typename T>
 void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &) {
     args.validate_count(2);
 
-    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         std::error_code error_code(Value::validated_to_number(ctx, args[0]), realm::sync::protocol_error_category());
         std::string message = Value::validated_to_string(ctx, args[1]);
         SyncSession::OnlyForTesting::handle_error(*session, SyncError(error_code, message, false));
@@ -356,7 +358,7 @@ template<typename T>
 void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(3);
 
-    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
 
         std::string direction = Value::validated_to_string(ctx, args[0], "direction");
         std::string mode = Value::validated_to_string(ctx, args[1], "mode");
@@ -390,7 +392,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
         std::function<ProgressHandler> progressFunc;
 
         util::EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
-            HANDLESCOPE
+            HANDLESCOPE(protected_ctx)
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
             callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
@@ -420,7 +422,7 @@ void SessionClass<T>::remove_progress_notification(ContextType ctx, ObjectType t
     auto syncSession = Value::validated_to_object(ctx, syncSessionProp);
     auto registrationToken = Object::get_property(ctx, callback_function, "_registrationToken");
 
-    if (auto session = get_internal<T, SessionClass<T>>(syncSession)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, syncSession)->lock()) {
         auto reg = Value::validated_to_number(ctx, registrationToken);
         session->unregister_progress_notifier(reg);
     }
@@ -429,7 +431,7 @@ void SessionClass<T>::remove_progress_notification(ContextType ctx, ObjectType t
 template<typename T>
 void SessionClass<T>::add_connection_notification(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
     args.validate_count(1);
-    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         auto callback_function = Value::validated_to_function(ctx, args[0], "callback");
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
@@ -438,7 +440,7 @@ void SessionClass<T>::add_connection_notification(ContextType ctx, ObjectType th
         std::function<ConnectionHandler> connectionFunc;
 
         util::EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
-            HANDLESCOPE
+            HANDLESCOPE(protected_ctx)
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_string(protected_ctx, get_connection_state_value(new_state));
             callback_arguments[1] = Value::from_string(protected_ctx, get_connection_state_value(old_state));
@@ -466,7 +468,7 @@ void SessionClass<T>::remove_connection_notification(ContextType ctx, ObjectType
     auto syncSession = Value::validated_to_object(ctx, syncSessionProp);
     auto registrationToken = Object::get_property(ctx, callback_function, "_connectionNotificationToken");
 
-    if (auto session = get_internal<T, SessionClass<T>>(syncSession)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, syncSession)->lock()) {
         auto reg = Value::validated_to_number(ctx, registrationToken);
         session->unregister_connection_change_callback(reg);
     }
@@ -476,7 +478,7 @@ template<typename T>
 void SessionClass<T>::is_connected(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
     args.validate_count(0);
     return_value.set(false);
-    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         auto state = session->state();
         auto connection_state = session->connection_state();
         if (connection_state == SyncSession::ConnectionState::Connected
@@ -490,7 +492,7 @@ template<typename T>
 void SessionClass<T>::resume(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
     args.validate_count(0);
     return_value.set(false);
-    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         session->revive_if_needed();
     }
 }
@@ -499,7 +501,7 @@ template<typename T>
 void SessionClass<T>::pause(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
     args.validate_count(0);
     return_value.set(false);
-    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         session->log_out();
     }
 }
@@ -516,7 +518,7 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
         throw std::invalid_argument(message.str());
     }
 
-    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         session->override_server(std::move(address), uint16_t(port));
     }
 }
@@ -524,14 +526,14 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
 template<typename T>
 void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments &args) {
     args.validate_count(1);
-    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         auto callback_function = Value::validated_to_function(ctx, args[0]);
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
         util::EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler([=](std::error_code error) {
-            HANDLESCOPE
+            HANDLESCOPE(protected_ctx)
             ValueType callback_arguments[1];
             if (error) {
                 ObjectType error_object = Object::create_empty(protected_ctx);
@@ -595,6 +597,7 @@ public:
     static void reconnect(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void has_existing_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void enable_multiplexing(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void deserialize_change_set(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
@@ -621,6 +624,7 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     FunctionType sync_constructor = ObjectWrap<T, SyncClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
+    Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 
     return sync_constructor;
@@ -672,6 +676,7 @@ template<typename T>
 void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
     auto callback_fn = Value::validated_to_function(ctx, args[0], "logger_callback");
+
     syncManagerShared<T>(ctx).set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
 }
 #endif
@@ -714,7 +719,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         ObjectType user_object = Object::validated_get_object(ctx, sync_config_object, "user");
-        SharedUser user = *get_internal<T, UserClass<T>>(user_object);
+        SharedUser user = *get_internal<T, UserClass<T>>(ctx, user_object);
         if (user->state() != SyncUser::State::LoggedIn) {
             throw std::runtime_error("User is no longer valid.");
         }

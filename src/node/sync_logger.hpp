@@ -23,6 +23,8 @@
 #include <node.h>
 #pragma GCC diagnostic pop
 
+#include "napi.h"
+
 #include "sync/sync_manager.hpp"
 
 namespace realm {
@@ -30,17 +32,17 @@ namespace node {
 
 class SyncLoggerFactory : public realm::SyncLoggerFactory {
 public:
-    SyncLoggerFactory(v8::Isolate* v8_isolate, v8::Local<v8::Function> callback)
-        : m_v8_isolate(v8_isolate)
-        , m_callback(v8_isolate, callback)
-    {
-    }
+	SyncLoggerFactory(Napi::Env env, Napi::Function callback)
+		: m_env(env),
+		  m_callback(Napi::Persistent(callback))
+	{
+	}
 
     std::unique_ptr<util::Logger> make_logger(util::Logger::Level level) override final;
 
 private:
-    v8::Isolate* m_v8_isolate;
-    v8::Persistent<v8::Function> m_callback;
+    Napi::Env m_env;
+    Napi::FunctionReference m_callback;
 };
 
 } // namespace node

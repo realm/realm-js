@@ -50,8 +50,8 @@
         "src/object-store/src/impl/results_notifier.cpp",
         "src/object-store/src/impl/transact_log_handler.cpp",
         "src/object-store/src/impl/weak_realm_notifier.cpp",
+        "src/object-store/src/util/scheduler.cpp",
         "src/object-store/src/util/uuid.cpp",
-
         "src/object-store/external/json/json.hpp",
         "src/object-store/src/audit.hpp",
         "src/object-store/src/binding_callback_thread_observer.hpp",
@@ -77,7 +77,6 @@
         "src/object-store/src/impl/notification_wrapper.hpp",
         "src/object-store/src/impl/object_accessor_impl.hpp",
         "src/object-store/src/impl/object_notifier.hpp",
-        "src/object-store/src/impl/primitive_list_notifier.hpp",
         "src/object-store/src/impl/realm_coordinator.hpp",
         "src/object-store/src/impl/results_notifier.hpp",
         "src/object-store/src/impl/transact_log_handler.hpp",
@@ -106,13 +105,13 @@
         "src/object-store/src/util/aligned_union.hpp",
         "src/object-store/src/util/atomic_shared_ptr.hpp",
         "src/object-store/src/util/event_loop_dispatcher.hpp",
-        "src/object-store/src/util/event_loop_signal.hpp",
+        "src/object-store/src/util/scheduler.hpp",
         "src/object-store/src/util/tagged_bool.hpp",
         "src/object-store/src/util/uuid.hpp",
-        "src/object-store/src/util/android/event_loop_signal.hpp",
-        "src/object-store/src/util/apple/event_loop_signal.hpp",
-        "src/object-store/src/util/generic/event_loop_signal.hpp",
-        "src/object-store/src/util/uv/event_loop_signal.hpp",
+        "src/object-store/src/util/android/scheduler.hpp",
+        "src/object-store/src/util/apple/scheduler.hpp",
+        "src/object-store/src/util/generic/scheduler.hpp",
+        "src/object-store/src/util/uv/scheduler.hpp",
       ],
       "conditions": [
         ["OS=='win'", {
@@ -228,6 +227,9 @@
     {
       "target_name": "OpenSSL",
       "type": "none",
+      "variables": {
+        "vendor_dir": "<(realm_js_dir)/vendor/realm-<(OS)-<(target_arch)<(debug_library_suffix)"
+      },
       "link_settings": {
         "conditions": [
           ["OS=='win'", {
@@ -240,8 +242,8 @@
             ]
           }],
           ["OS=='linux'", {
-            "libraries": [ "-l:libssl.a", "-l:libcrypto.a" ],
-            "library_dirs": [ "/usr/lib", "/usr/lib64" ],
+            "libraries": [ "<(vendor_dir)/openssl/lib/libssl.a", "<(vendor_dir)/openssl/lib/libcrypto.a" ],
+            "library_dirs": [ "<(vendor_dir)/openssl/lib" ],
           }]
         ]
       }

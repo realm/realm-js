@@ -31,19 +31,25 @@ const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
 
-const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
+
+const platformSupported = isNodeProcess && !isElectronProcess;
 
 const require_method = require;
 function node_require(module) {
     return require_method(module);
 }
 
+let fetch;
+if (isNodeProcess) {
+    fetch = node_require('node-fetch');
+}
+
 let tmp;
 let fs;
 let execFile;
 let path;
-
 if (isNodeProcess) {
     tmp = node_require('tmp');
     fs = node_require('fs');
@@ -203,7 +209,7 @@ module.exports = {
     },
 
     testRealmOpenWithExistingLocalRealm() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -242,7 +248,7 @@ module.exports = {
     },
 
     testRealmOpenAsync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -331,7 +337,7 @@ module.exports = {
     },
 
     testListNestedSync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -372,7 +378,7 @@ module.exports = {
     },
 
     testProgressNotificationsUnregisterForRealmConstructor() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -433,7 +439,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpen() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -461,7 +467,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpenAsync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -510,7 +516,7 @@ module.exports = {
 
     testClientReset() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -551,7 +557,7 @@ module.exports = {
 
     testClientResyncIncorrectMode() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -573,7 +579,7 @@ module.exports = {
 
     async testClientResyncDiscard() {
         // FIXME: try to enable for React Native
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
         const fetch = require('node-fetch');
@@ -595,7 +601,6 @@ module.exports = {
         realm1.close();
 
         // delete Realm on server
-        var URL = node_require('url').URL;
         let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
         let url = new URL(`/realms/files/${encodedPath}`, user.server);
         let options = {
@@ -667,7 +672,7 @@ module.exports = {
     },
 
     testConnectionState() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -824,7 +829,7 @@ module.exports = {
     },
 
     testDownloadAllServerChangesTimeout() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -844,6 +849,7 @@ module.exports = {
                     schema: [schema],
                     sync: {
                         url: REALM_URL,
+                        fullSynchronization: true
                     }
                 });
                 realm = new Realm(admin1Config);
@@ -855,7 +861,7 @@ module.exports = {
     },
 
     testUploadAllLocalChangesTimeout() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 
@@ -983,7 +989,7 @@ module.exports = {
     },
 
     testDeleteModelThrowsWhenSync() {
-        if (!isNodeProcess) {
+        if (!platformSupported) {
             return;
         }
 

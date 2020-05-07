@@ -175,7 +175,7 @@ public:
     bool is_same_list(realm::List const& list, ValueType const& value) const noexcept {
         auto object = Value::validated_to_object(m_ctx, value);
         if (js::Object<JSEngine>::template is_instance<ListClass<JSEngine>>(m_ctx, object)) {
-            return list == *get_internal<JSEngine, ListClass<JSEngine>>(object);
+            return list == *get_internal<JSEngine, ListClass<JSEngine>>(m_ctx, object);
         }
         return false;
     }
@@ -359,7 +359,7 @@ struct Unbox<JSEngine, Obj> {
 
         auto object = Value::validated_to_object(ctx->m_ctx, value);
         if (js::Object<JSEngine>::template is_instance<RealmObjectClass<JSEngine>>(ctx->m_ctx, object)) {
-            auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(object);
+            auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(ctx->m_ctx, object);
             if (realm_object->realm() == ctx->m_realm) {
                 return realm_object->obj();
             }
@@ -425,7 +425,10 @@ void NativeAccessor<T>::print(std::string& str, ValueType const& value) {
     else if (Value::is_object(m_ctx, value)) {
         auto object = Value::to_object(m_ctx, value);
         if (Object::template is_instance<RealmObjectClass<T>>(m_ctx, object)) {
-            auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(m_ctx, object);
+            if (!realm_object) {
+                throw std::runtime_error("Invalid argument 'value'.");
+            }
             auto& object_schema = realm_object->get_object_schema();
             str += object_schema.name;
             str += "{";

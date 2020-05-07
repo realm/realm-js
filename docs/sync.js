@@ -160,6 +160,16 @@ class Sync {
     static setLogLevel(level) { }
 
     /**
+     * Enable multiplexing multiple sync sessions over a single connection. 
+     * When having a lot of synchronized realms open the system might run out of file 
+     * descriptors because of all the open sockets to the server. Session multiplexing 
+     * is designed to alleviate that, but it might not work with a server configured with 
+     * fail-over. Only use if you're seeing errors about reaching the file descriptor limit
+     * and you know you are using many sync sessions.
+     */
+    static enableSessionMultiplexing() { }
+
+    /**
      * A callback passed to `Realm.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
      * @callback Realm.Sync~logCallback
      * @param {number} level The level of the log entry between 0 and 8 inclusively.

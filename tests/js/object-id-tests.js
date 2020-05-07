@@ -23,7 +23,7 @@
 const Realm = require('realm');
 const TestCase = require('./asserts');
 
-const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
+const isNodeProcess = (typeof process === 'object' && process + '' === '[object process]');
 
 module.exports = {
     testSynced: function() {

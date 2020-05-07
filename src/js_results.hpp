@@ -218,25 +218,25 @@ ResultsClass<T>::get_keypaths(ContextType ctx, Arguments &args) {
 
 template<typename T>
 void ResultsClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto results = get_internal<T, ResultsClass<T>>(object);
+    auto results = get_internal<T, ResultsClass<T>>(ctx, object);
     return_value.set((uint32_t)results->size());
 }
 
 template<typename T>
-void ResultsClass<T>::get_type(ContextType, ObjectType object, ReturnValue &return_value) {
-    auto results = get_internal<T, ResultsClass<T>>(object);
+void ResultsClass<T>::get_type(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto results = get_internal<T, ResultsClass<T>>(ctx, object);
     return_value.set(string_for_property_type(results->get_type() & ~realm::PropertyType::Flags));
 }
 
 template<typename T>
-void ResultsClass<T>::get_optional(ContextType, ObjectType object, ReturnValue &return_value) {
-    auto results = get_internal<T, ResultsClass<T>>(object);
+void ResultsClass<T>::get_optional(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto results = get_internal<T, ResultsClass<T>>(ctx, object);
     return_value.set(is_nullable(results->get_type()));
 }
 
 template<typename T>
 void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
-    auto results = get_internal<T, ResultsClass<T>>(object);
+    auto results = get_internal<T, ResultsClass<T>>(ctx, object);
     NativeAccessor<T> accessor(ctx, *results);
     return_value.set(results->get(accessor, index));
 }
@@ -244,7 +244,7 @@ void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t ind
 template<typename T>
 void ResultsClass<T>::description(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
     auto query = results->get_query();
     auto descriptor = results->get_descriptor_ordering();
     std::string serialized_query = query.get_description() + " " + descriptor.get_description(query.get_table());
@@ -254,25 +254,25 @@ void ResultsClass<T>::description(ContextType ctx, ObjectType this_object, Argum
 template<typename T>
 void ResultsClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
     return_value.set(ResultsClass<T>::create_instance(ctx, results->snapshot()));
 }
 
 template<typename T>
 void ResultsClass<T>::filtered(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
     return_value.set(create_filtered(ctx, *results, args));
 }
 
 template<typename T>
 void ResultsClass<T>::sorted(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
     return_value.set(ResultsClass<T>::create_instance(ctx, results->sort(ResultsClass<T>::get_keypaths(ctx, args))));
 }
 
 template<typename T>
 void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
+    return_value.set(get_internal<T, ResultsClass<T>>(ctx, this_object)->is_valid());
 }
 
 template<typename T>
@@ -309,7 +309,7 @@ void ResultsClass<T>::update(ContextType ctx, ObjectType this_object, Arguments 
     args.validate_maximum(2);
 
     std::string property = Value::validated_to_string(ctx, args[0], "property");
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
 
     auto schema = results->get_object_schema();
     if (!schema.property_for_name(StringData(property))) {
@@ -334,7 +334,7 @@ template<typename T>
 void ResultsClass<T>::index_of(ContextType ctx, ObjectType this_object,
                                Arguments &args, ReturnValue &return_value) {
     auto fn = [&](auto&& row) {
-        auto results = get_internal<T, ResultsClass<T>>(this_object);
+        auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
         NativeAccessor<T> accessor(ctx, *results);
         return results->index_of(accessor, row);
     };
@@ -352,7 +352,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     auto token = collection.add_notification_callback([=](CollectionChangeSet const& change_set, std::exception_ptr exception) {
-            HANDLESCOPE
+            HANDLESCOPE(protected_ctx)
             ValueType arguments[] {
                 static_cast<ObjectType>(protected_this),
                 CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)
@@ -364,7 +364,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
 
 template<typename T>
 void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
     add_listener(ctx, *results, this_object, args);
 }
 
@@ -385,7 +385,7 @@ void ResultsClass<T>::remove_listener(ContextType ctx, U& collection, ObjectType
 
 template<typename T>
 void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
     remove_listener(ctx, *results, this_object, args);
 }
 
@@ -393,7 +393,7 @@ template<typename T>
 void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
     results->m_notification_tokens.clear();
 }
 
