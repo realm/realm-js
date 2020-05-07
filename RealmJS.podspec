@@ -66,7 +66,7 @@ Pod::Spec.new do |s|
                                'CC' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang.sh',
                                'CXX' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang++.sh',
                                # Setting up clang
-                               'CLANG_CXX_LANGUAGE_STANDARD' => 'c++14',
+                               'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
                                'CLANG_CXX_LIBRARY' => 'libc++',
                                # Disabling warnings that object store, core and sync has a lot of
                                'CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF' => 'NO',
