@@ -198,6 +198,15 @@
 		42BD57BE24640AE5008679D5 /* remote_mongo_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = remote_mongo_client.hpp; path = src/sync/remote_mongo_client.hpp; sourceTree = "<group>"; };
 		42BD57BF24640AE5008679D5 /* auth_request_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = auth_request_client.hpp; path = src/sync/auth_request_client.hpp; sourceTree = "<group>"; };
 		42BD57C024640AE5008679D5 /* generic_network_transport.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = generic_network_transport.cpp; path = src/sync/generic_network_transport.cpp; sourceTree = "<group>"; };
+		42D9B5EC246511F200AB3349 /* indexed_map.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = indexed_map.hpp; sourceTree = "<group>"; };
+		42D9B5ED246511F200AB3349 /* max_key.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = max_key.hpp; sourceTree = "<group>"; };
+		42D9B5EE246511F200AB3349 /* min_key.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = min_key.hpp; sourceTree = "<group>"; };
+		42D9B5EF246511F300AB3349 /* regular_expression.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = regular_expression.cpp; sourceTree = "<group>"; };
+		42D9B5F0246511F300AB3349 /* regular_expression.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = regular_expression.hpp; sourceTree = "<group>"; };
+		42D9B5F1246511F300AB3349 /* bson.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bson.cpp; sourceTree = "<group>"; };
+		42D9B5F2246511F300AB3349 /* datetime.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = datetime.hpp; sourceTree = "<group>"; };
+		42D9B5F3246511F300AB3349 /* datetime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = datetime.cpp; sourceTree = "<group>"; };
+		42D9B5F4246511F300AB3349 /* bson.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = bson.hpp; sourceTree = "<group>"; };
 		4BA4035F23C6664700DE6856 /* object_changeset.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object_changeset.cpp; path = "object-store/src/object_changeset.cpp"; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
@@ -318,6 +327,7 @@
 		02022A6B1DA47EC8000F0C4F /* util */ = {
 			isa = PBXGroup;
 			children = (
+				42D9B5EB246511D300AB3349 /* bson */,
 				02022A6C1DA47EC8000F0C4F /* android */,
 				02022A6E1DA47EC8000F0C4F /* apple */,
 				02022A751DA47EC8000F0C4F /* generic */,
@@ -507,6 +517,22 @@
 				4BA4035F23C6664700DE6856 /* object_changeset.cpp */,
 			);
 			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		42D9B5EB246511D300AB3349 /* bson */ = {
+			isa = PBXGroup;
+			children = (
+				42D9B5F1246511F300AB3349 /* bson.cpp */,
+				42D9B5F4246511F300AB3349 /* bson.hpp */,
+				42D9B5F3246511F300AB3349 /* datetime.cpp */,
+				42D9B5F2246511F300AB3349 /* datetime.hpp */,
+				42D9B5EC246511F200AB3349 /* indexed_map.hpp */,
+				42D9B5ED246511F200AB3349 /* max_key.hpp */,
+				42D9B5EE246511F200AB3349 /* min_key.hpp */,
+				42D9B5EF246511F300AB3349 /* regular_expression.cpp */,
+				42D9B5F0246511F300AB3349 /* regular_expression.hpp */,
+			);
+			path = bson;
 			sourceTree = "<group>";
 		};
 		504CF8521EBCAE3600A9A4B6 /* impl */ = {
