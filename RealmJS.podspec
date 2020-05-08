@@ -55,6 +55,7 @@ Pod::Spec.new do |s|
                              'src/object-store/src/impl/apple/*.cpp',
                              'src/object-store/src/util/*.cpp',
                              'src/object-store/src/util/apple/*.cpp',
+                             'src/object-store/src/util/bson/*.cpp',
                              'react-native/ios/RealmReact/*.mm',
                              'vendor/*.cpp'
   
