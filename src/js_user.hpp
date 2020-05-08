@@ -73,14 +73,13 @@ public:
     static void get_identity(ContextType, ObjectType, ReturnValue &);
     static void get_token(ContextType, ObjectType, ReturnValue &);
     static void get_profile(ContextType, ObjectType, ReturnValue &);
-    static void set_profile(ContextType, ObjectType, ValueType);
     static void is_logged_in(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"identity", {wrap<get_identity>, nullptr}},
         {"token", {wrap<get_token>, nullptr}},
-        {"profile", {wrap<get_profile>, wrap<set_profile>}},
+        {"profile", {wrap<get_profile>, nullptr}},
         {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
         {"state", {wrap<get_state>, nullptr}}
     };
