@@ -91,7 +91,7 @@ public:
     static void is_connected(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
     static void resume(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
     static void pause(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-    static void override_server(ContextType, ObjectType, Arguments &, ReturnValue &);
+//    static void override_server(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void wait_for_download_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void wait_for_upload_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
 
@@ -106,7 +106,7 @@ public:
 
     MethodMap<T> const methods = {
         {"_simulateError", wrap<simulate_error>},
-        {"_overrideServer", wrap<override_server>},
+        //{"_overrideServer", wrap<override_server>},
         {"_waitForDownloadCompletion", wrap<wait_for_download_completion>},
         {"_waitForUploadCompletion", wrap<wait_for_upload_completion>},
         {"addProgressNotification", wrap<add_progress_notification>},
@@ -504,7 +504,7 @@ void SessionClass<T>::pause(ContextType ctx, ObjectType this_object, Arguments& 
     }
 }
 
-template<typename T>
+/*template<typename T>
 void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue&) {
     args.validate_count(2);
 
@@ -519,7 +519,7 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
         session->override_server(std::move(address), uint16_t(port));
     }
-}
+}*/
 
 template<typename T>
 void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments &args) {
