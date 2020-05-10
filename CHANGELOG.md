@@ -1,7 +1,7 @@
 10.0.0 Release notes (2020-5-8)
 =============================================================
 NOTE 1: Requires MacOS v10.14 (Mojave) to build.
-NOTE 2: Requires iOS 12 (React Natives).
+NOTE 2: Requires iOS 12 and React Natives 0.61.5.
 
 ### Breaking changes
 * `Realm.Sync.User` has been replaced by `Realm.User`.
