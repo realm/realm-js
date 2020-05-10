@@ -27,7 +27,7 @@ Pod::Spec.new do |s|
 
   s.authors                = package['author']
   s.homepage               = package['homepage']
-  s.platform               = :ios, '9.0'
+  s.platform               = :ios, '12.0'
 
   # The source field is a required field in the podspec, but it is not ment to be used.
   # This is because the Podspec is not ment to be published into a CocoaPod repository, instead React Native uses a :path style dependency when adding this to the users projects Podfile.
