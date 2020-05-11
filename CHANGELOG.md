@@ -1,10 +1,9 @@
-x.x.x Release notes (yyyy-MM-dd)
+5.0.5 Release notes (2020-05-12)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed a crash on Windows and Node.js 10+ when using Sync over HTTPS. ([#2560](https://github.com/realm/realm-js/issues/2560))
 
 ### Compatibility
