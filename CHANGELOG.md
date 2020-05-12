@@ -25,6 +25,22 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * Updated Realm Sync from v4.9.5 to v5.0.3.
 * Updated Realm Object Store to commit dc03607585fd27cf5afa8060a2d17120e47b9b3e.
 
+5.0.5 Release notes (2020-05-12)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed a crash on Windows and Node.js 10+ when using Sync over HTTPS. ([#2560](https://github.com/realm/realm-js/issues/2560))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
+
 5.0.4 Release notes (2020-4-29)
 =============================================================
 ### Enhancements
@@ -93,7 +109,7 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Added `fullSynchronization` and `clientResyncMode` to `Realm.Session.config` to generate a more complete configuration.
 
 5.0.0 Release notes (2020-3-18)
 =============================================================
@@ -154,6 +170,7 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 ### Internal
 * Updated Realm Object Store to commit 49458da2447499c370da0000c3b47c76e9ce9421.
 * Updated Realm Sync from v4.9.4 to v4.9.5.
+* Updated Realm Object Store to commit fda4afdda8f4325766c13a29c73e9e43e361be98.
 
 3.6.3 Release notes (2020-1-17)
 =============================================================
@@ -181,7 +198,7 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 ### Fixed
 * Fixed a bug that prevented `ClientResyncMode.Discard` to discard the local changes. ([#2664](https://github.com/realm/realm-js/issues/2664), since v3.1.0)
 * Fixed a bug where properties with float and double values would not be sorted correctly. ([realm/realm-core#3520](https://github.com/realm/realm-core/pull/3520), since v3.6.0)
-  * Fixed a bug where a `NOT` query on a list would incorrectly match objects which have an object index one less than a correctly matching object which appeared earlier in the list. ([realm/realm-cocoa#6289](https://github.com/realm/realm-cocoa/issues/6289), since v1.0.0)
+* Fixed a bug where a `NOT` query on a list would incorrectly match objects which have an object index one less than a correctly matching object which appeared earlier in the list. ([realm/realm-cocoa#6289](https://github.com/realm/realm-cocoa/issues/6289), since v1.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.

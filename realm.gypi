@@ -57,7 +57,6 @@
         "src/object-store/src/binding_callback_thread_observer.hpp",
         "src/object-store/src/binding_context.hpp",
         "src/object-store/src/collection_notifications.hpp",
-        "src/object-store/src/execution_context_id.hpp",
         "src/object-store/src/feature_checks.hpp",
         "src/object-store/src/index_set.hpp",
         "src/object-store/src/list.hpp",
@@ -92,7 +91,6 @@
         "src/object-store/src/sync/subscription_state.hpp",
         "src/object-store/src/sync/sync_config.hpp",
         "src/object-store/src/sync/sync_manager.hpp",
-        "src/object-store/src/sync/sync_permission.hpp",
         "src/object-store/src/sync/sync_session.hpp",
         "src/object-store/src/sync/sync_user.hpp",
         "src/object-store/src/sync/impl/apple/network_reachability_observer.hpp",
@@ -239,11 +237,23 @@
           ["OS=='win'", {
             "conditions": [
               ["target_arch=='ia32'", {
-                "libraries": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\ssleay32.lib" ]
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib" ]
               }, {
-                "libraries": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\ssleay32.lib" ]
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
               }],
-            ]
+            ],
+            # This inserts ssleay32.lib at the beginning of the linker input list,
+            # causing it to be considered before node.lib and its OpenSSL symbols.
+            # Additionally, we request that all the symbols from ssleay32.lib are included
+            # in the final executable.
+            "msvs_settings": {
+              "VCLinkerTool": {
+                "AdditionalDependencies": [ "libeay32.lib", "ssleay32.lib" ],
+                "AdditionalOptions": [
+                  "/WHOLEARCHIVE:ssleay32.lib"
+                ]
+              }
+            }
           }],
           ["OS=='linux'", {
             "libraries": [ "<(vendor_dir)/openssl/lib/libssl.a", "<(vendor_dir)/openssl/lib/libcrypto.a" ],
