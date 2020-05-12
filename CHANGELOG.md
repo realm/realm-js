@@ -30,7 +30,6 @@ NOTE 2: Requires iOS 12 and React Natives 0.61.5.
 * Updated Realm Object Store to commit ec6ffd5cc149e403d252e9d615b4e6dab572fa89.
 * Created a package named "realm-app-importer", to be used by integration tests (ideally by other SDKs too).
 
-
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
