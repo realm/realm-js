@@ -237,11 +237,23 @@
           ["OS=='win'", {
             "conditions": [
               ["target_arch=='ia32'", {
-                "libraries": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\ssleay32.lib" ]
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib" ]
               }, {
-                "libraries": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\ssleay32.lib" ]
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
               }],
-            ]
+            ],
+            # This inserts ssleay32.lib at the beginning of the linker input list,
+            # causing it to be considered before node.lib and its OpenSSL symbols.
+            # Additionally, we request that all the symbols from ssleay32.lib are included
+            # in the final executable.
+            "msvs_settings": {
+              "VCLinkerTool": {
+                "AdditionalDependencies": [ "libeay32.lib", "ssleay32.lib" ],
+                "AdditionalOptions": [
+                  "/WHOLEARCHIVE:ssleay32.lib"
+                ]
+              }
+            }
           }],
           ["OS=='linux'", {
             "libraries": [ "-l:libssl.a", "-l:libcrypto.a" ],
