@@ -73,7 +73,7 @@
       "VCCLCompilerTool": {
         "ExceptionHandling": 1,
         "AdditionalOptions": [
-         "/std:c++latest"
+         "/std:c++17"
         ]
       }
     },
