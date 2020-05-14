@@ -352,7 +352,7 @@ def buildMacOS(workerFunction) {
 
 def buildWindows(nodeVersion, arch) {
   return {
-    myNode('windows && nodejs') {
+    myNode('windows-vs2017 && nodejs') {
       unstash 'source'
 
       bat 'npm install --ignore-scripts --production'
@@ -372,7 +372,7 @@ def buildWindows(nodeVersion, arch) {
 
 def buildWindowsElectron(electronVersion, arch) {
   return {
-    myNode('windows && nodejs') {
+    myNode('windows-vs2017 && nodejs') {
       unstash 'source'
       bat 'npm install --ignore-scripts --production'
       withEnv([
