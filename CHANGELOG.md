@@ -3,7 +3,6 @@
 NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
 
 ### Breaking changes
-* Calling `Realm.close()` on a closed Realm will throw an exception.
 * Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
 * `Realm.delete(Realm.Collection)` will conserve the order i.e., if a `Realm.Results` is [1, 2, 3] (pseudo-notation), `Realm.delete(2)` will produce [1, 3].
 * It is only possible to compact a Realm when a single instance is open. Consider to use configuration parameter `shouldCompactOnLaunch` in the future.
@@ -23,7 +22,7 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 ### Internal
 * Updated Realm Core from v5.23.8 to v6.0.4.
 * Updated Realm Sync from v4.9.5 to v5.0.3.
-* Updated Realm Object Store to commit dc03607585fd27cf5afa8060a2d17120e47b9b3e.
+* Updated Realm Object Store to commit 820b74e2378f111991877d43068a95d2b7a2e404.
 
 5.0.5 Release notes (2020-05-12)
 =============================================================

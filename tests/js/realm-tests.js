@@ -276,7 +276,7 @@ module.exports = {
         const realm = new Realm({schema: []});
         realm.close();
         TestCase.assertTrue(realm.isClosed);
-        TestCase.assertThrows(() => realm.close());
+	realm.close();
         TestCase.assertTrue(realm.isClosed);
     },
 
