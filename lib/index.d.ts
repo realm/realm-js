@@ -365,6 +365,7 @@ declare namespace Realm {
         readonly token: string;
         readonly isLoggedIn: boolean;
         readonly state: string;
+        readonly customData: object;
 
         logOut(): void;
         deleteUser(): Promise<void>;

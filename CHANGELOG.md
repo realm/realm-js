@@ -33,7 +33,7 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added support for `customData` readonly property to `Realm.User` objects.
 
 ### Fixed
 * It was not possible to make client resync if a table contained binary data.
@@ -48,7 +48,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 6.0.0 Release notes (2020-5-6)
 =============================================================
-NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format.
 
 ### Breaking changes
 * Calling `Realm.close()` on a closed Realm will throw an exception.

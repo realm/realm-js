@@ -23,12 +23,16 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include <realm/binary_data.hpp>
 #include <realm/string_data.hpp>
 #include <realm/util/to_string.hpp>
 #include <realm/util/optional.hpp>
+#include <realm/util/base64.hpp>
 #include <realm/mixed.hpp>
+
+#include <object-store/src/util/bson/bson.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
@@ -137,7 +141,7 @@ struct Value {
     static ValueType from_decimal128(ContextType, const Decimal128&);
     static ValueType from_object_id(ContextType, const ObjectId&);
     static ValueType from_string(ContextType ctx, const char *s) { return s ? from_nonnull_string(ctx, s) : from_null(ctx); }
-    static ValueType from_string(ContextType ctx, StringData s) { return s ? from_nonnull_string(ctx, s) : from_null(ctx); }
+    static ValueType from_string(ContextType ctx, StringData s) { return s ? from_nonnull_string(ctx, String<T>(s)) : from_null(ctx); }
     static ValueType from_string(ContextType ctx, const std::string& s) { return from_nonnull_string(ctx, s.c_str()); }
     static ValueType from_binary(ContextType ctx, BinaryData b) { return b ? from_nonnull_binary(ctx, b) : from_null(ctx); }
     static ValueType from_nonnull_string(ContextType, const String<T>&);
@@ -145,6 +149,8 @@ struct Value {
     static ValueType from_undefined(ContextType);
     static ValueType from_timestamp(ContextType, Timestamp);
     static ValueType from_mixed(ContextType, const util::Optional<Mixed> &);
+    static ValueType from_bson(ContextType, const bson::Bson &);
+    static ObjectType from_bson(ContextType, const bson::BsonDocument &);
 
     static ObjectType to_array(ContextType, const ValueType &);
     static bool to_boolean(ContextType, const ValueType &);
@@ -203,8 +209,11 @@ struct Function {
         return call(ctx, function, this_object, arguments.size(), arguments.data());
     }
 
+    static ObjectType construct(ContextType ctx, const FunctionType & f, std::initializer_list<ValueType> args) {
+        return construct(ctx, f, args.size(), args.begin());
+    }
     static ObjectType construct(ContextType, const FunctionType &, size_t, const ValueType[]);
-    static ValueType construct(ContextType ctx, const FunctionType &function, const std::vector<ValueType> &arguments) {
+    static ObjectType construct(ContextType ctx, const FunctionType &function, const std::vector<ValueType> &arguments) {
         return construct(ctx, function, arguments.size(), arguments.data());
     }
 };
@@ -314,6 +323,8 @@ struct Object {
 
     template<typename ClassType>
     static void set_internal(ContextType ctx, const ObjectType &, typename ClassType::Internal*);
+
+    static ObjectType create_bson_type(ContextType, StringData type, std::initializer_list<ValueType> args);
 };
 
 template<typename ValueType>
@@ -477,6 +488,14 @@ inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Times
 }
 
 template<typename T>
+inline typename T::Object Object<T>::create_bson_type(ContextType ctx, StringData type, std::initializer_list<ValueType> args) {
+    auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
+    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
+    auto ctor = Value<T>::to_constructor(ctx, Object<T>::get_property(ctx, bson, type));
+    return Function<T>::construct(ctx, ctor, args);
+}
+
+template<typename T>
 inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const util::Optional<Mixed>& mixed) {
     if (!mixed) {
         return from_undefined(ctx);
@@ -502,9 +521,103 @@ inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const uti
         return from_string(ctx, value.get<StringData>().data());
     case type_Binary:
         return from_binary(ctx, value.get<BinaryData>());
-    default:
-        throw std::invalid_argument("Value not convertible.");
+
+    case type_Link:
+    case type_LinkList:
+    case type_OldDateTime:
+    case type_OldTable:
+    case type_OldMixed:
+        break;
     }
+    throw std::invalid_argument("Value not convertible.");
+}
+
+template<typename T>
+inline typename T::Value Value<T>::from_bson(typename T::Context ctx, const bson::Bson& value) {
+    using Type = bson::Bson::Type;
+
+    switch (value.type()) {
+    case Type::MinKey:
+        return Object<T>::create_bson_type(ctx, "MinKey", {});
+    case Type::MaxKey:
+        return Object<T>::create_bson_type(ctx, "MaxKey", {});
+    case Type::Null:
+        return from_null(ctx);
+    case Type::Bool:
+        return from_boolean(ctx, value.operator bool());
+    case Type::Double:
+        return from_number(ctx, value.operator double());
+    case Type::Int32:
+        // All int32 values can be precisely represented as a double
+        return from_number(ctx, double(value.operator int32_t()));
+    case Type::Int64:
+        // int64 needs special handling.
+        // TODO: Consider using plain js numbers for values within [-2^52, 2^52).
+        return Object<T>::create_bson_type(ctx, "Long", {
+            Value<T>::from_number(ctx, int32_t(value.operator int64_t())), // low
+            Value<T>::from_number(ctx, int32_t(value.operator int64_t() >> 32)), // high
+        });
+    case Type::Decimal128:
+        return from_decimal128(ctx, value.operator Decimal128());
+    case Type::ObjectId:
+        return from_object_id(ctx, value.operator ObjectId());
+    case Type::Datetime:
+        return from_timestamp(ctx, value.operator Timestamp());
+    case Type::Timestamp: {
+        auto mts = value.operator bson::MongoTimestamp();
+        return Object<T>::create_bson_type(ctx, "Timestamp", {
+            // The constructor takes the arguments "backwards" from standard order.
+            Value<T>::from_number(ctx, mts.increment),
+            Value<T>::from_number(ctx, mts.seconds),
+        });
+    }
+    case Type::String:
+        return from_string(ctx, value.operator const std::string&());
+    case Type::Binary: {
+        const auto& vec = value.operator const std::vector<char>&();
+        const auto decoded = realm::util::base64_decode_to_vector(StringData(vec.data(), vec.size()));
+        if (!decoded)
+            throw std::invalid_argument("invalid base64 in binary data");
+        auto Uint8Array = Value<T>::to_function(ctx, Object<T>::get_global(ctx, "Uint8Array"));
+        auto array = Function<T>::construct(ctx, Uint8Array, {
+            from_nonnull_binary(ctx, {decoded->data(), decoded->size()}),
+        });
+        return Object<T>::create_bson_type(ctx, "Binary", {
+            array,
+            Value<T>::from_number(ctx, 0), // TODO get subtype from `value` once it is possible.
+        });
+    }
+    case Type::Document:
+        return from_bson(ctx, value.operator const bson::BsonDocument&());
+    case Type::Array: {
+        auto&& in_vec = value.operator const std::vector<bson::Bson>&();
+        std::vector<ValueType> out_vec;
+        out_vec.reserve(in_vec.size());
+        for (auto&& elem : in_vec) {
+            out_vec.push_back(from_bson(ctx, elem));
+        }
+        return Object<T>::create_array(ctx, out_vec);
+    }
+    case Type::RegularExpression: {
+        auto&& re = value.operator const bson::RegularExpression&();
+        std::ostringstream oss;
+        oss << re.options();
+        return Object<T>::create_bson_type(ctx, "BSONRegExp", {
+            Value<T>::from_string(ctx, re.pattern()),
+            Value<T>::from_string(ctx, oss.str()),
+        });
+    }
+    }
+    throw std::invalid_argument("Value not convertible.");
+}
+
+template<typename T>
+inline typename T::Object Value<T>::from_bson(typename T::Context ctx, const bson::BsonDocument& doc) {
+    auto out = Object<T>::create_empty(ctx);
+    for (auto&& [k, v] : doc) {
+        Object<T>::set_property(ctx, out, k, from_bson(ctx, v));
+    }
+    return out;
 }
 
 } // js

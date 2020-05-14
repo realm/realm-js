@@ -46,6 +46,7 @@
 #include "results.hpp"
 #include "shared_realm.hpp"
 #include "thread_safe_reference.hpp"
+#include "util/scheduler.hpp"
 
 #include <realm/disable_sync_to_disk.hpp>
 #include <realm/global_key.hpp>
@@ -295,6 +296,7 @@ public:
     static void realm_file_exists(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     static void create_user_agent_description(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void bson_parse_json(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
@@ -309,6 +311,7 @@ public:
         {"deleteFile", wrap<delete_file>},
         {"exists", wrap<realm_file_exists>},
         {"_createUserAgentDescription", wrap<create_user_agent_description>},
+        {"_bsonParseJsonForTest", wrap<bson_parse_json>},
 #if REALM_ENABLE_SYNC
         {"_asyncOpen", wrap<async_open_realm>},
 #endif
@@ -1286,6 +1289,14 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
 template<typename T>
 void RealmClass<T>::create_user_agent_description(ContextType, ObjectType, Arguments&, ReturnValue &return_value) {
     return_value.set("RealmJS/RPC");
+}
+
+template<typename T>
+void RealmClass<T>::bson_parse_json(ContextType ctx, ObjectType, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(1);
+    auto json = std::string(Value::validated_to_string(ctx, args[0]));
+    auto parsed = bson::parse(json);
+    return_value.set(Value::from_bson(ctx, parsed));
 }
 
 #if REALM_ENABLE_SYNC

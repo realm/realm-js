@@ -75,13 +75,15 @@ public:
     static void get_profile(ContextType, ObjectType, ReturnValue &);
     static void is_logged_in(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
+    static void get_custom_data(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"identity", {wrap<get_identity>, nullptr}},
         {"token", {wrap<get_token>, nullptr}},
         {"profile", {wrap<get_profile>, nullptr}},
         {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
-        {"state", {wrap<get_state>, nullptr}}
+        {"state", {wrap<get_state>, nullptr}},
+        {"customData", {wrap<get_custom_data>, nullptr}},
     };
 
     MethodMap<T> const static_methods = {
@@ -144,6 +146,15 @@ void UserClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &re
         return_value.set("Removed");
         break;
     }
+}
+
+template<typename T>
+void UserClass<T>::get_custom_data(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto custom_data = get_internal<T, UserClass<T>>(ctx, object)->get()->custom_data();
+    if (!custom_data)
+        return return_value.set_null();
+
+    return_value.set(js::Value<T>::from_bson(ctx, *custom_data));
 }
 
 template<typename T>
