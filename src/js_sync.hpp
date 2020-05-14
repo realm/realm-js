@@ -91,7 +91,7 @@ public:
     static void is_connected(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
     static void resume(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
     static void pause(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-    static void override_server(ContextType, ObjectType, Arguments &, ReturnValue &);
+//    static void override_server(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void wait_for_download_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void wait_for_upload_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
 
@@ -106,7 +106,7 @@ public:
 
     MethodMap<T> const methods = {
         {"_simulateError", wrap<simulate_error>},
-        {"_overrideServer", wrap<override_server>},
+        //{"_overrideServer", wrap<override_server>},
         {"_waitForDownloadCompletion", wrap<wait_for_download_completion>},
         {"_waitForUploadCompletion", wrap<wait_for_upload_completion>},
         {"addProgressNotification", wrap<add_progress_notification>},
@@ -506,7 +506,7 @@ void SessionClass<T>::pause(ContextType ctx, ObjectType this_object, Arguments& 
     }
 }
 
-template<typename T>
+/*template<typename T>
 void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue&) {
     args.validate_count(2);
 
@@ -521,7 +521,7 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         session->override_server(std::move(address), uint16_t(port));
     }
-}
+}*/
 
 template<typename T>
 void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments &args) {
@@ -601,7 +601,6 @@ public:
 
     // private
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
-    static void populate_sync_config_for_ssl(ContextType, ObjectType config_object, SyncConfig&);
 
     MethodMap<T> const static_methods = {
         {"_hasExistingSessions", {wrap<has_existing_sessions>}},
@@ -730,28 +729,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             partition_value = Value::validated_to_string(ctx, partition_value_value, "partitionValue");
         }
 
-        bool client_validate_ssl = true;
-        ValueType validate_ssl_temp = Object::get_property(ctx, sync_config_object, "validate_ssl");
-        if (!Value::is_undefined(ctx, validate_ssl_temp)) {
-            client_validate_ssl = Value::validated_to_boolean(ctx, validate_ssl_temp, "validate_ssl");
-        }
-
-        util::Optional<std::string> ssl_trust_certificate_path;
-        ValueType trust_certificate_path_temp = Object::get_property(ctx, sync_config_object, "ssl_trust_certificate_path");
-         if (!Value::is_undefined(ctx, trust_certificate_path_temp)) {
-            ssl_trust_certificate_path = std::string(Value::validated_to_string(ctx, trust_certificate_path_temp, "ssl_trust_certificate_path"));
-        }
-        else {
-            ssl_trust_certificate_path = util::none;
-        }
-
-        std::function<sync::Session::SSLVerifyCallback> ssl_verify_callback;
-        ValueType ssl_verify_func = Object::get_property(ctx, sync_config_object, "open_ssl_verify_callback");
-        if (!Value::is_undefined(ctx, ssl_verify_func)) {
-            SSLVerifyCallbackSyncThreadFunctor<T> ssl_verify_functor {ctx, Value::validated_to_function(ctx, ssl_verify_func)};
-            ssl_verify_callback = std::move(ssl_verify_functor);
-        }
-
         config.sync_config = std::make_shared<SyncConfig>(std::move(user), std::move(partition_value));
         config.sync_config->error_handler = std::move(error_handler);
 
@@ -786,49 +763,10 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             config.sync_config->custom_http_headers = std::move(http_headers);
         }
 
-        // TODO: remove
-        config.sync_config->client_validate_ssl = client_validate_ssl;
-        config.sync_config->ssl_trust_certificate_path = ssl_trust_certificate_path;
-        config.sync_config->ssl_verify_callback = std::move(ssl_verify_callback);
-
-        ValueType ssl_config_value = Object::get_property(ctx, sync_config_object, "ssl");
-        if (Value::is_object(ctx, ssl_config_value)) {
-            auto ssl_config_object = Value::to_object(ctx, ssl_config_value);
-            populate_sync_config_for_ssl(ctx, ssl_config_object, *config.sync_config);
-        }
-
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();
             std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
         }
-
-#if REALM_ANDROID
-        // For React Native Android, if the user didn't define the ssl_verify_callback, we provide a default
-        // implementation for him, otherwise all SSL validation will fail, since the Sync client doesn't have
-        // access to the Android Keystore.
-        // This default implementation will perform a JNI call to invoke a Java method defined at the `SSLHelper`
-        // to perform the certificate verification.
-        if (!config.sync_config->ssl_verify_callback) {
-            auto ssl_verify_functor =
-            [](const std::string server_address, realm::sync::Session::port_type server_port,
-               const char* pem_data, size_t pem_size, int preverify_ok, int depth) {
-                JNIEnv* env = realm::jni_util::JniUtils::get_env(true);
-                static jmethodID java_certificate_verifier = env->GetStaticMethodID(ssl_helper_class, "certificateVerifier", "(Ljava/lang/String;Ljava/lang/String;I)Z");
-                jstring jserver_address = env->NewStringUTF(server_address.c_str());
-                // deep copy the pem_data into a string so DeleteLocalRef delete the local reference not the original const char
-                std::string pem(pem_data, pem_size);
-                jstring jpem = env->NewStringUTF(pem.c_str());
-
-                bool isValid = env->CallStaticBooleanMethod(ssl_helper_class, java_certificate_verifier,
-                                                            jserver_address,
-                                                            jpem, depth) == JNI_TRUE;
-                env->DeleteLocalRef(jserver_address);
-                env->DeleteLocalRef(jpem);
-                return isValid;
-            };
-            config.sync_config->ssl_verify_callback = std::move(ssl_verify_functor);
-        }
-#endif
 
         // default for query-based sync is manual and recover for full sync
         ClientResyncMode clientResyncMode = realm::ClientResyncMode::Recover;
@@ -849,25 +787,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         config.schema_mode = SchemaMode::Additive;
         config.path = SyncManager::shared().path_for_realm(*(config.sync_config));
-    }
-}
-
-template<typename T>
-void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType config_object, SyncConfig& config)
-{
-    ValueType validate_ssl = Object::get_property(ctx, config_object, "validate");
-    if (Value::is_boolean(ctx, validate_ssl)) {
-        config.client_validate_ssl = Value::to_boolean(ctx, validate_ssl);
-    }
-
-    ValueType certificate_path = Object::get_property(ctx, config_object, "certificatePath");
-    if (Value::is_string(ctx, certificate_path)) {
-        config.ssl_trust_certificate_path = std::string(Value::to_string(ctx, certificate_path));
-    }
-
-    ValueType validate_callback = Object::get_property(ctx, config_object, "validateCallback");
-    if (Value::is_function(ctx, validate_callback)) {
-        config.ssl_verify_callback = SSLVerifyCallbackSyncThreadFunctor<T> { ctx, Value::to_function(ctx, validate_callback) };
     }
 }
 

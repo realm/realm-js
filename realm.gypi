@@ -143,6 +143,10 @@
             "src/object-store/src/sync/sync_user.cpp",
             "src/object-store/src/sync/app.cpp",
             "src/object-store/src/sync/app_credentials.cpp",
+            "src/object-store/src/sync/app_service_client.cpp",
+            "src/object-store/src/sync/remote_mongo_client.cpp",
+            "src/object-store/src/sync/remote_mongo_collection.cpp",
+            "src/object-store/src/sync/remote_mongo_database.cpp",
             "src/object-store/src/sync/generic_network_transport.cpp",
             "src/object-store/src/util/bson/bson.cpp",
             "src/object-store/src/util/bson/regular_expression.cpp",
@@ -235,11 +239,23 @@
           ["OS=='win'", {
             "conditions": [
               ["target_arch=='ia32'", {
-                "libraries": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\ssleay32.lib" ]
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib" ]
               }, {
-                "libraries": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\ssleay32.lib" ]
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
               }],
-            ]
+            ],
+            # This inserts ssleay32.lib at the beginning of the linker input list,
+            # causing it to be considered before node.lib and its OpenSSL symbols.
+            # Additionally, we request that all the symbols from ssleay32.lib are included
+            # in the final executable.
+            "msvs_settings": {
+              "VCLinkerTool": {
+                "AdditionalDependencies": [ "libeay32.lib", "ssleay32.lib" ],
+                "AdditionalOptions": [
+                  "/WHOLEARCHIVE:ssleay32.lib"
+                ]
+              }
+            }
           }],
           ["OS=='linux'", {
             "libraries": [ "<(vendor_dir)/openssl/lib/libssl.a", "<(vendor_dir)/openssl/lib/libcrypto.a" ],

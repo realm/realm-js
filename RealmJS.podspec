@@ -27,7 +27,7 @@ Pod::Spec.new do |s|
 
   s.authors                = package['author']
   s.homepage               = package['homepage']
-  s.platform               = :ios, '9.0'
+  s.platform               = :ios, '12.0'
 
   # The source field is a required field in the podspec, but it is not ment to be used.
   # This is because the Podspec is not ment to be published into a CocoaPod repository, instead React Native uses a :path style dependency when adding this to the users projects Podfile.
@@ -55,6 +55,7 @@ Pod::Spec.new do |s|
                              'src/object-store/src/impl/apple/*.cpp',
                              'src/object-store/src/util/*.cpp',
                              'src/object-store/src/util/apple/*.cpp',
+                             'src/object-store/src/util/bson/*.cpp',
                              'react-native/ios/RealmReact/*.mm',
                              'vendor/*.cpp'
   
@@ -66,7 +67,7 @@ Pod::Spec.new do |s|
                                'CC' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang.sh',
                                'CXX' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang++.sh',
                                # Setting up clang
-                               'CLANG_CXX_LANGUAGE_STANDARD' => 'c++14',
+                               'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
                                'CLANG_CXX_LIBRARY' => 'libc++',
                                # Disabling warnings that object store, core and sync has a lot of
                                'CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF' => 'NO',

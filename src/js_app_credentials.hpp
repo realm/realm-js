@@ -40,7 +40,6 @@ class CredentialsClass : public ClassDefinition<T, realm::app::AppCredentials> {
 public:
     const std::string name = "Credentials";
 
-    static void constructor(ContextType, ObjectType, Arguments &);
     static FunctionType create_constructor(ContextType);
 
     static void facebook(ContextType, ObjectType, Arguments &, ReturnValue &);

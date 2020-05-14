@@ -38,6 +38,16 @@
 		3F50A4492447C0A0003A6F4C /* scheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F50A4462447C09D003A6F4C /* scheduler.cpp */; };
 		3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A911F58BDFF00D4855B /* uuid.cpp */; };
 		3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */; };
+		42D9B5F52465185C00AB3349 /* app_credentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57B224640AE4008679D5 /* app_credentials.cpp */; };
+		42D9B5F62465185C00AB3349 /* app_service_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57B624640AE4008679D5 /* app_service_client.cpp */; };
+		42D9B5F72465185C00AB3349 /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BB24640AE4008679D5 /* app.cpp */; };
+		42D9B5F82465185D00AB3349 /* generic_network_transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57C024640AE5008679D5 /* generic_network_transport.cpp */; };
+		42D9B5F92465185D00AB3349 /* remote_mongo_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BA24640AE4008679D5 /* remote_mongo_client.cpp */; };
+		42D9B5FA2465185D00AB3349 /* remote_mongo_collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57B324640AE4008679D5 /* remote_mongo_collection.cpp */; };
+		42D9B5FB2465185D00AB3349 /* remote_mongo_database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BD24640AE5008679D5 /* remote_mongo_database.cpp */; };
+		42D9B5FC2465185D00AB3349 /* bson.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42D9B5F1246511F300AB3349 /* bson.cpp */; };
+		42D9B5FD2465185D00AB3349 /* datetime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42D9B5F3246511F300AB3349 /* datetime.cpp */; };
+		42D9B5FE2465185D00AB3349 /* regular_expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42D9B5EF246511F300AB3349 /* regular_expression.cpp */; };
 		4BA4036023C6664700DE6856 /* object_changeset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4BA4035F23C6664700DE6856 /* object_changeset.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
 		504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */; };
@@ -200,6 +210,15 @@
 		42BD57BE24640AE5008679D5 /* remote_mongo_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = remote_mongo_client.hpp; path = src/sync/remote_mongo_client.hpp; sourceTree = "<group>"; };
 		42BD57BF24640AE5008679D5 /* auth_request_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = auth_request_client.hpp; path = src/sync/auth_request_client.hpp; sourceTree = "<group>"; };
 		42BD57C024640AE5008679D5 /* generic_network_transport.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = generic_network_transport.cpp; path = src/sync/generic_network_transport.cpp; sourceTree = "<group>"; };
+		42D9B5EC246511F200AB3349 /* indexed_map.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = indexed_map.hpp; sourceTree = "<group>"; };
+		42D9B5ED246511F200AB3349 /* max_key.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = max_key.hpp; sourceTree = "<group>"; };
+		42D9B5EE246511F200AB3349 /* min_key.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = min_key.hpp; sourceTree = "<group>"; };
+		42D9B5EF246511F300AB3349 /* regular_expression.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = regular_expression.cpp; sourceTree = "<group>"; };
+		42D9B5F0246511F300AB3349 /* regular_expression.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = regular_expression.hpp; sourceTree = "<group>"; };
+		42D9B5F1246511F300AB3349 /* bson.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bson.cpp; sourceTree = "<group>"; };
+		42D9B5F2246511F300AB3349 /* datetime.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = datetime.hpp; sourceTree = "<group>"; };
+		42D9B5F3246511F300AB3349 /* datetime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = datetime.cpp; sourceTree = "<group>"; };
+		42D9B5F4246511F300AB3349 /* bson.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = bson.hpp; sourceTree = "<group>"; };
 		4BA4035F23C6664700DE6856 /* object_changeset.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object_changeset.cpp; path = "object-store/src/object_changeset.cpp"; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
@@ -320,6 +339,7 @@
 		02022A6B1DA47EC8000F0C4F /* util */ = {
 			isa = PBXGroup;
 			children = (
+				42D9B5EB246511D300AB3349 /* bson */,
 				02022A6C1DA47EC8000F0C4F /* android */,
 				02022A6E1DA47EC8000F0C4F /* apple */,
 				02022A751DA47EC8000F0C4F /* generic */,
@@ -478,6 +498,22 @@
 			name = "Recovered References";
 			sourceTree = "<group>";
 		};
+		42D9B5EB246511D300AB3349 /* bson */ = {
+			isa = PBXGroup;
+			children = (
+				42D9B5F1246511F300AB3349 /* bson.cpp */,
+				42D9B5F4246511F300AB3349 /* bson.hpp */,
+				42D9B5F3246511F300AB3349 /* datetime.cpp */,
+				42D9B5F2246511F300AB3349 /* datetime.hpp */,
+				42D9B5EC246511F200AB3349 /* indexed_map.hpp */,
+				42D9B5ED246511F200AB3349 /* max_key.hpp */,
+				42D9B5EE246511F200AB3349 /* min_key.hpp */,
+				42D9B5EF246511F300AB3349 /* regular_expression.cpp */,
+				42D9B5F0246511F300AB3349 /* regular_expression.hpp */,
+			);
+			path = bson;
+			sourceTree = "<group>";
+		};
 		3F50A43E2447C09D003A6F4C /* uv */ = {
 			isa = PBXGroup;
 			children = (
@@ -611,10 +647,10 @@
 		F63117EA1CEB0BFA00ECB2DE /* impl */ = {
 			isa = PBXGroup;
 			children = (
+				02414B991CE6AAEF00A8669F /* collection_change_builder.cpp */,
 				F63118421CEBA7A100ECB2DE /* android */,
 				F63117EB1CEB0C1B00ECB2DE /* apple */,
 				F63118491CEBA7BD00ECB2DE /* generic */,
-				02414B991CE6AAEF00A8669F /* collection_change_builder.cpp */,
 				02414B9A1CE6AAEF00A8669F /* collection_change_builder.hpp */,
 				02414B9B1CE6AAEF00A8669F /* collection_notifier.cpp */,
 				02414B9C1CE6AAEF00A8669F /* collection_notifier.hpp */,
@@ -911,7 +947,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				42D9B5F52465185C00AB3349 /* app_credentials.cpp in Sources */,
+				42D9B5F62465185C00AB3349 /* app_service_client.cpp in Sources */,
+				42D9B5F72465185C00AB3349 /* app.cpp in Sources */,
+				42D9B5F82465185D00AB3349 /* generic_network_transport.cpp in Sources */,
+				42D9B5F92465185D00AB3349 /* remote_mongo_client.cpp in Sources */,
+				42D9B5FA2465185D00AB3349 /* remote_mongo_collection.cpp in Sources */,
+				42D9B5FB2465185D00AB3349 /* remote_mongo_database.cpp in Sources */,
+				42D9B5FC2465185D00AB3349 /* bson.cpp in Sources */,
+				42D9B5FD2465185D00AB3349 /* datetime.cpp in Sources */,
+				42D9B5FE2465185D00AB3349 /* regular_expression.cpp in Sources */,
 				832C1D2F229D3035001A20C1 /* async_open_task.cpp in Sources */,
+				3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */,
 				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,
 				022BF1021E7266DF00F382F1 /* binding_callback_thread_observer.cpp in Sources */,
 				02414BA51CE6ABCF00A8669F /* collection_change_builder.cpp in Sources */,
@@ -937,7 +984,6 @@
 				02F59EC31C88F17D007F774C /* results.cpp in Sources */,
 				02414BA81CE6ABCF00A8669F /* results_notifier.cpp in Sources */,
 				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
-				3F50A4492447C0A0003A6F4C /* scheduler.cpp in Sources */,
 				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
 				02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */,
 				02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */,

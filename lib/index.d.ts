@@ -388,26 +388,11 @@ declare namespace Realm {
         code: number;
     }
 
-    interface SSLVerifyObject {
-        serverAddress: string;
-        serverPort: number;
-        pemCertificate: string;
-        acceptedByOpenSSL: boolean;
-        depth: number;
-    }
-
     type ErrorCallback = (session: Session, error: SyncError) => void;
-    type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
     const enum SessionStopPolicy {
         AfterUpload = "after-upload",
         Immediately = "immediately",
         Never = "never"
-    }
-
-    interface SSLConfiguration {
-        validate?: boolean;
-        certificatePath?: string;
-        validateCallback?: SSLVerifyCallback;
     }
 
     const enum ClientResyncMode {
@@ -419,13 +404,6 @@ declare namespace Realm {
     interface SyncConfiguration {
         user: User;
         url: string;
-        /** @deprecated use `ssl` instead */
-        validate_ssl?: boolean;
-        /** @deprecated use `ssl` instead */
-        ssl_trust_certificate_path?: string;
-        /** @deprecated use `ssl` instead */
-        open_ssl_verify_callback?: SSLVerifyCallback;
-        ssl?: SSLConfiguration;
         error?: ErrorCallback;
         _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };

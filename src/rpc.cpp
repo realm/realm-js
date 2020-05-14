@@ -248,20 +248,6 @@ RPCServer::RPCServer() {
         setIncludesNativeCallStack(m_context, false);
     }
 
-    m_requests["/create_session"] = [this](const json dict) {
-        RJSInitializeInContext(m_context);
-
-        jsc::String realm_string = "Realm";
-        JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(m_context, JSContextGetGlobalObject(m_context), realm_string);
-        JSValueRef refreshAccessTokenCallback = deserialize_json_value(dict["refreshAccessToken"]);
-
-        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
-        JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
-        jsc::Object::set_property(m_context, user_constructor, "_refreshAccessToken", refreshAccessTokenCallback);
-
-        m_session_id = store_object(realm_constructor);
-        return (json){{"result", m_session_id}};
-    };
     m_requests["/create_realm"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
 
@@ -301,25 +287,6 @@ RPCServer::RPCServer() {
 
         JSObjectRef user_object = (JSObjectRef)jsc::Function::call(m_context, create_user_method, arg_count, arg_values);
         return (json){{"result", serialize_json_value(user_object)}};
-    };
-    m_requests["/_getExistingUser"] = [this](const json dict) {
-        JSObjectRef realm_constructor = get_realm_constructor();
-
-        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
-        JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
-        JSObjectRef create_user_method = (JSObjectRef)jsc::Object::get_property(m_context, user_constructor, "_getExistingUser");
-
-        json::array_t args = dict["arguments"];
-        size_t arg_count = args.size();
-        JSValueRef arg_values[arg_count];
-
-        for (size_t i = 0; i < arg_count; i++) {
-            arg_values[i] = deserialize_json_value(args[i]);
-        }
-
-        JSObjectRef user_object = (JSObjectRef)jsc::Function::call(m_context, create_user_method, arg_count, arg_values);
-        return (json){{"result", serialize_json_value(user_object)}};
-
     };
     m_requests["/call_sync_function"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
@@ -432,15 +399,6 @@ RPCServer::RPCServer() {
         m_objects.erase(oid);
         return json::object();
     };
-    m_requests["/get_all_users"] = [this](const json dict) {
-        JSObjectRef realm_constructor = get_realm_constructor();
-
-        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
-        JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
-        JSValueRef value = jsc::Object::get_property(m_context, user_constructor, "all");
-
-        return (json){{"result", serialize_json_value(value)}};
-    };
     m_requests["/clear_test_state"] = [this](const json dict) {
         // The session ID points to the Realm constructor object, which should remain.
         auto realm_constructor = m_objects[m_session_id];
@@ -463,6 +421,102 @@ RPCServer::RPCServer() {
         js::clear_test_state();
 
         return json::object();
+    };
+    m_requests["/_anonymous"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef anonymous_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "anonymous");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be zero
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, anonymous_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
+    m_requests["/_facebook"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef facebook_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "facebook");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be one
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, facebook_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
+    m_requests["/_apple"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef apple_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "apple");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be one
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, apple_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
+    m_requests["/_emailPassword"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef email_password_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "emailPassword");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be two
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, email_password_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
+    m_requests["/_userAPIKey"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef user_api_key_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "userAPIKey");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be one
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, user_api_key_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
+    m_requests["/_serverAPIKey"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef server_api_key_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "serverAPIKey");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be one
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, server_api_key_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
     };
 }
 
