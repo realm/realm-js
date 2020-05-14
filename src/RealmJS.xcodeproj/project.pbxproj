@@ -45,7 +45,6 @@
 		42D9B5FA2465185D00AB3349 /* remote_mongo_collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57B324640AE4008679D5 /* remote_mongo_collection.cpp */; };
 		42D9B5FB2465185D00AB3349 /* remote_mongo_database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BD24640AE5008679D5 /* remote_mongo_database.cpp */; };
 		42D9B5FC2465185D00AB3349 /* bson.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42D9B5F1246511F300AB3349 /* bson.cpp */; };
-		42D9B5FD2465185D00AB3349 /* datetime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42D9B5F3246511F300AB3349 /* datetime.cpp */; };
 		42D9B5FE2465185D00AB3349 /* regular_expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42D9B5EF246511F300AB3349 /* regular_expression.cpp */; };
 		4BA4036023C6664700DE6856 /* object_changeset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4BA4035F23C6664700DE6856 /* object_changeset.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
@@ -214,8 +213,6 @@
 		42D9B5EF246511F300AB3349 /* regular_expression.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = regular_expression.cpp; sourceTree = "<group>"; };
 		42D9B5F0246511F300AB3349 /* regular_expression.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = regular_expression.hpp; sourceTree = "<group>"; };
 		42D9B5F1246511F300AB3349 /* bson.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bson.cpp; sourceTree = "<group>"; };
-		42D9B5F2246511F300AB3349 /* datetime.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = datetime.hpp; sourceTree = "<group>"; };
-		42D9B5F3246511F300AB3349 /* datetime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = datetime.cpp; sourceTree = "<group>"; };
 		42D9B5F4246511F300AB3349 /* bson.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = bson.hpp; sourceTree = "<group>"; };
 		4BA4035F23C6664700DE6856 /* object_changeset.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object_changeset.cpp; path = "object-store/src/object_changeset.cpp"; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
@@ -499,8 +496,6 @@
 			children = (
 				42D9B5F1246511F300AB3349 /* bson.cpp */,
 				42D9B5F4246511F300AB3349 /* bson.hpp */,
-				42D9B5F3246511F300AB3349 /* datetime.cpp */,
-				42D9B5F2246511F300AB3349 /* datetime.hpp */,
 				42D9B5EC246511F200AB3349 /* indexed_map.hpp */,
 				42D9B5ED246511F200AB3349 /* max_key.hpp */,
 				42D9B5EE246511F200AB3349 /* min_key.hpp */,
@@ -949,7 +944,6 @@
 				42D9B5FA2465185D00AB3349 /* remote_mongo_collection.cpp in Sources */,
 				42D9B5FB2465185D00AB3349 /* remote_mongo_database.cpp in Sources */,
 				42D9B5FC2465185D00AB3349 /* bson.cpp in Sources */,
-				42D9B5FD2465185D00AB3349 /* datetime.cpp in Sources */,
 				42D9B5FE2465185D00AB3349 /* regular_expression.cpp in Sources */,
 				832C1D2F229D3035001A20C1 /* async_open_task.cpp in Sources */,
 				3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */,

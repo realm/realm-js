@@ -416,6 +416,12 @@ class User {
     get token() { }
 
     /**
+     * Gets this user's associated custom data. This is application-specific data provided by the server.
+     * @type {object?}
+     */
+    get customData() { }
+
+    /**
      * Creates the configuration object required to open a synchronized Realm.
      *
      * @param {Realm.PartialConfiguration} config - optional parameters that should override any default settings.
