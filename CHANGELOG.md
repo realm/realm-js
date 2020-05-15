@@ -26,7 +26,7 @@ NOTE 2: Requires iOS 12 and React Natives 0.61.5.
 
 ### Internal
 * Updated Realm Core from ??? to Realm Core v10.0.0-alpha.8.
-* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.12.
+* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.14.
 * Updated Realm Object Store to commit ec6ffd5cc149e403d252e9d615b4e6dab572fa89.
 * Created a package named "realm-app-importer", to be used by integration tests (ideally by other SDKs too).
 
