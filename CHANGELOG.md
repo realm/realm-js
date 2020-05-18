@@ -1,6 +1,6 @@
 6.0.0 Release notes (2020-5-14)
 =============================================================
-NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only Studio 3.11 or later will be able to open the new file format. 
 
 ### Breaking changes
 * Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
@@ -16,6 +16,7 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
+* Realm Studio: 3.11 or later.
 * APIs are backwards compatible with all previous release of realm in the 6.x.y series.
 * File format: Generates Realms with format v10 (reads and upgrades previous formats).
 
