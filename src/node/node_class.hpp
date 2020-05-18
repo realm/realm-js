@@ -47,12 +47,12 @@ namespace realm {
 namespace realm {
 namespace node {
 
-static Napi::FunctionReference ObjectGetOwnPropertyDescriptor;
-static node::Protected<Napi::Symbol> ExternalSymbol;
-static Napi::FunctionReference ObjectSetPrototypeOf;
-static Napi::FunctionReference GlobalProxy;
-static Napi::FunctionReference FunctionBind;
-static Napi::FunctionReference RealmClassConstructor;
+Napi::FunctionReference ObjectGetOwnPropertyDescriptor;
+node::Protected<Napi::Symbol> ExternalSymbol;
+Napi::FunctionReference ObjectSetPrototypeOf;
+Napi::FunctionReference GlobalProxy;
+Napi::FunctionReference FunctionBind;
+Napi::FunctionReference RealmClassConstructor;
 
 static void node_class_init(Napi::Env env) {
 	auto setPrototypeOf = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
