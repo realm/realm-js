@@ -1,3 +1,19 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Added missing file to Android builds. The bug caused RN Android to crash with error `cannot locate symbol "_ZN5realm4util9Scheduler12make_defaultEv"`. ([#2884](https://github.com/realm/realm-js/issues/2884))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
+* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
+
+### Internal
+* None.
+
 6.0.0 Release notes (2020-5-14)
 =============================================================
 NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
