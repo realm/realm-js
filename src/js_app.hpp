@@ -94,7 +94,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 
     args.validate_count(1);
 
-    set_internal<T, AppClass<T>>(this_object, nullptr);
+    set_internal<T, AppClass<T>>(ctx, this_object, nullptr);
 
     std::string id;
     realm::app::App::Config config;
@@ -156,12 +156,12 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     client_config.user_agent_binding_info = user_agent_binding_info;
     SyncManager::shared().configure(client_config, config);
 
-    set_internal<T, AppClass<T>>(this_object, new SharedApp(SyncManager::shared().app()));
+    set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(SyncManager::shared().app()));
 }
 
 template<typename T>
 void AppClass<T>::get_app_id(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
-    auto app = *get_internal<T, AppClass<T>>(this_object);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
     return_value.set(Value::from_string(ctx, app->config().app_id));
 }
 
@@ -169,19 +169,19 @@ template<typename T>
 void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
-    auto app = *get_internal<T, AppClass<T>>(this_object);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
 
     auto credentials_object = Value::validated_to_object(ctx, args[0]);
     auto callback_function = Value::validated_to_function(ctx, args[1]);
 
-    app::AppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(credentials_object);
+    app::AppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(ctx, credentials_object);
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<FunctionType> protected_callback(ctx, callback_function);
     Protected<ObjectType> protected_this(ctx, this_object);
 
     auto callback_handler([=](SharedUser user, util::Optional<realm::app::AppError> error) {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
 
         if (error) {
             ObjectType object = Object::create_empty(protected_ctx);
@@ -208,7 +208,7 @@ template<typename T>
 void AppClass<T>::all_users(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(0);
 
-    auto app = *get_internal<T, AppClass<T>>(this_object);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
 
     auto users = Object::create_empty(ctx);
     for (auto user : app->all_users()) {
@@ -221,7 +221,7 @@ template<typename T>
 void AppClass<T>::current_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(0);
 
-    auto app = *get_internal<T, AppClass<T>>(this_object);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
     auto user = app->current_user();
     return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(user, app)));
 }
@@ -231,8 +231,8 @@ template<typename T>
 void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(1);
 
-    auto app = *get_internal<T, AppClass<T>>(this_object);
-    auto user = get_internal<T, UserClass<T>>(Value::validated_to_object(ctx, args[0], "user"));
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
 
     app->switch_user(*user);
     return_value.set(Value::from_undefined(ctx));

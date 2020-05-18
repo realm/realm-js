@@ -85,7 +85,7 @@ void ResponseHandlerClass<T>::on_success(ContextType ctx, ObjectType this_object
 
     args.validate_count(1);
 
-    auto response_handler = get_internal<T, ResponseHandlerClass<T>>(this_object);
+    auto response_handler = get_internal<T, ResponseHandlerClass<T>>(ctx, this_object);
     ObjectType response_object = Value::validated_to_object(ctx, args[0]);
 
     // Copy the response from JavaScript to an Object Store object
@@ -121,7 +121,7 @@ template<typename T>
 void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(1);
 
-    auto response_handler = get_internal<T, ResponseHandlerClass<T>>(this_object);
+    auto response_handler = get_internal<T, ResponseHandlerClass<T>>(ctx, this_object);
     ObjectType error_object = Value::validated_to_object(ctx, args[0]);
 
     // Copy the error from JavaScript to an Object Store response object
@@ -153,9 +153,7 @@ struct JavaScriptNetworkTransport : public JavaScriptNetworkTransportWrapper<T> 
     using Object = js::Object<T>;
     using Value = js::Value<T>;
 
-    JavaScriptNetworkTransport(ContextType ctx) : JavaScriptNetworkTransportWrapper<T>(ctx)  {
-        m_ctx = ctx;
-
+    JavaScriptNetworkTransport(ContextType ctx)  : JavaScriptNetworkTransportWrapper<T>(ctx) , m_ctx(ctx) {
         realm_constructor = Value::validated_to_object(m_ctx, Object::get_global(m_ctx, "Realm"));
         network_transport = Object::get_property(m_ctx, realm_constructor, "_networkTransport");
     };

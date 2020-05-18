@@ -277,7 +277,7 @@ void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, Argument
 
 template<typename T>
 void ResultsClass<T>::is_empty(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    return_value.set(get_internal<T, ResultsClass<T>>(this_object)->size() == 0);
+    return_value.set(get_internal<T, ResultsClass<T>>(ctx, this_object)->size() == 0);
 }
 
 template<typename T>

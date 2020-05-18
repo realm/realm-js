@@ -266,7 +266,14 @@ private:
 template<typename T>
 void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
-    auto user = *get_internal<T, UserClass<T>>(ctx, this_object);
+
+    User<T>* internal = get_internal<T, UserClass<T>>(ctx, this_object);
+    if (internal == nullptr) {
+        throw std::runtime_error("Invalid User instance. No internal instance is set");
+    }
+
+    auto user = internal->get();
+    //user.get();
     if (auto session = user->session_for_on_disk_path(Value::validated_to_string(ctx, args[0]))) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
     } else {
@@ -301,7 +308,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
 template<typename T>
 void SessionClass<T>::get_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
-        return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
+        return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(*new SharedUser(session->config().user))));
     } else {
         return_value.set_undefined();
     }

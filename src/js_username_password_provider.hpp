@@ -73,7 +73,7 @@ template<typename T>
 void UsernamePasswordProviderClientClass<T>::register_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(3);
 
-    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(this_object);
+    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(ctx, this_object);
 
     auto email = Value::validated_to_string(ctx, args[0], "email");
     auto password = Value::validated_to_string(ctx, args[1], "password");
@@ -86,7 +86,7 @@ template<typename T>
 void UsernamePasswordProviderClientClass<T>::confirm_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(3);
 
-    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(this_object);
+    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(ctx, this_object);
 
     auto token = Value::validated_to_string(ctx, args[0], "token");
     auto token_id = Value::validated_to_string(ctx, args[1], "token_id");
@@ -99,7 +99,7 @@ template<typename T>
 void UsernamePasswordProviderClientClass<T>::resend_confirmation_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(2);
 
-    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(this_object);
+    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(ctx, this_object);
 
     auto email = Value::validated_to_string(ctx, args[0], "email");
     auto callback = Value::validated_to_function(ctx, args[2], "callback");
@@ -111,7 +111,7 @@ template<typename T>
 void UsernamePasswordProviderClientClass<T>::send_reset_password_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(2);
 
-    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(this_object);
+    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(ctx, this_object);
 
     auto email = Value::validated_to_string(ctx, args[0], "email");
     auto callback = Value::validated_to_function(ctx, args[2], "callback");
@@ -123,7 +123,7 @@ template<typename T>
 void UsernamePasswordProviderClientClass<T>::reset_password(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(4);
 
-    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(this_object);
+    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(ctx, this_object);
 
     auto password = Value::validated_to_string(ctx, args[0], "password");
     auto token = Value::validated_to_string(ctx, args[1], "token");

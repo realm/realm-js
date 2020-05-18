@@ -113,25 +113,25 @@ typename T::Object UserClass<T>::create_instance(ContextType ctx, SharedUser use
 
 template<typename T>
 void UserClass<T>::get_identity(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::string identity = get_internal<T, UserClass<T>>(object)->get()->identity();
+    std::string identity = get_internal<T, UserClass<T>>(ctx, object)->get()->identity();
     return_value.set(identity);
 }
 
 template<typename T>
 void UserClass<T>::get_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::string token = get_internal<T, UserClass<T>>(object)->get()->refresh_token();
+    std::string token = get_internal<T, UserClass<T>>(ctx, object)->get()->refresh_token();
     return_value.set(token);
 }
 
 template<typename T>
 void UserClass<T>::is_logged_in(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto logged_in = get_internal<T, UserClass<T>>(object)->get()->is_logged_in();
+    auto logged_in = get_internal<T, UserClass<T>>(ctx, object)->get()->is_logged_in();
     return_value.set(logged_in);
 }
 
 template<typename T>
 void UserClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto state = get_internal<T, UserClass<T>>(object)->get()->state();
+    auto state = get_internal<T, UserClass<T>>(ctx, object)->get()->state();
 
     switch (state) {
     case SyncUser::State::LoggedOut:
@@ -158,7 +158,7 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
     static const String string_min_age     = "minAge";
     static const String string_max_age     = "maxAge";
 
-    auto user_profile = get_internal<T, UserClass<T>>(object)->get()->user_profile();
+    auto user_profile = get_internal<T, UserClass<T>>(ctx, object)->get()->user_profile();
 
     auto profile_object = Object::create_empty(ctx);
 #define STRING_TO_PROP(propname) \
@@ -182,16 +182,16 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
 }
 
 template<typename T>
-void UserClass<T>::logout(ContextType, ObjectType this_object, Arguments& args, ReturnValue &) {
+void UserClass<T>::logout(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
     args.validate_count(0);
-    get_internal<T, UserClass<T>>(this_object)->get()->log_out();
+    get_internal<T, UserClass<T>>(ctx, this_object)->get()->log_out();
 }
 
 template<typename T>
 void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(1);
 
-    auto user = get_internal<T, UserClass<T>>(this_object);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
@@ -199,7 +199,8 @@ void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Argument
     Protected<ObjectType> protected_this(ctx, this_object);
 
     auto callback_handler([=](util::Optional<app::AppError> error) {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
+
         ObjectType error_object = Object::create_empty(protected_ctx);
         if (error) {
             Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
@@ -217,9 +218,9 @@ void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Argument
 template<typename T>
 void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
     args.validate_count(2);
-    auto user = get_internal<T, UserClass<T>>(this_object);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
 
-    auto credentials = *get_internal<T, CredentialsClass<T>>(Value::validated_to_object(ctx, args[0], "credentials"));
+    auto credentials = *get_internal<T, CredentialsClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "credentials"));
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
@@ -227,7 +228,7 @@ void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arg
     Protected<ObjectType> protected_this(ctx, this_object);
 
     auto callback_handler([=](SharedUser shared_user, util::Optional<app::AppError> error) {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
 
         if (error) {
             ObjectType error_object = Object::create_empty(protected_ctx);
