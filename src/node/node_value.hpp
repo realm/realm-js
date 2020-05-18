@@ -82,6 +82,16 @@ inline bool node::Value::is_number(Napi::Env env, const Napi::Value& value) {
 }
 
 template<>
+inline bool node::Value::is_decimal128(Napi::Env env, const Napi::Value& value) {
+	return value.IsObject();  // FIXME: can we do better?
+}
+
+template<>
+inline bool node::Value::is_object_id(Napi::Env env, const Napi::Value& value) {
+	return value.IsObject(); // FIXME: can we do better?
+}
+
+template<>
 inline bool node::Value::is_object(Napi::Env env, const Napi::Value& value) {
 	return value.IsObject();
 }
@@ -218,6 +228,53 @@ inline Napi::Object node::Value::to_date(Napi::Env env, const Napi::Value& value
 	}
 
 	return to_object(env, value);
+}
+
+template<>
+inline Napi::Value node::Value::from_decimal128(Napi::Env env, const Decimal128& number) {
+	Napi::EscapableHandleScope scope(env);
+	 
+	Napi::Function realm_constructor = node::RealmClassConstructor.Value();
+	Napi::Object decimal_constructor = realm_constructor.Get("_Decimal128").As<Napi::Object>();
+	Napi::Function fromStringFunc = decimal_constructor.Get("fromString").As<Napi::Function>();
+	Napi::String numberAsString = Napi::String::New(env, number.to_string());
+	Napi::Value result = fromStringFunc.Call({ numberAsString }); 
+
+	return scope.Escape(result);
+}
+
+template<>
+inline Decimal128 node::Value::to_decimal128(Napi::Env env, const Napi::Value& value) {
+	Napi::HandleScope scope(env);
+
+	Napi::Object decimal128 = value.As<Napi::Object>();
+	Napi::Function toStringFunc = decimal128.Get("toString").As<Napi::Function>();
+	node::String string = toStringFunc.Call({}).As<Napi::String>();
+	std::string decimal128AsString = string;
+	Decimal128 result(decimal128AsString);
+	return result;
+}
+
+template<>
+inline Napi::Value node::Value::from_object_id(Napi::Env env, const ObjectId& objectId) {
+	Napi::EscapableHandleScope scope(env);
+
+	Napi::Function realm_constructor = node::RealmClassConstructor.Value();
+	Napi::Function object_id_constructor = realm_constructor.Get("_ObjectId").As<Napi::Function>();
+	Napi::Value result = object_id_constructor.New({ Napi::String::New(env, objectId.to_string()) });
+	return scope.Escape(result);
+}
+
+template<>
+inline ObjectId node::Value::to_object_id(Napi::Env env, const Napi::Value& value) {
+	Napi::HandleScope scope(env);
+
+	Napi::Object objectId = value.As<Napi::Object>();
+	Napi::Function toHexStringFunc = objectId.Get("toHexString").As<Napi::Function>();
+	node::String string = toHexStringFunc.Call({}).As<Napi::String>();
+	std::string objectIdAsString = string;
+	ObjectId result(objectIdAsString.c_str());
+	return result;
 }
 
 } // js

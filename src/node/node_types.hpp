@@ -32,6 +32,8 @@
 namespace realm {
 namespace node {
 
+extern Napi::FunctionReference RealmClassConstructor;
+
 struct Types {
 	using Context = Napi::Env;
 	using GlobalContext = Napi::Env;

@@ -52,6 +52,7 @@ static node::Protected<Napi::Symbol> ExternalSymbol;
 static Napi::FunctionReference ObjectSetPrototypeOf;
 static Napi::FunctionReference GlobalProxy;
 static Napi::FunctionReference FunctionBind;
+static Napi::FunctionReference RealmClassConstructor;
 
 static void node_class_init(Napi::Env env) {
 	auto setPrototypeOf = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
@@ -993,6 +994,13 @@ Napi::Function ObjectWrap<ClassType>::init_class(Napi::Env env) {
 		
 		ctorPrototype.DefineProperties(properties);
 	}
+
+	bool isRealmClass = std::is_same<ClassType, realm::js::RealmClass<realm::node::Types>>::value;
+	if (isRealmClass) {
+		RealmClassConstructor = Napi::Persistent(ctor);
+		RealmClassConstructor.SuppressDestruct();
+	}
+
 
 	return ctor;
 }

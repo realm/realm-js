@@ -134,8 +134,8 @@ struct Value {
     static ValueType from_boolean(ContextType, bool);
     static ValueType from_null(ContextType);
     static ValueType from_number(ContextType, double);
-    static ValueType from_decimal128(ContextType, Decimal128);
-    static ValueType from_object_id(ContextType, ObjectId);
+    static ValueType from_decimal128(ContextType, const Decimal128&);
+    static ValueType from_object_id(ContextType, const ObjectId&);
     static ValueType from_string(ContextType ctx, const char *s) { return s ? from_nonnull_string(ctx, s) : from_null(ctx); }
     static ValueType from_string(ContextType ctx, StringData s) { return s ? from_nonnull_string(ctx, s) : from_null(ctx); }
     static ValueType from_string(ContextType ctx, const std::string& s) { return from_nonnull_string(ctx, s.c_str()); }
