@@ -73,7 +73,6 @@ inline typename T::Function UserAPIKeyProviderClientClass<T>::create_constructor
 template<typename T>
 typename T::Object make_api_key(typename T::Context ctx, util::Optional<app::App::UserAPIKey> api_key) {
     using ObjectType = typename T::Object;
-    using ValueType = typename T::Value;
 
     ObjectType api_key_object = Object<T>::create_empty(ctx);
     if (api_key) {
@@ -205,8 +204,6 @@ void UserAPIKeyProviderClientClass<T>::fetch_api_keys(ContextType ctx, ObjectTyp
 
 template<typename T>
 app::App::UserAPIKey to_api_key(typename T::Context ctx, typename T::Object api_key_object) {
-    using FunctionType = typename T::Function;
-    using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
     using String = js::String<T>;
 

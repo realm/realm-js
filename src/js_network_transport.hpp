@@ -122,7 +122,9 @@ void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, 
     args.validate_count(1);
 
     auto response_handler = get_internal<T, ResponseHandlerClass<T>>(ctx, this_object);
-    ObjectType error_object = Value::validated_to_object(ctx, args[0]);
+
+    //FIXME
+    //ObjectType error_object = Value::validated_to_object(ctx, args[0]);
 
     // Copy the error from JavaScript to an Object Store response object
     int http_status_code = 200; // FIXME
