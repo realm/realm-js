@@ -37,7 +37,7 @@
 namespace realm {
 	namespace js {
 		template<typename T>
-		class RealmObjectClass;
+		struct RealmObjectClass;
 		
 		template<typename T>
 		class RealmClass;
