@@ -1,4 +1,4 @@
-10.0.0-alpha.6 Release notes (2020-5-12)
+10.0.0 Release notes (2020-5-19)
 =============================================================
 NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 NOTE 2: Requires iOS 12 and React Natives 0.61.5.
