@@ -663,7 +663,7 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
     in >> log_level_2; // Throws
     if (!in || !in.eof())
         throw std::runtime_error("Bad log level");
-    syncManagerShared<T>(ctx).set_log_level(log_level_2);
+    SyncManager::shared().set_log_level(log_level_2);
 }
 
 #if REALM_PLATFORM_NODE
@@ -671,7 +671,7 @@ template<typename T>
 void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
     auto callback_fn = Value::validated_to_function(ctx, args[0], "logger_callback");
-    syncManagerShared<T>(ctx).set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
+    SyncManager::shared().set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
 }
 #endif
 
