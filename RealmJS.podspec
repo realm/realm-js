@@ -83,6 +83,7 @@ Pod::Spec.new do |s|
                                  '"$(PODS_TARGET_SRCROOT)/src/object-store/external/json/"',
                                  '"$(PODS_TARGET_SRCROOT)/vendor/"',
                                  '"$(PODS_TARGET_SRCROOT)/vendor/realm-ios/include/"',
+                                 '"$(PODS_TARGET_SRCROOT)/vendor/realm-ios/include/realm/"',
                                  '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
                                  '"$(PODS_ROOT)/Headers/Public/React-Core/"'
                                  # "'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting
