@@ -86,16 +86,11 @@ stage('build') {
   nodeVersions.each { nodeVersion ->
     parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
     parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-    parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
-    parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
   }
   electronVersions.each { electronVersion ->
     parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
     parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
-    parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
-    parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
   }
-  parallelExecutors["Android React Native"] = buildAndroid()
   parallel parallelExecutors
 }
 
@@ -103,40 +98,6 @@ if (gitTag) {
   stage('publish') {
     publish(nodeVersions, electronVersions, dependencies, gitTag)
   }
-}
-
-stage('test') {
-  parallelExecutors = [:]
-  for (def nodeVersion in nodeVersions) {
-    parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
-    parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
-    parallelExecutors["macOS test runners ${nodeVersion}"] = testMacOS("test-runners Release ${nodeVersion}")
-    // parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release ${nodeVersion}")
-    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux("test-runners Release ${nodeVersion}")
-    parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
-  }
-  // parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
-  parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  // parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
-  parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
-  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
-  //android_react_tests: testAndroid('react-tests-android', {
-  //  junit 'tests/react-test-app/tests.xml'
-  //}),
-  parallel parallelExecutors
-}
-
-stage('integration tests') {
-  parallel(
-    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
-    'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
-    'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
-    'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
-    'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests('10.15.1', it) },
-    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests('10.15.1', it) }
-  )
 }
 
 // == Methods
@@ -411,7 +372,7 @@ def buildAndroid() {
 def publish(nodeVersions, electronVersions, dependencies, tag) {
   myNode('docker') {
         //for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
-    for (def platform in ['macos', 'linux', 'windows-x64']) {
+    for (def platform in ['macos', 'linux']) {
       for (def version in nodeVersions) {
         unstash "pre-gyp-${platform}-${version}"
       }
