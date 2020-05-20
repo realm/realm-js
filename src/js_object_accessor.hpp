@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <realm/keys.hpp>
+
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
@@ -90,7 +92,7 @@ public:
     }
 
     template<typename T>
-    T unbox(ValueType value, realm::CreatePolicy policy = realm::CreatePolicy::Skip, size_t current_row = realm::npos);
+    T unbox(ValueType value, realm::CreatePolicy policy = realm::CreatePolicy::Skip, ObjKey current_obj = ObjKey());
 
     template<typename T>
     util::Optional<T> unbox_optional(ValueType value) {
@@ -117,11 +119,11 @@ public:
     ValueType box(realm::Object realm_object) {
         return RealmObjectClass<JSEngine>::create_instance(m_ctx, std::move(realm_object));
     }
-    ValueType box(RowExpr row) {
-        if (!row.is_attached()) {
+    ValueType box(Obj obj) {
+        if (!obj.is_valid()) {
             return Value::from_null(m_ctx);
         }
-        return RealmObjectClass<JSEngine>::create_instance(m_ctx, realm::Object(m_realm, *m_object_schema, row));
+        return RealmObjectClass<JSEngine>::create_instance(m_ctx, realm::Object(m_realm, *m_object_schema, obj));
     }
     ValueType box(realm::List list) {
         return ListClass<JSEngine>::create_instance(m_ctx, std::move(list));
@@ -176,63 +178,63 @@ private:
 namespace _impl {
 template<typename JSEngine>
 struct Unbox<JSEngine, bool> {
-    static bool call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static bool call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return js::Value<JSEngine>::validated_to_boolean(ctx->m_ctx, value, "Property");
     }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, int64_t> {
-    static int64_t call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static int64_t call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
     }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, float> {
-    static float call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static float call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
     }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, double> {
-    static double call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static double call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
     }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<bool>> {
-    static util::Optional<bool> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static util::Optional<bool> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<bool>(value);
 }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<int64_t>> {
-    static util::Optional<int64_t> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static util::Optional<int64_t> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<int64_t>(value);
 }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<float>> {
-    static util::Optional<float> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static util::Optional<float> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<float>(value);
 }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<double>> {
-    static util::Optional<double> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static util::Optional<double> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<double>(value);
 }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, StringData> {
-    static StringData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static StringData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         if (ctx->is_null(value)) {
             return StringData();
         }
@@ -243,7 +245,7 @@ struct Unbox<JSEngine, StringData> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, BinaryData> {
-    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value value, realm::CreatePolicy, size_t) {
+    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value value, realm::CreatePolicy, ObjKey) {
         if (ctx->is_null(value)) {
             return BinaryData();
         }
@@ -270,14 +272,14 @@ struct Unbox<JSEngine, BinaryData> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
-    static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         throw std::runtime_error("'Any' type is unsupported");
     }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Timestamp> {
-    static Timestamp call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, size_t) {
+    static Timestamp call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         if (ctx->is_null(value)) {
             return Timestamp();
         }
@@ -297,8 +299,8 @@ struct Unbox<JSEngine, Timestamp> {
 };
 
 template<typename JSEngine>
-struct Unbox<JSEngine, RowExpr> {
-    static RowExpr call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, size_t current_row) {
+struct Unbox<JSEngine, Obj> {
+    static Obj call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
         using Value = js::Value<JSEngine>;
         using ValueType = typename JSEngine::Value;
 
@@ -306,7 +308,7 @@ struct Unbox<JSEngine, RowExpr> {
         if (js::Object<JSEngine>::template is_instance<RealmObjectClass<JSEngine>>(ctx->m_ctx, object)) {
             auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(ctx->m_ctx, object);
             if (realm_object->realm() == ctx->m_realm) {
-                return realm_object->row();
+                return realm_object->obj();
             }
             if (policy == realm::CreatePolicy::Skip) {
                 throw std::runtime_error("Realm object is from another Realm");
@@ -322,14 +324,23 @@ struct Unbox<JSEngine, RowExpr> {
 
         auto child = realm::Object::create<ValueType>(*ctx, ctx->m_realm, *ctx->m_object_schema,
                                                       static_cast<ValueType>(object), policy, current_row);
-        return child.row();
+        return child.obj();
     }
 };
+
+// FIXME: Why do we need this? It is required in order to compile and seems to be used by the query builder
+template<typename JSEngine>
+struct Unbox<JSEngine, ObjKey> {
+    static ObjKey call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
+        return Unbox<JSEngine, Obj>::call(ctx, value, policy, current_row).get_key();
+    }
+};
+
 } // namespace _impl
 
 template<typename T>
 template<typename U>
-U NativeAccessor<T>::unbox(ValueType value, realm::CreatePolicy policy, size_t current_row) {
+U NativeAccessor<T>::unbox(ValueType value, realm::CreatePolicy policy, ObjKey current_row) {
     return _impl::Unbox<T, U>::call(this, std::move(value), policy, current_row);
 }
 

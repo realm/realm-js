@@ -1247,7 +1247,7 @@ module.exports = {
         // bool, string, date & data columns don't support 'avg'
         ['bool', 'string', 'date', 'data'].forEach(colName => {
             TestCase.assertThrowsContaining(() => object.list.avg(colName + 'Col'),
-                                            `Cannot average property '${colName}Col': operation not supported for '${colName}' properties`);
+                                            `Cannot avg property '${colName}Col': operation not supported for '${colName}' properties`);
         });
 
         // bool, string, date & data columns don't support 'sum'

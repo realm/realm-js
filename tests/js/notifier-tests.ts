@@ -28,7 +28,6 @@ const ipcSchema = [{
         path: 'string',
         insertions: 'int[]',
         deletions: 'int[]',
-        modifications: 'int[]',
         newModifications: 'int[]',
         oldModifications: 'int[]'
     }
@@ -52,7 +51,7 @@ function unexpectedNotificationError(changes) {
     let err = `unexpected notification for ${changes.path} (${Object.keys(changes.changes).length}):\n`;
     for (const objName in changes.changes) {
         const change = changes.changes[objName];
-        err += ` - ${objName}: {${change.insertions}; ${change.deletions}; ${change.modifications}}\n`
+        err += ` - ${objName}: {${change.insertions}; ${change.deletions}; ${change.newModifications}; ${change.oldModifications}}\n`
     }
     return err;
 }
@@ -155,18 +154,24 @@ function availablePromise(path, action) {
     });
 }
 
+function checkArrayEqualityUnordered(array1, array2) {
+    expect(array1.length).toEqual(array2.length);
+    expect(array1.sort()).toEqual(array2.sort());
+}
+
 function notificationPromise(regex, action, notification) {
     regex = `${notificationFilterPrefix}${regex}`;
+    const propertyToCheck = 'int';
     return changeObjectPromise(action, (changes) => {
         expect(changes.path).toMatch(regex);
         expect(Object.keys(changes.changes)).toEqual(Object.keys(notification));
         for (const objectType in notification) {
             const expected = notification[objectType];
             const actual = changes.changes[objectType];
-            expect(actual.insertions).toEqual(expected.insertions || []);
-            expect(actual.deletions).toEqual(expected.deletions || []);
-            expect(actual.modifications).toEqual(expected.modifications || []);
-            expect(actual.oldModifications).toEqual(expected.modifications || []);
+            checkArrayEqualityUnordered(actual.insertions.map(obj => obj[propertyToCheck]), expected.insertions || []);
+            checkArrayEqualityUnordered(actual.deletions.map(obj => obj[propertyToCheck]), expected.deletions || []);
+            checkArrayEqualityUnordered(actual.newModifications.map(obj => obj[propertyToCheck]), expected.newModifications || []);
+            checkArrayEqualityUnordered(actual.oldModifications.map(obj => obj[propertyToCheck]), expected.oldModifications || []);
         }
     });
 }
@@ -363,7 +368,7 @@ describe('Notifier', () => {
                 realm.objects('IntObject')[0].int = 2;
                 realm.delete(realm.objects('IntObject')[1]);
             }),
-            { IntObject: { deletions: [1], modifications: [0] } });
+            { IntObject: { deletions: [1], newModifications: [2], oldModifications: [0] } });
         realm.close();
     });
 
@@ -382,7 +387,7 @@ describe('Notifier', () => {
         await addChangeListener('.*', rosController);
         await notificationPromise('test',
             () => realm.write(() => realm.create('IntObject', [0])),
-            { IntObject: { insertions: [1] } });
+            { IntObject: { insertions: [0] } });
         realm.close();
     }, LONG_TIMEOUT);
 
@@ -434,7 +439,7 @@ describe('Notifier', () => {
                 realm.create('IntObject', [1]);
                 realm.create('IntObject', [2]);
             }),
-            { IntObject: { insertions: [0, 1] } });
+            { IntObject: { insertions: [1, 2] } });
         await changeObjectPromise(
             () => realm.write(() => realm.objects('IntObject')[0].int = 3),
             (changes) => {
@@ -763,13 +768,13 @@ describe('Notifier', () => {
         const [callback, realm] = await createRealmAndChangeListener();
         await notificationPromise('test',
             () => realm.write(() => realm.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
         realm.close();
 
         // Verify that the local copy exists
         const root = Realm.Sync.getListenerDirectory();
         const realmFile = rosController.adminRealm.objects('RealmFile').filtered('path == "/demo/test"')[0];
-        const path = `${root}/realms${realmFile.path}/${realmFile._objectId()}.realm`;
+        const path = `${root}/realms${realmFile.path}/${realmFile.objectId()}.realm`;
         expect(fs.existsSync(path)).toBeTruthy();
 
         await Realm.Sync.addListener(config(), 'delete', enqueuePendingChange);
@@ -861,13 +866,14 @@ describe('Multi-process Notifier', () => {
         }
     }
 
-    function expectEvent(event, type, path, insertions=[], deletions=[], modifications=[]) {
+    function expectEvent(event, type, path, insertions=[], deletions=[], oldModifications=[], newModifications=[]) {
         expect(event.type).toEqual(type);
         expect(event.path).toEqual(`/${currentTestName}/${path}`);
+
         expectArrayishEqual(event.insertions, insertions);
         expectArrayishEqual(event.deletions, deletions);
-        expectArrayishEqual(event.modifications, modifications);
-        expectArrayishEqual(event.oldModifications, modifications);
+        expectArrayishEqual(event.oldModifications, oldModifications);
+        expectArrayishEqual(event.newModifications, newModifications);
     }
 
     // expect an event for each of the realms at the paths present in events
@@ -879,7 +885,7 @@ describe('Multi-process Notifier', () => {
             const expected = events[key];
             expect(expected).toBeDefined();
             delete events[key];
-            expectEvent(actual, expected[0], key, expected[1], expected[1], expected[2]);
+            expectEvent(actual, expected[0], key, expected[1], expected[2], expected[3], expected[4]);
         }
     }
 
@@ -926,17 +932,17 @@ describe('Multi-process Notifier', () => {
         await expectNotifications('test', async (next) => {
             expectEvent(await next(), 'available', 'test');
 
-            realm.write(() => realm.create('IntObject', [0]));
-            expectEvent(await next(), 'change', 'test', [0]);
+            realm.write(() => realm.create('IntObject', [55]));
+            expectEvent(await next(), 'change', 'test', [55]);
 
-            realm.write(() => realm.create('IntObject', [0]));
-            expectEvent(await next(), 'change', 'test', [1]);
+            realm.write(() => realm.create('IntObject', [77]));
+            expectEvent(await next(), 'change', 'test', [77]);
 
-            realm.write(() => { realm.objects('IntObject')[1].int = 2; });
-            expectEvent(await next(), 'change', 'test', [], [], [1]);
+            realm.write(() => { realm.objects('IntObject').filtered('int = 77')[0].int = 2; });
+            expectEvent(await next(), 'change', 'test', [], [], [77], [2]);
 
-            realm.write(() => { realm.delete(realm.objects('IntObject')[0]); });
-            expectEvent(await next(), 'change', 'test', [0], [0, 1], []);
+            realm.write(() => { realm.delete(realm.objects('IntObject').filtered('int == 55')[0]); });
+            expectEvent(await next(), 'change', 'test', [], [55], [], []);
         });
         realm.close();
     });

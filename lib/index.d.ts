@@ -30,7 +30,14 @@ declare namespace Realm {
         oldModifications: number[];
     }
 
-    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
+    interface ObjectChanges {
+        insertions: Object[];
+        deletions: Object[];
+        newModifications: Object[];
+        oldModifications: Object[];
+    }
+
+    type CollectionChangeCallback<T> = (collection: Collection<T>, change: ObjectChanges) => void;
 
     /**
      * PropertyType
@@ -166,6 +173,8 @@ declare namespace Realm {
          * @returns number
          */
         linkingObjectsCount(): number;
+
+        objectId(): string;
 
         /**
          * @returns void
@@ -622,7 +631,7 @@ declare namespace Realm.Sync {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.ChangeEvent.html }
      */
     interface ChangeEvent {
-        readonly changes: { [object_type: string]: CollectionChangeSet };
+        readonly changes: { [object_type: string]: ObjectChanges };
         readonly oldRealm: Realm;
         readonly path: string;
         readonly realm: Realm;
@@ -928,6 +937,13 @@ declare class Realm {
      * @returns {T | undefined}
      */
     objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string): T & Realm.Object | undefined;
+
+    /**
+     * @param  {string|Realm.ObjectType|Function} type
+     * @param  {string} id
+     * @returns {T | undefined}
+     */
+    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, id: string): T & Realm.Object | undefined;
 
     /**
      * @param  {string|Realm.ObjectType|Function} type

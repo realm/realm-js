@@ -174,7 +174,7 @@ describe('Adapter', () => {
         const realmsSeenInChangeCallback: string[] = [];
         await new Promise(async (resolve, reject) => {
             const timeout = setTimeout(() => reject('Notification not recieved'), notificationNotReceivedTimeout);
-    
+
             function callback(realmPath: string) {
                 realmsSeenInChangeCallback.push(realmPath);
                 if (realmsSeenInChangeCallback.length == 2) {
@@ -182,7 +182,7 @@ describe('Adapter', () => {
                     resolve();
                 }
             }
-    
+
             adapter = new Realm.Sync.Adapter(tmpDir.name, `realm://localhost:${rosController.httpPort}`,
                 rosController.adminUser, predicate, callback);
         });
@@ -251,6 +251,8 @@ describe('Adapter', () => {
     }
 
     function applyInstructions(objects, instructions, schema) {
+        // console.log(instructions);
+        // console.log("");
         for (var inst of instructions) {
             // for clear wipe our map of objects
             if (inst.type == 'CLEAR') {
@@ -683,17 +685,17 @@ describe('Adapter', () => {
                 var testObjects = realm.objects('TestObject');
                 expect(testObjects.length).toBe(5);
                 realm.delete(testObjects[0]);
-                realm.delete(testObjects[1]);
+                realm.delete(testObjects[3]);
 
                 var intObjects = realm.objects('IntPrimaryObject');
                 expect(intObjects.length).toBe(5);
                 realm.delete(intObjects[0]);
-                realm.delete(intObjects[1]);
+                realm.delete(intObjects[3]);
 
                 var stringObjects = realm.objects('StringPrimaryObject');
                 expect(stringObjects.length).toBe(5);
                 realm.delete(stringObjects[0]);
-                realm.delete(stringObjects[1]);
+                realm.delete(stringObjects[3]);
 
                 // change property vaulue for one of the moved objects
                 intObjects[1].dataCol = 'changed to -1';
@@ -750,7 +752,7 @@ describe('Adapter', () => {
                 var testObjects = realm.objects('TestObject');
                 expect(testObjects.length).toBe(6);
                 realm.delete(testObjects[2]);
-                realm.delete(testObjects[3]);
+                realm.delete(testObjects[2]);
 
                 realm.create('IntPrimaryObject', [6, 'delete 6']);
                 realm.create('IntPrimaryObject', [7, 'delete 7']);
@@ -986,9 +988,10 @@ describe('Adapter', () => {
             {name: 'Object1', properties: {prop3: 'string?', prop4: 'Object2?'}},
             {name: 'Object2', properties: {prop5: 'bool', prop6: 'double'}},
         ];
-        (await rosController.createRealm('test1', newSchema)).close();
+        const realm = await rosController.createRealm('test1', newSchema);
+        await realm.syncSession.uploadAllLocalChanges();
+        realm.close();
         await nextChangePromise;
-
         const expected = [
             {
                 type: 'ADD_PROPERTIES',

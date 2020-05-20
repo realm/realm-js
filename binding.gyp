@@ -36,7 +36,6 @@
         "src/js_realm.cpp",
         "src/node/node_init.cpp",
         "src/node/platform.cpp",
-
         "src/concurrent_deque.hpp",
         "src/js_class.hpp",
         "src/js_collection.hpp",

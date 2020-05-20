@@ -427,25 +427,6 @@ module.exports = {
     },
 
     testDates: function() {
-        Realm.copyBundledRealmFiles();
-
-        // test file format upgrade
-        var realm_v3 = new Realm({path: 'dates-v3.realm', schema: [schemas.DateObject]});
-        TestCase.assertEqual(realm_v3.objects('Date').length, 2);
-        TestCase.assertEqual(realm_v3.objects('Date')[0].currentDate.getTime(), 1462500087955);
-        TestCase.assertEqual(realm_v3.objects('Date')[0].nullDate.getTime(), 1462500087955);
-        TestCase.assertEqual(realm_v3.objects('Date')[1].currentDate.getTime(), -10000);
-        TestCase.assertEqual(realm_v3.objects('Date')[1].nullDate, null);
-
-        // get new file format is not upgraded
-        var realm_v5 = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
-        TestCase.assertEqual(realm_v5.objects('Date').length, 2);
-        TestCase.assertEqual(realm_v3.objects('Date')[0].currentDate.getTime(), 1462500087955);
-        TestCase.assertEqual(realm_v3.objects('Date')[0].nullDate.getTime(), 1462500087955);
-        TestCase.assertEqual(realm_v3.objects('Date')[1].currentDate.getTime(), -10000);
-        TestCase.assertEqual(realm_v3.objects('Date')[1].nullDate, null);
-
-        // test different dates
         var realm = new Realm({schema: [schemas.DateObject]});
         const stringifiedDate = new Date();
         realm.write(function() {
@@ -483,11 +464,6 @@ module.exports = {
     },
 
     testSetLink: function() {
-        // FIXME: disabled for React Native, see https://github.com/realm/realm-js/issues/2072
-        if (!isNodeProcess) {
-            return;
-        }
-
         const schema = [
             {
                 name: 'PrimaryInt',

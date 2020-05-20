@@ -186,6 +186,9 @@ module.exports = {
         TestCase.assertThrows(function() {
             realm.objects('LinkTypesObject').filtered('objectCol = $0', object);
         });
+
+        realm2.close();
+        realm.close();
     },
 
     testResultsSorted: function() {

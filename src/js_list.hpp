@@ -37,7 +37,6 @@ class NativeAccessor;
 template<typename T>
 class List : public realm::List {
   public:
-    List(std::shared_ptr<realm::Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept : realm::List(r, l) {}
     List(const realm::List &l) : realm::List(l) {}
 
     std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
@@ -125,7 +124,7 @@ typename T::Object ListClass<T>::create_instance(ContextType ctx, realm::List li
 template<typename T>
 void ListClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(ctx, object);
-    return_value.set((uint32_t)list->size());
+    return_value.set(static_cast<uint32_t>(list->size()));
 }
 
 template<typename T>

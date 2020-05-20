@@ -194,12 +194,12 @@ static json read_object_properties(Object& object) {
     // Send the values of the primitive and short string properties directly
     // as the overhead of doing so is tiny compared to even a single RPC request
     auto& object_schema = object.get_object_schema();
-    auto row = object.row();
+    auto obj = object.obj();
     for (auto& property : object_schema.persisted_properties) {
         if (is_array(property.type)) {
             continue;
         }
-        if (is_nullable(property.type) && row.is_null(property.table_column)) {
+        if (is_nullable(property.type) && obj.is_null(property.column_key)) {
             cache[property.name] = {{"value", json(nullptr)}};
             continue;
         }
@@ -207,12 +207,12 @@ static json read_object_properties(Object& object) {
             cache[property.name] = {{"value", v}};
         };
         switch (property.type & ~PropertyType::Flags) {
-            case PropertyType::Bool:   cache_value(row.get_bool(property.table_column)); break;
-            case PropertyType::Int:    cache_value(row.get_int(property.table_column)); break;
-            case PropertyType::Float:  cache_value(row.get_float(property.table_column)); break;
-            case PropertyType::Double: cache_value(row.get_double(property.table_column)); break;
+            case PropertyType::Bool:   cache_value(obj.get<bool>(property.column_key)); break;
+            case PropertyType::Int:    cache_value(obj.get<int64_t>(property.column_key)); break;
+            case PropertyType::Float:  cache_value(obj.get<float>(property.column_key)); break;
+            case PropertyType::Double: cache_value(obj.get<double>(property.column_key)); break;
             case PropertyType::Date: {
-                auto ts = row.get_timestamp(property.table_column);
+                auto ts = obj.get<Timestamp>(property.column_key);
                 cache[property.name] = {
                     {"type", RealmObjectTypesDate},
                     {"value", ts.get_seconds() * 1000.0 + ts.get_nanoseconds() / 1000000.0},
@@ -221,7 +221,7 @@ static json read_object_properties(Object& object) {
             }
             break;
             case PropertyType::String: {
-                auto str = row.get_string(property.table_column);
+                auto str = obj.get<StringData>(property.column_key);
                 // A completely abitrary upper limit on how big of a string we'll pre-cache
                 if (str.size() < 100) {
                     cache_value(str);
@@ -715,6 +715,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"data", realm_dict}
         };
     }
+#if REALM_ENABLE_SYNC
     else if (jsc::Object::is_instance<js::UserClass<jsc::Types>>(m_context, js_object)) {
         auto user = *jsc::Object::get_internal<js::UserClass<jsc::Types>>(m_context, js_object);
         json user_dict {
@@ -757,6 +758,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"id", store_object(js_object)},
         };
     }
+#endif
     else if (jsc::Value::is_array(m_context, js_object)) {
         uint32_t length = jsc::Object::validated_get_length(m_context, js_object);
         std::vector<json> array;

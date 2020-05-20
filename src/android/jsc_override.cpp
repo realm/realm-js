@@ -193,7 +193,7 @@ static void swap_function()
 
     s_swapped = !s_swapped;
 
-    __builtin___clear_cache((void *)page_start, (void *)code_end);
+    __builtin___clear_cache((char *)page_start, (char *)code_end);
 
     // Return this region to no longer being writable.
     mprotect((void*)page_start, code_end - page_start, PROT_READ | PROT_EXEC);

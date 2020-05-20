@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "command-line-args": "^4.0.6",
-    "decompress": "^4.2.0",
     "electron": "^8.1.1",
     "electron-builder": "^22.3.2",
     "https-proxy-agent": "^2.2.3",

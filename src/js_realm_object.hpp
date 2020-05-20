@@ -222,28 +222,28 @@ void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments
         throw std::invalid_argument("Linked object type must have a primary key.");
     }
 
-    auto table = realm_object->row().get_table();
-    auto linked_table = table->get_link_target(prop->table_column);
+    auto table = realm_object->obj().get_table();
+    auto linked_table = table->get_link_target(prop->column_key);
 
-    size_t row_ndx = realm::not_found;
+    ObjKey obj_key = {};
     if (linked_pk->type == realm::PropertyType::String) {
-        row_ndx = linked_table->find_first(linked_pk->table_column,
+        obj_key = linked_table->find_first(linked_pk->column_key,
                                            accessor.template unbox<StringData>(args[1]));
     }
     else if (is_nullable(linked_pk->type)) {
-        row_ndx = linked_table->find_first(linked_pk->table_column,
+        obj_key = linked_table->find_first(linked_pk->column_key,
                                            accessor.template unbox<util::Optional<int64_t>>(args[1]));
     }
     else {
-        row_ndx = linked_table->find_first(linked_pk->table_column,
+        obj_key = linked_table->find_first(linked_pk->column_key,
                                            accessor.template unbox<int64_t>(args[1]));
     }
 
-    if (row_ndx == realm::not_found) {
-        realm_object->row().nullify_link(prop->table_column);
+    if (obj_key) {
+        realm_object->obj().set(prop->column_key, obj_key);
     }
     else {
-        realm_object->row().set_link(prop->table_column, row_ndx);
+        realm_object->obj().set_null(prop->column_key);
     }
 }
 
@@ -251,8 +251,9 @@ template<typename T>
 void RealmObjectClass<T>::get_realm(ContextType ctx, ObjectType object, ReturnValue& return_value) {
     return_value.set_undefined();
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
-    if (!realm_object) {
-        return;
+    if (realm_object) {
+        ObjectType realm_obj = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm_object->realm()));
+        return_value.set(realm_obj);
     }
 
     ObjectType realm_obj = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm_object->realm()));
@@ -285,22 +286,14 @@ template<typename T>
 void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Arguments &args, ReturnValue& return_value) {
     args.validate_maximum(0);
 
-#if REALM_ENABLE_SYNC
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
     if (!realm_object) {
         throw std::runtime_error("Invalid 'this' object");
     }
 
-    const Group& group = realm_object->realm()->read_group();
-    if (!sync::has_object_ids(group))
-        throw std::logic_error("_objectId() can only be used with objects from synced Realms.");
-
-    const Row& row = realm_object->row();
-    auto object_id = sync::object_id_for_row(group, *row.get_table(), row.get_index());
-    return_value.set(object_id.to_string());
-#else
-    throw std::logic_error("_objectId() can only be used with objects from synced Realms.");
-#endif
+    const Obj& obj = realm_object->obj();
+    auto obj_id = obj.get_object_id();
+    return_value.set(obj_id.to_string());
 }
 
 template<typename T>
@@ -333,8 +326,9 @@ void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arg
         return;
     }
 
-    return_value.set(self->row().get_table() == other->row().get_table()
-                     && self->row().get_index() == other->row().get_index());
+    // FIXME: is self == other good enough?
+    return_value.set(self->obj().get_table() == other->obj().get_table()
+                     && self->obj().get_key() == other->obj().get_key());
 }
 
 template<typename T>
@@ -344,9 +338,8 @@ void RealmObjectClass<T>::linking_objects_count(ContextType ctx, ObjectType obje
         throw std::runtime_error("Invalid 'this' object");
     }
 
-    const Row& row = realm_object->row();
-
-    return_value.set((uint32_t)row.get_backlink_count());
+    const Obj& obj = realm_object->obj();
+    return_value.set(static_cast<uint32_t>(obj.get_backlink_count()));
 }
 
 
@@ -374,12 +367,13 @@ void RealmObjectClass<T>::add_listener(ContextType ctx, ObjectType this_object, 
                 deleted = true;
             }
             else {
-                auto table = realm_object->row().get_table();
-                for (size_t i = 0; i < change_set.columns.size(); ++i) {
-                    if (change_set.columns[i].empty()) {
+                auto table = realm_object->obj().get_table();
+                for (const auto &col : change_set.columns) {
+                    if (col.second.empty()) {
                         continue;
                     }
-                    scratch.push_back(Value::from_string(protected_ctx, std::string(table->get_column_name(i))));
+                    ColKey col_key(col.first);
+                    scratch.push_back(Value::from_string(protected_ctx, std::string(table->get_column_name(col_key))));
                 }
             }
 
@@ -462,8 +456,8 @@ void realm::js::RealmObjectClass<T>::linking_objects(ContextType ctx, ObjectType
     }
 
     realm::TableRef table = ObjectStore::table_for_object_type(realm_object->realm()->read_group(), target_object_schema->name);
-    auto row = realm_object->row();
-    auto tv = row.get_table()->get_backlink_view(row.get_index(), table.get(), link_property->table_column);
+    auto obj = realm_object->obj();
+    auto tv = obj.get_backlink_view(table, link_property->column_key);
 
     return_value.set(ResultsClass<T>::create_instance(ctx, realm::Results(realm_object->realm(), std::move(tv))));
 }

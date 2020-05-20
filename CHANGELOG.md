@@ -1,3 +1,65 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* Realm Studio: 3.11 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
+* File format: Generates Realms with format v10 (reads and upgrades previous file format).
+
+### Internal
+* None.
+
+6.0.1 Release notes (2020-5-18)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Added missing file to Android builds. The bug caused RN Android to crash with error `cannot locate symbol "_ZN5realm4util9Scheduler12make_defaultEv"`. ([#2884](https://github.com/realm/realm-js/issues/2884))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* Realm Studio: 3.11 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
+* File format: Generates Realms with format v10 (reads and upgrades previous formats).
+
+### Internal
+* None.
+
+6.0.0 Release notes (2020-5-14)
+=============================================================
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format. 
+
+### Breaking changes
+* Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
+* `Realm.delete(Realm.Collection)` will conserve the order i.e., if a `Realm.Results` is [1, 2, 3] (pseudo-notation), `Realm.delete(2)` will produce [1, 3].
+* It is only possible to compact a Realm when a single instance is open. Consider to use configuration parameter `shouldCompactOnLaunch` in the future.
+* Schemas are not cached but will be reread when opening a Realm. This has an impact on default values as they are not persisted in the Realm files.
+
+### Enhancements
+* None.
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* Realm Studio: 3.11 or later.
+* APIs are backwards compatible with all previous release of realm in the 6.x.y series.
+* File format: Generates Realms with format v10 (reads and upgrades previous formats).
+
+### Internal
+* Updated Realm Core from v5.23.8 to v6.0.4.
+* Updated Realm Sync from v4.9.5 to v5.0.3.
+* Updated Realm Object Store to commit 820b74e2378f111991877d43068a95d2b7a2e404.
+
 5.0.5 Release notes (2020-05-12)
 =============================================================
 ### Enhancements

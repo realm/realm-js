@@ -9,8 +9,8 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := crypto-$(TARGET_ARCH_ABI)
-LOCAL_EXPORT_C_INCLUDES := core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/include
-LOCAL_SRC_FILES := core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/lib/libcrypto.a
+LOCAL_EXPORT_C_INCLUDES := core/include/openssl
+LOCAL_SRC_FILES := core/lib/libcrypto-$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 endif
 
@@ -32,8 +32,8 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := ssl-$(TARGET_ARCH_ABI)
-LOCAL_EXPORT_C_INCLUDES := core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/include
-LOCAL_SRC_FILES := core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/lib/libssl.a
+LOCAL_EXPORT_C_INCLUDES := core/include
+LOCAL_SRC_FILES := core/lib/libssl-$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -53,7 +53,6 @@ LOCAL_SRC_FILES += src/object-store/src/impl/collection_change_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/list_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/object_notifier.cpp
-LOCAL_SRC_FILES += src/object-store/src/impl/primitive_list_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/realm_coordinator.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/results_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/transact_log_handler.cpp
@@ -67,10 +66,12 @@ LOCAL_SRC_FILES += src/object-store/src/list.cpp
 LOCAL_SRC_FILES += src/object-store/src/object_schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/object_store.cpp
 LOCAL_SRC_FILES += src/object-store/src/object.cpp
+LOCAL_SRC_FILES += src/object-store/src/object_changeset.cpp
 LOCAL_SRC_FILES += src/object-store/src/results.cpp
 LOCAL_SRC_FILES += src/object-store/src/schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
 LOCAL_SRC_FILES += src/object-store/src/thread_safe_reference.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/scheduler.cpp
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_SRC_FILES += src/object-store/src/sync/async_open_task.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/partial_sync.cpp
@@ -78,7 +79,6 @@ LOCAL_SRC_FILES += src/object-store/src/sync/sync_config.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_manager.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_session.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_user.cpp
-LOCAL_SRC_FILES += src/object-store/src/sync/sync_permission.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_file.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_metadata.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/work_queue.cpp
@@ -90,7 +90,7 @@ LOCAL_C_INCLUDES += src/object-store/src
 LOCAL_C_INCLUDES += src/object-store/external/json
 LOCAL_C_INCLUDES += vendor
 LOCAL_C_INCLUDES += core/include
-LOCAL_C_INCLUDES += core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/include
+LOCAL_C_INCLUDES += core/include/openssl
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_C_INCLUDES += src/object-store/src/sync
 endif

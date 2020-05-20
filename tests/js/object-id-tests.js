@@ -26,16 +26,6 @@ const TestCase = require('./asserts');
 const isNodeProcess = (typeof process === 'object' && process + '' === '[object process]');
 
 module.exports = {
-    testNonSynced: function() {
-        let realm = new Realm({schema: [{ name: 'Dog', properties: { name: 'string' } }]});
-        var dog;
-        realm.write(() => {
-            dog = realm.create('Dog', ['Fido']);
-        });
-        TestCase.assertThrowsContaining(() => dog._objectId(), "_objectId() can only be used with objects from synced Realms");
-        TestCase.assertThrowsContaining(() => realm._objectForObjectId('Dog', 'foo'), "Realm._objectForObjectId() can only be used with synced Realms");
-    },
-
     testSynced: function() {
         if (!global.enableSyncTests) {
             return Promise.resolve();

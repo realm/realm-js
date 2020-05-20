@@ -42,6 +42,7 @@
 #include "thread_safe_reference.hpp"
 
 #include <realm/disable_sync_to_disk.hpp>
+#include <realm/global_key.hpp>
 #include <realm/util/file.hpp>
 #include <realm/util/scope_exit.hpp>
 
@@ -98,9 +99,9 @@ public:
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
-    RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) 
-        : m_context(ctx), 
-          m_realm(realm) 
+    RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx)
+        : m_context(ctx),
+          m_realm(realm)
     {
         SharedRealm sharedRealm = realm.lock();
         m_realm_path = sharedRealm->config().path;
@@ -221,7 +222,9 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
     using NativeAccessor = realm::js::NativeAccessor<T>;
-    using RealmCallbackHandler = void(ThreadSafeReference<Realm>&& realm, std::exception_ptr error);
+#if REALM_ENABLE_SYNC
+    using RealmCallbackHandler = void(ThreadSafeReference&& realm, std::exception_ptr error);
+#endif
 
 public:
     using ObjectDefaults = typename Schema<T>::ObjectDefaults;
@@ -352,26 +355,6 @@ public:
     };
 
   private:
-    static void handleRealmFileException(ContextType ctx, realm::Realm::Config const& config, const RealmFileException& ex) {
-        switch (ex.kind()) {
-            case RealmFileException::Kind::IncompatibleSyncedRealm: {
-                ObjectType configuration = Object::create_empty(ctx);
-                Object::set_property(ctx, configuration, "path", Value::from_string(ctx, ex.path()));
-                Object::set_property(ctx, configuration, "readOnly", Value::from_boolean(ctx, true));
-                if (!config.encryption_key.empty()) {
-                    Object::set_property(ctx, configuration, "encryption_key", Value::from_binary(ctx, BinaryData(&config.encryption_key[0], 64)));
-                }
-
-                ObjectType object = Object::create_empty(ctx);
-                Object::set_property(ctx, object, "name", Value::from_string(ctx, "IncompatibleSyncedRealmError"));
-                Object::set_property(ctx, object, "configuration", configuration);
-                throw Exception<T>(ctx, object);
-            }
-            default:
-                throw;
-        }
-    }
-
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
         std::string object_type;
 
@@ -473,34 +456,6 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
 
     Object::set_global(ctx, "Realm", realm_constructor);
     return realm_constructor;
-}
-
-static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
-    realm::util::Optional<int> old_file_format_version = realm->file_format_upgraded_from_version();
-    if (old_file_format_version && old_file_format_version < 5) {
-        // any versions earlier than file format 5 are stored as milliseconds and need to be converted to the new format
-        for (auto& object_schema : realm->schema()) {
-            auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
-            for (auto& property : object_schema.persisted_properties) {
-                if (property.type == realm::PropertyType::Date) {
-                    if (!realm->is_in_transaction()) {
-                        realm->begin_transaction();
-                    }
-
-                    for (size_t row_index = 0; row_index < table->size(); row_index++) {
-                        if (table->is_null(property.table_column, row_index)) {
-                            continue;
-                        }
-                        auto milliseconds = table->get_timestamp(property.table_column, row_index).get_seconds();
-                        table->set_timestamp(property.table_column, row_index, Timestamp(milliseconds / 1000, (milliseconds % 1000) * 1000000));
-                    }
-                }
-            }
-            if (realm->is_in_transaction()) {
-                realm->commit_transaction();
-            }
-        }
-    }
 }
 
 template<typename T>
@@ -651,12 +606,6 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 };
             }
 
-            static const String cache_string = "_cache";
-            ValueType cache_value = Object::get_property(ctx, object, cache_string);
-            if (!Value::is_undefined(ctx, cache_value)) {
-                config.cache = Value::validated_to_boolean(ctx, cache_value, "_cache");
-            }
-
             static const String automatic_change_notifications_string = "_automaticChangeNotifications";
             ValueType automatic_change_notifications_value = Object::get_property(ctx, object, automatic_change_notifications_string);
             if (!Value::is_undefined(ctx, automatic_change_notifications_value)) {
@@ -685,24 +634,16 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Argumen
     bool schema_updated = get_realm_config(ctx, args.count, args.value, config, defaults, constructors);
     auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
 
-    // Fix for datetime -> timestamp conversion
-    convert_outdated_datetime_columns(realm);
-
     set_internal<T, RealmClass<T>>(ctx, this_object, new SharedRealm(realm));
 }
 
 template<typename T>
 SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Config config, bool schema_updated,
                                                ObjectDefaultsMap&& defaults, ConstructorMap&& constructors) {
-    config.execution_context = Context<T>::get_execution_context_id(ctx);
+    config.scheduler = realm::util::Scheduler::make_default();
 
     SharedRealm realm;
-    try {
-        realm = realm::Realm::get_shared_realm(config);
-    }
-    catch (const RealmFileException& ex) {
-        handleRealmFileException(ctx, config, ex);
-    }
+    realm = realm::Realm::get_shared_realm(config);
     set_binding_context(ctx, realm, schema_updated, std::move(defaults), std::move(constructors));
 
     return realm;
@@ -930,15 +871,10 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     }
 
     std::shared_ptr<AsyncOpenTask> task;
-    try {
-        task = Realm::get_synchronized_realm(config);
-    }
-    catch (const RealmFileException& ex) {
-        handleRealmFileException(ctx, config, ex);
-    }
+    task = Realm::get_synchronized_realm(config);
 
-    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults=std::move(defaults),
-                                                               constructors=std::move(constructors)](ThreadSafeReference<Realm>&& realm_ref, std::exception_ptr error) mutable {
+    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults = std::move(defaults), constructors = std::move(constructors)]
+                                                               (ThreadSafeReference&& realm_ref, std::exception_ptr error) {
         HANDLESCOPE(protected_ctx)
 
         if (error) {
@@ -957,8 +893,10 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
             }
         }
 
-        auto realm = Realm::get_shared_realm(std::move(realm_ref), Context<T>::get_execution_context_id(protected_ctx));
-        set_binding_context(protected_ctx, realm, schema_updated, std::move(defaults), std::move(constructors));
+        auto def = std::move(defaults);
+        auto ctor = std::move(constructors);
+        const SharedRealm realm = Realm::get_shared_realm(std::move(realm_ref), util::Scheduler::make_default());
+        set_binding_context(protected_ctx, realm, schema_updated, std::move(def), std::move(ctor));
         ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
 
         ValueType callback_arguments[2];
@@ -966,6 +904,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         callback_arguments[1] = Value::from_null(protected_ctx);
         Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });
+
     task->start(callback_handler);
     return_value.set(create_object<T, AsyncOpenTaskClass<T>>(ctx, new std::shared_ptr<AsyncOpenTask>(task)));
 }
@@ -1069,7 +1008,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
         }
 
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
-        table->move_last_over(realm_object->row().get_index());
+        table->remove_object(realm_object->obj().get_key());
     }
     else if (Value::is_array(ctx, arg)) {
         uint32_t length = Object::validated_get_length(ctx, arg);
@@ -1082,12 +1021,11 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
 
             auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
             if (!realm_object) {
-               std::string message = "Invalid argument at index " + util::to_string(i); 
-               throw std::runtime_error(message);
+               throw std::runtime_error(util::format("Invalid argument at index %1", i));
             }
 
             realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
-            table->move_last_over(realm_object->row().get_index());
+            table->remove_object(realm_object->obj().get_key());
         }
     }
     else if (Object::template is_instance<ResultsClass<T>>(ctx, arg)) {
@@ -1117,7 +1055,7 @@ void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, Argument
     for (auto objectSchema : realm->schema()) {
         auto table = ObjectStore::table_for_object_type(realm->read_group(), objectSchema.name);
         if (realm->is_partial()) {
-            realm::Results(realm, *table).clear();
+            realm::Results(realm, table).clear();
         }
         else {
             table->clear();
@@ -1298,24 +1236,18 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 template<typename T>
 void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
     args.validate_count(2);
-
-#if REALM_ENABLE_SYNC
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
-    if (!sync::has_object_ids(realm->read_group()))
-        throw std::logic_error("Realm._objectForObjectId() can only be used with synced Realms.");
 
     auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     std::string object_id_string = Value::validated_to_string(ctx, args[1]);
-    auto object_id = sync::ObjectID::from_string(object_id_string);
 
     const Group& group = realm->read_group();
-    size_t ndx = sync::row_for_object_id(group, *ObjectStore::table_for_object_type(group, object_schema.name), object_id);
-    if (ndx != realm::npos) {
-        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, ndx)));
+    auto table = ObjectStore::table_for_object_type(group, object_schema.name);
+    auto object_id = GlobalKey::from_string(object_id_string);
+    auto object_key = table->get_obj_key(object_id);
+    if (object_key) {
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, object_key)));
     }
-#else
-    throw std::logic_error("Realm._objectForObjectId() can only be used with synced Realms.");
-#endif // REALM_ENABLE_SYNC
 }
 
 template<typename T>
@@ -1363,7 +1295,7 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
                 throw std::runtime_error("Invalid argument at index 0");
             }
 
-            auto p = realm->get_privileges(realm_object->row());
+            auto p = realm->get_privileges(realm_object->obj());
 
             ObjectType object = Object::create_empty(ctx);
             Object::set_property(ctx, object, "read", Value::from_boolean(ctx, has_privilege(p, Privilege::Read)));

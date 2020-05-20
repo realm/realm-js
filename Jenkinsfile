@@ -152,7 +152,6 @@ stage('integration tests') {
 }
 
 // == Methods
-
 def nodeIntegrationTests(nodeVersion, platform) {
   unstash 'source'
   unstash "pre-gyp-${platform}-${nodeVersion}"
@@ -165,6 +164,7 @@ def nodeIntegrationTests(nodeVersion, platform) {
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
+
     // Package up the integration tests
     sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
   }
@@ -352,7 +352,7 @@ def buildMacOS(workerFunction) {
 
 def buildWindows(nodeVersion, arch) {
   return {
-    myNode('windows && nodejs') {
+    myNode('windows-vs2017 && nodejs') {
       unstash 'source'
 
       bat 'npm install --ignore-scripts --production'
@@ -372,7 +372,7 @@ def buildWindows(nodeVersion, arch) {
 
 def buildWindowsElectron(electronVersion, arch) {
   return {
-    myNode('windows && nodejs') {
+    myNode('windows-vs2017 && nodejs') {
       unstash 'source'
       bat 'npm install --ignore-scripts --production'
       withEnv([
@@ -393,6 +393,7 @@ def buildWindowsElectron(electronVersion, arch) {
     }
   }
 }
+
 
 def inAndroidContainer(workerFunction) {
   return {

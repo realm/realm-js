@@ -30,10 +30,11 @@ import de.undercouch.gradle.tasks.download.Download
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.apache.tools.ant.filters.ReplaceTokens
 
+def openSSLVersion = "1.1.1b"
+
 // We download various C++ open-source dependencies into downloads.
 // We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
-
 
 ext.coreVersion = getDependenciesVersion("REALM_CORE_VERSION").trim()
 ext.syncVersion = getDependenciesVersion("REALM_SYNC_VERSION").trim()
@@ -75,7 +76,7 @@ task downloadRealmCore(type: Download) {
     if (project.buildSync) {
         src "https://static.realm.io/downloads/sync/realm-sync-android-${project.syncVersion}.tar.gz"
     } else {
-        src "https://static.realm.io/downloads/core/realm-core-android-${project.coreVersion}.tar.gz"
+        src "https://static.realm.io/downloads/core/realm-core-android-v${project.coreVersion}.tar.gz"
     }
     onlyIfNewer true
     overwrite true
@@ -95,57 +96,55 @@ task prepareRealmCore(dependsOn: downloadRealmCore, type:Copy) {
 }
 
 task downloadOpenSSL_x86(type: Download) {
-    src "https://static.realm.io/downloads/openssl/1.0.2k/Android/x86/openssl-release-1.0.2k-Android-x86.tar.gz"
+    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/x86/openssl.tgz"
     onlyIfNewer true
     overwrite true
-    dest new File(downloadsDir, "openssl-release-1.0.2k-Android-x86.tar.gz")
+    dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-x86.tar.gz")
 }
 
 task downloadOpenSSL_x86_64(type: Download) {
-    src "https://static.realm.io/downloads/openssl/1.0.2k/Android/x86_64/openssl-release-1.0.2k-Android-x86_64.tar.gz"
+    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/x86_64/openssl.tgz"
     onlyIfNewer true
     overwrite true
-    dest new File(downloadsDir, "openssl-release-1.0.2k-Android-x86_64.tar.gz")
+    dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-x86_64.tar.gz")
 }
 
 task prepareOpenSSL_x86(dependsOn: downloadOpenSSL_x86, type:Copy) {
     from tarTree(downloadOpenSSL_x86.dest)
     into "$coreDownloadDir/core"
+    rename 'lib(.*).a', 'lib$1-x86.a'
 }
 
 task prepareOpenSSL_x86_64(dependsOn: downloadOpenSSL_x86_64, type:Copy) {
     from tarTree(downloadOpenSSL_x86_64.dest)
     into "$coreDownloadDir/core"
+    rename 'lib(.*).a', 'lib$1-x86_64.a'
 }
 
 task downloadOpenSSL_arm(type: Download) {
-    src "https://static.realm.io/downloads/openssl/1.0.2k/Android/armeabi-v7a/openssl-release-1.0.2k-Android-armeabi-v7a.tar.gz"
+    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/armeabi-v7a/openssl.tgz"
     onlyIfNewer true
     overwrite true
-    dest new File(downloadsDir, "openssl-release-1.0.2k-Android-armeabi-v7a.tar.gz")
+    dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-armeabi-v7a.tar.gz")
 }
 
 task downloadOpenSSL_arm_64(type: Download) {
-    src "https://static.realm.io/downloads/openssl/1.0.2k/Android/arm64-v8a/openssl-release-1.0.2k-Android-arm64-v8a.tar.gz"
+    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/arm64-v8a/openssl.tgz"
     onlyIfNewer true
     overwrite true
-    dest new File(downloadsDir, "openssl-release-1.0.2k-Android-arm64-v8a.tar.gz")
+    dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-arm64-v8a.tar.gz")
 }
 
 task prepareOpenSSL_arm(dependsOn: downloadOpenSSL_arm, type:Copy) {
     from tarTree(downloadOpenSSL_arm.dest)
     into "$coreDownloadDir/core"
-    rename { String fileName ->
-        fileName.replace("-arm-", "-armeabi-")
-    }
+    rename 'lib(.*).a', 'lib$1-armeabi-v7a.a'
 }
 
 task prepareOpenSSL_arm_64(dependsOn: downloadOpenSSL_arm_64, type:Copy) {
     from tarTree(downloadOpenSSL_arm_64.dest)
     into "$coreDownloadDir/core"
-    rename { String fileName ->
-        fileName.replace("-arm-", "-armeabi-")
-    }
+    rename 'lib(.*).a', 'lib$1-arm64-v8a.a'
 }
 
 
@@ -213,7 +212,7 @@ def checkNdkVersion(ndkBuildFullPath) {
     } else {
         throw new GradleException("Neither ${releaseFile.getAbsolutePath()} nor ${propertyFile.getAbsolutePath()} is a file.")
     }
-    if (detectedNdkVersion != project.ndkVersion) {
+    if (detectedNdkVersion.split('\\.')[0] != project.ndkVersion) {
         throw new GradleException("Your NDK version: ${detectedNdkVersion}."
                 + " Realm JNI must be compiled with the version ${project.ndkVersion} of NDK.")
     }

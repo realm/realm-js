@@ -65,11 +65,11 @@ inline realm::SyncManager& syncManagerShared(typename T::Context &ctx) {
         }
         ensure_directory_exists_for_file(default_realm_file_directory());
 
-        SyncClientConfig config;
-        config.base_file_path = default_realm_file_directory();
-        config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
-        config.user_agent_binding_info = user_agent_binding_info;
-        SyncManager::shared().configure(config);
+        SyncClientConfig client_config;
+        client_config.base_file_path = default_realm_file_directory();
+        client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
+        client_config.user_agent_binding_info = user_agent_binding_info;
+        SyncManager::shared().configure(client_config);
     });
     return SyncManager::shared();
 }
@@ -1056,6 +1056,11 @@ void SyncClass<T>::initiate_client_reset(ContextType ctx, ObjectType this_object
     if (!SyncManager::shared().immediately_run_file_actions(std::string(path))) {
         throw std::runtime_error(util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
     }
+
+    SyncClientConfig client_config;
+    client_config.base_file_path = default_realm_file_directory();
+    client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
+    SyncManager::shared().configure(client_config);
 }
 
 template<typename T>
@@ -1409,7 +1414,6 @@ void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object
     }
     else {
         Realm::Config config;
-        config.cache = false;
         config.path = admin_realm_path;
         config.force_sync_history = true;
         config.schema_mode = SchemaMode::Additive;
@@ -1418,12 +1422,12 @@ void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object
 
     auto& group = realm->read_group();
     auto& table = *ObjectStore::table_for_object_type(group, "RealmFile");
-    size_t path_col_ndx = table.get_column_index("path");
+    auto path_col_key = table.get_column_key("path");
 
     std::vector<std::string> local_realms;
-    for (size_t i = 0, size = table.size(); i < size; ++i) {
-        auto virtual_path = table.get_string(path_col_ndx, i);
-        auto id = sync::object_id_for_row(group, table, i);
+    for (auto& obj : table) {
+        auto virtual_path = obj.get<StringData>(path_col_key);
+        auto id = obj.get_object_id();
         std::string file_path = util::format("%1/realms%2/%3.realm", local_root_dir, virtual_path, id.to_string());
 
         // filter out Realms not present locally

@@ -469,164 +469,6 @@ module.exports = {
             });
     },
 
-    testIncompatibleSyncedRealmOpen() {
-        let realm = "sync-v1.realm";
-        if (isElectronProcess) {
-            return;
-        }
-        if (isNodeProcess) {
-            realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
-        }
-        else {
-            //copy the bundled RN realm files for the test
-            Realm.copyBundledRealmFiles();
-        }
-
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
-            .then(user => {
-                const config = {
-                    path: realm,
-                    sync: {
-                        user,
-                        error : err => console.log(err),
-                        url: 'realm://127.0.0.1:9080/~/sync-v1',
-                        fullSynchronization: true,
-                    }
-                };
-                return Realm.open(config)
-            })
-            .then(realm => { throw new Error("Should fail with IncompatibleSyncedRealmError") })
-            .catch(e => {
-                if (e.name === "IncompatibleSyncedRealmError") {
-                    const backupRealm = new Realm(e.configuration);
-                    TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
-                    return;
-                }
-                throw new Error(unexpectedError(e));
-            });
-    },
-
-    testIncompatibleSyncedRealmOpenAsync() {
-        let realm = "sync-v1.realm";
-        if (isElectronProcess) {
-            return;
-        }
-        if (isNodeProcess) {
-            realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
-        }
-        else {
-            //copy the bundled RN realm files for the test
-            Realm.copyBundledRealmFiles();
-        }
-
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-            return new Promise((resolve, _reject) => {
-                const config = {
-                    path: realm,
-                    sync: {
-                        user,
-                        error : err => console.log(err),
-                        url: 'realm://127.0.0.1:9080/~/sync-v1',
-                        fullSynchronization: true,
-                    }
-                };
-
-                Realm.openAsync(config, (error, realm) => {
-                    if (!error) {
-                        _reject("Should fail with IncompatibleSyncedRealmError");
-                        return;
-                    }
-
-                    if (error.name === "IncompatibleSyncedRealmError") {
-                        const backupRealm = new Realm(error.configuration);
-                        TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
-                        resolve();
-                        return;
-                    }
-
-                    _reject(unexpectedError(error));
-                });
-            });
-        });
-    },
-
-    testIncompatibleSyncedRealmConsructor() {
-        let realm = "sync-v1.realm";
-        if (isElectronProcess) {
-            return;
-        }
-        if (isNodeProcess) {
-            realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
-        }
-        else {
-            //copy the bundled RN realm files for the test
-            Realm.copyBundledRealmFiles();
-        }
-
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-            return new Promise((resolve, _reject) => {
-                    const config = {
-                        path: realm,
-                        sync: {
-                            user,
-                            error : err => console.log(err),
-                            url: 'realm://127.0.0.1:9080/~/sync-v1'
-                        }
-                    };
-
-                    try {
-                        const realm = new Realm(config);
-                        _reject("Should fail with IncompatibleSyncedRealmError");
-                    }
-                    catch (e) {
-                        if (e.name === "IncompatibleSyncedRealmError") {
-                            const backupRealm = new Realm(e.configuration);
-                            TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
-                            resolve();
-                            return;
-                        }
-
-                        _reject(unexpectedError(e));
-                    }
-            });
-        });
-    },
-
-    testProgressNotificationsForRealmConstructor() {
-        if (!platformSupported) {
-            return;
-        }
-
-        const username = Utils.uuid();
-        const realmName = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080',  credentials))
-            .then(user => {
-                let config = {
-                    sync: {
-                        user,
-                        url: `realm://127.0.0.1:9080/~/${realmName}`
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                };
-
-                return Realm.open(config).then((realm) => {
-                    return new Promise((resolve, reject) => {
-                        realm.syncSession.addProgressNotification('download', 'reportIndefinitely', (transferred, transferable) => {
-                            if (transferred === transferable) {
-                                resolve();
-                            }
-                        });
-                        setTimeout(function() {
-                            reject("Progress Notifications API failed to call progress callback for Realm constructor");
-                        }, 5000);
-                    });
-                });
-            });
-    },
-
     testProgressNotificationsUnregisterForRealmConstructor() {
         if (!platformSupported) {
             return;
@@ -990,30 +832,30 @@ module.exports = {
         });
     },
 
-    testRoleClassWithPartialSyncCanCoexistWithPermissionsClass() {
-        if (!platformSupported) {
-            return;
-        }
+    // testRoleClassWithPartialSyncCanCoexistWithPermissionsClass() {
+    //     if (!isNodeProcess) {
+    //         return;
+    //     }
 
-        const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
-            let config = {
-                schema: [{name: 'Role', properties: {name: 'string'}}],
-                sync: {
-                    user: user,
-                    url: 'realm://127.0.0.1:9080/~/roleClass',
-                    fullSynchronization: false,
-                    error: (session, error) => console.log(error)
-                }
-            };
-            return Realm.open(config);
-        }).then(realm => {
-            // verify that these don't throw
-            realm.objects('Role');
-            realm.objects('__Role');
-        });
-    },
+    //     const username = Utils.uuid();
+    //     const credentials = Realm.Sync.Credentials.nickname(username);
+    //     return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
+    //         let config = {
+    //             schema: [{name: 'Role', properties: {name: 'string'}}],
+    //             sync: {
+    //                 user: user,
+    //                 url: 'realm://127.0.0.1:9080/~/roleClass',
+    //                 fullSynchronization: false,
+    //                 error: (session, error) => console.log(error)
+    //             }
+    //         };
+    //         return Realm.open(config);
+    //     }).then(realm => {
+    //         // verify that these don't throw
+    //         realm.objects('Role');
+    //         realm.objects('__Role');
+    //     });
+    // },
 
     testClientReset() {
         // FIXME: try to enable for React Native
@@ -1073,7 +915,6 @@ module.exports = {
             TestCase.assertDefined(error.config);
             TestCase.assertNotEqual(error.config.path, '');
             const path = realm.path;
-            realm.close();
             Realm.Sync.initiateClientReset(path);
         };
 

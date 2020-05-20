@@ -39,22 +39,23 @@ function createObjects(user) {
         schema: [{ name: 'Dog', properties: { name: 'string' } }]
     };
 
-    const realm = new Realm(config);
-    realm.write(() => {
-        for (let i = 1; i <= 3; i++) {
-            realm.create('Dog', { name: `Lassy ${i}` });
-        }
-    });
-
-    let session = realm.syncSession;
-    return new Promise((resolve, reject) => {
-        let callback = (transferred, total) => {
-            if (transferred === total) {
-                session.removeProgressNotification(callback);
-                resolve(realm);
+    return Realm.open(config).then(realm => {
+        realm.write(() => {
+            for (let i = 1; i <= 3; i++) {
+                realm.create('Dog', { name: `Lassy ${i}` });
             }
-        }
-        session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
+        });
+
+        let session = realm.syncSession;
+        return new Promise((resolve, reject) => {
+            let callback = (transferred, total) => {
+                if (transferred === total) {
+                    session.removeProgressNotification(callback);
+                    resolve(realm);
+                }
+            }
+            session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
+        });
     });
 }
 
