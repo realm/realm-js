@@ -354,6 +354,8 @@ declare namespace Realm {
         static serverAPIKey(key: string): Credentials;
     }
 
+
+    //FIXME: Fix ts definiton. Is this Realm.User or Realm.Sync.User. 
     /**
      * User
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.User.html }
@@ -500,11 +502,6 @@ declare namespace Realm {
     function initiateClientReset(path: string): void;
     function _hasExistingSessions(): boolean;
     function reconnect(): void;
-
-    /**
-     * @deprecated, to be removed in future versions
-     */
-    function setFeatureToken(token: string): void;
 }
 
 interface ProgressPromise extends Promise<Realm> {
@@ -538,14 +535,6 @@ declare class Realm {
      * @param {Configuration} config
      */
     static open(config: Realm.Configuration): ProgressPromise;
-    /**
-     * @deprecated in favor of `Realm.open`
-     * Open a realm asynchronously with a callback. If the realm is synced, it will be fully synchronized before it is available.
-     * @param {Configuration} config
-     * @param {Function} callback will be called when the realm is ready.
-     * @param {ProgressNotificationCallback} progressCallback? a progress notification callback for 'download' direction and 'forCurrentlyOutstandingWork' mode
-     */
-    static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
 
     /**
      * @deprecated in favor of `Realm.Sync.User.createConfiguration()`.
