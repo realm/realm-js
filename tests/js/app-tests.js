@@ -59,6 +59,21 @@ module.exports = {
         TestCase.assertInstanceOf(app, Realm.App);
     },
 
+    testNonexistingApp() {
+        const conf = {
+            id: 'smurf',
+            url: 'http://localhost:9090',
+            timeout: 1000,
+            app: {
+                name: 'realm-sdk-integration-tests',
+                version: '42'
+            }
+        };
+
+        // FIXME: this should fail!
+        let app = new Realm.App(conf);
+    },
+
     async testLogIn() {
         let app = new Realm.App(config);
         TestCase.assertTrue(app instanceof Realm.App);
@@ -66,6 +81,14 @@ module.exports = {
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
         TestCase.assertInstanceOf(user, Realm.User);
+    },
+
+    async testLogInNonexistingUser() {
+        let app = new Realm.App(config);
+        TestCase.assertTrue(app instanceof Realm.App);
+
+        let credentials = Realm.Credentials.emailPassword('me', 'secret');
+        let user = await app.logIn(credentials);
     },
 
     async testLogoutAndAllUsers() {

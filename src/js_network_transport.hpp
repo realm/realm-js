@@ -119,16 +119,18 @@ void ResponseHandlerClass<T>::on_success(ContextType ctx, ObjectType this_object
 
 template<typename T>
 void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+    static const String status_code = "statusCode";
+    static const String error_message = "errorMessage";
     args.validate_count(1);
 
     auto response_handler = get_internal<T, ResponseHandlerClass<T>>(this_object);
     ObjectType error_object = Value::validated_to_object(ctx, args[0]);
 
     // Copy the error from JavaScript to an Object Store response object
-    int http_status_code = 200; // FIXME
-    int custom_status_code = 0;
+    int http_status_code = static_cast<int>(Value::validated_to_number(ctx, Object::get_property(ctx, error_object, status_code)));
+    int custom_status_code = http_status_code;
     std::map<std::string, std::string> headers;
-    std::string body;
+    std::string body = Value::validated_to_string(ctx, Object::get_property(ctx, error_object, error_message));
 
     response_handler->m_completion_callback(app::Response{http_status_code, custom_status_code, headers, body});
 }
