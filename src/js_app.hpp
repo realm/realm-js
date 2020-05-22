@@ -223,7 +223,12 @@ void AppClass<T>::current_user(ContextType ctx, ObjectType this_object, Argument
 
     auto app = *get_internal<T, AppClass<T>>(this_object);
     auto user = app->current_user();
-    return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app))));
+    if (user) {
+        return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app))));
+    }
+    else {
+        return_value.set(Value::from_null(ctx));
+    }
 }
 
 
