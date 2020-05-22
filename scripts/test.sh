@@ -19,6 +19,8 @@ if [ "${CONFIGURATION}" == "Debug" ]; then
       USE_REALM_DEBUG=1
 fi
 
+USE_REALM_SYNC=1
+
 IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set and re-exported
 
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"

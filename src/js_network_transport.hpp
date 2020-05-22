@@ -89,7 +89,7 @@ void ResponseHandlerClass<T>::on_success(ContextType ctx, ObjectType this_object
     ObjectType response_object = Value::validated_to_object(ctx, args[0]);
 
     // Copy the response from JavaScript to an Object Store object
-    int http_status_code;
+    int http_status_code = 0;
     int custom_status_code = 0;
     std::map<std::string, std::string> headers;
     std::string body;

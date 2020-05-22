@@ -39,6 +39,8 @@
 #include "sync/sync_manager.hpp"
 #endif
 
+#include "util/scheduler.hpp"
+
 #include "binding_context.hpp"
 #include "object_accessor.hpp"
 #include "results.hpp"
