@@ -307,7 +307,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
 
 template<typename T>
 void SessionClass<T>::get_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
         return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(std::move(session->config().user), nullptr))); // FIXME: nullptr is not an app object
     } else {
         return_value.set_undefined();

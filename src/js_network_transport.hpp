@@ -126,7 +126,7 @@ void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, 
     auto response_handler = get_internal<T, ResponseHandlerClass<T>>(ctx, this_object);
 
     //FIXME
-    //ObjectType error_object = Value::validated_to_object(ctx, args[0]);
+    ObjectType error_object = Value::validated_to_object(ctx, args[0]);
 
     // Copy the error from JavaScript to an Object Store response object
     int http_status_code = static_cast<int>(Value::validated_to_number(ctx, Object::get_property(ctx, error_object, status_code)));
