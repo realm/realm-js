@@ -108,7 +108,7 @@ inline typename T::Function UserClass<T>::create_constructor(ContextType ctx) {
 
 template<typename T>
 typename T::Object UserClass<T>::create_instance(ContextType ctx, SharedUser user, SharedApp app) {
-    return create_object<T, UserClass<T>>(ctx, new User<T>(user, app));
+    return create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app)));
 }
 
 template<typename T>
@@ -243,7 +243,7 @@ void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arg
         }
 
         ValueType callback_arguments[2];
-        callback_arguments[0] = create_object<T, UserClass<T>>(ctx, new User<T>(shared_user, user->m_app));
+        callback_arguments[0] = create_object<T, UserClass<T>>(ctx, new User<T>(std::move(shared_user), std::move(user->m_app)));
         callback_arguments[1] = Value::from_undefined(protected_ctx);
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });

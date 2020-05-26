@@ -1072,6 +1072,14 @@
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm",
+				);
+				"HEADER_SEARCH_PATHS[arch=*]" = (
+					"$(SRCROOT)/object-store/external/json",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
@@ -1141,6 +1149,7 @@
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
@@ -1207,6 +1216,7 @@
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(inherited)",
@@ -1235,6 +1245,7 @@
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(inherited)",

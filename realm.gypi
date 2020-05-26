@@ -267,7 +267,7 @@
       "target_name": "vendored-realm",
       "type": "none",
       "all_dependent_settings": {
-        "include_dirs": [ "<(vendor_dir)/include" ],
+        "include_dirs": [ "<(vendor_dir)/include", "<(vendor_dir)/include/realm" ],
         "library_dirs": [
           "<(vendor_dir)/lib",
           "<(vendor_dir)/lib64",

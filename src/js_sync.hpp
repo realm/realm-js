@@ -285,7 +285,7 @@ template<typename T>
 void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
         ObjectType config = Object::create_empty(ctx);
-        Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
+        Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(std::move(session->config().user), nullptr))); // FIXME: nullptr is not an app object
         // TODO: add app id
         if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
@@ -307,8 +307,8 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
 
 template<typename T>
 void SessionClass<T>::get_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
-        return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(*new SharedUser(session->config().user))));
+    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+        return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(std::move(session->config().user), nullptr))); // FIXME: nullptr is not an app object
     } else {
         return_value.set_undefined();
     }
@@ -674,7 +674,7 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
     in >> log_level_2; // Throws
     if (!in || !in.eof())
         throw std::runtime_error("Bad log level");
-    syncManagerShared<T>(ctx).set_log_level(log_level_2);
+    SyncManager::shared().set_log_level(log_level_2);
 }
 
 #if REALM_PLATFORM_NODE
@@ -682,8 +682,7 @@ template<typename T>
 void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
     auto callback_fn = Value::validated_to_function(ctx, args[0], "logger_callback");
-
-    syncManagerShared<T>(ctx).set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
+    SyncManager::shared().set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
 }
 #endif
 

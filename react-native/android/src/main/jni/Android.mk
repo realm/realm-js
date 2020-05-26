@@ -95,6 +95,7 @@ LOCAL_C_INCLUDES += src/object-store/src
 LOCAL_C_INCLUDES += src/object-store/external/json
 LOCAL_C_INCLUDES += vendor
 LOCAL_C_INCLUDES += core/include
+LOCAL_C_INCLUDES += core/include/realm
 LOCAL_C_INCLUDES += core/include/openssl
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_C_INCLUDES += src/object-store/src/sync

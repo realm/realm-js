@@ -44,7 +44,7 @@ function runOutOfProcess() {
 }
 
 const config = {
-    id: 'default-lnpak',
+    id: 'default-hpvci',
     url: 'http://localhost:9090',
     timeout: 1000,
     app: {
@@ -59,6 +59,21 @@ module.exports = {
         TestCase.assertInstanceOf(app, Realm.App);
     },
 
+    testNonexistingApp() {
+        const conf = {
+            id: 'smurf',
+            url: 'http://localhost:9090',
+            timeout: 1000,
+            app: {
+                name: 'realm-sdk-integration-tests',
+                version: '42'
+            }
+        };
+
+        // FIXME: this should fail!
+        let app = new Realm.App(conf);
+    },
+
     async testLogIn() {
         let app = new Realm.App(config);
         TestCase.assertTrue(app instanceof Realm.App);
@@ -66,6 +81,14 @@ module.exports = {
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
         TestCase.assertInstanceOf(user, Realm.User);
+    },
+
+    async testLogInNonexistingUser() {
+        let app = new Realm.App(config);
+        TestCase.assertTrue(app instanceof Realm.App);
+
+        let credentials = Realm.Credentials.emailPassword('me', 'secret');
+        let user = await app.logIn(credentials);
     },
 
     async testLogoutAndAllUsers() {
@@ -85,20 +108,21 @@ module.exports = {
 
     async testCurrentUser() {
         let app = new Realm.App(config);
+        TestCase.assertNull(app.currentUser());
+
         let credentials = Realm.Credentials.anonymous();
 
         let user1 = await app.logIn(credentials);
         let user2 = app.currentUser();
-
         TestCase.assertEqual(user1.identity, user2.identity);
+
         user1.logOut();
+        TestCase.assertNull(app.currentUser());
     },
 
     async testMongoDBRealmSync() {
-        // Realm.Sync.setLogLevel('all');
-        // Realm.Sync.setLogger((level, message) => console.log(message));
         // Realm.clearTestState();
-        const appId = 'default-lnpak';
+        const appId = 'default-okqrb';
         // const appId = "realm-demo-gqlrw";
         const appConfig = {
             id: appId,
@@ -111,6 +135,8 @@ module.exports = {
             },
         };
         let app = new Realm.App(appConfig);
+        Realm.Sync.setLogLevel('all');
+        Realm.Sync.setLogger((level, message) => console.log(message));
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
         console.log("HEST 0 - logged in");
