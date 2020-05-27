@@ -15,7 +15,6 @@
     "needle": "^1.3.0",
     "node-fetch": "^2.6.0",
     "node-rsa": "^1.0.6",
-    "segfault-handler": "^1.3.0",
     "spawn-sync": "^2.0.0",
     "terminate": "^1.0.8",
     "tmp": "^0.0.30",

@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "build": "tsc -p .",
-    "start": "ts-mocha --project ./tsconfig.json --require src/utils/segfault-handler.js --require src/utils/inject-globals.js --watch-extensions ts,js --watch src/index.ts",
+    "start": "ts-mocha --project ./tsconfig.json --require src/utils/inject-globals.js --watch-extensions ts,js --watch src/index.ts",
     "prepack": "npm run build",
     "lint": "tslint -p ."
   },
