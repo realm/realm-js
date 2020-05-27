@@ -34,13 +34,6 @@ if (isNodeProcess && process.platform === 'win32') {
     global.enableSyncTests = false;
 }
 
-// catching segfaults during testing can help debugging
-// uncomment to enable segfault handler
-if (isNodeProcess) {
-    const SegfaultHandler = node_require('segfault-handler');
-    SegfaultHandler.registerHandler("crash.log");
-}
-
 var TESTS = {
     AppTests: require('./app-tests'),
     ListTests: require('./list-tests'),
