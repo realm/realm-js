@@ -146,7 +146,6 @@
             "src/object-store/src/sync/generic_network_transport.cpp",
             "src/object-store/src/util/bson/bson.cpp",
             "src/object-store/src/util/bson/regular_expression.cpp",
-            "src/object-store/src/util/bson/datetime.cpp"
           ],
         }, {
           "dependencies": [ "realm-core" ]
