@@ -40,6 +40,7 @@
 #include "results.hpp"
 #include "shared_realm.hpp"
 #include "thread_safe_reference.hpp"
+#include "util/scheduler.hpp"
 
 #include <realm/disable_sync_to_disk.hpp>
 #include <realm/global_key.hpp>

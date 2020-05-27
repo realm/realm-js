@@ -14,7 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
 ### Internal
-* None.
+* Fixed compiling without Realm Sync.
 
 6.0.1 Release notes (2020-5-18)
 =============================================================
@@ -35,7 +35,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 6.0.0 Release notes (2020-5-14)
 =============================================================
-NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format. 
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format.
 
 ### Breaking changes
 * Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
