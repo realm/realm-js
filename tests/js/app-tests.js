@@ -122,21 +122,19 @@ module.exports = {
 
     async testMongoDBRealmSync() {
         // Realm.clearTestState();
-        const appId = 'default-okqrb';
+        const appId = "default-hxmxb";
         // const appId = "realm-demo-gqlrw";
         const appConfig = {
             id: appId,
-            url: 'http://localhost:9090',
+            url: "http://localhost:9090",
             // url: 'realm-dev.mongodb.com',
             timeout: 1000,
             app: {
                 name: "default",
-                version: '0'
+                version: "0"
             },
         };
         let app = new Realm.App(appConfig);
-        Realm.Sync.setLogLevel('all');
-        Realm.Sync.setLogger((level, message) => console.log(message));
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
         console.log("HEST 0 - logged in");
@@ -158,15 +156,18 @@ module.exports = {
             }
         };
         Realm.deleteFile(realmConfig);
-
+        console.log("KAT 1");
         let realm = await Realm.open(realmConfig);
+        console.log("KAT 2");
         realm.write(() => {
             realm.deleteAll();
         });
+        console.log("KAT 3");
         realm.write(() => {
-            realm.create("Dog", { "_id": new ObjectId('0000002a9a7969d24bea4cf5'), name: "King" });
+            console.log("KAT 4");
+            realm.create("Dog", { "_id": new ObjectId("0000002a9a7969d24bea4cf5"), name: "King" });
             console.log('FISK 1');
-            realm.create("Dog", { "_id": new ObjectId('0000002a9a7969d24bea4cf4'), name: "King" });
+            realm.create("Dog", { "_id": new ObjectId("0000002a9a7969d24bea4cf4"), name: "King" });
         });
         console.log('FISK 2');
 
