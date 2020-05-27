@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <iostream>
 #include "node_types.hpp"
 #include "napi.h"
 
