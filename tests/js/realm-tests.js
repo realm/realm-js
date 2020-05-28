@@ -56,7 +56,7 @@ module.exports = {
         TestCase.assertEqual(typeof Realm, 'function');
         TestCase.assertTrue(Realm instanceof Function);
     },
-    
+
     testRealmObjectCreationByObject: function () {
         const CarSchema = {
             name: 'Car',
@@ -81,7 +81,7 @@ module.exports = {
             TestCase.assertEqual(carZero.make, "Audi");
             TestCase.assertEqual(carZero.model, "A4");
             TestCase.assertEqual(carZero.kilometers, 24);
-            
+
             let car2 = realm.create('Car', { make: 'VW', model: 'Touareg', kilometers: 13 });
             TestCase.assertEqual(car2.make, "VW");
             TestCase.assertEqual(car2.model, "Touareg");
@@ -157,7 +157,7 @@ module.exports = {
             TestCase.assertEqual(car.model, "A4");
             TestCase.assertEqual(car.kilometers, 24);
             TestCase.assertTrue(car instanceof Realm.Object);
-            
+
             let cars = realm.objects("Car");
             TestCase.assertUndefined(cars[""]);
             let carZero = cars[0];
@@ -196,7 +196,7 @@ module.exports = {
             TestCase.assertFalse(car3 instanceof Realm.Object);
             //methods from Realm.Objects should be present
             TestCase.assertDefined(car3.addListener);
-            
+
         });
         realm.close();
     },
@@ -310,10 +310,10 @@ module.exports = {
         if (!isNodeProcess && !isElectronProcess) {
             return;
         }
-        
+
         let realm = new Realm({schema: []});
-        function failingFunction() { 
-            throw new Error('not implemented'); 
+        function failingFunction() {
+            throw new Error('not implemented');
         }
 
         try {
@@ -1899,7 +1899,7 @@ module.exports = {
         TestCase.assertEqual(objects.length, numbers.length);
 
         for (let i = 0; i < numbers.length; i++) {
-            let d128 = objects[i]['decimalCol'];
+            let d128 = objects[i]["decimalCol"];
             TestCase.assertTrue(d128 instanceof Decimal128);
             TestCase.assertEqual(d128.toString(), numbers[i].toString().toUpperCase());
         }
@@ -1923,7 +1923,7 @@ module.exports = {
         TestCase.assertEqual(objects.length, numbers.length);
 
         for (let i = 0; i < numbers.length; i++) {
-            let d128 = objects[i]['decimalCol'];
+            let d128 = objects[i]["decimalCol"];
             TestCase.assertTrue(d128 instanceof Decimal128);
             TestCase.assertEqual(d128.toString(), numbers[i].toUpperCase());
         }
@@ -1937,7 +1937,7 @@ module.exports = {
         let oids = [];
 
         values.forEach(v => {
-            let oid = new ObjectId();
+            let oid = new ObjectId(v);
             realm.write(() => {
                 realm.create(schemas.ObjectIdObject.name, { id: oid });
             });
@@ -1948,9 +1948,9 @@ module.exports = {
         TestCase.assertEqual(objects.length, values.length);
 
         for (let i = 0; i < values.length; i++) {
-            let oid2 = objects[i]['id'];
-            TestCase.assertTrue(oid2 instanceof ObjectId, 'instaceof');
-            TestCase.assertTrue(oids[i].equals(oid2), 'equal');
+            let oid2 = objects[i]["id"];
+            TestCase.assertTrue(oid2 instanceof ObjectId, "instaceof");
+            TestCase.assertTrue(oids[i].equals(oid2), "equal");
             TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
         }
 
@@ -1974,9 +1974,9 @@ module.exports = {
         TestCase.assertEqual(objects.length, values.length);
 
         for (let i = 0; i < values.length; i++) {
-            let oid2 = objects[i]['id'];
-            TestCase.assertTrue(oid2 instanceof ObjectId, 'instaceof');
-            TestCase.assertTrue(oids[i].equals(oid2), 'equal');
+            let oid2 = objects[i]["id"];
+            TestCase.assertTrue(oid2 instanceof ObjectId, "instaceof");
+            TestCase.assertTrue(oids[i].equals(oid2), "equal");
             TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
             TestCase.assertEqual(oid2.getTimestamp().toISOString(), oids[i].getTimestamp().toISOString());
         }
