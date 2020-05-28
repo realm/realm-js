@@ -43,8 +43,10 @@ function runOutOfProcess() {
     });
 }
 
+const integration_tests_app_id = `${require("../../src/object-store/tests/mongodb/stitch.json").app_id}`;
+console.log(`found integration tests app id: ${integration_tests_app_id}`)
 const config = {
-    id: 'default-hpvci',
+    id: integration_tests_app_id,
     url: 'http://localhost:9090',
     timeout: 1000,
     app: {
@@ -88,7 +90,14 @@ module.exports = {
         TestCase.assertTrue(app instanceof Realm.App);
 
         let credentials = Realm.Credentials.emailPassword('me', 'secret');
-        let user = await app.logIn(credentials);
+        var didFail = false;
+        let user = await app.logIn(credentials).catch(err => {
+            TestCase.assertEqual(err.message, "invalid username/password");
+            TestCase.assertEqual(err.code, -1);
+            didFail = true;
+        });
+        TestCase.assertUndefined(user);
+        TestCase.assertEqual(didFail, true);
     },
 
     async testLogoutAndAllUsers() {
@@ -121,17 +130,7 @@ module.exports = {
     },
 
     async testMongoDBRealmSync() {
-        const appId = "default-fomiu";
-        const appConfig = {
-            id: appId,
-            url: "http://localhost:9090",
-            timeout: 1000,
-            app: {
-                name: "default",
-                version: "0"
-            },
-        };
-        let app = new Realm.App(appConfig);
+        let app = new Realm.App(config);
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
 
