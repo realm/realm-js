@@ -22,7 +22,7 @@ function assert_fancy_eq(a, b) {
     assertEqual(a, b);
 }
 
-function check([t, val]) {
+function check([t, val, serialized_if_special]) {
     const json = JSON.stringify({val});
     const parsed = realm_parse(json);
 
@@ -32,7 +32,11 @@ function check([t, val]) {
         assertEqual(parsed.val.constructor, t);
     }
 
-    assert_fancy_eq(parsed, bson_parse(json));
+    if (serialized_if_special) {
+        assert_fancy_eq(parsed, {val: serialized_if_special});
+    } else {
+        assert_fancy_eq(parsed, bson_parse(json));
+    }
 }
 
 function assertBig(numStr) {
@@ -51,18 +55,23 @@ const values = {
     bool_f: ['boolean', false],
 
     // Note: the parser doesn't officially support support the relaxed EJSON,
-    // so these two should not actually be used in practice. We currently differ
-    // from the js-bson parser in the type we use for intish numbers.
+    // so these two should not actually be used in practice.
     simple_double: ['number', 1.1],
-    // simple_intish_double: ['number', 1],
+    simple_intish_double: ['number', 1],
 
-    decimal: [bson.Decimal128, {$numberDecimal: "1.1"}],
+    decimal: [bson.Decimal128, {$numberDecimal: "1.100"}],
     double: ['number', {$numberDouble: "1.1"}],
     int: ['number', {$numberInt: "1"}],
-    long: [bson.Long, {$numberLong: "123"}],
-    long_neg: [bson.Long, {$numberLong: "-123"}],
+    long_medium: ['number', {$numberLong: "12345678901"}],
+    long_medium_neg: ['number', {$numberLong: "-12345678901"}],
     long_big: [bson.Long, {$numberLong: assertBig("1234567890123456789")}],
     long_big_neg: [bson.Long, {$numberLong: assertBig("-1234567890123456789")}],
+
+    // These are special because we parse small NumberLongs into js numbers, so they
+    // when they round trip, they become NumberInts. There isn't a great solution do this
+    // especially since stitch returns 1.0 as a NumberLong.
+    long_small: ['number', {$numberLong: "123"}, {$numberInt: "123"}],
+    long_small_neg: ['number', {$numberLong: "-123"}, {$numberInt: "-123"}],
 
     timestamp: [bson.Timestamp, {$timestamp: {t: 1234, i: 5678}}],
     date: [Date, {$date: {$numberLong: "1445401740123"}}],

@@ -34,6 +34,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Added support for `customData` readonly property to `Realm.User` objects.
+* Added support for calling server functions from `Realm.User` objects.
 
 ### Fixed
 * It was not possible to make client resync if a table contained binary data.

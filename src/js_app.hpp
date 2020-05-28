@@ -223,7 +223,8 @@ void AppClass<T>::all_users(ContextType ctx, ObjectType this_object, Arguments& 
 
     auto users = Object::create_empty(ctx);
     for (auto user : app->all_users()) {
-        Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app))), ReadOnly | DontDelete);
+        auto&& identity = user->identity();
+        Object::set_property(ctx, users, identity, create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), app)), ReadOnly | DontDelete);
     }
     return_value.set(users);
 }
@@ -238,7 +239,7 @@ void AppClass<T>::current_user(ContextType ctx, ObjectType this_object, Argument
         return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app))));
     }
     else {
-        return_value.set(Value::from_null(ctx));
+        return_value.set_null();
     }
 }
 

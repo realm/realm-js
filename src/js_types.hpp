@@ -163,6 +163,7 @@ struct Value {
     static ObjectType to_object(ContextType, const ValueType &);
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, ValueType);
+    static bson::Bson to_bson(ContextType, ValueType);
 
 
 #define VALIDATED(return_t, type) \
@@ -196,6 +197,9 @@ struct Function {
     using ValueType = typename T::Value;
 
     static ValueType callback(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
+    static ValueType callback(ContextType ctx, const FunctionType & f, const ObjectType& o,  std::initializer_list<ValueType> args) {
+        return callback(ctx, f, o, args.size(), args.begin());
+    }
     static ValueType call(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
     template<size_t N> static ValueType call(ContextType ctx, const FunctionType &function,
                                              const ObjectType &this_object, const ValueType (&arguments)[N])
@@ -293,12 +297,25 @@ struct Object {
     static ValueType call_method(ContextType ctx, const ObjectType &object, const String<T> &name, const std::vector<ValueType> &arguments) {
         return call_method(ctx, object, name, (uint32_t)arguments.size(), arguments.data());
     }
+    static ValueType call_method(ContextType ctx, const ObjectType &object, const String<T> &name, const std::initializer_list<ValueType> &arguments) {
+        return call_method(ctx, object, name, (uint32_t)arguments.size(), arguments.begin());
+    }
 
     static ObjectType create_empty(ContextType);
-    static ObjectType create_array(ContextType, uint32_t, const ValueType[]);
+    static ObjectType create_obj(ContextType ctx, std::initializer_list<std::pair<String<T>, ValueType>> values) {
+        auto obj = create_empty(ctx);
+        for (auto&& [name, val] : values) {
+            set_property(ctx, obj, name, val);
+        }
+        return obj;
+    }
 
+    static ObjectType create_array(ContextType, uint32_t, const ValueType[]);
     static ObjectType create_array(ContextType ctx, const std::vector<ValueType> &values) {
         return create_array(ctx, (uint32_t)values.size(), values.data());
+    }
+    static ObjectType create_array(ContextType ctx, std::initializer_list<ValueType> values) {
+        return create_array(ctx, (uint32_t)values.size(), values.begin());
     }
     static ObjectType create_array(ContextType ctx) {
         return create_array(ctx, 0, nullptr);
@@ -339,6 +356,11 @@ class Protected {
         bool operator()(const Protected<ValueType>& a, const Protected<ValueType>& b) const;
     };
 };
+template <typename GlobalCtx>
+Protected(GlobalCtx) -> Protected<GlobalCtx>;
+template <typename Ctx, typename T>
+Protected(Ctx, T) -> Protected<T>;
+
 
 template<typename T>
 struct Exception : public std::runtime_error {
@@ -550,13 +572,20 @@ inline typename T::Value Value<T>::from_bson(typename T::Context ctx, const bson
     case Type::Int32:
         // All int32 values can be precisely represented as a double
         return from_number(ctx, double(value.operator int32_t()));
-    case Type::Int64:
-        // int64 needs special handling.
-        // TODO: Consider using plain js numbers for values within [-2^52, 2^52).
+    case Type::Int64: {
+        // int64 needs special handling. The server uses it for all intish numbers, even 1.0, so we map
+        // it to a plain js number if it is in the range where it can be done precisely, otherwise
+        // we map to the bson.Long type which preserves the value, but is harder to use.
+        const auto i64_val = value.operator int64_t();
+        constexpr static int64_t max_precise_double = 1ll << 52; // 52 bits mantissa + implicit leading 1 bit.
+        if (-max_precise_double <= i64_val && i64_val <= max_precise_double)
+            return Value<T>::from_number(ctx, double(i64_val));
+
         return Object<T>::create_bson_type(ctx, "Long", {
-            Value<T>::from_number(ctx, int32_t(value.operator int64_t())), // low
-            Value<T>::from_number(ctx, int32_t(value.operator int64_t() >> 32)), // high
+            Value<T>::from_number(ctx, int32_t(i64_val)), // low
+            Value<T>::from_number(ctx, int32_t(i64_val >> 32)), // high
         });
+    }
     case Type::Decimal128:
         return from_decimal128(ctx, value.operator Decimal128());
     case Type::ObjectId:
@@ -620,5 +649,18 @@ inline typename T::Object Value<T>::from_bson(typename T::Context ctx, const bso
     return out;
 }
 
+template<typename T>
+inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value) {
+    // For now going through the bson.EJSON.stringify() since it will correctly handle the special JS types.
+    // Consider directly converting to Bson if we need more control or there are performance issues.
+    auto realm = Value::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
+    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
+    auto ejson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, bson, "EJSON"));
+    auto call_args_json = Object<T>::call_method(ctx, ejson, "stringify", {
+        value,
+        Object<T>::create_obj(ctx, {{"relaxed", Value::from_boolean(ctx, false)}}),
+    });
+    return bson::parse(Value::to_string(ctx, call_args_json));
+}
 } // js
 } // realm
