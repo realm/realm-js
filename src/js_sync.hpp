@@ -285,7 +285,7 @@ template<typename T>
 void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
         ObjectType config = Object::create_empty(ctx);
-        Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(std::move(session->config().user), nullptr))); // FIXME: nullptr is not an app object
+        Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
         // TODO: add app id
         if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
@@ -308,7 +308,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
 template<typename T>
 void SessionClass<T>::get_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
-        return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(std::move(session->config().user), nullptr))); // FIXME: nullptr is not an app object
+        return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
     } else {
         return_value.set_undefined();
     }

@@ -22,7 +22,7 @@
 
 // TODO: Once we get MongoDB Realm Cloud docker image integrated, we should be able
 //       to obtain the id of the Stitch app.
-const appId = "default-kktps";
+const appId = "realm-sdk-integration-tests-zueke";
 const appConfig = {
   id: appId,
   url: "http://localhost:9090",
@@ -96,14 +96,14 @@ module.exports = {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
 
-    app.logIn(credentials).then(user => {
+    return app.logIn(credentials).then(user => {
       assertIsUser(user);
 
       assertIsSameUser(user, app.currentUser());
-      user.logout();
+      user.logOut();
 
       // Is now logged out.
-      TestCase.assertUndefined(app.currentUser());
+      TestCase.assertNull(app.currentUser());
     });
   },
 
@@ -156,6 +156,26 @@ module.exports = {
     //    Realm.Sync.Credentials.custom("foo", "bar");
   },
 
+  async testFunctions() {
+    let app = new Realm.App(appConfig);
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+
+    TestCase.assertEqual(await user.callFunction('firstArg', [123]), 123);
+    TestCase.assertEqual(await user.functions.firstArg(123), 123);
+    TestCase.assertEqual(await user.functions['firstArg'](123), 123);
+
+    // Test method stashing / that `this` is bound correctly.
+    const firstArg = user.functions.firstArg;
+    TestCase.assertEqual(await firstArg(123), 123);
+    TestCase.assertEqual(await firstArg(123), 123); // Not just one-shot
+
+    TestCase.assertEqual(await user.functions.sum(1, 2, 3), 6);
+
+    const err = await TestCase.assertThrowsAsync(async() => await user.functions.error());
+    TestCase.assertEqual(err.code, 400);
+  },
+
   testAll() {
     let app = new Realm.App(appConfig);
     const all = app.allUsers();
@@ -166,7 +186,7 @@ module.exports = {
     return app.logIn(credentials).then(user1 => {
       const all = app.allUsers();
       TestCase.assertArrayLength(Object.keys(all), 1);
-      assertIsSameUser(all[user.identity], user1);
+      assertIsSameUser(all[user1.identity], user1);
 
       return app.logIn(Realm.Credentials.anonymous()).then(user2 => {
         let all = app.allUsers();
@@ -175,12 +195,12 @@ module.exports = {
         assertIsSameUser(all[user2.identity], user2);
         assertIsSameUser(all[user1.identity], user1);
 
-        user2.logout();
+        user2.logOut();
         all = app.allUsers();
         TestCase.assertArrayLength(Object.keys(all), 1);
         assertIsSameUser(all[user1.identity], user1);
 
-        user1.logout();
+        user1.logOut();
         all = app.allUsers();
         TestCase.assertArrayLength(Object.keys(all), 0);
       });

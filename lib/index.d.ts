@@ -355,7 +355,7 @@ declare namespace Realm {
     }
 
 
-    //FIXME: Fix ts definiton. Is this Realm.User or Realm.Sync.User. 
+    //FIXME: Fix ts definition. Is this Realm.User or Realm.Sync.User. 
     /**
      * User
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.User.html }
@@ -367,9 +367,29 @@ declare namespace Realm {
         readonly state: string;
         readonly customData: object;
 
+        /**
+         * Convenience wrapper around call_function(name, [args]).
+         *
+         * @example
+         * // These are all equivalent:
+         * await user.call_function("do_thing", [a1, a2, a3]);
+         * await user.functions.do_thing(a1, a2, a3);
+         * await user.functions["do_thing"](a1, a2, a3);
+         *
+         * @example
+         * // It it legal to store the functions as first-class values:
+         * const do_thing = user.functions.do_thing;
+         * await do_thing(a1);
+         * await do_thing(a2);
+         */   
+        readonly functions: {
+            [name: string] : (...args: any[]) => Promise<any>
+        };
+
         logOut(): void;
         deleteUser(): Promise<void>;
         linkCredentials(credentials: Credentials): Promise<void>;
+        call_function(name: string, args: any[]): Promise<any>;
     }
 
     interface UserMap {
