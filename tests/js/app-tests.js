@@ -122,7 +122,7 @@ module.exports = {
 
     async testMongoDBRealmSync() {
         // Realm.clearTestState();
-        const appId = "default-hxmxb";
+        const appId = "default-fomiu";
         // const appId = "realm-demo-gqlrw";
         const appConfig = {
             id: appId,
