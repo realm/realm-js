@@ -44,8 +44,8 @@ function runOutOfProcess() {
 }
 
 const config = {
-    id: 'default-hpvci',
-    url: 'http://localhost:9090',
+    id: global.APPID,
+    url: global.APPURL,
     timeout: 1000,
     app: {
         name: 'realm-sdk-integration-tests',
@@ -62,7 +62,7 @@ module.exports = {
     testNonexistingApp() {
         const conf = {
             id: 'smurf',
-            url: 'http://localhost:9090',
+            url: global.APPURL,
             timeout: 1000,
             app: {
                 name: 'realm-sdk-integration-tests',
@@ -121,10 +121,9 @@ module.exports = {
     },
 
     async testMongoDBRealmSync() {
-        const appId = "default-fomiu";
         const appConfig = {
-            id: appId,
-            url: "http://localhost:9090",
+            id: global.APPID,
+            url: global.APPURL,
             timeout: 1000,
             app: {
                 name: "default",

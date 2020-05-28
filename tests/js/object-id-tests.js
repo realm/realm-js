@@ -31,14 +31,29 @@ module.exports = {
             return Promise.resolve();
         }
 
-        const credentials = Realm.Sync.Credentials.anonymous();
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
-            const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' },
-                             schema: [{ name: 'IntegerPrimaryKey', properties: { int: 'int?' }, primaryKey: 'int' },
-                                      { name: 'StringPrimaryKey', properties: { string: 'string?' }, primaryKey: 'string' },
-                                      { name: 'NoPrimaryKey', properties: { string: 'string' }},
-                                     ],
-                           });
+        const appConfig = {
+            id: global.APPID,
+            url: global.APPURL,
+            timeout: 1000,
+            app: {
+                name: "default",
+                version: "0"
+            },
+        };
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+
+        return app.logIn(credentials).then(user => {
+            const config = {
+                sync: {
+                    user,
+                    partitionValue: '"LoLo"'
+                },
+                schema: [{ name: 'IntegerPrimaryKey', properties: { int: 'int?' }, primaryKey: 'int' },
+                    { name: 'StringPrimaryKey', properties: { string: 'string?' }, primaryKey: 'string' },
+                    { name: 'NoPrimaryKey', properties: { string: 'string' }},
+                ],
+            }
             return Realm.open(config).then(realm => {
                 var integer, nullInteger;
                 var string, nullString;

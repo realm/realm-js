@@ -17,8 +17,8 @@ function trySetElectronVersion() {
     if (descriptor.writable) {
             process.versions.electron = process.env.REALM_ELECTRON_VERSION;
     }
-    
-    
+
+
     if (descriptor.set) {
             descriptor.set(process.env.REALM_ELECTRON_VERSION);
     }

@@ -30,8 +30,9 @@ schemas.NameObject = {
 
 function createObjects(user) {
     const config = {
-        sync: { user,
-            url: `realm://127.0.0.1:9080/~/${realmName}`,
+        sync: {
+            user,
+            partitionValue: '"LoLo"',
             error: err => console.log(err)
         },
         schema: [schemas.ParentObject, schemas.NameObject],
@@ -69,8 +70,19 @@ function createObjects(user) {
     });
 }
 
-const credentials = Realm.Sync.Credentials.nickname(username);
-Realm.Sync.User.login('http://127.0.0.1:9080', credentials)
+const config = {
+    id: global.APPID,
+    url: global.APPURL,
+    timeout: 1000,
+    app: {
+        name: 'realm-sdk-integration-tests',
+        version: '42'
+    }
+};
+
+const credentials = Realm.Credentials.anonymous();
+const app = new Realm.App(config);
+app.logIn(credentials)
     .catch((error) => {
         const loginError = JSON.stringify(error);
         console.error(`nested-list-helper failed:\n User login error:\n${loginError}`);

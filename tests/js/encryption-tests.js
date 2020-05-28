@@ -75,17 +75,16 @@ module.exports = {
             return Promise.resolve();
         }
 
-        const config = {
-            id: 'default-gorbm',
-            url: 'http://localhost:9090',
+        const appConfig = {
+            id: global.APPID,
+            url: global.APPURL,
             timeout: 1000,
             app: {
-                name: 'realm-sdk-integration-tests',
-                version: '42'
-            }
+                name: "default",
+                version: "0"
+            },
         };
-
-        let app = new Realm.App(config);
+        let app = new Realm.App(appConfig);
 
         const credentials = Realm.Credentials.anonymous();
         return app.logIn(credentials).then(user => {

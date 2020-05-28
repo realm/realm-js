@@ -22,17 +22,15 @@
 
 // TODO: Once we get MongoDB Realm Cloud docker image integrated, we should be able
 //       to obtain the id of the Stitch app.
-const appId = "default-kktps";
 const appConfig = {
-  id: appId,
-  url: "http://localhost:9090",
+  id: global.APPID,
+  url: global.APPURL,
   timeout: 1000,
   app: {
-      name: "realm-sdk-integration-tests",
-      version: "42"
-  }
+      name: "default",
+      version: "0"
+  },
 };
-
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
@@ -117,42 +115,8 @@ module.exports = {
 
   testLoginNonExistingUser() {
     let app = new Realm.App(appConfig);
-    let credentials = Realm.Credentials.usernamePassword('foo', 'pass');
+    let credentials = Realm.Credentials.emailPassword('foo', 'pass');
     TestCase.assertThrows(app.logIn(credentials));
-  },
-
-  testLoginTowardsMisbehavingServer() {
-    // Try authenticating using an endpoint that doesn't exist
-    return Realm.Sync.User.login('http://127.0.0.1:9080/invalid-auth-endpoint', Realm.Sync.Credentials.anonymous())
-      .then(() => { throw new Error('Login should have failed'); })
-      .catch((e) => {
-        assertIsError(e);
-        TestCase.assertEqual(
-          e.message,
-          "Could not authenticate: Realm Object Server didn't respond with valid JSON"
-        );
-      });
-  },
-
-  testAuthenticateJWT() {
-    // if (!isNodeProcess) {
-    //   return;
-    // }
-
-    // return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.jwt(signToken('user_name', false)))
-    //   .then(user => {
-    //       TestCase.assertEqual(user.identity, 'user_name');
-    //       TestCase.assertFalse(user.isAdmin);
-    //       return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.jwt(signToken('admin_user', true)))
-    //   }).then(user => {
-    //       TestCase.assertEqual(user.identity, 'admin_user');
-    //       TestCase.assertTrue(user.isAdmin);
-    //   });
-  },
-
-  testAuthenticateCustom() {
-    // Assert that we can create custom credentials without specifying userInfo
-    //    Realm.Sync.Credentials.custom("foo", "bar");
   },
 
   testAll() {

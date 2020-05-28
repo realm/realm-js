@@ -278,7 +278,6 @@ module.exports = {
         const realm = new Realm({schema: []});
         realm.close();
         TestCase.assertTrue(realm.isClosed);
-        TestCase.assertThrows(() => realm.close());
         TestCase.assertTrue(realm.isClosed);
     },
 
@@ -462,14 +461,28 @@ module.exports = {
         if (!global.enableSyncTests) {
             return;
         }
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
+
+        const appConfig = {
+            id: global.APPID,
+            url: global.APPURL,
+            timeout: 1000,
+            app: {
+                name: "default",
+                version: "0"
+            },
+        };
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+
+        return app.logIn(credentials)
             .then(user => {
-                const config = user.createConfiguration({
+                const config = {
                     schema: [schemas.TestObject],
                     sync: {
-                        url: `realm://127.0.0.1:9080/testRealmExists_${Utils.uuid()}`,
+                        user,
+                        partitionValue: '"LoLo"'
                     },
-                });
+                };
                 TestCase.assertFalse(Realm.exists(config));
                 new Realm(config).close();
                 TestCase.assertTrue(Realm.exists(config));
@@ -1578,12 +1591,21 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User
-            .login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
+        const appConfig = {
+            id: global.APPID,
+            url: global.APPURL,
+            timeout: 1000,
+            app: {
+                name: "default",
+                version: "0"
+            },
+        };
+        let app = new Realm.App(appConfig);
+        return app.logIn(Realm.Credentials.anonymous())
             .then(user => {
                 const config = {
                     schema: [schemas.TestObject],
-                    sync: {user, url: 'realm://127.0.0.1:9080/~/test' },
+                    sync: {user, partitionValue: '"Lolo"' },
                 };
 
                 const realm = new Realm(config);
