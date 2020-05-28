@@ -578,7 +578,9 @@ def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer',
-               'REALM_SET_NVM_ALIAS=1']) {
+               'REALM_SET_NVM_ALIAS=1',
+               'PATH=/Users/realm/.rbenv/bin:/Users/realm/.rbenv/shims:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/realm/.gems/bin'
+              ]) {
         doInside('./scripts/test.sh', target, postStep)
       }
     }
