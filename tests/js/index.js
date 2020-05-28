@@ -93,6 +93,7 @@ exports.registerTests = function(tests) {
 };
 
 exports.prepare = function (done) {
+    done();
 };
 
 exports.runTest = function(suiteName, testName) {
@@ -114,7 +115,7 @@ exports.runTest = function(suiteName, testName) {
                 global.gc();
             }
         }
-        
+
         return result;
     }
 
