@@ -150,12 +150,23 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     }
     ensure_directory_exists_for_file(default_realm_file_directory());
 
+    auto platform_description_function = js::Object<T>::get_property(ctx, realm_constructor, "_createPlatformDescription");
+    if (js::Value<T>::is_function(ctx, platform_description_function)) {
+        auto result = js::Function<T>::call(ctx, js::Value<T>::to_function(ctx, platform_description_function), realm_constructor, 0, nullptr);
+        auto result_object = js::Value<T>::validated_to_object(ctx, result);
+        static const String platform_name = "platform";
+        static const String platform_version_name = "platform_version";
+        static const String sdk_version_name = "sdk_version";
+        config.platform = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, platform_name));
+        config.platform_version = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, platform_version_name));
+        config.sdk_version = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, sdk_version_name));
+    }
+
     SyncClientConfig client_config;
     client_config.base_file_path = default_realm_file_directory();
     client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
     client_config.user_agent_binding_info = user_agent_binding_info;
     SyncManager::shared().configure(client_config, config);
-
     set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(SyncManager::shared().app()));
 }
 

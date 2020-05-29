@@ -121,25 +121,19 @@ module.exports = {
     },
 
     async testMongoDBRealmSync() {
-        // Realm.clearTestState();
-        const appId = 'default-okqrb';
-        // const appId = "realm-demo-gqlrw";
+        const appId = "default-fomiu";
         const appConfig = {
             id: appId,
-            url: 'http://localhost:9090',
-            // url: 'realm-dev.mongodb.com',
+            url: "http://localhost:9090",
             timeout: 1000,
             app: {
                 name: "default",
-                version: '0'
+                version: "0"
             },
         };
         let app = new Realm.App(appConfig);
-        Realm.Sync.setLogLevel('all');
-        Realm.Sync.setLogger((level, message) => console.log(message));
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
-        console.log("HEST 0 - logged in");
 
         const realmConfig = {
             schema: [{
@@ -158,30 +152,23 @@ module.exports = {
             }
         };
         Realm.deleteFile(realmConfig);
-
         let realm = await Realm.open(realmConfig);
         realm.write(() => {
             realm.deleteAll();
         });
         realm.write(() => {
-            realm.create("Dog", { "_id": new ObjectId('0000002a9a7969d24bea4cf5'), name: "King" });
-            console.log('FISK 1');
-            realm.create("Dog", { "_id": new ObjectId('0000002a9a7969d24bea4cf4'), name: "King" });
+            realm.create("Dog", { "_id": new ObjectId("0000002a9a7969d24bea4cf5"), name: "King" });
+            realm.create("Dog", { "_id": new ObjectId("0000002a9a7969d24bea4cf4"), name: "King" });
         });
-        console.log('FISK 2');
 
-        console.log(`HEST 1: ${realm.objects("Dog").length}`);
         await realm.syncSession.uploadAllLocalChanges();
-        console.log(`HEST 2: ${realm.objects("Dog").length}`);
         TestCase.assertEqual(realm.objects("Dog").length, 2);
         realm.close();
 
         Realm.deleteFile(realmConfig);
 
-        console.log('HEST 3');
         let realm2 = await Realm.open(realmConfig);
         await realm2.syncSession.downloadAllServerChanges();
-        console.log("HEST 4");
 
         TestCase.assertEqual(realm2.objects("Dog").length, 2);
         realm2.close();
