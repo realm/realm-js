@@ -53,9 +53,12 @@
             "problemMatcher": []
         },
         {
-            "label": "Download and Start Server",
-            "command": "${workspaceRoot}/scripts/download_and_start_server.sh",
+            "label": "start_stitch",
+            "command": "${workspaceRoot}/scripts/test.sh",
             "type": "shell",
+            "args": [
+                "start-server",
+            ],
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -64,7 +67,27 @@
                 "showReuseMessage": true,
                 "clear": false
             },
-            "isBackground": true
+            "isBackground": true,
+            // This task is run before some debug tasks.
+            // Problem is, it's a watch script, and since it never exits, VSCode
+            // complains. All this is needed so VSCode just lets it run.
+            "problemMatcher": [
+                {
+                "pattern": [
+                    {
+                    "regexp": ".",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": ".",
+                }
+                }
+            ]
         }
     ]
 }

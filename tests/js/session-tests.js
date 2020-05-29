@@ -30,6 +30,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
+const AppConfig = require('./support/testConfig');
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
@@ -58,20 +59,7 @@ if (isNodeProcess) {
     path = node_require("path");
 }
 
-
-const appId = 'default-lnpak';
-const appUrl = 'http://localhost:9090';
-// const appId = "realm-demo-gqlrw";
-const appConfig = {
-    id: appId,
-    url: appUrl,
-    // url: 'realm-dev.mongodb.com',
-    timeout: 1000,
-    app: {
-        name: "default",
-        version: '0'
-    },
-};
+let appConfig = AppConfig.integrationAppConfig;
 
 function getSyncConfiguration(user) {
     const realmConfig = {
@@ -153,28 +141,8 @@ function unexpectedError(e) {
 module.exports = {
     testLocalRealmHasNoSession() {
         let realm = new Realm();
-        TestCase.assertNull(realm.syncSession);
+        return TestCase.assertNull(realm.syncSession);
     },
-
-    testCustomHTTPHeaders() {
-        // return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-        //     let config = {
-        //         sync: {
-        //             user,
-        //             url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
-        //             custom_http_headers: {
-        //                 'X-Foo': 'Bar'
-        //             }
-        //         },
-        //         schema: [{ name: 'Dog', properties: { name: 'string' } }],
-        //     };
-        //     return Realm.open(config).then(realm => {
-        //           TestCase.assertDefined(realm.syncSession.config.custom_http_headers);
-        //           TestCase.assertEqual(realm.syncSession.config.custom_http_headers['X-Foo'], 'Bar');
-        //     });
-        // });
-    },
-
 
     testRealmOpen() {
         if (!isNodeProcess) {
@@ -188,9 +156,8 @@ module.exports = {
         let user, config;
 
         let app = new Realm.App(appConfig);
-        const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appId, appUrl, realmName, REALM_MODULE_PATH)
-            .then(() => app.logIn(credentials))
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, realmName, REALM_MODULE_PATH)
+            .then(() => app.logIn(Realm.Credentials.anonymous()))
             .then(u => {
                 user = u;
                 config = getSyncConfiguration(u);
@@ -219,7 +186,7 @@ module.exports = {
         let user, config;
         let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appId, appUrl, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, realmName, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
             .then(u => {
                 user = u;
@@ -257,7 +224,7 @@ module.exports = {
 
         const credentials = Realm.Credentials.anonymous();
         let app = new Realm.App(appConfig);
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appId, appUrl, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
             .then(user => {
                 let config = getSyncConfiguration(user);
@@ -386,7 +353,7 @@ module.exports = {
 
         let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appId, appUrl, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, realmName, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
             .then(user => {
                 let config = getSyncConfiguration(user);

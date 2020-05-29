@@ -16,6 +16,7 @@ electronTestVersion = electronVersions[0]
 def gitTag = null
 def formattedVersion = null
 dependencies = null
+objectStoreDependencies = null
 
 environment {
   GIT_COMMITTER_NAME="ci"
@@ -40,6 +41,7 @@ stage('check') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
     dependencies = readProperties file: 'dependencies.list'
+    objectStoreDependencies = readProperties file: 'src/object-store/dependencies.list'
     gitTag = readGitTag()
     def gitSha = readGitSha()
     def version = getVersion()
@@ -96,16 +98,16 @@ stage('pretest') {
 stage('build') {
     parallelExecutors = [:]
     nodeVersions.each { nodeVersion ->
-      parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
+      //parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
       parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-      parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
-      parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
+      //parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
+      //parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
     }
     electronVersions.each { electronVersion ->
-      parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
+      //parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
       parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
-      parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
-      parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
+      //parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
+      //parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
     }
     parallelExecutors["Android React Native"] = buildAndroid()
     parallel parallelExecutors
@@ -120,20 +122,20 @@ if (gitTag) {
 stage('test') {
   parallelExecutors = [:]
 
-  parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
-  parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
-  parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
+  //parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
+  //parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
+  //parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}")
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
-  parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
+  //parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
 
   //parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
-  parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
+  //parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
   //parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
-  parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
-  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
+  //parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
+  //parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
+  //parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
   //android_react_tests: testAndroid('react-tests-android', {
   //  junit 'tests/react-test-app/tests.xml'
   //}),
@@ -553,18 +555,22 @@ def testLinux(target, postStep = null) {
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
       try {
-        reportStatus(reportName, 'PENDING', 'Build has started')
-        image.inside('-e HOME=/tmp') {
-          timeout(time: 1, unit: 'HOURS') {
-            withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target}"
+          // stitch images are auto-published every day to our CI
+          // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
+          // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
+          // if there's really a new feature you need from the latest stitch, upgrade this manually
+        withRealmCloud(version: objectStoreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/src/object-store/tests/mongodb"]) { networkName ->
+          reportStatus(reportName, 'PENDING', 'Build has started')
+          image.inside('-e HOME=/tmp') {
+            timeout(time: 1, unit: 'HOURS') {
+              sh "scripts/test.sh ${target}"
             }
+            if (postStep) {
+              postStep.call()
+            }
+            deleteDir()
+            reportStatus(reportName, 'SUCCESS', 'Success!')
           }
-          if (postStep) {
-            postStep.call()
-          }
-          deleteDir()
-          reportStatus(reportName, 'SUCCESS', 'Success!')
         }
       } catch(Exception e) {
         reportStatus(reportName, 'FAILURE', e.toString())

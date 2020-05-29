@@ -47,6 +47,7 @@ fi
 SERVER_PID=0
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
 LOGCAT_OUT="$SRCROOT/logcat_out.txt"
+RUN_STITCH_IN_FORGROUND=""
 
 die() {
   echo "$@" >&2
@@ -55,6 +56,11 @@ die() {
 
 start_server() {
   echo "test.sh: starting stitch"
+  if [ "$CI_RUN" == "true" ]; then
+    echo "CI Run detected, not manually starting a server"
+    return;
+  fi
+
   if [[ -z "$(command -v docker)" ]]; then
     echo "starting stitch requires docker"
     exit 1
@@ -66,11 +72,16 @@ start_server() {
     echo "no existing stitch instance running in docker, attempting to start one"
     . "${SRCROOT}/src/object-store/dependencies.list"
     echo "using object-store stitch dependency: ${MDBREALM_TEST_SERVER_TAG}"
-    STITCH_DOCKER_ID=$(docker run -d -v "${SRCROOT}/src/object-store/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}")
-    echo "starting docker image $STITCH_DOCKER_ID"
-    # wait for stitch to import apps and start serving before continuing
-    docker logs --follow "$STITCH_DOCKER_ID" | grep -m 1 "Serving on.*9090" || true
-    echo "Started stitch with docker id: ${STITCH_DOCKER_ID}"
+    if [[ -n "$RUN_STITCH_IN_FORGROUND" ]]; then
+      # we don't worry about tracking the STITCH_DOCKER_ID because without the -d flag, this docker is tied to the shell
+      docker run -v "${SRCROOT}/src/object-store/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}"
+    else
+      STITCH_DOCKER_ID=$(docker run -d $BACKGROUND_FLAG -v "${SRCROOT}/src/object-store/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}")
+      echo "starting docker image $STITCH_DOCKER_ID"
+      # wait for stitch to import apps and start serving before continuing
+      docker logs --follow "$STITCH_DOCKER_ID" | grep -m 1 "Serving on.*9090" || true
+      echo "Started stitch with docker id: ${STITCH_DOCKER_ID}"
+    fi
   fi
 }
 
@@ -317,6 +328,10 @@ case "$TARGET" in
   pod install
   xctest ReactExample
   popd
+  ;;
+"start-server")
+  RUN_STITCH_IN_FORGROUND=true
+  start_server
   ;;
 "react-tests-android")
   npm run check-environment

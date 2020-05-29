@@ -13,6 +13,7 @@ const ObjectId = require('bson').ObjectId;
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
+const AppConfig = require('./support/testConfig')
 
 const tmp = require('tmp');
 const fs = require('fs');
@@ -43,17 +44,7 @@ function runOutOfProcess() {
     });
 }
 
-const integration_tests_app_id = `${require("../../src/object-store/tests/mongodb/stitch.json").app_id}`;
-console.log(`found integration tests app id: ${integration_tests_app_id}`)
-const config = {
-    id: integration_tests_app_id,
-    url: 'http://localhost:9090',
-    timeout: 1000,
-    app: {
-        name: 'realm-sdk-integration-tests',
-        version: '42'
-    }
-};
+const config = AppConfig.integrationAppConfig;
 
 module.exports = {
     testNewApp() {
