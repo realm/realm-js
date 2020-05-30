@@ -19,7 +19,7 @@
 #pragma once
 
 #include <realm/keys.hpp>
-#include <realm/decimal.hpp>
+#include <realm/decimal128.hpp>
 #include <realm/object_id.hpp>
 
 #include "js_list.hpp"
