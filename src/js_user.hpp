@@ -279,7 +279,7 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
         *user,
         name,
         call_args_bson.operator const bson::BsonArray&(), 
-        EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
+        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
                              callback = Protected(ctx, callback),
                              this_object = Protected(ctx, this_object)]
                             (util::Optional<app::AppError> error, util::Optional<bson::Bson> result) {
