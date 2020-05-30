@@ -19,6 +19,8 @@
 #pragma once
 
 #include <realm/keys.hpp>
+#include <realm/decimal.hpp>
+#include <realm/object_id.hpp>
 
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
