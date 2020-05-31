@@ -16,12 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+
 #include "node_init.hpp"
 #include "napi.h"
 
 #include "js_realm.hpp"
 #if REALM_ENABLE_SYNC
 #include "js_adapter.hpp"
+#else
+#pragma comment( lib, "ws2_32.lib")
 #endif
 
  namespace realm {
