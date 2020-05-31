@@ -142,52 +142,34 @@ module.exports = {
 
   testAll() {
     let app = new Realm.App(appConfig);
+    Object.keys(app.allUsers()).forEach(id => users[id].logOut()); // FIXME: we need to reset users for each test
+
     const all = app.allUsers();
-    TestCase.assertArrayLength(Object.keys(all), 0);
+    TestCase.assertArrayLength(Object.keys(all), 0, "Noone to begin with");
 
 
     let credentials = Realm.Credentials.anonymous();
     return app.logIn(credentials).then(user1 => {
       const all = app.allUsers();
-      TestCase.assertArrayLength(Object.keys(all), 1);
+      TestCase.assertArrayLength(Object.keys(all), 1, "One user");
       assertIsSameUser(all[user1.identity], user1);
 
       return app.logIn(Realm.Credentials.anonymous()).then(user2 => {
         let all = app.allUsers();
-        TestCase.assertArrayLength(Object.keys(all), 2);
+        TestCase.assertArrayLength(Object.keys(all), 2, "Two users");
         // NOTE: the list of users is in latest-first order.
         assertIsSameUser(all[user2.identity], user2);
         assertIsSameUser(all[user1.identity], user1);
 
         user2.logOut();
         all = app.allUsers();
-        TestCase.assertArrayLength(Object.keys(all), 1);
+        TestCase.assertArrayLength(Object.keys(all), 1, "Back to one user");
         assertIsSameUser(all[user1.identity], user1);
 
         user1.logOut();
         all = app.allUsers();
-        TestCase.assertArrayLength(Object.keys(all), 0);
+        TestCase.assertArrayLength(Object.keys(all), 0, "All gone");
       });
-    });
-  },
-
-  testCurrent() {
-    let app = new Realm.App(appConfig);
-    TestCase.assertUndefined(app.currentUser());
-
-    let user1;
-    return app.logIn(Realm.Credentials.anonymous()).then(user1 => {
-      assertIsSameUser(app.currentUser(), user1);
-
-      return app.logIn(Realm.Credentials.anonymous());
-    }).then(user2 => {
-      TestCase.assertThrows(() => app.currentUser(), 'We expect Realm.App.currentUser() to throw if > 1 user.');
-      user2.logout();
-
-      assertIsSameUser(app.currentUser(), user1);
-
-      user1.logout();
-      TestCase.assertUndefined(app.currentUser());
     });
   },
 };

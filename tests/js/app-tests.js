@@ -88,7 +88,12 @@ module.exports = {
         TestCase.assertTrue(app instanceof Realm.App);
 
         let credentials = Realm.Credentials.emailPassword('me', 'secret');
-        let user = await app.logIn(credentials);
+        try {
+            await app.logIn(credentials);
+        } catch (e) {
+            Promise.resolve();
+        }
+        Promise.reject();
     },
 
     async testLogoutAndAllUsers() {

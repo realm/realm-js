@@ -3,10 +3,11 @@ This script creates new nested objects into a new Realm.
 */
 
 'use strict';
-console.log("nested-list-helper started");
-const username = process.argv[3];
-const realmName = process.argv[4];
-const realmModule = process.argv[5];
+console.log("nested-list-helper started", JSON.stringify(process.argv));
+const appid = process.argv[3];
+const appurl = process.argv[4];
+const realmName = process.argv[5];
+const realmModule = process.argv[6];
 
 const Realm = require(realmModule);
 
@@ -29,6 +30,7 @@ schemas.NameObject = {
 };
 
 function createObjects(user) {
+    console.log('FISK 501')
     const config = {
         sync: {
             user,
@@ -38,48 +40,47 @@ function createObjects(user) {
         schema: [schemas.ParentObject, schemas.NameObject],
     };
 
-    return Realm.open(config).then(realm => {
-        realm.write(() => {
-            realm.create('ParentObject', {
-                id: 1,
-                name: [
-                    { family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
-                    { family: 'Hansen', given: ['Ib'], prefix: [] }
-                ]
-            });
-            realm.create('ParentObject', {
-                id: 2,
-                name: [
-                    { family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
-                ]
-            });
+    let realm = new Realm(config);
+    realm.write(() => {
+        realm.create('ParentObject', {
+            id: 1,
+            name: [
+                { family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
+                { family: 'Hansen', given: ['Ib'], prefix: [] }
+            ]
         });
+        realm.create('ParentObject', {
+            id: 2,
+            name: [
+                { family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
+            ]
+        });
+    });
 
-        console.log("JSON: " + JSON.stringify(realm.objects('ParentObject')));
+    console.log("JSON: " + JSON.stringify(realm.objects('ParentObject')));
 
-        let session = realm.syncSession;
-        return new Promise((resolve, reject) => {
-            let callback = (transferred, total) => {
-                if (transferred === total) {
-                    session.removeProgressNotification(callback);
-                    resolve(realm);
-                }
+    let session = realm.syncSession;
+    return new Promise((resolve, reject) => {
+        let callback = (transferred, total) => {
+            if (transferred === total) {
+                session.removeProgressNotification(callback);
+                resolve(realm);
             }
-            session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
-        });
+        }
+        session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
     });
 }
 
 const config = {
-    id: global.APPID,
-    url: global.APPURL,
+    id: appid,
+    url: appurl,
     timeout: 1000,
     app: {
-        name: 'realm-sdk-integration-tests',
-        version: '42'
+        name: 'default',
+        version: '0'
     }
 };
-
+console.log('FISK 3', JSON.stringify(config));
 const credentials = Realm.Credentials.anonymous();
 const app = new Realm.App(config);
 app.logIn(credentials)
