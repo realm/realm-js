@@ -19,6 +19,10 @@
 #include "node_init.hpp"
 #include "napi.h"
 
+#if !REALM_ENABLE_SYNC
+#pragma comment( lib, "ws2_32.lib")
+#endif
+
 #include "js_realm.hpp"
 
  namespace realm {
