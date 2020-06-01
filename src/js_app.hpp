@@ -107,7 +107,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
             config.app_id = Value::validated_to_string(ctx, config_id_value, "id");
         }
         else {
-            throw runtime_error("App configuration must have an id.");
+            throw std::runtime_error("App configuration must have an id.");
         }
 
         ValueType config_url_value = Object::get_property(ctx, config_object, config_url);
