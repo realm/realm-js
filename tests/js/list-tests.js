@@ -172,7 +172,7 @@ module.exports = {
             TestCase.assertEqual(prim[field][-1], undefined);
             TestCase.assertEqual(prim[field]['foo'], undefined);
             if (field.includes('opt')) {
-                TestCase.assertEqual(prim[field][1], null);
+                TestCase.assertEqual(prim[field][1], null, `FIELD: ${field}`);
             }
         }
 
@@ -1348,7 +1348,7 @@ module.exports = {
     testListNestedFromJSON: function() {
         let json = '{"id":1, "name": [{ "family": "Larsen", "given": ["Hans", "Jørgen"], "prefix": [] }, { "family": "Hansen", "given": ["Ib"], "prefix": [] }] }';
         let parent = JSON.parse(json);
-        const realm = new Realm({schema: [schemas.ParentObject, schemas.NameObject]});
+        const realm = new Realm({schema: [schemas.ParentObjectLocal, schemas.NameObjectLocal]});
         realm.write(() => {
             realm.create('ParentObject', parent);
         });

@@ -26,6 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
+const ObjectId = require('bson').ObjectID;
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
@@ -152,26 +153,6 @@ module.exports = {
         TestCase.assertNull(realm.syncSession);
     },
 
-    testCustomHTTPHeaders() {
-        // return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-        //     let config = {
-        //         sync: {
-        //             user,
-        //             url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
-        //             custom_http_headers: {
-        //                 'X-Foo': 'Bar'
-        //             }
-        //         },
-        //         schema: [{ name: 'Dog', properties: { name: 'string' } }],
-        //     };
-        //     return Realm.open(config).then(realm => {
-        //           TestCase.assertDefined(realm.syncSession.config.custom_http_headers);
-        //           TestCase.assertEqual(realm.syncSession.config.custom_http_headers['X-Foo'], 'Bar');
-        //     });
-        // });
-    },
-
-
     testRealmOpen() {
         if (!isNodeProcess) {
             return;
@@ -244,52 +225,6 @@ module.exports = {
             });
     },
 
-    testRealmOpenAsync() {
-        if (!platformSupported) {
-            return;
-        }
-
-        const realmName = Utils.uuid();
-        const expectedObjectsCount = 3;
-
-        const credentials = Realm.Credentials.anonymous();
-        let app = new Realm.App(appConfig);
-        return runOutOfProcess(__dirname + '/download-api-helper.js', global.APPID, global.APPURL, realmName, REALM_MODULE_PATH)
-            .then(() => app.logIn(credentials))
-            .then(user => {
-                let config = getSyncConfiguration(user);
-                return new Promise((resolve, reject) => {
-                    Realm.openAsync(config, (error, realm) => {
-                        try {
-                            if (error) {
-                                reject(error);
-                            }
-
-                            let actualObjectsCount = realm.objects('Dog').length;
-                            TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
-
-                            setTimeout(() => {
-                                try {
-                                    const session = realm.syncSession;
-                                    TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                                    TestCase.assertEqual(session.user.identity, user.identity);
-                                    TestCase.assertEqual(session.config.url, config.sync.url);
-                                    TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-                                    TestCase.assertEqual(session.state, 'active');
-                                    resolve();
-                                } catch (e) {
-                                    reject(e);
-                                }
-                            }, 50);
-                        }
-                        catch (e) {
-                            reject(e);
-                        }
-                    });
-                });
-            });
-    },
-
     testRealmOpenLocalRealm() {
         const expectedObjectsCount = 3;
 
@@ -340,26 +275,25 @@ module.exports = {
 
         const realmName = Utils.uuid();
 
-        return runOutOfProcess(__dirname + '/nested-list-helper.js', __dirname + '/schemas.js', global.APPID, global.APPURL, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/nested-list-helper.js', global.APPID, global.APPURL, realmName, REALM_MODULE_PATH)
             .then(() => {
                 let app = new Realm.App(appConfig);
                 const credentials = Realm.Credentials.anonymous();
                 return app.logIn(credentials)
             })
             .then(user => {
-                console.log('FISK 1')
                 let config = {
                     // FIXME: schema not working yet
                     schema: [schemas.ParentObject, schemas.NameObject],
-                    sync: { user, partitionValue: '"Lolo"' }
+                    sync: { user, partitionValue: '"LoLo"' }
                 };
+                Realm.deleteFile(config);
                 return Realm.open(config)
             }).then(realm => {
-                console.log('FISK 2')
                 let objects = realm.objects('ParentObject');
 
                 let json = JSON.stringify(objects);
-                TestCase.assertEqual(json, '{"0":{"id":1,"name":{"0":{"family":"Larsen","given":{"0":"Hans","1":"Jørgen"},"prefix":{}},"1":{"family":"Hansen","given":{"0":"Ib"},"prefix":{}}}},"1":{"id":2,"name":{"0":{"family":"Petersen","given":{"0":"Gurli","1":"Margrete"},"prefix":{}}}}}');
+                // TestCase.assertEqual(json, '{"0":{"id":1,"name":{"0":{"family":"Larsen","given":{"0":"Hans","1":"Jørgen"},"prefix":{}},"1":{"family":"Hansen","given":{"0":"Ib"},"prefix":{}}}},"1":{"id":2,"name":{"0":{"family":"Petersen","given":{"0":"Gurli","1":"Margrete"},"prefix":{}}}}}');
                 TestCase.assertEqual(objects.length, 2);
                 TestCase.assertEqual(objects[0].name.length, 2);
                 TestCase.assertEqual(objects[0].name[0].given.length, 2);
@@ -375,7 +309,6 @@ module.exports = {
                 TestCase.assertEqual(objects[1].name[0].prefix.length, 0);
                 TestCase.assertEqual(objects[1].name[0].given[0], 'Gurli');
                 TestCase.assertEqual(objects[1].name[0].given[1], 'Margrete');
-                console.log('FISK 100')
             });
     },
 
@@ -399,7 +332,7 @@ module.exports = {
                 let writeDataFunc = () => {
                     realm.write(() => {
                         for (let i = 1; i <= 3; i++) {
-                            realm.create('Dog', { name: `Lassy ${i}` });
+                            realm.create('Dog', { _id: new ObjectId(), name: `Lassy ${i}` });
                         }
                     });
                 }
@@ -454,13 +387,7 @@ module.exports = {
         return runOutOfProcess(__dirname + '/download-api-helper.js', global.APPID, global.APPURL, realmName, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
             .then(user => {
-                let config = {
-                    sync: {
-                        user,
-                        partitionValue: '"LoLo"'
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                };
+                let config = getSyncConfiguration(user);
 
                 return Promise.race([
                     Realm.open(config).progress((transferred, total) => { progressCalled = true; }),
@@ -588,12 +515,7 @@ module.exports = {
     testAddConnectionNotification() {
         let app = new Realm.App(appConfig);
         return app.logIn(Realm.Credentials.anonymous()).then((u) => {
-            let config = {
-                sync: {
-                    user: u,
-                    partitionValue: '"LoLo"'
-                }
-            };
+            let config = getSyncConfiguration(u);
             return Realm.open(config);
         }).then(realm => {
             return new Promise((resolve, reject) => {
@@ -758,17 +680,18 @@ module.exports = {
 
     testUploadDownloadAllChanges() {
         let app = new Realm.App(appConfig);
-        let credentials = Realm.Credentials.anonymous();
 
         const schema = {
-            'name': 'CompletionHandlerObject',
+            name: 'CompletionHandlerObject',
+            primaryKey: '_id',
             properties: {
-                'name': { type: 'string'}
+                _id: 'object id?',
+                name: 'string'
             }
         };
 
         let realm2;
-        return app.logIn(credentials)
+        return app.logIn(Realm.Credentials.anonymous())
             .then((user1) => {
                 const config1 = {
                     schema: [schema],
@@ -780,7 +703,12 @@ module.exports = {
                 return Realm.open(config1);
             })
             .then((realm1) => {
-                realm1.write(() => { realm1.create('CompletionHandlerObject', { 'name': 'foo'}); });
+                realm1.write(() => { // TODO: how to ensure clean state?
+                    realm1.deleteAll();
+                });
+                realm1.write(() => {
+                    realm1.create('CompletionHandlerObject', { "_id": new ObjectId("0000002a9a7969d24bea4cf5"), 'name': 'foo'});
+                });
                 return realm1.syncSession.uploadAllLocalChanges();
             })
             .then(() => {
@@ -812,8 +740,10 @@ module.exports = {
         let app = new Realm.App(appConfig);
         const schema = {
             name: 'CompletionHandlerObject',
+            primaryKey: '_id',
             properties: {
-                'name': { type: 'string'}
+                _id: 'object id?',
+                name: 'string'
             }
         };
 
@@ -842,8 +772,10 @@ module.exports = {
 
         const schema = {
             name: 'CompletionHandlerObject',
+            primaryKey: '_id',
             properties: {
-                'name': { type: 'string'}
+                _id: 'object id?',
+                name: 'string'
             }
         };
 

@@ -4,17 +4,20 @@ This script creates new nested objects into a new Realm.
 
 'use strict';
 console.log("nested-list-helper started", JSON.stringify(process.argv));
-const appid = process.argv[3];
-const appurl = process.argv[4];
-const realmName = process.argv[5];
-const realmModule = process.argv[6];
+const appid = process.argv[2];
+const appurl = process.argv[3];
+const realmName = process.argv[4];
+const realmModule = process.argv[5];
 
 const Realm = require(realmModule);
+const ObjectId = require('bson').ObjectID;
 
 let schemas = {};
 schemas.ParentObject = {
     name: 'ParentObject',
+    primaryKey: '_id',
     properties: {
+        _id:           'object id?',
         id:            'int',
         name:          'NameObject[]'
     }
@@ -22,7 +25,9 @@ schemas.ParentObject = {
 
 schemas.NameObject = {
     name: 'NameObject',
+    primaryKey: '_id',
     properties: {
+        _id:          'object id?',
         family:       'string',
         given:        'string[]',
         prefix:       'string[]'
@@ -30,7 +35,6 @@ schemas.NameObject = {
 };
 
 function createObjects(user) {
-    console.log('FISK 501')
     const config = {
         sync: {
             user,
@@ -40,19 +44,23 @@ function createObjects(user) {
         schema: [schemas.ParentObject, schemas.NameObject],
     };
 
+    realm.deleteFile(config);
     let realm = new Realm(config);
     realm.write(() => {
+        realm.deleteAll();
         realm.create('ParentObject', {
             id: 1,
+            _id: new ObjectId(),
             name: [
-                { family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
-                { family: 'Hansen', given: ['Ib'], prefix: [] }
+                { _id: new ObjectId(), family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
+                { _id: new ObjectId(), family: 'Hansen', given: ['Ib'], prefix: [] }
             ]
         });
         realm.create('ParentObject', {
             id: 2,
+            _id: new ObjectId(),
             name: [
-                { family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
+                { _id: new ObjectId(), family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
             ]
         });
     });
@@ -80,7 +88,6 @@ const config = {
         version: '0'
     }
 };
-console.log('FISK 3', JSON.stringify(config));
 const credentials = Realm.Credentials.anonymous();
 const app = new Realm.App(config);
 app.logIn(credentials)
@@ -90,4 +97,4 @@ app.logIn(credentials)
         process.exit(-2);
     })
     .then((user) => createObjects(user))
-    .then(() => process.exit(0));
+    .then((realm) => { realm.close(); process.exit(0); });

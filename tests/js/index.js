@@ -23,7 +23,7 @@ const Realm = require('realm');
 if (typeof Realm.App !== 'undefined' && Realm.App !== null) {
     global.WARNING = "global is not available in React Native. Use it only in tests";
     global.enableSyncTests = true;
-    global.APPID = "default-fomiu"; // FIXME: Get the app-id from the running server
+    global.APPID = "default-fkmbq"; // FIXME: Get the app-id from the running server
     global.APPURL = "http://localhost:9090";
 }
 

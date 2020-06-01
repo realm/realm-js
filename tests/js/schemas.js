@@ -334,7 +334,9 @@ exports.LinkingObjectsObject = {
 
 exports.ParentObject = {
     name: 'ParentObject',
+    primaryKey: '_id',
     properties: {
+        _id:           'object id?',
         id:            'int',
         name:          'NameObject[]'
     }
@@ -342,12 +344,32 @@ exports.ParentObject = {
 
 exports.NameObject = {
     name: 'NameObject',
+    primaryKey: '_id',
+    properties: {
+        _id:          'object id?',
+        family:       'string',
+        given:        'string[]',
+        prefix:       'string[]'
+    }
+};
+
+exports.ParentObjectLocal = {
+    name: 'ParentObject',
+    properties: {
+        id:            'int',
+        name:          'NameObject[]'
+    }
+};
+
+exports.NameObjectLocal = {
+    name: 'NameObject',
     properties: {
         family:       'string',
         given:        'string[]',
         prefix:       'string[]'
     }
 };
+
 
 exports.MultiListObject = {
     name: 'MultiListObject',
