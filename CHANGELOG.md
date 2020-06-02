@@ -1,11 +1,11 @@
-6.0.2 Release notes (yyyy-MM-dd)
+6.0.2 Release notes (2020-06-02)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixes crashes on some iOS devices when upgrading realm file to new format ([2902](https://github.com/realm/realm-js/issues/2902))
+* Fixes a possible 'NoSuchTable' exception after upgrading of a realm file on some devices ([3701](https://github.com/realm/realm-core/issues/3701))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
