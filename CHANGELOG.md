@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+6.0.2 Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * None.
