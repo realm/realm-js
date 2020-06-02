@@ -45,7 +45,8 @@ var TESTS = {
     EncryptionTests: require('./encryption-tests'),
     ObjectIDTests: require('./object-id-tests'),
     AliasTests: require('./alias-tests'),
-    Garbagecollectiontests: require('./garbage-collection'),
+    BsonTests: require('./bson-tests'),
+    // Garbagecollectiontests: require('./garbage-collection'),
 };
 
 // If sync is enabled, run the sync tests

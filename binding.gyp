@@ -140,13 +140,11 @@
         "scripts/publish.sh",
         "scripts/react-tests-android.js",
         "scripts/set-version.sh",
-        "scripts/test-ros-server.js",
         "scripts/test.sh",
         "scripts/utils.sh",
 
         "tests/.eslintrc.json",
         "tests/index.js",
-        "tests/js/admin-user-helper.js",
         "tests/js/asserts.js",
         "tests/js/async-tests.js",
         "tests/js/download-api-helper.js",

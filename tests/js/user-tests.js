@@ -43,6 +43,7 @@ function assertIsUser(user) {
   TestCase.assertType(user, 'object');
   TestCase.assertType(user.token, 'string');
   TestCase.assertType(user.identity, 'string');
+  TestCase.assertType(user.customData, 'object');
   TestCase.assertInstanceOf(user, Realm.User);
 }
 
@@ -111,6 +112,26 @@ module.exports = {
     }).catch(err => {
       TestCase.assertEqual(err.message, "invalid username/password");
     });
+  },
+
+  async testFunctions() {
+    let app = new Realm.App(appConfig);
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+
+    TestCase.assertEqual(await user.callFunction('firstArg', [123]), 123);
+    TestCase.assertEqual(await user.functions.firstArg(123), 123);
+    TestCase.assertEqual(await user.functions['firstArg'](123), 123);
+
+    // Test method stashing / that `this` is bound correctly.
+    const firstArg = user.functions.firstArg;
+    TestCase.assertEqual(await firstArg(123), 123);
+    TestCase.assertEqual(await firstArg(123), 123); // Not just one-shot
+
+    TestCase.assertEqual(await user.functions.sum(1, 2, 3), 6);
+
+    const err = await TestCase.assertThrowsAsync(async() => await user.functions.error());
+    TestCase.assertEqual(err.code, 400);
   },
 
   testAll() {

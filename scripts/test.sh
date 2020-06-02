@@ -44,7 +44,7 @@ if [[ $TARGET = *-android ]]; then
   export REALM_BUILD_ANDROID=1
 fi
 
-SERVER_PID=0
+# SERVER_PID=0
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
 LOGCAT_OUT="$SRCROOT/logcat_out.txt"
 RUN_STITCH_IN_FORGROUND=""
@@ -99,7 +99,7 @@ test_temp_dir=
 nvm_old_default=
 cleanup() {
   # Kill started object server
-  stop_server || true
+  # stop_server || true
 
   if [ "$(uname)" = 'Darwin' ]; then
     echo "shutting down running simulators"
@@ -300,7 +300,7 @@ case "$TARGET" in
   npm run check-environment
   set_nvm_default
   npm ci
-  start_server
+  # start_server
 
   pushd tests/react-test-app
   npm ci
@@ -311,7 +311,7 @@ case "$TARGET" in
   pushd ios
   pod install
   xctest ReactTests
-  stop_server
+  # stop_server
   ;;
 "react-example")
   npm run check-environment
@@ -335,7 +335,7 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   npm run check-environment
-  start_server
+  # start_server
 
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
@@ -383,6 +383,7 @@ case "$TARGET" in
   npm run check-environment
   npm ci --build-from-source=realm --realm_enable_sync=${USE_REALM_SYNC} --use_realm_debug=${USE_REALM_DEBUG}
   start_server
+
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
   test_temp_dir=$PWD # set it to be cleaned at exit
@@ -391,11 +392,11 @@ case "$TARGET" in
   npm ci
   npm run test
   popd
-  stop_server
+  # stop_server
   ;;
 "electron")
   npm ci
-  start_server
+  # start_server
 
   pushd "$SRCROOT/tests/electron"
   # Build Realm and runtime deps for electron
@@ -409,15 +410,15 @@ case "$TARGET" in
   npm test -- --process=main
 
   popd
-  stop_server
-  start_server
+  # stop_server
+  # start_server
   pushd "$SRCROOT/tests/electron"
 
   npm test -- --process=render
 
   popd
 
-  stop_server
+  # stop_server
   ;;
 "test-runners")
   npm run check-environment

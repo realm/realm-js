@@ -140,17 +140,23 @@ module.exports = {
     },
 
     assertThrows: function(func, errorMessage, depth) {
-        let caught = false;
         try {
             func();
         }
         catch (e) {
-            caught = true;
+            return e
         }
+        throw new TestFailureError(errorMessage || `Expected exception not thrown from ${func}`, depth);
+    },
 
-        if (!caught) {
-            throw new TestFailureError(errorMessage || 'Expected exception not thrown', depth);
+    assertThrowsAsync: async function(func, errorMessage, depth) {
+        try {
+            await func();
         }
+        catch (e) {
+            return e
+        }
+        throw new TestFailureError(errorMessage || `Expected exception not thrown from ${func}`, depth);
     },
 
     assertThrowsException: function(func, expectedException) {

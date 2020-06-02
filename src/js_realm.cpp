@@ -60,7 +60,7 @@ void clear_test_state() {
 #if REALM_ANDROID
     s_test_files_path = realm::default_realm_file_directory();
     auto ros_dir = s_test_files_path + "/realm-object-server";
-    if (File::exists(ros_dir)) {
+    if (util::File::exists(ros_dir)) {
         util::remove_dir_recursive(s_test_files_path + "/realm-object-server");
     }
 #else

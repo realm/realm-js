@@ -107,7 +107,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
             config.app_id = Value::validated_to_string(ctx, config_id_value, "id");
         }
         else {
-            throw runtime_error("App configuration must have an id.");
+            throw std::runtime_error("App configuration must have an id.");
         }
 
         ValueType config_url_value = Object::get_property(ctx, config_object, config_url);
@@ -223,7 +223,8 @@ void AppClass<T>::all_users(ContextType ctx, ObjectType this_object, Arguments& 
 
     auto users = Object::create_empty(ctx);
     for (auto user : app->all_users()) {
-        Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app))), ReadOnly | DontDelete);
+        auto&& identity = user->identity();
+        Object::set_property(ctx, users, identity, create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), app)), ReadOnly | DontDelete);
     }
     return_value.set(users);
 }
@@ -238,7 +239,7 @@ void AppClass<T>::current_user(ContextType ctx, ObjectType this_object, Argument
         return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app))));
     }
     else {
-        return_value.set(Value::from_null(ctx));
+        return_value.set_null();
     }
 }
 
