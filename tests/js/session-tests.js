@@ -30,6 +30,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
+const ObjectId = require('bson').ObjectID;
 const AppConfig = require('./support/testConfig');
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -157,7 +158,7 @@ module.exports = {
 
         let app = new Realm.App(appConfig);
         return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, realmName, REALM_MODULE_PATH)
-            .then(() => app.logIn(Realm.Credentials.anonymous()))
+            .then(() => { return app.logIn(Realm.Credentials.anonymous()) })
             .then(u => {
                 user = u;
                 config = getSyncConfiguration(u);
@@ -172,6 +173,7 @@ module.exports = {
                 TestCase.assertEqual(session.config.url, config.sync.url);
                 TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
                 TestCase.assertEqual(session.state, 'active');
+                user.logOut();
             });
     },
 
@@ -211,52 +213,6 @@ module.exports = {
                 TestCase.assertEqual(session.config.url, config.sync.url);
                 TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
                 TestCase.assertEqual(session.state, 'active');
-            });
-    },
-
-    testRealmOpenAsync() {
-        if (!platformSupported) {
-            return;
-        }
-
-        const realmName = Utils.uuid();
-        const expectedObjectsCount = 3;
-
-        const credentials = Realm.Credentials.anonymous();
-        let app = new Realm.App(appConfig);
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, REALM_MODULE_PATH)
-            .then(() => app.logIn(credentials))
-            .then(user => {
-                let config = getSyncConfiguration(user);
-                return new Promise((resolve, reject) => {
-                    Realm.openAsync(config, (error, realm) => {
-                        try {
-                            if (error) {
-                                reject(error);
-                            }
-
-                            let actualObjectsCount = realm.objects('Dog').length;
-                            TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
-
-                            setTimeout(() => {
-                                try {
-                                    const session = realm.syncSession;
-                                    TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                                    TestCase.assertEqual(session.user.identity, user.identity);
-                                    TestCase.assertEqual(session.config.url, config.sync.url);
-                                    TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-                                    TestCase.assertEqual(session.state, 'active');
-                                    resolve();
-                                } catch (e) {
-                                    reject(e);
-                                }
-                            }, 50);
-                        }
-                        catch (e) {
-                            reject(e);
-                        }
-                    });
-                });
             });
     },
 
@@ -309,17 +265,19 @@ module.exports = {
         }
 
         const realmName = Utils.uuid();
-
-        let app = new Realm.App(appConfig);
-        const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/nested-list-helper.js', __dirname + '/schemas.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => app.logIn(credentials))
+        return runOutOfProcess(__dirname + '/nested-list-helper.js', appConfig.id, appConfig.url, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                let app = new Realm.App(appConfig);
+                const credentials = Realm.Credentials.anonymous();
+                return app.logIn(credentials)
+            })
             .then(user => {
                 let config = {
                     // FIXME: schema not working yet
                     schema: [schemas.ParentObject, schemas.NameObject],
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}` }
+                    sync: { user, partitionValue: '"LoLo"' }
                 };
+                Realm.deleteFile(config);
                 return Realm.open(config)
             }).then(realm => {
                 let objects = realm.objects('ParentObject');
@@ -364,7 +322,7 @@ module.exports = {
                 let writeDataFunc = () => {
                     realm.write(() => {
                         for (let i = 1; i <= 3; i++) {
-                            realm.create('Dog', { name: `Lassy ${i}` });
+                            realm.create('Dog', { _id: new ObjectId(), name: `Lassy ${i}` });
                         }
                     });
                 }
@@ -415,66 +373,17 @@ module.exports = {
         let progressCalled = false;
 
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+        let app = new Realm.App(appConfig);
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, REALM_MODULE_PATH)
+            .then(() => { return app.logIn(credentials)})
             .then(user => {
-                let config = {
-                    sync: {
-                        user,
-                        url: `realm://127.0.0.1:9080/~/${realmName}`
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                };
+                let config = getSyncConfiguration(user);
 
                 return Promise.race([
                     Realm.open(config).progress((transferred, total) => { progressCalled = true; }),
                     new Promise((_, reject) => setTimeout(() => reject("Progress Notifications API failed to call progress callback for Realm constructor"), 5000))
                 ]);
             }).then(() => TestCase.assertTrue(progressCalled));
-    },
-
-    testProgressNotificationsForRealmOpenAsync() {
-        if (!platformSupported) {
-            return;
-        }
-
-        const username = Utils.uuid();
-        const realmName = Utils.uuid();
-
-        const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
-            .then(user => {
-                return new Promise((resolve, reject) => {
-                    let config = {
-                        sync: {
-                            user,
-                            url: `realm://127.0.0.1:9080/~/${realmName}`
-                        },
-                        schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                    };
-
-                    let progressCalled = false;
-
-                    Realm.openAsync(config,
-                        (error, realm) => {
-                            if (error) {
-                                reject(error);
-                                return;
-                            }
-
-                            TestCase.assertTrue(progressCalled);
-                            resolve();
-                        },
-                        (transferred, total) => {
-                            progressCalled = true;
-                        });
-
-                    setTimeout(function() {
-                        reject("Progress Notifications API failed to call progress callback for Realm constructor");
-                    }, 5000);
-                });
-            });
     },
 
     testInvalidArugmentsToAutomaticSyncConfiguration() {
