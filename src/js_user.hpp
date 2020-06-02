@@ -22,14 +22,14 @@
 #include "js_collection.hpp"
 #include "js_sync_util.hpp"
 #include "js_app_credentials.hpp"
-#include "object-store/src/sync/app.hpp"
-#include "object-store/src/sync/sync_user.hpp"
-#include "platform.hpp"
+#include "js_user_apikey_provider.hpp"
 
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/sync_user.hpp"
+#include "sync/app.hpp"
+#include "platform.hpp"
 
 namespace realm {
 namespace js {
@@ -93,12 +93,14 @@ public:
     static void session_for_on_disk_path(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void link_credentials(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void call_function(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void auth_api_keys(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"logOut", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
         {"_linkCredentials", wrap<link_credentials>},
         {"_callFunction", wrap<call_function>},
+        {"_authApiKeys", wrap<auth_api_keys>},
     };
 };
 
@@ -263,6 +265,13 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
                 }),
             });
         }));
+}
+
+template<typename T>
+void UserClass<T>::auth_api_keys(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(0);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+    return_value.set(UserAPIKeyProviderClientClass<T>::create_instance(ctx, user->m_app, std::move(*user)));
 }
 
 }
