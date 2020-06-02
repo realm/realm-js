@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "10.0.0-alpha.10",
+  "version": "10.0.0-alpha.11",
   "license": "See the actual license in the file LICENSE",
   "homepage": "https://realm.io",
   "keywords": [
@@ -95,7 +95,6 @@
     "node-pre-gyp": "git+https://github.com/kneth/node-pre-gyp.git#add-node-14.0.0",
     "progress": "^2.0.3",
     "prop-types": "^15.6.2",
-    "realm-network-transport": "file:packages/realm-network-transport/realm-network-transport-0.1.0.tgz",
     "request": "^2.88.0",
     "stream-counter": "^1.0.0",
     "sync-request": "^3.0.1",
