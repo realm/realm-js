@@ -75,15 +75,7 @@ module.exports = {
             return Promise.resolve();
         }
 
-        const config = {
-            id: 'default-gorbm',
-            url: 'http://localhost:9090',
-            timeout: 1000,
-            app: {
-                name: 'realm-sdk-integration-tests',
-                version: '42'
-            }
-        };
+        const config = require('./support/testConfig').integrationAppConfig;
 
         let app = new Realm.App(config);
 

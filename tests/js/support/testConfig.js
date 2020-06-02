@@ -23,9 +23,12 @@
 const integrationTestsAppId = `${require("../../../src/object-store/tests/mongodb/stitch.json").app_id}`;
 console.log(`tests are using integration tests app id: ${integrationTestsAppId}`);
 
+const appUrl = process.env.MONGODB_REALM_ENDPOINT || "http://localhost";
+const appPort = process.env.MONGODB_REALM_PORT || "9090";
+
 const integrationAppConfig = {
     id: integrationTestsAppId,
-    url: 'http://localhost:9090',
+    url: `${appUrl}:${appPort}`,
     timeout: 1000,
     app: {
         name: "default",

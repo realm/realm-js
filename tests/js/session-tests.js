@@ -150,7 +150,6 @@ module.exports = {
             return;
         }
 
-        const username = Utils.uuid();
         const realmName = Utils.uuid();
         const expectedObjectsCount = 3;
 
@@ -213,6 +212,7 @@ module.exports = {
                 TestCase.assertEqual(session.config.url, config.sync.url);
                 TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
                 TestCase.assertEqual(session.state, 'active');
+                realm.close()
             });
     },
 
@@ -232,6 +232,7 @@ module.exports = {
 
             let actualObjectsCount = realm.objects('Dog').length;
             TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Local realm does not contain the expected objects count");
+            realm.close()
         });
     },
 
