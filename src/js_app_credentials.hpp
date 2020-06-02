@@ -49,18 +49,26 @@ public:
     static void function(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void user_api_key(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void server_api_key(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void google(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void custom(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     MethodMap<T> const static_methods = {
         {"facebook",         wrap<facebook>},
         {"anonymous",        wrap<anonymous>},
         {"apple",            wrap<apple>},
+        {"google",           wrap<google>},
         {"emailPassword",    wrap<email_password>},
         {"_function",        wrap<function>},
         {"userAPIKey",       wrap<user_api_key>},
         {"serverAPIKey",     wrap<server_api_key>},
-
+        {"custom",           wrap<custom>},
     };
 
+    static void provider(ContextType, ObjectType, Arguments &, ReturnValue &);
+
+    MethodMap<T> const methods = {
+        {"provider", wrap<provider>},
+    };
 };
 
 template<typename T>
@@ -94,6 +102,26 @@ void CredentialsClass<T>::apple(ContextType ctx, ObjectType this_object, Argumen
     realm::app::AppCredentialsToken token = Value::validated_to_string(ctx, arguments[0]);
 
     auto credentials = realm::app::AppCredentials::apple(token);
+    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
+}
+
+template<typename T>
+void CredentialsClass<T>::google(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
+    arguments.validate_maximum(1);
+
+    realm::app::AppCredentialsToken token = Value::validated_to_string(ctx, arguments[0]);
+
+    auto credentials = realm::app::AppCredentials::google(token);
+    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
+}
+
+template<typename T>
+void CredentialsClass<T>::custom(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
+    arguments.validate_maximum(1);
+
+    realm::app::AppCredentialsToken token = Value::validated_to_string(ctx, arguments[0]);
+
+    auto credentials = realm::app::AppCredentials::custom(token);
     return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 
@@ -132,6 +160,14 @@ void CredentialsClass<T>::server_api_key(ContextType ctx, ObjectType this_object
 
     auto credentials = realm::app::AppCredentials::server_api_key(server_api_key);
     return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
+}
+
+template<typename T>
+void CredentialsClass<T>::provider(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
+    arguments.validate_count(0);
+
+    auto credentials = get_internal<T, CredentialsClass<T>>(ctx, this_object);
+    return_value.set(Value::from_string(ctx, credentials->provider_as_string()));
 }
 
 }

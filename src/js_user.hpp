@@ -91,14 +91,12 @@ public:
 
     static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void session_for_on_disk_path(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void delete_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void link_credentials(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void call_function(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"logOut", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
-        {"_deleteUser", wrap<delete_user>},
         {"_linkCredentials", wrap<link_credentials>},
         {"_callFunction", wrap<call_function>},
     };
@@ -198,34 +196,6 @@ template<typename T>
 void UserClass<T>::logout(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
     args.validate_count(0);
     get_internal<T, UserClass<T>>(ctx, this_object)->get()->log_out();
-}
-
-template<typename T>
-void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(1);
-
-    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
-    auto callback = Value::validated_to_function(ctx, args[0], "callback");
-
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback);
-    Protected<ObjectType> protected_this(ctx, this_object);
-
-    auto callback_handler([=](util::Optional<app::AppError> error) {
-        HANDLESCOPE(protected_ctx)
-
-        ObjectType error_object = Object::create_empty(protected_ctx);
-        if (error) {
-            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
-            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
-        }
-
-        ValueType callback_arguments[1];
-        callback_arguments[0] = error_object;
-        Function::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
-    });
-
-    user->m_app->remove_user(*user, callback_handler);
 }
 
 template<typename T>

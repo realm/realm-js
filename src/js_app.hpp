@@ -68,12 +68,16 @@ public:
     static void all_users(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void current_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void remove_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
         {"allUsers", wrap<all_users>},
         {"currentUser", wrap<current_user>},
         {"switchUser", wrap<switch_user>},
+        {"_removeUser", wrap<remove_user>},
+
     };
 };
 
@@ -255,6 +259,34 @@ void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments
     return_value.set(Value::from_undefined(ctx));
 }
 
+template<typename T>
+void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+    args.validate_count(2);
+
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
+
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+
+    auto callback_handler([=](util::Optional<app::AppError> error) {
+        HANDLESCOPE(protected_ctx)
+
+        ObjectType error_object = Object::create_empty(protected_ctx);
+        if (error) {
+            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
+            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
+        }
+
+        ValueType callback_arguments[1];
+        callback_arguments[0] = error_object;
+        Function::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+    });
+
+    app->remove_user(*user, callback_handler);
+}
 
 }
 }
