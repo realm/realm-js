@@ -27,7 +27,7 @@ namespace realm {
 namespace js {
 
 template<typename T>
-class UsernamePasswordProviderClientClass : public ClassDefinition<T, app::App::UsernamePasswordProviderClient> {
+class EmailPasswordProviderClientClass : public ClassDefinition<T, app::App::UsernamePasswordProviderClient> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -41,9 +41,10 @@ class UsernamePasswordProviderClientClass : public ClassDefinition<T, app::App::
     using Arguments = js::Arguments<T>;
 
 public:
-    std::string const name = "UsernamePasswordProviderClient";
+    std::string const name = "EmailPasswordProviderClient";
 
     static FunctionType create_constructor(ContextType);
+    static ObjectType create_instance(ContextType, SharedApp);
 
     PropertyMap<T> const properties = {
     };
@@ -64,16 +65,21 @@ public:
 };
 
 template<typename T>
-inline typename T::Function UsernamePasswordProviderClientClass<T>::create_constructor(ContextType ctx) {
-    FunctionType constructor = ObjectWrap<T, UsernamePasswordProviderClientClass<T>>::create_constructor(ctx);
+inline typename T::Function EmailPasswordProviderClientClass<T>::create_constructor(ContextType ctx) {
+    FunctionType constructor = ObjectWrap<T, EmailPasswordProviderClientClass<T>>::create_constructor(ctx);
     return constructor;
 }
 
 template<typename T>
-void UsernamePasswordProviderClientClass<T>::register_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+typename T::Object EmailPasswordProviderClientClass<T>::create_instance(ContextType ctx, SharedApp app) {
+    return create_object<T, EmailPasswordProviderClientClass<T>>(ctx, new app::App::UsernamePasswordProviderClient(app->provider_client<realm::app::App::UsernamePasswordProviderClient>()));
+}
+
+template<typename T>
+void EmailPasswordProviderClientClass<T>::register_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(3);
 
-    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, EmailPasswordProviderClientClass<T>>(ctx, this_object);
 
     auto email = Value::validated_to_string(ctx, args[0], "email");
     auto password = Value::validated_to_string(ctx, args[1], "password");
@@ -83,10 +89,10 @@ void UsernamePasswordProviderClientClass<T>::register_email(ContextType ctx, Obj
 }
 
 template<typename T>
-void UsernamePasswordProviderClientClass<T>::confirm_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void EmailPasswordProviderClientClass<T>::confirm_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(3);
 
-    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, EmailPasswordProviderClientClass<T>>(ctx, this_object);
 
     auto token = Value::validated_to_string(ctx, args[0], "token");
     auto token_id = Value::validated_to_string(ctx, args[1], "token_id");
@@ -96,10 +102,10 @@ void UsernamePasswordProviderClientClass<T>::confirm_user(ContextType ctx, Objec
 }
 
 template<typename T>
-void UsernamePasswordProviderClientClass<T>::resend_confirmation_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void EmailPasswordProviderClientClass<T>::resend_confirmation_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(2);
 
-    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, EmailPasswordProviderClientClass<T>>(ctx, this_object);
 
     auto email = Value::validated_to_string(ctx, args[0], "email");
     auto callback = Value::validated_to_function(ctx, args[2], "callback");
@@ -108,10 +114,10 @@ void UsernamePasswordProviderClientClass<T>::resend_confirmation_email(ContextTy
 }
 
 template<typename T>
-void UsernamePasswordProviderClientClass<T>::send_reset_password_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void EmailPasswordProviderClientClass<T>::send_reset_password_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(2);
 
-    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, EmailPasswordProviderClientClass<T>>(ctx, this_object);
 
     auto email = Value::validated_to_string(ctx, args[0], "email");
     auto callback = Value::validated_to_function(ctx, args[2], "callback");
@@ -120,10 +126,10 @@ void UsernamePasswordProviderClientClass<T>::send_reset_password_email(ContextTy
 }
 
 template<typename T>
-void UsernamePasswordProviderClientClass<T>::reset_password(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void EmailPasswordProviderClientClass<T>::reset_password(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(4);
 
-    auto& client = *get_internal<T, UsernamePasswordProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, EmailPasswordProviderClientClass<T>>(ctx, this_object);
 
     auto password = Value::validated_to_string(ctx, args[0], "password");
     auto token = Value::validated_to_string(ctx, args[1], "token");

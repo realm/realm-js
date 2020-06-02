@@ -29,6 +29,7 @@
 #include "js_user.hpp"
 #include "js_app_credentials.hpp"
 #include "js_network_transport.hpp"
+#include "js_email_password_provider.hpp"
 
 using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
@@ -69,7 +70,7 @@ public:
     static void current_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_user(ContextType, ObjectType, Arguments&, ReturnValue&);
-
+    static void auth_email_password(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
@@ -77,7 +78,7 @@ public:
         {"currentUser", wrap<current_user>},
         {"switchUser", wrap<switch_user>},
         {"_removeUser", wrap<remove_user>},
-
+        {"_authEmailPassword", wrap<auth_email_password>},
     };
 };
 
@@ -286,6 +287,13 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
     });
 
     app->remove_user(*user, callback_handler);
+}
+
+template<typename T>
+void AppClass<T>::auth_email_password(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(0);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    return_value.set(EmailPasswordProviderClientClass<T>::create_instance(ctx, app));
 }
 
 }
