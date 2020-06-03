@@ -732,7 +732,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
         std::string partition_value;
         if (!Value::is_undefined(ctx, partition_value_value)) {
-            partition_value = Value::validated_to_string(ctx, partition_value_value, "partitionValue");
+            // FIXME: we need a Value::validated_to_bson() function here
+            auto partition_bson = Value::to_bson(ctx, partition_value_value);
+            std::stringstream s;
+            s << partition_bson;
+            partition_value = s.str();
         }
 
         config.sync_config = std::make_shared<SyncConfig>(std::move(user), std::move(partition_value));

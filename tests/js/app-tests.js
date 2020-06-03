@@ -9,7 +9,7 @@ function node_require(module) {
     return require_method(module);
 }
 
-const ObjectId = require('bson').ObjectId;
+const { ObjectId, serialize } = require("bson");
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
@@ -152,7 +152,7 @@ module.exports = {
               }],
             sync: {
                 user: user,
-                partitionValue: '"LoLo"'
+                partitionValue: serialize("LoLo"),
             }
         };
         Realm.deleteFile(realmConfig);

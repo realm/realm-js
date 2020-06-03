@@ -22,6 +22,9 @@ var Realm = require('realm');
 var TestCase = require('./asserts');
 var Schemas = require('./schemas');
 
+const { ObjectId, serialize } = require("bson");
+
+
 module.exports = {
     testEncryptedInvalidKeys: function() {
         // test failure with invalid keys
@@ -92,7 +95,7 @@ module.exports = {
                 encryptionKey: new Int8Array(64),
                 sync: {
                     user: user,
-                    partitionValue: '"LoLo"'
+                    partitionValue: serialize("LoLo")
                 }
             });
             user.logOut(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work
