@@ -41,7 +41,7 @@ declare namespace Realm {
      * PropertyType
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~PropertyType }
      */
-    type PropertyType = string | 'bool' | 'int' | 'float' | 'double' | 'string' | 'data' | 'date' | 'list' | 'linkingObjects';
+    type PropertyType = string | 'bool' | 'int' | 'float' | 'double' | 'decimal128' | 'objectId' | 'string' | 'data' | 'date' | 'list' | 'linkingObjects';
 
     /**
      * ObjectSchemaProperty
@@ -104,7 +104,10 @@ declare namespace Realm {
     interface SyncConfiguration {
         user: User;
         partitionValue: string;
-        // FIXME: add the rest
+        customHttpHeaders?: { [header: string]: string };
+        newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        _sessionStopPolicy?: SessionStopPolicy;
     }
 
     /**
@@ -180,8 +183,6 @@ declare namespace Realm {
          * @returns number
          */
         linkingObjectsCount(): number;
-
-        objectId(): string;
 
         /**
          * @returns void
@@ -319,53 +320,37 @@ declare namespace Realm {
         readonly prototype: Results<any>;
     };
 
-    interface UserInfo {
-        id: string;
-        isAdmin: boolean;
-    }
-
-    interface Account {
-        provider_id: string;
-        provider: string;
-        user: UserInfo
-    }
-
-    interface SerializedUser {
-        server: string;
-        refreshToken: string;
-        identity: string;
-        isAdmin: boolean;
-    }
-
-    interface SerializedTokenUser {
-        server: string;
-        adminToken: string;
-    }
-
-    class AdminCredentials extends Credentials {
-        identityProvider: "adminToken";
-    }
     class Credentials {
         static emailPassword(email: string, password: string): Credentials;
         static facebook(token: string): Credentials;
         static apple(token: string): Credentials;
+        static gooogle(token: string): Credentials;
         static anonymous(): Credentials;
         static userAPIKey(key: string): Credentials;
         static serverAPIKey(key: string): Credentials;
+        static custom(token: string): Credentials;
+        static function(token: string): Promise<Credentials>;
     }
 
+    interface UserProfile {
+        name?: string;
+        email?: string;
+        pictureUrl?: string;
+        firstName?: string;
+        lastName?: string;
+        gender?: string;
+        birthday?: string;
+        minAge?: string;
+        maxAge?: string;
+    }
 
-    //FIXME: Fix ts definition. Is this Realm.User or Realm.Sync.User. 
-    /**
-     * User
-     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.User.html }
-     */
     class User {
         readonly identity: string;
         readonly token: string;
         readonly isLoggedIn: boolean;
         readonly state: string;
         readonly customData: object;
+        readonly profile: UserProfile;
 
         /**
          * Convenience wrapper around call_function(name, [args]).
@@ -381,26 +366,46 @@ declare namespace Realm {
          * const do_thing = user.functions.do_thing;
          * await do_thing(a1);
          * await do_thing(a2);
-         */   
+         */
         readonly functions: {
             [name: string] : (...args: any[]) => Promise<any>
         };
 
         logOut(): void;
-        deleteUser(): Promise<void>;
         linkCredentials(credentials: Credentials): Promise<void>;
         call_function(name: string, args: any[]): Promise<any>;
+
+        readonly apiKeys: Realm.Auth.APIKeys;
+    }
+
+    namespace Auth {
+        class APIKeys {
+            createAPIKey(name: string): Promise<void>;
+            fetchAPIKey(id: string): Promise<Object>;
+            allAPIKeys(): Promise<Array<Object>>;
+            deleteAPIKey(id: string): Promise<void>;
+            enableAPIKey(id: string): Promise<void>;
+            disableAPIKey(id: string): Promise<void>;
+        }
+
+        class EmailPassword {
+            registerEmail(email: string, password: string): Promise<void>;
+            confirmUser(token: string, id: string): Promise<void>;
+            resendConfirmationEmail(email: string): Promise<void>;
+            sendResetPasswordEmail(email: string): Promise<void>;
+            resetPassword(password: string, token: string, id: string): Promise<void>;
+        }
     }
 
     interface UserMap {
         [identity: string]: User
     }
     class App {
-
         logIn(credentials: Credentials): Promise<User>;
         allUsers(): UserMap;
-        currentUser(): User;
+        currentUser(): User | null;
         switchUser(user: User): void;
+        removeUser(user: User): Promise<User>;
     }
 
     interface SyncError {
@@ -418,21 +423,14 @@ declare namespace Realm {
         Never = "never"
     }
 
-    const enum ClientResyncMode {
-        Discard = 'discard',
-        Manual = 'manual',
-        Recover = 'recover'
-    }
-
     interface SyncConfiguration {
         user: User;
-        url: string;
+        partitionValue: string;
         error?: ErrorCallback;
         _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
-        clientResyncMode?: ClientResyncMode;
     }
 
     interface OpenRealmBehaviorConfiguration {
@@ -466,63 +464,61 @@ declare namespace Realm {
 
     type ConnectionNotificationCallback = (newState: ConnectionState, oldState: ConnectionState) => void;
 
-    /**
-    * Session
-    * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.Session.html }
-    */
-    class Session {
-        readonly config: SyncConfiguration;
-        readonly state: 'invalid' | 'active' | 'inactive';
-        readonly url: string;
-        readonly user: User;
-        readonly connectionState: ConnectionState;
+    namespace Sync {
+        class Session {
+            readonly config: SyncConfiguration;
+            readonly state: 'invalid' | 'active' | 'inactive';
+            readonly url: string;
+            readonly user: User;
+            readonly connectionState: ConnectionState;
 
-        addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
-        removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
+            addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
+            removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
 
-        addConnectionNotification(callback: ConnectionNotificationCallback): void;
-        removeConnectionNotification(callback: ConnectionNotificationCallback): void;
+            addConnectionNotification(callback: ConnectionNotificationCallback): void;
+            removeConnectionNotification(callback: ConnectionNotificationCallback): void;
 
-        isConnected(): boolean;
+            isConnected(): boolean;
 
-        resume(): void;
-        pause(): void;
+            resume(): void;
+            pause(): void;
 
-        downloadAllServerChanges(timeoutMs?: number): Promise<void>;
-        uploadAllLocalChanges(timeoutMs?: number): Promise<void>;
+            downloadAllServerChanges(timeoutMs?: number): Promise<void>;
+            uploadAllLocalChanges(timeoutMs?: number): Promise<void>;
+        }
+
+
+        /**
+        * AuthError
+        * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.AuthError.html }
+        */
+        class AuthError {
+            readonly code: number;
+            readonly type: string;
+        }
+
+        type LogLevel = 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off';
+
+        enum NumericLogLevel {
+            All,
+            Trace,
+            Debug,
+            Detail,
+            Info,
+            Warn,
+            Error,
+            Fatal,
+            Off,
+        }
+
+        function setLogLevel(logLevel: LogLevel): void;
+        function setLogger(callback: (level: NumericLogLevel, message: string) => void): void;
+        function setUserAgent(userAgent: string): void;
+        function enableSessionMultiplexing(): void;
+        function initiateClientReset(path: string): void;
+        function _hasExistingSessions(): boolean;
+        function reconnect(): void;
     }
-
-
-    /**
-    * AuthError
-    * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.AuthError.html }
-    */
-    class AuthError {
-        readonly code: number;
-        readonly type: string;
-    }
-
-    type LogLevel = 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off';
-
-    enum NumericLogLevel {
-        All,
-        Trace,
-        Debug,
-        Detail,
-        Info,
-        Warn,
-        Error,
-        Fatal,
-        Off,
-    }
-
-    function setLogLevel(logLevel: LogLevel): void;
-    function setLogger(callback: (level: NumericLogLevel, message: string) => void): void;
-    function setUserAgent(userAgent: string): void;
-    function enableSessionMultiplexing(): void;
-    function initiateClientReset(path: string): void;
-    function _hasExistingSessions(): boolean;
-    function reconnect(): void;
 }
 
 interface ProgressPromise extends Promise<Realm> {
@@ -541,7 +537,7 @@ declare class Realm {
     readonly isInTransaction: boolean;
     readonly isClosed: boolean;
 
-    readonly syncSession: Realm.Session | null;
+    readonly syncSession: Realm.Sync.Session | null;
 
     /**
      * Get the current schema version of the Realm at the given path.
@@ -556,13 +552,6 @@ declare class Realm {
      * @param {Configuration} config
      */
     static open(config: Realm.Configuration): ProgressPromise;
-
-    /**
-     * @deprecated in favor of `Realm.Sync.User.createConfiguration()`.
-     * Return a configuration for a default Realm.
-     * @param {Realm.Sync.User} optional user.
-     */
-    static automaticSyncConfiguration(user?: Realm.User): string;
 
     /**
      * @param {Realm.ObjectSchema} object schema describing the object that should be created.
