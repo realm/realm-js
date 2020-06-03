@@ -51,14 +51,6 @@
  */
 
 /**
- * This describes the different options used when adding a Global Notifier listener.
- * @typedef {Object} Realm.Sync~RealmListenerConfiguration
- * @property {string} serverUrl - The sync server to listen to.
- * @property {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
- * @property {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
- */
-
-/**
  * Specify how to open a synced Realm.
  *
  * @typedef {Object} Realm.Sync~OpenRealmBehaviorConfiguration
@@ -439,7 +431,7 @@ class APIKeys {
      *
      * @returns {Promise<Array>}
      */
-    appAPIKeys() { }
+    allAPIKeys() { }
 
     /**
      * Deletes a user API key associated with the current user.
