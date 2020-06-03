@@ -46,7 +46,6 @@ module.exports = {
                     { name: 'NoPrimaryKey', properties: { string: 'string' }},
                 ],
             }
-
             return Realm.open(config).then(realm => {
                 var integer, nullInteger;
                 var string, nullString;

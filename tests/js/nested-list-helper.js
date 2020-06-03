@@ -16,6 +16,7 @@ let schemas = {};
 schemas.ParentObject = {
     primaryKey: '_id',
     name: 'ParentObject',
+    primaryKey: '_id',
     properties: {
         _id:           'object id?',
         id:            'int',
@@ -37,9 +38,9 @@ schemas.NameObject = {
 function createObjects(user) {
     const config = {
         sync: {
-                user,
-                partitionValue: '"LoLo"',
-                error: err => console.log(err)
+            user,
+            partitionValue: '"LoLo"',
+            error: err => console.log(err)
         },
         schema: [schemas.ParentObject, schemas.NameObject],
     };
@@ -85,7 +86,7 @@ const config = {
     timeout: 1000,
     app: {
         name: 'default',
-        version: '1'
+        version: '0'
     }
 };
 const credentials = Realm.Credentials.anonymous();

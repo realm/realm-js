@@ -440,7 +440,6 @@ module.exports = {
         TestCase.assertEqual(results.indexOf(object3), 1);
 
         const nonRealmObject = {test: "this is an object"};
-        TestCase.assertEqual(objects.indexOf(nonRealmObject), -1);
 
         // Searching for object from the wrong realm
         var realm2 = new Realm({path: '2.realm', schema: realm.schema});

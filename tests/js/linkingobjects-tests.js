@@ -21,6 +21,7 @@
 var Realm = require('realm');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
+var ObjectId = require('bson').ObjectId;
 
 function names(results) {
     return results.map(function(object) {
@@ -234,15 +235,15 @@ module.exports = {
 
         var parent;
         realm.write(() => {
-            parent = realm.create('ParentObject', { id : 0 });
+            parent = realm.create('ParentObject', { _id: new ObjectId("0000002a9a7969d24bea4cf5"), id : 0 });
         });
 
         TestCase.assertEqual(realm.objects('ParentObject').length, 1);
 
         var child;
         realm.write(() => {
-            child = realm.create('NameObject', { family: 'Johnson', given: ['Olivier'], prefix: [] });
-            realm.create('ParentObject', { id: 1, name: [child] });
+            child = realm.create('NameObject', { _id: new ObjectId("0000002a9a7969d24bea4cf6"), family: 'Johnson', given: ['Olivier'], prefix: [] });
+            realm.create('ParentObject', { _id: new ObjectId("0000002a9a7969d24bea4cf7"), id: 1, name: [child] });
         });
         TestCase.assertEqual(realm.objects('ParentObject').length, 2);
         TestCase.assertEqual(realm.objects('NameObject').length, 1);

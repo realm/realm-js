@@ -38,7 +38,7 @@ function mockRealm(realmModulePath) {
        warnOnUnregistered: false
    });
    mockery.registerSubstitute('realm', REALM_MODULE_PATH); // eslint-disable-line no-undef
-}   
+}
 
 mockRealm(path.resolve(__dirname, '../..'));
 

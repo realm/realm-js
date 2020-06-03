@@ -149,6 +149,7 @@ module.exports = {
 
     async testMongoDBRealmSync() {
         let app = new Realm.App(config);
+
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
 

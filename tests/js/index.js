@@ -23,6 +23,8 @@ const Realm = require('realm');
 if (typeof Realm.App !== 'undefined' && Realm.App !== null) {
     global.WARNING = "global is not available in React Native. Use it only in tests";
     global.enableSyncTests = true;
+    global.APPID = "default-fkmbq"; // FIXME: Get the app-id from the running server
+    global.APPURL = "http://localhost:9090";
 }
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -52,7 +54,7 @@ var TESTS = {
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
     TESTS.AppTests = require('./app-tests'),
-    // TESTS.OpenBehaviorTests = require('./open-behavior-tests');
+    // TESTS.OpenBehaviorTests = require('./open-behavior-tests'); // FIXME: figure out how to enable them
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
 }
@@ -116,7 +118,7 @@ exports.runTest = function(suiteName, testName) {
                 global.gc();
             }
         }
-        
+
         return result;
     }
 

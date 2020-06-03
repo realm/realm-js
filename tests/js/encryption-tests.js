@@ -74,9 +74,7 @@ module.exports = {
         if (!global.enableSyncTests) {
             return Promise.resolve();
         }
-
         const config = require('./support/testConfig').integrationAppConfig;
-
         let app = new Realm.App(config);
 
         const credentials = Realm.Credentials.anonymous();
