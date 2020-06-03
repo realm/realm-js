@@ -52,10 +52,10 @@ module.exports = {
         TestCase.assertInstanceOf(app, Realm.App);
     },
 
-    testNonexistingApp() {
+    async testInvalidServer() {
         const conf = {
             id: 'smurf',
-            url: 'http://localhost:9090',
+            url: 'http://localhost:9999',
             timeout: 1000,
             app: {
                 name: 'realm-sdk-integration-tests',
@@ -63,8 +63,35 @@ module.exports = {
             }
         };
 
-        // FIXME: this should fail!
         let app = new Realm.App(conf);
+        let credentials = Realm.Credentials.anonymous();
+        let failed = false;
+        let user = await app.logIn(credentials).catch(err => {
+            failed = true;
+            TestCase.assertEqual(err.message, "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED 127.0.0.1:9999");
+        });
+        TestCase.assertEqual(failed, true);
+    },
+
+    async testNonexistingApp() {
+        const conf = {
+            id: 'smurf',
+            url: config.url,
+            timeout: 1000,
+            app: {
+                name: 'realm-sdk-integration-tests',
+                version: '42'
+            }
+        };
+
+        let app = new Realm.App(conf);
+        let credentials = Realm.Credentials.anonymous();
+        let failed = false;
+        let user = await app.logIn(credentials).catch(err => {
+            failed = true;
+            TestCase.assertEqual(err.message, "cannot find app using Client App ID 'smurf'");
+        });
+        TestCase.assertEqual(failed, true);
     },
 
     async testLogIn() {

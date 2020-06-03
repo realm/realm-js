@@ -121,18 +121,36 @@ template<typename T>
 void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     static const String status_code = "statusCode";
     static const String error_message = "errorMessage";
+    static const String network_message = "message";
     args.validate_count(1);
 
     auto response_handler = get_internal<T, ResponseHandlerClass<T>>(ctx, this_object);
 
-    //FIXME
     ObjectType error_object = Value::validated_to_object(ctx, args[0]);
 
     // Copy the error from JavaScript to an Object Store response object
-    int http_status_code = static_cast<int>(Value::validated_to_number(ctx, Object::get_property(ctx, error_object, status_code)));
-    int custom_status_code = http_status_code;
+    int http_status_code = 0;
+    int custom_status_code = 0;
     std::map<std::string, std::string> headers;
-    std::string body = Value::validated_to_string(ctx, Object::get_property(ctx, error_object, error_message));
+    std::string body = "undefined js network transport error";
+    ValueType status_code_object = Object::get_property(ctx, error_object, status_code);
+    ValueType message_code_object = Object::get_property(ctx, error_object, error_message);
+    ValueType network_message_code_object = Object::get_property(ctx, error_object, network_message);
+    // There's two paths to reporting errors respectively:
+    // 1) we've found the expected status fields, pass through the http_status_code and the raw body, and let object-store code attempt to parse it
+    // 2) set custom_status_code to something non-zero and object-store will propagate the body as is, this will happen if we're dealing with a raw NetworkTransport error
+    // we choose 2 for now because it seems to be the most descriptive
+    if (!Value::is_undefined(ctx, status_code_object) && !Value::is_undefined(ctx, message_code_object)) {
+        http_status_code = static_cast<int>(Value::validated_to_number(ctx, Object::get_property(ctx, error_object, status_code), "statusCode"));
+        body = Value::validated_to_string(ctx, Object::get_property(ctx, error_object, error_message), "errorMessage");
+    } 
+    else if (!Value::is_undefined(ctx, network_message_code_object)) {
+        custom_status_code = -1;
+        body = Value::validated_to_string(ctx, Object::get_property(ctx, error_object, network_message), "message");
+    }
+    else { // unexpected, but just pass through the default message
+        custom_status_code = -1;
+    }
 
     response_handler->m_completion_callback(app::Response{http_status_code, custom_status_code, headers, body});
 }
