@@ -48,8 +48,17 @@
           "WARNING_CFLAGS": [ "<@(warning-flags)" ]
         }
       }],
-      ["OS=='linux'", {
-        "defines": [ "_GLIBCXX_USE_CXX11_ABI=0" ]
+      ["OS=='linux' and target_arch!='arm'", {
+        # We assume that non-arm linux is using core compiled to the old C++ ABI.
+        "defines": [ "_GLIBCXX_USE_CXX11_ABI=0" ],
+      }],
+      ["OS=='linux' and target_arch=='arm'", {
+        # We assume that linux+arm is RPi for now.
+        "cflags_cc": [
+            "-Wno-psabi",
+            "-pipe",
+            "-march=armv7-a" # This is the default for our pre-built core. Must use same level of atomic support to avoid shared_ptr ABI mismatch.
+        ]
       }]
     ],
     # windows stuff

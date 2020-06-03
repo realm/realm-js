@@ -252,7 +252,8 @@
               }
             }
           }],
-          ["OS=='linux'", {
+          ["OS=='linux' and target_arch!='arm'", {
+            # Use embedded openssl on non-RPi linux. We assume that linux+arm is RPi for now.
             "libraries": [ "<(vendor_dir)/openssl/lib/libssl.a", "<(vendor_dir)/openssl/lib/libcrypto.a" ],
             "library_dirs": [ "<(vendor_dir)/openssl/lib" ],
           }]
