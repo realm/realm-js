@@ -518,6 +518,14 @@ class User {
      */
     linkCredentials(credentials) { }
 
+
+    /**
+     * Refresh user's custom data.
+     * @returns {Promise<void>}
+     * @see {Realm.User.customData}
+     */
+    refreshCustomData() { }
+
     /**
      * Returns a provider to interact with API keys.
      * @return {Realm.Auth.APIKeys} - the provider
@@ -529,7 +537,7 @@ class User {
      * @param {string} name - name of the function to call
      * @param {any[]} args - list of arguments to pass
      */
-    call_function(name, args) { }
+    callFunction(name, args) { }
 
     /**
      * Convenience wrapper around `call_function(name, [args])`

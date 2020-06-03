@@ -373,7 +373,8 @@ declare namespace Realm {
 
         logOut(): void;
         linkCredentials(credentials: Credentials): Promise<void>;
-        call_function(name: string, args: any[]): Promise<any>;
+        callFunction(name: string, args: any[]): Promise<any>;
+        refreshCustomData(): Promise<void>;
 
         readonly apiKeys: Realm.Auth.APIKeys;
     }
