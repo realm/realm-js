@@ -436,8 +436,8 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
     FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
-    FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
     FunctionType realm_object_constructor = ObjectWrap<T, RealmObjectClass<T>>::create_constructor(ctx);
+    FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
@@ -733,7 +733,7 @@ void RealmClass<T>::realm_file_exists(ContextType ctx, ObjectType this_object, A
     args.validate_maximum(1);
     ValueType value = args[0];
     std::string realm_file_path = validate_and_normalize_config(ctx, value).path;
-    return_value.set(File::exists(realm_file_path));
+    return_value.set(realm::util::File::exists(realm_file_path));
 }
 
 template<typename T>
@@ -869,7 +869,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     std::shared_ptr<AsyncOpenTask> task;
     task = Realm::get_synchronized_realm(config);
 
-    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults = std::move(defaults), constructors = std::move(constructors)]
+    realm::util::EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults = std::move(defaults), constructors = std::move(constructors)]
                                                                (ThreadSafeReference&& realm_ref, std::exception_ptr error) {
         HANDLESCOPE(protected_ctx)
 
@@ -1351,7 +1351,7 @@ void AsyncOpenTaskClass<T>::add_download_notification(ContextType ctx, ObjectTyp
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    EventLoopDispatcher<SyncProgressHandler> callback_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) mutable {
+    realm::util::EventLoopDispatcher<SyncProgressHandler> callback_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) mutable {
         HANDLESCOPE(protected_ctx)
         ValueType callback_arguments[2];
         callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);

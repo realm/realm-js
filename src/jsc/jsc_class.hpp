@@ -884,7 +884,7 @@ static inline bool try_get_int(JSStringRef property, int64_t& value) {
         ++str;
     }
     while (str != end && *str >= '0' && *str <= '9') {
-        if (int_multiply_with_overflow_detect(value, 10)) {
+        if (util::int_multiply_with_overflow_detect(value, 10)) {
             return false;
         }
         value += *str - '0';
