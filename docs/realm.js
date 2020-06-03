@@ -480,7 +480,7 @@ class Realm {
  *   of precision.
  * @property {string} "string" - Property value may be any arbitrary string.
  * @property {Decimal128} "decimal" - Property value may be a `Decimal128` object (see `bson` for details).
- * @property {ObjectId} "object id" - Property valye may be an `ObjectId` object (see `bson` for details).
+ * @property {ObjectId} "objectId" - Property valye may be an `ObjectId` object (see `bson` for details).
  * @property {Date} "date" - Property may be assigned any `Date` instance.
  * @property {ArrayBuffer} "data" - Property may either be assigned an `ArrayBuffer`
  *   or `ArrayBufferView` (e.g. `DataView`, `Int8Array`, `Float32Array`, etc.) instance,
