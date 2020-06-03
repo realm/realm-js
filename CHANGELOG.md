@@ -14,7 +14,7 @@
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
 ### Internal
-* Fixed compiling without Realm Sync.
+* Fixed compiling without Realm Sync
 
 6.0.1 Release notes (2020-5-18)
 =============================================================
