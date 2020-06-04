@@ -55,7 +55,7 @@ describe("FunctionsFactory", () => {
         const response = factory.hello("friendly");
         expect(response).to.be.instanceOf(Promise);
         const { message } = await response;
-        expect(message).to.equal("hello friendly world!");
+        expect(message).equals("hello friendly world!");
         expect(transport.requests).deep.equals([
             {
                 url: "http://localhost:1337/functions/call",

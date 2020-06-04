@@ -26,7 +26,6 @@ describe("AuthenticatedTransport", () => {
         const transport = new AuthenticatedTransport(new MockTransport(), {
             currentUser: null,
         });
-        // Expect something of the getters and setters
         expect(typeof transport.fetch).equals("function");
     });
 });
