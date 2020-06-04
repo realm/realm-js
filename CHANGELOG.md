@@ -1,8 +1,8 @@
 10.0.0 Release notes (2020-3-26)
 =============================================================
-NOTE 1: This release brings many breaking changes and new features.
-NOTE 2: The old Realm Sync (against Realm Cloud and/or on-prim Realm Object Server) has been removed. The new Realm Sync works together with MongoDB Realm.
-NOTE 3: Deprecated methods have been removed.
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
+NOTE: Deprecated methods have been removed.
 
 ### Breaking changes
 * `Realm.Sync.User` has been replaced by `Realm.User`.
@@ -26,9 +26,10 @@ NOTE 3: Deprecated methods have been removed.
 * None.
 
 ### Compatibility
-* MongoDB Realm Cloud: vX.Y.Z or later.
+* MongoDB Realm Cloud.
+* Realm Studio v10.0.0 (and related beta versions)
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 10.x.y series.
-* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
+* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
 * Updated Realm Core from v6.0.5 to Realm Core v10.0.0-beta.1.
