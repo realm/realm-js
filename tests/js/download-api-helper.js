@@ -28,20 +28,20 @@ function trySetElectronVersion() {
 trySetElectronVersion();
 
 const Realm = require(realmModule);
-const ObjectId = require('bson').ObjectID;
+const { ObjectId, serialize } = require("bson");
 
 function createObjects(user) {
     const config = {
         sync: {
             user: user,
-            partitionValue: '"LoLo"',
+            partitionValue: serialize("LoLo"),
             error: err => console.log(err)
         },
         schema: [{
             name: 'Dog',
             primaryKey: '_id',
             properties: {
-              _id: 'object id?',
+              _id: 'objectId?',
               breed: 'string?',
               name: 'string',
               realm_id: 'string?',

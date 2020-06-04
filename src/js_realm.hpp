@@ -31,8 +31,9 @@
 #if REALM_ENABLE_SYNC
 #include "js_sync.hpp"
 #include "js_app.hpp"
+#include "js_auth.hpp"
 #include "js_app_credentials.hpp"
-#include "js_username_password_provider.hpp"
+#include "js_email_password_provider.hpp"
 #include "js_user_apikey_provider.hpp"
 #include "sync/async_open_task.hpp"
 #include "sync/sync_config.hpp"
@@ -463,11 +464,14 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType response_handler_constructor = ResponseHandlerClass<T>::create_constructor(ctx);
     Object::set_property(ctx, realm_constructor, "ResponseHandler", response_handler_constructor, attributes);
 
-    FunctionType username_password_provider_client_constructor = UsernamePasswordProviderClientClass<T>::create_constructor(ctx);
-    Object::set_property(ctx, app_constructor, "UsernamePasswordProvider", username_password_provider_client_constructor, attributes);
+    FunctionType auth_constructor = AuthClass<T>::create_constructor(ctx);
+    Object::set_property(ctx, realm_constructor, "Auth", auth_constructor, attributes);
+
+    FunctionType email_password_provider_client_constructor = EmailPasswordProviderClientClass<T>::create_constructor(ctx);
+    Object::set_property(ctx, auth_constructor, "EmailPasswordProvider", email_password_provider_client_constructor, attributes);
 
     FunctionType user_apikey_provider_client_constructor = UserAPIKeyProviderClientClass<T>::create_constructor(ctx);
-    Object::set_property(ctx, app_constructor, "UserAPIKeyProvider", user_apikey_provider_client_constructor, attributes);
+    Object::set_property(ctx, auth_constructor, "UserAPIKeyProvider", user_apikey_provider_client_constructor, attributes);
 #endif
 
     if (getenv("REALM_DISABLE_SYNC_TO_DISK")) {
@@ -1236,7 +1240,7 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
     auto table = ObjectStore::table_for_object_type(group, object_schema.name);
     auto object_id = GlobalKey::from_string(object_id_string);
     auto object_key = table->get_objkey(object_id);
-    
+
     if (object_key) {
         return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, object_key)));
     }

@@ -131,6 +131,7 @@ struct Value {
     static bool is_undefined(ContextType, const ValueType &);
     static bool is_binary(ContextType, const ValueType &);
     static bool is_valid(const ValueType &);
+    static bool is_bson(ContextType, const ValueType &);
 
     static bool is_valid_for_property(ContextType, const ValueType&, const Property&);
     static bool is_valid_for_property_type(ContextType, const ValueType&, realm::PropertyType type, StringData object_type);
@@ -328,7 +329,7 @@ struct Object {
 
     template<typename ClassType>
     static ObjectType create_instance_by_schema(ContextType, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal*);
-    
+
     template<typename ClassType>
     static bool is_instance(ContextType, const ObjectType &);
 

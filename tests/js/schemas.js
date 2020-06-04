@@ -336,7 +336,7 @@ exports.ParentObject = {
     name: 'ParentObject',
     primaryKey: '_id',
     properties: {
-        _id:           'object id?',
+        _id:           'objectId?',
         id:            'int',
         name:          'NameObject[]'
     }
@@ -346,7 +346,7 @@ exports.NameObject = {
     name: 'NameObject',
     primaryKey: '_id',
     properties: {
-        _id:          'object id?',
+        _id:          'objectId?',
         family:       'string',
         given:        'string[]',
         prefix:       'string[]'
