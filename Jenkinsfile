@@ -554,6 +554,10 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
 
       def buildSteps = { String dockerArgs = "" ->
           image.inside("-e HOME=/tmp ${dockerArgs}") {
+            if (enableSync) {
+                // check the network connection to local mongodb before continuing to compile everything
+                sh "curl http://mongodb-realm:9090"
+            }
             timeout(time: 1, unit: 'HOURS') {
               sh "scripts/test.sh ${target}"
             }
@@ -573,8 +577,6 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
               // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
               // if there's really a new feature you need from the latest stitch, upgrade this manually
             withRealmCloud(version: objectStoreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/src/object-store/tests/mongodb"]) { networkName ->
-                // sanity check the network to local stitch before continuing to compile everything
-                sh "curl http://mongodb-realm:9090"
                 buildSteps("-e MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\" --network=${networkName}")
             }
           } else {
@@ -593,7 +595,7 @@ def testMacOS(target, postStep = null) {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1',
-               'USE_REALM_SYNC=0']) {
+               'DISABLE_REALM_SYNC=1']) {
         doInside('./scripts/test.sh', target, postStep)
       }
     }
