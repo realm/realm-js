@@ -28,7 +28,7 @@ function trySetElectronVersion() {
 trySetElectronVersion();
 
 const Realm = require(realmModule);
-const ObjectId = require('bson').ObjectID;
+const { ObjectId, serialize } = require("bson");
 
 function createObjects(user) {
     const config = {
@@ -41,7 +41,7 @@ function createObjects(user) {
             name: 'Dog',
             primaryKey: '_id',
             properties: {
-              _id: 'object id?',
+              _id: 'objectId?',
               breed: 'string?',
               name: 'string',
               realm_id: 'string?',

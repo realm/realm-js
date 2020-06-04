@@ -10,14 +10,14 @@ const realmName = process.argv[4];
 const realmModule = process.argv[5];
 
 const Realm = require(realmModule);
-const ObjectId = require('bson').ObjectID;
+const { ObjectId, serialize } = require("bson");
 
 let schemas = {};
 schemas.ParentObject = {
     name: 'ParentObject',
     primaryKey: '_id',
     properties: {
-        _id:           'object id?',
+        _id:           'objectId?',
         id:            'int',
         name:          'NameObject[]'
     }
@@ -27,7 +27,7 @@ schemas.NameObject = {
     name: 'NameObject',
     primaryKey: '_id',
     properties: {
-        _id:          'object id?',
+        _id:          'objectId?',
         family:       'string',
         given:        'string[]',
         prefix:       'string[]'
@@ -38,7 +38,7 @@ function createObjects(user) {
     const config = {
         sync: {
             user,
-            partitionValue: '"LoLo"',
+            partitionValue: serialize("LoLo"),
             error: err => console.log(err)
         },
         schema: [schemas.ParentObject, schemas.NameObject],

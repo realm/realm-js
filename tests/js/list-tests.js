@@ -1392,11 +1392,11 @@ module.exports = {
 
     testGetAndApplySchema: function() {
         const realm1 = new Realm({
-            schema: [schemas.NameObject],
+            schema: [schemas.NameObjectLocal],
             _cache: false,
         });
         realm1.write(() => {
-            realm1.create(schemas.NameObject.name, { family: 'Smith', given: [ 'Bob', 'Ted']});
+            realm1.create(schemas.NameObjectLocal.name, { family: 'Smith', given: [ 'Bob', 'Ted']});
         })
         const schema = realm1.schema;
         realm1.close();
@@ -1405,7 +1405,7 @@ module.exports = {
             schema: schema,
             _cache: false,
         });
-        let names = realm2.objects(schemas.NameObject.name);
+        let names = realm2.objects(schemas.NameObjectLocal.name);
         TestCase.assertEqual(names.length, 1);
         TestCase.assertEqual(names[0]['family'], 'Smith');
         TestCase.assertEqual(names[0]['given'].length, 2);

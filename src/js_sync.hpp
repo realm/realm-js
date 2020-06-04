@@ -732,7 +732,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
         std::string partition_value;
         if (!Value::is_undefined(ctx, partition_value_value)) {
-            partition_value = Value::validated_to_string(ctx, partition_value_value, "partitionValue");
+            // FIXME: we need a Value::validated_to_bson() function here
+            auto partition_bson = Value::to_bson(ctx, partition_value_value);
+            std::stringstream s;
+            s << partition_bson;
+            partition_value = s.str();
         }
 
         config.sync_config = std::make_shared<SyncConfig>(std::move(user), std::move(partition_value));
@@ -755,7 +759,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         config.sync_config->stop_policy = session_stop_policy;
 
         // Custom HTTP headers
-        ValueType sync_custom_http_headers_value = Object::get_property(ctx, sync_config_object, "custom_http_headers");
+        ValueType sync_custom_http_headers_value = Object::get_property(ctx, sync_config_object, "customHttpHeaders");
         if (!Value::is_undefined(ctx, sync_custom_http_headers_value)) {
             auto sync_custom_http_headers = Value::validated_to_object(ctx, sync_custom_http_headers_value);
             auto property_names = Object::get_property_names(ctx, sync_custom_http_headers);
@@ -774,23 +778,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
         }
 
-        // default for query-based sync is manual and recover for full sync
-        ClientResyncMode clientResyncMode = realm::ClientResyncMode::Recover;
-        ValueType client_resync_mode_temp = Object::get_property(ctx, sync_config_object, "clientResyncMode");
-        if (!Value::is_undefined(ctx, client_resync_mode_temp)) {
-            std::string client_resync_mode = std::string(Value::validated_to_string(ctx, client_resync_mode_temp, "client_resync_mode"));
-            if (client_resync_mode == std::string("recover")) {
-                clientResyncMode = realm::ClientResyncMode::Recover;
-            } else if (client_resync_mode == std::string("manual")) {
-                clientResyncMode = realm::ClientResyncMode::Manual;
-            } else if (client_resync_mode == std::string("discard")) {
-                clientResyncMode = realm::ClientResyncMode::DiscardLocal;
-            } else {
-                throw std::invalid_argument("Unknown argument for clientResyncMode: " + client_resync_mode);
-            }
-        }
-        config.sync_config->client_resync_mode = clientResyncMode;
-
+        config.sync_config->client_resync_mode = realm::ClientResyncMode::Recover;
         config.schema_mode = SchemaMode::Additive;
         config.path = SyncManager::shared().path_for_realm(*(config.sync_config));
     }

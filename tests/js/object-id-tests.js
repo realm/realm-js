@@ -24,6 +24,8 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const AppConfig = require('./support/testConfig');
 
+const { ObjectId, serialize } = require("bson");
+
 const isNodeProcess = (typeof process === 'object' && process + '' === '[object process]');
 
 module.exports = {
@@ -39,7 +41,7 @@ module.exports = {
             const config = {
                 sync: {
                     user,
-                    partitionValue: '"LoLo"'
+                    partitionValue: serialize("LoLo")
                 },
                 schema: [{ name: 'IntegerPrimaryKey', properties: { int: 'int?' }, primaryKey: 'int' },
                     { name: 'StringPrimaryKey', properties: { string: 'string?' }, primaryKey: 'string' },

@@ -1,0 +1,28 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"target": "es2015",
+		"moduleResolution": "node",
+		"forceConsistentCasingInFileNames": true,
+		"typeRoots": [
+			"./node_modules/@types",
+			"./types",
+			"../../node_modules/@types",
+		],
+		"types": [
+			"bson",
+			"realm-network-transport",
+			"node",
+			"mocha",
+			"chai",
+			"realm"
+		],
+		"lib": [
+			"es2015",
+			"dom"
+		]
+	},
+	"include": [
+		"src/**/*.ts"
+	]
+}

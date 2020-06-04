@@ -26,7 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
-const ObjectId = require('bson').ObjectID;
+const { ObjectId, serialize } = require("bson");
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
@@ -68,7 +68,7 @@ function getSyncConfiguration(user, partition) {
             name: 'Dog',
             primaryKey: '_id',
             properties: {
-              _id: 'object id?',
+              _id: 'objectId?',
               breed: 'string?',
               name: 'string',
               realm_id: 'string?',
@@ -530,7 +530,7 @@ module.exports = {
             let config = {
                 sync: {
                     user: u,
-                    partitionValue: '"LoLo"'
+                    partitionValue: serialize("LoLo")
                 }
             };
             return Realm.open(config);
@@ -564,7 +564,7 @@ module.exports = {
             let config = {
                 sync: {
                     user: u,
-                    partitionValue: '"LoLo"'
+                    partitionValue: serialize("LoLo")
                 }
             };
             return Realm.open(config);
@@ -612,7 +612,7 @@ module.exports = {
         const config = {
             sync: {
                 user: user,
-                partitionValue: '"LoLo"'
+                partitionValue: serialize("LoLo")
             }
         };
 
@@ -634,7 +634,7 @@ module.exports = {
         const config = {
             sync: {
                 user: user,
-                partitionValue: '"LoLo"'
+                partitionValue: serialize("LoLo")
             }
         };
 
@@ -657,7 +657,7 @@ module.exports = {
         const config = {
             sync: {
                 user: user,
-                partitionValue: '"LoLo"'
+                partitionValue: serialize("LoLo")
             }
         };
 

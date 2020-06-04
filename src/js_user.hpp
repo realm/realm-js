@@ -22,14 +22,14 @@
 #include "js_collection.hpp"
 #include "js_sync_util.hpp"
 #include "js_app_credentials.hpp"
-#include "object-store/src/sync/app.hpp"
-#include "object-store/src/sync/sync_user.hpp"
-#include "platform.hpp"
+#include "js_user_apikey_provider.hpp"
 
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/sync_user.hpp"
+#include "sync/app.hpp"
+#include "platform.hpp"
 
 namespace realm {
 namespace js {
@@ -91,16 +91,19 @@ public:
 
     static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void session_for_on_disk_path(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void delete_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void link_credentials(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void call_function(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void auth_api_keys(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void refresh_custom_data(ContextType, ObjectType, Arguments&, ReturnValue&);
+
 
     MethodMap<T> const methods = {
         {"logOut", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
-        {"_deleteUser", wrap<delete_user>},
         {"_linkCredentials", wrap<link_credentials>},
         {"_callFunction", wrap<call_function>},
+        {"_authApiKeys", wrap<auth_api_keys>},
+        {"_refreshCustomData", wrap<refresh_custom_data>},
     };
 };
 
@@ -201,34 +204,6 @@ void UserClass<T>::logout(ContextType ctx, ObjectType this_object, Arguments& ar
 }
 
 template<typename T>
-void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(1);
-
-    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
-    auto callback = Value::validated_to_function(ctx, args[0], "callback");
-
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback);
-    Protected<ObjectType> protected_this(ctx, this_object);
-
-    auto callback_handler([=](util::Optional<app::AppError> error) {
-        HANDLESCOPE(protected_ctx)
-
-        ObjectType error_object = Object::create_empty(protected_ctx);
-        if (error) {
-            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
-            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
-        }
-
-        ValueType callback_arguments[1];
-        callback_arguments[0] = error_object;
-        Function::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
-    });
-
-    user->m_app->remove_user(*user, callback_handler);
-}
-
-template<typename T>
 void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
     args.validate_count(2);
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
@@ -287,6 +262,35 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
             // Note: reversing argument order.
             Function::callback(ctx, callback, this_object, {
                 !result ? Value::from_undefined(ctx) : Value::from_bson(ctx, *result),
+                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
+                    {"message", Value::from_string(ctx, error->message)},
+                    {"code", Value::from_number(ctx, error->error_code.value())},
+                }),
+            });
+        }));
+}
+
+template<typename T>
+void UserClass<T>::auth_api_keys(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(0);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+    return_value.set(UserAPIKeyProviderClientClass<T>::create_instance(ctx, user->m_app, std::move(*user)));
+}
+
+template<typename T>
+void UserClass<T>::refresh_custom_data(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(1);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
+
+    user->m_app->refresh_custom_data(
+        *user,
+        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
+                            callback = Protected(ctx, callback),
+                            this_object = Protected(ctx, this_object)]
+                           (util::Optional<app::AppError> error) {
+            HANDLESCOPE(ctx)
+            Function::callback(ctx, callback, this_object, {
                 !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
                     {"message", Value::from_string(ctx, error->message)},
                     {"code", Value::from_number(ctx, error->error_code.value())},
