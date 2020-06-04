@@ -1,9 +1,29 @@
-import { AbortController } from 'abort-controller';
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2020 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+import { MongoDBRealmError } from "./MongoDBRealmError";
 
 declare const process: any;
 declare const require: ((id: string) => any) | undefined;
 
-export type Method = "GET" | "POST";
+const isNodeProcess = typeof process === "object" && "node" in process.versions;
+
+export type Method = "GET" | "POST" | "DELETE" | "PUT";
 
 export type Headers = { [name: string]: string };
 
@@ -55,11 +75,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
             // Try to get it from the global
             if (typeof fetch === "function" && typeof window === "object") {
                 DefaultNetworkTransport.fetch = fetch.bind(window);
-            } else if (
-                typeof process === "object" &&
-                typeof require === "function" &&
-                "node" in process.versions
-            ) {
+            } else if (isNodeProcess && typeof require === "function") {
                 // Making it harder for the static analyzers see this require call
                 const nodeRequire = require;
                 DefaultNetworkTransport.fetch = nodeRequire("node-fetch");
@@ -73,11 +89,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
         if (!DefaultNetworkTransport.AbortController) {
             if (typeof AbortController !== "undefined") {
                 DefaultNetworkTransport.AbortController = AbortController;
-            } else if (
-                typeof process === "object" &&
-                typeof require === "function" &&
-                "node" in process.versions
-            ) {
+            } else if (isNodeProcess && typeof require === "function") {
                 // Making it harder for the static analyzers see this require call
                 const nodeRequire = require;
                 DefaultNetworkTransport.AbortController = nodeRequire(
@@ -99,17 +111,37 @@ export class DefaultNetworkTransport implements NetworkTransport {
             const response = await this.fetch(request);
             const contentType = response.headers.get("content-type");
             if (response.ok) {
-                if (contentType && contentType.startsWith("application/json")) {
+                if (contentType === null) {
+                    return null as any;
+                } else if (contentType.startsWith("application/json")) {
                     // Awaiting the response to ensure we'll throw our own error
                     return await response.json();
                 } else {
-                    throw new Error("Expected a JSON response");
+                    throw new Error("Expected an empty or a JSON response");
                 }
-            } else {
-                // TODO: Check if a message can be extracted from the response
-                throw new Error(
-                    `Unexpected status code (${response.status} ${response.statusText})`,
+            } else if (
+                contentType &&
+                contentType.startsWith("application/json")
+            ) {
+                throw new MongoDBRealmError(
+                    response.status,
+                    response.statusText,
+                    await response.json(),
                 );
+            } else {
+                if (contentType && contentType.startsWith("application/json")) {
+                    // Awaiting the response to ensure we'll throw our own error
+                    const json = await response.json();
+                    throw new MongoDBRealmError(
+                        response.status,
+                        response.statusText,
+                        json,
+                    );
+                } else {
+                    throw new Error(
+                        `Unexpected status code (${response.status} ${response.statusText})`,
+                    );
+                }
             }
         } catch (err) {
             throw new Error(

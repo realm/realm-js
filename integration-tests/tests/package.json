@@ -20,14 +20,10 @@
     "@types/node": "^11.10.4",
     "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
-    "prettier": "^1.16.4",
     "realm": "../..",
     "ts-mocha": "^6.0.0",
-    "tslint": "^5.13.1",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-eslint-rules": "^5.4.0",
-    "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^3.3.3333"
+    "tslint": "../../node_modules/tslint",
+    "typescript": "../../node_modules/typescript"
   },
   "dependencies": {
     "chai": "^4.2.0"

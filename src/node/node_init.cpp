@@ -28,7 +28,7 @@
  namespace realm {
  namespace node {
 
-static void napi_init(Napi::Env env, Napi::Object exports) {
+ static void napi_init(Napi::Env env, Napi::Object exports) {
 	node_class_init(env);
 
 	Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
@@ -46,7 +46,3 @@ static void napi_init(Napi::Env env, Napi::Object exports) {
  }
 
 NODE_API_MODULE(realm, NAPI_Init)
-
-
-
-

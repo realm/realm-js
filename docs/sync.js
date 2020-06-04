@@ -19,43 +19,35 @@
 /* eslint getter-return: "off", no-dupe-class-members: "off" */
 
 /**
+ * This describes the options used to create a {@link Realm.App} instance.
+ * @typedef {Object} Realm.App~AppConfiguration
+ * @property {string} id - The id of the MongoDB Realm app.
+ * @property {string} url - The URL of the MongoDB Realm end-point.
+ * @property {number} timeout - General timeout (in millisecs) for requests.
+ * @property {Realm.App~LocalAppConfiguration} app - local app configuration
+ */
+
+/**
+ * This describes the options used for local app configuration.
+ * @typedef {Object} Realm.App~LocalAppConfiguration
+ * @property {string} name - The name of the app.
+ * @property {string} version - The version of the app.
+ */
+
+/**
  * This describes the different options used to create a {@link Realm} instance with Realm Platform synchronization.
  * @typedef {Object} Realm.Sync~SyncConfiguration
- * @property {Realm.Sync.User} user - A {@link Realm.Sync.User} object obtained by calling `Realm.Sync.User.login`.
- * @property {string} url - A `string` which contains a valid Realm Sync url.
+ * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
+ * @property {string} partitionValue - The value of the partition key (serialized BSON).
  * @property {function} [error] - A callback function which is called in error situations.
  *    The `error` callback can take up to five optional arguments: `name`, `message`, `isFatal`,
  *    `category`, and `code`.
  *
  * @property {Object} [custom_http_headers] - A map (string, string) of custom HTTP headers.
- * @property {string} [clientResyncMode] A Client Resync is triggered if the device and server cannot agree on a common shared history
- *     for the Realm file, thus making it impossible for the device to upload or receive any changes.
- *     This can happen if the server is rolled back or restored from backup. Just having the device offline will not trigger a Client Resync.
- *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'recover'` as the default value.
  * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
        If not set, the Realm will be downloaded before opened.
  * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
  *    file to complete and then open. If not set, the Realm will be downloaded before opened.
- */
-
-/**
- * This describes the client resync modes.
- * @typedef {("recover"|"discard"|"manual")} Realm.Sync~ClientResyncMode
- * @property "recover" - Realm will compare the local Realm with the Realm on the server and automatically transfer
- *     any changes from the local Realm that makes sense to the Realm provided by the server.
- *     This is the default mode for fully synchronized Realms. It is not yet supported by query-based Realms.
- * @property "discard" - The local Realm will be discarded and replaced with the server side Realm.
- *     All local changes will be lost. This mode is not yet supported by query-based Realms.
- * @property "manual" - A manual Client Resync is also known as a Client Reset. An error will be thrown.
- *     See also {@link Realm.Sync.initiateClientReset}.
- */
-
-/**
- * This describes the different options used when adding a Global Notifier listener.
- * @typedef {Object} Realm.Sync~RealmListenerConfiguration
- * @property {string} serverUrl - The sync server to listen to.
- * @property {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
- * @property {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
  */
 
 /**
@@ -83,16 +75,78 @@
  * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~downloadBeforeOpenBehavior
  */
 
-/**
- * When opening a Realm created with Realm Mobile Platform v1.x, it is automatically
- * migrated to the v2.x format. In case this migration
- * is not possible, an exception is thrown. The exception´s `message` property will be equal
- * to `IncompatibleSyncedRealmException`. The Realm is backed up, and the property `configuration`
- * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and
- * copy objects to a new synced Realm.
- *
- * @memberof Realm
- */
+ /**
+  * The class represents a MongoDB Realm App.
+  *
+  * ```js
+  * let app = new Realm.App(config);
+  * ```
+  *
+  * @memberof Realm
+  */
+ class App {
+
+    /**
+     * Creates a new app and connects to a MongoDB Realm instance.
+     *
+     * @param {Realm.App~AppConfiguration} config - The configuration of the app.
+     * @throws If no app id is provided.
+     */
+    constructor(config) { }
+
+    /**
+     * Logs in a user.
+     *
+     * @param {Realm.Credentials} credentials - Valid Credentials for the user.
+     * @returns {Promise<Realm.User>}
+     */
+    logIn(credentials) { }
+
+    /**
+     * Returns the current user if any.
+     *
+     * @returns {Realm.User} The current user, `null` is no current user.
+     */
+    currentUser() { }
+
+    /**
+     * Returns a dictionary of alll users. Users' identity is used as key.
+     *
+     * @returns {Array}
+     */
+    allUsers() { }
+
+    /**
+     * Switches the current user.
+     *
+     * @param {Realm.User} user - The user to switch to.
+     * @throws If user is not logged in.
+     */
+    switchUser(user) { }
+
+    /**
+     * Removes the user from MongoDB Realm.
+     *
+     * @param {Realm.User} user - The user to remove.
+     * @returns {Promise<void>}
+     */
+    removeUser(user) { }
+
+    /**
+     * Auth providers. Currently only `emailPassword` provider is support
+     *
+     * @example
+     * {
+     * let app = new Realm.App(config);
+     * let provider = app.auth.emailPassword;
+     * }
+     *
+     * @see Realm.Auth
+     * @see Realm.Auth.EmailPassword
+     */
+    get auth() { }
+ }
+
 class Sync {
 
     /**
@@ -112,10 +166,10 @@ class Sync {
     static setLogLevel(level) { }
 
     /**
-     * Enable multiplexing multiple sync sessions over a single connection. 
-     * When having a lot of synchronized realms open the system might run out of file 
-     * descriptors because of all the open sockets to the server. Session multiplexing 
-     * is designed to alleviate that, but it might not work with a server configured with 
+     * Enable multiplexing multiple sync sessions over a single connection.
+     * When having a lot of synchronized realms open the system might run out of file
+     * descriptors because of all the open sockets to the server. Session multiplexing
+     * is designed to alleviate that, but it might not work with a server configured with
      * fail-over. Only use if you're seeing errors about reaching the file descriptor limit
      * and you know you are using many sync sessions.
      */
@@ -152,7 +206,7 @@ class Sync {
      * Throws error if reset is not possible.
      * @example
      * {
-     *   const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
+     *   const config = { sync: { user, partitionValue } };
      *   config.sync.error = (sender, error) => {
      *     if (error.name === 'ClientReset') {
      *       Realm.Sync.initiateClientReset(original_path);
@@ -212,205 +266,214 @@ class IncompatibleSyncedRealmError {
 
 /**
  * Class for creating user credentials
- * @memberof Realm.Sync
+ * @memberof Realm
  */
 class Credentials {
     /**
-     * Creates credentials based on a login with a username and a password.
+     * Creates credentials based on a login with an email address and a password.
      * @param {string} username The username of the user.
      * @param {string} password The user's password.
-     * @param {boolean} [createUser] optional - `true` if the user should be created, `false` otherwise. If
-     * `true` is provided and the user exists, or `false` is provided and the user doesn't exist,
-     * an error will be thrown. If not specified, if the user doesn't exist, they will be created,
-     * otherwise, they'll be logged in if the password matches.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static usernamePassword(username, password, createUser) { }
+    static emailPassword(email, password) { }
 
     /**
      * Creates credentials based on a Facebook login.
      * @param {string} token A Facebook authentication token, obtained by logging into Facebook..
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
     static facebook(token) { }
 
     /**
      * Creates credentials based on a Google login.
-     * @param {string} token A Google authentication token, obtained by logging into Google..
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * @param {string} token A Google authentication token, obtained by logging into Google.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
     static google(token) { }
 
     /**
      * Creates credentials for an anonymous user. These can only be used once - using them a second
      * time will result in a different user being logged in. If you need to get a user that has already logged
-     * in with the Anonymous credentials, use {@linkcode Realm.Sync.User.current|User.current} or {@linkcode Realm.Sync.User.all|User.all}
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * in with the Anonymous credentials, use {@linkcode Realm.App.currentUser} or {@linkcode Realm.App.allUsers}
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
     static anonymous() { }
 
     /**
-     * Creates credentials based on a login with a nickname. If multiple users try to login
-     * with the same nickname, they'll get the same underlying sync user.
-     * @param {string} value The nickname of the user.
-     * @param {boolean} [isAdmin] An optional parameter controlling whether the user is admin. Default is `false`.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
-     */
-    static nickname(value, isAdmin) { }
-
-    /**
-     * Creates credentials based on an Active Directory login.
-     * @param {string} token An access token, obtained by logging into Azure Active Directory.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
-     */
-    static azureAD(token) { }
-
-    /**
-     * Creates credentials based on a JWT login.
-     * @param {string} token A JSON Web Token, that will be validated against the server's configured rules.
-     * @param {string} [providerName] The name of the provider as configured in the Realm Object. If not specified, the default
-     * name - `jwt` - will be used.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
-     */
-    static jwt(token, providerName) { }
-
-    /**
-     * Creates credentials based on an admin token. Using this credential will not contact the Realm Object Server.
-     * @param {string} token The admin token.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
-     */
-    static adminToken(token) { }
-
-    /**
      * Creates credentials with a custom provider and user identifier.
-     * @param {string} providerName Provider used to verify the credentials.
      * @param {string} token A string identifying the user. Usually an identity token or a username.
-     * @param {userInfo} userInfo Data describing the user further or null if the user does not have any extra data.
-     * The data will be serialized to JSON, so all values must be mappable to a valid JSON data type.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static custom(providerName, token, userInfo) { }
+    static custom(token) { }
 
+    /**
+     * Creates credentials with a MongoDB Realm function and user identifier.
+     * @param {string} token A string identifying the user. Usually an identity token or a username.
+     * @return {Promise<Credentials>} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static function(token) { }
+
+    /**
+     * Creates credentials from a user API key.
+     * @param {string} key A string identifying the user by API key.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static userAPIKey(token) { }
+
+    /**
+     * Creates credentials from a server API key.
+     * @param {string} key A string identifying the user by API key.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static serverAPIKey(token) { }
+
+    /**
+     * Creates credentials based on an Apple login.
+     * @param {string} token An Apple authentication token, obtained by logging into Apple.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static apple(token) { }
 
     /**
      * Gets the identity provider for the credentials.
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
-    get identityProvider() { }
-
-    /**
-     * Gets the access token.
-     * @returns {string}
-     */
-    get token() { }
-
-    /**
-     * Gets additional user information associated with the credentials.
-     * @returns {object} A dictionary, containing the additional information.
-     */
-    get userInfo() { }
+    get provider() { }
 }
 
 /**
- * Class for managing Sync users.
- * @memberof Realm.Sync
+ * A namespace for auth providers
+ * @see Realm.Auth.EmailPassword
+ * @see Realm.Auth.UserAPIKey
+ * @memberof Realm
+ */
+class Auth {
+}
+
+
+/**
+ * Class for managing email/password for users
+ * @memberof Realm.Auth
+ */
+class EmailPassword {
+
+    /**
+     * Registers a new email identity with the username/password provider,
+     * and sends a confirmation email to the provided address.
+     *
+     * @param {string} email - The email address of the user to register.
+     * @param {string} password  - The password that the user created for the new username/password identity.
+     * @returns {Promise<void>}
+     */
+    registerEmail(email, password) { }
+
+    /**
+     * Confirms an email identity with the username/password provider.
+     *
+     * @param {string} token - The confirmation token that was emailed to the user.
+     * @param {string} id - The confirmation token id that was emailed to the user.
+     * @returns {Promise<void>}
+     */
+    confirmUser(token, id) { }
+
+    /**
+     * Re-sends a confirmation email to a user that has registered but
+     * not yet confirmed their email address.
+     *
+     * @param {string} email - The email address of the user to re-send a confirmation for.
+     * @returns {Promise<void>}
+     */
+    resendConfirmationEmail(email) { }
+
+    /**
+     * Sends an email to the user for resetting the password.
+     * @param {string} email - The email address of the user to re-send a confirmation for.
+     * @returns {Promise<void>}
+     */
+    sendResetPasswordEmail(email) { }
+
+    /**
+     * Resets the password of an email identity using the password reset token emailed to a user.
+     * @param {string} password - The desired new password.
+     * @param {string} token - The password reset token that was emailed to the user.
+     * @param {string} id - The password reset token id that was emailed to the user.
+     * @returns {Promise<void>}
+     */
+    resetPassword(password, token, id) { }
+}
+
+/**
+ * A client for the user API key authentication provider which
+ * can be used to create and modify user API keys. This
+ * client should only be used by an authenticated user.
+ * @memberof Realm.Auth
+ */
+class APIKeys {
+
+    /**
+     * Creates a user API key that can be used to authenticate as the current user.
+     *
+     * @param {string} name - The name of the API key to be created.
+     * @returns {Promise<void>}
+     */
+    createAPIKey(name) { }
+
+    /**
+     * Fetches a user API key associated with the current user.
+     *
+     * @param {string} id - The id of the API key to fetch.
+     * @returns {Promise<Object>}
+     */
+    fetchAPIKey(id) { }
+
+    /**
+     * Fetches the user API keys associated with the current user.
+     *
+     * @returns {Promise<Array>}
+     */
+    allAPIKeys() { }
+
+    /**
+     * Deletes a user API key associated with the current user.
+     *
+     * @param {string} id - The id of the API key to delete.
+     * @returns {Promise<void>}
+     */
+    deleteAPIKey(id) { }
+
+    /**
+     * Enables a user API key associated with the current user.
+     *
+     * @param {string} id - The id of the API key to enable.
+     * @returns {Promise<void>}
+     */
+    enableAPIKey(id) { }
+
+    /**
+     * Disables a user API key associated with the current user.
+     *
+     * @param {string} id - The id of the API key to disable.
+     * @returns {Promise<void>}
+     */
+    disableAPIKey(id) { }
+}
+
+
+/**
+ * Class for managing users.
+ * @memberof Realm
  */
 class User {
     /**
-     * Logs the user in to the Realm Object Server.
-     * @param {string} server The url of the server that the user is authenticated against.
-     * @param {Credentials} credentials The credentials to use for authentication. Obtain them by calling one of
-     * the {@linkcode Realm.Sync.Credentials|Credentials} static methods.
-     * @return {Promise<User> | User} A {@linkcode Realm.Sync.User|User} object if the credentials are
-     * {@linkcode Realm.Sync.Credentials.adminToken|adminToken}, {@link Realm.Sync.User|`Promise<User>`} otherwise.
-     */
-    static login(server, credentials) { }
-
-    /**
-     * Request a password reset email to be sent to a user's email.
-     * This will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
-     *
-     * This can only be used for users who authenticated with the 'password' provider, and passed a valid email address as a username.
-     *
-     * @param {string} server - authentication server
-     * @param {string} email - The email that corresponds to the user's username.
-     * @return {Promise<void>} A promise which is resolved when the request has been sent.
-     */
-    static requestPasswordReset(server, email) { }
-
-    /**
-     * Complete the password reset flow by using the reset token sent to the user's email as a one-time authorization token to change the password.
-     *
-     * By default, Realm Object Server will send a link to the user's email that will redirect to a webpage where they can enter their new password.
-     * If you wish to provide a native UX, you may wish to modify the password authentication provider to use a custom URL with deep linking, so you can
-     * open the app, extract the token, and navigate to a view that allows to change the password within the app.
-     *
-     * @param {string} server - authentication server
-     * @param {string} resetToken - The token that was sent to the user's email address.
-     * @param {string} newPassword - The user's new password.
-     * @return {Promise<void>} A promise which is resolved when the request has been sent.
-     */
-    static completePasswordReset(server, resetToken, newPassword) { }
-
-    /**
-     * Request an email confirmation email to be sent to a user's email.
-     * This will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
-     *
-     * @param {string} server - authentication server
-     * @param {string} email - The email that corresponds to the user's username.
-     * @return {Promise<void>} A promise which is resolved when the request has been sent.
-     */
-    static requestEmailConfirmation(server, email) { }
-
-    /**
-     * Complete the email confirmation flow by using the confirmation token sent to the user's email as a one-time authorization token to confirm their email.
-     *
-     * By default, Realm Object Server will send a link to the user's email that will redirect to a webpage where they can enter their new password.
-     * If you wish to provide a native UX, you may wish to modify the password authentication provider to use a custom URL with deep linking, so you can
-     * open the app, extract the token, and navigate to a view that allows to confirm the email within the app.
-     *
-     * @param {string} server - authentication server
-     * @param {string} confirmationToken - The token that was sent to the user's email address.
-     * @return {Promise<void>} A promise which is resolved when the request has been sent.
-     */
-    static confirmEmail(server, confirmationToken) { }
-
-    /**
-     * Creates a new sync user instance from the serialized representation.
-     * @param {object} serialized - the serialized version of the user, obtained by calling {@link User#serialize}.
-     */
-    static deserialize(serialized) { }
-
-    /**
-     * A dictionary containing users that are currently logged in.
-     * The keys in the dictionary are user identities, values are corresponding User objects.
-     * @type {object}
-     */
-    static get all() { }
-
-    /**
-     * Get the currently logged in user.
-     * Throws error if > 1 user logged in, returns undefined if no users logged in.
-     * @type {User}
-     */
-    static get current() { }
-
-    /**
-     * Gets the server URL that was used for authentication.
-     * @type {string}
-     */
-    get server() { }
-
-    /**
-     * Gets the identity of this user on the Realm Object Server.
-     * The identity is a guaranteed to be unique among all users on the Realm Object Server.
+     * Gets the identity of this user on MongoDB Realm Cloud.
+     * The identity is a guaranteed to be unique among all users on MongoDB Realm Cloud .
      * @type {string}
      */
     get identity() { }
 
     /**
-     * Gets this user's refresh token. This is the user's credential for accessing the Realm
-     * Object Server and should be treated as sensitive data.
+     * Gets this user's refresh token. This is the user's credential for accessing the MongoDB
+     * Realm Cloud and should be treated as sensitive data.
      * @type {string}
      */
     get token() { }
@@ -422,12 +485,60 @@ class User {
     get customData() { }
 
     /**
+     * Is true if the user is logged in. False otherwise.
+     * @type {boolean}
+     */
+    get isLoggedIn() { }
+
+    /**
+     * Gets the user's state which can be one of the following:
+     *  - `LoggedOut` - the user is logged out
+     *  - `LoggedIn` - the user is logged in
+     *  - `Removed`  - the user has been removed
+     * @type {string}
+     */
+    get state() { }
+
+    /**
+     * Gets the user's profile (name, email address, etc.).
+     * @type {object}
+     */
+    get profile() { }
+
+    /**
+     * Logs out the user.
+     */
+    logOut() { }
+
+    /**
+     * Links a user to another credentials. This is useful when linking
+     * different account togteher.
+     * @param {Realm.Credentials} credentials
+     * @returns {Promise<Realm.User>} - updated user object
+     */
+    linkCredentials(credentials) { }
+
+
+    /**
+     * Refresh user's custom data.
+     * @returns {Promise<void>}
+     * @see {Realm.User.customData}
+     */
+    refreshCustomData() { }
+
+    /**
+     * Returns a provider to interact with API keys.
+     * @return {Realm.Auth.APIKeys} - the provider
+     */
+    apiKeys() { }
+
+    /**
      * Calls the named server function as this user.
      * @param {string} name - name of the function to call
      * @param {any[]} args - list of arguments to pass
      */
-    call_function(name, args) { }
-    
+    callFunction(name, args) { }
+
     /**
      * Convenience wrapper around `call_function(name, [args])`
      *
@@ -442,55 +553,12 @@ class User {
      * const do_thing = user.functions.do_thing;
      * await do_thing(a1);
      * await do_thing(a2);
-     */   
+     */
     get functions() { }
-
-    /**
-     * Creates the configuration object required to open a synchronized Realm.
-     *
-     * @param {Realm.PartialConfiguration} config - optional parameters that should override any default settings.
-     * @returns {Realm.Configuration} the full Realm configuration
-     * @since 3.0.0
-     */
-    createConfiguration(config) { }
-
-    /**
-     * Serializes a user to an object, that can be persisted or passed to another component to create a new instance
-     * by calling {@link User.deserialize}. The serialized user instance includes the user's refresh token and should
-     * be treated as sensitive data.
-     * @returns {object} an object, containing the user identity, server url, and refresh token.
-     */
-    serialize() { }
-
-    /**
-     * Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user
-     * credentials will be deleted from this device.
-     * @return {Promise<void>} A promise which is resolved when the user has logged out both locally and on the server.
-     */
-    logout() { }
-
-    /**
-     * Get account information for a user. (requires administrator privilidges)
-     * @param {string} provider - the provider to query for user account information (ex. 'password')
-     * @param {string} username - the target username which account information should be retrieved
-     * @returns {Promise} - a promise that will be resolved with the retrieved account information as JSON object
-     * @example
-     * {
-     *   "user_id": "f7a8d2ad9768d73d9d161723935f6f95",
-     *   "accounts": [
-     *     {
-     *       "provider": "password",
-     *       "provider_id": "user@email.com"
-     *     }
-     *   ],
-     *   "metadata":[]
-     * }
-     */
-    retrieveAccount(provider, username) { }
 }
 
 /**
- * An object encapsulating a Realm Object Server session. Sessions represent the communication between the
+ * An object encapsulating a MongoDB Realm Cloud session. Sessions represent the communication between the
  * client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
  * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions
  * associated with Realms are managed automatically.

@@ -120,6 +120,16 @@ copy .\packages\openssl-windows_x64-windows-static\lib\libeay32.lib C:\src\vcpkg
 copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg\installed\x64-windows-static\lib
 ```
 
+### Installing the project's sub-packages
+
+We've decided to slowly migrate this repository to a mono-repository containing multiple packages (stored in the `./packages` directory), to install & link these, run
+
+```
+npx lerna bootstrap
+```
+
+Please familiarise yourself with [Lerna](https://github.com/lerna/lerna) to learn how to add dependencies to these packages.
+
 ### Building docs
 API documentation is written using [JSDoc](http://usejsdoc.org/).
 
