@@ -15,6 +15,7 @@ NOTE: Deprecated methods have been removed.
 * Renamed configuration option `custom_http_headers` to `customHttpHeaders`.
 
 ### Enhancements
+* Added support for compiling on a RaspberryPi. ([#2798](https://github.com/realm/realm-js/issues/2798) 
 * Added support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
 * Added support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
 * Added support for embedded objects. ([#2676](https://github.com/realm/realm-js/issues/2676))
