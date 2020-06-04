@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2020 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
 import { expect } from "chai";
 
 import { Credentials } from "realm-web";
@@ -37,18 +55,18 @@ describe("Remote MongoDB", () => {
             {
                 runId,
                 name: "Alice",
-                hiddenField: "very-secret"
+                hiddenField: "very-secret",
             },
             {
                 runId,
                 name: "Bob",
-                hiddenField: "very-secret"
+                hiddenField: "very-secret",
             },
             {
                 runId,
                 name: "Charlie",
-                hiddenField: "very-secret"
-            }
+                hiddenField: "very-secret",
+            },
         ]);
     });
 
@@ -65,7 +83,7 @@ describe("Remote MongoDB", () => {
     it("returns null when finding no document", async () => {
         const collection = getCollection();
         const result = await collection.findOne({
-            whatever: "non-existent"
+            whatever: "non-existent",
         });
         expect(result).equals(null);
     });
@@ -74,7 +92,7 @@ describe("Remote MongoDB", () => {
         const collection = getCollection();
         const result = await collection.findOne(
             { runId, name: "Bob" },
-            { projection: { name: 1 } }
+            { projection: { name: 1 } },
         );
         if (result === null) {
             throw new Error("Expected a result");
@@ -91,7 +109,7 @@ describe("Remote MongoDB", () => {
         const result = await collection.findOneAndUpdate(
             { runId, name: "Nobody" },
             { name: "Dennis", hiddenField: "a hidden value" },
-            { upsert: true, returnNewDocument: true }
+            { upsert: true, returnNewDocument: true },
         );
         if (result === null) {
             throw new Error("Expected a result");
@@ -108,7 +126,7 @@ describe("Remote MongoDB", () => {
         const result = await collection.findOneAndUpdate(
             { runId, name: "Bob" },
             { name: "Bobby" },
-            { projection: { name: 1 }, returnNewDocument: true }
+            { projection: { name: 1 }, returnNewDocument: true },
         );
         if (result === null) {
             throw new Error("Expected a result");
@@ -128,8 +146,8 @@ describe("Remote MongoDB", () => {
             {
                 projection: { name: 1, hiddenField: 1 },
                 upsert: true,
-                returnNewDocument: true
-            }
+                returnNewDocument: true,
+            },
         );
         if (result === null) {
             throw new Error("Expected a result");
@@ -147,7 +165,7 @@ describe("Remote MongoDB", () => {
         // Delete the document with the last name (Charlie)
         const result = await collection.findOneAndDelete(
             { runId },
-            { sort: { name: -1 } }
+            { sort: { name: -1 } },
         );
         // Check the result
         if (result === null) {
@@ -168,7 +186,7 @@ describe("Remote MongoDB", () => {
         const result = await collection.aggregate([
             { $match: { runId } },
             { $group: { _id: null, names: { $push: "$name" } } },
-            { $project: { _id: 0 } }
+            { $project: { _id: 0 } },
         ]);
         expect(result).deep.equals([{ names: ["Alice", "Bob", "Charlie"] }]);
     });
@@ -180,7 +198,7 @@ describe("Remote MongoDB", () => {
         // Insert a document
         const insertResult = await collection.insertOne({
             runId,
-            name: "Some test document ..."
+            name: "Some test document ...",
         });
         expect(typeof insertResult.insertedId).equals("object");
         expect(insertResult.insertedId.constructor.name).equal("ObjectId");
@@ -189,13 +207,13 @@ describe("Remote MongoDB", () => {
         expect(countAfter - countBefore).equals(1);
         // Try to retrieve it again
         const findResult = await collection.findOne({
-            _id: { $eq: insertResult.insertedId }
+            _id: { $eq: insertResult.insertedId },
         });
         // Expect a result with a similar object id
         expect(findResult).deep.equals({
             _id: insertResult.insertedId,
             runId,
-            name: "Some test document ..."
+            name: "Some test document ...",
         });
     });
 
@@ -206,7 +224,7 @@ describe("Remote MongoDB", () => {
         // Insert a document
         const insertResult = await collection.insertMany([
             { runId, name: "My first document" },
-            { runId, name: "My second document" }
+            { runId, name: "My second document" },
         ]);
         expect(insertResult.insertedIds.length).equals(2);
         for (const id of insertResult.insertedIds) {
@@ -250,7 +268,7 @@ describe("Remote MongoDB", () => {
         // Delete the document with the last name (Charlie)
         const result = await collection.updateOne(
             { runId, name: "Alice" },
-            { name: "Alison" }
+            { name: "Alison" },
         );
         // Check the result
         expect(typeof result).equals("object");
@@ -265,7 +283,7 @@ describe("Remote MongoDB", () => {
         const result = await collection.updateOne(
             { runId, name: "Dennis" },
             { runId, name: "Dennis" },
-            { upsert: true }
+            { upsert: true },
         );
         // Check the result
         expect(typeof result).equals("object");
@@ -279,7 +297,7 @@ describe("Remote MongoDB", () => {
         // Delete the document with the last name (Charlie)
         const result = await collection.updateMany(
             { runId },
-            { hiddenField: "same secret" }
+            { hiddenField: "same secret" },
         );
         // Check the result
         expect(typeof result).equals("object");
@@ -293,7 +311,7 @@ describe("Remote MongoDB", () => {
         const result = await collection.updateMany(
             { runId, name: "Dennis" },
             { runId, name: "Dennis" },
-            { upsert: true }
+            { upsert: true },
         );
         // Check the result
         expect(typeof result).equals("object");

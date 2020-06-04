@@ -23,11 +23,65 @@ import { MockTransport } from "../test/MockTransport";
 
 describe("AuthenticatedTransport", () => {
     it("constructs", () => {
-        const transport = new AuthenticatedTransport(
-            { currentUser: null },
-            new MockTransport(),
-        );
-        // Expect something of the getters and setters
+        const transport = new AuthenticatedTransport(new MockTransport(), {
+            currentUser: null,
+        });
         expect(typeof transport.fetch).equals("function");
+    });
+
+    it("sends access token when requesting", async () => {
+        const baseTransport = new MockTransport([{ foo: "bar" }]);
+        const transport = new AuthenticatedTransport(baseTransport, {
+            currentUser: { accessToken: "my-access-token" } as Realm.User,
+        });
+        // Send a request
+        const response = await transport.fetch({
+            method: "POST",
+            path: "/w00t",
+            body: { something: "interesting" },
+            headers: { Cookie: "yes-please" },
+        });
+        // Expect something of the request and response
+        expect(baseTransport.requests).deep.equals([
+            {
+                method: "POST",
+                url: "http://localhost:1337/w00t",
+                body: { something: "interesting" },
+                headers: {
+                    Cookie: "yes-please",
+                    Accept: "application/json",
+                    Authorization: "Bearer my-access-token",
+                    "Content-Type": "application/json",
+                },
+            },
+        ]);
+        expect(response).deep.equals({ foo: "bar" });
+    });
+
+    it("allows overwriting headers", async () => {
+        const baseTransport = new MockTransport([{}]);
+        const transport = new AuthenticatedTransport(baseTransport, {
+            currentUser: { accessToken: "my-access-token" } as Realm.User,
+        });
+        // Send a request
+        await transport.fetch({
+            method: "GET",
+            path: "/w00t",
+            headers: {
+                Authorization: "Bearer my-custom-token",
+            },
+        });
+        // Expect something of the request
+        expect(baseTransport.requests).deep.equals([
+            {
+                method: "GET",
+                url: "http://localhost:1337/w00t",
+                headers: {
+                    Authorization: "Bearer my-custom-token",
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            },
+        ]);
     });
 });

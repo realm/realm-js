@@ -28,6 +28,11 @@ interface MyDocument extends Realm.Services.RemoteMongoDB.Document {
     name: string;
 }
 
+const DEFAULT_HEADERS = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+};
+
 describe("MongoDB Remote service", () => {
     it("can find documents", async () => {
         const transport = new MockTransport([
@@ -71,6 +76,7 @@ describe("MongoDB Remote service", () => {
                     ],
                 },
                 url: "http://localhost:1337/functions/call",
+                headers: DEFAULT_HEADERS,
             },
         ]);
         // TODO: Expect something about the findResult
@@ -127,15 +133,18 @@ describe("MongoDB Remote service", () => {
                     ],
                 },
                 url: "http://localhost:1337/functions/call",
+                headers: DEFAULT_HEADERS,
             },
         ]);
         // TODO: Expect something about the findResult
         expect(typeof result).equals("object");
         // Expect that the first document is EJSON deserialized
         expect(typeof result).equals("object");
-        expect(typeof result._id).equals("object");
-        expect(result._id.constructor.name).equals("ObjectId");
-        expect(result.name).equals("Some document name ...");
+        if (result) {
+            expect(typeof result._id).equals("object");
+            expect(result._id.constructor.name).equals("ObjectId");
+            expect(result.name).equals("Some document name ...");
+        }
     });
 
     it("can insert a document", async () => {
@@ -168,6 +177,7 @@ describe("MongoDB Remote service", () => {
                     ],
                 },
                 url: "http://localhost:1337/functions/call",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
@@ -214,6 +224,7 @@ describe("MongoDB Remote service", () => {
                     ],
                 },
                 url: "http://localhost:1337/functions/call",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
@@ -242,6 +253,7 @@ describe("MongoDB Remote service", () => {
                     ],
                 },
                 url: "http://localhost:1337/functions/call",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });

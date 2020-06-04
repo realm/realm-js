@@ -23,7 +23,7 @@ declare const require: ((id: string) => any) | undefined;
 
 const isNodeProcess = typeof process === "object" && "node" in process.versions;
 
-export type Method = "GET" | "POST" | "DELETE";
+export type Method = "GET" | "POST" | "DELETE" | "PUT";
 
 export type Headers = { [name: string]: string };
 

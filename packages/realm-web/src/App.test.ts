@@ -23,6 +23,11 @@ import { User, UserState } from "./User";
 import { MockNetworkTransport } from "./test/MockNetworkTransport";
 import { Credentials } from "./Credentials";
 
+const DEFAULT_HEADERS = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+};
+
 /* eslint-disable @typescript-eslint/camelcase */
 
 describe("App", () => {
@@ -81,8 +86,20 @@ describe("App", () => {
                 refresh_token: "very-refreshing",
             },
             {
-                first_name: "John",
-                last_name: "Doe",
+                data: {
+                    first_name: "John",
+                    last_name: "Doe",
+                },
+                domain_id: "5ed10debc085000e2c0097ac",
+                identities: [
+                    {
+                        id: "5ed10e0dc085000e2c0099f2-fufttusvpmojykvacvhijoaq",
+                        provider_id: "5ed10dedc085000e2c0097c5",
+                        provider_type: "anon-user",
+                    },
+                ],
+                type: "normal",
+                user_id: "5ed10e0dc085000e2c0099f3",
             },
         ]);
         const app = new App({
@@ -114,12 +131,14 @@ describe("App", () => {
                     username: "gilfoil@testing.mongodb.com",
                     password: "v3ry-s3cret",
                 },
+                headers: DEFAULT_HEADERS,
             },
             {
                 method: "GET",
                 url: "http://localhost:1337/api/client/v2.0/auth/profile",
                 headers: {
                     Authorization: "Bearer deadbeef",
+                    ...DEFAULT_HEADERS,
                 },
             },
         ]);
@@ -156,12 +175,14 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
                 body: {},
+                headers: DEFAULT_HEADERS,
             },
             {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
                     Authorization: "Bearer very-refreshing",
+                    ...DEFAULT_HEADERS,
                 },
             },
         ]);
@@ -198,12 +219,14 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
                 body: {},
+                headers: DEFAULT_HEADERS,
             },
             {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
                     Authorization: "Bearer very-refreshing",
+                    ...DEFAULT_HEADERS,
                 },
             },
         ]);
@@ -234,20 +257,25 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
                 body: {},
+                headers: DEFAULT_HEADERS,
             },
             {
                 method: "POST",
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/functions/call",
                 body: { name: "hello", arguments: [] },
-                headers: { Authorization: "Bearer deadbeef" },
+                headers: {
+                    Authorization: "Bearer deadbeef",
+                    ...DEFAULT_HEADERS,
+                },
             },
         ]);
     });
 
     it("expose a collection of service factories", () => {
         const transport = new MockNetworkTransport([]);
-        const app = new App("default-app-id", {
+        const app = new App({
+            id: "default-app-id",
             transport,
             baseUrl: "http://localhost:1337",
         });

@@ -24,6 +24,11 @@ import {
 } from "./FunctionsFactory";
 import { MockTransport } from "./test/MockTransport";
 
+const DEFAULT_HEADERS = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+};
+
 describe("FunctionsFactory", () => {
     it("can be created", () => {
         const factory = createFunctionsFactory({} as any);
@@ -50,7 +55,7 @@ describe("FunctionsFactory", () => {
         const response = factory.hello("friendly");
         expect(response).to.be.instanceOf(Promise);
         const { message } = await response;
-        expect(message).to.equal("hello friendly world!");
+        expect(message).equals("hello friendly world!");
         expect(transport.requests).deep.equals([
             {
                 url: "http://localhost:1337/functions/call",
@@ -60,6 +65,7 @@ describe("FunctionsFactory", () => {
                     service: "custom-service",
                     arguments: ["friendly"],
                 },
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });

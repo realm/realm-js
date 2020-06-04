@@ -20,8 +20,13 @@
 /* eslint-disable @typescript-eslint/triple-slash-reference */
 
 /// <reference path="services.d.ts" />
+/// <reference path="auth-providers.d.ts" />
 
 declare namespace Realm {
+    // See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
+    type ObjectId = import("bson").ObjectId;
+    type Binary = import("bson").Binary;
+    
     namespace Credentials {
         /**
          * Payload sent when authenticating using the [Email/Password Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
@@ -137,6 +142,11 @@ declare namespace Realm {
          * Use this to call services within by the MongoDB Realm app.
          */
         services: Realm.Services;
+
+        /**
+         * Perform operations on an app's authentication providers.
+         */
+        auth: Realm.AuthProviders;
 
         /**
          * The last user to log in or being switched to.

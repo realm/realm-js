@@ -1,11 +1,9 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"target": "ES5",
-		"types": [],
-		"noEmit": false,
-		"declaration": true,
-		"outDir": "./dist"
+		"types": []
 	},
-	"exclude": ["src/**/*.test.ts"]
+	"exclude": [
+		"src/**/*.test.ts"
+	]
 }
