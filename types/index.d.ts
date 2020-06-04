@@ -19,6 +19,8 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
+/// <reference path="./app.d.ts"/>
+
 declare namespace Realm {
     interface CollectionChangeSet {
         insertions: number[];
