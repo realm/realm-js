@@ -106,7 +106,7 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         prop.type |= PropertyType::Data;
     }
     else if (type == "decimal128") {
-        prop.type |= PropertyType::Decimal128;
+        prop.type |= PropertyType::Decimal;
     }
     else if (type == "objectId") {
         prop.type |= PropertyType::ObjectId;
@@ -141,11 +141,11 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
             prop.object_type = "";
         }
         else if (prop.object_type == "decimal128") {
-            prop.type |= PropertyType::Decimal128 | PropertyType::Array;
+            prop.type |= PropertyType::Decimal | PropertyType::Array;
             prop.object_type = "";
         }
         else if (prop.object_type == "objectId") {
-            prop.type |= PropertyType::Decimal128 | PropertyType::Array;
+            prop.type |= PropertyType::Decimal | PropertyType::Array;
             prop.object_type = "";
         }
         else {
