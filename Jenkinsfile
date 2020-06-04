@@ -553,14 +553,14 @@ def testLinux(target, postStep = null) {
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
       try {
-          // stitch images are auto-published every day to our CI
-          // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
-          // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
-          // if there's really a new feature you need from the latest stitch, upgrade this manually
+        // stitch images are auto-published every day to our CI
+        // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
+        // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
+        // if there's really a new feature you need from the latest stitch, upgrade this manually
         withRealmCloud(version: objectStoreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/src/object-store/tests/mongodb"]) { networkName ->
           reportStatus(reportName, 'PENDING', 'Build has started')
           image.inside('-e HOME=/tmp') {
-            withEnv(["MONGODB_REALM_ENDPOINT=http://mongodb-realm"]) {
+            withEnv(['MONGODB_REALM_ENDPOINT="http://mongodb-realm"']) {
               timeout(time: 1, unit: 'HOURS') {
                 sh "scripts/test.sh ${target}"
               }

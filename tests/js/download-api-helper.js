@@ -5,7 +5,7 @@ This script creates 3 new objects into a new realm. These are objects are valida
 console.log("download-api-helper started");
 const appId = process.argv[2];
 const appUrl = process.argv[3];
-const realmName = process.argv[4];
+const partition = process.argv[4];
 const realmModule = process.argv[5];
 
 
@@ -35,7 +35,7 @@ function createObjects(user) {
     const config = {
         sync: {
             user: user,
-            partitionValue: '"LoLo"',
+            partitionValue: partition,
             error: err => console.log(err)
         },
         schema: [{

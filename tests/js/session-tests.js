@@ -62,7 +62,7 @@ if (isNodeProcess) {
 
 let appConfig = AppConfig.integrationAppConfig;
 
-function getSyncConfiguration(user) {
+function getSyncConfiguration(user, partition) {
     const realmConfig = {
         schema: [{
             name: 'Dog',
@@ -76,7 +76,7 @@ function getSyncConfiguration(user) {
           }],
         sync: {
             user: user,
-            partitionValue: '"LoLo"'
+            partitionValue: partition
         }
     };
     return realmConfig;
@@ -150,17 +150,17 @@ module.exports = {
             return;
         }
 
-        const realmName = Utils.uuid();
+        const partition = Utils.genPartition();
         const expectedObjectsCount = 3;
 
         let user, config;
-
+        let credentials = Realm.Credentials.anonymous();
         let app = new Realm.App(appConfig);
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, realmName, REALM_MODULE_PATH)
-            .then(() => { return app.logIn(Realm.Credentials.anonymous()) })
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
+            .then(() => { return app.logIn(credentials) })
             .then(u => {
                 user = u;
-                config = getSyncConfiguration(u);
+                config = getSyncConfiguration(u, partition);
                 return Realm.open(config)
             }).then(realm => {
                 let actualObjectsCount = realm.objects('Dog').length;
@@ -181,17 +181,17 @@ module.exports = {
             return;
         }
 
-        const realmName = Utils.uuid();
+        const partition = Utils.genPartition();
         const expectedObjectsCount = 3;
 
         let user, config;
         let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
             .then(u => {
                 user = u;
-                config = getSyncConfiguration(user);
+                config = getSyncConfiguration(user, partition);
                 config.schemaVersion = 1;
 
                 // Open the Realm with a schema version of 1, then immediately close it.
@@ -238,9 +238,11 @@ module.exports = {
 
     testErrorHandling() {
         let app = new Realm.App(appConfig);
-        return app.logIn(Realm.Credentials.anonymous()).then(user => {
+        const partition = Utils.genPartition();
+        const credentials = Realm.Credentials.anonymous();
+        return app.logIn(credentials).then(user => {
             return new Promise((resolve, _reject) => {
-                const config = getSyncConfiguration(user);
+                const config = getSyncConfiguration(user, partition);
                 config.sync.error = (_, error) => {
                     try {
                         TestCase.assertEqual(error.message, 'simulated error');
@@ -260,23 +262,23 @@ module.exports = {
         });
     },
 
-    testListNestedSync() {
+    /*testListNestedSync() {
         if (!platformSupported) {
             return;
         }
 
-        const realmName = Utils.uuid();
-        return runOutOfProcess(__dirname + '/nested-list-helper.js', appConfig.id, appConfig.url, realmName, REALM_MODULE_PATH)
+        const partition = Utils.genPartition();
+        let app = new Realm.App(appConfig);
+        const credentials = Realm.Credentials.anonymous();
+        return runOutOfProcess(__dirname + '/nested-list-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
             .then(() => {
-                let app = new Realm.App(appConfig);
-                const credentials = Realm.Credentials.anonymous();
                 return app.logIn(credentials)
             })
             .then(user => {
                 let config = {
                     // FIXME: schema not working yet
                     schema: [schemas.ParentObject, schemas.NameObject],
-                    sync: { user, partitionValue: '"LoLo"' }
+                    sync: { user, partitionValue: partition }
                 };
                 Realm.deleteFile(config);
                 return Realm.open(config)
@@ -301,21 +303,21 @@ module.exports = {
                 TestCase.assertEqual(objects[1].name[0].given[0], 'Gurli');
                 TestCase.assertEqual(objects[1].name[0].given[1], 'Margrete');
             });
-    },
+    },*/
 
     testProgressNotificationsUnregisterForRealmConstructor() {
         if (!platformSupported) {
             return;
         }
 
-        const realmName = Utils.uuid();
+        const partition = Utils.genPartition();
 
         let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
             .then(user => {
-                let config = getSyncConfiguration(user);
+                let config = getSyncConfiguration(user, partition);
 
                 let realm = new Realm(config);
                 let unregisterFunc;
@@ -369,16 +371,15 @@ module.exports = {
             return;
         }
 
-        const username = Utils.uuid();
-        const realmName = Utils.uuid();
+        const partition = Utils.genPartition();
         let progressCalled = false;
 
         const credentials = Realm.Credentials.anonymous();
         let app = new Realm.App(appConfig);
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
             .then(() => { return app.logIn(credentials)})
             .then(user => {
-                let config = getSyncConfiguration(user);
+                let config = getSyncConfiguration(user, partition);
 
                 return Promise.race([
                     Realm.open(config).progress((transferred, total) => { progressCalled = true; }),
@@ -504,9 +505,11 @@ module.exports = {
     */
 
     testAddConnectionNotification() {
+        const partition = Utils.genPartition();
         let app = new Realm.App(appConfig);
-        return app.logIn(Realm.Credentials.anonymous()).then((u) => {
-            let config = getSyncConfiguration(u);
+        const credentials = Realm.Credentials.anonymous();
+        return app.logIn(credentials).then((u) => {
+            let config = getSyncConfiguration(u, partition);
             return Realm.open(config);
         }).then(realm => {
             return new Promise((resolve, reject) => {
@@ -522,7 +525,8 @@ module.exports = {
 
     testRemoveConnectionNotification() {
         let app = new Realm.App(appConfig);
-        return app.logIn(Realm.Credentials.anonymous()).then((u) => {
+        const credentials = Realm.Credentials.anonymous();
+        return app.logIn(credentials).then((u) => {
             let config = {
                 sync: {
                     user: u,
@@ -672,54 +676,33 @@ module.exports = {
     testUploadDownloadAllChanges() {
         let app = new Realm.App(appConfig);
 
-        const schema = {
-            name: 'CompletionHandlerObject',
-            primaryKey: '_id',
-            properties: {
-                _id: 'object id?',
-                name: 'string'
-            }
-        };
-
         let realm2;
-        return app.logIn(Realm.Credentials.anonymous())
+        const realmPartition = Utils.genPartition();
+
+        const credentials = Realm.Credentials.anonymous();
+        return app.logIn(credentials)
             .then((user1) => {
-                const config1 = {
-                    schema: [schema],
-                    sync: {
-                        user: user1,
-                        partitionValue: '"LoLo"'
-                    }
-                };
+                const config1 = getSyncConfiguration(user1, realmPartition);
                 return Realm.open(config1);
             })
             .then((realm1) => {
-                realm1.write(() => { // TODO: how to ensure clean state?
-                    realm1.deleteAll();
-                });
                 realm1.write(() => {
-                    realm1.create('CompletionHandlerObject', { "_id": new ObjectId("0000002a9a7969d24bea4cf5"), 'name': 'foo'});
+                    realm1.create('Dog', { _id: new ObjectId(), name: `Lassy` });
                 });
-                return realm1.syncSession.uploadAllLocalChanges();
+                return realm1.syncSession.uploadAllLocalChanges(1000);
             })
             .then(() => {
                 return app.logIn(Realm.Credentials.anonymous());
             })
             .then((user2) => {
-                const config2 = {
-                    schema: [schema],
-                    sync: {
-                        user: user2,
-                        partitionValue: '"LoLo"'
-                    }
-                };
+                const config2 = getSyncConfiguration(user2, realmPartition);
                 return Realm.open(config2).then(r => {
                     realm2 = r;
                     return realm2.syncSession.downloadAllServerChanges();
                 });
             })
             .then(() => {
-                TestCase.assertEqual(1,  realm2.objects('CompletionHandlerObject').length);
+                TestCase.assertEqual(1,  realm2.objects('Dog').length);
             });
     },
 
@@ -729,25 +712,11 @@ module.exports = {
         }
 
         let app = new Realm.App(appConfig);
-        const schema = {
-            name: 'CompletionHandlerObject',
-            primaryKey: '_id',
-            properties: {
-                _id: 'object id?',
-                name: 'string'
-            }
-        };
-
+        const realmPartition = Utils.genPartition();
         let realm;
         return app.logIn(Realm.Credentials.anonymous())
             .then(user => {
-                const config = {
-                    schema: [schema],
-                    sync: {
-                        user: user,
-                        partitionValue: '"LoLo"'
-                    }
-                };
+                const config = getSyncConfiguration(user, realmPartition);
                 realm = new Realm(config);
                 return realm.syncSession.downloadAllServerChanges(1);
             }).then(() => { throw new Error('Download did not time out'); }, (e) => {
@@ -761,26 +730,12 @@ module.exports = {
             return;
         }
 
-        const schema = {
-            name: 'CompletionHandlerObject',
-            primaryKey: '_id',
-            properties: {
-                _id: 'object id?',
-                name: 'string'
-            }
-        };
-
         let realm;
         let app = new Realm.App(appConfig);
+        const realmPartition = Utils.genPartition();
         return app.logIn(Realm.Credentials.anonymous())
             .then(user => {
-                const config = {
-                    schema: [schema],
-                    sync: {
-                        user: user,
-                        partitionValue: '"LoLo"'
-                    }
-                };
+                const config = getSyncConfiguration(user, realmPartition);
                 realm = new Realm(config);
                 return realm.syncSession.uploadAllLocalChanges(1);
             }).then(() => { throw new Error('Upload did not time out'); }, (e) => {
@@ -792,13 +747,9 @@ module.exports = {
     testReconnect() {
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
+        const realmPartition = Utils.genPartition();
         return app.logIn(credentials).then(user => {
-            const config = {
-                sync: {
-                    user: user,
-                    partitionValue: '"LoLo"'
-                }
-            };
+            const config = getSyncConfiguration(user, realmPartition);
             let realm = new Realm(config);
 
             // No real way to check if this works automatically.
@@ -812,13 +763,9 @@ module.exports = {
 
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
+        const realmPartition = Utils.genPartition();
         return app.logIn(credentials).then(user => {
-            const config = {
-                sync: {
-                    user: user,
-                    partitionValue: '"LoLo"'
-                }
-            };
+            const config = getSyncConfiguration(user, realmPartition);
             let realm = new Realm(config);
             realm.close();
 
@@ -844,17 +791,12 @@ module.exports = {
     testSessionStopPolicy() {
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
+        const realmPartition = Utils.genPartition();
 
         return app.logIn(credentials)
             .then((user) => {
                 // Check valid input
-                const config1 = {
-                    sync: {
-                        user: user,
-                        partitionValue: '"LoLo"',
-                        _sessionStopPolicy: 'after-upload'
-                    }
-                }
+                const config1 = getSyncConfiguration(user, realmPartition);
                 new Realm(config1).close();
 
                 const config2 = config1;
@@ -875,21 +817,17 @@ module.exports = {
     testSessionStopPolicyImmediately() {
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
+        const realmPartition = Utils.genPartition();
 
         return app.logIn(credentials)
             .then((user) => {
                 // Check valid input
-                const config1 = {
-                    sync: {
-                        user: user,
-                        partitionValue: '"LoLo"',
-                        _sessionStopPolicy: 'immediately'
-                    }
-                };
+                var config = getSyncConfiguration(user, realmPartition);
+                config.sync._sessionStopPolicy = "immediately"
 
                 {
                     TestCase.assertFalse(Realm.Sync._hasExistingSessions());
-                    const realm = new Realm(config1);
+                    const realm = new Realm(config);
                     const session = realm.syncSession;
                     TestCase.assertTrue(Realm.Sync._hasExistingSessions());
                     realm.close();
@@ -904,19 +842,13 @@ module.exports = {
         }
 
         let app = new Realm.App(appConfig);
-
+        const realmPartition = Utils.genPartition();
         return app.logIn(Realm.Credentials.anonymous()).then((u) => {
-            let config = {
-                schema: [schemas.TestObject],
-                sync: {
-                    user: u,
-                    partitionValue: '"LoLo"'
-                }
-            };
+            const config = getSyncConfiguration(u, realmPartition);
             return Realm.open(config);
         }).then(realm => {
             realm.write(() => {
-                TestCase.assertThrows(() => { realm.deleteModel(schemas.TestObject.name); });
+                TestCase.assertThrows(() => { realm.deleteModel(schemas.Dog.name); });
             });
             realm.close();
         });

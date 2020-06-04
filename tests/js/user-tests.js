@@ -119,19 +119,19 @@ module.exports = {
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
-    TestCase.assertEqual(await user.callFunction('firstArg', [123]), 123);
-    TestCase.assertEqual(await user.functions.firstArg(123), 123);
-    TestCase.assertEqual(await user.functions['firstArg'](123), 123);
+    TestCase.assertEqual(await user.callFunction('sumFunc', [123]), 123);
+    TestCase.assertEqual(await user.functions.sumFunc(123), 123);
+    TestCase.assertEqual(await user.functions['sumFunc'](123), 123);
 
     // Test method stashing / that `this` is bound correctly.
-    const firstArg = user.functions.firstArg;
-    TestCase.assertEqual(await firstArg(123), 123);
-    TestCase.assertEqual(await firstArg(123), 123); // Not just one-shot
+    const sumFunc = user.functions.sumFunc;
+    TestCase.assertEqual(await sumFunc(123), 123);
+    TestCase.assertEqual(await sumFunc(123), 123); // Not just one-shot
 
-    TestCase.assertEqual(await user.functions.sum(1, 2, 3), 6);
+    TestCase.assertEqual(await user.functions.sumFunc(1, 2, 3), 6);
 
     const err = await TestCase.assertThrowsAsync(async() => await user.functions.error());
-    TestCase.assertEqual(err.code, 400);
+    TestCase.assertEqual(err.message, "function not found: 'error'");
   },
 
   testAll() {
