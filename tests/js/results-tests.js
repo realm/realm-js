@@ -211,9 +211,6 @@ module.exports = {
             });
         };
 
-        objects = objects.sorted([]);
-        TestCase.assertArraysEqual(primaries(objects), [2, 3, 1, 4, 0]);
-
         objects = objects.sorted('primaryCol');
         TestCase.assertArraysEqual(primaries(objects), [0, 1, 2, 3, 4]);
 
