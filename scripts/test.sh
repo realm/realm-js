@@ -8,12 +8,18 @@ export NPM_CONFIG_PROGRESS=false
 
 TARGET=$1
 CONFIGURATION=${2:-Release}
-NODE_VERSION=${3:-v8.15.0}
-USE_REALM_SYNC=${4:-1}
+NODE_VERSION=${3:-v10.19.0}
 
 if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
 fi
+
+USE_REALM_DEBUG=0
+if [ "${CONFIGURATION}" == "Debug" ]; then
+      USE_REALM_DEBUG=1
+fi
+
+USE_REALM_SYNC=1
 
 IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set and re-exported
 
@@ -38,7 +44,7 @@ if [[ $TARGET = *-android ]]; then
   export REALM_BUILD_ANDROID=1
 fi
 
-SERVER_PID=0
+# SERVER_PID=0
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
 LOGCAT_OUT="$SRCROOT/logcat_out.txt"
 
@@ -47,31 +53,31 @@ die() {
   exit 1
 }
 
-start_server() {
-  echo "test.sh: starting ROS"
-  if [ -z "${SYNC_WORKER_FEATURE_TOKEN}" ]; then
-     die "SYNC_WORKER_FEATURE_TOKEN must be set to run tests."
-  fi
+# start_server() {
+#   echo "test.sh: starting ROS"
+#   if [ -z "${SYNC_WORKER_FEATURE_TOKEN}" ]; then
+#      die "SYNC_WORKER_FEATURE_TOKEN must be set to run tests."
+#   fi
 
-  ./scripts/download-object-server.sh
-  mkdir -p "$(pwd)/build"
-  local ros_log_temp=$(mktemp)
-  node ./scripts/test-ros-server.js | tee $ros_log_temp &
-  ( tail -f $ros_log_temp & ) | grep -q 'Started: '
+#   ./scripts/download-object-server.sh
+#   mkdir -p "$(pwd)/build"
+#   local ros_log_temp=$(mktemp)
+#   node ./scripts/test-ros-server.js | tee $ros_log_temp &
+#   ( tail -f $ros_log_temp & ) | grep -q 'Started: '
 
-  SERVER_PID=$(jobs -l | grep 'test-ros-server' | awk '{split($0, a, / */); print a[2]}')
-  export ROS_DATA_DIR="$(perl -ne 'print "$1\n" if /^Started: (.*?)$/' $ros_log_temp)"
-  echo ROS PID: ${SERVER_PID}
-}
+#   SERVER_PID=$(jobs -l | grep 'test-ros-server' | awk '{split($0, a, / */); print a[2]}')
+#   export ROS_DATA_DIR="$(perl -ne 'print "$1\n" if /^Started: (.*?)$/' $ros_log_temp)"
+#   echo ROS PID: ${SERVER_PID}
+# }
 
-stop_server() {
-  echo stopping server
-  if [[ ${SERVER_PID} -gt 0 ]] ; then
-    echo server is running. killing it
-    kill -9 ${SERVER_PID} >/dev/null 2>&1  || true
-    wait ${SERVER_PID} >/dev/null 2>&1 || true # wait may fail if the server exits fast enough
-  fi
-}
+# stop_server() {
+#   echo stopping server
+#   if [[ ${SERVER_PID} -gt 0 ]] ; then
+#     echo server is running. killing it
+#     kill -9 ${SERVER_PID} >/dev/null 2>&1  || true
+#     wait ${SERVER_PID} >/dev/null 2>&1 || true # wait may fail if the server exits fast enough
+#   fi
+# }
 
 startedSimulator=false
 log_temp=
@@ -79,7 +85,7 @@ test_temp_dir=
 nvm_old_default=
 cleanup() {
   # Kill started object server
-  stop_server || true
+  # stop_server || true
 
   if [ "$(uname)" = 'Darwin' ]; then
     echo "shutting down running simulators"
@@ -280,7 +286,7 @@ case "$TARGET" in
   npm run check-environment
   set_nvm_default
   npm ci
-  start_server
+  # start_server
 
   pushd tests/react-test-app
   npm ci
@@ -291,7 +297,7 @@ case "$TARGET" in
   pushd ios
   pod install
   xctest ReactTests
-  stop_server
+  # stop_server
   ;;
 "react-example")
   npm run check-environment
@@ -311,7 +317,7 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   npm run check-environment
-  start_server
+  # start_server
 
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
@@ -356,14 +362,9 @@ case "$TARGET" in
   ;;
 
 "node")
-  if [ "${CONFIGURATION}" == "Debug" ]; then
-      USE_REALM_DEBUG=1
-  else
-      USE_REALM_DEBUG=0
-  fi
   npm run check-environment
   npm ci --build-from-source=realm --realm_enable_sync=${USE_REALM_SYNC} --use_realm_debug=${USE_REALM_DEBUG}
-  start_server
+  # start_server
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
@@ -373,16 +374,16 @@ case "$TARGET" in
   npm ci
   npm run test
   popd
-  stop_server
+  # stop_server
   ;;
 "electron")
   npm ci
-  start_server
+  # start_server
 
   pushd "$SRCROOT/tests/electron"
   # Build Realm and runtime deps for electron
   export npm_config_build_from_source=realm
-  export npm_config_target=4.0.6
+  export npm_config_target=8.1.1
   export npm_config_runtime=electron
   export npm_config_disturl=https://atom.io/download/electron
   npm ci --realm_enable_sync
@@ -391,15 +392,15 @@ case "$TARGET" in
   npm test -- --process=main
 
   popd
-  stop_server
-  start_server
+  # stop_server
+  # start_server
   pushd "$SRCROOT/tests/electron"
 
   npm test -- --process=render
 
   popd
 
-  stop_server
+  # stop_server
   ;;
 "test-runners")
   npm run check-environment

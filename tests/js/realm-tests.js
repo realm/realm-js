@@ -35,11 +35,12 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
-const Decimal128 = require('bson').Decimal128;
-const ObjectId = require('bson').ObjectId;
+const { Decimal128, ObjectId, serialize } = require("bson");
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
+
 if (isNodeProcess && process.platform === 'win32') {
     pathSeparator = '\\';
 }
@@ -47,12 +48,194 @@ if (isNodeProcess && process.platform === 'win32') {
 const fs = isNodeProcess ? nodeRequire('fs-extra') : require('react-native-fs');
 
 module.exports = {
-    testRealmConstructor: function() {
+    testRealmConstructorTest: function() {
         const realm = new Realm({schema: []});
         TestCase.assertTrue(realm instanceof Realm);
 
         TestCase.assertEqual(typeof Realm, 'function');
         TestCase.assertTrue(Realm instanceof Function);
+    },
+
+    testRealmObjectCreationByObject: function () {
+        const CarSchema = {
+            name: 'Car',
+            properties: {
+                make: 'string',
+                model: 'string',
+                kilometers: { type: 'int', default: 0 },
+            }
+        };
+
+        let realm = new Realm({ schema: [CarSchema] });
+        realm.write(() => {
+            let car = realm.create('Car', { make: 'Audi', model: 'A4', kilometers: 24 });
+            TestCase.assertEqual(car.make, "Audi");
+            TestCase.assertEqual(car.model, "A4");
+            TestCase.assertEqual(car.kilometers, 24);
+            TestCase.assertTrue(car instanceof Realm.Object);
+
+            let cars = realm.objects("Car");
+            TestCase.assertUndefined(cars[""]);
+            let carZero = cars[0];
+            TestCase.assertEqual(carZero.make, "Audi");
+            TestCase.assertEqual(carZero.model, "A4");
+            TestCase.assertEqual(carZero.kilometers, 24);
+
+            let car2 = realm.create('Car', { make: 'VW', model: 'Touareg', kilometers: 13 });
+            TestCase.assertEqual(car2.make, "VW");
+            TestCase.assertEqual(car2.model, "Touareg");
+            TestCase.assertEqual(car2.kilometers, 13);
+            TestCase.assertTrue(car2 instanceof Realm.Object);
+        });
+    },
+
+    testRealmObjectCreationByConstructor: function () {
+        let constructorCalled = false;
+        //test class syntax support
+        class Car extends Realm.Object {
+            constructor() {
+                super();
+                constructorCalled = true;
+            }
+        }
+
+        Car.schema = {
+            name: 'Car',
+            properties: {
+                make: 'string',
+                model: 'string',
+                otherType: { type: 'string', mapTo: "type", optional: true},
+                kilometers: { type: 'int', default: 0 },
+            }
+        };
+
+        let calledAsConstructor = false;
+
+        //test constructor function support
+        function Car2 () {
+            if (new.target) {
+                calledAsConstructor = true;
+            }
+        }
+
+        Car2.schema = {
+            name: 'Car2',
+            properties: {
+                make: 'string',
+                model: 'string',
+                kilometers: { type: 'int', default: 0 },
+            }
+        };
+
+        Object.setPrototypeOf(Car2.prototype, Realm.Object.prototype);
+        Object.setPrototypeOf(Car2, Realm.Object);
+
+        //test class syntax support without extending Realm.Object
+        let car3ConstructorCalled = true;
+        class Car3 {
+            constructor() {
+                car3ConstructorCalled = true;
+            }
+        }
+
+        Car3.schema = {
+            name: 'Car3',
+            properties: {
+                make: 'string',
+                model: 'string',
+                otherType: { type: 'string', mapTo: "type", optional: true},
+                kilometers: { type: 'int', default: 0 },
+            }
+        };
+
+        let realm = new Realm({ schema: [Car, Car2, Car3] });
+        realm.write(() => {
+            let car = realm.create('Car', { make: 'Audi', model: 'A4', kilometers: 24 });
+            TestCase.assertTrue(constructorCalled);
+            TestCase.assertEqual(car.make, "Audi");
+            TestCase.assertEqual(car.model, "A4");
+            TestCase.assertEqual(car.kilometers, 24);
+            TestCase.assertTrue(car instanceof Realm.Object);
+
+            let cars = realm.objects("Car");
+            TestCase.assertUndefined(cars[""]);
+            let carZero = cars[0];
+            TestCase.assertEqual(carZero.make, "Audi");
+            TestCase.assertEqual(carZero.model, "A4");
+            TestCase.assertEqual(carZero.kilometers, 24);
+            TestCase.assertTrue(carZero instanceof Realm.Object);
+
+            constructorCalled = false;
+            let car1 = realm.create('Car', { make: 'VW', model: 'Touareg', kilometers: 13 });
+            TestCase.assertTrue(constructorCalled);
+            TestCase.assertEqual(car1.make, "VW");
+            TestCase.assertEqual(car1.model, "Touareg");
+            TestCase.assertEqual(car1.kilometers, 13);
+            TestCase.assertTrue(car1 instanceof Realm.Object);
+
+            let car2 = realm.create('Car2', { make: 'Audi', model: 'A4', kilometers: 24 });
+            TestCase.assertTrue(calledAsConstructor);
+            TestCase.assertEqual(car2.make, "Audi");
+            TestCase.assertEqual(car2.model, "A4");
+            TestCase.assertEqual(car2.kilometers, 24);
+            TestCase.assertTrue(car2 instanceof Realm.Object);
+
+            let car2_1 = realm.create('Car2', { make: 'VW', model: 'Touareg', kilometers: 13 });
+            TestCase.assertTrue(calledAsConstructor);
+            TestCase.assertEqual(car2_1.make, "VW");
+            TestCase.assertEqual(car2_1.model, "Touareg");
+            TestCase.assertEqual(car2_1.kilometers, 13);
+            TestCase.assertTrue(car2_1 instanceof Realm.Object);
+
+            let car3 = realm.create('Car3', { make: 'Audi', model: 'A4', kilometers: 24 });
+            TestCase.assertTrue(car3ConstructorCalled);
+            TestCase.assertEqual(car3.make, "Audi");
+            TestCase.assertEqual(car3.model, "A4");
+            TestCase.assertEqual(car3.kilometers, 24);
+            TestCase.assertFalse(car3 instanceof Realm.Object);
+            //methods from Realm.Objects should be present
+            TestCase.assertDefined(car3.addListener);
+
+        });
+        realm.close();
+    },
+
+    testRealmObjectCreationByPrimitiveArray: function () {
+        const Primitive = {
+            name: 'Primitive',
+            properties: {
+                intArray: 'int[]'
+            }
+        };
+
+        var realm = new Realm({ schema: [Primitive] });
+        realm.write(() => {
+            var primitive = realm.create(Primitive.name, { intArray: [1, 2, 3] });
+            TestCase.assertEqual(primitive.intArray[0], 1);
+            primitive.intArray[0] = 5;
+            TestCase.assertEqual(primitive.intArray[0], 5);
+        });
+    },
+
+    testNativeFunctionOverwrite: function() {
+        if (!isNodeProcess && !isElectronProcess) {
+            return;
+        }
+
+        const realm = new Realm({schema: []});
+        var oldClose = realm.close.bind(realm);
+        var newCloseCalled = false;
+        realm.close = () => {
+            newCloseCalled = true;
+        };
+        realm.close();
+        TestCase.assertTrue(newCloseCalled, "The new function should be called");
+
+        TestCase.assertFalse(realm.isClosed, "The realm should not be closed");
+
+        oldClose();
+
+        TestCase.assertTrue(realm.isClosed, "The realm should be closed");
     },
 
     testRealmConstructorPath: function() {
@@ -94,7 +277,6 @@ module.exports = {
         const realm = new Realm({schema: []});
         realm.close();
         TestCase.assertTrue(realm.isClosed);
-        TestCase.assertThrows(() => realm.close());
         TestCase.assertTrue(realm.isClosed);
     },
 
@@ -120,6 +302,31 @@ module.exports = {
         TestCase.assertEqual(realm.objects('TestObject')[0].doubleCol, 1);
         TestCase.assertEqual(realm.schemaVersion, 2);
         TestCase.assertEqual(realm.schema.length, 1);
+    },
+
+    testStackTrace: function() {
+        if (!isNodeProcess && !isElectronProcess) {
+            return;
+        }
+
+        let realm = new Realm({schema: []});
+        function failingFunction() {
+            throw new Error('not implemented');
+        }
+
+        try {
+            realm.write(() => {
+                failingFunction();
+            });
+        }
+        catch(e) {
+            TestCase.assertNotEqual(e.stack, undefined, "e.stack should not be undefined");
+            TestCase.assertNotEqual(e.stack, null, "e.stack should not be null");
+            TestCase.assertTrue(e.stack.indexOf("at failingFunction (") !== -1, "failingfunction should be on the stack");
+            TestCase.assertTrue(e.stack.indexOf("not implemented") !== -1, "the error message should be present");
+        }
+
+        realm.close();
     },
 
     testRealmConstructorDynamicSchema: function() {
@@ -253,14 +460,28 @@ module.exports = {
         if (!global.enableSyncTests) {
             return;
         }
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
+
+        const appConfig = {
+            id: global.APPID,
+            url: global.APPURL,
+            timeout: 1000,
+            app: {
+                name: "default",
+                version: "0"
+            },
+        };
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+
+        return app.logIn(credentials)
             .then(user => {
-                const config = user.createConfiguration({
+                const config = {
                     schema: [schemas.TestObject],
                     sync: {
-                        url: `realm://127.0.0.1:9080/testRealmExists_${Utils.uuid()}`,
+                        user,
+                        partitionValue: serialize("LoLo")
                     },
-                });
+                };
                 TestCase.assertFalse(Realm.exists(config));
                 new Realm(config).close();
                 TestCase.assertTrue(Realm.exists(config));
@@ -1324,6 +1545,7 @@ module.exports = {
     testManualCompactMultipleInstances: function() {
         const realm1 = new Realm({schema: [schemas.StringOnly]});
         const realm2 = new Realm({schema: [schemas.StringOnly]});
+        realm2.objects('StringOnlyObject');
         TestCase.assertFalse(realm1.compact());
     },
 
@@ -1368,12 +1590,21 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User
-            .login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
+        const appConfig = {
+            id: global.APPID,
+            url: global.APPURL,
+            timeout: 1000,
+            app: {
+                name: "default",
+                version: "0"
+            },
+        };
+        let app = new Realm.App(appConfig);
+        return app.logIn(Realm.Credentials.anonymous())
             .then(user => {
                 const config = {
                     schema: [schemas.TestObject],
-                    sync: {user, url: 'realm://127.0.0.1:9080/~/test' },
+                    sync: {user, partitionValue: '"Lolo"' },
                 };
 
                 const realm = new Realm(config);
@@ -1610,8 +1841,9 @@ module.exports = {
         TestCase.assertEqual(managedObj.objectCol.doubleCol, 1);
         TestCase.assertEqual(managedObj.nullObjectCol, null);
         TestCase.assertEqual(managedObj.arrayCol[0].doubleCol, 2);
-    },
 
+        realm.close();
+    },
 
     testWriteCopyTo: function() {
         const realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
@@ -1673,38 +1905,102 @@ module.exports = {
     },
 
     testDecimal128: function() {
-        const realm = new Realm({schema: [schemas.DecimalObject]});
+        const realm = new Realm({schema: [schemas.Decimal128Object]});
 
-        let d = Decimal128.fromString("42");
-        realm.write(() => {
-            realm.create(schemas.DecimalObject.name, { decimalCol: d});
+        let numbers = [42, 3.1415, 6.022e23, -7, -100.2, 1.02E9];
+
+        numbers.forEach(number => {
+            let d = Decimal128.fromString(number.toString());
+            realm.write(() => {
+                realm.create(schemas.Decimal128Object.name, { decimalCol: d});
+            });
         });
 
-        let objects = realm.objects(schemas.DecimalObject.name);
-        TestCase.assertEqual(objects.length, 1);
+        let objects = realm.objects(schemas.Decimal128Object.name);
+        TestCase.assertEqual(objects.length, numbers.length);
 
-        let d128 = objects[0]['decimalCol'];
-        TestCase.assertTrue(d128 instanceof Decimal128);
-        TestCase.assertEqual(d128.toString(), "42");
+        for (let i = 0; i < numbers.length; i++) {
+            let d128 = objects[i]["decimalCol"];
+            TestCase.assertTrue(d128 instanceof Decimal128);
+            TestCase.assertEqual(d128.toString(), numbers[i].toString().toUpperCase());
+        }
+
+        realm.close();
+    },
+
+    testDecimal128_LargeNumbers: function() {
+        const realm = new Realm({schema: [schemas.Decimal128Object]});
+        // Core doesn't support numbers like 9.99e+6143 yet.
+        let numbers = ["1.02e+6102", "-1.02e+6102", "1.02e-6102", /*"9.99e+6143",*/ "1e-6142"];
+
+        numbers.forEach(number => {
+            let d = Decimal128.fromString(number);
+            realm.write(() => {
+                realm.create(schemas.Decimal128Object.name, { decimalCol: d});
+            });
+        });
+
+        let objects = realm.objects(schemas.Decimal128Object.name);
+        TestCase.assertEqual(objects.length, numbers.length);
+
+        for (let i = 0; i < numbers.length; i++) {
+            let d128 = objects[i]["decimalCol"];
+            TestCase.assertTrue(d128 instanceof Decimal128);
+            TestCase.assertEqual(d128.toString(), numbers[i].toUpperCase());
+        }
 
         realm.close();
     },
 
     testObjectId: function() {
         const realm = new Realm({schema: [schemas.ObjectIdObject]});
+        let values = ["0000002a9a7969d24bea4cf2", "0000002a9a7969d24bea4cf3"];
+        let oids = [];
 
-        let oid1 = new ObjectId('0000002a9a7969d24bea4cf2');
-        realm.write(() => {
-            realm.create(schemas.ObjectIdObject.name, { id: oid1 });
+        values.forEach(v => {
+            let oid = new ObjectId(v);
+            realm.write(() => {
+                realm.create(schemas.ObjectIdObject.name, { id: oid });
+            });
+            oids.push(oid);
         });
 
         let objects = realm.objects(schemas.ObjectIdObject.name);
-        TestCase.assertEqual(objects.length, 1);
+        TestCase.assertEqual(objects.length, values.length);
 
-        let oid2 = objects[0]['id'];
-        TestCase.assertTrue(oid2 instanceof ObjectId, 'instaceof');
-        TestCase.assertTrue(oid1.equals(oid2), 'equal');
-        TestCase.assertEqual(oid2.toHexString(), oid1.toHexString());
+        for (let i = 0; i < values.length; i++) {
+            let oid2 = objects[i]["id"];
+            TestCase.assertTrue(oid2 instanceof ObjectId, "instaceof");
+            TestCase.assertTrue(oids[i].equals(oid2), "equal");
+            TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
+        }
+
+        realm.close();
+    },
+
+    testObjectIdFromTimestamp: function() {
+        const realm = new Realm({schema: [schemas.ObjectIdObject]});
+        let values = [1, 1000000000, 2000000000];
+        let oids = [];
+
+        values.forEach(v => {
+            let oid = ObjectId.createFromTime(v);
+            realm.write(() => {
+                realm.create(schemas.ObjectIdObject.name, { id: oid });
+            });
+            oids.push(oid);
+        });
+
+        let objects = realm.objects(schemas.ObjectIdObject.name);
+        TestCase.assertEqual(objects.length, values.length);
+
+        for (let i = 0; i < values.length; i++) {
+            let oid2 = objects[i]["id"];
+            TestCase.assertTrue(oid2 instanceof ObjectId, "instaceof");
+            TestCase.assertTrue(oids[i].equals(oid2), "equal");
+            TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
+            TestCase.assertEqual(oid2.getTimestamp().toISOString(), oids[i].getTimestamp().toISOString());
+        }
 
         realm.close();
     },

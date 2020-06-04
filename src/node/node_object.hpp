@@ -19,160 +19,194 @@
 #pragma once
 
 #include "node_types.hpp"
+#include "napi.h"
 
 namespace realm {
 namespace js {
 
-template<>
-inline v8::Local<v8::Value> node::Object::get_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, StringData key) {
-    Nan::TryCatch trycatch;
-    v8::Local<v8::String> node_key;
+inline napi_property_attributes operator|(napi_property_attributes a, PropertyAttributes b) {
+	int flag = napi_default;
 
-    // If we have just plain ASCII, we can skip the conversion from UTF-8
-    if (std::all_of(key.data(), key.data() + key.size(), [](char c) { return c <= 127; })) {
-        node_key = v8::String::NewExternal(isolate, new v8::ExternalOneByteStringResourceImpl(key.data(), key.size()));
-    }
-    else {
-        node_key = v8::String::NewFromUtf8(isolate, key.data(), v8::String::kNormalString, key.size());
-    }
+	if ((b & DontEnum) != DontEnum) {
+		flag |= napi_enumerable;
+	}
 
-    auto value = Nan::Get(object, node_key);
-    if (trycatch.HasCaught()) {
-        throw node::Exception(isolate, trycatch.Exception());
-    }
-    return value.ToLocalChecked();
+	if ((b & DontDelete) != DontDelete) {
+		flag |= napi_configurable;
+	}
+
+	if ((b & ReadOnly) != ReadOnly) {
+		flag |= napi_writable;
+	}
+
+	napi_property_attributes napi_flag = static_cast<napi_property_attributes>(a | flag);
+	return napi_flag;
 }
 
 template<>
-inline v8::Local<v8::Value> node::Object::get_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, const node::String &key) {
-    Nan::TryCatch trycatch;
-    auto value = Nan::Get(object, v8::Local<v8::String>(key));
-
-    if (trycatch.HasCaught()) {
-        throw node::Exception(isolate, trycatch.Exception());
-    }
-    return value.ToLocalChecked();
+inline Napi::Value node::Object::get_property(Napi::Env env, const Napi::Object& object, StringData key) {
+	try {
+		return object.Get(key);
+	}
+	catch (const Napi::Error& e) {
+		throw node::Exception(env, e.Message());
+	}
 }
 
 template<>
-inline v8::Local<v8::Value> node::Object::get_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, uint32_t index) {
-    Nan::TryCatch trycatch;
-    auto value = Nan::Get(object, index);
-
-    if (trycatch.HasCaught()) {
-        throw node::Exception(isolate, trycatch.Exception());
-    }
-    return value.ToLocalChecked();
+inline Napi::Value node::Object::get_property(Napi::Env env, const Napi::Object& object, const node::String &key) {
+	try {
+		return object.Get(key);
+	}
+	catch (const Napi::Error& e) {
+		throw node::Exception(env, e.Message());
+	}
 }
 
 template<>
-inline void node::Object::set_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, const node::String &key, const v8::Local<v8::Value> &value, PropertyAttributes attributes) {
-    Nan::TryCatch trycatch;
-
-    if (attributes) {
-        Nan::ForceSet(object, v8::Local<v8::String>(key), value, v8::PropertyAttribute(attributes));
-    }
-    else {
-        Nan::Set(object, v8::Local<v8::String>(key), value);
-    }
-
-    if (trycatch.HasCaught()) {
-        throw node::Exception(isolate, trycatch.Exception());
-    }
+inline Napi::Value node::Object::get_property(Napi::Env env, const Napi::Object& object, uint32_t index) {
+	try {
+		return object.Get(index);
+	}
+	catch (const Napi::Error& e) {
+		throw node::Exception(env, e.Message());
+	}
 }
 
 template<>
-inline void node::Object::set_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, uint32_t index, const v8::Local<v8::Value> &value) {
-    Nan::TryCatch trycatch;
-    Nan::Set(object, index, value);
-
-    if (trycatch.HasCaught()) {
-        throw node::Exception(isolate, trycatch.Exception());
-    }
+inline void node::Object::set_property(Napi::Env env, const Napi::Object& object, const node::String& key, const Napi::Value& value, PropertyAttributes attributes) {
+	try {
+		Napi::Object obj = object;
+		if (attributes) {
+			napi_property_attributes napi_attributes = napi_default | attributes;
+			std::string name = key;
+			auto propDescriptor = Napi::PropertyDescriptor::Value(name, value, napi_attributes);
+			obj.DefineProperty(propDescriptor);
+		}
+		else {
+			obj.Set(key, value);
+		}
+	}
+	catch (const Napi::Error& e) {
+		throw node::Exception(env, e.Message());
+	}
 }
 
 template<>
-inline std::vector<node::String> node::Object::get_property_names(v8::Isolate* isolate, const v8::Local<v8::Object> &object) {
-    auto maybe_array = Nan::GetPropertyNames(object);
-    if (maybe_array.IsEmpty()) {
-        return std::vector<node::String>();
-    }
-
-    auto array = maybe_array.ToLocalChecked();
-    uint32_t count = array->Length();
-
-    std::vector<node::String> names;
-    names.reserve(count);
-
-    for (uint32_t i = 0; i < count; i++) {
-        names.push_back(array->Get(i)->ToString());
-    }
-
-    return names;
+inline void node::Object::set_property(Napi::Env env, const Napi::Object& object, uint32_t index, const Napi::Value& value) {
+	try {
+		Napi::Object obj = object;
+		obj.Set(index, value);
+	}
+	catch (const Napi::Error& e) {
+		throw node::Exception(env, e.Message());
+	}
 }
 
 template<>
-inline v8::Local<v8::Value> node::Object::get_prototype(v8::Isolate* isolate, const v8::Local<v8::Object> &object) {
-    return object->GetPrototype();
+inline std::vector<node::String> node::Object::get_property_names(Napi::Env env, const Napi::Object& object) {
+	try {
+		auto propertyNames = object.GetPropertyNames();
+
+		uint32_t count = propertyNames.Length();
+		std::vector<node::String> names;
+		names.reserve(count);
+
+		for (uint32_t i = 0; i < count; i++) {
+			names.push_back(node::Value::to_string(env, propertyNames[i]));
+		}
+
+		return names;
+	}
+	catch (const Napi::Error& e) {
+		throw node::Exception(env, e.Message());
+	}
 }
 
 template<>
-inline void node::Object::set_prototype(v8::Isolate* isolate, const v8::Local<v8::Object> &object, const v8::Local<v8::Value> &prototype) {
-    Nan::SetPrototype(object, prototype);
+inline Napi::Value node::Object::get_prototype(Napi::Env env, const Napi::Object& object) {
+	napi_value result;
+	napi_status status = napi_get_prototype(env, object, &result);
+	if (status != napi_ok) {
+		throw node::Exception(env, "Failed to get object's prototype");
+	}
+	return Napi::Object(env, result);
 }
 
 template<>
-inline v8::Local<v8::Object> node::Object::create_empty(v8::Isolate* isolate) {
-    return Nan::New<v8::Object>();
+inline void node::Object::set_prototype(Napi::Env env, const Napi::Object& object, const Napi::Value& prototype) {
+	auto setPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
+	if (setPrototypeOfFunc.IsEmpty() || setPrototypeOfFunc.IsUndefined()) {
+		throw std::runtime_error("no 'setPrototypeOf'");
+	}
+
+	setPrototypeOfFunc.Call({ object, prototype });
 }
 
 template<>
-inline v8::Local<v8::Object> node::Object::create_array(v8::Isolate* isolate, uint32_t length, const v8::Local<v8::Value> values[]) {
-    v8::Local<v8::Array> array = Nan::New<v8::Array>(length);
+inline Napi::Object node::Object::create_empty(Napi::Env env) {
+	return Napi::Object::New(env);
+}
+
+template<>
+inline Napi::Object node::Object::create_array(Napi::Env env, uint32_t length, const Napi::Value values[]) {
+	Napi::Array array = Napi::Array::New(env, length);
     for (uint32_t i = 0; i < length; i++) {
-        set_property(isolate, array, i, values[i]);
+        set_property(env, array, i, values[i]);
     }
     return array;
 }
 
 template<>
-inline v8::Local<v8::Object> node::Object::create_date(v8::Isolate* isolate, double time) {
-    return Nan::New<v8::Date>(time).ToLocalChecked();
+inline Napi::Object node::Object::create_date(Napi::Env env, double time) {
+	Napi::Function date_constructor = env.Global().Get("Date").As<Napi::Function>();
+	Napi::Number value = Napi::Number::New(env, time);
+	return date_constructor.New({ value });
 }
 
 template<>
 template<typename ClassType>
-inline v8::Local<v8::Object> node::Object::create_instance(v8::Isolate* isolate, typename ClassType::Internal* internal) {
-    return node::ObjectWrap<ClassType>::create_instance(isolate, internal);
+inline Napi::Object node::Object::create_instance(Napi::Env env, typename ClassType::Internal* internal) {
+    return node::ObjectWrap<ClassType>::create_instance(env, internal);
 }
 
 template<>
 template<typename ClassType>
-inline bool node::Object::is_instance(v8::Isolate* isolate, const v8::Local<v8::Object> &object) {
-    return node::ObjectWrap<ClassType>::has_instance(isolate, object);
+inline Napi::Object node::Object::create_instance_by_schema(Napi::Env env, Napi::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
+	return node::ObjectWrap<ClassType>::create_instance_by_schema(env, constructor, schema, internal);
+}
+
+template<typename ClassType>
+inline void on_context_destroy(Napi::Env env, std::string realmPath) {
+	node::ObjectWrap<ClassType>::on_context_destroy(env, realmPath);
 }
 
 template<>
 template<typename ClassType>
-inline typename ClassType::Internal* node::Object::get_internal(const v8::Local<v8::Object> &object) {
-    return *Nan::ObjectWrap::Unwrap<node::ObjectWrap<ClassType>>(object);
+inline bool node::Object::is_instance(Napi::Env env, const Napi::Object& object) {
+    return node::ObjectWrap<ClassType>::is_instance(env, object);
 }
 
 template<>
 template<typename ClassType>
-inline void node::Object::set_internal(const v8::Local<v8::Object> &object, typename ClassType::Internal* ptr) {
-    auto wrap = Nan::ObjectWrap::Unwrap<node::ObjectWrap<ClassType>>(object);
-    *wrap = ptr;
+inline typename ClassType::Internal* node::Object::get_internal(Napi::Env env, const Napi::Object& object) {
+	return node::ObjectWrap<ClassType>::get_internal(env, object);
 }
 
 template<>
-inline void node::Object::set_global(v8::Isolate* isolate, const node::String &key, const v8::Local<v8::Value> &value) {
-    Object::set_property(isolate, isolate->GetCurrentContext()->Global(), key, value);
+template<typename ClassType>
+inline void node::Object::set_internal(Napi::Env env, const Napi::Object& object, typename ClassType::Internal* internal) {
+	return node::ObjectWrap<ClassType>::set_internal(env, object, internal);
 }
 
 template<>
-inline v8::Local<v8::Value> node::Object::get_global(v8::Isolate* isolate, const node::String &key) {
-    return Object::get_property(isolate, isolate->GetCurrentContext()->Global(), key);
+inline void node::Object::set_global(Napi::Env env, const node::String &key, const Napi::Value &value) {
+	Object::set_property(env, env.Global(), key, value);
+}
+
+template<>
+inline Napi::Value node::Object::get_global(Napi::Env env, const node::String &key) {
+	return Object::get_property(env, env.Global(), key);
 }
 
 } // js

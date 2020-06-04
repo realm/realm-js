@@ -22,6 +22,9 @@ var Realm = require('realm');
 var TestCase = require('./asserts');
 var Schemas = require('./schemas');
 
+const { ObjectId, serialize } = require("bson");
+
+
 module.exports = {
     testEncryptedInvalidKeys: function() {
         // test failure with invalid keys
@@ -75,17 +78,27 @@ module.exports = {
             return Promise.resolve();
         }
 
- 
-        const credentials = Realm.Sync.Credentials.usernamePassword("realm-admin", "");
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(adminUser => {
+        const appConfig = {
+            id: global.APPID,
+            url: global.APPURL,
+            timeout: 1000,
+            app: {
+                name: "default",
+                version: "0"
+            },
+        };
+        let app = new Realm.App(appConfig);
+
+        const credentials = Realm.Credentials.anonymous();
+        return app.logIn(credentials).then(user => {
             new Realm({
                 encryptionKey: new Int8Array(64),
                 sync: {
-                    user: adminUser,
-                    url: 'realm://127.0.0.1:9080/~/encryptedRealm'
+                    user: user,
+                    partitionValue: serialize("LoLo")
                 }
             });
-            adminUser.logout(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work
+            user.logOut(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work
         });
     }
 };

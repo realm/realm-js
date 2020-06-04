@@ -21,6 +21,8 @@
 #include <realm/util/to_string.hpp>
 
 #include <string>
+#include <stdarg.h>
+#include <stdio.h>
 
 #import <Foundation/Foundation.h>
 
@@ -145,6 +147,17 @@ void remove_file(const std::string &path)
 void remove_directory(const std::string &path)
 {
     remove_file(path); // works for directories too
+}
+
+
+void print(const char* fmt, ...)
+{
+    va_list vl;
+    va_start(vl, fmt);
+    std::string format(fmt);
+    format.append("\n");
+    vprintf(format.c_str(), vl);
+    va_end(vl);
 }
 
 }

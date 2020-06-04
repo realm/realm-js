@@ -53,14 +53,14 @@ void clear_test_state() {
     realm::_impl::RealmCoordinator::clear_all_caches();
     realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
 #if REALM_ENABLE_SYNC
-    for(auto &user : SyncManager::shared().all_logged_in_users()) {
+    for(auto &user : SyncManager::shared().all_users()) {
         user->log_out();
     }
     SyncManager::shared().reset_for_testing();
 #if REALM_ANDROID
     s_test_files_path = realm::default_realm_file_directory();
     auto ros_dir = s_test_files_path + "/realm-object-server";
-    if (File::exists(ros_dir)) {
+    if (util::File::exists(ros_dir)) {
         util::remove_dir_recursive(s_test_files_path + "/realm-object-server");
     }
 #else
@@ -76,10 +76,6 @@ void clear_test_state() {
     }
     s_test_files_path = util::make_temp_dir();
 #endif
-    SyncClientConfig client_config;
-    client_config.base_file_path = s_test_files_path;
-    client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
-    SyncManager::shared().configure(client_config);
 #endif
 }
 

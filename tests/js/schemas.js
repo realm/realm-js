@@ -27,17 +27,17 @@ exports.TestObject = {
     }
 };
 
-exports.DecimalObject = {
-    name: 'DecimalObject',
+exports.Decimal128Object = {
+    name: 'Decimal128Object',
     properties: {
-        decimalCol: 'decimal'
+        decimal128Col: 'decimal128'
     }
 };
 
 exports.ObjectIdObject = {
     name: 'ObjectIdObject',
     properties: {
-        id: 'object id'
+        id: 'objectId'
     }
 };
 
@@ -79,8 +79,8 @@ exports.BasicTypes = {
         stringCol:   'string',
         dateCol:     'date',
         dataCol:     'data',
-        decimalCol:  'decimal',
-        objectIdCol: 'object id',
+        decimal128Col:  'decimal128',
+        objectIdCol: 'objectId',
     }
 };
 
@@ -184,8 +184,8 @@ exports.PrimitiveArrays = {
         string: 'string[]',
         date:   'date[]',
         data:   'data[]',
-        decimal: 'decimal[]',
-        oid:    'object id[]',
+        decimal128: 'decimal128[]',
+        objectId:    'objectId[]',
 
         optBool:   'bool?[]',
         optInt:    'int?[]',
@@ -194,8 +194,8 @@ exports.PrimitiveArrays = {
         optString: 'string?[]',
         optDate:   'date?[]',
         optData:   'data?[]',
-        optDecimal: 'decimal?[]',
-        optOid:    'object id?[]'
+        optDecimal128: 'decimal128?[]',
+        optObjectId:    'objectId?[]'
     }
 };
 
@@ -334,7 +334,9 @@ exports.LinkingObjectsObject = {
 
 exports.ParentObject = {
     name: 'ParentObject',
+    primaryKey: '_id',
     properties: {
+        _id:           'objectId?',
         id:            'int',
         name:          'NameObject[]'
     }
@@ -342,12 +344,32 @@ exports.ParentObject = {
 
 exports.NameObject = {
     name: 'NameObject',
+    primaryKey: '_id',
+    properties: {
+        _id:          'objectId?',
+        family:       'string',
+        given:        'string[]',
+        prefix:       'string[]'
+    }
+};
+
+exports.ParentObjectLocal = {
+    name: 'ParentObject',
+    properties: {
+        id:            'int',
+        name:          'NameObject[]'
+    }
+};
+
+exports.NameObjectLocal = {
+    name: 'NameObject',
     properties: {
         family:       'string',
         given:        'string[]',
         prefix:       'string[]'
     }
 };
+
 
 exports.MultiListObject = {
     name: 'MultiListObject',
@@ -420,6 +442,14 @@ exports.ContactSchema = {
     properties: {
         name: 'string',
         address: 'Address'
+    }
+};
+
+exports.HouseOwnerSchema = {
+    name: 'HouseOwner',
+    properties: {
+        name: 'string',
+        addresses: { type: "list", objectType: "Address" }
     }
 };
 

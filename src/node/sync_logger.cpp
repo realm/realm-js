@@ -18,16 +18,15 @@
 
 #include "sync_logger.hpp"
 
-#include "util/event_loop_signal.hpp"
+#include "util/scheduler.hpp"
 
 #include <realm/util/logger.hpp>
 
 #include <mutex>
+#include <queue>
 #include <stdexcept>
 #include <string>
 #include <utility>
-#include <set>
-#include <queue>
 
 using namespace realm;
 using namespace realm::node;
@@ -40,28 +39,27 @@ struct SyncLoggerMessage {
 
 class SyncLoggerQueue {
 public:
-    SyncLoggerQueue(v8::Isolate* v8_isolate, v8::Local<v8::Function> callback)
-        : m_log_uv_async([this] { log_uv_callback(); }) // Throws
-        , m_v8_isolate(v8_isolate)
-        , m_callback(v8_isolate, callback)
+    SyncLoggerQueue(Napi::Env env, Napi::Function callback)
+    : m_env(env), m_callback(Napi::Persistent(callback))
     {
+        m_scheduler->set_notify_callback([this] { log_uv_callback(); });
     }
 
 protected:
     void log_uv_callback();
     std::queue<SyncLoggerMessage> m_log_queue;
     std::mutex m_mutex;
-    EventLoopSignal<std::function<void()>> m_log_uv_async;
+    std::shared_ptr<util::Scheduler> m_scheduler = util::Scheduler::make_default();
 
 private:
-    v8::Isolate* m_v8_isolate;
-    v8::Persistent<v8::Function> m_callback;
+    Napi::Env m_env;
+    Napi::FunctionReference m_callback;
 };
 
 class SyncLogger : public realm::util::RootLogger, public SyncLoggerQueue {
 public:
-    SyncLogger(v8::Isolate* v8_isolate, v8::Local<v8::Function> callback)
-        : SyncLoggerQueue(v8_isolate, callback)
+    SyncLogger(Napi::Env env, Napi::Function callback)
+        : SyncLoggerQueue(env, callback)
     {
     }
 
@@ -71,10 +69,8 @@ protected:
 
 void SyncLoggerQueue::log_uv_callback()
 {
-    // This function is always executed by the Node.js event loop
-    // thread.
-    v8::HandleScope scope(m_v8_isolate);
-    v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(m_v8_isolate, m_callback);
+    // This function is always executed by the Node.js event loop thread.
+    Napi::HandleScope scope(m_env);
 
     std::queue<SyncLoggerMessage> popped;
     {
@@ -83,10 +79,12 @@ void SyncLoggerQueue::log_uv_callback()
     }
 
     while (!popped.empty()) {
-        v8::Local<v8::Value> argv[] = {v8::Integer::New(m_v8_isolate, static_cast<int>(popped.front().m_level)),
-                                       v8::String::NewFromUtf8(m_v8_isolate, popped.front().m_message.c_str())};
-
-        callback->Call(m_v8_isolate->GetCurrentContext(), v8::Null(m_v8_isolate), 2, argv);
+        m_callback.Call(m_env.Null(),
+            {
+                Napi::Number::New(m_env, static_cast<int>(popped.front().m_level)),
+                Napi::String::New(m_env, popped.front().m_message.c_str())
+            }
+        );
 
         popped.pop();
     }
@@ -96,16 +94,17 @@ void SyncLogger::do_log(realm::util::Logger::Level level, std::string message)
 {
     std::lock_guard<std::mutex> lock(m_mutex); // Throws
     m_log_queue.push({std::move(message), level});
-    m_log_uv_async.notify();
+    m_scheduler->notify();
 }
 
 } // anonymous namespace
 
 std::unique_ptr<util::Logger> realm::node::SyncLoggerFactory::make_logger(util::Logger::Level level)
 {
-    v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(m_v8_isolate, m_callback);
+    Napi::HandleScope scope(m_env);
+    Napi::Function callback = m_callback.Value();
 
-    auto logger = std::make_unique<SyncLogger>(m_v8_isolate, callback); // Throws
+    auto logger = std::make_unique<SyncLogger>(m_env, callback); // Throws
     logger->set_level_threshold(level);
     return std::unique_ptr<util::Logger>(logger.release());
 }

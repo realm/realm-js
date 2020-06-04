@@ -63,17 +63,26 @@ class Protected<JSValueRef> {
 
   public:
     Protected() {}
+
     Protected(const Protected<JSValueRef> &other) : Protected(other.m_context, other.m_value) {}
+    
     Protected(Protected<JSValueRef> &&other) : m_context(other.m_context), m_value(other.m_value) {
         other.m_context = nullptr;
         other.m_value = nullptr;
     }
+
     Protected(JSContextRef ctx, JSValueRef value) : m_context(JSContextGetGlobalContext(ctx)), m_value(value) {
+        JSGlobalContextRetain(m_context);
         JSValueProtect(m_context, m_value);
     }
+
     ~Protected() {
         if (m_value) {
             JSValueUnprotect(m_context, m_value);
+        }
+
+        if (m_context) {
+            JSGlobalContextRelease(m_context);
         }
     }
     operator JSValueRef() const {

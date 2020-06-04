@@ -35,9 +35,17 @@
 		02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EBD1C88F17D007F774C /* shared_realm.cpp */; };
 		02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
+		3F50A4492447C0A0003A6F4C /* scheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F50A4462447C09D003A6F4C /* scheduler.cpp */; };
 		3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A911F58BDFF00D4855B /* uuid.cpp */; };
-		3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */; };
 		3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */; };
+		42D9B5F52465185C00AB3349 /* app_credentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57B224640AE4008679D5 /* app_credentials.cpp */; };
+		42D9B5F72465185C00AB3349 /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BB24640AE4008679D5 /* app.cpp */; };
+		42D9B5F82465185D00AB3349 /* generic_network_transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57C024640AE5008679D5 /* generic_network_transport.cpp */; };
+		42D9B5F92465185D00AB3349 /* remote_mongo_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BA24640AE4008679D5 /* remote_mongo_client.cpp */; };
+		42D9B5FA2465185D00AB3349 /* remote_mongo_collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57B324640AE4008679D5 /* remote_mongo_collection.cpp */; };
+		42D9B5FB2465185D00AB3349 /* remote_mongo_database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BD24640AE5008679D5 /* remote_mongo_database.cpp */; };
+		42D9B5FC2465185D00AB3349 /* bson.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42D9B5F1246511F300AB3349 /* bson.cpp */; };
+		42D9B5FE2465185D00AB3349 /* regular_expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42D9B5EF246511F300AB3349 /* regular_expression.cpp */; };
 		4BA4036023C6664700DE6856 /* object_changeset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4BA4035F23C6664700DE6856 /* object_changeset.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
 		504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */; };
@@ -89,12 +97,7 @@
 		02022A481DA474A7000F0C4F /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = weak_realm_notifier.hpp; sourceTree = "<group>"; };
 		02022A4A1DA475A9000F0C4F /* weak_realm_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = weak_realm_notifier.cpp; sourceTree = "<group>"; };
 		02022A4C1DA475C0000F0C4F /* placeholder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = placeholder.cpp; path = src/placeholder.cpp; sourceTree = "<group>"; };
-		02022A6D1DA47EC8000F0C4F /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = event_loop_signal.hpp; sourceTree = "<group>"; };
-		02022A6F1DA47EC8000F0C4F /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = event_loop_signal.hpp; sourceTree = "<group>"; };
 		02022A701DA47EC8000F0C4F /* atomic_shared_ptr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = atomic_shared_ptr.hpp; sourceTree = "<group>"; };
-		02022A721DA47EC8000F0C4F /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = event_loop_signal.hpp; sourceTree = "<group>"; };
-		02022A761DA47EC8000F0C4F /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = event_loop_signal.hpp; sourceTree = "<group>"; };
-		02022A781DA47EC8000F0C4F /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = event_loop_signal.hpp; sourceTree = "<group>"; };
 		022BF0FF1E7266C800F382F1 /* binding_callback_thread_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = binding_callback_thread_observer.cpp; path = src/binding_callback_thread_observer.cpp; sourceTree = "<group>"; };
 		022BF1001E7266C800F382F1 /* binding_callback_thread_observer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_callback_thread_observer.hpp; path = src/binding_callback_thread_observer.hpp; sourceTree = "<group>"; };
 		02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmJSCoreTests.m; path = ios/RealmJSCoreTests.m; sourceTree = "<group>"; };
@@ -165,17 +168,52 @@
 		02F59EDC1C88F2BB007F774C /* realm_coordinator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = realm_coordinator.hpp; sourceTree = "<group>"; };
 		02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transact_log_handler.cpp; sourceTree = "<group>"; };
 		02F59EDE1C88F2BB007F774C /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = transact_log_handler.hpp; sourceTree = "<group>"; };
-		3F8D962D2203B67E00327C8C /* fifo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fifo.cpp; sourceTree = "<group>"; };
-		3F8D962E2203B67E00327C8C /* fifo.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fifo.hpp; sourceTree = "<group>"; };
+		3F50A43C2447C09D003A6F4C /* copyable_atomic.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = copyable_atomic.hpp; sourceTree = "<group>"; };
+		3F50A43D2447C09D003A6F4C /* event_loop_dispatcher.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = event_loop_dispatcher.hpp; sourceTree = "<group>"; };
+		3F50A43F2447C09D003A6F4C /* scheduler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = scheduler.hpp; sourceTree = "<group>"; };
+		3F50A4412447C09D003A6F4C /* scheduler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = scheduler.hpp; sourceTree = "<group>"; };
+		3F50A4432447C09D003A6F4C /* scheduler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = scheduler.hpp; sourceTree = "<group>"; };
+		3F50A4442447C09D003A6F4C /* scheduler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = scheduler.hpp; sourceTree = "<group>"; };
+		3F50A4452447C09D003A6F4C /* checked_mutex.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = checked_mutex.hpp; sourceTree = "<group>"; };
+		3F50A4462447C09D003A6F4C /* scheduler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = scheduler.cpp; sourceTree = "<group>"; };
+		3F50A4482447C09D003A6F4C /* scheduler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = scheduler.hpp; sourceTree = "<group>"; };
 		3FCE2A871F58BDE500D4855B /* object_accessor_impl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = object_accessor_impl.hpp; sourceTree = "<group>"; };
 		3FCE2A8C1F58BDFF00D4855B /* aligned_union.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = aligned_union.hpp; sourceTree = "<group>"; };
 		3FCE2A8E1F58BDFF00D4855B /* tagged_bool.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = tagged_bool.hpp; sourceTree = "<group>"; };
-		3FCE2A8F1F58BDFF00D4855B /* time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = time.hpp; sourceTree = "<group>"; };
 		3FCE2A901F58BDFF00D4855B /* uuid.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = uuid.hpp; sourceTree = "<group>"; };
 		3FCE2A911F58BDFF00D4855B /* uuid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uuid.cpp; sourceTree = "<group>"; };
-		3FCE2A941F58BE1D00D4855B /* sync_permission.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_permission.hpp; path = src/sync/sync_permission.hpp; sourceTree = "<group>"; };
-		3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_permission.cpp; path = src/sync/sync_permission.cpp; sourceTree = "<group>"; };
 		3FCE2A991F58BE3600D4855B /* feature_checks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = feature_checks.hpp; path = "object-store/src/feature_checks.hpp"; sourceTree = SOURCE_ROOT; };
+		42BD57A824640A94008679D5 /* js_app.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_app.hpp; sourceTree = "<group>"; };
+		42BD57A924640A94008679D5 /* js_app_credentials.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_app_credentials.hpp; sourceTree = "<group>"; };
+		42BD57AA24640A94008679D5 /* js_username_password_provider.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_username_password_provider.hpp; sourceTree = "<group>"; };
+		42BD57AB24640A94008679D5 /* js_user.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_user.hpp; sourceTree = "<group>"; };
+		42BD57AC24640A94008679D5 /* js_network_transport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_network_transport.hpp; sourceTree = "<group>"; };
+		42BD57AD24640A95008679D5 /* js_sync_util.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_sync_util.hpp; sourceTree = "<group>"; };
+		42BD57AE24640A95008679D5 /* js_user_apikey_provider.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_user_apikey_provider.hpp; sourceTree = "<group>"; };
+		42BD57AF24640AA8008679D5 /* keypath_helpers.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = keypath_helpers.hpp; path = src/keypath_helpers.hpp; sourceTree = "<group>"; };
+		42BD57B024640AE4008679D5 /* generic_network_transport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = generic_network_transport.hpp; path = src/sync/generic_network_transport.hpp; sourceTree = "<group>"; };
+		42BD57B124640AE4008679D5 /* app_credentials.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = app_credentials.hpp; path = src/sync/app_credentials.hpp; sourceTree = "<group>"; };
+		42BD57B224640AE4008679D5 /* app_credentials.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = app_credentials.cpp; path = src/sync/app_credentials.cpp; sourceTree = "<group>"; };
+		42BD57B324640AE4008679D5 /* remote_mongo_collection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = remote_mongo_collection.cpp; path = src/sync/remote_mongo_collection.cpp; sourceTree = "<group>"; };
+		42BD57B424640AE4008679D5 /* remote_mongo_database.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = remote_mongo_database.hpp; path = src/sync/remote_mongo_database.hpp; sourceTree = "<group>"; };
+		42BD57B524640AE4008679D5 /* app.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = app.hpp; path = src/sync/app.hpp; sourceTree = "<group>"; };
+		42BD57B724640AE4008679D5 /* remote_mongo_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = remote_mongo_collection.hpp; path = src/sync/remote_mongo_collection.hpp; sourceTree = "<group>"; };
+		42BD57B824640AE4008679D5 /* app_utils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = app_utils.hpp; path = src/sync/app_utils.hpp; sourceTree = "<group>"; };
+		42BD57B924640AE4008679D5 /* app_service_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = app_service_client.hpp; path = src/sync/app_service_client.hpp; sourceTree = "<group>"; };
+		42BD57BA24640AE4008679D5 /* remote_mongo_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = remote_mongo_client.cpp; path = src/sync/remote_mongo_client.cpp; sourceTree = "<group>"; };
+		42BD57BB24640AE4008679D5 /* app.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = app.cpp; path = src/sync/app.cpp; sourceTree = "<group>"; };
+		42BD57BC24640AE5008679D5 /* async_open_task.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = async_open_task.hpp; path = src/sync/async_open_task.hpp; sourceTree = "<group>"; };
+		42BD57BD24640AE5008679D5 /* remote_mongo_database.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = remote_mongo_database.cpp; path = src/sync/remote_mongo_database.cpp; sourceTree = "<group>"; };
+		42BD57BE24640AE5008679D5 /* remote_mongo_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = remote_mongo_client.hpp; path = src/sync/remote_mongo_client.hpp; sourceTree = "<group>"; };
+		42BD57BF24640AE5008679D5 /* auth_request_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = auth_request_client.hpp; path = src/sync/auth_request_client.hpp; sourceTree = "<group>"; };
+		42BD57C024640AE5008679D5 /* generic_network_transport.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = generic_network_transport.cpp; path = src/sync/generic_network_transport.cpp; sourceTree = "<group>"; };
+		42D9B5EC246511F200AB3349 /* indexed_map.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = indexed_map.hpp; sourceTree = "<group>"; };
+		42D9B5ED246511F200AB3349 /* max_key.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = max_key.hpp; sourceTree = "<group>"; };
+		42D9B5EE246511F200AB3349 /* min_key.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = min_key.hpp; sourceTree = "<group>"; };
+		42D9B5EF246511F300AB3349 /* regular_expression.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = regular_expression.cpp; sourceTree = "<group>"; };
+		42D9B5F0246511F300AB3349 /* regular_expression.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = regular_expression.hpp; sourceTree = "<group>"; };
+		42D9B5F1246511F300AB3349 /* bson.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bson.cpp; sourceTree = "<group>"; };
+		42D9B5F4246511F300AB3349 /* bson.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = bson.hpp; sourceTree = "<group>"; };
 		4BA4035F23C6664700DE6856 /* object_changeset.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object_changeset.cpp; path = "object-store/src/object_changeset.cpp"; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
@@ -189,7 +227,6 @@
 		504CF85B1EBCAE3600A9A4B6 /* sync_file.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = sync_file.hpp; sourceTree = "<group>"; };
 		504CF85C1EBCAE3600A9A4B6 /* sync_metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sync_metadata.cpp; sourceTree = "<group>"; };
 		504CF85D1EBCAE3600A9A4B6 /* sync_metadata.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = sync_metadata.hpp; sourceTree = "<group>"; };
-		5D02C7781E1C83650048C13E /* execution_context_id.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = execution_context_id.hpp; path = src/execution_context_id.hpp; sourceTree = "<group>"; };
 		5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_safe_reference.cpp; path = src/thread_safe_reference.cpp; sourceTree = "<group>"; };
 		5D02C77A1E1C83650048C13E /* thread_safe_reference.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = thread_safe_reference.hpp; path = src/thread_safe_reference.hpp; sourceTree = "<group>"; };
 		5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = jsc_value.cpp; sourceTree = "<group>"; };
@@ -296,17 +333,19 @@
 		02022A6B1DA47EC8000F0C4F /* util */ = {
 			isa = PBXGroup;
 			children = (
+				42D9B5EB246511D300AB3349 /* bson */,
 				02022A6C1DA47EC8000F0C4F /* android */,
 				02022A6E1DA47EC8000F0C4F /* apple */,
 				02022A751DA47EC8000F0C4F /* generic */,
 				02022A771DA47EC8000F0C4F /* uv */,
 				3FCE2A8C1F58BDFF00D4855B /* aligned_union.hpp */,
 				02022A701DA47EC8000F0C4F /* atomic_shared_ptr.hpp */,
-				02022A721DA47EC8000F0C4F /* event_loop_signal.hpp */,
-				3F8D962D2203B67E00327C8C /* fifo.cpp */,
-				3F8D962E2203B67E00327C8C /* fifo.hpp */,
+				3F50A4452447C09D003A6F4C /* checked_mutex.hpp */,
+				3F50A43C2447C09D003A6F4C /* copyable_atomic.hpp */,
+				3F50A43D2447C09D003A6F4C /* event_loop_dispatcher.hpp */,
+				3F50A4462447C09D003A6F4C /* scheduler.cpp */,
+				3F50A4442447C09D003A6F4C /* scheduler.hpp */,
 				3FCE2A8E1F58BDFF00D4855B /* tagged_bool.hpp */,
-				3FCE2A8F1F58BDFF00D4855B /* time.hpp */,
 				3FCE2A911F58BDFF00D4855B /* uuid.cpp */,
 				3FCE2A901F58BDFF00D4855B /* uuid.hpp */,
 			);
@@ -314,41 +353,16 @@
 			path = src/util;
 			sourceTree = "<group>";
 		};
-		02022A6C1DA47EC8000F0C4F /* android */ = {
-			isa = PBXGroup;
-			children = (
-				02022A6D1DA47EC8000F0C4F /* event_loop_signal.hpp */,
-			);
-			path = android;
-			sourceTree = "<group>";
-		};
-		02022A6E1DA47EC8000F0C4F /* apple */ = {
-			isa = PBXGroup;
-			children = (
-				02022A6F1DA47EC8000F0C4F /* event_loop_signal.hpp */,
-			);
-			path = apple;
-			sourceTree = "<group>";
-		};
-		02022A751DA47EC8000F0C4F /* generic */ = {
-			isa = PBXGroup;
-			children = (
-				02022A761DA47EC8000F0C4F /* event_loop_signal.hpp */,
-			);
-			path = generic;
-			sourceTree = "<group>";
-		};
-		02022A771DA47EC8000F0C4F /* uv */ = {
-			isa = PBXGroup;
-			children = (
-				02022A781DA47EC8000F0C4F /* event_loop_signal.hpp */,
-			);
-			path = uv;
-			sourceTree = "<group>";
-		};
 		0270BC3D1B7CFBFD00010E03 /* RealmJS */ = {
 			isa = PBXGroup;
 			children = (
+				42BD57A924640A94008679D5 /* js_app_credentials.hpp */,
+				42BD57A824640A94008679D5 /* js_app.hpp */,
+				42BD57AC24640A94008679D5 /* js_network_transport.hpp */,
+				42BD57AD24640A95008679D5 /* js_sync_util.hpp */,
+				42BD57AE24640A95008679D5 /* js_user_apikey_provider.hpp */,
+				42BD57AB24640A94008679D5 /* js_user.hpp */,
+				42BD57AA24640A94008679D5 /* js_username_password_provider.hpp */,
 				F62A35131C18E6E2004A917D /* iOS */,
 				F6874A441CAD2ACD00EEEE36 /* JSC */,
 				F6BCCFDF1C83809A00FE31AE /* lib */,
@@ -379,13 +393,11 @@
 		02B58CA71AE99CEB009B348C = {
 			isa = PBXGroup;
 			children = (
-				832C1D2E229D3035001A20C1 /* async_open_task.cpp */,
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
 				02B58CB21AE99CEC009B348C /* Products */,
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
 				02B58CC01AE99CEC009B348C /* RealmJSTests */,
 				F6C3FBB41BF680D000E6FFD4 /* Vendor */,
-				424B66B12408619D0065F963 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -442,13 +454,27 @@
 		02E315CC1DB80DE000555337 /* sync */ = {
 			isa = PBXGroup;
 			children = (
+				42BD57B224640AE4008679D5 /* app_credentials.cpp */,
+				42BD57B124640AE4008679D5 /* app_credentials.hpp */,
+				42BD57B924640AE4008679D5 /* app_service_client.hpp */,
+				42BD57B824640AE4008679D5 /* app_utils.hpp */,
+				42BD57BB24640AE4008679D5 /* app.cpp */,
+				42BD57B524640AE4008679D5 /* app.hpp */,
+				42BD57BC24640AE5008679D5 /* async_open_task.hpp */,
+				42BD57BF24640AE5008679D5 /* auth_request_client.hpp */,
+				42BD57C024640AE5008679D5 /* generic_network_transport.cpp */,
+				42BD57B024640AE4008679D5 /* generic_network_transport.hpp */,
+				42BD57BA24640AE4008679D5 /* remote_mongo_client.cpp */,
+				42BD57BE24640AE5008679D5 /* remote_mongo_client.hpp */,
+				42BD57B324640AE4008679D5 /* remote_mongo_collection.cpp */,
+				42BD57B724640AE4008679D5 /* remote_mongo_collection.hpp */,
+				42BD57BD24640AE5008679D5 /* remote_mongo_database.cpp */,
+				42BD57B424640AE4008679D5 /* remote_mongo_database.hpp */,
 				504CF8521EBCAE3600A9A4B6 /* impl */,
 				02E315CD1DB80DF200555337 /* sync_client.hpp */,
 				02E315C21DB80DDD00555337 /* sync_config.hpp */,
 				02E315C31DB80DDD00555337 /* sync_manager.cpp */,
 				02E315C41DB80DDD00555337 /* sync_manager.hpp */,
-				3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */,
-				3FCE2A941F58BE1D00D4855B /* sync_permission.hpp */,
 				02E315C51DB80DDD00555337 /* sync_session.cpp */,
 				02E315C61DB80DDD00555337 /* sync_session.hpp */,
 				02E315C71DB80DDD00555337 /* sync_user.cpp */,
@@ -457,12 +483,58 @@
 			name = sync;
 			sourceTree = "<group>";
 		};
-		424B66B12408619D0065F963 /* Recovered References */ = {
+		3F50A43B2447C07F003A6F4C /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
 				4BA4035F23C6664700DE6856 /* object_changeset.cpp */,
 			);
 			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		42D9B5EB246511D300AB3349 /* bson */ = {
+			isa = PBXGroup;
+			children = (
+				42D9B5F1246511F300AB3349 /* bson.cpp */,
+				42D9B5F4246511F300AB3349 /* bson.hpp */,
+				42D9B5EC246511F200AB3349 /* indexed_map.hpp */,
+				42D9B5ED246511F200AB3349 /* max_key.hpp */,
+				42D9B5EE246511F200AB3349 /* min_key.hpp */,
+				42D9B5EF246511F300AB3349 /* regular_expression.cpp */,
+				42D9B5F0246511F300AB3349 /* regular_expression.hpp */,
+			);
+			path = bson;
+			sourceTree = "<group>";
+		};
+		3F50A43E2447C09D003A6F4C /* uv */ = {
+			isa = PBXGroup;
+			children = (
+				3F50A43F2447C09D003A6F4C /* scheduler.hpp */,
+			);
+			path = uv;
+			sourceTree = "<group>";
+		};
+		3F50A4402447C09D003A6F4C /* generic */ = {
+			isa = PBXGroup;
+			children = (
+				3F50A4412447C09D003A6F4C /* scheduler.hpp */,
+			);
+			path = generic;
+			sourceTree = "<group>";
+		};
+		3F50A4422447C09D003A6F4C /* android */ = {
+			isa = PBXGroup;
+			children = (
+				3F50A4432447C09D003A6F4C /* scheduler.hpp */,
+			);
+			path = android;
+			sourceTree = "<group>";
+		};
+		3F50A4472447C09D003A6F4C /* apple */ = {
+			isa = PBXGroup;
+			children = (
+				3F50A4482447C09D003A6F4C /* scheduler.hpp */,
+			);
+			path = apple;
 			sourceTree = "<group>";
 		};
 		504CF8521EBCAE3600A9A4B6 /* impl */ = {
@@ -504,6 +576,7 @@
 		F62A35141C18E783004A917D /* Object Store */ = {
 			isa = PBXGroup;
 			children = (
+				42BD57AF24640AA8008679D5 /* keypath_helpers.hpp */,
 				F63117EA1CEB0BFA00ECB2DE /* impl */,
 				02E315CC1DB80DE000555337 /* sync */,
 				02022A6B1DA47EC8000F0C4F /* util */,
@@ -512,7 +585,6 @@
 				02F59EAE1C88F17D007F774C /* binding_context.hpp */,
 				02414B961CE6AADD00A8669F /* collection_notifications.cpp */,
 				02414B971CE6AADD00A8669F /* collection_notifications.hpp */,
-				5D02C7781E1C83650048C13E /* execution_context_id.hpp */,
 				3FCE2A991F58BE3600D4855B /* feature_checks.hpp */,
 				02F59EAF1C88F17D007F774C /* index_set.cpp */,
 				02F59EB01C88F17D007F774C /* index_set.hpp */,
@@ -865,6 +937,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				42D9B5F52465185C00AB3349 /* app_credentials.cpp in Sources */,
+				42D9B5F72465185C00AB3349 /* app.cpp in Sources */,
+				42D9B5F82465185D00AB3349 /* generic_network_transport.cpp in Sources */,
+				42D9B5F92465185D00AB3349 /* remote_mongo_client.cpp in Sources */,
+				42D9B5FA2465185D00AB3349 /* remote_mongo_collection.cpp in Sources */,
+				42D9B5FB2465185D00AB3349 /* remote_mongo_database.cpp in Sources */,
+				42D9B5FC2465185D00AB3349 /* bson.cpp in Sources */,
+				42D9B5FE2465185D00AB3349 /* regular_expression.cpp in Sources */,
 				832C1D2F229D3035001A20C1 /* async_open_task.cpp in Sources */,
 				3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */,
 				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,
@@ -896,7 +976,6 @@
 				02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */,
 				02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */,
 				504CF8611EBCAE3600A9A4B6 /* sync_metadata.cpp in Sources */,
-				3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */,
 				02E315CA1DB80DDD00555337 /* sync_session.cpp in Sources */,
 				02E315CB1DB80DDD00555337 /* sync_user.cpp in Sources */,
 				504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */,
@@ -936,7 +1015,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CC = "$(SRCROOT)/../scripts/ccache-clang.sh";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
-				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
@@ -959,7 +1038,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4.0.0;
+				CURRENT_PROJECT_VERSION = 10.0.0;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -987,8 +1066,17 @@
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm",
+				);
+				"HEADER_SEARCH_PATHS[arch=*]" = (
+					"$(SRCROOT)/object-store/external/json",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
@@ -1009,7 +1097,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CC = "$(SRCROOT)/../scripts/ccache-clang.sh";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
-				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
@@ -1032,7 +1120,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4.0.0;
+				CURRENT_PROJECT_VERSION = 10.0.0;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1055,8 +1143,10 @@
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -1120,6 +1210,7 @@
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(inherited)",
@@ -1148,6 +1239,7 @@
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(inherited)",

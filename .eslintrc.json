@@ -1,7 +1,7 @@
 {
   "root": true,
   "env": {
-    "es6": true,
+    "es2017": true,
     "node": true
   },
   "extends": "eslint:recommended",
@@ -10,16 +10,13 @@
     "no-empty": 0,
     "no-console": 0,
     "no-unused-vars": [
-      "warn",
-      {
+      "warn", {
         "varsIgnorePattern": "^_",
         "args": "none"
       }
     ],
-    "strict": [
-      2,
-      "global"
-    ]
+    "strict": [2, "global"],
+    "quotes": [1, "double"]
   },
   "settings": {
     "react": {

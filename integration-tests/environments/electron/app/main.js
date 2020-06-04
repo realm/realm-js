@@ -40,7 +40,13 @@ app.on("ready", () => {
     if (processType === "main") {
         require("./mocha.js")(mochaRemoteServerURL, "main");
     } else if (processType === "renderer") {
-        mainWindow = new BrowserWindow({ show: false });
+        mainWindow = new BrowserWindow({ 
+            show: false, 
+            webPreferences: {
+                nodeIntegration: true
+            }
+        });
+        
         // Load the index.html of the app.
         mainWindow.loadURL(url.format({
             pathname: path.join(__dirname, "index.html"),

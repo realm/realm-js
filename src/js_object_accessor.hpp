@@ -62,6 +62,24 @@ public:
     , m_object_schema(collection.get_type() == realm::PropertyType::Object ? &collection.get_object_schema() : nullptr)
     { }
 
+    NativeAccessor(NativeAccessor& na, Obj parent, Property const& prop)
+        : m_ctx(na.m_ctx)
+        , m_realm(na.m_realm)
+        , m_parent(std::move(parent))
+        , m_property(&prop)
+        , m_object_schema(nullptr)
+    {
+        if (prop.type == realm::PropertyType::Object) {
+            auto schema = m_realm->schema().find(prop.object_type);
+            if (schema != m_realm->schema().end()) {
+			    m_object_schema = &*schema;
+            }
+        }
+        else {
+            m_object_schema = na.m_object_schema;
+        }
+    }
+
     NativeAccessor(NativeAccessor& parent, const Property& prop)
 		: m_ctx(parent.m_ctx)
 		, m_realm(parent.m_realm)
@@ -72,10 +90,6 @@ public:
 			m_object_schema = &*schema;
 		}
 	}
-
-    bool is_embedded() const {
-        return m_object_schema ? bool(m_object_schema->is_embedded) : false;
-    }
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
@@ -98,10 +112,9 @@ public:
     template<typename T>
     T unbox(ValueType value, realm::CreatePolicy policy = realm::CreatePolicy::Skip, ObjKey current_obj = ObjKey());
 
-    Obj unbox_embedded(ValueType value, CreatePolicy policy, Obj& parent, ColKey col, size_t ndx) {
-        return realm::Object::create_embedded(*this, m_realm, *m_object_schema, value, policy, parent, col, ndx).obj();
+    Obj create_embedded_object() {
+        return m_parent.create_and_set_linked_object(m_property->column_key);
     }
-
 
     template<typename T>
     util::Optional<T> unbox_optional(ValueType value) {
@@ -162,7 +175,7 @@ public:
     bool is_same_list(realm::List const& list, ValueType const& value) const noexcept {
         auto object = Value::validated_to_object(m_ctx, value);
         if (js::Object<JSEngine>::template is_instance<ListClass<JSEngine>>(m_ctx, object)) {
-            return list == *get_internal<JSEngine, ListClass<JSEngine>>(object);
+            return list == *get_internal<JSEngine, ListClass<JSEngine>>(m_ctx, object);
         }
         return false;
     }
@@ -178,10 +191,11 @@ public:
 private:
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
+    Obj m_parent;
+    const Property* m_property = nullptr;
     const ObjectSchema* m_object_schema;
     std::string m_string_buffer;
     OwnedBinaryData m_owned_binary_data;
-
     template<typename, typename>
     friend struct _impl::Unbox;
 };
@@ -345,16 +359,13 @@ struct Unbox<JSEngine, Obj> {
 
         auto object = Value::validated_to_object(ctx->m_ctx, value);
         if (js::Object<JSEngine>::template is_instance<RealmObjectClass<JSEngine>>(ctx->m_ctx, object)) {
-            auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(object);
+            auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(ctx->m_ctx, object);
             if (realm_object->realm() == ctx->m_realm) {
                 return realm_object->obj();
             }
-            if (policy == realm::CreatePolicy::Skip) {
+            if (!policy.create) {
                 throw std::runtime_error("Realm object is from another Realm");
             }
-        }
-        if (policy == realm::CreatePolicy::Skip) {
-            throw NonRealmObjectException();
         }
 
         if (Value::is_array(ctx->m_ctx, object)) {
@@ -414,7 +425,10 @@ void NativeAccessor<T>::print(std::string& str, ValueType const& value) {
     else if (Value::is_object(m_ctx, value)) {
         auto object = Value::to_object(m_ctx, value);
         if (Object::template is_instance<RealmObjectClass<T>>(m_ctx, object)) {
-            auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(m_ctx, object);
+            if (!realm_object) {
+                throw std::runtime_error("Invalid argument 'value'.");
+            }
             auto& object_schema = realm_object->get_object_schema();
             str += object_schema.name;
             str += "{";
