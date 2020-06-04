@@ -130,9 +130,9 @@ stage('test') {
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
 
-  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
+  //parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
+  //parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
@@ -584,7 +584,8 @@ def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer',
-               'REALM_SET_NVM_ALIAS=1']) {
+               'REALM_SET_NVM_ALIAS=1',
+               'USE_REALM_SYNC=0']) {
         doInside('./scripts/test.sh', target, postStep)
       }
     }

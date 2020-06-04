@@ -1329,7 +1329,7 @@ module.exports = {
             });
         });
 
-        let objects = realm.objects('ParentObject');
+        let objects = realm.objects('ParentObject').sorted([['id', false]])
         TestCase.assertEqual(objects.length, 2);
         TestCase.assertEqual(objects[0].name.length, 2);
         TestCase.assertEqual(objects[0].name[0].given.length, 2);
