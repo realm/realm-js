@@ -94,6 +94,8 @@ public:
     static void link_credentials(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void call_function(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void auth_api_keys(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void refresh_custom_data(ContextType, ObjectType, Arguments&, ReturnValue&);
+
 
     MethodMap<T> const methods = {
         {"logOut", wrap<logout>},
@@ -101,6 +103,7 @@ public:
         {"_linkCredentials", wrap<link_credentials>},
         {"_callFunction", wrap<call_function>},
         {"_authApiKeys", wrap<auth_api_keys>},
+        {"_refreshCustomData", wrap<refresh_custom_data>},
     };
 };
 
@@ -272,6 +275,28 @@ void UserClass<T>::auth_api_keys(ContextType ctx, ObjectType this_object, Argume
     args.validate_count(0);
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
     return_value.set(UserAPIKeyProviderClientClass<T>::create_instance(ctx, user->m_app, std::move(*user)));
+}
+
+template<typename T>
+void UserClass<T>::refresh_custom_data(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(1);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
+
+    user->m_app->refresh_custom_data(
+        *user,
+        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
+                            callback = Protected(ctx, callback),
+                            this_object = Protected(ctx, this_object)]
+                           (util::Optional<app::AppError> error) {
+            HANDLESCOPE(ctx)
+            Function::callback(ctx, callback, this_object, {
+                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
+                    {"message", Value::from_string(ctx, error->message)},
+                    {"code", Value::from_number(ctx, error->error_code.value())},
+                }),
+            });
+        }));
 }
 
 }

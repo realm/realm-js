@@ -35,8 +35,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
-const Decimal128 = require('bson').Decimal128;
-const ObjectId = require('bson').ObjectId;
+const { Decimal128, ObjectId, serialize } = require("bson");
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -480,7 +479,7 @@ module.exports = {
                     schema: [schemas.TestObject],
                     sync: {
                         user,
-                        partitionValue: '"LoLo"'
+                        partitionValue: serialize("LoLo")
                     },
                 };
                 TestCase.assertFalse(Realm.exists(config));

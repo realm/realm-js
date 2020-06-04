@@ -1,20 +1,26 @@
 10.0.0 Release notes (2020-3-26)
 =============================================================
-NOTE 1: Requires MacOS v10.14 (Mojave) to build.
+NOTE 1: This release brings many breaking changes and new features.
+NOTE 2: The old Realm Sync (against Realm Cloud and/or on-prim Realm Object Server) has been removed. The new Realm Sync works together with MongoDB Realm.
+NOTE 3: Deprecated methods have been removed.
 
 ### Breaking changes
 * `Realm.Sync.User` has been replaced by `Realm.User`.
-* `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([RJS-434](https://jira.mongodb.org/browse/RJS-434))
-* Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partitionValue` has been added to the `sync` configuration as a replacement. Read more [here](XXX). ([]())
+* `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([#2732](https://github.com/realm/realm-js/issues/2732))
+* Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partitionValue` has been added to the `sync` configuration as a replacement. Please read the documentation to get the full picture.
 * Permissions has been removed. You need to configure permissions through MongoDB Realm.
-* Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`, `Realm.Sync.setSyncLogger()`
-* `Realm.automaticSyncConfiguration()` has been removed.
+* Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`, `Realm.Sync.setSyncLogger()`, `Realm.automaticSyncConfiguration()`.
+* Renamed configuration option `custom_http_headers` to `customHttpHeaders`.
 
 ### Enhancements
 * Added support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
 * Added support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
 * Added support for embedded objects. ([#2676](https://github.com/realm/realm-js/issues/2676))
-* Added `Realm.App` and `Realm.Credentials`.
+* Added `Realm.App` with the following methods: `logIn()`, `currentUser()`, `allUsers()`, `switchUser()`, and `removeUser()`. A `Realm.App` instance represents a MongoDB Realm app. ([#2750](https://github.com/realm/realm-js/issues/2750) and [#2809](https://github.com/realm/realm-js/issues/2809))
+* Added `Realm.Credentials` which represents credentials MongoDB Realm users. It is the following methods: `emailPassword()`, `facebook`, `anonymous()`, `apple()`, `google()`, `custom()`, and `function()`. You must enable the credentials validation at MongoDB Realm before deploying your app. ([#2750](https://github.com/realm/realm-js/issues/2750) and [#2809](https://github.com/realm/realm-js/issues/2809))
+* Added auth providers `Realm.Auth.EmailPassword` and `Realm.Auth.APIKeys`. ([#2750](https://github.com/realm/realm-js/issues/2750) and [#2809](https://github.com/realm/realm-js/issues/2809))
+* Added support for `customData` readonly property to `Realm.User` objects. ([#2809](https://github.com/realm/realm-js/issues/2809))
+* Added support for calling server functions from `Realm.User` objects. ([#2809](https://github.com/realm/realm-js/issues/2809))
 
 ### Fixed
 * None.
@@ -25,28 +31,11 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Updated Realm Core from ??? to Realm Core v10.0.0-alpha.8.
-* Updated Realm Sync from ??? to Realm Sync v10.0.0-alpha.14.
+* Updated Realm Core from v6.0.5 to Realm Core v10.0.0-beta.1.
+* Updated Realm Sync from v5.0.5 to Realm Sync v10.0.0-beta.1.
 * Updated Realm Object Store to commit ec6ffd5cc149e403d252e9d615b4e6dab572fa89.
 * Created a package named "realm-app-importer", to be used by integration tests (ideally by other SDKs too).
 
-
-x.x.x Release notes (yyyy-MM-dd)
-=============================================================
-### Enhancements
-* Added support for `customData` readonly property to `Realm.User` objects.
-* Added support for calling server functions from `Realm.User` objects.
-
-### Fixed
-* It was not possible to make client resync if a table contained binary data.
-
-### Compatibility
-* Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
-* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
-
-### Internal
-* None.
 
 6.0.0 Release notes (2020-5-6)
 =============================================================

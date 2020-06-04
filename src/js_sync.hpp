@@ -732,7 +732,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
         std::string partition_value;
         if (!Value::is_undefined(ctx, partition_value_value)) {
-            partition_value = Value::validated_to_string(ctx, partition_value_value, "partitionValue");
+            // FIXME: we need a Value::validated_to_bson() function here
+            auto partition_bson = Value::to_bson(ctx, partition_value_value);
+            std::stringstream s;
+            s << partition_bson;
+            partition_value = s.str();
         }
 
         config.sync_config = std::make_shared<SyncConfig>(std::move(user), std::move(partition_value));
@@ -755,7 +759,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         config.sync_config->stop_policy = session_stop_policy;
 
         // Custom HTTP headers
-        ValueType sync_custom_http_headers_value = Object::get_property(ctx, sync_config_object, "custom_http_headers");
+        ValueType sync_custom_http_headers_value = Object::get_property(ctx, sync_config_object, "customHttpHeaders");
         if (!Value::is_undefined(ctx, sync_custom_http_headers_value)) {
             auto sync_custom_http_headers = Value::validated_to_object(ctx, sync_custom_http_headers_value);
             auto property_names = Object::get_property_names(ctx, sync_custom_http_headers);
