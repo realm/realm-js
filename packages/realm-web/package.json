@@ -4,6 +4,7 @@
   "description": "Authenticate and communicate with the MongoDB Realm platform, from your web-browser",
   "main": "dist/bundle.cjs.js",
   "module": "dist/bundle.es.js",
+  "browser": "dist/bundle.iife.js",
   "types": "dist/bundle.d.ts",
   "scripts": {
     "prepack": "npm run build",
@@ -62,6 +63,7 @@
     "realm-network-transport": "^0.6.0",
     "rollup": "^2.6.1",
     "rollup-plugin-dts": "^1.4.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "ts-node": "^8.8.2",
     "typescript": "file:../../node_modules/typescript"
   }

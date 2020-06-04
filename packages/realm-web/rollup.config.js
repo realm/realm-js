@@ -20,6 +20,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import resolve from "@rollup/plugin-node-resolve";
 import dts from "rollup-plugin-dts";
+import builtins from "rollup-plugin-node-builtins";
 
 import pkg from "./package.json";
 
@@ -44,6 +45,26 @@ export default [
             resolve(),
         ],
         external: ["bson"],
+    },
+    {
+        input: "src/index.ts",
+        output: [
+            {
+                file: pkg.browser,
+                name: "Realm",
+                format: "iife",
+            },
+        ],
+        plugins: [
+            typescript({
+                tsconfig: "tsconfig.build.json",
+            }),
+            builtins(),
+            resolve({
+                preferBuiltins: true,
+            }),
+            commonjs(),
+        ],
     },
     {
         input: "types/generated/index.d.ts",
