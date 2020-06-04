@@ -462,15 +462,8 @@ module.exports = {
             return;
         }
 
-        const appConfig = {
-            id: global.APPID,
-            url: global.APPURL,
-            timeout: 1000,
-            app: {
-                name: "default",
-                version: "0"
-            },
-        };
+        const appConfig = require('./support/testConfig').integrationAppConfig;
+
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
 
@@ -1591,15 +1584,8 @@ module.exports = {
             return;
         }
 
-        const appConfig = {
-            id: global.APPID,
-            url: global.APPURL,
-            timeout: 1000,
-            app: {
-                name: "default",
-                version: "0"
-            },
-        };
+        const appConfig = require('./support/testConfig').integrationAppConfig;
+
         let app = new Realm.App(appConfig);
         return app.logIn(Realm.Credentials.anonymous())
             .then(user => {

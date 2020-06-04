@@ -505,11 +505,9 @@ def doInside(script, target, postStep = null) {
       }
     }
     wrap([$class: 'AnsiColorBuildWrapper']) {
-      withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
         timeout(time: 1, unit: 'HOURS') {
-          sh "SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} bash ${script} ${target}"
+          sh "bash ${script} ${target}"
         }
-      }
     }
     if (postStep) {
        postStep.call()

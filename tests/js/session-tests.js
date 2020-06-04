@@ -31,7 +31,6 @@ const ObjectId = require('bson').ObjectID;
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
-const ObjectId = require('bson').ObjectID;
 const AppConfig = require('./support/testConfig');
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';

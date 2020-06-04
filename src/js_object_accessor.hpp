@@ -232,6 +232,9 @@ struct Unbox<JSEngine, double> {
 template<typename JSEngine>
 struct Unbox<JSEngine, Decimal128> {
     static Decimal128 call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        if (ctx->is_null(value)) {
+            return Decimal128(realm::null());
+        }
         return js::Value<JSEngine>::validated_to_decimal128(ctx->m_ctx, value, "Property");
     }
 };
@@ -268,13 +271,6 @@ template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<double>> {
     static util::Optional<double> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<double>(value);
-    }
-};
-
-template<typename JSEngine>
-struct Unbox<JSEngine, util::Optional<Decimal128>> {
-    static util::Optional<Decimal128> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        return ctx->template unbox_optional<Decimal128>(value);
     }
 };
 
