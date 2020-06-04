@@ -1546,7 +1546,6 @@ module.exports = {
     testManualCompactMultipleInstances: function() {
         const realm1 = new Realm({schema: [schemas.StringOnly]});
         const realm2 = new Realm({schema: [schemas.StringOnly]});
-        realm2.objects('StringOnlyObject');
         TestCase.assertFalse(realm1.compact());
     },
 
@@ -1906,18 +1905,18 @@ module.exports = {
     },
 
     testDecimal128: function() {
-        const realm = new Realm({schema: [schemas.DecimalObject]});
+        const realm = new Realm({schema: [schemas.Decimal128Object]});
 
         let numbers = [42, 3.1415, 6.022e23, -7, -100.2, 1.02E9];
 
         numbers.forEach(number => {
             let d = Decimal128.fromString(number.toString());
             realm.write(() => {
-                realm.create(schemas.DecimalObject.name, { decimalCol: d});
+                realm.create(schemas.Decimal128Object.name, { decimalCol: d});
             });
         });
 
-        let objects = realm.objects(schemas.DecimalObject.name);
+        let objects = realm.objects(schemas.Decimal128Object.name);
         TestCase.assertEqual(objects.length, numbers.length);
 
         for (let i = 0; i < numbers.length; i++) {
@@ -1930,18 +1929,18 @@ module.exports = {
     },
 
     testDecimal128_LargeNumbers: function() {
-        const realm = new Realm({schema: [schemas.DecimalObject]});
+        const realm = new Realm({schema: [schemas.Decimal128Object]});
         // Core doesn't support numbers like 9.99e+6143 yet.
         let numbers = ["1.02e+6102", "-1.02e+6102", "1.02e-6102", /*"9.99e+6143",*/ "1e-6142"];
 
         numbers.forEach(number => {
             let d = Decimal128.fromString(number);
             realm.write(() => {
-                realm.create(schemas.DecimalObject.name, { decimalCol: d});
+                realm.create(schemas.Decimal128Object.name, { decimalCol: d});
             });
         });
 
-        let objects = realm.objects(schemas.DecimalObject.name);
+        let objects = realm.objects(schemas.Decimal128Object.name);
         TestCase.assertEqual(objects.length, numbers.length);
 
         for (let i = 0; i < numbers.length; i++) {

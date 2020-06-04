@@ -309,14 +309,14 @@ module.exports = {
         TestCase.assertEqual(objects[1].boolCol, false, 'second element descending for boolCol');
         TestCase.assertEqual(objects[2].boolCol, false, 'third element descending for boolCol');
 
-        objects = objects.sorted('decimalCol', false);
+        objects = objects.sorted('decimal128Col', false);
         for (var i = 0; i < 3; i++) {
-            TestCase.assertEqual(objects[i].decimalCol.toString(), decimals[i].toString(), `element ${i} ascending for decimal`);
+            TestCase.assertEqual(objects[i].decimal128Col.toString(), decimals[i].toString(), `element ${i} ascending for decimal128`);
         }
 
-        objects = objects.sorted('decimalCol', true);
+        objects = objects.sorted('decimal128Col', true);
         for (var i = 0; i < 3; i++) {
-            TestCase.assertEqual(objects[i].decimalCol.toString(), decimals[2-i].toString(), `element ${i} descending for decimal`);
+            TestCase.assertEqual(objects[i].decimal128Col.toString(), decimals[2-i].toString(), `element ${i} descending for decimal128`);
         }
     },
 
