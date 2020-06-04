@@ -1314,15 +1314,17 @@ module.exports = {
         realm.write(() => {
             realm.create('ParentObject', {
                 id: 1,
+                _id: new ObjectId(), 
                 name: [
-                    { family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
-                    { family: 'Hansen', given: ['Ib'], prefix: [] }
+                    { _id: new ObjectId(), family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
+                    { _id: new ObjectId(), family: 'Hansen', given: ['Ib'], prefix: [] }
                 ]
             });
             realm.create('ParentObject', {
                 id: 2,
+                _id: new ObjectId(), 
                 name: [
-                    {family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
+                    {_id: new ObjectId(), family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
                 ]
             });
         });
