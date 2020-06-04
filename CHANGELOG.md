@@ -8,6 +8,7 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partitionValue` has been added to the `sync` configuration as a replacement. Read more [here](XXX). ([]())
 * Permissions has been removed. You need to configure permissions through MongoDB Realm.
 * Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`, `Realm.Sync.setSyncLogger()`
+* `Realm.automaticSyncConfiguration()` has been removed.
 
 ### Enhancements
 * Added support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))

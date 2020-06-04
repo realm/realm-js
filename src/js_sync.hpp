@@ -774,23 +774,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
         }
 
-        // default for query-based sync is manual and recover for full sync
-        ClientResyncMode clientResyncMode = realm::ClientResyncMode::Recover;
-        ValueType client_resync_mode_temp = Object::get_property(ctx, sync_config_object, "clientResyncMode");
-        if (!Value::is_undefined(ctx, client_resync_mode_temp)) {
-            std::string client_resync_mode = std::string(Value::validated_to_string(ctx, client_resync_mode_temp, "client_resync_mode"));
-            if (client_resync_mode == std::string("recover")) {
-                clientResyncMode = realm::ClientResyncMode::Recover;
-            } else if (client_resync_mode == std::string("manual")) {
-                clientResyncMode = realm::ClientResyncMode::Manual;
-            } else if (client_resync_mode == std::string("discard")) {
-                clientResyncMode = realm::ClientResyncMode::DiscardLocal;
-            } else {
-                throw std::invalid_argument("Unknown argument for clientResyncMode: " + client_resync_mode);
-            }
-        }
-        config.sync_config->client_resync_mode = clientResyncMode;
-
+        config.sync_config->client_resync_mode = realm::ClientResyncMode::Recover;
         config.schema_mode = SchemaMode::Additive;
         config.path = SyncManager::shared().path_for_realm(*(config.sync_config));
     }

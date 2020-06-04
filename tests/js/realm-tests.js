@@ -1546,6 +1546,7 @@ module.exports = {
     testManualCompactMultipleInstances: function() {
         const realm1 = new Realm({schema: [schemas.StringOnly]});
         const realm2 = new Realm({schema: [schemas.StringOnly]});
+        realm2.objects('StringOnlyObject');
         TestCase.assertFalse(realm1.compact());
     },
 
