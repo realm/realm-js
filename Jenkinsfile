@@ -559,11 +559,11 @@ def testLinux(target, postStep = null) {
         // if there's really a new feature you need from the latest stitch, upgrade this manually
         withRealmCloud(version: objectStoreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/src/object-store/tests/mongodb"]) { networkName ->
           reportStatus(reportName, 'PENDING', 'Build has started')
-          image.inside('-e HOME=/tmp') {
-            withEnv(['MONGODB_REALM_ENDPOINT="http://mongodb-realm"']) {
-              timeout(time: 1, unit: 'HOURS') {
-                sh "scripts/test.sh ${target}"
-              }
+          image.inside("-e HOME=/tmp -e MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\" --network=${networkName}") {
+            // sanity check the network to local stitch before continuing to compile everything
+            sh "curl http://mongodb-realm:9090"
+            timeout(time: 1, unit: 'HOURS') {
+              sh "scripts/test.sh ${target}"
             }
             if (postStep) {
               postStep.call()
