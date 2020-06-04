@@ -24,7 +24,7 @@ const os = require('os');
 const fetch = require('node-fetch');
 const HttpsProxyAgent = require('https-proxy-agent');
 const ini = require('ini');
-const decompress = require('decompress');
+const tar = require('tar');
 const crypto = require('crypto');
 
 const LOCKFILE_NAME = 'download-realm.lock';
@@ -111,11 +111,13 @@ function download(serverFolder, archive, destination) {
 function extract(downloadedArchive, targetFolder, archiveRootFolder) {
     console.log(`Extracting ${path.basename(downloadedArchive)} => ${targetFolder}`);
     if (!archiveRootFolder) {
-        return decompress(downloadedArchive, targetFolder);
+        ensureDirExists(targetFolder);
+        return tar.extract({ file: downloadedArchive, cwd: targetFolder });
     } else {
         const base = path.basename(downloadedArchive).split('.');
         const tempExtractLocation = path.resolve(getTempDir(), base.slice(0, base.length - 2).join('.'));
-        return decompress(downloadedArchive, tempExtractLocation)
+        ensureDirExists(tempExtractLocation);
+        return tar.extract({ file: downloadedArchive, cwd: tempExtractLocation })
             .then(() => fs.readdir(path.resolve(tempExtractLocation, archiveRootFolder)))
             .then(items => Promise.all(items.map(item => {
                 const source = path.resolve(tempExtractLocation, archiveRootFolder, item);
@@ -129,12 +131,15 @@ function extract(downloadedArchive, targetFolder, archiveRootFolder) {
 function acquire(desired, target) {
     const corePath = desired.CORE_ARCHIVE && path.resolve(getTempDir(), desired.CORE_ARCHIVE);
     const syncPath = desired.SYNC_ARCHIVE && path.resolve(getTempDir(), desired.SYNC_ARCHIVE);
+    const openSSLPath = desired.OPENSSL && path.resolve(getTempDir(), "openssl.tar.gz");
 
     return fs.emptyDir(target)
         .then(() => corePath && download(desired.CORE_SERVER_FOLDER, desired.CORE_ARCHIVE, corePath))
         .then(() => corePath && extract(corePath, target, desired.CORE_ARCHIVE_ROOT))
         .then(() => syncPath && download(desired.SYNC_SERVER_FOLDER, desired.SYNC_ARCHIVE, syncPath))
         .then(() => syncPath && extract(syncPath, target, desired.SYNC_ARCHIVE_ROOT))
+        .then(() => openSSLPath && download("openssl/1.1.1b/Linux/x86_64", "openssl.tgz", openSSLPath))
+        .then(() => openSSLPath && extract(openSSLPath, path.resolve(target, "openssl"), ""))
         .then(() => writeLockfile(target, desired))
 }
 
@@ -162,6 +167,7 @@ function getCoreRequirements(dependencies, options, required = {}) {
         case 'linux':
             required.CORE_SERVER_FOLDER += `/linux/${flavor}`;
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Linux-devel.tar.gz`;
+            required.OPENSSL = "https://static.realm.io/downloads/openssl/1.1.1b/Linux/x86_64/openssl.tgz";
             return required;
         default:
             throw new Error(`Unsupported core platform '${options.platform}'`);
@@ -189,6 +195,7 @@ function getSyncRequirements(dependencies, options, required = {}) {
         case 'linux':
             // flavor is ignored since we only publish Release mode
             required.SYNC_ARCHIVE = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}-Linux-devel.tar.gz`;
+            required.OPENSSL = "https://static.realm.io/downloads/openssl/1.1.1b/Linux/x86_64/openssl.tgz";
             return getCoreRequirements(dependencies, options, required);
         default:
             throw new Error(`Unsupported sync platform '${options.platform}'`);
@@ -236,6 +243,7 @@ const optionDefinitions = [
     { name: 'debug', type: Boolean },
     { name: 'force', type: Boolean },
 ];
+
 const options = require('command-line-args')(optionDefinitions);
 if (options.platform === '..\\win') {
     options.platform = 'win'; // handle gyp idiocy
@@ -256,8 +264,10 @@ ensureDirExists(getTempDir());
 const dependencies = ini.parse(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
 
 const requirements = (options.sync ? getSyncRequirements : getCoreRequirements)(dependencies, options);
+
 console.log('Resolved requirements:', requirements);
 console.log('Resolved options:', options);
+
 if (!shouldSkipAcquire(realmDir, requirements, options.force)) {
     acquire(requirements, realmDir)
         .then(() => console.log('Success'))

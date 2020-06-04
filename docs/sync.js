@@ -112,6 +112,16 @@ class Sync {
     static setLogLevel(level) { }
 
     /**
+     * Enable multiplexing multiple sync sessions over a single connection. 
+     * When having a lot of synchronized realms open the system might run out of file 
+     * descriptors because of all the open sockets to the server. Session multiplexing 
+     * is designed to alleviate that, but it might not work with a server configured with 
+     * fail-over. Only use if you're seeing errors about reaching the file descriptor limit
+     * and you know you are using many sync sessions.
+     */
+    static enableSessionMultiplexing() { }
+
+    /**
      * A callback passed to `Realm.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
      * @callback Realm.Sync~logCallback
      * @param {number} level The level of the log entry between 0 and 8 inclusively.
@@ -404,6 +414,36 @@ class User {
      * @type {string}
      */
     get token() { }
+
+    /**
+     * Gets this user's associated custom data. This is application-specific data provided by the server.
+     * @type {object?}
+     */
+    get customData() { }
+
+    /**
+     * Calls the named server function as this user.
+     * @param {string} name - name of the function to call
+     * @param {any[]} args - list of arguments to pass
+     */
+    call_function(name, args) { }
+    
+    /**
+     * Convenience wrapper around `call_function(name, [args])`
+     *
+     * @example
+     * // These are all equivalent:
+     * await user.call_function("do_thing", [a1, a2, a3]);
+     * await user.functions.do_thing(a1, a2, a3);
+     * await user.functions["do_thing"](a1, a2, a3);
+     *
+     * @example
+     * // It it legal to store the functions as first-class values:
+     * const do_thing = user.functions.do_thing;
+     * await do_thing(a1);
+     * await do_thing(a2);
+     */   
+    get functions() { }
 
     /**
      * Creates the configuration object required to open a synchronized Realm.

@@ -5,37 +5,28 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "lldb",
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
             "request": "launch",
-            "name": "Debug LLDB",
             "program": "node",
-            "windows": {
-                "program": "C:\\Progra~1\\nodejs\\node.exe"
-            },
-            "cwd": "${workspaceRoot}/tests",
             "args": [
-                "--inspect-brk=5858",
+                "--expose_gc",
                 "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
                 "spec/unit_tests.js",
                 "--filter=."
             ],
-            "stopOnEntry": true
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug LLDB only",
-            "program": "node",
-            "windows": {
-                "program": "C:\\Progra~1\\nodejs\\node.exe"
-            },
-            "args": [
-                "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
-                "spec/unit_tests.js",
-                "--filter=."
-            ],
-            "cwd": "${workspaceFolder}/tests",
-            "stopOnEntry": false,
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}/tests",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         },
         {
             "type": "node",
@@ -44,6 +35,7 @@
             "preLaunchTask": "rebuild-node-tests",
             "cwd": "${workspaceRoot}/tests",
             "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+            "runtimeArgs": ["--expose_gc"],
             "args": [
                 "spec/unit_tests.js",
                 "--filter=."
@@ -55,6 +47,7 @@
             "name": "Debug Node Unit Tests",
             "cwd": "${workspaceRoot}/tests",
             "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+            "runtimeArgs": ["--expose_gc"],
             "args": [
                 "spec/unit_tests.js",
                 "--filter=."
@@ -84,9 +77,9 @@
             ]
         },
         {
-            "name": "Debug LLDB + NodeJS",
+            "name": "Debug GDB + NodeJS",
             "configurations": [
-                "Debug LLDB",
+                "(gdb) Launch",
                 "Attach to Port"
             ]
         }

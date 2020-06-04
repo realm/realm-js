@@ -17,21 +17,36 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "node_init.hpp"
+#include "napi.h"
+
+#if !REALM_ENABLE_SYNC
+#pragma comment( lib, "ws2_32.lib")
+#endif
 
 #include "js_realm.hpp"
 
-namespace realm {
-namespace node {
+ namespace realm {
+ namespace node {
 
-static void init(v8::Local<v8::Object> exports, v8::Local<v8::Value> module,
-                 v8::Local<v8::Context> context) {
-    v8::Isolate* isolate = context->GetIsolate();
-    v8::Local<v8::Function> realm_constructor = js::RealmClass<Types>::create_constructor(isolate);
+static void napi_init(Napi::Env env, Napi::Object exports) {
+	node_class_init(env);
 
-    Nan::Set(exports, realm_constructor->GetName(), realm_constructor);
+	Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
+
+	std::string name = realm_constructor.Get("name").As<Napi::String>();
+	exports.Set(Napi::String::New(env, name), realm_constructor);
 }
 
 } // node
 } // realm
 
-NODE_MODULE_CONTEXT_AWARE(Realm, realm::node::init);
+ static Napi::Object NAPI_Init(Napi::Env env, Napi::Object exports) {
+	 realm::node::napi_init(env, exports);
+	 return exports;
+ }
+
+NODE_API_MODULE(realm, NAPI_Init)
+
+
+
+

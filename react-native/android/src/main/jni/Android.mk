@@ -80,14 +80,12 @@ LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_file.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_metadata.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/app.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/app_credentials.cpp
-LOCAL_SRC_FILES += src/object-store/src/sync/app_service_client.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_client.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_collection.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_database.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/generic_network_transport.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/bson/bson.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/bson/regular_expression.cpp
-LOCAL_SRC_FILES += src/object-store/src/util/bson/datetime.cpp
 endif
 
 LOCAL_C_INCLUDES := src

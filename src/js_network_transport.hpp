@@ -85,11 +85,11 @@ void ResponseHandlerClass<T>::on_success(ContextType ctx, ObjectType this_object
 
     args.validate_count(1);
 
-    auto response_handler = get_internal<T, ResponseHandlerClass<T>>(this_object);
+    auto response_handler = get_internal<T, ResponseHandlerClass<T>>(ctx, this_object);
     ObjectType response_object = Value::validated_to_object(ctx, args[0]);
 
     // Copy the response from JavaScript to an Object Store object
-    int http_status_code;
+    int http_status_code = 0;
     int custom_status_code = 0;
     std::map<std::string, std::string> headers;
     std::string body;
@@ -123,7 +123,9 @@ void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, 
     static const String error_message = "errorMessage";
     args.validate_count(1);
 
-    auto response_handler = get_internal<T, ResponseHandlerClass<T>>(this_object);
+    auto response_handler = get_internal<T, ResponseHandlerClass<T>>(ctx, this_object);
+
+    //FIXME
     ObjectType error_object = Value::validated_to_object(ctx, args[0]);
 
     // Copy the error from JavaScript to an Object Store response object
@@ -155,9 +157,7 @@ struct JavaScriptNetworkTransport : public JavaScriptNetworkTransportWrapper<T> 
     using Object = js::Object<T>;
     using Value = js::Value<T>;
 
-    JavaScriptNetworkTransport(ContextType ctx) : JavaScriptNetworkTransportWrapper<T>(ctx)  {
-        m_ctx = ctx;
-
+    JavaScriptNetworkTransport(ContextType ctx)  : JavaScriptNetworkTransportWrapper<T>(ctx) , m_ctx(ctx) {
         realm_constructor = Value::validated_to_object(m_ctx, Object::get_global(m_ctx, "Realm"));
         network_transport = Object::get_property(m_ctx, realm_constructor, "_networkTransport");
     };
@@ -200,6 +200,7 @@ private:
             case app::HttpMethod::post:  return "POST";
             case app::HttpMethod::del:   return "DEL";
             case app::HttpMethod::patch: return "PATCH";
+            default: throw std::runtime_error("Unknown HttpMethod argument");
         }
     }
 };

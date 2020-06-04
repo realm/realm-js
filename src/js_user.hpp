@@ -75,13 +75,15 @@ public:
     static void get_profile(ContextType, ObjectType, ReturnValue &);
     static void is_logged_in(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
+    static void get_custom_data(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"identity", {wrap<get_identity>, nullptr}},
         {"token", {wrap<get_token>, nullptr}},
         {"profile", {wrap<get_profile>, nullptr}},
         {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
-        {"state", {wrap<get_state>, nullptr}}
+        {"state", {wrap<get_state>, nullptr}},
+        {"customData", {wrap<get_custom_data>, nullptr}},
     };
 
     MethodMap<T> const static_methods = {
@@ -91,12 +93,14 @@ public:
     static void session_for_on_disk_path(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void delete_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void link_credentials(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void call_function(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"logOut", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
         {"_deleteUser", wrap<delete_user>},
-        {"_linkCredentials", wrap<link_credentials>}
+        {"_linkCredentials", wrap<link_credentials>},
+        {"_callFunction", wrap<call_function>},
     };
 };
 
@@ -113,25 +117,25 @@ typename T::Object UserClass<T>::create_instance(ContextType ctx, SharedUser use
 
 template<typename T>
 void UserClass<T>::get_identity(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::string identity = get_internal<T, UserClass<T>>(object)->get()->identity();
+    std::string identity = get_internal<T, UserClass<T>>(ctx, object)->get()->identity();
     return_value.set(identity);
 }
 
 template<typename T>
 void UserClass<T>::get_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::string token = get_internal<T, UserClass<T>>(object)->get()->refresh_token();
+    std::string token = get_internal<T, UserClass<T>>(ctx, object)->get()->refresh_token();
     return_value.set(token);
 }
 
 template<typename T>
 void UserClass<T>::is_logged_in(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto logged_in = get_internal<T, UserClass<T>>(object)->get()->is_logged_in();
+    auto logged_in = get_internal<T, UserClass<T>>(ctx, object)->get()->is_logged_in();
     return_value.set(logged_in);
 }
 
 template<typename T>
 void UserClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto state = get_internal<T, UserClass<T>>(object)->get()->state();
+    auto state = get_internal<T, UserClass<T>>(ctx, object)->get()->state();
 
     switch (state) {
     case SyncUser::State::LoggedOut:
@@ -147,6 +151,15 @@ void UserClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &re
 }
 
 template<typename T>
+void UserClass<T>::get_custom_data(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto custom_data = get_internal<T, UserClass<T>>(ctx, object)->get()->custom_data();
+    if (!custom_data)
+        return return_value.set_null();
+
+    return_value.set(js::Value<T>::from_bson(ctx, *custom_data));
+}
+
+template<typename T>
 void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& return_value) {
     static const String string_name        = "name";
     static const String string_email       = "email";
@@ -158,7 +171,7 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
     static const String string_min_age     = "minAge";
     static const String string_max_age     = "maxAge";
 
-    auto user_profile = get_internal<T, UserClass<T>>(object)->get()->user_profile();
+    auto user_profile = get_internal<T, UserClass<T>>(ctx, object)->get()->user_profile();
 
     auto profile_object = Object::create_empty(ctx);
 #define STRING_TO_PROP(propname) \
@@ -182,16 +195,16 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
 }
 
 template<typename T>
-void UserClass<T>::logout(ContextType, ObjectType this_object, Arguments& args, ReturnValue &) {
+void UserClass<T>::logout(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
     args.validate_count(0);
-    get_internal<T, UserClass<T>>(this_object)->get()->log_out();
+    get_internal<T, UserClass<T>>(ctx, this_object)->get()->log_out();
 }
 
 template<typename T>
 void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(1);
 
-    auto user = get_internal<T, UserClass<T>>(this_object);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
@@ -199,7 +212,8 @@ void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Argument
     Protected<ObjectType> protected_this(ctx, this_object);
 
     auto callback_handler([=](util::Optional<app::AppError> error) {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
+
         ObjectType error_object = Object::create_empty(protected_ctx);
         if (error) {
             Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
@@ -217,9 +231,9 @@ void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Argument
 template<typename T>
 void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
     args.validate_count(2);
-    auto user = get_internal<T, UserClass<T>>(this_object);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
 
-    auto credentials = *get_internal<T, CredentialsClass<T>>(Value::validated_to_object(ctx, args[0], "credentials"));
+    auto credentials = *get_internal<T, CredentialsClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "credentials"));
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
@@ -227,7 +241,7 @@ void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arg
     Protected<ObjectType> protected_this(ctx, this_object);
 
     auto callback_handler([=](SharedUser shared_user, util::Optional<app::AppError> error) {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
 
         if (error) {
             ObjectType error_object = Object::create_empty(protected_ctx);
@@ -242,7 +256,8 @@ void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arg
         }
 
         ValueType callback_arguments[2];
-        callback_arguments[0] = create_object<T, UserClass<T>>(ctx, new User<T>(std::move(shared_user), std::move(user->m_app)));
+        callback_arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new User<T>(std::move(shared_user),
+                                                                                          user->m_app));
         callback_arguments[1] = Value::from_undefined(protected_ctx);
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });
@@ -250,6 +265,35 @@ void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arg
     user->m_app->link_user(*user, credentials, callback_handler);
 }
 
+template<typename T>
+void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
+    args.validate_count(3);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+
+    auto name = Value::validated_to_string(ctx, args[0], "name");
+    auto call_args_js = Value::validated_to_array(ctx, args[1], "args");
+    auto callback = Value::validated_to_function(ctx, args[2], "callback");
+    auto call_args_bson = Value::to_bson(ctx, call_args_js);
+
+    user->m_app->call_function(
+        *user,
+        name,
+        call_args_bson.operator const bson::BsonArray&(),
+        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
+                             callback = Protected(ctx, callback),
+                             this_object = Protected(ctx, this_object)]
+                            (util::Optional<app::AppError> error, util::Optional<bson::Bson> result) {
+            HANDLESCOPE(ctx);
+            // Note: reversing argument order.
+            Function::callback(ctx, callback, this_object, {
+                !result ? Value::from_undefined(ctx) : Value::from_bson(ctx, *result),
+                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
+                    {"message", Value::from_string(ctx, error->message)},
+                    {"code", Value::from_number(ctx, error->error_code.value())},
+                }),
+            });
+        }));
+}
 
 }
 }

@@ -15,9 +15,9 @@
       "target_name": "realm",
       "conditions": [
         [ "OS!='mac'", {
-          "dependencies": [ "object-store", "OpenSSL" ],
+          "dependencies": [ "object-store", "OpenSSL",  "<!(node -p \"require('node-addon-api').gyp\")"],
         }, {
-          "dependencies": [ "object-store" ],
+          "dependencies": [ "object-store", "<!(node -p \"require('node-addon-api').gyp\")" ],
         }],
         ["realm_enable_sync", {
           "sources": [
@@ -40,7 +40,6 @@
         "src/js_realm.cpp",
         "src/node/node_init.cpp",
         "src/node/platform.cpp",
-
         "src/concurrent_deque.hpp",
         "src/js_class.hpp",
         "src/js_collection.hpp",
@@ -71,7 +70,7 @@
         "src",
         "src/object-store/src",
         "src/object-store/external/json",
-        "src/object-store/src"
+        "<!@(node -p \"require('node-addon-api').include\")"
       ],
     },
     {
@@ -106,12 +105,8 @@
         "lib/extensions.js",
         "lib/index.d.ts",
         "lib/index.js",
-        "lib/notification-worker.js",
         "lib/notifier.js",
-        "lib/permission-api.js",
         "lib/submit-analytics.js",
-        "lib/user-methods.js",
-        "lib/worker.js",
 
         "lib/browser/base64.js",
         "lib/browser/collections.js",
@@ -122,7 +117,6 @@
         "lib/browser/results.js",
         "lib/browser/rpc.js",
         "lib/browser/session.js",
-        "lib/browser/subscription.js",
         "lib/browser/user.js",
         "lib/browser/util.js",
 
@@ -146,14 +140,11 @@
         "scripts/publish.sh",
         "scripts/react-tests-android.js",
         "scripts/set-version.sh",
-        "scripts/test-ros-server.js",
         "scripts/test.sh",
         "scripts/utils.sh",
 
         "tests/.eslintrc.json",
         "tests/index.js",
-        "tests/js/adapter-tests.ts",
-        "tests/js/admin-user-helper.js",
         "tests/js/asserts.js",
         "tests/js/async-tests.js",
         "tests/js/download-api-helper.js",
@@ -163,11 +154,9 @@
         "tests/js/linkingobjects-tests.js",
         "tests/js/list-tests.js",
         "tests/js/migration-tests.js",
-        "tests/js/notifier-tests.ts",
         "tests/js/object-id-tests.js",
         "tests/js/object-tests.js",
         "tests/js/package.json",
-        "tests/js/permission-tests.js",
         "tests/js/query-tests.js",
         "tests/js/query-tests.json",
         "tests/js/realm-tests.js",

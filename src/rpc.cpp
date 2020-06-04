@@ -346,7 +346,7 @@ RPCServer::RPCServer() {
 
         json result;
         if (jsc::Object::is_instance<js::RealmObjectClass<jsc::Types>>(m_context, object)) {
-            auto obj = jsc::Object::get_internal<js::RealmObjectClass<jsc::Types>>(object);
+            auto obj = jsc::Object::get_internal<js::RealmObjectClass<jsc::Types>>(m_context, object);
             result = read_object_properties(*obj);
         }
         if (result.find(name) == result.end()) {
@@ -708,7 +708,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     JSObjectRef js_object = jsc::Value::validated_to_object(m_context, js_value);
 
     if (jsc::Object::is_instance<js::RealmObjectClass<jsc::Types>>(m_context, js_object)) {
-        auto object = jsc::Object::get_internal<js::RealmObjectClass<jsc::Types>>(js_object);
+        auto object = jsc::Object::get_internal<js::RealmObjectClass<jsc::Types>>(m_context, js_object);
         return {
             {"type", RealmObjectTypesObject},
             {"id", store_object(js_object)},
@@ -717,7 +717,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         };
     }
     else if (jsc::Object::is_instance<js::ListClass<jsc::Types>>(m_context, js_object)) {
-        auto list = jsc::Object::get_internal<js::ListClass<jsc::Types>>(js_object);
+        auto list = jsc::Object::get_internal<js::ListClass<jsc::Types>>(m_context, js_object);
         return {
             {"type", RealmObjectTypesList},
             {"id", store_object(js_object)},
@@ -726,7 +726,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
          };
     }
     else if (jsc::Object::is_instance<js::ResultsClass<jsc::Types>>(m_context, js_object)) {
-        auto results = jsc::Object::get_internal<js::ResultsClass<jsc::Types>>(js_object);
+        auto results = jsc::Object::get_internal<js::ResultsClass<jsc::Types>>(m_context, js_object);
         return {
             {"type", RealmObjectTypesResults},
             {"id", store_object(js_object)},
@@ -735,7 +735,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         };
     }
     else if (jsc::Object::is_instance<js::RealmClass<jsc::Types>>(m_context, js_object)) {
-        auto realm = jsc::Object::get_internal<js::RealmClass<jsc::Types>>(js_object);
+        auto realm = jsc::Object::get_internal<js::RealmClass<jsc::Types>>(m_context, js_object);
         json realm_dict {
             {"_isPartialRealm", serialize_json_value(jsc::Object::get_property(m_context, js_object, "_isPartialRealm"))},
             {"inMemory", serialize_json_value(jsc::Object::get_property(m_context, js_object, "inMemory"))},
@@ -752,9 +752,9 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     }
 #if REALM_ENABLE_SYNC
     else if (jsc::Object::is_instance<js::UserClass<jsc::Types>>(m_context, js_object)) {
-        std::shared_ptr<SyncUser> user = *jsc::Object::get_internal<js::UserClass<jsc::Types>>(js_object);
+        auto user = jsc::Object::get_internal<js::UserClass<jsc::Types>>(m_context, js_object);
         json user_dict {
-            {"identity", user->identity()},
+            {"identity", user->get()->identity()},
         };
         return {
             {"type", RealmObjectTypesUser},

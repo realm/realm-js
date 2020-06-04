@@ -22,17 +22,15 @@
 
 // TODO: Once we get MongoDB Realm Cloud docker image integrated, we should be able
 //       to obtain the id of the Stitch app.
-const appId = "default-kktps";
 const appConfig = {
-  id: appId,
-  url: "http://localhost:9090",
+  id: global.APPID,
+  url: global.APPURL,
   timeout: 1000,
   app: {
-      name: "realm-sdk-integration-tests",
-      version: "42"
-  }
+      name: "default",
+      version: "0"
+  },
 };
-
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
@@ -55,6 +53,7 @@ function assertIsUser(user) {
   TestCase.assertType(user, 'object');
   TestCase.assertType(user.token, 'string');
   TestCase.assertType(user.identity, 'string');
+  TestCase.assertType(user.customData, 'object');
   TestCase.assertInstanceOf(user, Realm.User);
 }
 
@@ -95,14 +94,14 @@ module.exports = {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
 
-    app.logIn(credentials).then(user => {
+    return app.logIn(credentials).then(user => {
       assertIsUser(user);
 
       assertIsSameUser(user, app.currentUser());
-      user.logout();
+      user.logOut();
 
       // Is now logged out.
-      TestCase.assertUndefined(app.currentUser());
+      TestCase.assertNull(app.currentUser());
     });
   },
 
@@ -117,92 +116,60 @@ module.exports = {
 
   testLoginNonExistingUser() {
     let app = new Realm.App(appConfig);
-    let credentials = Realm.Credentials.usernamePassword('foo', 'pass');
+    let credentials = Realm.Credentials.emailPassword('foo', 'pass');
     TestCase.assertThrows(app.logIn(credentials));
   },
 
-  testLoginTowardsMisbehavingServer() {
-    // Try authenticating using an endpoint that doesn't exist
-    return Realm.Sync.User.login('http://127.0.0.1:9080/invalid-auth-endpoint', Realm.Sync.Credentials.anonymous())
-      .then(() => { throw new Error('Login should have failed'); })
-      .catch((e) => {
-        assertIsError(e);
-        TestCase.assertEqual(
-          e.message,
-          "Could not authenticate: Realm Object Server didn't respond with valid JSON"
-        );
-      });
-  },
+  async testFunctions() {
+    let app = new Realm.App(appConfig);
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
 
-  testAuthenticateJWT() {
-    // if (!isNodeProcess) {
-    //   return;
-    // }
+    TestCase.assertEqual(await user.callFunction('firstArg', [123]), 123);
+    TestCase.assertEqual(await user.functions.firstArg(123), 123);
+    TestCase.assertEqual(await user.functions['firstArg'](123), 123);
 
-    // return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.jwt(signToken('user_name', false)))
-    //   .then(user => {
-    //       TestCase.assertEqual(user.identity, 'user_name');
-    //       TestCase.assertFalse(user.isAdmin);
-    //       return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.jwt(signToken('admin_user', true)))
-    //   }).then(user => {
-    //       TestCase.assertEqual(user.identity, 'admin_user');
-    //       TestCase.assertTrue(user.isAdmin);
-    //   });
-  },
+    // Test method stashing / that `this` is bound correctly.
+    const firstArg = user.functions.firstArg;
+    TestCase.assertEqual(await firstArg(123), 123);
+    TestCase.assertEqual(await firstArg(123), 123); // Not just one-shot
 
-  testAuthenticateCustom() {
-    // Assert that we can create custom credentials without specifying userInfo
-    //    Realm.Sync.Credentials.custom("foo", "bar");
+    TestCase.assertEqual(await user.functions.sum(1, 2, 3), 6);
+
+    const err = await TestCase.assertThrowsAsync(async() => await user.functions.error());
+    TestCase.assertEqual(err.code, 400);
   },
 
   testAll() {
     let app = new Realm.App(appConfig);
+    Object.keys(app.allUsers()).forEach(id => users[id].logOut()); // FIXME: we need to reset users for each test
+
     const all = app.allUsers();
-    TestCase.assertArrayLength(Object.keys(all), 0);
+    TestCase.assertArrayLength(Object.keys(all), 0, "Noone to begin with");
 
 
     let credentials = Realm.Credentials.anonymous();
     return app.logIn(credentials).then(user1 => {
       const all = app.allUsers();
-      TestCase.assertArrayLength(Object.keys(all), 1);
-      assertIsSameUser(all[user.identity], user1);
+      TestCase.assertArrayLength(Object.keys(all), 1, "One user");
+      assertIsSameUser(all[user1.identity], user1);
 
       return app.logIn(Realm.Credentials.anonymous()).then(user2 => {
         let all = app.allUsers();
-        TestCase.assertArrayLength(Object.keys(all), 2);
+        TestCase.assertArrayLength(Object.keys(all), 2, "Two users");
         // NOTE: the list of users is in latest-first order.
         assertIsSameUser(all[user2.identity], user2);
         assertIsSameUser(all[user1.identity], user1);
 
-        user2.logout();
+        user2.logOut();
         all = app.allUsers();
-        TestCase.assertArrayLength(Object.keys(all), 1);
+        TestCase.assertArrayLength(Object.keys(all), 1, "Back to one user");
         assertIsSameUser(all[user1.identity], user1);
 
-        user1.logout();
+        user1.logOut();
         all = app.allUsers();
-        TestCase.assertArrayLength(Object.keys(all), 0);
+        TestCase.assertArrayLength(Object.keys(all), 0, "All gone");
       });
-    });
-  },
-
-  testCurrent() {
-    let app = new Realm.App(appConfig);
-    TestCase.assertUndefined(app.currentUser());
-
-    let user1;
-    return app.logIn(Realm.Credentials.anonymous()).then(user1 => {
-      assertIsSameUser(app.currentUser(), user1);
-
-      return app.logIn(Realm.Credentials.anonymous());
-    }).then(user2 => {
-      TestCase.assertThrows(() => app.currentUser(), 'We expect Realm.App.currentUser() to throw if > 1 user.');
-      user2.logout();
-
-      assertIsSameUser(app.currentUser(), user1);
-
-      user1.logout();
-      TestCase.assertUndefined(app.currentUser());
     });
   },
 };

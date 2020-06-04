@@ -64,7 +64,7 @@ std::function<void(util::Optional<realm::app::AppError>)> make_callback_handler(
     Protected<ObjectType> protected_this(ctx, this_object);
 
     auto callback_handler([=](util::Optional<realm::app::AppError> error) {
-        HANDLESCOPE
+        HANDLESCOPE(ctx)
 
         if (error) {
             ObjectType error_object = Object<T>::create_empty(protected_ctx);

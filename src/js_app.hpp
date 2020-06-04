@@ -94,7 +94,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 
     args.validate_count(1);
 
-    set_internal<T, AppClass<T>>(this_object, nullptr);
+    set_internal<T, AppClass<T>>(ctx, this_object, nullptr);
 
     std::string id;
     realm::app::App::Config config;
@@ -107,7 +107,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
             config.app_id = Value::validated_to_string(ctx, config_id_value, "id");
         }
         else {
-            throw runtime_error("App configuration must have an id.");
+            throw std::runtime_error("App configuration must have an id.");
         }
 
         ValueType config_url_value = Object::get_property(ctx, config_object, config_url);
@@ -150,18 +150,29 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     }
     ensure_directory_exists_for_file(default_realm_file_directory());
 
+    auto platform_description_function = js::Object<T>::get_property(ctx, realm_constructor, "_createPlatformDescription");
+    if (js::Value<T>::is_function(ctx, platform_description_function)) {
+        auto result = js::Function<T>::call(ctx, js::Value<T>::to_function(ctx, platform_description_function), realm_constructor, 0, nullptr);
+        auto result_object = js::Value<T>::validated_to_object(ctx, result);
+        static const String platform_name = "platform";
+        static const String platform_version_name = "platform_version";
+        static const String sdk_version_name = "sdk_version";
+        config.platform = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, platform_name));
+        config.platform_version = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, platform_version_name));
+        config.sdk_version = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, sdk_version_name));
+    }
+
     SyncClientConfig client_config;
     client_config.base_file_path = default_realm_file_directory();
     client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
     client_config.user_agent_binding_info = user_agent_binding_info;
     SyncManager::shared().configure(client_config, config);
-
-    set_internal<T, AppClass<T>>(this_object, new SharedApp(SyncManager::shared().app()));
+    set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(SyncManager::shared().app()));
 }
 
 template<typename T>
 void AppClass<T>::get_app_id(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
-    auto app = *get_internal<T, AppClass<T>>(this_object);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
     return_value.set(Value::from_string(ctx, app->config().app_id));
 }
 
@@ -169,19 +180,19 @@ template<typename T>
 void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
-    auto app = *get_internal<T, AppClass<T>>(this_object);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
 
     auto credentials_object = Value::validated_to_object(ctx, args[0]);
     auto callback_function = Value::validated_to_function(ctx, args[1]);
 
-    app::AppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(credentials_object);
+    app::AppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(ctx, credentials_object);
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<FunctionType> protected_callback(ctx, callback_function);
     Protected<ObjectType> protected_this(ctx, this_object);
 
     auto callback_handler([=](SharedUser user, util::Optional<realm::app::AppError> error) {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
 
         if (error) {
             ObjectType object = Object::create_empty(protected_ctx);
@@ -208,11 +219,12 @@ template<typename T>
 void AppClass<T>::all_users(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(0);
 
-    auto app = *get_internal<T, AppClass<T>>(this_object);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
 
     auto users = Object::create_empty(ctx);
     for (auto user : app->all_users()) {
-        Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app))), ReadOnly | DontDelete);
+        auto&& identity = user->identity();
+        Object::set_property(ctx, users, identity, create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), app)), ReadOnly | DontDelete);
     }
     return_value.set(users);
 }
@@ -221,13 +233,13 @@ template<typename T>
 void AppClass<T>::current_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(0);
 
-    auto app = *get_internal<T, AppClass<T>>(this_object);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
     auto user = app->current_user();
     if (user) {
         return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app))));
     }
     else {
-        return_value.set(Value::from_null(ctx));
+        return_value.set_null();
     }
 }
 
@@ -236,8 +248,8 @@ template<typename T>
 void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(1);
 
-    auto app = *get_internal<T, AppClass<T>>(this_object);
-    auto user = get_internal<T, UserClass<T>>(Value::validated_to_object(ctx, args[0], "user"));
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
 
     app->switch_user(*user);
     return_value.set(Value::from_undefined(ctx));

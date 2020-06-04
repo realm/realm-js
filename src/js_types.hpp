@@ -18,18 +18,21 @@
 
 #pragma once
 
-#include "execution_context_id.hpp"
 #include "property.hpp"
 
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include <realm/binary_data.hpp>
 #include <realm/string_data.hpp>
 #include <realm/util/to_string.hpp>
 #include <realm/util/optional.hpp>
+#include <realm/util/base64.hpp>
 #include <realm/mixed.hpp>
+
+#include <object-store/src/util/bson/bson.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
@@ -38,6 +41,10 @@
 #else
 # define REALM_JS_INLINE inline
 #endif
+
+namespace realm {
+    class ObjectSchema;
+}
 
 namespace realm {
 namespace js {
@@ -78,7 +85,6 @@ struct Context {
     using GlobalContextType = typename T::GlobalContext;
 
     static GlobalContextType get_global_context(ContextType);
-    static AbstractExecutionContextID get_execution_context_id(ContextType);
 };
 
 class TypeErrorException : public std::invalid_argument {
@@ -132,10 +138,10 @@ struct Value {
     static ValueType from_boolean(ContextType, bool);
     static ValueType from_null(ContextType);
     static ValueType from_number(ContextType, double);
-    static ValueType from_decimal128(ContextType, Decimal128);
-    static ValueType from_object_id(ContextType, ObjectId);
+    static ValueType from_decimal128(ContextType, const Decimal128&);
+    static ValueType from_object_id(ContextType, const ObjectId&);
     static ValueType from_string(ContextType ctx, const char *s) { return s ? from_nonnull_string(ctx, s) : from_null(ctx); }
-    static ValueType from_string(ContextType ctx, StringData s) { return s ? from_nonnull_string(ctx, s) : from_null(ctx); }
+    static ValueType from_string(ContextType ctx, StringData s) { return s ? from_nonnull_string(ctx, String<T>(s)) : from_null(ctx); }
     static ValueType from_string(ContextType ctx, const std::string& s) { return from_nonnull_string(ctx, s.c_str()); }
     static ValueType from_binary(ContextType ctx, BinaryData b) { return b ? from_nonnull_binary(ctx, b) : from_null(ctx); }
     static ValueType from_nonnull_string(ContextType, const String<T>&);
@@ -143,6 +149,8 @@ struct Value {
     static ValueType from_undefined(ContextType);
     static ValueType from_timestamp(ContextType, Timestamp);
     static ValueType from_mixed(ContextType, const util::Optional<Mixed> &);
+    static ValueType from_bson(ContextType, const bson::Bson &);
+    static ObjectType from_bson(ContextType, const bson::BsonDocument &);
 
     static ObjectType to_array(ContextType, const ValueType &);
     static bool to_boolean(ContextType, const ValueType &);
@@ -155,6 +163,7 @@ struct Value {
     static ObjectType to_object(ContextType, const ValueType &);
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, ValueType);
+    static bson::Bson to_bson(ContextType, ValueType);
 
 
 #define VALIDATED(return_t, type) \
@@ -188,6 +197,9 @@ struct Function {
     using ValueType = typename T::Value;
 
     static ValueType callback(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
+    static ValueType callback(ContextType ctx, const FunctionType & f, const ObjectType& o,  std::initializer_list<ValueType> args) {
+        return callback(ctx, f, o, args.size(), args.begin());
+    }
     static ValueType call(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
     template<size_t N> static ValueType call(ContextType ctx, const FunctionType &function,
                                              const ObjectType &this_object, const ValueType (&arguments)[N])
@@ -201,8 +213,11 @@ struct Function {
         return call(ctx, function, this_object, arguments.size(), arguments.data());
     }
 
+    static ObjectType construct(ContextType ctx, const FunctionType & f, std::initializer_list<ValueType> args) {
+        return construct(ctx, f, args.size(), args.begin());
+    }
     static ObjectType construct(ContextType, const FunctionType &, size_t, const ValueType[]);
-    static ValueType construct(ContextType ctx, const FunctionType &function, const std::vector<ValueType> &arguments) {
+    static ObjectType construct(ContextType ctx, const FunctionType &function, const std::vector<ValueType> &arguments) {
         return construct(ctx, function, arguments.size(), arguments.data());
     }
 };
@@ -282,12 +297,25 @@ struct Object {
     static ValueType call_method(ContextType ctx, const ObjectType &object, const String<T> &name, const std::vector<ValueType> &arguments) {
         return call_method(ctx, object, name, (uint32_t)arguments.size(), arguments.data());
     }
+    static ValueType call_method(ContextType ctx, const ObjectType &object, const String<T> &name, const std::initializer_list<ValueType> &arguments) {
+        return call_method(ctx, object, name, (uint32_t)arguments.size(), arguments.begin());
+    }
 
     static ObjectType create_empty(ContextType);
-    static ObjectType create_array(ContextType, uint32_t, const ValueType[]);
+    static ObjectType create_obj(ContextType ctx, std::initializer_list<std::pair<String<T>, ValueType>> values) {
+        auto obj = create_empty(ctx);
+        for (auto&& [name, val] : values) {
+            set_property(ctx, obj, name, val);
+        }
+        return obj;
+    }
 
+    static ObjectType create_array(ContextType, uint32_t, const ValueType[]);
     static ObjectType create_array(ContextType ctx, const std::vector<ValueType> &values) {
         return create_array(ctx, (uint32_t)values.size(), values.data());
+    }
+    static ObjectType create_array(ContextType ctx, std::initializer_list<ValueType> values) {
+        return create_array(ctx, (uint32_t)values.size(), values.begin());
     }
     static ObjectType create_array(ContextType ctx) {
         return create_array(ctx, 0, nullptr);
@@ -299,13 +327,21 @@ struct Object {
     static ObjectType create_instance(ContextType, typename ClassType::Internal*);
 
     template<typename ClassType>
+    static ObjectType create_instance_by_schema(ContextType, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal*);
+    
+    template<typename ClassType>
     static bool is_instance(ContextType, const ObjectType &);
 
     template<typename ClassType>
     static typename ClassType::Internal* get_internal(const ObjectType &);
 
     template<typename ClassType>
-    static void set_internal(const ObjectType &, typename ClassType::Internal*);
+    static typename ClassType::Internal* get_internal(ContextType ctx, const ObjectType &);
+
+    template<typename ClassType>
+    static void set_internal(ContextType ctx, const ObjectType &, typename ClassType::Internal*);
+
+    static ObjectType create_bson_type(ContextType, StringData type, std::initializer_list<ValueType> args);
 };
 
 template<typename ValueType>
@@ -320,6 +356,11 @@ class Protected {
         bool operator()(const Protected<ValueType>& a, const Protected<ValueType>& b) const;
     };
 };
+template <typename GlobalCtx>
+Protected(GlobalCtx) -> Protected<GlobalCtx>;
+template <typename Ctx, typename T>
+Protected(Ctx, T) -> Protected<T>;
+
 
 template<typename T>
 struct Exception : public std::runtime_error {
@@ -369,13 +410,18 @@ REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, typena
 }
 
 template<typename T, typename ClassType>
-REALM_JS_INLINE typename ClassType::Internal* get_internal(const typename T::Object &object) {
-    return Object<T>::template get_internal<ClassType>(object);
+REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context ctx, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr) {
+    return Object<T>::template create_instance_by_schema<ClassType>(ctx, constructor, schema, internal);
 }
 
 template<typename T, typename ClassType>
-REALM_JS_INLINE void set_internal(const typename T::Object &object, typename ClassType::Internal* ptr) {
-    Object<T>::template set_internal<ClassType>(object, ptr);
+REALM_JS_INLINE typename ClassType::Internal* get_internal(typename T::Context ctx, const typename T::Object &object) {
+    return Object<T>::template get_internal<ClassType>(ctx, object);
+}
+
+template<typename T, typename ClassType>
+REALM_JS_INLINE void set_internal(typename T::Context ctx, const typename T::Object &object, typename ClassType::Internal* ptr) {
+    Object<T>::template set_internal<ClassType>(ctx, object, ptr);
 }
 
 template<typename T>
@@ -417,6 +463,7 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
                 REALM_UNREACHABLE();
         }
     };
+
     auto check_collection_type = [&](auto&& list) {
         auto list_type = list->get_type();
         return list_type == type
@@ -431,10 +478,10 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
     if (is_object(context, value)) {
         auto object = to_object(context, value);
         if (Object<T>::template is_instance<ResultsClass<T>>(context, object)) {
-            return check_collection_type(get_internal<T, ResultsClass<T>>(object));
+            return check_collection_type(get_internal<T, ResultsClass<T>>(context, object));
         }
         if (Object<T>::template is_instance<ListClass<T>>(context, object)) {
-            return check_collection_type(get_internal<T, ListClass<T>>(object));
+            return check_collection_type(get_internal<T, ListClass<T>>(context, object));
         }
     }
 
@@ -463,6 +510,14 @@ inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Times
 }
 
 template<typename T>
+inline typename T::Object Object<T>::create_bson_type(ContextType ctx, StringData type, std::initializer_list<ValueType> args) {
+    auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
+    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
+    auto ctor = Value<T>::to_constructor(ctx, Object<T>::get_property(ctx, bson, type));
+    return Function<T>::construct(ctx, ctor, args);
+}
+
+template<typename T>
 inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const util::Optional<Mixed>& mixed) {
     if (!mixed) {
         return from_undefined(ctx);
@@ -488,10 +543,124 @@ inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const uti
         return from_string(ctx, value.get<StringData>().data());
     case type_Binary:
         return from_binary(ctx, value.get<BinaryData>());
-    default:
-        throw std::invalid_argument("Value not convertible.");
+
+    case type_Link:
+    case type_LinkList:
+    case type_OldDateTime:
+    case type_OldTable:
+    case type_OldMixed:
+        break;
     }
+    throw std::invalid_argument("Value not convertible.");
 }
 
+template<typename T>
+inline typename T::Value Value<T>::from_bson(typename T::Context ctx, const bson::Bson& value) {
+    using Type = bson::Bson::Type;
+
+    switch (value.type()) {
+    case Type::MinKey:
+        return Object<T>::create_bson_type(ctx, "MinKey", {});
+    case Type::MaxKey:
+        return Object<T>::create_bson_type(ctx, "MaxKey", {});
+    case Type::Null:
+        return from_null(ctx);
+    case Type::Bool:
+        return from_boolean(ctx, value.operator bool());
+    case Type::Double:
+        return from_number(ctx, value.operator double());
+    case Type::Int32:
+        // All int32 values can be precisely represented as a double
+        return from_number(ctx, double(value.operator int32_t()));
+    case Type::Int64: {
+        // int64 needs special handling. The server uses it for all intish numbers, even 1.0, so we map
+        // it to a plain js number if it is in the range where it can be done precisely, otherwise
+        // we map to the bson.Long type which preserves the value, but is harder to use.
+        const auto i64_val = value.operator int64_t();
+        constexpr static int64_t max_precise_double = 1ll << 52; // 52 bits mantissa + implicit leading 1 bit.
+        if (-max_precise_double <= i64_val && i64_val <= max_precise_double)
+            return Value<T>::from_number(ctx, double(i64_val));
+
+        return Object<T>::create_bson_type(ctx, "Long", {
+            Value<T>::from_number(ctx, int32_t(i64_val)), // low
+            Value<T>::from_number(ctx, int32_t(i64_val >> 32)), // high
+        });
+    }
+    case Type::Decimal128:
+        return from_decimal128(ctx, value.operator Decimal128());
+    case Type::ObjectId:
+        return from_object_id(ctx, value.operator ObjectId());
+    case Type::Datetime:
+        return from_timestamp(ctx, value.operator Timestamp());
+    case Type::Timestamp: {
+        auto mts = value.operator bson::MongoTimestamp();
+        return Object<T>::create_bson_type(ctx, "Timestamp", {
+            // The constructor takes the arguments "backwards" from standard order.
+            Value<T>::from_number(ctx, mts.increment),
+            Value<T>::from_number(ctx, mts.seconds),
+        });
+    }
+    case Type::String:
+        return from_string(ctx, value.operator const std::string&());
+    case Type::Binary: {
+        const auto& vec = value.operator const std::vector<char>&();
+        const auto decoded = realm::util::base64_decode_to_vector(StringData(vec.data(), vec.size()));
+        if (!decoded)
+            throw std::invalid_argument("invalid base64 in binary data");
+        auto Uint8Array = Value<T>::to_function(ctx, Object<T>::get_global(ctx, "Uint8Array"));
+        auto array = Function<T>::construct(ctx, Uint8Array, {
+            from_nonnull_binary(ctx, {decoded->data(), decoded->size()}),
+        });
+        return Object<T>::create_bson_type(ctx, "Binary", {
+            array,
+            Value<T>::from_number(ctx, 0), // TODO get subtype from `value` once it is possible.
+        });
+    }
+    case Type::Document:
+        return from_bson(ctx, value.operator const bson::BsonDocument&());
+    case Type::Array: {
+        auto&& in_vec = value.operator const std::vector<bson::Bson>&();
+        std::vector<ValueType> out_vec;
+        out_vec.reserve(in_vec.size());
+        for (auto&& elem : in_vec) {
+            out_vec.push_back(from_bson(ctx, elem));
+        }
+        return Object<T>::create_array(ctx, out_vec);
+    }
+    case Type::RegularExpression: {
+        auto&& re = value.operator const bson::RegularExpression&();
+        std::ostringstream oss;
+        oss << re.options();
+        return Object<T>::create_bson_type(ctx, "BSONRegExp", {
+            Value<T>::from_string(ctx, re.pattern()),
+            Value<T>::from_string(ctx, oss.str()),
+        });
+    }
+    }
+    throw std::invalid_argument("Value not convertible.");
+}
+
+template<typename T>
+inline typename T::Object Value<T>::from_bson(typename T::Context ctx, const bson::BsonDocument& doc) {
+    auto out = Object<T>::create_empty(ctx);
+    for (auto&& [k, v] : doc) {
+        Object<T>::set_property(ctx, out, k, from_bson(ctx, v));
+    }
+    return out;
+}
+
+template<typename T>
+inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value) {
+    // For now going through the bson.EJSON.stringify() since it will correctly handle the special JS types.
+    // Consider directly converting to Bson if we need more control or there are performance issues.
+    auto realm = Value::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
+    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
+    auto ejson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, bson, "EJSON"));
+    auto call_args_json = Object<T>::call_method(ctx, ejson, "stringify", {
+        value,
+        Object<T>::create_obj(ctx, {{"relaxed", Value::from_boolean(ctx, false)}}),
+    });
+    return bson::parse(Value::to_string(ctx, call_args_json));
+}
 } // js
 } // realm

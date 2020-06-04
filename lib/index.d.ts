@@ -152,6 +152,16 @@ declare namespace Realm {
      */
     interface Object {
         /**
+         * @returns An array of the names of the object's properties.
+         */
+        keys(): string[];
+
+        /**
+         * @returns An array of key/value pairs of the object's properties.
+         */
+        entries(): [string, any][];
+
+        /**
          * @returns boolean
          */
         isValid(): boolean;
@@ -344,6 +354,8 @@ declare namespace Realm {
         static serverAPIKey(key: string): Credentials;
     }
 
+
+    //FIXME: Fix ts definition. Is this Realm.User or Realm.Sync.User. 
     /**
      * User
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.User.html }
@@ -353,10 +365,31 @@ declare namespace Realm {
         readonly token: string;
         readonly isLoggedIn: boolean;
         readonly state: string;
+        readonly customData: object;
+
+        /**
+         * Convenience wrapper around call_function(name, [args]).
+         *
+         * @example
+         * // These are all equivalent:
+         * await user.call_function("do_thing", [a1, a2, a3]);
+         * await user.functions.do_thing(a1, a2, a3);
+         * await user.functions["do_thing"](a1, a2, a3);
+         *
+         * @example
+         * // It it legal to store the functions as first-class values:
+         * const do_thing = user.functions.do_thing;
+         * await do_thing(a1);
+         * await do_thing(a2);
+         */   
+        readonly functions: {
+            [name: string] : (...args: any[]) => Promise<any>
+        };
 
         logOut(): void;
         deleteUser(): Promise<void>;
         linkCredentials(credentials: Credentials): Promise<void>;
+        call_function(name: string, args: any[]): Promise<any>;
     }
 
     interface UserMap {
@@ -486,14 +519,10 @@ declare namespace Realm {
     function setLogLevel(logLevel: LogLevel): void;
     function setLogger(callback: (level: NumericLogLevel, message: string) => void): void;
     function setUserAgent(userAgent: string): void;
+    function enableSessionMultiplexing(): void;
     function initiateClientReset(path: string): void;
     function _hasExistingSessions(): boolean;
     function reconnect(): void;
-
-    /**
-     * @deprecated, to be removed in future versions
-     */
-    function setFeatureToken(token: string): void;
 }
 
 interface ProgressPromise extends Promise<Realm> {
@@ -527,14 +556,6 @@ declare class Realm {
      * @param {Configuration} config
      */
     static open(config: Realm.Configuration): ProgressPromise;
-    /**
-     * @deprecated in favor of `Realm.open`
-     * Open a realm asynchronously with a callback. If the realm is synced, it will be fully synchronized before it is available.
-     * @param {Configuration} config
-     * @param {Function} callback will be called when the realm is ready.
-     * @param {ProgressNotificationCallback} progressCallback? a progress notification callback for 'download' direction and 'forCurrentlyOutstandingWork' mode
-     */
-    static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
 
     /**
      * @deprecated in favor of `Realm.Sync.User.createConfiguration()`.

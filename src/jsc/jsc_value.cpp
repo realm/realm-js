@@ -66,7 +66,7 @@ JSValueRef jsc::Value::from_nonnull_binary(JSContextRef ctx, BinaryData data)
 }
 
 template<>
-JSValueRef jsc::Value::from_decimal128(JSContextRef ctx, Decimal128 value)
+JSValueRef jsc::Value::from_decimal128(JSContextRef ctx, const Decimal128& value)
 {
     static jsc::String s_realm = "Realm";
     static jsc::String s_decimal = "_Decimal128";
@@ -82,7 +82,7 @@ JSValueRef jsc::Value::from_decimal128(JSContextRef ctx, Decimal128 value)
 }
 
 template<>
-JSValueRef jsc::Value::from_object_id(JSContextRef ctx, ObjectId value)
+JSValueRef jsc::Value::from_object_id(JSContextRef ctx, const ObjectId& value)
 {
     static jsc::String s_realm = "Realm";
     static jsc::String s_object_id = "_ObjectId";
