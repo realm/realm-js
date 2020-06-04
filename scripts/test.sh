@@ -20,7 +20,7 @@ if [ "${CONFIGURATION}" == "Debug" ]; then
 fi
 
 USE_REALM_SYNC=1
-if [ -n "${DISABLE_REALM_SYNC}"]; then
+if [ -n "${DISABLE_REALM_SYNC}" ]; then
   USE_REALM_SYNC=0
 fi
 
