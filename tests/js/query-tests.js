@@ -240,20 +240,19 @@ module.exports = {
     },
 
     testQueryDecimal: function() {
-        var realm = new Realm({ schema: [schemas.DecimalObject] });
-
+        var realm = new Realm({ schema: [schemas.Decimal128Object] });
         realm.write(function () {
             [0, 1, 2].forEach(v => {
-                realm.create(schemas.DecimalObject.name, { decimalCol: Decimal128.fromString(`1000${v}`) });
+                realm.create(schemas.Decimal128Object.name, { decimal128Col: Decimal128.fromString(`1000${v}`) });
             });
         });
 
-        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol <  10002").length, 2);
-        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol <= 10002").length, 3);
-        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol >  10001").length, 1);
-        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol >= 10001").length, 2);
-        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol == 10002").length, 1);
-        TestCase.assertEqual(realm.objects(schemas.DecimalObject.name).filtered("decimalCol != 10002").length, 2);
+        TestCase.assertEqual(realm.objects(schemas.Decimal128Object.name).filtered("decimal128Col <  10002").length, 2);
+        TestCase.assertEqual(realm.objects(schemas.Decimal128Object.name).filtered("decimal128Col <= 10002").length, 3);
+        TestCase.assertEqual(realm.objects(schemas.Decimal128Object.name).filtered("decimal128Col >  10001").length, 1);
+        TestCase.assertEqual(realm.objects(schemas.Decimal128Object.name).filtered("decimal128Col >= 10001").length, 2);
+        TestCase.assertEqual(realm.objects(schemas.Decimal128Object.name).filtered("decimal128Col == 10002").length, 1);
+        TestCase.assertEqual(realm.objects(schemas.Decimal128Object.name).filtered("decimal128Col != 10002").length, 2);
 
         realm.close();
     }

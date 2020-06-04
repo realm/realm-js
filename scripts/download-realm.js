@@ -144,29 +144,26 @@ function acquire(desired, target) {
 }
 
 function getCoreRequirements(dependencies, options, required = {}) {
-    required.CORE_SERVER_FOLDER = `core/v${dependencies.REALM_CORE_VERSION}`;
+    required.CORE_SERVER_FOLDER = `core`;
     let flavor = options.debug ? 'Debug' : 'Release';
 
     switch (options.platform) {
         case 'mac':
-            required.CORE_SERVER_FOLDER += `/macosx/${flavor}`;
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-macosx-devel.tar.gz`;
             return required;
         case 'ios':
             flavor = flavor === 'Debug' ? 'MinSizeDebug' : flavor;
-            required.CORE_SERVER_FOLDER += `/ios/${flavor}`;
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-iphoneos.tar.gz`;
             return required;
         case 'win': {
             if (!options.arch) throw new Error(`Specifying '--arch' is required for platform 'win'`);
             const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
-            required.CORE_SERVER_FOLDER += `/windows/${arch}/nouwp/${flavor}`;
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Windows-${arch}-devel.tar.gz`;
             return required;
         }
         case 'linux':
-            required.CORE_SERVER_FOLDER += `/linux/${flavor}`;
-            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Linux-devel.tar.gz`;
+            const arch_string = options.arch == 'arm' ? '-armhf': '';
+            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Linux${arch_string}-devel.tar.gz`;
             required.OPENSSL = "https://static.realm.io/downloads/openssl/1.1.1b/Linux/x86_64/openssl.tgz";
             return required;
         default:
@@ -193,8 +190,9 @@ function getSyncRequirements(dependencies, options, required = {}) {
             return getCoreRequirements(dependencies, options, required);
         }
         case 'linux':
+            const arch_string = options.arch == 'arm' ? '-armhf': '';
             // flavor is ignored since we only publish Release mode
-            required.SYNC_ARCHIVE = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}-Linux-devel.tar.gz`;
+            required.SYNC_ARCHIVE = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}-Linux${arch_string}-devel.tar.gz`;
             required.OPENSSL = "https://static.realm.io/downloads/openssl/1.1.1b/Linux/x86_64/openssl.tgz";
             return getCoreRequirements(dependencies, options, required);
         default:

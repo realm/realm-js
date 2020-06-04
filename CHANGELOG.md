@@ -14,6 +14,7 @@ NOTE 1: Requires MacOS v10.14 (Mojave) to build.
 * Added support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
 * Added support for embedded objects. ([#2676](https://github.com/realm/realm-js/issues/2676))
 * Added `Realm.App` and `Realm.Credentials`.
+* Added support for compiling on a RaspberryPi.
 
 ### Fixed
 * None.

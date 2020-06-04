@@ -8,7 +8,6 @@ const appUrl = process.argv[3];
 const partition = process.argv[4];
 const realmModule = process.argv[5];
 
-
 function trySetElectronVersion() {
     if (!process.versions || !process.env.REALM_ELECTRON_VERSION) {
         return;

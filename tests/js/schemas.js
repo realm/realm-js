@@ -27,17 +27,17 @@ exports.TestObject = {
     }
 };
 
-exports.DecimalObject = {
-    name: 'DecimalObject',
+exports.Decimal128Object = {
+    name: 'Decimal128Object',
     properties: {
-        decimalCol: 'decimal'
+        decimal128Col: 'decimal128'
     }
 };
 
 exports.ObjectIdObject = {
     name: 'ObjectIdObject',
     properties: {
-        id: 'object id'
+        id: 'objectId'
     }
 };
 
@@ -79,8 +79,8 @@ exports.BasicTypes = {
         stringCol:   'string',
         dateCol:     'date',
         dataCol:     'data',
-        decimalCol:  'decimal',
-        objectIdCol: 'object id',
+        decimal128Col:  'decimal128',
+        objectIdCol: 'objectId',
     }
 };
 
@@ -184,8 +184,8 @@ exports.PrimitiveArrays = {
         string: 'string[]',
         date:   'date[]',
         data:   'data[]',
-        decimal: 'decimal[]',
-        oid:    'object id[]',
+        decimal128: 'decimal128[]',
+        objectId:    'objectId[]',
 
         optBool:   'bool?[]',
         optInt:    'int?[]',
@@ -194,8 +194,8 @@ exports.PrimitiveArrays = {
         optString: 'string?[]',
         optDate:   'date?[]',
         optData:   'data?[]',
-        optDecimal: 'decimal?[]',
-        optOid:    'object id?[]'
+        optDecimal128: 'decimal128?[]',
+        optObjectId:    'objectId?[]'
     }
 };
 
