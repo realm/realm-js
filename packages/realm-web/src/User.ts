@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import type { App } from "./App";
+import { AuthenticatedTransport } from "./transports";
+import { UserProfile } from "./UserProfile";
 
 // Disabling requiring JSDoc for now - as the User class is exported as the Realm.User interface, which is already documented.
 /* eslint-disable jsdoc/require-jsdoc */
@@ -35,11 +37,14 @@ export enum UserState {
     Removed = "removed",
 }
 
+export enum UserType {
+    Normal = "normal",
+    Server = "server",
+}
+
 export interface UserController {
     setAccessToken(token: string): void;
     setState(state: UserState): void;
-    setProfile(profile: Realm.UserProfile): void;
-    forgetTokens(): void;
 }
 
 export interface UserControlHandle {
@@ -89,11 +94,64 @@ export class User implements Realm.User {
         }
     }
 
+    /**
+     * Log in and create a user
+     *
+     * @param transport The transport to use when issuing requests
+     * @param credentials Credentials to use when logging in
+     * @param app
+     * @param fetchProfile Should the users profile be fetched? (default: true)
+     */
+    public static async logIn(
+        app: App<Realm.BaseFunctionsFactory>,
+        credentials: Realm.Credentials,
+        fetchProfile = true,
+    ) {
+        // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
+        const response = await app.appTransport.fetch(
+            {
+                method: "POST",
+                path: `/auth/providers/${credentials.providerName}/login`,
+                body: credentials.payload,
+            },
+            null,
+        );
+        // Spread out values from the response and ensure they're valid
+        const {
+            user_id: userId,
+            access_token: accessToken,
+            refresh_token: refreshToken,
+        } = response;
+        if (typeof userId !== "string") {
+            throw new Error("Expected a user id in the response");
+        }
+        if (typeof accessToken !== "string") {
+            throw new Error("Expected an access token in the response");
+        }
+        if (typeof refreshToken !== "string") {
+            throw new Error("Expected an refresh token in the response");
+        }
+        // Create the user
+        const handle = User.create({
+            app,
+            id: userId,
+            accessToken,
+            refreshToken,
+        });
+        // If neeeded, fetch and set the profile on the user
+        if (fetchProfile) {
+            await handle.user.refreshProfile();
+        }
+        // Return the user handle
+        return handle;
+    }
+
     private _id: string;
     private _accessToken: string | null;
     private _refreshToken: string | null;
     private _profile: Realm.UserProfile | undefined;
     private _state: Realm.UserState;
+    private transport: AuthenticatedTransport;
 
     public constructor({
         app,
@@ -107,25 +165,20 @@ export class User implements Realm.User {
         this._accessToken = accessToken;
         this._refreshToken = refreshToken;
         this._state = UserState.Active;
+        this.transport = new AuthenticatedTransport(app.baseTransport, {
+            currentUser: this,
+        });
 
         // Create and expose the controller to the creator
         if (onController) {
-            const controller: UserController = {
+            onController({
                 setAccessToken: token => {
                     this._accessToken = token;
-                },
-                setProfile: profile => {
-                    this._profile = profile;
                 },
                 setState: state => {
                     this._state = state;
                 },
-                forgetTokens: () => {
-                    this._accessToken = null;
-                    this._refreshToken = null;
-                },
-            };
-            onController(controller);
+            });
         }
     }
 
@@ -173,5 +226,31 @@ export class User implements Realm.User {
         } else {
             throw new Error("A profile was never fetched for this user");
         }
+    }
+
+    public async refreshProfile() {
+        // Fetch the latest profile
+        const response = await this.transport.fetch({
+            method: "GET",
+            path: "/auth/profile",
+        });
+        // Create a profile instance
+        this._profile = new UserProfile(response);
+    }
+
+    public async logOut() {
+        // Invalidate the refresh token
+        await this.app.baseTransport.fetch({
+            method: "DELETE",
+            path: "/auth/session",
+            headers: {
+                Authorization: `Bearer ${this._refreshToken}`,
+            },
+        });
+        // Forget the tokens
+        this._accessToken = null;
+        this._refreshToken = null;
+        // Update the state
+        this._state = UserState.LoggedOut;
     }
 }

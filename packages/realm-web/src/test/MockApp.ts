@@ -24,16 +24,23 @@ import { MockNetworkTransport } from "./MockNetworkTransport";
  */
 export class MockApp extends App<any> {
     /**
+     * The mock network transport created when creating this mock app.
+     */
+    public readonly mockTransport: MockNetworkTransport;
+
+    /**
      * Create mocked App, useful when testing.
      *
      * @param id The ID of the app.
      * @param requests An array of requests returned by the underlying mocked network transport.
      */
     constructor(id: string, requests: object[] = []) {
+        const transport = new MockNetworkTransport(requests);
         super({
             id,
             baseUrl: "http://localhost:1337",
-            transport: new MockNetworkTransport(requests),
+            transport,
         });
+        this.mockTransport = transport;
     }
 }

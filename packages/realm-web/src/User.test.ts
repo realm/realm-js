@@ -19,10 +19,13 @@
 import { expect } from "chai";
 
 import { MockApp } from "./test/MockApp";
-import { User } from "./User";
+import { UserType, User, UserState } from "./User";
+
+// Since responses from the server uses underscores in field names:
+/* eslint @typescript-eslint/camelcase: "warn" */
 
 describe("User", () => {
-    it("sends a request when logging in", async () => {
+    it("constructs", async () => {
         const app = new MockApp("my-mocked-app");
         const user = new User({
             app,
@@ -31,8 +34,79 @@ describe("User", () => {
             refreshToken: "very-refreshing",
         });
         // Assume that the user has an access token
-        expect(user.accessToken).to.equal("deadbeef");
+        expect(user.accessToken).equals("deadbeef");
     });
 
-    // TODO: Test the controller pattern
+    it("deletes session when logging out", async () => {
+        const app = new MockApp("my-mocked-app", [{}]);
+        const user = new User({
+            app,
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+        });
+        // Log out the user
+        await user.logOut();
+        // Expect that a request was made
+        expect(app.mockTransport.requests).deep.equals([
+            {
+                method: "DELETE",
+                url: "http://localhost:1337/api/client/v2.0/auth/session",
+                headers: {
+                    // It's important that the refresh and not the access token is sent here ..
+                    Authorization: "Bearer very-refreshing",
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            },
+        ]);
+    });
+
+    it("can refresh the user profile", async () => {
+        const user = new User({
+            app: new MockApp("my-mocked-app", [
+                {
+                    data: {
+                        first_name: "John",
+                    },
+                    identities: [],
+                    type: "normal",
+                },
+            ]),
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+            onController: controller => {
+                controller.setAccessToken("new-access-token");
+                controller.setState(UserState.Removed);
+            },
+        });
+        // Expect an exception if the profile was never fetched
+        expect(() => {
+            user.profile;
+        }).throws("A profile was never fetched for this user");
+        // Refresh the profile and expect a firstName
+        await user.refreshProfile();
+        expect(user.profile).deep.equals({
+            identities: [],
+            type: UserType.Normal,
+            firstName: "John",
+        });
+    });
+
+    it("provides a controller which state", () => {
+        const user = new User({
+            app: new MockApp("my-mocked-app"),
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+            onController: controller => {
+                controller.setAccessToken("new-access-token");
+                controller.setState(UserState.Removed);
+            },
+        });
+        // Expect something about the user
+        expect(user.accessToken).equals("new-access-token");
+        expect(user.state).equals("removed");
+    });
 });

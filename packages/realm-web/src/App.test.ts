@@ -86,8 +86,20 @@ describe("App", () => {
                 refresh_token: "very-refreshing",
             },
             {
-                first_name: "John",
-                last_name: "Doe",
+                data: {
+                    first_name: "John",
+                    last_name: "Doe",
+                },
+                domain_id: "5ed10debc085000e2c0097ac",
+                identities: [
+                    {
+                        id: "5ed10e0dc085000e2c0099f2-fufttusvpmojykvacvhijoaq",
+                        provider_id: "5ed10dedc085000e2c0097c5",
+                        provider_type: "anon-user",
+                    },
+                ],
+                type: "normal",
+                user_id: "5ed10e0dc085000e2c0099f3",
             },
         ]);
         const app = new App({

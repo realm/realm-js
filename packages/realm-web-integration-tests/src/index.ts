@@ -22,6 +22,7 @@ const mochaClient = new MochaRemoteClient({
     onInstrumented: () => {
         require("./app.test");
         require("./credentials.test");
+        require("./user.test");
         require("./functions.test");
         require("./services.test");
         require("./api-key-auth-provider.test");

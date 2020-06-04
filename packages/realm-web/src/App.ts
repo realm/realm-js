@@ -62,15 +62,19 @@ export class App<
     public static readonly DEFAULT_BASE_URL = "https://stitch.mongodb.com";
 
     /**
+     * A transport adding the base route prefix to all requests.
+     */
+    public readonly baseTransport: Transport;
+
+    /**
+     * A transport adding the base and app route prefix to all requests.
+     */
+    public readonly appTransport: Transport;
+
+    /**
      * This base route will be prefixed requests issued through by the base transport
      */
     private static readonly BASE_ROUTE = "/api/client/v2.0";
-
-    /** A transport adding the base route prefix to all requests. */
-    private readonly baseTransport: Transport;
-
-    /** A transport adding the base and app route prefix to all requests. */
-    private readonly appTransport: Transport;
 
     /**
      * A (reversed) stack of active and logged-out users.
@@ -100,25 +104,25 @@ export class App<
         }
         const baseUrl = configuration.baseUrl || App.DEFAULT_BASE_URL;
         // Get or construct the network transport
-        const baseUrlTransport = new BaseTransport(
+        this.baseTransport = new BaseTransport(
             configuration.transport,
             baseUrl,
+            App.BASE_ROUTE,
         );
         // Construct an object, wrapping the network transport, enabling authenticated requests
+        this.appTransport = this.baseTransport.prefix(`/app/${this.id}`);
         const authTransport = new AuthenticatedTransport(
-            baseUrlTransport,
+            this.appTransport,
             this,
         );
-        this.baseTransport = authTransport.prefix(App.BASE_ROUTE);
-        this.appTransport = this.baseTransport.prefix(`/app/${this.id}`);
         // Construct the functions factory
         this.functions = createFunctionsFactory<FunctionsFactoryType>(
-            this.appTransport,
+            authTransport,
         );
         // Construct the services factory
-        this.services = createServicesFactory(this.appTransport);
+        this.services = createServicesFactory(authTransport);
         // Construct the auth providers
-        this.auth = createAuthProviders(this.appTransport);
+        this.auth = createAuthProviders(authTransport);
     }
 
     /**
@@ -158,45 +162,11 @@ export class App<
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
     public async logIn(credentials: Realm.Credentials, fetchProfile = true) {
-        // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
-        const response = await this.appTransport.fetch(
-            {
-                method: "POST",
-                path: `/auth/providers/${credentials.providerName}/login`,
-                body: credentials.payload,
-            },
-            null,
+        const handle: UserControlHandle = await User.logIn(
+            this,
+            credentials,
+            fetchProfile,
         );
-        // Spread out values from the response and ensure they're valid
-        const {
-            user_id: userId,
-            access_token: accessToken,
-            refresh_token: refreshToken,
-        } = response;
-        if (typeof userId !== "string") {
-            throw new Error("Expected a user id in the response");
-        }
-        if (typeof accessToken !== "string") {
-            throw new Error("Expected an access token in the response");
-        }
-        if (typeof refreshToken !== "string") {
-            throw new Error("Expected an refresh token in the response");
-        }
-        // Create the user
-        const handle = User.create({
-            app: this,
-            id: userId,
-            accessToken,
-            refreshToken,
-        });
-        // If neeeded, fetch and set the profile on the user
-        if (fetchProfile) {
-            const profile = await this.baseTransport.fetch(
-                { method: "GET", path: "/auth/profile" },
-                handle.user,
-            );
-            handle.controller.setProfile(profile);
-        }
         // Add the user at the top of the stack
         this.users.splice(0, 0, handle);
         // Return the user
@@ -211,19 +181,8 @@ export class App<
     public async logOut(
         userOrId: Realm.User | string | null = this.currentUser,
     ) {
-        const { user, controller } = this.getUserHandle(userOrId);
-        // Invalidate the refresh token
-        await this.baseTransport.fetch({
-            method: "DELETE",
-            path: "/auth/session",
-            headers: {
-                Authorization: `Bearer ${user.refreshToken}`,
-            },
-        });
-        // Make the user forget its tokens
-        controller.forgetTokens();
-        // Set the state of the user
-        controller.setState(UserState.LoggedOut);
+        const { user } = this.getUserHandle(userOrId);
+        await user.logOut();
     }
 
     /**

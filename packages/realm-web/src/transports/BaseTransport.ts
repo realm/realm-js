@@ -51,12 +51,14 @@ export class BaseTransport implements Transport {
      *
      * @param networkTransport The underlying network transport.
      * @param baseUrl The base URL to prepend to paths.
+     * @param basePath
      */
     constructor(
         networkTransport: NetworkTransport = new DefaultNetworkTransport(),
         baseUrl: string,
+        basePath = "",
     ) {
-        this.baseUrl = baseUrl;
+        this.baseUrl = baseUrl + basePath;
         this.networkTransport = networkTransport;
     }
 
