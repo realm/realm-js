@@ -125,7 +125,7 @@ stage('test') {
   parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
   parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
   parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
-  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}")
+  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
@@ -540,7 +540,7 @@ def testAndroid(target, postStep = null) {
   }
 }
 
-def testLinux(target, postStep = null) {
+def testLinux(target, postStep = null, Boolean enableSync = false) {
   return {
       node('docker') {
       def reportName = "Linux ${target}"
@@ -552,16 +552,8 @@ def testLinux(target, postStep = null) {
       }
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
-      try {
-        // stitch images are auto-published every day to our CI
-        // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
-        // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
-        // if there's really a new feature you need from the latest stitch, upgrade this manually
-        withRealmCloud(version: objectStoreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/src/object-store/tests/mongodb"]) { networkName ->
-          reportStatus(reportName, 'PENDING', 'Build has started')
-          image.inside("-e HOME=/tmp -e MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\" --network=${networkName}") {
-            // sanity check the network to local stitch before continuing to compile everything
-            sh "curl http://mongodb-realm:9090"
+      def buildSteps = { String dockerArgs = "" ->
+          image.inside("-e HOME=/tmp ${dockerArgs}") {
             timeout(time: 1, unit: 'HOURS') {
               sh "scripts/test.sh ${target}"
             }
@@ -571,10 +563,26 @@ def testLinux(target, postStep = null) {
             deleteDir()
             reportStatus(reportName, 'SUCCESS', 'Success!')
           }
-        }
-      } catch(Exception e) {
-        reportStatus(reportName, 'FAILURE', e.toString())
-        throw e
+      }
+
+      try {
+          reportStatus(reportName, 'PENDING', 'Build has started')
+          if (enableSync) {
+              // stitch images are auto-published every day to our CI
+              // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
+              // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
+              // if there's really a new feature you need from the latest stitch, upgrade this manually
+            withRealmCloud(version: objectStoreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/src/object-store/tests/mongodb"]) { networkName ->
+                // sanity check the network to local stitch before continuing to compile everything
+                sh "curl http://mongodb-realm:9090"
+                buildSteps("-e MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\" --network=${networkName}")
+            }
+          } else {
+            buildSteps("")
+          }
+        } catch(Exception e) {
+          reportStatus(reportName, 'FAILURE', e.toString())
+          throw e
       }
     }
   }
