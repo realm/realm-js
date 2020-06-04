@@ -1,16 +1,18 @@
-'use strict';
+//TODO: remove the file once CI is working
 
-const mockery = require('mockery');
+// 'use strict';
 
-module.exports = function(realmModulePath) {
-    if (typeof REALM_MODULE_PATH !== 'undefined')
-        return;
+// const mockery = require('mockery');
 
-    global.REALM_MODULE_PATH = realmModulePath;
+// module.exports = function(realmModulePath) {
+//     if (typeof REALM_MODULE_PATH !== 'undefined')
+//         return;
 
-    mockery.enable({
-        warnOnReplace: false,
-        warnOnUnregistered: false
-    });
-    mockery.registerSubstitute('realm', REALM_MODULE_PATH); // eslint-disable-line no-undef
-}
+//     global.REALM_MODULE_PATH = realmModulePath;
+
+//     mockery.enable({
+//         warnOnReplace: false,
+//         warnOnUnregistered: false
+//     });
+//     mockery.registerSubstitute('realm', REALM_MODULE_PATH); // eslint-disable-line no-undef
+// }

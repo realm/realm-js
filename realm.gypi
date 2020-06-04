@@ -50,14 +50,13 @@
         "src/object-store/src/impl/results_notifier.cpp",
         "src/object-store/src/impl/transact_log_handler.cpp",
         "src/object-store/src/impl/weak_realm_notifier.cpp",
+        "src/object-store/src/util/scheduler.cpp",
         "src/object-store/src/util/uuid.cpp",
-
         "src/object-store/external/json/json.hpp",
         "src/object-store/src/audit.hpp",
         "src/object-store/src/binding_callback_thread_observer.hpp",
         "src/object-store/src/binding_context.hpp",
         "src/object-store/src/collection_notifications.hpp",
-        "src/object-store/src/execution_context_id.hpp",
         "src/object-store/src/feature_checks.hpp",
         "src/object-store/src/index_set.hpp",
         "src/object-store/src/list.hpp",
@@ -77,7 +76,6 @@
         "src/object-store/src/impl/notification_wrapper.hpp",
         "src/object-store/src/impl/object_accessor_impl.hpp",
         "src/object-store/src/impl/object_notifier.hpp",
-        "src/object-store/src/impl/primitive_list_notifier.hpp",
         "src/object-store/src/impl/realm_coordinator.hpp",
         "src/object-store/src/impl/results_notifier.hpp",
         "src/object-store/src/impl/transact_log_handler.hpp",
@@ -91,26 +89,26 @@
         "src/object-store/src/sync/async_open_task.hpp",
         "src/object-store/src/sync/sync_config.hpp",
         "src/object-store/src/sync/sync_manager.hpp",
-        "src/object-store/src/sync/sync_permission.hpp",
         "src/object-store/src/sync/sync_session.hpp",
         "src/object-store/src/sync/sync_user.hpp",
+        "src/object-store/src/sync/app.hpp",
+        "src/object-store/src/sync/app_credentials.hpp",
         "src/object-store/src/sync/impl/apple/network_reachability_observer.hpp",
         "src/object-store/src/sync/impl/apple/system_configuration.hpp",
         "src/object-store/src/sync/impl/network_reachability.hpp",
         "src/object-store/src/sync/impl/sync_client.hpp",
         "src/object-store/src/sync/impl/sync_file.hpp",
         "src/object-store/src/sync/impl/sync_metadata.hpp",
-        "src/object-store/src/sync/impl/work_queue.hpp",
         "src/object-store/src/util/aligned_union.hpp",
         "src/object-store/src/util/atomic_shared_ptr.hpp",
         "src/object-store/src/util/event_loop_dispatcher.hpp",
-        "src/object-store/src/util/event_loop_signal.hpp",
+        "src/object-store/src/util/scheduler.hpp",
         "src/object-store/src/util/tagged_bool.hpp",
         "src/object-store/src/util/uuid.hpp",
-        "src/object-store/src/util/android/event_loop_signal.hpp",
-        "src/object-store/src/util/apple/event_loop_signal.hpp",
-        "src/object-store/src/util/generic/event_loop_signal.hpp",
-        "src/object-store/src/util/uv/event_loop_signal.hpp",
+        "src/object-store/src/util/android/scheduler.hpp",
+        "src/object-store/src/util/apple/scheduler.hpp",
+        "src/object-store/src/util/generic/scheduler.hpp",
+        "src/object-store/src/util/uv/scheduler.hpp",
       ],
       "conditions": [
         ["OS=='win'", {
@@ -140,6 +138,14 @@
             "src/object-store/src/sync/sync_manager.cpp",
             "src/object-store/src/sync/sync_session.cpp",
             "src/object-store/src/sync/sync_user.cpp",
+            "src/object-store/src/sync/app.cpp",
+            "src/object-store/src/sync/app_credentials.cpp",
+            "src/object-store/src/sync/remote_mongo_client.cpp",
+            "src/object-store/src/sync/remote_mongo_collection.cpp",
+            "src/object-store/src/sync/remote_mongo_database.cpp",
+            "src/object-store/src/sync/generic_network_transport.cpp",
+            "src/object-store/src/util/bson/bson.cpp",
+            "src/object-store/src/util/bson/regular_expression.cpp",
           ],
         }, {
           "dependencies": [ "realm-core" ]
@@ -220,20 +226,35 @@
     {
       "target_name": "OpenSSL",
       "type": "none",
+      "variables": {
+        "vendor_dir": "<(realm_js_dir)/vendor/realm-<(OS)-<(target_arch)<(debug_library_suffix)"
+      },
       "link_settings": {
         "conditions": [
           ["OS=='win'", {
             "conditions": [
               ["target_arch=='ia32'", {
-                "libraries": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\ssleay32.lib" ]
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib" ]
               }, {
-                "libraries": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\ssleay32.lib" ]
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
               }],
-            ]
+            ],
+            # This inserts ssleay32.lib at the beginning of the linker input list,
+            # causing it to be considered before node.lib and its OpenSSL symbols.
+            # Additionally, we request that all the symbols from ssleay32.lib are included
+            # in the final executable.
+            "msvs_settings": {
+              "VCLinkerTool": {
+                "AdditionalDependencies": [ "libeay32.lib", "ssleay32.lib" ],
+                "AdditionalOptions": [
+                  "/WHOLEARCHIVE:ssleay32.lib"
+                ]
+              }
+            }
           }],
           ["OS=='linux'", {
-            "libraries": [ "-l:libssl.a", "-l:libcrypto.a" ],
-            "library_dirs": [ "/usr/lib", "/usr/lib64" ],
+            "libraries": [ "<(vendor_dir)/openssl/lib/libssl.a", "<(vendor_dir)/openssl/lib/libcrypto.a" ],
+            "library_dirs": [ "<(vendor_dir)/openssl/lib" ],
           }]
         ]
       }
@@ -245,7 +266,7 @@
       "target_name": "vendored-realm",
       "type": "none",
       "all_dependent_settings": {
-        "include_dirs": [ "<(vendor_dir)/include" ],
+        "include_dirs": [ "<(vendor_dir)/include", "<(vendor_dir)/include/realm" ],
         "library_dirs": [
           "<(vendor_dir)/lib",
           "<(vendor_dir)/lib64",

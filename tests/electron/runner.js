@@ -49,6 +49,6 @@ app.start().then(() => {
   process.exit(statusCode);
 }).catch((error) => {
   // Log any failures
-  console.error("Test harness failure:", error.message);
+  console.error("Test harness failure:", error);
   process.exit(-1);
 })

@@ -12,7 +12,7 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Realm JavaScript](https://realm.io/docs/javascript/latest/#getting-started). Please notice that currently only node.js version 8 and 10 are supported.
+Please see the detailed instructions in our docs to use [Realm JavaScript](https://realm.io/docs/javascript/latest/#getting-started). Please notice that currently only node.js version 10 or later are supported.
 
 ## Documentation
 
@@ -26,7 +26,6 @@ The API reference is located at [realm.io/docs/javascript/latest/api/](https://r
 * **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We actively monitor and answer questions on SO!
 * **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
 * **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
-* Sign up for our [**Community Newsletter**](https://go.pardot.com/l/210132/2017-04-26/3j74l) to get regular tips, learn about other use-cases and get alerted of blog posts and tutorials about Realm.
 
 ## Building Realm
 
@@ -34,7 +33,7 @@ In case you don't want to use the precompiled version on npm, you can build Real
 
 Prerequisites:
 * Xcode 9.4+
-* node.js version 10
+* node.js version 10 or later
 * nvm (on Mac)
 * cocoapods (on Mac)
 * Android SDK 23+

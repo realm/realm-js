@@ -36,7 +36,9 @@ module.exports = {
             this.assertEqual(val1 && val1.getTime(), val2.getTime(), errorMessage, depth + 1);
         }
         else if (type === 'object') {
-            for (const key of Object.keys(val1)) {
+            var keys = val1.keys !== undefined ? val1.keys() : Object.keys(val1);
+
+            for (const key of keys) {
                 const message = errorMessage ? `${errorMessage}: ${key}` : key;
                 this.assertEqual(val1[key], val2[key], message, depth + 1);
             }
@@ -117,7 +119,10 @@ module.exports = {
             compare = (i, a, b) => a >= b - 0.000001 && a <= b + 0.000001;
         }
         else if (val1.type === 'object') {
-            compare = (i, a, b) => Object.keys(a).every(key => a[key] === b[key]);
+            compare = (i, a, b) => {
+                var keys = a.keys !== undefined ? a.keys() : Object.keys(a);
+                return keys.every(key => a[key] === b[key]);
+            }
         }
         else {
             compare = (i, a, b) => a === b;
@@ -135,17 +140,23 @@ module.exports = {
     },
 
     assertThrows: function(func, errorMessage, depth) {
-        let caught = false;
         try {
             func();
         }
         catch (e) {
-            caught = true;
+            return e
         }
+        throw new TestFailureError(errorMessage || `Expected exception not thrown from ${func}`, depth);
+    },
 
-        if (!caught) {
-            throw new TestFailureError(errorMessage || 'Expected exception not thrown', depth);
+    assertThrowsAsync: async function(func, errorMessage, depth) {
+        try {
+            await func();
         }
+        catch (e) {
+            return e
+        }
+        throw new TestFailureError(errorMessage || `Expected exception not thrown from ${func}`, depth);
     },
 
     assertThrowsException: function(func, expectedException) {

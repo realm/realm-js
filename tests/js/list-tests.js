@@ -63,8 +63,8 @@ module.exports = {
         TestCase.assertEqual(prim.double.type, 'double');
         TestCase.assertEqual(prim.string.type, 'string');
         TestCase.assertEqual(prim.date.type, 'date');
-        TestCase.assertEqual(prim.decimal.type, 'decimal');
-        TestCase.assertEqual(prim.oid.type, 'object id');
+        TestCase.assertEqual(prim.decimal128.type, 'decimal128');
+        TestCase.assertEqual(prim.objectId.type, 'objectId');
 
         TestCase.assertEqual(prim.optBool.type, 'bool');
         TestCase.assertEqual(prim.optInt.type, 'int');
@@ -72,8 +72,8 @@ module.exports = {
         TestCase.assertEqual(prim.optDouble.type, 'double');
         TestCase.assertEqual(prim.optString.type, 'string');
         TestCase.assertEqual(prim.optDate.type, 'date');
-        TestCase.assertEqual(prim.optDecimal.type, 'decimal');
-        TestCase.assertEqual(prim.optOid.type, 'object id');
+        TestCase.assertEqual(prim.optDecimal128.type, 'decima128');
+        TestCase.assertEqual(prim.optObjectId.type, 'objectId');
 
         TestCase.assertFalse(prim.bool.optional);
         TestCase.assertFalse(prim.int.optional);
@@ -81,8 +81,8 @@ module.exports = {
         TestCase.assertFalse(prim.double.optional);
         TestCase.assertFalse(prim.string.optional);
         TestCase.assertFalse(prim.date.optional);
-        TestCase.assertFalse(prim.decimal.optional);
-        TestCase.assertFalse(prim.oid.optional);
+        TestCase.assertFalse(prim.decimal128.optional);
+        TestCase.assertFalse(prim.objectId.optional);
 
         TestCase.assertTrue(prim.optBool.optional);
         TestCase.assertTrue(prim.optInt.optional);
@@ -90,8 +90,8 @@ module.exports = {
         TestCase.assertTrue(prim.optDouble.optional);
         TestCase.assertTrue(prim.optString.optional);
         TestCase.assertTrue(prim.optDate.optional);
-        TestCase.assertTrue(prim.optDecimal.optional);
-        TestCase.assertTrue(prim.optOid.optional);
+        TestCase.assertTrue(prim.optDecimal128.optional);
+        TestCase.assertTrue(prim.optObjectId.optional);
     },
 
     testListLength: function() {
@@ -140,8 +140,8 @@ module.exports = {
                 string: ['a', 'b'],
                 date:   [new Date(1), new Date(2)],
                 data:   [DATA1, DATA2],
-                decimal: [Decimal128.fromString('1'), Decimal128.fromString('2')],
-                oid:    [new ObjectId('0000002a9a7969d24bea4cf2'), new ObjectId('0000002a9a7969d24bea4cf3')],
+                decimal128: [Decimal128.fromString('1'), Decimal128.fromString('2')],
+                objectId:    [new ObjectId('0000002a9a7969d24bea4cf2'), new ObjectId('0000002a9a7969d24bea4cf3')],
 
                 optBool:   [true, null],
                 optInt:    [1, null],
@@ -151,7 +151,7 @@ module.exports = {
                 optDate:   [new Date(1), null],
                 optData:   [DATA1, null],
                 optDecimal: [Decimal128.fromString('1'), null],
-                optOid:    [new ObjectId('0000002a9a7969d24bea4cf2'), null]
+                optObjectId:    [new ObjectId('0000002a9a7969d24bea4cf2'), null]
             });
         });
 
@@ -167,12 +167,12 @@ module.exports = {
         TestCase.assertEqual(obj.arrayCol1[-1], undefined);
         TestCase.assertEqual(obj.arrayCol1['foo'], undefined);
 
-        for (let field of Object.keys(prim)) {
+        for (let field of prim.keys()) {
             TestCase.assertEqual(prim[field][2], undefined);
             TestCase.assertEqual(prim[field][-1], undefined);
             TestCase.assertEqual(prim[field]['foo'], undefined);
             if (field.includes('opt')) {
-                TestCase.assertEqual(prim[field][1], null);
+                TestCase.assertEqual(prim[field][1], null, `FIELD: ${field}`);
             }
         }
 
@@ -190,10 +190,10 @@ module.exports = {
         TestCase.assertSimilar('data', prim.data[1], DATA2);
         TestCase.assertSimilar('date', prim.date[0], new Date(1));
         TestCase.assertSimilar('date', prim.date[1], new Date(2));
-        TestCase.assertSimilar('decimal', prim.decimal[0], Decimal128.fromString('1'));
-        TestCase.assertSimilar('decimal', prim.decimal[1], Decimal128.fromString('2'));
-        TestCase.assertSimilar('object id', prim.oid[0], new ObjectId('0000002a9a7969d24bea4cf2'));
-        TestCase.assertSimilar('object id', prim.oid[1], new ObjectId('0000002a9a7969d24bea4cf3'));
+        TestCase.assertSimilar('decimal128', prim.decimal128[0], Decimal128.fromString('1'));
+        TestCase.assertSimilar('decimal128', prim.decimal128[1], Decimal128.fromString('2'));
+        TestCase.assertSimilar('objectId', prim.objectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
+        TestCase.assertSimilar('objectId', prim.objectId[1], new ObjectId('0000002a9a7969d24bea4cf3'));
 
         TestCase.assertSimilar('bool', prim.optBool[0], true);
         TestCase.assertSimilar('int', prim.optInt[0], 1);
@@ -202,8 +202,8 @@ module.exports = {
         TestCase.assertSimilar('string', prim.optString[0], 'a');
         TestCase.assertSimilar('data', prim.optData[0], DATA1);
         TestCase.assertSimilar('date', prim.optDate[0], new Date(1));
-        TestCase.assertSimilar('decimal', prim.optDecimal[0], Decimal128.fromString('1'));
-        TestCase.assertSimilar('object id', prim.optOid[0], new ObjectId('0000002a9a7969d24bea4cf2'));
+        TestCase.assertSimilar('decimal128', prim.optDecimal128[0], Decimal128.fromString('1'));
+        TestCase.assertSimilar('objectId', prim.optObjectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
     },
 
     testListSubscriptSetters: function() {
@@ -1348,7 +1348,7 @@ module.exports = {
     testListNestedFromJSON: function() {
         let json = '{"id":1, "name": [{ "family": "Larsen", "given": ["Hans", "Jørgen"], "prefix": [] }, { "family": "Hansen", "given": ["Ib"], "prefix": [] }] }';
         let parent = JSON.parse(json);
-        const realm = new Realm({schema: [schemas.ParentObject, schemas.NameObject]});
+        const realm = new Realm({schema: [schemas.ParentObjectLocal, schemas.NameObjectLocal]});
         realm.write(() => {
             realm.create('ParentObject', parent);
         });
@@ -1390,11 +1390,11 @@ module.exports = {
 
     testGetAndApplySchema: function() {
         const realm1 = new Realm({
-            schema: [schemas.NameObject],
+            schema: [schemas.NameObjectLocal],
             _cache: false,
         });
         realm1.write(() => {
-            realm1.create(schemas.NameObject.name, { family: 'Smith', given: [ 'Bob', 'Ted']});
+            realm1.create(schemas.NameObjectLocal.name, { family: 'Smith', given: [ 'Bob', 'Ted']});
         })
         const schema = realm1.schema;
         realm1.close();
@@ -1403,7 +1403,7 @@ module.exports = {
             schema: schema,
             _cache: false,
         });
-        let names = realm2.objects(schemas.NameObject.name);
+        let names = realm2.objects(schemas.NameObjectLocal.name);
         TestCase.assertEqual(names.length, 1);
         TestCase.assertEqual(names[0]['family'], 'Smith');
         TestCase.assertEqual(names[0]['given'].length, 2);
@@ -1412,12 +1412,65 @@ module.exports = {
 
     testCreateEmbeddedObjects: function() {
         const realm = new Realm({schema: [schemas.ContactSchema, schemas.AddressSchema]});
+
         realm.write(() => {
-            realm.create(schemas.ContactSchema.name, { name: 'Freddy Krueger', address: { street: 'Elm Street', city: 'Springwood' }} );
+            realm.create(schemas.ContactSchema.name, { name: "Freddy Krueger", address: { street: "Elm Street", city: "Springwood" }} );
         });
 
         TestCase.assertEqual(realm.objects(schemas.ContactSchema.name).length, 1);
         TestCase.assertEqual(realm.objects(schemas.AddressSchema.name).length, 1);
+
+        realm.write(() => {
+            realm.create(schemas.ContactSchema.name, { name: "John Doe" } );
+        });
+
+        let contacts = realm.objects(schemas.ContactSchema.name);
+        TestCase.assertEqual(contacts.length, 2);
+        TestCase.assertEqual(realm.objects(schemas.AddressSchema.name).length, 1);
+        TestCase.assertEqual(contacts[0]["address"]["street"], "Elm Street");
+        TestCase.assertNull(contacts[1]["address"]);
+
+        realm.close();
+    },
+
+
+    testCreateMultipleEmbeddedObjects: function() {
+        const realm = new Realm({schema: [schemas.HouseOwnerSchema, schemas.AddressSchema]});
+
+        realm.write(() => {
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Ib", addresses: [
+                { street: "Algade", city: "Nordby" },
+                { street: "Skolevej", city: "Sydpynten" }
+            ]});
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Petra", addresses: [
+                { street: "Algade", city: "Nordby" }
+            ]});
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Hans" });
+        });
+
+        let owners = realm.objects(schemas.HouseOwnerSchema.name).sorted("name");
+        let addresses = realm.objects(schemas.AddressSchema.name).sorted("street");
+        TestCase.assertEqual(owners.length, 3);
+        TestCase.assertEqual(addresses.length, 3);
+
+        const names = ["Hans", "Ib", "Petra"];
+        for (let i = 0; i < names.length; i++) {
+            TestCase.assertEqual(owners[i]["name"], names[i]);
+        }
+
+        let streets = ["Algade", "Algade", "Skolevej"];
+        for (let i = 0; i < streets.length; i++) {
+            TestCase.assertEqual(addresses[i]["street"], streets[i]);
+        }
+
+        realm.write(() => {
+            addresses[0]["street"] = "Strandvejen";
+        });
+
+        streets = ["Algade", "Skolevej", "Strandvejen"];
+        for (let i = 0; i < streets.length; i++) {
+            TestCase.assertEqual(addresses[i]["street"], streets[i]);
+        }
 
         realm.close();
     }

@@ -1,4 +1,4 @@
-The Realm JavaScript SDK supports querying based on a language inspired by [NSPredicate](https://realm.io/news/nspredicate-cheatsheet/).
+The Realm JavaScript SDK supports querying based on a language inspired by [NSPredicate](https://academy.realm.io/posts/nspredicate-cheatsheet/).
 
 The {@link Realm.Collection#filtered Collection.filtered()} method is used to query a Realm:
 
@@ -114,6 +114,65 @@ Example:
 ```JS
 // Find contacts with friends above 21 in SF
 let teens = realm.objects('Contact').filtered('SUBQUERY(friends, $friend, $friend.age > 21 AND $friend.city = "SF").@count > 0');
+```
+
+### Queries on lists of primitives
+
+The query syntax for a list of primitive values is mostly the same as querying a list of objects via links or lists.
+However, there are some small differences. To illustrate, let's construct a movie database, where each movie has an anonymous star rating and a list of string tags.
+
+```JS
+const MovieSchema = {
+  name: 'Movie',
+  properties: {
+    name: 'string',
+    ratings: 'int[]',
+    tags: 'string[]',
+  }
+};
+let realm = new Realm({schema: [MovieSchema]});
+realm.write(() => {
+  let m0 = realm.create('Movie', {
+    name: 'The Matrix',
+    ratings: [5, 5, 3, 4, 5, 1, 5],
+    tags: ['science fiction', 'artificial reality'],
+  });
+  let m1 = realm.create('Movie', {
+    name: 'Inception',
+    ratings: [3, 5, 3, 4, 5, 5],
+    tags: ['dream', 'science fiction', 'thriller'],
+  })
+});
+```
+
+Just like with lists of objects, we can use aggregates: `.@count`, `.@avg`, `.@min`, `.@max`, `.@sum`.
+Collection operators (`ANY`, `ALL`, `NONE`) are also available. If nothing is specified, then `ANY` is implied.
+Let's look at some example queries from the movie database:
+
+```JS
+// Find movies which have a "science fiction" tag, [c] marks a case insensitive string comparison
+realm.objects('Movie').filtered('tags =[c] "science fiction"')
+// Find movies which have any tag that begins with the text "science" (string operators: LIKE, CONTAINS, BEGINSWITH, ENDSWITH are also available)
+realm.objects('Movie').filtered('tags BEGINSWITH[c] "science"')
+// Find movies that have only single word tags by filtering out any words with a space
+realm.objects('Movie').filtered('NONE tags CONTAINS " "')
+// Find movies that have an average rating of more than 4 stars
+realm.objects('Movie').filtered('ratings.@avg >= 4')
+// Find movies that do not have any one star ratings
+realm.objects('Movie').filtered('ALL ratings > 1')
+// Find movies that have a tag that is also the title (multi-property comparison of the same types is allowed)
+realm.objects('Movie').filtered('ANY tags = name')
+```
+
+Compared to lists of objects, there is one unique operation on lists of primitves which is `.length`.
+This operator will compare the length of each individual element of type string or binary.
+This is because the `.@size` operator is already used to specify the number of elements in the list.
+
+```JS
+// Find movies that have over 100 tags
+realm.objects('Movie').filtered('tags.@size > 100')
+// Find movies that have a tag (ANY is implied) that is over 100 characters in length
+realm.objects('Movie').filtered('tags.length > 100')
 ```
 
 ### Backlink queries

@@ -23,35 +23,46 @@
 #include <map>
 #include <string>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wundef"
-#include <nan.h>
-#pragma GCC diagnostic pop
-
 #include "js_types.hpp"
 
-#define HANDLESCOPE Nan::HandleScope handle_scope;
+#include "napi.h"
+
+#define HANDLESCOPE(env) Napi::HandleScope handle_scope(env);
 
 namespace realm {
 namespace node {
 
-struct Types {
-    using Context = v8::Isolate*;
-    using GlobalContext = v8::Local<v8::Context>;
-    using Value = v8::Local<v8::Value>;
-    using Object = v8::Local<v8::Object>;
-    using String = v8::Local<v8::String>;
-    using Function = v8::Local<v8::Function>;
+extern Napi::FunctionReference RealmClassConstructor;
 
-    using ConstructorCallback = Nan::FunctionCallback;
-    using FunctionCallback = Nan::FunctionCallback;
-    using PropertyGetterCallback = Nan::GetterCallback;
-    using PropertySetterCallback = Nan::SetterCallback;
-    using IndexPropertyGetterCallback = Nan::IndexGetterCallback;
-    using IndexPropertySetterCallback = Nan::IndexSetterCallback;
-    using StringPropertyGetterCallback = v8::NamedPropertyGetterCallback;
-    using StringPropertySetterCallback = v8::NamedPropertySetterCallback;
-    using StringPropertyEnumeratorCallback = v8::NamedPropertyEnumeratorCallback;
+struct Types {
+	using Context = Napi::Env;
+	using GlobalContext = Napi::Env;
+	using Value = Napi::Value;
+	using Object = Napi::Object;
+	using String = Napi::String;
+	using Function = Napi::Function;
+
+	typedef Napi::Value(*NapiFunctionCallback)(const Napi::CallbackInfo& info);
+
+	typedef Napi::Value(*NapiIndexGetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, uint32_t index);
+	typedef Napi::Value(*NapiIndexSetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, uint32_t index, const Napi::Value& value);
+	typedef Napi::Value(*NapiPropertyGetterCallback)(const Napi::CallbackInfo& info);
+	typedef void(*NapiPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::Value& value);
+
+	typedef Napi::Value(*NapiStringPropertyGetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, const Napi::String& property);
+	typedef Napi::Value(*NapiStringPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, const Napi::String& property, const Napi::Value& value);
+	typedef Napi::Value(*NapiStringPropertyEnumeratorCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance);
+
+	using ConstructorCallback = NapiFunctionCallback;
+	using FunctionCallback = NapiFunctionCallback;
+	using PropertyGetterCallback = NapiPropertyGetterCallback;
+	using PropertySetterCallback = NapiPropertySetterCallback;
+	using IndexPropertyGetterCallback = NapiIndexGetterCallback;
+	using IndexPropertySetterCallback = NapiIndexSetterCallback;
+
+	using StringPropertyGetterCallback = NapiStringPropertyGetterCallback;
+	using StringPropertySetterCallback = NapiStringPropertySetterCallback;
+	using StringPropertyEnumeratorCallback = NapiStringPropertyEnumeratorCallback;
 };
 
 template<typename ClassType>

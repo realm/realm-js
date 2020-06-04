@@ -56,7 +56,9 @@ function determineSpawnParameters(processType, serverUrl) {
 function runElectron(processType, serverUrl) {
     const { command, args } = determineSpawnParameters(processType, serverUrl);
     // Spawn the Electron app
-    const appProcess = spawn(command, args, { stdio: "inherit" });
+    const env = Object.create(process.env);
+    env.ELECTRON_DISABLE_SANDBOX = 1;
+    const appProcess = spawn(command, args, { stdio: "inherit", env : env });
     // If the runner closes, we should kill the Electron app
     process.on("exit", () => {
         appProcess.kill("SIGHUP");
@@ -127,6 +129,6 @@ Promise.race([
     process.exit(failures > 0 ? 1 : 0);
 }, (error) => {
     // Log any failures
-    console.error("Test harness failure:", error.stack);
+    console.error("Test harness failure:", error);
     process.exit(1);
 });

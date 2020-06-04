@@ -19,252 +19,263 @@
 #pragma once
 
 #include "node_types.hpp"
+#include "napi.h"
 
 namespace realm {
 namespace js {
 
 template<>
-inline const char *node::Value::typeof(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    if (value->IsNull()) { return "null"; }
-    if (value->IsNumber()) { return "number"; }
-    if (value->IsString()) { return "string"; }
-    if (value->IsBoolean()) { return "boolean"; }
-    if (value->IsUndefined()) { return "undefined"; }
-    if (value->IsObject()) { return "object"; }
-    return "unknown";
+inline const char* node::Value::typeof(Napi::Env env, const Napi::Value& value) {
+	if (value.IsNull()) { return "null"; }
+	if (value.IsNumber()) { return "number"; }
+	if (value.IsString()) { return "string"; }
+	if (value.IsBoolean()) { return "boolean"; }
+	if (value.IsUndefined()) { return "undefined"; }
+	if (value.IsObject()) { return "object"; }
+	return "unknown";
 }
 
 template<>
-inline bool node::Value::is_array(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsArray();
+inline bool node::Value::is_array(Napi::Env env, const Napi::Value& value) {
+	return value.IsArray();
 }
 
 template<>
-inline bool node::Value::is_array_buffer(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsArrayBuffer();
+inline bool node::Value::is_array_buffer(Napi::Env env, const Napi::Value& value) {
+	return value.IsArrayBuffer();
 }
 
 template<>
-inline bool node::Value::is_array_buffer_view(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsArrayBufferView();
+inline bool node::Value::is_array_buffer_view(Napi::Env env, const Napi::Value& value) {
+	return value.IsTypedArray() || value.IsDataView();
 }
 
 template<>
-inline bool node::Value::is_date(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsDate();
+inline bool node::Value::is_date(Napi::Env env, const Napi::Value& value) {
+	return value.IsObject() && value.As<Napi::Object>().InstanceOf(env.Global().Get("Date").As<Napi::Function>());
 }
 
 template<>
-inline bool node::Value::is_boolean(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsBoolean();
+inline bool node::Value::is_boolean(Napi::Env env, const Napi::Value& value) {
+    return value.IsBoolean();
 }
 
 template<>
-inline bool node::Value::is_constructor(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsFunction();
+inline bool node::Value::is_constructor(Napi::Env env, const Napi::Value& value) {
+	return value.IsFunction();
+}
+
+
+template<>
+inline bool node::Value::is_function(Napi::Env env, const Napi::Value& value) {
+	return value.IsFunction();
 }
 
 template<>
-inline bool node::Value::is_function(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsFunction();
+inline bool node::Value::is_null(Napi::Env env, const Napi::Value& value) {
+	return value.IsNull();
 }
 
 template<>
-inline bool node::Value::is_null(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsNull();
+inline bool node::Value::is_number(Napi::Env env, const Napi::Value& value) {
+	return value.IsNumber();
 }
 
 template<>
-inline bool node::Value::is_number(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsNumber();
+inline bool node::Value::is_decimal128(Napi::Env env, const Napi::Value& value) {
+	return value.IsObject();  // FIXME: can we do better?
 }
 
 template<>
-inline bool node::Value::is_decimal128(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsObject(); // FIXME: can we do better?
+inline bool node::Value::is_object_id(Napi::Env env, const Napi::Value& value) {
+	return value.IsObject(); // FIXME: can we do better?
 }
 
 template<>
-inline bool node::Value::is_object_id(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsObject(); // FIXME: can we do better?
+inline bool node::Value::is_object(Napi::Env env, const Napi::Value& value) {
+	return value.IsObject();
 }
 
 template<>
-inline bool node::Value::is_object(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsObject();
+inline bool node::Value::is_string(Napi::Env env, const Napi::Value& value) {
+	return value.IsString();
 }
 
 template<>
-inline bool node::Value::is_string(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsString();
+inline bool node::Value::is_undefined(Napi::Env env, const Napi::Value& value) {
+	return value.IsUndefined();
 }
 
 template<>
-inline bool node::Value::is_undefined(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsUndefined();
+inline bool node::Value::is_binary(Napi::Env env, const Napi::Value& value) {
+	return Value::is_array_buffer(env, value) || Value::is_array_buffer_view(env, value);
 }
 
 template<>
-inline bool node::Value::is_binary(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return Value::is_array_buffer(isolate, value) || Value::is_array_buffer_view(isolate, value)
-        || ::node::Buffer::HasInstance(value);
+inline bool node::Value::is_valid(const Napi::Value& value) {
+	return !value.IsEmpty();
 }
 
 template<>
-inline bool node::Value::is_valid(const v8::Local<v8::Value> &value) {
-    return !value.IsEmpty();
+inline Napi::Value node::Value::from_boolean(Napi::Env env, bool boolean) {
+	return Napi::Boolean::New(env, boolean);
+}
+
+
+template<>
+inline Napi::Value node::Value::from_null(Napi::Env env) {
+	return Napi::Value(env, env.Null());
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_boolean(v8::Isolate* isolate, bool boolean) {
-    return Nan::New(boolean);
+inline Napi::Value node::Value::from_number(Napi::Env env, double number) {
+	return Napi::Number::New(env, number);
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_null(v8::Isolate* isolate) {
-    return Nan::Null();
+inline Napi::Value node::Value::from_nonnull_string(Napi::Env env, const node::String& string) {
+	return Napi::String::New(env, string);
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_number(v8::Isolate* isolate, double number) {
-    return Nan::New(number);
+inline Napi::Value node::Value::from_nonnull_binary(Napi::Env env, BinaryData data) {
+	Napi::EscapableHandleScope scope(env);
+
+	Napi::ArrayBuffer buffer = Napi::ArrayBuffer::New(env, data.size());
+
+	if (data.size()) {
+		memcpy(buffer.Data(), data.data(), data.size());
+	}
+
+	return scope.Escape(buffer);
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_nonnull_string(v8::Isolate* isolate, const node::String &string) {
-    return v8::Local<v8::String>(string);
+inline Napi::Value node::Value::from_undefined(Napi::Env env) {
+	return Napi::Value(env, env.Undefined());
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_nonnull_binary(v8::Isolate* isolate, BinaryData data) {
-    v8::Local<v8::ArrayBuffer> buffer = v8::ArrayBuffer::New(isolate, data.size());
-    v8::ArrayBuffer::Contents contents = buffer->GetContents();
-
-    if (data.size()) {
-        memcpy(contents.Data(), data.data(), data.size());
-    }
-
-    return buffer;
+inline bool node::Value::to_boolean(Napi::Env env, const Napi::Value& value) {
+	return value.ToBoolean();
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_undefined(v8::Isolate* isolate) {
-    return Nan::Undefined();
+inline node::String node::Value::to_string(Napi::Env env, const Napi::Value& value) {
+	return value.ToString();
 }
 
 template<>
-inline bool node::Value::to_boolean(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return Nan::To<bool>(value).FromMaybe(false);
+inline double node::Value::to_number(Napi::Env env, const Napi::Value& value) {
+	double number = value.ToNumber();
+	if (std::isnan(number)) {
+		throw std::invalid_argument(util::format("Value '%1' not convertible to a number.", (std::string)to_string(env, value)));
+	}
+
+	return number;
 }
 
 template<>
-inline node::String node::Value::to_string(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->ToString();
+inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value value) {
+	// Make a non-null OwnedBinaryData, even when `data` is nullptr.
+	auto make_owned_binary_data = [](const char* data, size_t length) {
+		REALM_ASSERT(data || length == 0);
+		char placeholder;
+		return OwnedBinaryData(data ? data : &placeholder, length);
+	};
+
+	if (Value::is_array_buffer(env, value)) {
+		auto arrayBuffer = value.As<Napi::ArrayBuffer>();
+		return make_owned_binary_data(static_cast<char*>(arrayBuffer.Data()), arrayBuffer.ByteLength());
+	}
+	else if (Value::is_array_buffer_view(env, value)) {
+		int64_t byteLength = value.As<Napi::Object>().Get("byteLength").As<Napi::Number>();
+		int64_t byteOffset = value.As<Napi::Object>().Get("byteOffset").As<Napi::Number>();
+		Napi::ArrayBuffer arrayBuffer = value.As<Napi::Object>().Get("buffer").As<Napi::ArrayBuffer>();
+		return make_owned_binary_data(static_cast<char*>(arrayBuffer.Data()) + byteOffset, byteLength);
+	}
+	else {
+		throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
+	}
 }
 
 template<>
-inline double node::Value::to_number(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    double number = Nan::To<double>(value).FromMaybe(NAN);
-    if (std::isnan(number)) {
-        throw std::invalid_argument(util::format("Value '%1' not convertible to a number.",
-                                                 (std::string)to_string(isolate, value)));
-    }
-    return number;
+inline Napi::Object node::Value::to_object(Napi::Env env, const Napi::Value& value) {
+	return value.ToObject();
 }
 
 template<>
-inline OwnedBinaryData node::Value::to_binary(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-    // Make a non-null OwnedBinaryData, even when `data` is nullptr.
-    auto make_owned_binary_data = [](const char* data, size_t length) {
-        REALM_ASSERT(data || length == 0);
-        char placeholder;
-        return OwnedBinaryData(data ? data : &placeholder, length);
-    };
-
-    if (Value::is_array_buffer(isolate, value)) {
-        v8::Local<v8::ArrayBuffer> array_buffer = value.As<v8::ArrayBuffer>();
-        v8::ArrayBuffer::Contents contents = array_buffer->GetContents();
-
-        return make_owned_binary_data(static_cast<char*>(contents.Data()), contents.ByteLength());
-    }
-    else if (Value::is_array_buffer_view(isolate, value)) {
-        v8::Local<v8::ArrayBufferView> array_buffer_view = value.As<v8::ArrayBufferView>();
-        std::unique_ptr<char[]> data(new char[array_buffer_view->ByteLength()]);
-
-        size_t bytes = array_buffer_view->CopyContents(data.get(), array_buffer_view->ByteLength());
-        OwnedData owned_data(std::move(data), bytes);
-
-        return *reinterpret_cast<OwnedBinaryData*>(&owned_data);
-    }
-    else if (::node::Buffer::HasInstance(value)) {
-        return make_owned_binary_data(::node::Buffer::Data(value), ::node::Buffer::Length(value));
-    }
-    else {
-        throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
-    }
+inline Napi::Object node::Value::to_array(Napi::Env env, const Napi::Value& value) {
+	return to_object(env, value);
 }
 
 template<>
-inline v8::Local<v8::Object> node::Value::to_object(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return Nan::To<v8::Object>(value).FromMaybe(v8::Local<v8::Object>());
+inline Napi::Function node::Value::to_function(Napi::Env env, const Napi::Value& value) {
+	return value.IsFunction() ? value.As<Napi::Function>() : Napi::Function();
 }
 
 template<>
-inline v8::Local<v8::Object> node::Value::to_array(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return to_object(isolate, value);
+inline Napi::Function node::Value::to_constructor(Napi::Env env, const Napi::Value& value) {
+	return to_function(env, value);
 }
 
 template<>
-inline v8::Local<v8::Function> node::Value::to_function(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->IsFunction() ? v8::Local<v8::Function>::Cast(value) : v8::Local<v8::Function>();
+inline Napi::Object node::Value::to_date(Napi::Env env, const Napi::Value& value) {
+	if (value.IsString()) {
+		Napi::Function date_constructor = to_constructor(env, env.Global().Get("Date"));
+		std::array<Napi::Value, 1 > args{ {value} };
+		return node::Function::construct(env, date_constructor, args.size(), args.data());
+	}
+
+	return to_object(env, value);
 }
 
 template<>
-inline v8::Local<v8::Function> node::Value::to_constructor(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return to_function(isolate, value);
+inline Napi::Value node::Value::from_decimal128(Napi::Env env, const Decimal128& number) {
+	Napi::EscapableHandleScope scope(env);
+
+	Napi::Function realm_constructor = node::RealmClassConstructor.Value();
+	Napi::Object decimal_constructor = realm_constructor.Get("_Decimal128").As<Napi::Object>();
+	Napi::Function fromStringFunc = decimal_constructor.Get("fromString").As<Napi::Function>();
+	Napi::String numberAsString = Napi::String::New(env, number.to_string());
+	Napi::Value result = fromStringFunc.Call({ numberAsString });
+
+	return scope.Escape(result);
 }
 
 template<>
-inline v8::Local<v8::Object> node::Value::to_date(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    if (value->IsString()) {
-        v8::Local<v8::Function> date_constructor = to_constructor(isolate, node::Object::get_property(isolate, isolate->GetCurrentContext()->Global(), "Date"));
-        std::array<v8::Local<v8::Value>, 1> args { {value} };
-        return node::Function::construct(isolate, date_constructor, args.size(), args.data());
-    }
-    return to_object(isolate, value);
+inline Decimal128 node::Value::to_decimal128(Napi::Env env, const Napi::Value& value) {
+	Napi::HandleScope scope(env);
+
+	Napi::Object decimal128 = value.As<Napi::Object>();
+	Napi::Function toStringFunc = decimal128.Get("toString").As<Napi::Function>();
+	node::String string = toStringFunc.Call(value, {}).As<Napi::String>();
+	std::string decimal128AsString = string;
+	Decimal128 result(decimal128AsString);
+	return result;
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_decimal128(v8::Isolate* isolate, Decimal128 number) {
-    auto realm_constructor = Value::validated_to_object(isolate, node::Object::get_global(isolate, "Realm"));
-    auto decimal_constructor = to_constructor(isolate, node::Object::get_property(isolate, realm_constructor, "_Decimal128"));
-    v8::Local<v8::Function> fromString = to_function(isolate, node::Object::get_property(isolate, decimal_constructor, "fromString"));
-    std::array<v8::Local<v8::Value>, 1> args { {from_nonnull_string(isolate, number.to_string())} };
-    return node::Function::call(isolate, fromString, args.size(), args.data());
+inline Napi::Value node::Value::from_object_id(Napi::Env env, const ObjectId& objectId) {
+	Napi::EscapableHandleScope scope(env);
+
+	Napi::Function realm_constructor = node::RealmClassConstructor.Value();
+	Napi::Function object_id_constructor = realm_constructor.Get("_ObjectId").As<Napi::Function>();
+	napi_value args[] = { Napi::String::New(env, objectId.to_string()) };
+	Napi::Value result = object_id_constructor.New(1, args);
+	return scope.Escape(result);
 }
 
 template<>
-inline Decimal128 node::Value::to_decimal128(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    auto as_string = node::Object::call_method(isolate, to_object(isolate, value), "toString", 0, nullptr);
-    return Decimal128(to_string(isolate, as_string));
-}
+inline ObjectId node::Value::to_object_id(Napi::Env env, const Napi::Value& value) {
+	Napi::HandleScope scope(env);
 
-template<>
-inline v8::Local<v8::Value> node::Value::from_object_id(v8::Isolate* isolate, ObjectId objectId) {
-    auto realm_constructor = Value::validated_to_object(isolate, node::Object::get_global(isolate, "Realm"));
-    auto object_id_constructor = to_constructor(isolate, node::Object::get_property(isolate, realm_constructor, "_ObjectId"));
-
-    std::array<v8::Local<v8::Value>, 1> args { {from_string(isolate, objectId.to_string())} };
-    return node::Function::construct(isolate, object_id_constructor, args.size(), args.data());
-}
-
-template<>
-inline ObjectId node::Value::to_object_id(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    auto as_string = node::Object::call_method(isolate, to_object(isolate, value), "toHexString", 0, nullptr);
-    std::string oid = to_string(isolate, as_string);
-    ObjectId new_oid = ObjectId(oid.c_str());
-
-    return new_oid;
+	Napi::Object objectId = value.As<Napi::Object>();
+	Napi::Function toHexStringFunc = objectId.Get("toHexString").As<Napi::Function>();
+	node::String string = toHexStringFunc.Call(value, {}).As<Napi::String>();
+	std::string objectIdAsString = string;
+	ObjectId result(objectIdAsString.c_str());
+	return result;
 }
 
 } // js
