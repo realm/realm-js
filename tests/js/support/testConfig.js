@@ -21,7 +21,7 @@
 // If the docker instance has imported this stitch config, it will have written the app id
 // back into the config file, so we can read it out again here.
 const integrationTestsAppId = `${require("../../../src/object-store/tests/mongodb/stitch.json").app_id}`;
-const appUrl = process.env.MONGODB_REALM_ENDPOINT || "http://localhost";
+const appUrl = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/\"/g,'') : "http://localhost";
 const appPort = process.env.MONGODB_REALM_PORT || "9090";
 console.log(`tests are using integration tests app id: ${integrationTestsAppId} on ${appUrl}:${appPort}`);
 
