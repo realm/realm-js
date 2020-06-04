@@ -142,7 +142,7 @@ function unexpectedError(e) {
 module.exports = {
     testLocalRealmHasNoSession() {
         let realm = new Realm();
-        return TestCase.assertNull(realm.syncSession);
+        TestCase.assertNull(realm.syncSession);
     },
 
     testRealmOpen() {

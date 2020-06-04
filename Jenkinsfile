@@ -560,7 +560,7 @@ def testLinux(target, postStep = null) {
         withRealmCloud(version: objectStoreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/src/object-store/tests/mongodb"]) { networkName ->
           reportStatus(reportName, 'PENDING', 'Build has started')
           image.inside('-e HOME=/tmp') {
-            withEnv(["MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\""]) {
+            withEnv(["MONGODB_REALM_ENDPOINT=http://mongodb-realm"]) {
               timeout(time: 1, unit: 'HOURS') {
                 sh "scripts/test.sh ${target}"
               }

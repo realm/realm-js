@@ -14,7 +14,6 @@ const ObjectId = require('bson').ObjectID;
 
 let schemas = {};
 schemas.ParentObject = {
-    primaryKey: '_id',
     name: 'ParentObject',
     primaryKey: '_id',
     properties: {
