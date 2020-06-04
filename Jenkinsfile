@@ -98,16 +98,16 @@ stage('pretest') {
 stage('build') {
     parallelExecutors = [:]
     nodeVersions.each { nodeVersion ->
-      //parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
+      parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
       parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-      //parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
-      //parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
+      parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
+      parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
     }
     electronVersions.each { electronVersion ->
-      //parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
+      parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
       parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
-      //parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
-      //parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
+      parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
+      parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
     }
     parallelExecutors["Android React Native"] = buildAndroid()
     parallel parallelExecutors
@@ -122,20 +122,20 @@ if (gitTag) {
 stage('test') {
   parallelExecutors = [:]
 
-  //parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
-  //parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
-  //parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
+  parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
+  parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
+  parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}")
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
-  //parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
+  parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
 
-  //parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
-  //parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  //parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
-  //parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
-  //parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-  //parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
+  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
+  parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
+  parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
+  parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
+  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
+  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
   //android_react_tests: testAndroid('react-tests-android', {
   //  junit 'tests/react-test-app/tests.xml'
   //}),
