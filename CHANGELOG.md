@@ -9,13 +9,13 @@ NOTE: Deprecated methods have been removed.
 ### Breaking changes
 * `Realm.Sync.User` has been replaced by `Realm.User`.
 * `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([#2732](https://github.com/realm/realm-js/issues/2732))
-* Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partitionValue` has been added to the `sync` configuration as a replacement. Please read the documentation to get the full picture.
+* Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partitionValue` has been added to the `sync` configuration as a replacement. Please read section "Partition Atlas Data into Realms" in documentation for further information.
 * Permissions has been removed. You need to configure permissions through MongoDB Realm.
 * Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`, `Realm.Sync.setSyncLogger()`, `Realm.automaticSyncConfiguration()`.
 * Renamed configuration option `custom_http_headers` to `customHttpHeaders`.
 
 ### Enhancements
-* Added support for compiling on a RaspberryPi. ([#2798](https://github.com/realm/realm-js/issues/2798) 
+* Added support for compiling on a RaspberryPi. ([#2798](https://github.com/realm/realm-js/issues/2798)
 * Added support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
 * Added support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
 * Added support for embedded objects. ([#2676](https://github.com/realm/realm-js/issues/2676))
@@ -31,13 +31,13 @@ NOTE: Deprecated methods have been removed.
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v10.0.0 (and related beta versions)
-* APIs are backwards compatible with all previous release of Realm JavaScript in the 10.x.y series.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
 * Updated Realm Core from v6.0.5 to Realm Core v10.0.0-beta.1.
 * Updated Realm Sync from v5.0.5 to Realm Sync v10.0.0-beta.1.
-* Updated Realm Object Store to commit ec6ffd5cc149e403d252e9d615b4e6dab572fa89.
+* Updated Realm Object Store to commit 6d081a53377514f9b77736cb03051a03d829da92.
 * Created a package named "realm-app-importer", to be used by integration tests (ideally by other SDKs too).
 
 

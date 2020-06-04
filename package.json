@@ -81,7 +81,6 @@
     "check-environment": "node scripts/check-environment.js"
   },
   "dependencies": {
-    "abort-controller": "^3.0.0",
     "bson": "^4.0.3",
     "command-line-args": "^4.0.6",
     "deepmerge": "2.1.0",

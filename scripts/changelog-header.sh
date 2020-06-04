@@ -14,9 +14,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Compatibility
-* Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
-* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
 * None.

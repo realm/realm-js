@@ -72,7 +72,7 @@ module.exports = {
         TestCase.assertEqual(prim.optDouble.type, 'double');
         TestCase.assertEqual(prim.optString.type, 'string');
         TestCase.assertEqual(prim.optDate.type, 'date');
-        TestCase.assertEqual(prim.optDecimal128.type, 'decima128');
+        TestCase.assertEqual(prim.optDecimal128.type, 'decimal128');
         TestCase.assertEqual(prim.optObjectId.type, 'objectId');
 
         TestCase.assertFalse(prim.bool.optional);
