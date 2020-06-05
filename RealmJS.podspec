@@ -27,7 +27,7 @@ Pod::Spec.new do |s|
 
   s.authors                = package['author']
   s.homepage               = package['homepage']
-  s.platform               = :ios, '12.0'
+  s.platform               = :ios, '9.0'
 
   # The source field is a required field in the podspec, but it is not ment to be used.
   # This is because the Podspec is not ment to be published into a CocoaPod repository, instead React Native uses a :path style dependency when adding this to the users projects Podfile.
@@ -58,7 +58,7 @@ Pod::Spec.new do |s|
                              'src/object-store/src/util/bson/*.cpp',
                              'react-native/ios/RealmReact/*.mm',
                              'vendor/*.cpp'
-  
+
   s.frameworks             = uses_frameworks ? ['JavaScriptCore', 'React'] : ['JavaScriptCore']
 
   s.library                = 'c++', 'z'
@@ -89,7 +89,7 @@ Pod::Spec.new do |s|
                                  # "'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting
                                ].join(' ')
                              }
-  
+
   # TODO: Consider providing an option to build with the -dbg binaries instead
   s.ios.vendored_libraries = 'vendor/realm-ios/librealm-ios.a', 'vendor/realm-ios/librealm-parser-ios.a'
   # s.watchos.vendored_libraries = 'vendor/realm-ios/librealm-watchos.a', 'vendor/realm-ios/librealm-parser-watchos.a'
