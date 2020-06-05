@@ -103,7 +103,6 @@
         "lib/collection-methods.js",
         "lib/errors.js",
         "lib/extensions.js",
-        "lib/index.d.ts",
         "lib/index.js",
         "lib/notifier.js",
         "lib/submit-analytics.js",
