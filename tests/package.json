@@ -19,11 +19,11 @@
     "terminate": "^1.0.8",
     "tmp": "^0.0.30",
     "ts-node": "^8.0.2",
-    "typescript": "^2.5.2",
+    "typescript": "^3.9.5",
     "url-parse": "^1.1.7"
   },
   "scripts": {
-    "check-typescript": "tsc --types --noEmit --alwaysStrict ./../lib/index.d.ts",
+    "check-typescript": "tsc --types --noEmit --alwaysStrict ./../types/index.d.ts",
     "js-tests": "node --expose_gc node_modules/jasmine/bin/jasmine.js spec/unit_tests.js --filter=.",
     "test": "npm run check-typescript && npm run js-tests"
   }
