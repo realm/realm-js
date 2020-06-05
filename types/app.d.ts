@@ -203,7 +203,7 @@ declare namespace Realm {
         /**
          * The state of the user.
          */
-        state: UserState;
+        readonly state: UserState;
 
         // TODO: Populate the list of identities
         // identities: UserIdentity[];
@@ -221,7 +221,7 @@ declare namespace Realm {
         /**
          * A profile containing additional information about the user.
          */
-        profile: UserProfile;
+        readonly profile: UserProfile;
     }
 
     /**

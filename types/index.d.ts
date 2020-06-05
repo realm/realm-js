@@ -322,17 +322,17 @@ declare namespace Realm {
         readonly prototype: Results<any>;
     };
 
-    class Credentials {
-        static emailPassword(email: string, password: string): Credentials;
-        static facebook(token: string): Credentials;
-        static apple(token: string): Credentials;
-        static gooogle(token: string): Credentials;
-        static anonymous(): Credentials;
-        static userAPIKey(key: string): Credentials;
-        static serverAPIKey(key: string): Credentials;
-        static custom(token: string): Credentials;
-        static function(token: string): Promise<Credentials>;
-    }
+    // class Credentials {
+    //     static emailPassword(email: string, password: string): Credentials;
+    //     static facebook(token: string): Credentials;
+    //     static apple(token: string): Credentials;
+    //     static gooogle(token: string): Credentials;
+    //     static anonymous(): Credentials;
+    //     static userAPIKey(key: string): Credentials;
+    //     static serverAPIKey(key: string): Credentials;
+    //     static custom(token: string): Credentials;
+    //     static function(token: string): Promise<Credentials>;
+    // }
 
     interface UserProfile {
         name?: string;
@@ -350,7 +350,7 @@ declare namespace Realm {
         readonly identity: string;
         readonly token: string;
         readonly isLoggedIn: boolean;
-        readonly state: string;
+        readonly state: UserState;
         readonly customData: object;
         readonly profile: UserProfile;
 
@@ -403,13 +403,14 @@ declare namespace Realm {
     interface UserMap {
         [identity: string]: User
     }
-    class App {
-        logIn(credentials: Credentials): Promise<User>;
-        allUsers(): UserMap;
-        currentUser(): User | null;
-        switchUser(user: User): void;
-        removeUser(user: User): Promise<User>;
-    }
+
+    // class App {
+    //     logIn(credentials: Credentials): Promise<User>;
+    //     allUsers(): UserMap;
+    //     currentUser(): User | null;
+    //     switchUser(user: User): void;
+    //     removeUser(user: User): Promise<User>;
+    // }
 
     interface SyncError {
         name: string;
@@ -419,7 +420,6 @@ declare namespace Realm {
         code: number;
     }
 
-    type ErrorCallback = (session: Session, error: SyncError) => void;
     const enum SessionStopPolicy {
         AfterUpload = "after-upload",
         Immediately = "immediately",
@@ -429,7 +429,6 @@ declare namespace Realm {
     interface SyncConfiguration {
         user: User;
         partitionValue: string;
-        error?: ErrorCallback;
         _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
