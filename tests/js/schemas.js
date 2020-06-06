@@ -194,7 +194,6 @@ exports.PrimitiveArrays = {
         optString: 'string?[]',
         optDate:   'date?[]',
         optData:   'data?[]',
-        optDecimal128: 'decimal128?[]',
         optObjectId:    'objectId?[]'
     }
 };
