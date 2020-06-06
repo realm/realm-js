@@ -20,9 +20,6 @@ if [ "${CONFIGURATION}" == "Debug" ]; then
 fi
 
 USE_REALM_SYNC=1
-if [ -n "${DISABLE_REALM_SYNC}" ]; then
-  USE_REALM_SYNC=0
-fi
 
 IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set and re-exported
 
