@@ -595,7 +595,7 @@ def testMacOS(target, postStep = null) {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1',
-               'DISABLE_REALM_SYNC=1']) {
+               'REALM_DISABLE_SYNC_TESTS=1']) {
         doInside('./scripts/test.sh', target, postStep)
       }
     }
