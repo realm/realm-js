@@ -359,9 +359,12 @@ struct Unbox<JSEngine, Obj> {
             if (realm_object->realm() == ctx->m_realm) {
                 return realm_object->obj();
             }
-            if (!policy.create) {
+
+            bool updating = policy.copy && policy.update;
+            if (!updating && !policy.create) {
                 throw std::runtime_error("Realm object is from another Realm");
             }
+
         }
 
         if (Value::is_array(ctx->m_ctx, object)) {
