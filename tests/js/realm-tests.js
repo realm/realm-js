@@ -1898,7 +1898,7 @@ module.exports = {
         numbers.forEach(number => {
             let d = Decimal128.fromString(number.toString());
             realm.write(() => {
-                realm.create(schemas.Decimal128Object.name, { decimalCol: d});
+                realm.create(schemas.Decimal128Object.name, { decimal128Col: d});
             });
         });
 
@@ -1906,7 +1906,7 @@ module.exports = {
         TestCase.assertEqual(objects.length, numbers.length);
 
         for (let i = 0; i < numbers.length; i++) {
-            let d128 = objects[i]["decimalCol"];
+            let d128 = objects[i]["decimal128Col"];
             TestCase.assertTrue(d128 instanceof Decimal128);
             TestCase.assertEqual(d128.toString(), numbers[i].toString().toUpperCase());
         }
@@ -1922,7 +1922,7 @@ module.exports = {
         numbers.forEach(number => {
             let d = Decimal128.fromString(number);
             realm.write(() => {
-                realm.create(schemas.Decimal128Object.name, { decimalCol: d});
+                realm.create(schemas.Decimal128Object.name, { decimal128Col: d});
             });
         });
 
@@ -1930,7 +1930,7 @@ module.exports = {
         TestCase.assertEqual(objects.length, numbers.length);
 
         for (let i = 0; i < numbers.length; i++) {
-            let d128 = objects[i]["decimalCol"];
+            let d128 = objects[i]["decimal128Col"];
             TestCase.assertTrue(d128 instanceof Decimal128);
             TestCase.assertEqual(d128.toString(), numbers[i].toUpperCase());
         }
