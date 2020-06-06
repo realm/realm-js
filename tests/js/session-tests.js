@@ -26,7 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
-const { ObjectId, serialize } = require("bson");
+const { ObjectId } = require("bson");
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
@@ -262,7 +262,7 @@ module.exports = {
         });
     },
 
-    /*testListNestedSync() {
+    /* testListNestedSync() {
         if (!platformSupported) {
             return;
         }
@@ -526,13 +526,9 @@ module.exports = {
     testRemoveConnectionNotification() {
         let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
+        const partition = Utils.genPartition();
         return app.logIn(credentials).then((u) => {
-            let config = {
-                sync: {
-                    user: u,
-                    partitionValue: serialize("LoLo")
-                }
-            };
+            let config = getSyncConfiguration(u, partition);
             return Realm.open(config);
         }).then(realm => {
             return new Promise((resolve, reject) => {
@@ -557,16 +553,11 @@ module.exports = {
         if (!platformSupported) {
             return;
         }
-
+        const partition = Utils.genPartition();
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
         return app.logIn(credentials).then((u) => {
-            let config = {
-                sync: {
-                    user: u,
-                    partitionValue: serialize("LoLo")
-                }
-            };
+            let config = getSyncConfiguration(u, partition);
             return Realm.open(config);
         }).then(realm => {
             let session = realm.syncSession;
@@ -609,12 +600,8 @@ module.exports = {
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
         const user = await app.logIn(credentials);
-        const config = {
-            sync: {
-                user: user,
-                partitionValue: serialize("LoLo")
-            }
-        };
+        const partition = Utils.genPartition();
+        let config = getSyncConfiguration(user, partition);
 
         const realm = await Realm.open(config);
         const session = realm.syncSession;
@@ -631,12 +618,8 @@ module.exports = {
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
         const user = await app.logIn(credentials);
-        const config = {
-            sync: {
-                user: user,
-                partitionValue: serialize("LoLo")
-            }
-        };
+        const partition = Utils.genPartition();
+        let config = getSyncConfiguration(user, partition);
 
         const realm = await Realm.open(config);
         const session = realm.syncSession;
@@ -654,12 +637,8 @@ module.exports = {
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
         const user = await app.logIn(credentials);
-        const config = {
-            sync: {
-                user: user,
-                partitionValue: serialize("LoLo")
-            }
-        };
+        const partition = Utils.genPartition();
+        let config = getSyncConfiguration(user, partition);
 
         const realm = await Realm.open(config);
         const session = realm.syncSession;

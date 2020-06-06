@@ -28,7 +28,7 @@ function trySetElectronVersion() {
 trySetElectronVersion();
 
 const Realm = require(realmModule);
-const { ObjectId, serialize } = require("bson");
+const { ObjectId } = require("bson");
 
 function createObjects(user) {
     const config = {

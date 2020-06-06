@@ -40,6 +40,7 @@ if (isNodeProcess) {
 }
 
 function assertIsUser(user) {
+  TestCase.assertDefined(user);
   TestCase.assertType(user, 'object');
   TestCase.assertType(user.token, 'string');
   TestCase.assertType(user.identity, 'string');
@@ -75,6 +76,11 @@ function signToken(userId) {
     expiresIn: "1d",
     algorithm: "RS256",
   });
+}
+
+function randomVerifiableEmail() {
+    // according to the custom register function, emails will register if they contain "realm_tests_do_autoverify"
+    return `realm_tests_do_autoverify_${Utils.uuid()}_@test.com`;
 }
 
 module.exports = {
@@ -114,6 +120,16 @@ module.exports = {
     });
   },
 
+  // testRegisterAutoVerifyEmailPassword() {
+  //   let app = new Realm.App(appConfig);
+  //   let credentials = Realm.Credentials.emailPassword(randomVerifiableEmail(), 'pass');
+  //   return app.logIn(credentials).then((user) => {
+  //     throw new Error("Login should have failed");
+  //   }).catch(err => {
+  //     TestCase.assertEqual(err.message, "invalid username/password");
+  //   });
+  // },
+
   async testFunctions() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
@@ -149,24 +165,42 @@ module.exports = {
 
       return app.logIn(Realm.Credentials.anonymous()).then(user2 => {
         let all = app.allUsers();
-        TestCase.assertArrayLength(Object.keys(all), 2, "Two users");
+        TestCase.assertArrayLength(Object.keys(all), 1, "still one user");
         // NOTE: the list of users is in latest-first order.
         assertIsSameUser(all[user2.identity], user2);
         assertIsSameUser(all[user1.identity], user1);
 
-        user2.logOut();
-        all = app.allUsers();
-        TestCase.assertArrayLength(Object.keys(all), 1, "Back to one user");
-        assertIsSameUser(all[user1.identity], user1);
-
-        user1.logOut();
+        user2.logOut(); // logs out the shared anonymous session
         all = app.allUsers();
         TestCase.assertArrayLength(Object.keys(all), 0, "All gone");
       });
     });
   },
 
-  testCurrent() {
+  testCurrentWithAnonymous() {
+    let app = new Realm.App(appConfig);
+    TestCase.assertNull(app.currentUser());
+
+    let firstUser;
+    return app.logIn(Realm.Credentials.anonymous()).then(user1 => {
+      assertIsSameUser(app.currentUser(), user1);
+      firstUser = user1;
+      return app.logIn(Realm.Credentials.anonymous());
+    }).then(user2 => {
+      // the most recently logged in user is considered current
+      TestCase.assertTrue(firstUser.isLoggedIn);
+      TestCase.assertTrue(user2.isLoggedIn);
+      assertIsSameUser(app.currentUser(), user2);
+      user2.logOut();
+      // since anonymous user sessions are shared, user1 is logged out as well
+      TestCase.assertNull(app.currentUser());
+      TestCase.assertFalse(firstUser.isLoggedIn);
+      TestCase.assertFalse(user2.isLoggedIn);
+    });
+  },
+
+  /* do this with a email/pw user 
+  testCurrentWithEmail() {
     let app = new Realm.App(appConfig);
     TestCase.assertNull(app.currentUser());
 
@@ -185,5 +219,38 @@ module.exports = {
       firstUser.logOut();
       TestCase.assertNull(app.currentUser());
     });
-  },
+  },*/
+
+  /* FIXME: do this with an email/pw user
+  testAll() {
+    let app = new Realm.App(appConfig);
+    Object.keys(app.allUsers()).forEach(id => users[id].logOut()); // FIXME: we need to reset users for each test
+
+    const all = app.allUsers();
+    TestCase.assertArrayLength(Object.keys(all), 0, "Noone to begin with");
+
+    let credentials = Realm.Credentials.anonymous();
+    return app.logIn(credentials).then(user1 => {
+      const all = app.allUsers();
+      TestCase.assertArrayLength(Object.keys(all), 1, "One user");
+      assertIsSameUser(all[user1.identity], user1);
+
+      return app.logIn(Realm.Credentials.anonymous()).then(user2 => {
+        let all = app.allUsers();
+        TestCase.assertArrayLength(Object.keys(all), 2, "Two users");
+        // NOTE: the list of users is in latest-first order.
+        assertIsSameUser(all[user2.identity], user2);
+        assertIsSameUser(all[user1.identity], user1);
+
+        user2.logOut();
+        all = app.allUsers();
+        TestCase.assertArrayLength(Object.keys(all), 1, "Back to one user");
+        assertIsSameUser(all[user1.identity], user1);
+
+        user1.logOut();
+        all = app.allUsers();
+        TestCase.assertArrayLength(Object.keys(all), 0, "All gone");
+      });
+    });
+  },*/
 };

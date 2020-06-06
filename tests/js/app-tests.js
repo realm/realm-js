@@ -9,11 +9,12 @@ function node_require(module) {
     return require_method(module);
 }
 
-const { ObjectId, serialize } = require("bson");
+const { ObjectId } = require("bson");
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const AppConfig = require('./support/testConfig')
+const Utils = require('./test-utils');
 
 const tmp = require('tmp');
 const fs = require('fs');
@@ -152,7 +153,7 @@ module.exports = {
 
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
-
+        const partition = Utils.genPartition();
         const realmConfig = {
             schema: [{
                 name: 'Dog',
@@ -166,14 +167,11 @@ module.exports = {
               }],
             sync: {
                 user: user,
-                partitionValue: serialize("LoLo"),
+                partitionValue: partition
             }
         };
         Realm.deleteFile(realmConfig);
         let realm = await Realm.open(realmConfig);
-        realm.write(() => {
-            realm.deleteAll();
-        });
         realm.write(() => {
             realm.create("Dog", { "_id": new ObjectId("0000002a9a7969d24bea4cf5"), name: "King" });
             realm.create("Dog", { "_id": new ObjectId("0000002a9a7969d24bea4cf4"), name: "King" });
