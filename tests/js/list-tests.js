@@ -187,10 +187,10 @@ module.exports = {
         TestCase.assertSimilar('data', prim.data[1], DATA2);
         TestCase.assertSimilar('date', prim.date[0], new Date(1));
         TestCase.assertSimilar('date', prim.date[1], new Date(2));
-        TestCase.assertSimilar('decimal128', prim.decimal128[0], Decimal128.fromString('1'));
-        TestCase.assertSimilar('decimal128', prim.decimal128[1], Decimal128.fromString('2'));
-        TestCase.assertSimilar('objectId', prim.objectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
-        TestCase.assertSimilar('objectId', prim.objectId[1], new ObjectId('0000002a9a7969d24bea4cf3'));
+        TestCase.assertSimilar('decimal128', prim.decimal128[0].toString(), Decimal128.fromString('1').toString());
+        TestCase.assertSimilar('decimal128', prim.decimal128[1].toString(), Decimal128.fromString('2').toString());
+        TestCase.assertSimilar('objectId', prim.objectId[0].toString(), new ObjectId('0000002a9a7969d24bea4cf2').toString());
+        TestCase.assertSimilar('objectId', prim.objectId[1].toString(), new ObjectId('0000002a9a7969d24bea4cf3').toString());
 
         TestCase.assertSimilar('bool', prim.optBool[0], true);
         TestCase.assertSimilar('int', prim.optInt[0], 1);
@@ -199,7 +199,7 @@ module.exports = {
         TestCase.assertSimilar('string', prim.optString[0], 'a');
         TestCase.assertSimilar('data', prim.optData[0], DATA1);
         TestCase.assertSimilar('date', prim.optDate[0], new Date(1));
-        TestCase.assertSimilar('objectId', prim.optObjectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
+        TestCase.assertSimilar('objectId', prim.optObjectId[0].toString(), new ObjectId('0000002a9a7969d24bea4cf2').toString());
     },
 
     testListSubscriptSetters: function() {
