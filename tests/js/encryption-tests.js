@@ -95,7 +95,7 @@ module.exports = {
                 encryptionKey: new Int8Array(64),
                 sync: {
                     user: user,
-                    partitionValue: serialize("LoLo")
+                    partitionValue: "LoLo"
                 }
             });
             user.logOut(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work

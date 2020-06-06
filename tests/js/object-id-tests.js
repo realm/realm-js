@@ -49,7 +49,7 @@ module.exports = {
             const config = {
                 sync: {
                     user,
-                    partitionValue: serialize("LoLo")
+                    partitionValue: "LoLo"
                 },
                 schema: [{ name: 'IntegerPrimaryKey', properties: { int: 'int?' }, primaryKey: 'int' },
                     { name: 'StringPrimaryKey', properties: { string: 'string?' }, primaryKey: 'string' },
