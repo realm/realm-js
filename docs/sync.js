@@ -38,12 +38,12 @@
  * This describes the different options used to create a {@link Realm} instance with Realm Platform synchronization.
  * @typedef {Object} Realm.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
- * @property {string} partitionValue - The value of the partition key (serialized BSON).
+ * @property {string|number|BSON.ObjectId} partitionValue - The value of the partition key.
  * @property {function} [error] - A callback function which is called in error situations.
  *    The `error` callback can take up to five optional arguments: `name`, `message`, `isFatal`,
  *    `category`, and `code`.
  *
- * @property {Object} [custom_http_headers] - A map (string, string) of custom HTTP headers.
+ * @property {Object} [customHttpHeaders] - A map (string, string) of custom HTTP headers.
  * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
        If not set, the Realm will be downloaded before opened.
  * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
