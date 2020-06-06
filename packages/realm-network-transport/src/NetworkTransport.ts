@@ -158,12 +158,6 @@ export class DefaultNetworkTransport implements NetworkTransport {
         this.fetch(request)
             .then(async response => {
                 const decodedBody = await response.text();
-                if (response.status >= 400) {
-                    throw {
-                        statusCode: response.status,
-                        errorMessage: decodedBody,
-                    };
-                }
                 // Pull out the headers of the response
                 const responseHeaders: Headers = {};
                 response.headers.forEach((value, key) => {
