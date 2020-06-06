@@ -775,7 +775,9 @@ module.exports = {
         return app.logIn(credentials)
             .then((user) => {
                 // Check valid input
-                const config1 = getSyncConfiguration(user, realmPartition);
+                let config1 = getSyncConfiguration(user, realmPartition);
+                config1.sync._sessionStopPolicy = 'after-upload';
+
                 new Realm(config1).close();
 
                 const config2 = config1;
