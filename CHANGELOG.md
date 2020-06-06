@@ -1,10 +1,11 @@
-10.0.0-beta.2 Release notes (2020-6-6)
+10.0.0-beta.3 Release notes (2020-6-6)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
 * `partitionValue` can now be specified as a plain string, number or `BSON.ObjectId`.
+* Added TypeScript definitions back in.
 
 ### Compatibility
 * MongoDB Realm Cloud.
