@@ -322,18 +322,6 @@ declare namespace Realm {
         readonly prototype: Results<any>;
     };
 
-    // class Credentials {
-    //     static emailPassword(email: string, password: string): Credentials;
-    //     static facebook(token: string): Credentials;
-    //     static apple(token: string): Credentials;
-    //     static gooogle(token: string): Credentials;
-    //     static anonymous(): Credentials;
-    //     static userAPIKey(key: string): Credentials;
-    //     static serverAPIKey(key: string): Credentials;
-    //     static custom(token: string): Credentials;
-    //     static function(token: string): Promise<Credentials>;
-    // }
-
     interface UserProfile {
         name?: string;
         email?: string;
@@ -404,6 +392,7 @@ declare namespace Realm {
         [identity: string]: User
     }
 
+    //TODO: This clashes with app.d.ts. Remove or refactor
     // class App {
     //     logIn(credentials: Credentials): Promise<User>;
     //     allUsers(): UserMap;
