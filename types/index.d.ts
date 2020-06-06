@@ -415,15 +415,6 @@ declare namespace Realm {
         Never = "never"
     }
 
-    interface SyncConfiguration {
-        user: User;
-        partitionValue: string;
-        _sessionStopPolicy?: SessionStopPolicy;
-        custom_http_headers?: { [header: string]: string };
-        newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
-        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
-    }
-
     interface OpenRealmBehaviorConfiguration {
         readonly type: OpenRealmBehaviorType
         readonly timeOut?: number;
