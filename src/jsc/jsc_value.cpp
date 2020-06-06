@@ -72,6 +72,10 @@ JSValueRef jsc::Value::from_decimal128(JSContextRef ctx, const Decimal128& value
     static jsc::String s_decimal = "_Decimal128";
     static jsc::String s_from_string = "fromString";
 
+    if (value.is_null()) {
+        return JSValueMakeNull(ctx);
+    }
+
     JSObjectRef global_object = JSContextGetGlobalObject(ctx);
     JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(ctx, global_object, s_realm);
     JSObjectRef decimal_constructor = jsc::Object::validated_get_constructor(ctx, realm_constructor, s_decimal);

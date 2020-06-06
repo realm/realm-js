@@ -242,6 +242,10 @@ template<>
 inline Napi::Value node::Value::from_decimal128(Napi::Env env, const Decimal128& number) {
 	Napi::EscapableHandleScope scope(env);
 
+	if (number.is_null()) {
+		return scope.Escape(Napi::Value(env, env.Null()));
+	}
+
 	Napi::Function realm_constructor = node::RealmClassConstructor.Value();
 	Napi::Object decimal_constructor = realm_constructor.Get("_Decimal128").As<Napi::Object>();
 	Napi::Function fromStringFunc = decimal_constructor.Get("fromString").As<Napi::Function>();

@@ -203,6 +203,7 @@ module.exports = {
         TestCase.assertSimilar('data', prim.optData[0], DATA1);
         TestCase.assertSimilar('date', prim.optDate[0], new Date(1));
         TestCase.assertSimilar('decimal128', prim.optDecimal128[0], Decimal128.fromString('1'));
+        TestCase.assertNull(prim.optDecimal128[1]);
         TestCase.assertSimilar('objectId', prim.optObjectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
     },
 
@@ -1314,7 +1315,7 @@ module.exports = {
         realm.write(() => {
             realm.create('ParentObject', {
                 id: 1,
-                _id: new ObjectId(), 
+                _id: new ObjectId(),
                 name: [
                     { _id: new ObjectId(), family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
                     { _id: new ObjectId(), family: 'Hansen', given: ['Ib'], prefix: [] }
@@ -1322,7 +1323,7 @@ module.exports = {
             });
             realm.create('ParentObject', {
                 id: 2,
-                _id: new ObjectId(), 
+                _id: new ObjectId(),
                 name: [
                     {_id: new ObjectId(), family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
                 ]

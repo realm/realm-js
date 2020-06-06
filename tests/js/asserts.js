@@ -29,8 +29,14 @@ module.exports = {
         else if (type === 'float' || type === 'double') {
             this.assertEqualWithTolerance(val1, val2, 0.000001, errorMessage, depth + 1);
         }
+        else if (type === 'decimal128') {
+            this.assertEqual(val1.toString(), val2.toString(), errorMessage, depth + 1);
+        }
         else if (type === 'data') {
             this.assertArraysEqual(new Uint8Array(val1), val2, errorMessage, depth + 1);
+        }
+        else if (type === 'objectId') {
+            this.assertEqual(val1.toString(), val2.toString(), errorMessage, depth + 1);
         }
         else if (type === 'date') {
             this.assertEqual(val1 && val1.getTime(), val2.getTime(), errorMessage, depth + 1);
