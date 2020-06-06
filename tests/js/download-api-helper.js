@@ -34,7 +34,7 @@ function createObjects(user) {
     const config = {
         sync: {
             user: user,
-            partitionValue: serialize("LoLo"),
+            partitionValue: "LoLo",
             error: err => console.log(err)
         },
         schema: [{

@@ -84,7 +84,7 @@ function getSyncConfiguration(user) {
           }],
         sync: {
             user: user,
-            partitionValue: serialize("LoLo")
+            partitionValue: "LoLo"
         }
     };
     return realmConfig;
@@ -285,7 +285,7 @@ module.exports = {
                 let config = {
                     // FIXME: schema not working yet
                     schema: [schemas.ParentObject, schemas.NameObject],
-                    sync: { user, partitionValue: serialize("LoLo") }
+                    sync: { user, partitionValue: "LoLo" }
                 };
                 Realm.deleteFile(config);
                 return Realm.open(config)
@@ -535,7 +535,7 @@ module.exports = {
             let config = {
                 sync: {
                     user: u,
-                    partitionValue: serialize("LoLo")
+                    partitionValue: "LoLo"
                 }
             };
             return Realm.open(config);
@@ -569,7 +569,7 @@ module.exports = {
             let config = {
                 sync: {
                     user: u,
-                    partitionValue: serialize("LoLo")
+                    partitionValue: "LoLo"
                 }
             };
             return Realm.open(config);
@@ -617,7 +617,7 @@ module.exports = {
         const config = {
             sync: {
                 user: user,
-                partitionValue: serialize("LoLo")
+                partitionValue: "LoLo"
             }
         };
 
@@ -639,7 +639,7 @@ module.exports = {
         const config = {
             sync: {
                 user: user,
-                partitionValue: serialize("LoLo")
+                partitionValue: "LoLo"
             }
         };
 
@@ -662,7 +662,7 @@ module.exports = {
         const config = {
             sync: {
                 user: user,
-                partitionValue: serialize("LoLo")
+                partitionValue: "LoLo"
             }
         };
 
@@ -697,7 +697,7 @@ module.exports = {
                     schema: [schema],
                     sync: {
                         user: user1,
-                        partitionValue: serialize("LoLo")
+                        partitionValue: "LoLo"
                     }
                 };
                 return Realm.open(config1);
@@ -719,7 +719,7 @@ module.exports = {
                     schema: [schema],
                     sync: {
                         user: user2,
-                        partitionValue: serialize("LoLo")
+                        partitionValue: "LoLo"
                     }
                 };
                 return Realm.open(config2).then(r => {
@@ -754,7 +754,7 @@ module.exports = {
                     schema: [schema],
                     sync: {
                         user: user,
-                        partitionValue: serialize("LoLo")
+                        partitionValue: "LoLo"
                     }
                 };
                 realm = new Realm(config);
@@ -787,7 +787,7 @@ module.exports = {
                     schema: [schema],
                     sync: {
                         user: user,
-                        partitionValue: serialize("LoLo")
+                        partitionValue: "LoLo"
                     }
                 };
                 realm = new Realm(config);
@@ -805,7 +805,7 @@ module.exports = {
             const config = {
                 sync: {
                     user: user,
-                    partitionValue: serialize("LoLo")
+                    partitionValue: "LoLo"
                 }
             };
             let realm = new Realm(config);
@@ -825,7 +825,7 @@ module.exports = {
             const config = {
                 sync: {
                     user: user,
-                    partitionValue: serialize("LoLo")
+                    partitionValue: "LoLo"
                 }
             };
             let realm = new Realm(config);
@@ -860,7 +860,7 @@ module.exports = {
                 const config1 = {
                     sync: {
                         user: user,
-                        partitionValue: serialize("LoLo"),
+                        partitionValue: "LoLo",
                         _sessionStopPolicy: 'after-upload'
                     }
                 }
@@ -891,7 +891,7 @@ module.exports = {
                 const config1 = {
                     sync: {
                         user: user,
-                        partitionValue: serialize("LoLo"),
+                        partitionValue: "LoLo",
                         _sessionStopPolicy: 'immediately'
                     }
                 };
@@ -919,7 +919,7 @@ module.exports = {
                 schema: [schemas.TestObject],
                 sync: {
                     user: u,
-                    partitionValue: serialize("LoLo")
+                    partitionValue: "LoLo"
                 }
             };
             return Realm.open(config);

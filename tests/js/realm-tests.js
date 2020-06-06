@@ -479,7 +479,7 @@ module.exports = {
                     schema: [schemas.TestObject],
                     sync: {
                         user,
-                        partitionValue: serialize("LoLo")
+                        partitionValue: "LoLo"
                     },
                 };
                 TestCase.assertFalse(Realm.exists(config));

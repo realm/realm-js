@@ -732,9 +732,24 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
         std::string partition_value;
         if (!Value::is_undefined(ctx, partition_value_value)) {
-            // FIXME: we need a Value::validated_to_bson() function here
-            auto partition_bson = Value::to_bson(ctx, partition_value_value);
-            std::stringstream s;
+            bson::Bson partition_bson;
+            if (Value::is_string(ctx, partition_value_value)) {
+                std::string pv = Value::validated_to_string(ctx, partition_value_value);
+                partition_bson = bson::Bson(pv);
+            }
+            else if (Value::is_number(ctx, partition_value_value)) {
+                auto pv = Value::validated_to_number(ctx, partition_value_value);
+                partition_bson = bson::Bson(static_cast<int64_t>(pv));
+            }
+            else if (Value::is_object_id(ctx, partition_value_value)) {
+                auto pv = Value::validated_to_object_id(ctx, partition_value_value);
+                partition_bson = bson::Bson(pv);
+            }
+            else {
+                throw std::runtime_error("partitionValue must be of type 'string', 'number', or 'objectId'.");
+            }
+
+            std::ostringstream s;
             s << partition_bson;
             partition_value = s.str();
         }

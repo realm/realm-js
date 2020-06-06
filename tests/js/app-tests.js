@@ -152,7 +152,7 @@ module.exports = {
               }],
             sync: {
                 user: user,
-                partitionValue: serialize("LoLo"),
+                partitionValue: "LoLo",
             }
         };
         Realm.deleteFile(realmConfig);
