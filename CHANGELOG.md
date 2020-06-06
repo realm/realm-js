@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.0.0-beta.2 Release notes (2020-6-6)
 =============================================================
 ### Enhancements
 * None.
