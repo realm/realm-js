@@ -734,7 +734,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         if (!Value::is_undefined(ctx, partition_value_value)) {
             bson::Bson partition_bson;
             if (Value::is_string(ctx, partition_value_value)) {
-                auto pv = Value::validated_to_string(ctx, partition_value_value);
+                std::string pv = Value::validated_to_string(ctx, partition_value_value);
                 partition_bson = bson::Bson(pv);
             }
             else if (Value::is_number(ctx, partition_value_value)) {
