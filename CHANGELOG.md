@@ -6,6 +6,7 @@
 ### Fixed
 * `partitionValue` can now be specified as a plain string, number or `BSON.ObjectId`.
 * Added TypeScript definitions back in.
+* Fixed a bug preventing optional Decimal128 to be null.
 
 ### Compatibility
 * MongoDB Realm Cloud.
