@@ -22,7 +22,7 @@ var Realm = require('realm');
 var TestCase = require('./asserts');
 var Schemas = require('./schemas');
 
-const { ObjectId, serialize } = require("bson");
+const { ObjectId } = require("bson");
 
 
 module.exports = {
@@ -77,17 +77,8 @@ module.exports = {
         if (!global.enableSyncTests) {
             return Promise.resolve();
         }
-
-        const appConfig = {
-            id: global.APPID,
-            url: global.APPURL,
-            timeout: 1000,
-            app: {
-                name: "default",
-                version: "0"
-            },
-        };
-        let app = new Realm.App(appConfig);
+        const config = require('./support/testConfig').integrationAppConfig;
+        let app = new Realm.App(config);
 
         const credentials = Realm.Credentials.anonymous();
         return app.logIn(credentials).then(user => {

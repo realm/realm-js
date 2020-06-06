@@ -16,6 +16,7 @@ electronTestVersion = electronVersions[0]
 def gitTag = null
 def formattedVersion = null
 dependencies = null
+objectStoreDependencies = null
 
 environment {
   GIT_COMMITTER_NAME="ci"
@@ -40,6 +41,7 @@ stage('check') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
     dependencies = readProperties file: 'dependencies.list'
+    objectStoreDependencies = readProperties file: 'src/object-store/dependencies.list'
     gitTag = readGitTag()
     def gitSha = readGitSha()
     def version = getVersion()
@@ -123,7 +125,7 @@ stage('test') {
   parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
   parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
   parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
-  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}")
+  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
@@ -503,11 +505,9 @@ def doInside(script, target, postStep = null) {
       }
     }
     wrap([$class: 'AnsiColorBuildWrapper']) {
-      withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
         timeout(time: 1, unit: 'HOURS') {
-          sh "SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} bash ${script} ${target}"
+          sh "bash ${script} ${target}"
         }
-      }
     }
     if (postStep) {
        postStep.call()
@@ -540,7 +540,7 @@ def testAndroid(target, postStep = null) {
   }
 }
 
-def testLinux(target, postStep = null) {
+def testLinux(target, postStep = null, Boolean enableSync = false) {
   return {
       node('docker') {
       def reportName = "Linux ${target}"
@@ -552,23 +552,39 @@ def testLinux(target, postStep = null) {
       }
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
-      try {
-        reportStatus(reportName, 'PENDING', 'Build has started')
-        image.inside('-e HOME=/tmp') {
-          timeout(time: 1, unit: 'HOURS') {
-            withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target}"
+      def buildSteps = { String dockerArgs = "" ->
+          image.inside("-e HOME=/tmp ${dockerArgs}") {
+            if (enableSync) {
+                // check the network connection to local mongodb before continuing to compile everything
+                sh "curl http://mongodb-realm:9090"
             }
+            timeout(time: 1, unit: 'HOURS') {
+              sh "scripts/test.sh ${target}"
+            }
+            if (postStep) {
+              postStep.call()
+            }
+            deleteDir()
+            reportStatus(reportName, 'SUCCESS', 'Success!')
           }
-          if (postStep) {
-            postStep.call()
+      }
+
+      try {
+          reportStatus(reportName, 'PENDING', 'Build has started')
+          if (enableSync) {
+              // stitch images are auto-published every day to our CI
+              // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
+              // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
+              // if there's really a new feature you need from the latest stitch, upgrade this manually
+            withRealmCloud(version: objectStoreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/src/object-store/tests/mongodb"]) { networkName ->
+                buildSteps("-e MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\" --network=${networkName}")
+            }
+          } else {
+            buildSteps("")
           }
-          deleteDir()
-          reportStatus(reportName, 'SUCCESS', 'Success!')
-        }
-      } catch(Exception e) {
-        reportStatus(reportName, 'FAILURE', e.toString())
-        throw e
+        } catch(Exception e) {
+          reportStatus(reportName, 'FAILURE', e.toString())
+          throw e
       }
     }
   }
@@ -578,7 +594,8 @@ def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer',
-               'REALM_SET_NVM_ALIAS=1']) {
+               'REALM_SET_NVM_ALIAS=1',
+               'DISABLE_REALM_SYNC=1']) {
         doInside('./scripts/test.sh', target, postStep)
       }
     }

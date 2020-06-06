@@ -37,7 +37,6 @@ if (isNodeProcess && process.platform === 'win32') {
 }
 
 var TESTS = {
-    AppTests: require('./app-tests'),
     ListTests: require('./list-tests'),
     LinkingObjectsTests: require('./linkingobjects-tests'),
     ObjectTests: require('./object-tests'),
@@ -54,6 +53,7 @@ var TESTS = {
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
+    TESTS.AppTests = require('./app-tests');
     // TESTS.OpenBehaviorTests = require('./open-behavior-tests'); // FIXME: figure out how to enable them
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');

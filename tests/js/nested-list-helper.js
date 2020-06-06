@@ -44,7 +44,7 @@ function createObjects(user) {
         schema: [schemas.ParentObject, schemas.NameObject],
     };
 
-    realm.deleteFile(config);
+    Realm.deleteFile(config);
     let realm = new Realm(config);
     realm.write(() => {
         realm.deleteAll();

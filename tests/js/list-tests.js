@@ -150,7 +150,7 @@ module.exports = {
                 optString: ['a', null],
                 optDate:   [new Date(1), null],
                 optData:   [DATA1, null],
-                optDecimal: [Decimal128.fromString('1'), null],
+                optDecimal128: [Decimal128.fromString('1'), null],
                 optObjectId:    [new ObjectId('0000002a9a7969d24bea4cf2'), null]
             });
         });
@@ -1314,20 +1314,22 @@ module.exports = {
         realm.write(() => {
             realm.create('ParentObject', {
                 id: 1,
+                _id: new ObjectId(), 
                 name: [
-                    { family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
-                    { family: 'Hansen', given: ['Ib'], prefix: [] }
+                    { _id: new ObjectId(), family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
+                    { _id: new ObjectId(), family: 'Hansen', given: ['Ib'], prefix: [] }
                 ]
             });
             realm.create('ParentObject', {
                 id: 2,
+                _id: new ObjectId(), 
                 name: [
-                    {family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
+                    {_id: new ObjectId(), family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
                 ]
             });
         });
 
-        let objects = realm.objects('ParentObject');
+        let objects = realm.objects('ParentObject').sorted([['id', false]])
         TestCase.assertEqual(objects.length, 2);
         TestCase.assertEqual(objects[0].name.length, 2);
         TestCase.assertEqual(objects[0].name[0].given.length, 2);

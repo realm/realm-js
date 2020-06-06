@@ -20,27 +20,17 @@
 
 'use strict';
 
-// TODO: Once we get MongoDB Realm Cloud docker image integrated, we should be able
-//       to obtain the id of the Stitch app.
-const appConfig = {
-  id: global.APPID,
-  url: global.APPURL,
-  timeout: 1000,
-  app: {
-      name: "default",
-      version: "0"
-  },
-};
-
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const AppConfig = require('./support/testConfig');
 
 const require_method = require;
 function node_require(module) {
     return require_method(module);
 }
+let appConfig = AppConfig.integrationAppConfig;
 
 let fs, jwt, rosDataDir;
 if (isNodeProcess) {
@@ -50,6 +40,7 @@ if (isNodeProcess) {
 }
 
 function assertIsUser(user) {
+  TestCase.assertDefined(user);
   TestCase.assertType(user, 'object');
   TestCase.assertType(user.token, 'string');
   TestCase.assertType(user.identity, 'string');
@@ -87,6 +78,11 @@ function signToken(userId) {
   });
 }
 
+function randomVerifiableEmail() {
+    // according to the custom register function, emails will register if they contain "realm_tests_do_autoverify"
+    return `realm_tests_do_autoverify_${Utils.uuid()}_@test.com`;
+}
+
 module.exports = {
 
   // tests also logIn() and currentUser()
@@ -105,39 +101,53 @@ module.exports = {
     });
   },
 
-  testUsernamePasswordMissingUsername() {
-    TestCase.assertThrows(() => Realm.Credentials.usernamePassword(undefined, 'password'));
+  testEmailPasswordMissingUsername() {
+    TestCase.assertThrows(() => Realm.Credentials.emailPassword(undefined, 'password'));
   },
 
-  testUsernamePasswordMissingPassword() {
+  testEmailPasswordMissingPassword() {
     const username = Utils.uuid();
-    TestCase.assertThrows(() => Realm.Credentials.usernamePassword(username, undefined));
+    TestCase.assertThrows(() => Realm.Credentials.emailPassword(username, undefined));
   },
 
   testLoginNonExistingUser() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.emailPassword('foo', 'pass');
-    TestCase.assertThrows(app.logIn(credentials));
+    return app.logIn(credentials).then((user) => {
+      throw new Error("Login should have failed");
+    }).catch(err => {
+      TestCase.assertEqual(err.message, "invalid username/password");
+    });
   },
+
+  // testRegisterAutoVerifyEmailPassword() {
+  //   let app = new Realm.App(appConfig);
+  //   let credentials = Realm.Credentials.emailPassword(randomVerifiableEmail(), 'pass');
+  //   return app.logIn(credentials).then((user) => {
+  //     throw new Error("Login should have failed");
+  //   }).catch(err => {
+  //     TestCase.assertEqual(err.message, "invalid username/password");
+  //   });
+  // },
 
   async testFunctions() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
-    TestCase.assertEqual(await user.callFunction('firstArg', [123]), 123);
-    TestCase.assertEqual(await user.functions.firstArg(123), 123);
-    TestCase.assertEqual(await user.functions['firstArg'](123), 123);
+    TestCase.assertEqual(await user.callFunction('sumFunc', [123]), 123);
+    TestCase.assertEqual(await user.functions.sumFunc(123), 123);
+    TestCase.assertEqual(await user.functions['sumFunc'](123), 123);
 
     // Test method stashing / that `this` is bound correctly.
-    const firstArg = user.functions.firstArg;
-    TestCase.assertEqual(await firstArg(123), 123);
-    TestCase.assertEqual(await firstArg(123), 123); // Not just one-shot
+    const sumFunc = user.functions.sumFunc;
+    TestCase.assertEqual(await sumFunc(123), 123);
+    TestCase.assertEqual(await sumFunc(123), 123); // Not just one-shot
 
-    TestCase.assertEqual(await user.functions.sum(1, 2, 3), 6);
+    TestCase.assertEqual(await user.functions.sumFunc(1, 2, 3), 6);
 
     const err = await TestCase.assertThrowsAsync(async() => await user.functions.error());
-    TestCase.assertEqual(err.code, 400);
+    TestCase.assertEqual(err.message, "function not found: 'error'");
   },
 
   testAll() {
@@ -147,6 +157,77 @@ module.exports = {
     const all = app.allUsers();
     TestCase.assertArrayLength(Object.keys(all), 0, "Noone to begin with");
 
+    let credentials = Realm.Credentials.anonymous();
+    return app.logIn(credentials).then(user1 => {
+      const all = app.allUsers();
+      TestCase.assertArrayLength(Object.keys(all), 1, "One user");
+      assertIsSameUser(all[user1.identity], user1);
+
+      return app.logIn(Realm.Credentials.anonymous()).then(user2 => {
+        let all = app.allUsers();
+        TestCase.assertArrayLength(Object.keys(all), 1, "still one user");
+        // NOTE: the list of users is in latest-first order.
+        assertIsSameUser(all[user2.identity], user2);
+        assertIsSameUser(all[user1.identity], user1);
+
+        user2.logOut(); // logs out the shared anonymous session
+        all = app.allUsers();
+        TestCase.assertArrayLength(Object.keys(all), 0, "All gone");
+      });
+    });
+  },
+
+  testCurrentWithAnonymous() {
+    let app = new Realm.App(appConfig);
+    TestCase.assertNull(app.currentUser());
+
+    let firstUser;
+    return app.logIn(Realm.Credentials.anonymous()).then(user1 => {
+      assertIsSameUser(app.currentUser(), user1);
+      firstUser = user1;
+      return app.logIn(Realm.Credentials.anonymous());
+    }).then(user2 => {
+      // the most recently logged in user is considered current
+      TestCase.assertTrue(firstUser.isLoggedIn);
+      TestCase.assertTrue(user2.isLoggedIn);
+      assertIsSameUser(app.currentUser(), user2);
+      user2.logOut();
+      // since anonymous user sessions are shared, user1 is logged out as well
+      TestCase.assertNull(app.currentUser());
+      TestCase.assertFalse(firstUser.isLoggedIn);
+      TestCase.assertFalse(user2.isLoggedIn);
+    });
+  },
+
+  /* do this with a email/pw user 
+  testCurrentWithEmail() {
+    let app = new Realm.App(appConfig);
+    TestCase.assertNull(app.currentUser());
+
+    let firstUser;
+    return app.logIn(Realm.Credentials.anonymous()).then(user1 => {
+      assertIsSameUser(app.currentUser(), user1);
+      firstUser = user1;
+      return app.logIn(Realm.Credentials.anonymous());
+    }).then(user2 => {
+      // the most recently logged in user is considered current
+      assertIsSameUser(app.currentUser(), user2);
+      user2.logOut();
+      // auto change back to another logged in user
+      assertIsSameUser(app.currentUser(), firstUser);
+
+      firstUser.logOut();
+      TestCase.assertNull(app.currentUser());
+    });
+  },*/
+
+  /* FIXME: do this with an email/pw user
+  testAll() {
+    let app = new Realm.App(appConfig);
+    Object.keys(app.allUsers()).forEach(id => users[id].logOut()); // FIXME: we need to reset users for each test
+
+    const all = app.allUsers();
+    TestCase.assertArrayLength(Object.keys(all), 0, "Noone to begin with");
 
     let credentials = Realm.Credentials.anonymous();
     return app.logIn(credentials).then(user1 => {
@@ -171,5 +252,5 @@ module.exports = {
         TestCase.assertArrayLength(Object.keys(all), 0, "All gone");
       });
     });
-  },
+  },*/
 };

@@ -35,7 +35,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
-const { Decimal128, ObjectId, serialize } = require("bson");
+const { Decimal128, ObjectId } = require("bson");
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -461,15 +461,8 @@ module.exports = {
             return;
         }
 
-        const appConfig = {
-            id: global.APPID,
-            url: global.APPURL,
-            timeout: 1000,
-            app: {
-                name: "default",
-                version: "0"
-            },
-        };
+        const appConfig = require('./support/testConfig').integrationAppConfig;
+
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
 
@@ -1590,15 +1583,8 @@ module.exports = {
             return;
         }
 
-        const appConfig = {
-            id: global.APPID,
-            url: global.APPURL,
-            timeout: 1000,
-            app: {
-                name: "default",
-                version: "0"
-            },
-        };
+        const appConfig = require('./support/testConfig').integrationAppConfig;
+
         let app = new Realm.App(appConfig);
         return app.logIn(Realm.Credentials.anonymous())
             .then(user => {
