@@ -71,6 +71,7 @@ LOCAL_SRC_FILES += src/object-store/src/results.cpp
 LOCAL_SRC_FILES += src/object-store/src/schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
 LOCAL_SRC_FILES += src/object-store/src/thread_safe_reference.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/scheduler.cpp
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_SRC_FILES += src/object-store/src/sync/async_open_task.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_manager.cpp

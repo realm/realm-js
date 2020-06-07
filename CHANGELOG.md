@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed an incorrect import in the React Native debugging support. Bug prevented app to be launched.
+* Fixed Android builds by adding missing files to build system.
 
 ### Compatibility
 * MongoDB Realm Cloud.
