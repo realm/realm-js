@@ -1,3 +1,20 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed an incorrect import in the React Native debugging support. Bug prevented app to be launched.
+* Fixed Android builds by adding missing files to build system.
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+
+### Internal
+* None.
+
 10.0.0-beta.3 Release notes (2020-6-6)
 =============================================================
 ### Enhancements
