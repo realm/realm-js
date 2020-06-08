@@ -273,7 +273,7 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
 template<typename T>
 void UserClass<T>::get_auth_api_keys(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
-    return_value.set(UserAPIKeyProviderClientClass<T>::create_instance(ctx, user->m_app, std::move(*user)));
+    return_value.set(UserAPIKeyProviderClientClass<T>::create_instance(ctx, user->m_app, *user));
 }
 
 template<typename T>

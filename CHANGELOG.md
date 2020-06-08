@@ -8,6 +8,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * `Realm.User.refreshCustomData()` will return the data when refreshed.
 * Fixed bugs so `Realm.User.auth.APIKeys` and `Realm.App.auth.EmailPassword` are properties and not functions.
 * Added missing methods to `Realm.Auth` classes.
+* When restarting an app, re-using the already logged in user would result in Sync not resuming.
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -15,7 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* None.
+* Updated Realm Object Store to commit c50be4dd178ef7e11d453f61a5ac2afa8c1c10bf.
 
 10.0.0-beta.4 Release notes (2020-6-7)
 =============================================================
