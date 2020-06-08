@@ -13,6 +13,8 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Fixed bugs so `Realm.User.auth.APIKeys` and `Realm.App.auth.EmailPassword` are properties and not functions. (since v10.0.0-beta.1)
 * Added missing methods to `Realm.Auth` classes. (since v10.0.0-beta.1)
 * When restarting an app, re-using the already logged in user would result in Sync not resuming. (since v10.0.0-beta.1)
+* Disabled client resync. (since v10.0.0-beta.1)
+* Android report version as number and not as string, preventing an app to launch. (since v10.0.0-beta.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
