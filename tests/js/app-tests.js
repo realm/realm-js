@@ -189,5 +189,23 @@ module.exports = {
         TestCase.assertEqual(realm2.objects("Dog").length, 2);
         realm2.close();
         user.logOut();
-    }
+    },
+
+    async testEmailPasswordProvider() {
+        let app = new Realm.App(config);
+
+        let credentials = Realm.Credentials.anonymous();
+        let provider = app.auth.emailPassword;
+        TestCase.assertTrue(provider instanceof Realm.Auth.EmailPasswordProvider);
+    },
+
+    async testUserAPIKeyProvider() {
+        let app = new Realm.App(config);
+
+        let credentials = Realm.Credentials.anonymous();
+        let user = await app.logIn(credentials);
+        let provider = user.auth.apiKeys;
+        TestCase.assertTrue(provider instanceof Realm.Auth.UserAPIKeyProvider);
+        user.logOut();
+    },
 };
