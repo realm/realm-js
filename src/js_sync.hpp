@@ -793,7 +793,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
         }
 
-        config.sync_config->client_resync_mode = realm::ClientResyncMode::Recover;
+        config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
         config.schema_mode = SchemaMode::Additive;
         config.path = SyncManager::shared().path_for_realm(*(config.sync_config));
     }
