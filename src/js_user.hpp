@@ -76,6 +76,7 @@ public:
     static void is_logged_in(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
     static void get_custom_data(ContextType, ObjectType, ReturnValue &);
+    static void get_auth_api_keys(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"identity", {wrap<get_identity>, nullptr}},
@@ -84,6 +85,7 @@ public:
         {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
         {"state", {wrap<get_state>, nullptr}},
         {"customData", {wrap<get_custom_data>, nullptr}},
+        {"_authApiKeys", {wrap<get_auth_api_keys>, nullptr}},
     };
 
     MethodMap<T> const static_methods = {
@@ -93,7 +95,6 @@ public:
     static void session_for_on_disk_path(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void link_credentials(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void call_function(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void auth_api_keys(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void refresh_custom_data(ContextType, ObjectType, Arguments&, ReturnValue&);
 
 
@@ -102,7 +103,6 @@ public:
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
         {"_linkCredentials", wrap<link_credentials>},
         {"_callFunction", wrap<call_function>},
-        {"_authApiKeys", wrap<auth_api_keys>},
         {"_refreshCustomData", wrap<refresh_custom_data>},
     };
 };
@@ -271,8 +271,7 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
 }
 
 template<typename T>
-void UserClass<T>::auth_api_keys(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
-    args.validate_count(0);
+void UserClass<T>::get_auth_api_keys(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
     return_value.set(UserAPIKeyProviderClientClass<T>::create_instance(ctx, user->m_app, std::move(*user)));
 }

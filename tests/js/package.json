@@ -4,6 +4,6 @@
   "private": true,
   "dependencies": {
     "buffer": "^5.0.8",
-    "es6-promise": "^3.2.1",
+    "es6-promise": "^3.2.1"
   }
 }
