@@ -242,18 +242,23 @@ void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arg
 
 template<typename T>
 void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
-    args.validate_count(3);
+    args.validate_count(4);
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
 
     auto name = Value::validated_to_string(ctx, args[0], "name");
     auto call_args_js = Value::validated_to_array(ctx, args[1], "args");
-    auto callback = Value::validated_to_function(ctx, args[2], "callback");
+    auto service = Value::is_undefined(ctx, args[2])
+            ? util::none
+            : util::Optional<std::string>(Value::validated_to_string(ctx, args[2], "service"));
+    auto callback = Value::validated_to_function(ctx, args[3], "callback");
+
     auto call_args_bson = Value::to_bson(ctx, call_args_js);
 
     user->m_app->call_function(
         *user,
         name,
         call_args_bson.operator const bson::BsonArray&(),
+        service,
         realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
                              callback = Protected(ctx, callback),
                              this_object = Protected(ctx, this_object)]

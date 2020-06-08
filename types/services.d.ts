@@ -147,7 +147,7 @@ declare namespace Realm {
             };
 
             /**
-             * Options passed when inserting a document
+             * Result of inserting one document
              */
             interface InsertOneResult {
                 /**
@@ -157,7 +157,7 @@ declare namespace Realm {
             }
 
             /**
-             * Options passed when inserting multiple documents
+             * Result of inserting many documents
              */
             interface InsertManyResult {
                 /**

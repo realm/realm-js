@@ -555,6 +555,20 @@ class User {
      * await do_thing(a2);
      */
     get functions() { }
+
+    /**
+     * Returns a connection to the MongoDB service.
+     *
+     * @example
+     * let blueWidgets = user.remoteMongoClient('myClusterName')
+     *                       .db('myDb')
+     *                       .collection('widgets')
+     *                       .find({color: 'blue'});
+     *
+     * @param {string} serviceName
+     * @returns {Realm~RemoteMongoDB}
+     */
+    remoteMongoClient(serviceName) { }
 }
 
 /**
@@ -761,4 +775,209 @@ class Worker {
      * * `execArgv`: Command-line arguments to pass to the `node` worker processes.
      */
     constructor(moduleName, options = {}) { }
+}
+
+
+
+/**
+ * The RemoteMongoDB service can be used to get database and collection objects for interacting with MongoDB data.
+ * @alias Realm~RemoteMongoDB
+ */
+class RemoteMongoDB {
+    /**
+     * Get the interface to a remote MongoDB database.
+     *
+     * @param {string} databaseName The name of the database.
+     * @returns {Realm~RemoteMongoDBDatabase} The remote MongoDB database.
+     */
+    db(databaseName) { }
+}
+
+/**
+ * The RemoteMongoDB service can be used to get database and collection objects for interacting with MongoDB data.
+ * @alias Realm~RemoteMongoDBDatabase
+ */
+class RemoteMongoDBDatabase {
+    /**
+     * Get the interface to a remote MongoDB collection.
+     *
+     * @param {string} name The name of the collection.
+     * @returns {Realm.RemoteMongoDBCollection} The remote MongoDB collection.
+     */
+    collection(name) { }
+}
+
+/**
+ * A remote collection of documents in a MongoDB database.
+ * @memberof Realm
+ */
+class RemoteMongoDBCollection {
+    /**
+     * Finds the documents which match the provided query.
+     *
+     * @param {object} [filter] An optional filter applied to narrow down the results.
+     * @param {object} [options] Additional options to apply.
+     * @param {object} [options.projection] Limits the fields to return for all matching documents.
+     * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+     * @param {object} [options.sort] The order in which to return matching documents.
+     * @param {number} [options.limit] The maximum number of documents to return.
+     * @returns {object[]} The documents.
+     */
+    async find(filter, options) { }
+
+    /**
+     * Finds a document which matches the provided filter.
+     *
+     * @param {object} [filter] An optional filter applied to narrow down the results.
+     * @param {object} [options] Additional options to apply.
+     * @param {object} [options.projection] Limits the fields to return for all matching documents.
+     * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+     * @param {object} [options.sort] The order in which to return matching documents.
+     * @returns {object} The document or null if nothing matched.
+     */
+    async findOne(filter, options) { }
+
+    /**
+     * Finds a document which matches the provided query and performs the desired update to individual fields.
+     *
+     * @param {object} filter A filter applied to narrow down the results.
+     * @param {object} update The new values for the document.
+     * @param {object} [options] Additional options to apply.
+     * @param {object} [options.projection] Limits the fields to return for all matching documents.
+     * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+     * @param {object} [options.sort] The order in which to return matching documents.
+     * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
+     * query filter when the query does not match any existing documents in the collection.
+     * @param {boolean} [options.returnNewDocument=false] if true, indicates that the action should return
+     * the document in its updated form instead of its original, pre-update form.
+     * @returns {?object} The document (before or after modification) or null if nothing matched.
+     */
+    async findOneAndUpdate(filter, update, options) { }
+
+    /**
+     * Finds a document which matches the provided filter and replaces it with a new document.
+     *
+     * @param {object} filter A filter applied to narrow down the results.
+     * @param {object} replacement The new values for the document.
+     * @param {object} [options] Additional options to apply.
+     * @param {object} [options.projection] Limits the fields to return for all matching documents.
+     * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+     * @param {object} [options.sort] The order in which to return matching documents.
+     * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
+     * query filter when the query does not match any existing documents in the collection.
+     * @param {boolean} [options.returnNewDocument=false] if true, indicates that the action should return
+     * the document in its updated form instead of its original, pre-update form.
+     * @returns {?object} The document (before or after modification) or null if nothing matched.
+     */
+    async findOneAndReplace(filter, replacement, options) { }
+
+    /**
+     * Finds a document which matches the provided filter and deletes it
+     *
+     * @param {object} filter A filter applied to narrow down the results.
+     * @param {object} [options] Additional options to apply.
+     * @param {object} [options.projection] Limits the fields to return for all matching documents.
+     * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+     * @param {object} [options.sort] The order in which to return matching documents.
+     * @returns {object} The document or null if nothing matched.
+     */
+    async findOneAndDelete(filter, options) { }
+
+    /**
+     * Runs an aggregation framework pipeline against this collection.
+     *
+     * @param {object[]} pipeline An array of aggregation pipeline stages.
+     * @returns {object[]} The result.
+     */
+    async aggregate(pipeline) { }
+
+    /**
+     * Counts the number of documents in this collection matching the provided filter.
+     *
+     * @param {object} [filter] An optional filter applied to narrow down the results.
+     * @param {object} [options] Additional options to apply.
+     * @param {number} [options.limit] The maximum number of documents to return.
+     * @returns {number}
+     */
+    async count(filter, options) { }
+
+    /**
+     * @typedef Realm.RemoteMongoDBCollection~InsertOneResult Result of inserting a document
+     * @property insertedId The id of the inserted document
+     */
+
+    /**
+     * Inserts a single document into the collection.
+     * Note: If the document is missing an _id, one will be generated for it by the server.
+     *
+     * @param {object} document The document.
+     * @returns {Realm.RemoteMongoDBCollection~InsertOneResult} The _id of the inserted document.
+     */
+    async insertOne(document) { }
+
+    /**
+     * @typedef Realm.RemoteMongoDBCollection~InsertManyResult Result of inserting many documents
+     * @property {Array} insertedIds The ids of the inserted documents
+     */
+
+    /**
+     * Inserts an array of documents into the collection.
+     * If any values are missing identifiers, they will be generated by the server.
+     *
+     * @param {object[]} documents The array of documents.
+     * @returns {Realm.RemoteMongoDBCollection~InsertManyResult} The _ids of the inserted documents.
+     */
+    async insertMany(documents) { }
+
+    /**
+     * @typedef {object} Realm.RemoteMongoDBCollection~DeleteResult Result of deleting documents
+     * @property {number} deletedCount The number of documents that were deleted.
+     */
+
+    /**
+     * Deletes a single matching document from the collection.
+     *
+     * @param {object} filter A filter applied to narrow down the result.
+     * @returns {Realm.RemoteMongoDBCollection~DeleteResult}
+     */
+    async deleteOne(filter) { }
+
+    /**
+     * Deletes multiple documents.
+     *
+     * @param {object} filter A filter applied to narrow down the result.
+     * @returns {Realm.RemoteMongoDBCollection~DeleteResult}
+     */
+    async deleteMany(filter) { }
+
+    /**
+     * @typedef {object} Realm.RemoteMongoDBCollection~UpdateResult Result of updating documents
+     * @property {number} matchedCount The number of documents that matched the filter.
+     * @property {number} modifedCount The number of documents matched by the query.
+     * @property [upsertedId] The identifier of the inserted document if an upsert took place.
+     */
+
+    /**
+     * Updates a single document matching the provided filter in this collection.
+     *
+     * @param {object} filter A filter applied to narrow down the results.
+     * @param {object} update The new values for the document.
+     * @param {object} [options] Additional options to apply.
+     * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
+     * query filter when the query does not match any existing documents in the collection.
+     * @returns {Realm.RemoteMongoDBCollection~UpdateResult}
+     */
+    async updateOne(filter, update, options) { }
+
+    /**
+     * Updates multiple documents matching the provided filter in this collection.
+     *
+     * @param {object} filter A filter applied to narrow down the results.
+     * @param {object} update The new values for the document.
+     * @param {object} [options] Additional options to apply.
+     * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
+     * query filter when the query does not match any existing documents in the collection.
+     * @returns {Realm.RemoteMongoDBCollection~UpdateResult}
+     */
+    async updateMany(filter, update, options) { }
 }
