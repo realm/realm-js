@@ -123,14 +123,35 @@ inline bool jsc::Value::is_valid(const JSValueRef &value) {
     return value != nullptr;
 }
 
+inline bool is_bson_type(JSContextRef ctx, const JSValueRef &value, std::string type) {
+    if (JSValueIsNull(ctx, proto) || JSValueIsUndefined(ctx, value) || !JSValueIsObject(ctx, value)) {
+        return false;
+    }
+
+
+    JSValueRef error = nullptr;
+    JSValueRef bsonType = JSObjectGetProperty(ctx, value, JSStringCreateWithUTF8CString("_bsontype"), &error);
+    if (error) {
+        throw jsc::Exception(ctx, error);
+    }
+
+    if (JSValueIsUndefined(ctx, value)) {
+        return false;
+    }
+
+    jsc::String bsonTypeValue = Value::to_string(ctx, bsonType);
+    std::string bsonTypeStringValue = bsonTypeValue;
+    return bsonTypeStringValue == type;
+}
+
 template<>
 inline bool jsc::Value::is_decimal128(JSContextRef ctx, const JSValueRef &value) {
-    return JSValueIsObject(ctx, value); // FIXME: can we do better?
+    return is_bson_type(ctx, value, "Decimal128");
 }
 
 template<>
 inline bool jsc::Value::is_object_id(JSContextRef ctx, const JSValueRef &value) {
-    return JSValueIsObject(ctx, value); // FIXME: can we do better?
+    return is_bson_type(ctx, value, "ObjectID");
 }
 
 template<>
