@@ -150,6 +150,21 @@ module.exports = {
     TestCase.assertEqual(err.message, "function not found: 'error'");
   },
 
+  async testRemoteMongoClient() {
+    let app = new Realm.App(appConfig);
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+
+    let mongo = user.remoteMongoClient('BackingDB');
+    let collection = mongo.db('test').collection('testRemoteMongoClient');
+
+    await collection.deleteMany({});
+    await collection.insertOne({hello: "world"});
+    TestCase.assertEqual(await collection.count({}), 1);
+    TestCase.assertEqual(await collection.count({hello: "world"}), 1);
+    TestCase.assertEqual(await collection.count({hello: "pineapple"}), 0);
+  },
+
   testAll() {
     let app = new Realm.App(appConfig);
     Object.keys(app.allUsers()).forEach(id => users[id].logOut()); // FIXME: we need to reset users for each test
