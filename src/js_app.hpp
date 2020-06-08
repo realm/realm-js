@@ -60,9 +60,11 @@ public:
     static FunctionType create_constructor(ContextType);
 
     static void get_app_id(ContextType, ObjectType, ReturnValue &);
+    static void get_auth_email_password(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"id", {wrap<get_app_id>, nullptr}},
+        {"_authEmailPassword", {wrap<get_auth_email_password>, nullptr}},
     };
 
     static void login(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -70,7 +72,6 @@ public:
     static void current_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_user(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void auth_email_password(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
@@ -78,7 +79,6 @@ public:
         {"currentUser", wrap<current_user>},
         {"switchUser", wrap<switch_user>},
         {"_removeUser", wrap<remove_user>},
-        {"_authEmailPassword", wrap<auth_email_password>},
     };
 };
 
@@ -293,8 +293,7 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
 }
 
 template<typename T>
-void AppClass<T>::auth_email_password(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
-    args.validate_count(0);
+void AppClass<T>::get_auth_email_password(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
     return_value.set(EmailPasswordProviderClientClass<T>::create_instance(ctx, app));
 }

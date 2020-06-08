@@ -5,6 +5,9 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Changed default MongoDB Realm URL to https://cloud.mongodb.com.
+* `Realm.User.refreshCustomData()` will return the data when refreshed.
+* Fixed bugs so `Realm.User.auth.APIKeys` and `Realm.App.auth.EmailPassword` are properties and not functions.
+* Added missing methods to `Realm.Auth` classes.
 
 ### Compatibility
 * MongoDB Realm Cloud.

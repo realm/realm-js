@@ -521,7 +521,7 @@ class User {
 
     /**
      * Refresh user's custom data.
-     * @returns {Promise<void>}
+     * @returns {Promise<Object>}
      * @see {Realm.User.customData}
      */
     refreshCustomData() { }
