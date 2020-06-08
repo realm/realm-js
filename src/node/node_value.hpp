@@ -92,7 +92,7 @@ inline bool is_bson_type(Napi::Env env, const Napi::Value& value, std::string ty
 		return false;
 	}
 
-	return bsonType.StrictEquals(Napi::String::New(env, "Decimal128"));
+	return bsonType.StrictEquals(Napi::String::New(env, type));
 }
 
 template<>
