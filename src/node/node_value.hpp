@@ -87,12 +87,12 @@ inline bool is_bson_type(Napi::Env env, const Napi::Value& value, std::string ty
 	}
 
 	Napi::Object object = value.As<Napi::Object>();
-	Napi::Value _bsonType = object.Get("_bsontype");
-	if (_bsonType.IsUndefined()) {
+	Napi::Value bsonType = object.Get("_bsontype");
+	if (bsonType.IsUndefined()) {
 		return false;
 	}
 
-	return _bsonType.StrictEquals(Napi::String::New(env, "Decimal128"));
+	return bsonType.StrictEquals(Napi::String::New(env, "Decimal128"));
 }
 
 template<>
