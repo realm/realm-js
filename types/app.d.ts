@@ -26,7 +26,7 @@ declare namespace Realm {
     // See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
     type ObjectId = import("bson").ObjectId;
     type Binary = import("bson").Binary;
-    
+
     namespace Credentials {
         /**
          * Payload sent when authenticating using the [Email/Password Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
@@ -123,6 +123,9 @@ declare namespace Realm {
      * A MongoDB Realm App.
      */
     class App<FunctionsFactoryType extends object = DefaultFunctionsFactory> {
+
+        constructor(AppConstructor);
+
         /**
          *
          */
