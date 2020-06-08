@@ -342,7 +342,7 @@ declare namespace Realm {
         readonly token: string;
         readonly isLoggedIn: boolean;
         readonly state: UserState;
-        readonly customData: object;
+        readonly customData: Object;
         readonly profile: UserProfile;
 
         /**
@@ -367,7 +367,7 @@ declare namespace Realm {
         logOut(): void;
         linkCredentials(credentials: Credentials): Promise<void>;
         callFunction(name: string, args: any[]): Promise<any>;
-        refreshCustomData(): Promise<void>;
+        refreshCustomData(): Promise<Object>;
 
         readonly apiKeys: Realm.Auth.APIKeys;
     }

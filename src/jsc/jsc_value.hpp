@@ -41,37 +41,6 @@ static inline bool is_object_of_type(JSContextRef ctx, JSValueRef value, jsc::St
     return result;
 }
 
-// Look up and verify against Realm._bson.<type>
-static inline bool is_object_of_bson_type(JSContextRef ctx, JSValueRef value, jsc::String type) {
-    static const jsc::String realm_name = "Realm";
-    static const jsc::String bson_name = "_bson";
-
-    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
-    JSValueRef exception = nullptr;
-
-    JSValueRef realm = JSObjectGetProperty(ctx, global_object, realm_name, &exception);
-    if (exception) {
-        throw jsc::Exception(ctx, exception);
-    }
-
-    JSValueRef bson = JSObjectGetProperty(ctx, jsc::Value::validated_to_object(ctx, realm), bson_name, &exception);
-    if (exception) {
-        throw jsc::Exception(ctx, exception);
-    }
-
-    JSValueRef constructor = JSObjectGetProperty(ctx, jsc::Value::validated_to_object(ctx, bson), type, &exception);
-    if (exception) {
-        throw jsc::Exception(ctx, exception);
-    }
-
-    bool result = JSValueIsInstanceOfConstructor(ctx, value, jsc::Value::validated_to_constructor(ctx, constructor), &exception);
-    if (exception) {
-        throw jsc::Exception(ctx, exception);
-    }
-
-    return result;
-}
-
 template<>
 inline const char *jsc::Value::typeof(JSContextRef ctx, const JSValueRef &value) {
     switch (JSValueGetType(ctx, value)) {
@@ -154,16 +123,35 @@ inline bool jsc::Value::is_valid(const JSValueRef &value) {
     return value != nullptr;
 }
 
+inline bool is_bson_type(JSContextRef ctx, const JSValueRef &value, std::string type) {
+    if (JSValueIsNull(ctx, proto) || JSValueIsUndefined(ctx, value) || !JSValueIsObject(ctx, value)) {
+        return false;
+    }
+
+
+    JSValueRef error = nullptr;
+    JSValueRef bsonType = JSObjectGetProperty(ctx, value, JSStringCreateWithUTF8CString("_bsontype"), &error);
+    if (error) {
+        throw jsc::Exception(ctx, error);
+    }
+
+    if (JSValueIsUndefined(ctx, value)) {
+        return false;
+    }
+
+    jsc::String bsonTypeValue = Value::to_string(ctx, bsonType);
+    std::string bsonTypeStringValue = bsonTypeValue;
+    return bsonTypeStringValue == type;
+}
+
 template<>
 inline bool jsc::Value::is_decimal128(JSContextRef ctx, const JSValueRef &value) {
-    static const jsc::String type = "Decimal128";
-    return is_object_of_bson_type(ctx, value, type);
+    return is_bson_type(ctx, value, "Decimal128");
 }
 
 template<>
 inline bool jsc::Value::is_object_id(JSContextRef ctx, const JSValueRef &value) {
-    static const jsc::String type = "ObjectId";
-    return is_object_of_bson_type(ctx, value, type);
+    return is_bson_type(ctx, value, "ObjectID");
 }
 
 template<>
