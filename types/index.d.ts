@@ -21,6 +21,9 @@
 
 /// <reference path="./app.d.ts"/>
 
+// See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
+type ObjectId = import("bson").ObjectId;
+
 declare namespace Realm {
     interface CollectionChangeSet {
         insertions: number[];
@@ -614,17 +617,10 @@ declare class Realm {
 
     /**
      * @param  {string|Realm.ObjectType|Function} type
-     * @param  {number|string} key
+     * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string): T & Realm.Object | undefined;
-
-    /**
-     * @param  {string|Realm.ObjectType|Function} type
-     * @param  {string} id
-     * @returns {T | undefined}
-     */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, id: string): T & Realm.Object | undefined;
+    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string | ObjectId): T & Realm.Object | undefined;
 
     /**
      * @param  {string|Realm.ObjectType|Function} type

@@ -24,7 +24,6 @@
 
 declare namespace Realm {
     // See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
-    type ObjectId = import("bson").ObjectId;
     type Binary = import("bson").Binary;
 
     namespace Credentials {
@@ -191,7 +190,7 @@ declare namespace Realm {
         /**
          * An optional URL to use as a prefix when requesting the MongoDB Realm services.
          */
-        baseUrl?: string;
+        url?: string;
     }
 
     /**

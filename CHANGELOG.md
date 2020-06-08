@@ -4,7 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed `Realm.App` constuctor's TypeScript definition.
+* Fixed `Realm.App` constuctor's TypeScript definition. Changed `baseUrl` to `url` in app configuration.
+* Fixed TypeScript definition of `Realm.objectForPrimaryKey()`.
 
 ### Compatibility
 * MongoDB Realm Cloud.
