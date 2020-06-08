@@ -57,6 +57,9 @@ inline const char *jsc::Value::typeof(JSContextRef ctx, const JSValueRef &value)
 }
 
 template<>
+inline jsc::String jsc::Value::to_string(JSContextRef, const JSValueRef &);
+
+template<>
 inline bool jsc::Value::is_array(JSContextRef ctx, const JSValueRef &value) {
     // JSValueIsArray() is not available until iOS 9.
     static const jsc::String type = "Array";
