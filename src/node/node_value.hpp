@@ -81,22 +81,28 @@ inline bool node::Value::is_number(Napi::Env env, const Napi::Value& value) {
 	return value.IsNumber();
 }
 
+inline bool is_bson_type(Napi::Env env, const Napi::Value& value, std::string type) {
+	if (value.IsNull() || value.IsUndefined() || !value.IsObject()) {
+		return false;
+	}
+
+	Napi::Object object = value.As<Napi::Object>();
+	Napi::Value bsonType = object.Get("_bsontype");
+	if (bsonType.IsUndefined()) {
+		return false;
+	}
+
+	return bsonType.StrictEquals(Napi::String::New(env, "Decimal128"));
+}
+
 template<>
 inline bool node::Value::is_decimal128(Napi::Env env, const Napi::Value& value) {
-	auto realm = env.Global().Get("Realm");
-    auto _bson = realm.As<Napi::Object>().Get("_bson");
-    auto _decimal128 = _bson.As<Napi::Object>().Get("Decimal128");
-
-	return value.IsObject() && value.As<Napi::Object>().InstanceOf(_decimal128.As<Napi::Function>());
+	return is_bson_type(env, value, "Decimal128");
 }
 
 template<>
 inline bool node::Value::is_object_id(Napi::Env env, const Napi::Value& value) {
-	auto realm = env.Global().Get("Realm");
-    auto _bson = realm.As<Napi::Object>().Get("_bson");
-    auto _objectId = _bson.As<Napi::Object>().Get("ObjectId");
-
-	return value.IsObject() && value.As<Napi::Object>().InstanceOf(_objectId.As<Napi::Function>());
+	return is_bson_type(env, value, "ObjectID");
 }
 
 template<>
