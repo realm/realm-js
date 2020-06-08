@@ -124,13 +124,18 @@ inline bool jsc::Value::is_valid(const JSValueRef &value) {
 }
 
 inline bool is_bson_type(JSContextRef ctx, const JSValueRef &value, std::string type) {
-    if (JSValueIsNull(ctx, proto) || JSValueIsUndefined(ctx, value) || !JSValueIsObject(ctx, value)) {
+    if (JSValueIsNull(ctx, value) || JSValueIsUndefined(ctx, value) || !JSValueIsObject(ctx, value)) {
         return false;
     }
 
 
     JSValueRef error = nullptr;
-    JSValueRef bsonType = JSObjectGetProperty(ctx, value, JSStringCreateWithUTF8CString("_bsontype"), &error);
+    JSObjectRef object = JSValueToObject(ctx, value, &error);
+    if (error) {
+        throw jsc::Exception(ctx, error);
+    }
+
+    JSValueRef bsonType = JSObjectGetProperty(ctx, object, JSStringCreateWithUTF8CString("_bsontype"), &error);
     if (error) {
         throw jsc::Exception(ctx, error);
     }
@@ -139,7 +144,7 @@ inline bool is_bson_type(JSContextRef ctx, const JSValueRef &value, std::string 
         return false;
     }
 
-    jsc::String bsonTypeValue = Value::to_string(ctx, bsonType);
+    jsc::String bsonTypeValue = jsc::Value::to_string(ctx, bsonType);
     std::string bsonTypeStringValue = bsonTypeValue;
     return bsonTypeStringValue == type;
 }
