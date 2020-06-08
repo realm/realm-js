@@ -57,9 +57,6 @@ inline const char *jsc::Value::typeof(JSContextRef ctx, const JSValueRef &value)
 }
 
 template<>
-inline jsc::String jsc::Value::to_string(JSContextRef, const JSValueRef &);
-
-template<>
 inline bool jsc::Value::is_array(JSContextRef ctx, const JSValueRef &value) {
     // JSValueIsArray() is not available until iOS 9.
     static const jsc::String type = "Array";
@@ -147,7 +144,13 @@ inline bool is_bson_type(JSContextRef ctx, const JSValueRef &value, std::string 
         return false;
     }
 
-    jsc::String bsonTypeValue = jsc::Value::to_string(ctx, bsonType);
+    jsc::String bsonTypeValue = JSValueToStringCopy(ctx, bsonType, &error);
+    // Since the string's retain value is +2 here, we need to manually release it before returning.
+    JSStringRelease(bsonTypeValue);
+    if (error) {
+        throw jsc::Exception(ctx, error);
+    }
+
     std::string bsonTypeStringValue = bsonTypeValue;
     return bsonTypeStringValue == type;
 }
