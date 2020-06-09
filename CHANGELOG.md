@@ -1,14 +1,18 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.0.0-beta.5 Release notes (2020-6-8)
 =============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
+
 ### Enhancements
 * None.
 
 ### Fixed
 * Changed default MongoDB Realm URL to https://cloud.mongodb.com.
-* `Realm.User.refreshCustomData()` will return the data when refreshed.
-* Fixed bugs so `Realm.User.auth.APIKeys` and `Realm.App.auth.EmailPassword` are properties and not functions.
-* Added missing methods to `Realm.Auth` classes.
-* When restarting an app, re-using the already logged in user would result in Sync not resuming.
+* `Realm.User.refreshCustomData()` will return the data when refreshed. (since v10.0.0-beta.1)
+* Fixed bugs so `Realm.User.auth.APIKeys` and `Realm.App.auth.EmailPassword` are properties and not functions. (since v10.0.0-beta.1)
+* Added missing methods to `Realm.Auth` classes. (since v10.0.0-beta.1)
+* When restarting an app, re-using the already logged in user would result in Sync not resuming. (since v10.0.0-beta.1)
 * Disabled client resync. (since v10.0.0-beta.1)
 * Android report version as number and not as string, preventing an app to launch. (since v10.0.0-beta.1)
 
@@ -16,6 +20,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+
+### Known issues
+* TypeScript definitions for `Realm.objectForPrimaryKey()` and the `Realm.App` constructor are inconsistent. (https://github.com/realm/realm-js/issues/2940)
 
 ### Internal
 * Updated Realm Object Store to commit c50be4dd178ef7e11d453f61a5ac2afa8c1c10bf.

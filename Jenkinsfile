@@ -109,7 +109,7 @@ stage('build') {
       parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
       parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
     }
-    parallelExecutors["Android React Native"] = buildAndroid()
+    //parallelExecutors["Android React Native"] = buildAndroid()
     parallel parallelExecutors
 }
 
