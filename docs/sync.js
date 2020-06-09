@@ -22,7 +22,7 @@
  * This describes the options used to create a {@link Realm.App} instance.
  * @typedef {Object} Realm.App~AppConfiguration
  * @property {string} id - The id of the MongoDB Realm app.
- * @property {string} url - The URL of the MongoDB Realm end-point (default: https://cloud.mongodb.com/)
+ * @property {string} url - The URL of the MongoDB Realm end-point.
  * @property {number} timeout - General timeout (in millisecs) for requests.
  * @property {Realm.App~LocalAppConfiguration} app - local app configuration
  */
