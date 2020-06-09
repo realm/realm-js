@@ -100,6 +100,7 @@ stage('build') {
     nodeVersions.each { nodeVersion ->
       parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
       parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
+      parallelExecutors["Linux Rpi Node ${nodeVersion}"] = buildLinuxRpi { buildCommon(nodeVersion, it, '--arch=arm') }
       parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
       parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
     }
@@ -296,12 +297,12 @@ def buildDockerEnv(name, extra_args='') {
   return docker.image(name)
 }
 
-def buildCommon(nodeVersion, platform) {
+def buildCommon(nodeVersion, platform, extraFlags='') {
   sshagent(credentials: ['realm-ci-ssh']) {
     sh "mkdir -p ~/.ssh"
     sh "ssh-keyscan github.com >> ~/.ssh/known_hosts"
     sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
-    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package"
+    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
   }
   dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
     stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
@@ -333,6 +334,20 @@ def buildLinux(workerFunction) {
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
       image.inside('-e HOME=/tmp') {
         workerFunction('linux')
+      }
+    }
+  }
+}
+
+def buildLinuxRpi(workerFunction) {
+  return {
+    myNode('docker') {
+      unstash 'source'
+      sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+      buildDockerEnv("realm-js:rpi", '-f armhf.Dockerfile').inside('-e HOME=/tmp') {
+        withEnv(['CC=arm-linux-gnueabihf-gcc', 'CXX=arm-linux-gnueabihf-g++']) {
+          workerFunction('linux-armhf')
+        }
       }
     }
   }
@@ -444,6 +459,9 @@ def publish(nodeVersions, electronVersions, dependencies, tag) {
       for (def version in electronVersions) {
         unstash "electron-pre-gyp-${platform}-${version}"
       }
+    }
+    for (def version in nodeVersions) {
+      unstash "pre-gyp-linux-armhf-${version}"
     }
 
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
