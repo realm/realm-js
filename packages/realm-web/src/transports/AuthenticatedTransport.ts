@@ -54,7 +54,13 @@ export class AuthenticatedTransport implements Transport {
         this.userContext = userContext;
     }
 
-    /** @inheritdoc */
+    /**
+     * Fetch a network resource as an authenticated user.
+     *
+     * @param request The request to issue towards the server
+     * @param user The user used when fetching, defaults to the `app.currentUser`.
+     *             If `null`, the fetch will be unauthenticated.
+     */
     public fetch<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>,
         user: Realm.User | null = this.userContext.currentUser,
@@ -69,8 +75,9 @@ export class AuthenticatedTransport implements Transport {
     }
 
     /** @inheritdoc */
-    public prefix(pathPrefix: string): Transport {
-        return new PrefixedTransport(this, pathPrefix);
+    public prefix(pathPrefix: string): AuthenticatedTransport {
+        const prefixedTransport = this.transport.prefix(pathPrefix);
+        return new AuthenticatedTransport(prefixedTransport, this.userContext);
     }
 
     /**
