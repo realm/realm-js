@@ -403,7 +403,7 @@ def inAndroidContainer(workerFunction) {
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
         image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       }
-      sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+      
       // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
       // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
       lock("${env.NODE_NAME}-android") {
