@@ -13,6 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Reverted back to rely on Realm.App's default URL in Realm Object Store.
+* Updated Realm Object Store to commit c02707bc28e1886970c5da29ef481dc0cb6c3dd8.
 
 10.0.0-beta.5 Release notes (2020-6-8)
 =============================================================
