@@ -144,6 +144,7 @@
             "src/object-store/src/sync/remote_mongo_collection.cpp",
             "src/object-store/src/sync/remote_mongo_database.cpp",
             "src/object-store/src/sync/generic_network_transport.cpp",
+            "src/object-store/src/sync/push_client.cpp",
             "src/object-store/src/util/bson/bson.cpp",
             "src/object-store/src/util/bson/regular_expression.cpp",
           ],

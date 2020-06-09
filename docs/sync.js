@@ -569,6 +569,33 @@ class User {
      * @returns {Realm~RemoteMongoDB}
      */
     remoteMongoClient(serviceName) { }
+
+    /**
+     * @class Realm.User~Push Access to the operations of the push service.
+     */
+
+    /**
+     * Registers the provided token with this User's device.
+     *
+     * @function Realm.User~Push#register
+     * @param {string} token
+     * @returns {Promise<void>} completed when the user is registered, or the operation fails.
+     */
+
+    /**
+     * Deregisters this User's device.
+     *
+     * @function Realm.User~Push#deregister
+     * @returns {Promise<void>} completed when the user is deregistered, or the operation fails.
+     */
+
+    /**
+     * Access the operations of the push service.
+     *
+     * @param {string} serviceName
+     * @returns {Realm.User~Push}
+     */
+    push(serviceName) { }
 }
 
 /**

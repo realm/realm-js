@@ -371,6 +371,10 @@ declare namespace Realm {
         linkCredentials(credentials: Credentials): Promise<void>;
         callFunction(name: string, args: any[]): Promise<any>;
         refreshCustomData(): Promise<Object>;
+        push(serviceName: string): {
+            register(token: string): Promise<void>,
+            deregister(): Promise<void>,
+        };
 
         readonly apiKeys: Realm.Auth.APIKeys;
     }

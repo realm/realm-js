@@ -6,6 +6,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 
 ### Enhancements
 * Added RemoteMongoClient functionality to `Realm.User`
+* Added Push functionality to `Realm.User`
 
 ### Fixed
 * Added missing `SyncConfiguration.error` field in the typescript definitions.

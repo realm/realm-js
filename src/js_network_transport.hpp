@@ -216,7 +216,7 @@ private:
             case app::HttpMethod::get:   return "GET";
             case app::HttpMethod::put:   return "PUT";
             case app::HttpMethod::post:  return "POST";
-            case app::HttpMethod::del:   return "DEL";
+            case app::HttpMethod::del:   return "DELETE";
             case app::HttpMethod::patch: return "PATCH";
             default: throw std::runtime_error("Unknown HttpMethod argument");
         }

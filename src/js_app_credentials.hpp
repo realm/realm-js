@@ -140,8 +140,11 @@ template<typename T>
 void CredentialsClass<T>::function(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
     arguments.validate_count(1);
     const std::string payload_json = Value::validated_to_string(ctx, arguments[0], "payload");
+    const auto payload_bson = bson::parse(payload_json);
+    if (payload_bson.type() != bson::Bson::Type::Document) 
+        throw std::invalid_argument("payload must be a json object");
 
-    auto credentials = realm::app::AppCredentials::function(payload_json);
+    auto credentials = realm::app::AppCredentials::function(payload_bson.operator const bson::BsonDocument&());
     return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 
