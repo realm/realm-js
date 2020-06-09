@@ -111,7 +111,7 @@ describe("App", () => {
             baseUrl: "http://localhost:1337",
         });
         const credentials = Credentials.emailPassword(
-            "gilfoil@testing.mongodb.com",
+            "gilfoyle@testing.mongodb.com",
             "v3ry-s3cret",
         );
         const user = await app.logIn(credentials);
@@ -131,7 +131,7 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/local-userpass/login",
                 body: {
-                    username: "gilfoil@testing.mongodb.com",
+                    username: "gilfoyle@testing.mongodb.com",
                     password: "v3ry-s3cret",
                 },
                 headers: DEFAULT_HEADERS,
@@ -187,6 +187,94 @@ describe("App", () => {
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
                     Authorization: "Bearer very-refreshing",
+                    ...DEFAULT_HEADERS,
+                },
+            },
+        ]);
+    });
+
+    it("can log in a user, when another user is already logged in", async () => {
+        const transport = new MockNetworkTransport([
+            {
+                user_id: "totally-valid-user-id-1",
+                access_token: "deadbeef1",
+                refresh_token: "very-refreshing-1",
+            },
+            {
+                data: {},
+                domain_id: "5ed10debc085000e2c0097ac",
+                identities: [],
+                type: "normal",
+                user_id: "totally-valid-user-id-1",
+            },
+            {
+                user_id: "totally-valid-user-id-2",
+                access_token: "deadbeef2",
+                refresh_token: "very-refreshing-2",
+            },
+            {
+                data: {},
+                domain_id: "5ed10debc085000e2c0097ac",
+                identities: [],
+                type: "normal",
+                user_id: "totally-valid-user-id-2",
+            },
+        ]);
+        const app = new App({
+            id: "default-app-id",
+            transport,
+            baseUrl: "http://localhost:1337",
+        });
+        // Log in two different users
+        {
+            const credentials = Credentials.emailPassword(
+                "gilfoyle@testing.mongodb.com",
+                "v3ry-s3cret-1",
+            );
+            await app.logIn(credentials);
+        }
+        {
+            const credentials = Credentials.emailPassword(
+                "dinesh@testing.mongodb.com",
+                "v3ry-s3cret-2",
+            );
+            await app.logIn(credentials);
+        }
+        // Expect the request made it to the transport
+        expect(transport.requests).deep.equals([
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/local-userpass/login",
+                body: {
+                    username: "gilfoyle@testing.mongodb.com",
+                    password: "v3ry-s3cret-1",
+                },
+                headers: DEFAULT_HEADERS,
+            },
+            {
+                method: "GET",
+                url: "http://localhost:1337/api/client/v2.0/auth/profile",
+                headers: {
+                    Authorization: "Bearer deadbeef1",
+                    ...DEFAULT_HEADERS,
+                },
+            },
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/local-userpass/login",
+                body: {
+                    username: "dinesh@testing.mongodb.com",
+                    password: "v3ry-s3cret-2",
+                },
+                headers: DEFAULT_HEADERS,
+            },
+            {
+                method: "GET",
+                url: "http://localhost:1337/api/client/v2.0/auth/profile",
+                headers: {
+                    Authorization: "Bearer deadbeef2",
                     ...DEFAULT_HEADERS,
                 },
             },
