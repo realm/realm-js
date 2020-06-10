@@ -1,6 +1,6 @@
 {
   "name": "realm-web",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Authenticate and communicate with the MongoDB Realm platform, from your web-browser",
   "main": "dist/bundle.cjs.js",
   "module": "dist/bundle.es.js",
@@ -41,8 +41,8 @@
     "bson": "^4.0.3"
   },
   "optionalDependencies": {
-    "node-fetch": "^2.6.0",
-    "abort-controller": "^3.0.0"
+    "abort-controller": "^3.0.0",
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^7.1.3",
