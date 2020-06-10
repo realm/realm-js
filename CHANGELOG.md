@@ -8,7 +8,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * None.
 
 ### Fixed
-* Fixed inconsistency in property type names (`objectId` as `object id` and `decimal128` as `decimal`). (since v10.0.0-beta.1)
+* Fixed inconsistency in property type names (`objectId` as `object id` and `decimal128` as `decimal`). ([#2948](https://github.com/realm/realm-js/issues/2948), since v10.0.0-beta.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
