@@ -105,7 +105,7 @@ export class User<
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
     public static async logIn(
-        app: App<Realm.BaseFunctionsFactory>,
+        app: App<any>,
         credentials: Realm.Credentials,
         fetchProfile = true,
     ) {
