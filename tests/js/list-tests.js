@@ -50,30 +50,30 @@ module.exports = {
 
         let obj, prim;
         realm.write(() => {
-            obj = realm.create('LinkTypesObject', {});
-            prim = realm.create('PrimitiveArrays', {});
+            obj = realm.create("LinkTypesObject", {});
+            prim = realm.create("PrimitiveArrays", {});
         });
 
-        TestCase.assertEqual(obj.arrayCol.type, 'object');
-        TestCase.assertEqual(obj.arrayCol1.type, 'object');
+        TestCase.assertEqual(obj.arrayCol.type, "object");
+        TestCase.assertEqual(obj.arrayCol1.type, "object");
 
-        TestCase.assertEqual(prim.bool.type, 'bool');
-        TestCase.assertEqual(prim.int.type, 'int');
-        TestCase.assertEqual(prim.float.type, 'float');
-        TestCase.assertEqual(prim.double.type, 'double');
-        TestCase.assertEqual(prim.string.type, 'string');
-        TestCase.assertEqual(prim.date.type, 'date');
-        TestCase.assertEqual(prim.decimal128.type, 'decimal');
-        TestCase.assertEqual(prim.objectId.type, 'object id');
+        TestCase.assertEqual(prim.bool.type, "bool");
+        TestCase.assertEqual(prim.int.type, "int");
+        TestCase.assertEqual(prim.float.type, "float");
+        TestCase.assertEqual(prim.double.type, "double");
+        TestCase.assertEqual(prim.string.type, "string");
+        TestCase.assertEqual(prim.date.type, "date");
+        TestCase.assertEqual(prim.decimal128.type, "decimal128");
+        TestCase.assertEqual(prim.objectId.type, "objectId");
 
-        TestCase.assertEqual(prim.optBool.type, 'bool');
-        TestCase.assertEqual(prim.optInt.type, 'int');
-        TestCase.assertEqual(prim.optFloat.type, 'float');
-        TestCase.assertEqual(prim.optDouble.type, 'double');
-        TestCase.assertEqual(prim.optString.type, 'string');
-        TestCase.assertEqual(prim.optDate.type, 'date');
-        TestCase.assertEqual(prim.optDecimal128.type, 'decimal');
-        TestCase.assertEqual(prim.optObjectId.type, 'object id');
+        TestCase.assertEqual(prim.optBool.type, "bool");
+        TestCase.assertEqual(prim.optInt.type, "int");
+        TestCase.assertEqual(prim.optFloat.type, "float");
+        TestCase.assertEqual(prim.optDouble.type, "double");
+        TestCase.assertEqual(prim.optString.type, "string");
+        TestCase.assertEqual(prim.optDate.type, "date");
+        TestCase.assertEqual(prim.optDecimal128.type, "decimal128");
+        TestCase.assertEqual(prim.optObjectId.type, "objectId");
 
         TestCase.assertFalse(prim.bool.optional);
         TestCase.assertFalse(prim.int.optional);

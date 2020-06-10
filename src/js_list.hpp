@@ -130,7 +130,7 @@ void ListClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &r
 template<typename T>
 void ListClass<T>::get_type(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(ctx, object);
-    return_value.set(string_for_property_type(list->get_type() & ~realm::PropertyType::Flags));
+    return_value.set(js_string_for_property_type(list->get_type() & ~realm::PropertyType::Flags));
 }
 
 template<typename T>
@@ -315,7 +315,7 @@ void ListClass<T>::validate_value(ContextType ctx, realm::List& list, ValueType 
         object_type = list.get_object_schema().name;
     }
     if (!Value::is_valid_for_property_type(ctx, value, type, object_type)) {
-        throw TypeErrorException("Property", object_type ? object_type : string_for_property_type(type), Value::to_string(ctx, value));
+        throw TypeErrorException("Property", object_type ? object_type : js_string_for_property_type(type), Value::to_string(ctx, value));
     }
 }
 

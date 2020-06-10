@@ -121,5 +121,14 @@ void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::Ob
     }
 }
 
+static const char *js_string_for_property_type(realm::PropertyType type) {
+    std::map<realm::PropertyType, const char *> type_map = {
+        { realm::PropertyType::ObjectId, "objectId" },
+        { realm::PropertyType::Decimal, "decimal128" }
+    };
+
+    return realm::string_for_property_type(type, type_map);
+}
+
 } // js
 } // realm

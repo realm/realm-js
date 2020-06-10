@@ -33,6 +33,7 @@
 #include <realm/mixed.hpp>
 
 #include <object-store/src/util/bson/bson.hpp>
+#include <object-store/src/property.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
