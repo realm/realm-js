@@ -36,7 +36,7 @@ describe("EmailPasswordAuthProvider", () => {
         // List all existing keys
         await app.auth.emailPassword.registerUser(email, password);
         // Authenticate
-        const newCredentials = Credentials.usernamePassword(email, password);
+        const newCredentials = Credentials.emailPassword(email, password);
         await app.logIn(newCredentials);
     });
 });

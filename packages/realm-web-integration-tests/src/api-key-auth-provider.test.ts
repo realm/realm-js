@@ -30,7 +30,7 @@ describe("ApiKeyAuthProvider", () => {
         const credentials = Credentials.anonymous();
         await app.logIn(credentials);
         // List all existing keys
-        const keys = await app.auth.apiKey.list();
+        const keys = await app.auth.apiKey.fetchAll();
         // console.log(keys);
         // Create an api key
         const key = await app.auth.apiKey.create("my-key");
