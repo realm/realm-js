@@ -102,6 +102,7 @@ module.exports = {
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
         TestCase.assertInstanceOf(user, Realm.User);
+        await user.logOut();
     },
 
     async testLogInNonexistingUser() {
@@ -128,7 +129,7 @@ module.exports = {
         let user = await app.logIn(credentials);
         users = app.allUsers();
         TestCase.assertEqual(Object.keys(users).length, nUsers + 1)
-        user.logOut();
+        await user.logOut();
 
         users = app.allUsers();
         TestCase.assertEqual(Object.keys(users).length, nUsers);
@@ -144,7 +145,7 @@ module.exports = {
         let user2 = app.currentUser();
         TestCase.assertEqual(user1.identity, user2.identity);
 
-        user1.logOut();
+        await user1.logOut();
         TestCase.assertNull(app.currentUser());
     },
 
@@ -188,24 +189,6 @@ module.exports = {
 
         TestCase.assertEqual(realm2.objects("Dog").length, 2);
         realm2.close();
-        user.logOut();
-    },
-
-    async testEmailPasswordProvider() {
-        let app = new Realm.App(config);
-
-        let credentials = Realm.Credentials.anonymous();
-        let provider = app.auth.emailPassword;
-        TestCase.assertTrue(provider instanceof Realm.Auth.EmailPasswordProvider);
-    },
-
-    async testUserAPIKeyProvider() {
-        let app = new Realm.App(config);
-
-        let credentials = Realm.Credentials.anonymous();
-        let user = await app.logIn(credentials);
-        let provider = user.auth.apiKeys;
-        TestCase.assertTrue(provider instanceof Realm.Auth.UserAPIKeyProvider);
-        user.logOut();
+        await user.logOut();
     },
 };
