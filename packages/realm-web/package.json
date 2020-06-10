@@ -37,6 +37,7 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
+    "@types/bson": "^4.0.2",
     "bson": "^4.0.3"
   },
   "optionalDependencies": {
@@ -46,7 +47,6 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^7.1.3",
     "@rollup/plugin-typescript": "^4.1.1",
-    "@types/bson": "^4.0.2",
     "@types/chai": "^4.2.9",
     "@types/fs-extra": "^8.1.0",
     "@types/mocha": "^7.0.1",

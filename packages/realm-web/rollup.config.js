@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import typescript from "@rollup/plugin-typescript";
-import dts from "rollup-plugin-dts";
 import resolve from "@rollup/plugin-node-resolve";
+import dts from "rollup-plugin-dts";
 
 import pkg from "./package.json";
 
@@ -48,11 +48,17 @@ export default [
         output: {
             file: "dist/bundle.d.ts",
             format: "es",
-            intro: `
-                /// <reference path="../types/realm/bson.d.ts" />
-                /// <reference path="../types/realm/app.d.ts" />
-            `,
+            intro: [
+                '/// <reference path="../types/realm/bson.d.ts" />',
+                '/// <reference path="../types/realm/app.d.ts" />',
+            ].join("\n"),
         },
-        plugins: [dts(), resolve()],
+        plugins: [
+            dts({
+                // Ensures that the realm-network-transport types are included in the bundle
+                respectExternal: true,
+            }),
+            resolve(),
+        ],
     },
 ];
