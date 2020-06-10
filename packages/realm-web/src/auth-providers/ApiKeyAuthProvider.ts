@@ -47,7 +47,7 @@ export class ApiKeyAuthProvider implements Realm.Auth.ApiKeyProvider {
     }
 
     /** @inheritdoc */
-    get(keyId: Realm.ObjectId): Promise<Realm.Auth.ApiKey> {
+    fetch(keyId: Realm.ObjectId): Promise<Realm.Auth.ApiKey> {
         return this.transport
             .fetch({
                 method: "GET",
@@ -57,7 +57,7 @@ export class ApiKeyAuthProvider implements Realm.Auth.ApiKeyProvider {
     }
 
     /** @inheritdoc */
-    list(): Promise<Realm.Auth.ApiKey[]> {
+    fetchAll(): Promise<Realm.Auth.ApiKey[]> {
         return this.transport.fetch({ method: "GET" }).then(deserialize);
     }
 
