@@ -19,6 +19,7 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
+/// <reference path="./bson.d.ts"/>
 /// <reference path="./app.d.ts"/>
 
 declare namespace Realm {
@@ -327,57 +328,6 @@ declare namespace Realm {
     const Results: {
         readonly prototype: Results<any>;
     };
-
-    interface UserProfile {
-        name?: string;
-        email?: string;
-        pictureUrl?: string;
-        firstName?: string;
-        lastName?: string;
-        gender?: string;
-        birthday?: string;
-        minAge?: string;
-        maxAge?: string;
-    }
-
-    class User {
-        readonly identity: string;
-        readonly token: string;
-        readonly isLoggedIn: boolean;
-        readonly state: UserState;
-        readonly customData: Object;
-        readonly profile: UserProfile;
-
-        /**
-         * Convenience wrapper around call_function(name, [args]).
-         *
-         * @example
-         * // These are all equivalent:
-         * await user.call_function("do_thing", [a1, a2, a3]);
-         * await user.functions.do_thing(a1, a2, a3);
-         * await user.functions["do_thing"](a1, a2, a3);
-         *
-         * @example
-         * // It it legal to store the functions as first-class values:
-         * const do_thing = user.functions.do_thing;
-         * await do_thing(a1);
-         * await do_thing(a2);
-         */
-        readonly functions: {
-            [name: string] : (...args: any[]) => Promise<any>
-        };
-
-        logOut(): void;
-        linkCredentials(credentials: Credentials): Promise<void>;
-        callFunction(name: string, args: any[]): Promise<any>;
-        refreshCustomData(): Promise<Object>;
-        push(serviceName: string): {
-            register(token: string): Promise<void>,
-            deregister(): Promise<void>,
-        };
-
-        readonly apiKeys: Realm.Auth.APIKeys;
-    }
 
     namespace Auth {
         class APIKeys {

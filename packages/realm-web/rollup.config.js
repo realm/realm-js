@@ -48,7 +48,10 @@ export default [
         output: {
             file: "dist/bundle.d.ts",
             format: "es",
-            intro: '/// <reference path="../types/realm/index.d.ts" />',
+            intro: `
+                /// <reference path="../types/realm/bson.d.ts" />
+                /// <reference path="../types/realm/app.d.ts" />
+            `,
         },
         plugins: [dts(), resolve()],
     },

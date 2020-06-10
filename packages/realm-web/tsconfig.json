@@ -24,5 +24,6 @@
 	},
 	"include": [
 		"src/**/*.ts"
-	]
+	],
+	"exclude": []
 }

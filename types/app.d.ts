@@ -23,10 +23,6 @@
 /// <reference path="auth-providers.d.ts" />
 
 declare namespace Realm {
-    // See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
-    type ObjectId = import("bson").ObjectId;
-    type Binary = import("bson").Binary;
-    
     namespace Credentials {
         /**
          * Payload sent when authenticating using the [Email/Password Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
@@ -123,6 +119,7 @@ declare namespace Realm {
      * A MongoDB Realm App.
      */
     class App<FunctionsFactoryType extends object = DefaultFunctionsFactory> {
+
         /**
          *
          */
@@ -194,11 +191,14 @@ declare namespace Realm {
     /**
      * Representation of an authenticated user of an app.
      */
-    interface User {
+    class User<
+        FunctionsFactoryType extends object = DefaultFunctionsFactory,
+        CustomDataType extends object = any
+    > {
         /**
          * The automatically-generated internal ID of the user.
          */
-        id: string;
+        readonly id: string;
 
         /**
          * The state of the user.
@@ -206,22 +206,99 @@ declare namespace Realm {
         readonly state: UserState;
 
         // TODO: Populate the list of identities
-        // identities: UserIdentity[];
+        // readonly identities: UserIdentity[];
 
         /**
          * The access token used when requesting a new access token.
          */
-        accessToken: string | null;
+        readonly accessToken: string | null;
 
         /**
          * The refresh token used when requesting a new access token.
          */
-        refreshToken: string | null;
+        readonly refreshToken: string | null;
+
+        /**
+         * You can store arbitrary data about your application users in a MongoDB collection and configure Stitch to automatically expose each user’s data in a field of their user object.
+         * For example, you might store a user’s preferred language, date of birth, or their local timezone.
+         *
+         * If this value has not been configured, it will be empty.
+         */
+        readonly customData: CustomDataType;
 
         /**
          * A profile containing additional information about the user.
          */
         readonly profile: UserProfile;
+
+        /**
+         * Use this to call functions defined by the MongoDB Realm app, as this user.
+         */
+        readonly functions: FunctionsFactoryType & BaseFunctionsFactory;
+
+        /**
+         * This object allows API keys associated with the user to be retrieved, created, enabled and disabled.
+         */
+        readonly apiKeys: Realm.Auth.APIKeys;
+
+        /**
+         * Log out the user.
+         */
+        logOut(): Promise<void>;
+
+        /**
+         * Link the user with a new identity represented by another set of credentials.
+         * 
+         * @param credentials The credentials to use when linking.
+         */
+        linkCredentials(credentials: Credentials): Promise<void>;
+
+        /**
+         * Call a remote MongoDB Realm function by it's name.
+         * Note: Consider using `functions[name]()` instead of calling this method.
+         *
+         * @example
+         * // These are all equivalent:
+         * await user.callFunction("doThing", [a1, a2, a3]);
+         * await user.functions.doThing(a1, a2, a3);
+         * await user.functions["doThing"](a1, a2, a3);
+         *
+         * @example
+         * // The methods returned from the functions object are bound, which is why it's okay to store the function in a variable before calling it:
+         * const doThing = user.functions.doThing;
+         * await doThing(a1);
+         * await doThing(a2);
+         *
+         * @param name Name of the function
+         * @param args Arguments passed to the function
+         */
+        callFunction(name: string, ...args: any[]): Promise<any>;
+
+        /**
+         * Refresh the access token and derive custom data from it.
+         * 
+         * @returns The newly fetched custom data.
+         */
+        refreshCustomData(): Promise<CustomDataType>;
+
+        /** 
+         * Use the Push service to enable sending push messages to this user via Firebase Cloud Messaging (FCM).
+         * 
+         * @returns An service client with methods to register and deregister the device on the user.
+         */
+        push(serviceName: string): {
+            /**
+             * Register this device with the user.
+             * 
+             * @param token A Firebase Cloud Messaging (FCM) token, retrieved via the firebase SDK.
+             */
+            register(token: string): Promise<void>,
+
+            /**
+             * Deregister this device with the user, to disable sending messages to this device.
+             */
+            deregister(): Promise<void>,
+        };
     }
 
     /**
@@ -236,13 +313,21 @@ declare namespace Realm {
         Removed = "removed",
     }
 
+    /**
+     * The type of a user.
+     */
+    enum UserType {
+        /** A normal end-user created this user */
+        Normal = "normal",
+        /** The user was created by the server */
+        Server = "server",
+    }
+
     // TODO: Implement storing these identities on the user
-    /*
     interface UserIdentity {
         userId: string;
         providerType: string;
     }
-    */
 
     /**
      * An extended profile with detailed information about the user.
@@ -299,7 +384,7 @@ declare namespace Realm {
          * The type of user
          * // TODO: Determine the meaning of the different possibilities.
          */
-        userType: "server" | "normal";
+        type: UserType;
     }
 
     /**

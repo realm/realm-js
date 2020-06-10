@@ -55,7 +55,10 @@ export interface UserControlHandle {
 /**
  * Representation of an authenticated user of an app.
  */
-export class User implements Realm.User {
+export class User<
+    FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
+    CustomDataType extends object = any
+> implements Realm.User<FunctionsFactoryType, CustomDataType> {
     /**
      * The app that this user is associated with.
      */
@@ -217,6 +220,18 @@ export class User implements Realm.User {
         return this._state;
     }
 
+    get customData(): CustomDataType {
+        throw new Error("Not yet implemented");
+    }
+    
+    get functions(): FunctionsFactoryType & Realm.BaseFunctionsFactory {
+        throw new Error("Not yet implemented");
+    }
+    
+    get apiKeys(): Realm.Auth.APIKeys {
+        throw new Error("Not yet implemented");
+    }
+
     /**
      * @returns Profile containing detailed information about the user.
      */
@@ -252,5 +267,23 @@ export class User implements Realm.User {
         this._refreshToken = null;
         // Update the state
         this._state = UserState.LoggedOut;
+    }
+
+    /** @inheritdoc */
+    public async linkCredentials(credentials: Realm.Credentials) {
+        throw new Error("Not yet implemented");
+    }
+
+    public async refreshCustomData() {
+        await this.refreshAccessToken();
+        return this.customData;
+    }
+
+    public callFunction(name: string, ...args: any[]) {
+        return this.functions.callFunction(name, ...args);
+    }
+
+    private async refreshAccessToken() {
+        throw new Error("Not yet implemented");
     }
 }
