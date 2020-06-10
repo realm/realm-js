@@ -100,9 +100,8 @@ export class User<
     /**
      * Log in and create a user
      *
-     * @param transport The transport to use when issuing requests
+     * @param app The app used when logging in the user
      * @param credentials Credentials to use when logging in
-     * @param app
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
     public static async logIn(
@@ -223,11 +222,11 @@ export class User<
     get customData(): CustomDataType {
         throw new Error("Not yet implemented");
     }
-    
+
     get functions(): FunctionsFactoryType & Realm.BaseFunctionsFactory {
         throw new Error("Not yet implemented");
     }
-    
+
     get apiKeys(): Realm.Auth.APIKeys {
         throw new Error("Not yet implemented");
     }
