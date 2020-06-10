@@ -378,7 +378,7 @@ declare namespace Realm {
              */
             get(
                 url: string,
-                options: HTTP.RequestOptions,
+                options?: HTTP.RequestOptions,
             ): Promise<HTTP.Response>;
 
             /**
@@ -390,7 +390,7 @@ declare namespace Realm {
              */
             post(
                 url: string,
-                options: HTTP.RequestOptions,
+                options?: HTTP.RequestOptions,
             ): Promise<HTTP.Response>;
 
             /**
@@ -402,7 +402,7 @@ declare namespace Realm {
              */
             put(
                 url: string,
-                options: HTTP.RequestOptions,
+                options?: HTTP.RequestOptions,
             ): Promise<HTTP.Response>;
 
             /**
@@ -414,7 +414,7 @@ declare namespace Realm {
              */
             delete(
                 url: string,
-                options: HTTP.RequestOptions,
+                options?: HTTP.RequestOptions,
             ): Promise<HTTP.Response>;
 
             /**
@@ -426,7 +426,7 @@ declare namespace Realm {
              */
             head(
                 url: string,
-                options: HTTP.RequestOptions,
+                options?: HTTP.RequestOptions,
             ): Promise<HTTP.Response>;
 
             /**
@@ -438,7 +438,7 @@ declare namespace Realm {
              */
             patch(
                 url: string,
-                options: HTTP.RequestOptions,
+                options?: HTTP.RequestOptions,
             ): Promise<HTTP.Response>;
         }
 
