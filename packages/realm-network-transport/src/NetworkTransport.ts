@@ -56,7 +56,7 @@ export interface NetworkTransport {
     ): Promise<ResponseBody>;
     fetchWithCallbacks<RequestBody extends any>(
         request: Request<RequestBody>,
-        handler: ResponseHandler
+        handler: ResponseHandler,
     ): void;
 }
 
@@ -129,19 +129,9 @@ export class DefaultNetworkTransport implements NetworkTransport {
                     await response.json(),
                 );
             } else {
-                if (contentType && contentType.startsWith("application/json")) {
-                    // Awaiting the response to ensure we'll throw our own error
-                    const json = await response.json();
-                    throw new MongoDBRealmError(
-                        response.status,
-                        response.statusText,
-                        json,
-                    );
-                } else {
-                    throw new Error(
-                        `Unexpected status code (${response.status} ${response.statusText})`,
-                    );
-                }
+                throw new Error(
+                    `Unexpected status code (${response.status} ${response.statusText})`,
+                );
             }
         } catch (err) {
             throw new Error(
@@ -152,7 +142,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
 
     public fetchWithCallbacks<RequestBody extends any>(
         request: Request<RequestBody>,
-        handler: ResponseHandler
+        handler: ResponseHandler,
     ) {
         // tslint:disable-next-line: no-console
         this.fetch(request)
