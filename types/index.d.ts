@@ -329,25 +329,6 @@ declare namespace Realm {
         readonly prototype: Results<any>;
     };
 
-    namespace Auth {
-        class APIKeys {
-            createAPIKey(name: string): Promise<void>;
-            fetchAPIKey(id: string): Promise<Object>;
-            allAPIKeys(): Promise<Array<Object>>;
-            deleteAPIKey(id: string): Promise<void>;
-            enableAPIKey(id: string): Promise<void>;
-            disableAPIKey(id: string): Promise<void>;
-        }
-
-        class EmailPassword {
-            registerEmail(email: string, password: string): Promise<void>;
-            confirmUser(token: string, id: string): Promise<void>;
-            resendConfirmationEmail(email: string): Promise<void>;
-            sendResetPasswordEmail(email: string): Promise<void>;
-            resetPassword(password: string, token: string, id: string): Promise<void>;
-        }
-    }
-
     interface UserMap {
         [identity: string]: User
     }

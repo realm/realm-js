@@ -239,7 +239,7 @@ declare namespace Realm {
         /**
          * This object allows API keys associated with the user to be retrieved, created, enabled and disabled.
          */
-        readonly apiKeys: Realm.Auth.APIKeys;
+        readonly apiKeys: Realm.Auth.ApiKeyProvider;
 
         /**
          * Log out the user.

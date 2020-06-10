@@ -20,7 +20,7 @@ import { Transport } from "../transports";
 
 /** @inheritdoc */
 export class EmailPasswordAuthProvider
-    implements Realm.AuthProviders.EmailPasswordAuthProvider {
+    implements Realm.Auth.EmailPasswordProvider {
     /**
      * The underlying transport.
      */
