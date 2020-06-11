@@ -1,3 +1,15 @@
+0.4.0 Release notes (2020-6-11)
+=============================================================
+
+### Enhancements
+* None.
+
+### Fixed
+* Loading Realm Web into a browser would yeild an error with the message "global is not defined", this was due to an issue in the "bson" dependency which got downgraded to the latest stable version. [(#2960)](https://github.com/realm/realm-js/pull/2960)
+
+### Internal
+* None
+
 0.3.0 Release notes (2020-6-11)
 =============================================================
 
