@@ -404,7 +404,7 @@ class Realm {
  *   that must be unique across all objects of this type within the same Realm.
  * @property {boolean} [embedded] - True if the object type is embedded. An embedded object
  *   can be linked to by at most one parent object. Default value: false.
- * @property {Object<string, (Realm~PropertyType|Realm~ObjectSchemaProperty)>} properties -
+ * @property {Object<string, (Realm~PropertyType|Realm~ObjectSchemaProperty|Realm~ObjectSchema)>} properties -
  *   An object where the keys are property names and the values represent the property type.
  *
  * @example
