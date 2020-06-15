@@ -1905,6 +1905,9 @@ module.exports = {
         let objects = realm.objects(schemas.Decimal128Object.name);
         TestCase.assertEqual(objects.length, numbers.length);
 
+        var d128Col = objects[0].objectSchema().properties.decimal128Col;
+        TestCase.assertEqual(d128Col.type, "Decimal128");
+
         for (let i = 0; i < numbers.length; i++) {
             let d128 = objects[i]["decimal128Col"];
             TestCase.assertTrue(d128 instanceof Decimal128);
@@ -1953,6 +1956,9 @@ module.exports = {
 
         let objects = realm.objects(schemas.ObjectIdObject.name);
         TestCase.assertEqual(objects.length, values.length);
+
+        var idCol = objects[0].objectSchema().properties.id;
+        TestCase.assertEqual(idCol.type, "ObjectId");
 
         for (let i = 0; i < values.length; i++) {
             let oid2 = objects[i]["id"];
