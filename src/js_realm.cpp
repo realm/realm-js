@@ -106,7 +106,7 @@ std::string TypeErrorException::type_string(Property const& prop)
             ret = "decimal128";
             break;
         case PropertyType::ObjectId:
-            ret = "ObjectId";
+            ret = "objectId";
             break;
         case PropertyType::LinkingObjects:
         case PropertyType::Object:

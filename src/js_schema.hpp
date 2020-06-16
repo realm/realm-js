@@ -403,7 +403,15 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
         }
     }
     else {
-        Object::set_property(ctx, object, type_string, Value::from_string(ctx, string_for_property_type(property.type)));
+        std::string propertyType = string_for_property_type(property.type);
+        if (property.type == realm::PropertyType::Decimal) {
+            propertyType = "decimal128";
+        }
+        else if (property.type == realm::PropertyType::ObjectId) {
+            propertyType = "objectId";
+        }
+
+        Object::set_property(ctx, object, type_string, Value::from_string(ctx, propertyType));
     }
 
     static const String object_type_string = "objectType";
