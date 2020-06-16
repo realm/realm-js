@@ -275,14 +275,19 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
     auto callback_handler([=](util::Optional<app::AppError> error) {
         HANDLESCOPE(protected_ctx)
 
-        ObjectType error_object = Object::create_empty(protected_ctx);
+        ValueType result;
         if (error) {
+            ObjectType error_object = Object::create_empty(protected_ctx);
             Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
             Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
+            result = error_object;
+        }
+        else {
+            result = Value::from_undefined(ctx);
         }
 
         ValueType callback_arguments[1];
-        callback_arguments[0] = error_object;
+        callback_arguments[0] = result;
         Function::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
     });
 
