@@ -333,15 +333,6 @@ declare namespace Realm {
         [identity: string]: User
     }
 
-    //TODO: This clashes with app.d.ts. Remove or refactor
-    // class App {
-    //     logIn(credentials: Credentials): Promise<User>;
-    //     allUsers(): UserMap;
-    //     currentUser(): User | null;
-    //     switchUser(user: User): void;
-    //     removeUser(user: User): Promise<User>;
-    // }
-
     interface SyncError {
         name: string;
         message: string;
