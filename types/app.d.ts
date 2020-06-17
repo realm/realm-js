@@ -162,14 +162,13 @@ declare namespace Realm {
          */
         logIn(credentials: Credentials): Promise<User<FunctionsFactoryType, CustomDataType>>;
 
-        /**
-         * Log out the currently authenticated user and clear any persisted authentication information.
-         * 
-         * @returns A promise that resolves once the user has been logged out of the app.
-         * 
-         * TODO: Realm JS does not (yet) implement this method.
-         */
-        logOut(): Promise<void>;
+        // TODO: Realm JS does not (yet) implement this method. Remove the comment once it does.
+        // /**
+        //  * Log out the currently authenticated user and clear any persisted authentication information.
+        //  * 
+        //  * @returns A promise that resolves once the user has been logged out of the app.
+        //  */
+        // logOut(): Promise<void>;
 
         /**
          * Switch current user, from an instance of `User` or the string id of the user.
@@ -177,7 +176,7 @@ declare namespace Realm {
         switchUser(user: User<FunctionsFactoryType, CustomDataType>): void;
 
         /**
-         * Switch current user, from an instance of `User` or the string id of the user.
+         * Logs out and removes a user from the app.
          * 
          * @returns A promise that resolves once the user has been logged out and removed from the app.
          */
