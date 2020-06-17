@@ -28,7 +28,6 @@ interface UserParameters {
     id: string;
     accessToken: string;
     refreshToken: string;
-    onController?: (controller: UserController) => void;
 }
 
 export enum UserState {
@@ -42,16 +41,6 @@ export enum UserType {
     Server = "server",
 }
 
-export interface UserController {
-    setAccessToken(token: string): void;
-    setState(state: UserState): void;
-}
-
-export interface UserControlHandle {
-    user: User;
-    controller: UserController;
-}
-
 /**
  * Representation of an authenticated user of an app.
  */
@@ -62,40 +51,7 @@ export class User<
     /**
      * The app that this user is associated with.
      */
-    public readonly app: App<any>;
-
-    /*
-     * The list of identities associated with this user.
-     * // TODO: Implement and test this ...
-     */
-    // public readonly identities: Realm.UserIdentity[] = [];
-
-    /**
-     * Create a user, returning both the user and a controller enabling updates to the user's internal state.
-     *
-     * @param parameters The parameters passed to the constructor.
-     * @returns an object containing the new user and its controller.
-     */
-    public static create(parameters: UserParameters): UserControlHandle {
-        const { onController, ...otherParameters } = parameters;
-        let controller: UserController | undefined;
-        const user = new User({
-            ...otherParameters,
-            onController: c => {
-                if (onController) {
-                    onController(c);
-                }
-                controller = c;
-            },
-        });
-        if (controller) {
-            return { user, controller };
-        } else {
-            throw new Error(
-                "Expected controllerReady to be called synchronously",
-            );
-        }
-    }
+    public readonly app: App<FunctionsFactoryType, CustomDataType>;
 
     /**
      * Log in and create a user
@@ -104,8 +60,11 @@ export class User<
      * @param credentials Credentials to use when logging in
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
-    public static async logIn(
-        app: App<any>,
+    public static async logIn<
+        FunctionsFactoryType extends object,
+        CustomDataType extends object
+    >(
+        app: App<FunctionsFactoryType, CustomDataType>,
         credentials: Realm.Credentials,
         fetchProfile = true,
     ) {
@@ -134,7 +93,7 @@ export class User<
             throw new Error("Expected an refresh token in the response");
         }
         // Create the user
-        const handle = User.create({
+        const user = new User<FunctionsFactoryType, CustomDataType>({
             app,
             id: userId,
             accessToken,
@@ -142,10 +101,10 @@ export class User<
         });
         // If neeeded, fetch and set the profile on the user
         if (fetchProfile) {
-            await handle.user.refreshProfile();
+            await user.refreshProfile();
         }
         // Return the user handle
-        return handle;
+        return user;
     }
 
     private _id: string;
@@ -155,13 +114,7 @@ export class User<
     private _state: Realm.UserState;
     private transport: AuthenticatedTransport;
 
-    public constructor({
-        app,
-        id,
-        accessToken,
-        refreshToken,
-        onController,
-    }: UserParameters) {
+    public constructor({ app, id, accessToken, refreshToken }: UserParameters) {
         this.app = app;
         this._id = id;
         this._accessToken = accessToken;
@@ -170,18 +123,6 @@ export class User<
         this.transport = new AuthenticatedTransport(app.baseTransport, {
             currentUser: this,
         });
-
-        // Create and expose the controller to the creator
-        if (onController) {
-            onController({
-                setAccessToken: token => {
-                    this._accessToken = token;
-                },
-                setState: state => {
-                    this._state = state;
-                },
-            });
-        }
     }
 
     /**
@@ -215,8 +156,14 @@ export class User<
      *
      * @returns The current state of the user.
      */
-    get state(): Realm.UserState {
-        return this._state;
+    get state(): UserState {
+        if (this.app.allUsers.indexOf(this) === -1) {
+            return UserState.Removed;
+        } else {
+            return this._refreshToken === null
+                ? UserState.LoggedOut
+                : UserState.Active;
+        }
     }
 
     get customData(): CustomDataType {

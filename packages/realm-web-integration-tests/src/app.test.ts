@@ -50,12 +50,12 @@ describe("App#constructor", () => {
         expect(app.allUsers).deep.equals([user2, user1]);
         // Ensure that the two users are not one and the same
         expect(user1.id).to.not.equals(user2.id);
-        // Switch back to the first user, by object reference
+        // Switch back to the first user
         app.switchUser(user1);
         expect(app.currentUser).equals(user1);
         expect(app.allUsers).deep.equals([user1, user2]);
-        // Switch back to the second user, by user id
-        app.switchUser(user2.id);
+        // Switch back to the second user
+        app.switchUser(user2);
         expect(app.currentUser).equals(user2);
         expect(app.allUsers).deep.equals([user2, user1]);
         // Switch back to the first user and log out

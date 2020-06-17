@@ -118,7 +118,7 @@ declare namespace Realm {
     /**
      * A MongoDB Realm App.
      */
-    class App<FunctionsFactoryType extends object = DefaultFunctionsFactory> {
+    class App<FunctionsFactoryType extends object = DefaultFunctionsFactory, CustomDataType extends object = any> {
 
         /**
          *
@@ -148,29 +148,40 @@ declare namespace Realm {
         /**
          * The last user to log in or being switched to.
          */
-        readonly currentUser: Realm.User | null;
+        readonly currentUser: User<FunctionsFactoryType, CustomDataType> | null;
 
         /**
          * All authenticated users.
          */
-        readonly allUsers: Readonly<Realm.User[]>;
+        readonly allUsers: Readonly<User<FunctionsFactoryType, CustomDataType>[]>;
 
         /**
          * Log in a user using a specific credential
          *
          * @param credentials the credentials to use when logging in
          */
-        logIn(credentials: Credentials): Promise<Realm.User>;
+        logIn(credentials: Credentials): Promise<User<FunctionsFactoryType, CustomDataType>>;
 
         /**
          * Log out the currently authenticated user and clear any persisted authentication information.
+         * 
+         * @returns A promise that resolves once the user has been logged out of the app.
+         * 
+         * TODO: Realm JS does not (yet) implement this method.
          */
         logOut(): Promise<void>;
 
         /**
-         * Switch current user, from an instance of `Realm.User` or the string id of the user.
+         * Switch current user, from an instance of `User` or the string id of the user.
          */
-        switchUser(user: User | string): void;
+        switchUser(user: User<FunctionsFactoryType, CustomDataType>): void;
+
+        /**
+         * Switch current user, from an instance of `User` or the string id of the user.
+         * 
+         * @returns A promise that resolves once the user has been logged out and removed from the app.
+         */
+        removeUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void>;
     }
 
     /**
@@ -243,8 +254,12 @@ declare namespace Realm {
 
         /**
          * Log out the user.
+         * 
+         * @returns A promise that resolves once the user has been logged out of the app.
+         * 
+         * TODO: Realm JS does not (yet) return a promise here, instead `undefined` is returned.
          */
-        logOut(): Promise<void>;
+        logOut(): Promise<void> | void;
 
         /**
          * Link the user with a new identity represented by another set of credentials.

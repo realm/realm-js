@@ -72,7 +72,7 @@ describe("ApiKeyAuthProvider", () => {
             },
         ]);
         const provider = new ApiKeyAuthProvider(transport);
-        const apiKey = await provider.get(
+        const apiKey = await provider.fetch(
             ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         );
         // Expect something of the key
@@ -115,7 +115,7 @@ describe("ApiKeyAuthProvider", () => {
             ],
         ]);
         const provider = new ApiKeyAuthProvider(transport);
-        const apiKeys = await provider.list();
+        const apiKeys = await provider.fetchAll();
         // Expect something of the first key
         const [firstKey, secondKey] = apiKeys;
         expect(firstKey._id.toHexString()).equals("deadbeefdeadbeefdeadbee1");

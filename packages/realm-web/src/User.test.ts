@@ -76,10 +76,6 @@ describe("User", () => {
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
-            onController: controller => {
-                controller.setAccessToken("new-access-token");
-                controller.setState(UserState.Removed);
-            },
         });
         // Expect an exception if the profile was never fetched
         expect(() => {
@@ -92,21 +88,5 @@ describe("User", () => {
             type: UserType.Normal,
             firstName: "John",
         });
-    });
-
-    it("provides a controller which state", () => {
-        const user = new User({
-            app: new MockApp("my-mocked-app"),
-            id: "some-user-id",
-            accessToken: "deadbeef",
-            refreshToken: "very-refreshing",
-            onController: controller => {
-                controller.setAccessToken("new-access-token");
-                controller.setState(UserState.Removed);
-            },
-        });
-        // Expect something about the user
-        expect(user.accessToken).equals("new-access-token");
-        expect(user.state).equals("removed");
     });
 });
