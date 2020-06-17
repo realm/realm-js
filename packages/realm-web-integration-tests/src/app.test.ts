@@ -64,5 +64,7 @@ describe("App#constructor", () => {
         await app.logOut();
         expect(app.currentUser).equals(user2);
         expect(app.allUsers).deep.equals([user2, user1]);
+        await app.removeUser(user1);
+        expect(app.allUsers).deep.equals([user2]);
     });
 });
