@@ -201,16 +201,18 @@ export class User<
 
     public async logOut() {
         // Invalidate the refresh token
-        await this.app.baseTransport.fetch({
-            method: "DELETE",
-            path: "/auth/session",
-            headers: {
-                Authorization: `Bearer ${this._refreshToken}`,
-            },
-        });
-        // Forget the tokens
-        this._accessToken = null;
-        this._refreshToken = null;
+        if (this._refreshToken !== null) {
+            await this.app.baseTransport.fetch({
+                method: "DELETE",
+                path: "/auth/session",
+                headers: {
+                    Authorization: `Bearer ${this._refreshToken}`,
+                },
+            });
+            // Forget the tokens
+            this._accessToken = null;
+            this._refreshToken = null;
+        }
         // Update the state
         this._state = UserState.LoggedOut;
     }
