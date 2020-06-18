@@ -229,7 +229,7 @@ declare namespace Realm {
         readonly refreshToken: string | null;
 
         /**
-         * You can store arbitrary data about your application users in a MongoDB collection and configure Stitch to automatically expose each user’s data in a field of their user object.
+         * You can store arbitrary data about your application users in a MongoDB collection and configure MongoDB Realm to automatically expose each user’s data in a field of their user object.
          * For example, you might store a user’s preferred language, date of birth, or their local timezone.
          *
          * If this value has not been configured, it will be empty.
