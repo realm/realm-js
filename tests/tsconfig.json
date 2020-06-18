@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2018",
         "module": "commonjs",
         "moduleResolution": "node",
         "noImplicitAny": false,
@@ -9,7 +9,7 @@
         "sourceMap": true,
         "declaration": true,
         "emitDecoratorMetadata": true,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
     },
     "include": [
         "spec/**/*.ts"

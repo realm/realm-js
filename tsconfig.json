@@ -2,7 +2,8 @@
 	"compilerOptions": {
 		"strict": true,
 		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"target": "ES2018",
 	},
 	"exclude": [
 		"packages"
