@@ -356,15 +356,31 @@ declare namespace Realm {
                     options?: UpdateOptions,
                 ): Promise<UpdateResult>;
 
-                /*
+                /**
+                 * Creates an asynchronous change stream to monitor this collection for changes.
+                 *
+                 * By default, yields all change events for this collection. You may specify at most one of
+                 * the `filter` or `ids` options.
+                 *
+                 * @param options.filter A filter for which change events you are interested in.
+                 * @param options.ids A list of ids that you are interested in watching
+                 *
+                 * @see https://docs.mongodb.com/manual/reference/change-events/
+                 */
                 watch(
-                    arg?: any[] | object | undefined
-                ): Promise<Stream<ChangeEvent<T>>>;
-
-                watchCompact(
-                    ids: any[]
-                ): Promise<Stream<CompactChangeEvent<T>>>;
-                */
+                    options: {} | {filter: Filter} | {id: Array<any>},
+                ): AsyncGenerator<{
+                    _id: any,
+                    operationType: "insert" | "delete" | "replace" | "update" | "drop" | "rename" | "dropDatabase" |  "invalidate",
+                    fullDocument?: T,
+                    ns?: {db: string, coll?: string},
+                    to?: {db: string, coll: string},
+                    documentKey?: any,
+                    updateDescription?: {updatedFields: any, removedFields: Array<string>},
+                    clusterTime?: Timestamp,
+                    txnNumber?: Long,
+                    lsid?: object,
+                }>;
             }
         }
 

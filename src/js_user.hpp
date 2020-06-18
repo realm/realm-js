@@ -23,7 +23,9 @@
 #include "js_sync_util.hpp"
 #include "js_app_credentials.hpp"
 #include "js_api_key_auth.hpp"
+#include "js_network_transport.hpp"
 
+#include "sync/remote_mongo_collection.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
 #include "sync/sync_session.hpp"
@@ -36,6 +38,79 @@ namespace js {
 
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 using SharedApp = std::shared_ptr<realm::app::App>;
+using WatchStream = realm::app::WatchStream;
+
+template<typename T>
+class WatchStreamClass : public ClassDefinition<T, WatchStream> {
+    using GlobalContextType = typename T::GlobalContext;
+    using ContextType = typename T::Context;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using String = js::String<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+    using Function = js::Function<T>;
+    using ReturnValue = js::ReturnValue<T>;
+    using Arguments = js::Arguments<T>;
+
+public:
+    std::string const name = "WatchStream";
+
+    static void get_state(ContextType, ObjectType, ReturnValue &);
+    static void get_error(ContextType, ObjectType, ReturnValue &);
+
+    PropertyMap<T> const properties = {
+        {"state", {wrap<get_state>, nullptr}},
+        {"error", {wrap<get_error>, nullptr}},
+    };
+
+    MethodMap<T> const static_methods = {
+    };
+
+    static void feed_buffer(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void next_event(ContextType, ObjectType, Arguments&, ReturnValue&);
+
+    MethodMap<T> const methods = {
+        {"feedBuffer", wrap<feed_buffer>},
+        {"nextEvent", wrap<next_event>},
+    };
+};
+
+template<typename T>
+void WatchStreamClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    WatchStream* ws = get_internal<T, WatchStreamClass<T>>(ctx, object);
+    switch (ws->state()) {
+    case WatchStream::HAVE_ERROR:
+        return return_value.set(Value::from_string(ctx, "HAVE_ERROR"));
+    case WatchStream::HAVE_EVENT:
+        return return_value.set(Value::from_string(ctx, "HAVE_EVENT"));
+    case WatchStream::NEED_DATA:
+        return return_value.set(Value::from_string(ctx, "NEED_DATA"));
+    }
+    REALM_UNREACHABLE();
+}
+
+template<typename T>
+void WatchStreamClass<T>::get_error(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    WatchStream* ws = get_internal<T, WatchStreamClass<T>>(ctx, object);
+    return return_value.set(Object::create_from_app_error(ctx, ws->error()));
+}
+
+template<typename T>
+void WatchStreamClass<T>::feed_buffer(ContextType ctx, ObjectType object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(1);
+    WatchStream* ws = get_internal<T, WatchStreamClass<T>>(ctx, object);
+    auto buffer = Value::validated_to_binary(ctx, args[0], "buffer");
+    ws->feed_buffer({buffer.data(), buffer.size()});
+}
+
+template<typename T>
+void WatchStreamClass<T>::next_event(ContextType ctx, ObjectType object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(0);
+    WatchStream* ws = get_internal<T, WatchStreamClass<T>>(ctx, object);
+    return return_value.set(Value::from_bson(ctx, ws->next_event()));
+}
 
 template<typename T>
 class User : public SharedUser {
@@ -100,6 +175,8 @@ public:
     static void refresh_custom_data(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void push_register(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void push_deregister(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void make_streaming_request(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void new_watch_stream(ContextType, ObjectType, Arguments&, ReturnValue&);
 
 
     MethodMap<T> const methods = {
@@ -110,13 +187,18 @@ public:
         {"_refreshCustomData", wrap<refresh_custom_data>},
         {"_pushRegister", wrap<push_register>},
         {"_pushDeregister", wrap<push_deregister>},
+        {"_makeStreamingRequest", wrap<make_streaming_request>},
+        {"_newWatchStream", wrap<new_watch_stream>},
     };
 };
 
 template<typename T>
 inline typename T::Function UserClass<T>::create_constructor(ContextType ctx) {
-    FunctionType user_constructor = ObjectWrap<T, UserClass<T>>::create_constructor(ctx);
-    return user_constructor;
+    // WatchStream isn't directly nameable from JS, so we don't need to do anything with the returned function object,
+    // but we still need to initialize it here.
+    ObjectWrap<T, WatchStreamClass<T>>::create_constructor(ctx);
+
+    return ObjectWrap<T, UserClass<T>>::create_constructor(ctx);
 }
 
 template<typename T>
@@ -301,6 +383,30 @@ void UserClass<T>::push_deregister(ContextType ctx, ObjectType this_object, Argu
     user->m_app->push_notification_client(service).deregister_device(
         *user,
         Function::wrap_void_callback(ctx, this_object, callback));
+}
+
+template<typename T>
+void UserClass<T>::make_streaming_request(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_between(2, 3);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+
+    auto name = Value::validated_to_string(ctx, args[0], "name");
+    auto service = Value::validated_to_string(ctx, args[1], "service");
+    auto call_args_js = Value::validated_to_array(ctx, args[2], "args");
+    auto call_args_bson = Value::to_bson(ctx, call_args_js);
+
+    auto req = user->m_app->make_streaming_request(
+        *user,
+        name,
+        call_args_bson.operator const bson::BsonArray &(),
+        std::string(service));
+    return return_value.set(JavaScriptNetworkTransport<T>::makeRequest(ctx, req));
+}
+
+template<typename T>
+void UserClass<T>::new_watch_stream(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(0);
+    return return_value.set(create_object<T, WatchStreamClass<T>>(ctx, new WatchStream()));
 }
 }
 }

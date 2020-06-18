@@ -20,4 +20,6 @@ declare namespace Realm {
     // See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
     type ObjectId = import("bson").ObjectId;
     type Binary = import("bson").Binary;
+    type Long = import("bson").Long;
+    type Timestamp = import("bson").Timestamp;
 }

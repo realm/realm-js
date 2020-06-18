@@ -242,6 +242,72 @@ module.exports = {
     TestCase.assertEqual(await collection.count({hello: "pineapple"}), 0);
   },
 
+  async testRemoteMongoClientWatch() {
+    let app = new Realm.App(appConfig);
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+    let collection = user.remoteMongoClient('BackingDB').db('test_data').collection('testRemoteMongoClient');
+
+    const sleep = async time => new Promise(resolve => setInterval(resolve, time));
+    const str = 'use some odd chars to force weird encoding %\n\r\n\\????>>>>';
+    await Promise.all([
+      (async () => {
+        // There is a race with creating the watch() streams, since they won't
+        // see inserts from before they are created. 
+        // Wait 500ms (490+10) before first insert to try to avoid it.
+        await sleep(490);
+        for (let i = 0; i < 10; i++) {
+          await sleep(10);
+          await collection.insertOne({_id: i, hello: "world", str});
+        }
+        await collection.insertOne({_id: 'done', done: true}); // break other sides out of loop
+      })(),
+      (async () => {
+        let expected = 0;
+        for await (let event of collection.watch()) {
+          if (event.fullDocument.done)
+            break;
+          TestCase.assertEqual(event.fullDocument._id, expected++);
+        }
+        TestCase.assertEqual(expected, 10);
+      })(),
+      (async () => {
+        const filter = {$or:[
+          {'fullDocument._id': 3, 'fullDocument.str': str},
+          {'fullDocument.done': true},
+        ]}
+        let seenIt = false;
+        for await (let event of collection.watch({filter})) {
+          if (event.fullDocument.done)
+            break;
+          TestCase.assertEqual(event.fullDocument._id, 3);
+          seenIt = true;
+        }
+        TestCase.assertTrue(seenIt, "seenIt for filter");
+      })(),
+      (async () => {
+        let seenIt = false;
+        for await (let event of collection.watch({ids: [5, 'done']})) {
+          if (event.fullDocument.done)
+            break;
+          TestCase.assertTrue(event.fullDocument._id, 5);
+          seenIt = true;
+        }
+        TestCase.assertTrue(seenIt, "seenIt for ids");
+      })(),
+    ]);
+
+    // Test failure of initial request by logging out.
+    await user.logOut();
+    let err = await TestCase.assertThrowsAsync(async () => {
+      for await (let _ of collection.watch()) {
+        TestCase.assertTrue(false, "This should be unreachable");
+      }
+    });
+    if (err.code != 401)
+      throw err;
+  },
+
   async testPush() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
