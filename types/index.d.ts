@@ -110,6 +110,7 @@ declare namespace Realm {
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
+        error?: (session: Sync.Session, error: SyncError) => void;
     }
 
     /**

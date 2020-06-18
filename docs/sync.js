@@ -35,7 +35,7 @@
  */
 
 /**
- * This describes the different options used to create a {@link Realm} instance with Realm Platform synchronization.
+ * This describes the different options used to create a {@link Realm} instance with Realm Cloud synchronization.
  * @typedef {Object} Realm.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
  * @property {string|number|BSON.ObjectId} partitionValue - The value of the partition key.
