@@ -53,7 +53,7 @@ declare namespace Realm {
              *
              * @param email the email associated to resend the confirmation to.
              */
-            resendConfirmation(email: string): Promise<void>;
+            resendConfirmationEmail(email: string): Promise<void>;
 
             /**
              * Complete resetting the password

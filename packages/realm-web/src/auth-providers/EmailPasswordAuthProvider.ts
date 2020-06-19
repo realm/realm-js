@@ -55,7 +55,7 @@ export class EmailPasswordAuthProvider
     }
 
     /** @inheritdoc */
-    resendConfirmation(email: string): Promise<void> {
+    resendConfirmationEmail(email: string): Promise<void> {
         return this.transport.fetch({
             method: "POST",
             path: "/confirm/send",
