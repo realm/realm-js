@@ -16,6 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/**
+ * The type of a user.
+ */
+enum UserType {
+    /** A normal end-user created this user */
+    Normal = "normal",
+    /** The user was created by the server */
+    Server = "server",
+}
+
 /** @ignore */
 enum DataKey {
     /** @ignore */
@@ -80,7 +90,7 @@ export class UserProfile implements Realm.UserProfile {
     public readonly maxAge?: string;
 
     /** @inheritdoc */
-    public readonly type: Realm.UserType;
+    public readonly type: Realm.UserType = UserType.Normal;
 
     /** @inheritdoc */
     public readonly identities: Realm.UserIdentity[];
@@ -90,20 +100,7 @@ export class UserProfile implements Realm.UserProfile {
      *
      * @param response The response of a call fetching the users profile
      */
-    constructor(response: any) {
-        /**
-      -  "data": {}
-      -  "domain_id": "5ed10debc085000e2c0097ac"
-      -  "identities": [
-      -    {
-      -      "id": "5ed10e0dc085000e2c0099f2-fufttusvpmojykvacvhijoaq"
-      -      "provider_id": "5ed10dedc085000e2c0097c5"
-      -      "provider_type": "anon-user"
-      -    }
-      -  ]
-      -  "type": "normal"
-      -  "user_id": "5ed10e0dc085000e2c0099f3"
-         */
+    constructor(response?: any) {
         if (typeof response.type === "string") {
             this.type = response.type;
         } else {
@@ -139,4 +136,6 @@ export class UserProfile implements Realm.UserProfile {
             throw new Error("Expected 'data' in the response body");
         }
     }
+
+    // public hydrateFromResponse() {}
 }

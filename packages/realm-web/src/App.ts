@@ -24,6 +24,8 @@ import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
 import { Credentials } from "./Credentials";
 import { create as createServicesFactory } from "./services";
 import { EmailPasswordAuth } from "./auth-providers";
+import { Storage, createDefaultStorage } from "./storage";
+import { AppStorage } from "./AppStorage";
 
 /**
  * Configuration to pass as an argument when constructing an app.
@@ -31,6 +33,8 @@ import { EmailPasswordAuth } from "./auth-providers";
 export interface AppConfiguration extends Realm.AppConfiguration {
     /** Transport to use when fetching resources */
     transport?: NetworkTransport;
+    /** Used when persisting app state, such as tokens of authenticated users */
+    storage?: Storage;
 }
 
 /**
@@ -74,15 +78,20 @@ export class App<
     public readonly emailPasswordAuth: EmailPasswordAuth;
 
     /**
+     * Storage available for the app
+     */
+    public readonly storage: AppStorage;
+
+    /**
      * This base route will be prefixed requests issued through by the base transport
      */
     private static readonly BASE_ROUTE = "/api/client/v2.0";
 
     /**
-     * A (reversed) stack of active and logged-out users.
+     * An array of active and logged-out users.
      * Elements in the beginning of the array is considered more recent than the later elements.
      */
-    private readonly users: User<FunctionsFactoryType, CustomDataType>[] = [];
+    private users: User<FunctionsFactoryType, CustomDataType>[] = [];
 
     /**
      * Construct a Realm App, either from the Realm App id visible from the MongoDB Realm UI or a configuration.
@@ -125,6 +134,11 @@ export class App<
         this.services = createServicesFactory(authTransport);
         // Construct the auth providers
         this.emailPasswordAuth = new EmailPasswordAuth(authTransport);
+        // Construct the storage
+        const baseStorage = configuration.storage || createDefaultStorage();
+        this.storage = new AppStorage(baseStorage, this.id);
+        // Hydrate the app state from storage
+        this.hydrate();
     }
 
     /**
@@ -156,6 +170,12 @@ export class App<
         > = await User.logIn(this, credentials, fetchProfile);
         // Add the user at the top of the stack
         this.users.unshift(user);
+        // Persist the user id in the storage,
+        // merging to avoid overriding logins from other apps using the same underlying storage
+        this.storage.setUserIds(
+            this.users.map(u => u.id),
+            true,
+        );
         // Return the user
         return user;
     }
@@ -170,9 +190,12 @@ export class App<
             throw new Error("The user was never logged into this app");
         }
         this.users.splice(index, 1);
-        // Log out the user
+        // Log out the user - this removes access and refresh tokens from storage
         await user.logOut();
-        // TODO: Delete any data / tokens which were persisted
+        // Remove the users profile from storage
+        this.storage.remove(`user(${user.id}):profile`);
+        // Remove the user from the storage
+        this.storage.removeUserId(user.id);
     }
 
     /**
@@ -217,19 +240,10 @@ export class App<
     }
 
     /**
-     * Get the (user and it's controller) handle of a user
-     *
-     * @param userOrId A user object or user id
-     * @returns A handle containing the user and it's controller.
+     * Restores the state of the app (active and logged-out users) from the storage
      */
-    private getUser(userOrId: Realm.User | string | null) {
-        const user = this.users.find(u =>
-            typeof userOrId === "string" ? u.id === userOrId : u === userOrId,
-        );
-        if (user) {
-            return user;
-        } else {
-            throw new Error("Invalid user or user id");
-        }
+    private hydrate() {
+        const userIds = this.storage.getUserIds();
+        this.users = userIds.map(id => User.hydrate(this, id));
     }
 }
