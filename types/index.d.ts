@@ -110,6 +110,7 @@ declare namespace Realm {
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
+        error?: ErrorCallback;
     }
 
     /**
@@ -408,6 +409,8 @@ declare namespace Realm {
         category?: string;
         code: number;
     }
+
+    type ErrorCallback = (session: Session, error: SyncError) => void;
 
     const enum SessionStopPolicy {
         AfterUpload = "after-upload",

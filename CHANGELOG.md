@@ -9,7 +9,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Added missing `SyncConfiguration.error` field in the typescript definitions.
 
 ### Compatibility
 * MongoDB Realm Cloud.
