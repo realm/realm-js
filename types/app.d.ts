@@ -255,10 +255,8 @@ declare namespace Realm {
          * Log out the user.
          * 
          * @returns A promise that resolves once the user has been logged out of the app.
-         * 
-         * TODO: Realm JS does not (yet) return a promise here, instead `undefined` is returned.
          */
-        logOut(): Promise<void> | void;
+        logOut(): Promise<void>;
 
         /**
          * Link the user with a new identity represented by another set of credentials.
