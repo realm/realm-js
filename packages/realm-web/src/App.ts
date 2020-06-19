@@ -164,16 +164,6 @@ export class App<
     /**
      * @inheritdoc
      */
-    public async logOut() {
-        const user = this.currentUser;
-        if (user) {
-            await user.logOut();
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public async removeUser(user: User<FunctionsFactoryType, CustomDataType>) {
         // Remove the user from the list of users
         const index = this.users.findIndex(u => u === user);

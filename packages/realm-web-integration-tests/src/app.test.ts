@@ -61,7 +61,7 @@ describe("App#constructor", () => {
         // Switch back to the first user and log out
         app.switchUser(user1);
         expect(app.currentUser).equals(user1);
-        await app.logOut();
+        await user1.logOut();
         expect(app.currentUser).equals(user2);
         expect(app.allUsers).deep.equals([user2, user1]);
         await app.removeUser(user1);
