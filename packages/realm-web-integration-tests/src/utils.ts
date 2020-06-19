@@ -34,3 +34,9 @@ export function createApp<FunctionsFactoryType extends object>() {
         baseUrl: BASE_URL,
     });
 }
+
+export function clearStorage() {
+    if (window.localStorage) {
+        localStorage.clear();
+    }
+}

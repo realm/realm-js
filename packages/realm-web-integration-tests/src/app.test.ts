@@ -20,12 +20,22 @@ import { expect } from "chai";
 
 import { App, Credentials } from "realm-web";
 
-import { createApp } from "./utils";
+import { createApp, clearStorage } from "./utils";
+
+async function logOutAllUsers(app: App<object>) {
+    for (const user of app.allUsers) {
+        await user.logOut();
+    }
+}
 
 describe("App#constructor", () => {
     it("constructs", () => {
         const app = new App("default-app-id");
         expect(app).to.be.instanceOf(App);
+    });
+
+    afterEach(() => {
+        clearStorage();
     });
 
     it("can login a user", async () => {

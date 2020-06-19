@@ -268,6 +268,7 @@ export class User<
      * Restore a user from the data stored in the storage of an `App` instance.
      */
     public hydrate() {
+        // Hydrate tokens
         const accessToken = this.storage.accessToken;
         const refreshToken = this.storage.refreshToken;
         if (
@@ -281,11 +282,8 @@ export class User<
                 `Failed hydrating user (${this.id}), missing access or refresh token`,
             );
         }
-
-        const profile = this.storage.profile;
-        if (profile) {
-            this._profile = profile;
-        }
+        // Hydrate any profile
+        this._profile = this.storage.profile;
     }
 
     private async refreshAccessToken() {

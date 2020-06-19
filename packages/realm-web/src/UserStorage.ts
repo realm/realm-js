@@ -108,13 +108,4 @@ export class UserStorage extends PrefixedStorage {
             this.set(PROFILE_STORAGE_KEY, JSON.stringify(value));
         }
     }
-
-    /**
-     * Clears all values saved in the store
-     */
-    public removeAll() {
-        this.remove(ACCESS_TOKEN_STORAGE_KEY);
-        this.remove(REFRESH_TOKEN_STORAGE_KEY);
-        this.remove(PROFILE_STORAGE_KEY);
-    }
 }

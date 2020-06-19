@@ -24,6 +24,9 @@ export { Storage } from "./Storage";
 import { LocalStorage } from "./LocalStorage";
 import { MemoryStorage } from "./MemoryStorage";
 
+/** We're reusing a singleton to simulate the persistance of the localstorage */
+const memoryStorageSingleton = new MemoryStorage();
+
 /**
  * Create a `Storage` instance, default to the current environment
  *
@@ -32,6 +35,8 @@ import { MemoryStorage } from "./MemoryStorage";
  */
 export function createDefaultStorage() {
     const storage =
-        typeof window === "object" ? new LocalStorage() : new MemoryStorage();
+        typeof window === "object"
+            ? new LocalStorage()
+            : memoryStorageSingleton;
     return storage.prefix("realm-web");
 }

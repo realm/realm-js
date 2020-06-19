@@ -93,7 +93,7 @@ export class UserProfile implements Realm.UserProfile {
     public readonly type: Realm.UserType = UserType.Normal;
 
     /** @inheritdoc */
-    public readonly identities: Realm.UserIdentity[];
+    public readonly identities: Realm.UserIdentity[] = [];
 
     /**
      * Construct a user profile from the body of a response
@@ -101,41 +101,41 @@ export class UserProfile implements Realm.UserProfile {
      * @param response The response of a call fetching the users profile
      */
     constructor(response?: any) {
-        if (typeof response.type === "string") {
-            this.type = response.type;
-        } else {
-            throw new Error("Expected 'type' in the response body");
-        }
-
-        if (Array.isArray(response.identities)) {
-            this.identities = response.identities.map((identity: any) => {
-                return {
-                    id: identity.id,
-                    providerId: identity["provider_id"],
-                    providerType: identity["provider_type"],
-                };
-            });
-        } else {
-            throw new Error("Expected 'identities' in the response body");
-        }
-
-        const { data } = response;
-        if (typeof data === "object") {
-            for (const key in DATA_MAPPING) {
-                const value = data[key];
-                const propertyName = DATA_MAPPING[key as DataKey];
-                if (
-                    typeof value === "string" &&
-                    propertyName !== "identities" &&
-                    propertyName !== "type"
-                ) {
-                    this[propertyName] = value;
-                }
+        if (response) {
+            if (typeof response.type === "string") {
+                this.type = response.type;
+            } else {
+                throw new Error("Expected 'type' in the response body");
             }
-        } else {
-            throw new Error("Expected 'data' in the response body");
+
+            if (Array.isArray(response.identities)) {
+                this.identities = response.identities.map((identity: any) => {
+                    return {
+                        id: identity.id,
+                        providerId: identity["provider_id"],
+                        providerType: identity["provider_type"],
+                    };
+                });
+            } else {
+                throw new Error("Expected 'identities' in the response body");
+            }
+
+            const { data } = response;
+            if (typeof data === "object") {
+                for (const key in DATA_MAPPING) {
+                    const value = data[key];
+                    const propertyName = DATA_MAPPING[key as DataKey];
+                    if (
+                        typeof value === "string" &&
+                        propertyName !== "identities" &&
+                        propertyName !== "type"
+                    ) {
+                        this[propertyName] = value;
+                    }
+                }
+            } else {
+                throw new Error("Expected 'data' in the response body");
+            }
         }
     }
-
-    // public hydrateFromResponse() {}
 }

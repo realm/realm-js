@@ -125,6 +125,7 @@ describe("User", () => {
         expect(userStorage.get("accessToken")).equals(null);
         expect(userStorage.get("refreshToken")).equals(null);
         // Logging out shouldn't delete information about the profile
+        expect(user.profile).deep.equals(profile);
         const profile2 = JSON.parse(userStorage.get("profile") || "");
         expect(profile2).deep.equals(profile);
     });
