@@ -8,6 +8,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * `Realm.Auth.EmailPassword.registerEmail()` has been renamed to `Realm.Auth.EmailPassword.registerUser()`.
 * `Realm.User.identity` has been renamed to `Realm.User.id`.
 * `Realm.User.token` has been renamed to `Realm.User.accessToken`.
+* Change instance methods `Realm.App.currentUser()` and `Realm.App.allUsers()` to instance properties `Realm.App.currentUser` and `Realm.App.allUsers`.
 
 ### Enhancements
 * Added RemoteMongoClient functionality to `Realm.User`

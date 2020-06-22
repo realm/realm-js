@@ -107,14 +107,14 @@
      *
      * @returns {Realm.User} The current user, `null` is no current user.
      */
-    currentUser() { }
+    get currentUser() { }
 
     /**
      * Returns a dictionary of alll users. Users' identity is used as key.
      *
      * @returns {Array}
      */
-    allUsers() { }
+    get allUsers() { }
 
     /**
      * Switches the current user.

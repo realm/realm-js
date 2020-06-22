@@ -95,18 +95,18 @@ async function registerAndLogInEmailUser(app) {
   await app.auth.emailPassword.registerUser(validEmail, validPassword);
   let user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword))
   assertIsUser(user);
-  assertIsSameUser(user, app.currentUser());
+  assertIsSameUser(user, app.currentUser);
   return user;
 }
 
 async function logOutExistingUsers(app) {
-  let users = app.allUsers();
-  Object.keys(app.allUsers()).forEach(async id => await users[id].logOut());
+  let users = app.allUsers;
+  Object.keys(app.allUsers).forEach(async id => await users[id].logOut());
 }
 
 module.exports = {
 
-  // tests also logIn() and currentUser()
+  // tests also logIn() and currentUser
   async testLogout() {
     let app = new Realm.App(appConfig);
     await logOutExistingUsers(app);
@@ -114,10 +114,10 @@ module.exports = {
 
     let user = await app.logIn(credentials);
     assertIsUser(user);
-    assertIsSameUser(user, app.currentUser());
+    assertIsSameUser(user, app.currentUser);
     await user.logOut();
     // Is now logged out.
-    TestCase.assertNull(app.currentUser());
+    TestCase.assertNull(app.currentUser);
   },
 
   testEmailPasswordMissingUsername() {
@@ -188,7 +188,7 @@ module.exports = {
       await app.auth.emailPassword.registerUser(validEmail, validPassword);
       let user = await app.logIn(credentials)
       assertIsUser(user);
-      assertIsSameUser(user, app.currentUser());
+      assertIsSameUser(user, app.currentUser);
       await user.logOut();
     }
   },
@@ -242,41 +242,41 @@ module.exports = {
     let app = new Realm.App(appConfig);
     await logOutExistingUsers(app);
 
-    let all = app.allUsers();
+    let all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 0, "Noone to begin with");
 
     let credentials = Realm.Credentials.anonymous();
     let user1 = await app.logIn(credentials);
-    all = app.allUsers();
+    all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 1, "One user");
     assertIsSameUser(all[user1.id], user1);
     let user2 = await app.logIn(Realm.Credentials.anonymous());
-    all = app.allUsers();
+    all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 1, "still one user");
     // NOTE: the list of users is in latest-first order.
     assertIsSameUser(all[user2.id], user2);
     assertIsSameUser(all[user1.id], user1);
 
     await user2.logOut(); // logs out the shared anonymous session
-    all = app.allUsers();
+    all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 0, "All gone");
   },
 
   async testCurrentWithAnonymous() {
     let app = new Realm.App(appConfig);
     await logOutExistingUsers(app);
-    TestCase.assertNull(app.currentUser());
+    TestCase.assertNull(app.currentUser);
 
     let firstUser = await app.logIn(Realm.Credentials.anonymous());
-    assertIsSameUser(app.currentUser(), firstUser);
+    assertIsSameUser(app.currentUser, firstUser);
     let secondUser = await app.logIn(Realm.Credentials.anonymous());
     // the most recently logged in user is considered current
     TestCase.assertTrue(firstUser.isLoggedIn);
     TestCase.assertTrue(secondUser.isLoggedIn);
-    assertIsSameUser(app.currentUser(), secondUser);
+    assertIsSameUser(app.currentUser, secondUser);
     secondUser.logOut();
     // since anonymous user sessions are shared, firstUser is logged out as well
-    TestCase.assertNull(app.currentUser());
+    TestCase.assertNull(app.currentUser);
     TestCase.assertFalse(firstUser.isLoggedIn);
     TestCase.assertFalse(secondUser.isLoggedIn);
   },
@@ -284,39 +284,39 @@ module.exports = {
   async testCurrentWithEmail() {
     let app = new Realm.App(appConfig);
     await logOutExistingUsers(app);
-    TestCase.assertNull(app.currentUser());
+    TestCase.assertNull(app.currentUser);
 
     let firstUser = await registerAndLogInEmailUser(app);
-    assertIsSameUser(app.currentUser(), firstUser);
+    assertIsSameUser(app.currentUser, firstUser);
     let secondUser = await registerAndLogInEmailUser(app);
-    assertIsSameUser(app.currentUser(), secondUser); // the most recently logged in user is considered current
+    assertIsSameUser(app.currentUser, secondUser); // the most recently logged in user is considered current
     await secondUser.logOut();
-    assertIsSameUser(app.currentUser(), firstUser); // auto change back to another logged in user
+    assertIsSameUser(app.currentUser, firstUser); // auto change back to another logged in user
     await firstUser.logOut();
-    TestCase.assertNull(app.currentUser());
+    TestCase.assertNull(app.currentUser);
   },
 
   async testAllWithEmail() {
     let app = new Realm.App(appConfig);
     await logOutExistingUsers(app);
 
-    let all = app.allUsers();
+    let all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 0, "Noone to begin with");
 
     let credentials = Realm.Credentials.anonymous();
     let user1 = await registerAndLogInEmailUser(app);
-    all = app.allUsers();
+    all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 1, "One user");
     assertIsSameUser(all[user1.id], user1);
     let user2 = await registerAndLogInEmailUser(app);
-    all = app.allUsers();
+    all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 2, "Two users");
     // NOTE: the list of users is in latest-first order.
     assertIsSameUser(all[user2.id], user2);
     assertIsSameUser(all[user1.id], user1);
 
     await user2.logOut();
-    all = app.allUsers();
+    all = app.allUsers;
     assertIsSameUser(all[user2.id], user2);
     assertIsSameUser(all[user1.id], user1);
     TestCase.assertFalse(user2.isLoggedIn);
@@ -324,7 +324,7 @@ module.exports = {
     TestCase.assertArrayLength(Object.keys(all), 2, "still holds references to both users");
 
     await user1.logOut();
-    all = app.allUsers();
+    all = app.allUsers;
     TestCase.assertFalse(user1.isLoggedIn);
     TestCase.assertFalse(user2.isLoggedIn);
     TestCase.assertArrayLength(Object.keys(all), 2, "still holds references to both users"); // FIXME: is this actually expected?
