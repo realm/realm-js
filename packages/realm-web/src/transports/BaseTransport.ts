@@ -29,6 +29,11 @@ import { PrefixedTransport } from "./PrefixedTransport";
  */
 export class BaseTransport implements Transport {
     /**
+     * This base route will be prefixed requests issued through by the base transport
+     */
+    private static readonly DEFAULT_BASE_ROUTE = "/api/client/v2.0";
+
+    /**
      * Default headers that will always be sat on requests
      */
     private static readonly DEFAULT_HEADERS = {
@@ -47,29 +52,36 @@ export class BaseTransport implements Transport {
     private readonly baseUrl: string;
 
     /**
+     *The base URL to prepend to paths.
+     */
+    private readonly baseRoute: string;
+
+    /**
      * Constructs a base transport, which takes paths (prepended by a base URL) instead of absolute urls.
      *
      * @param networkTransport The underlying network transport.
      * @param baseUrl The base URL to prepend to paths.
-     * @param basePath A base path to prepend to the base URL.
+     * @param baseRoute The base route to prepend to the base URL.
      */
     constructor(
         networkTransport: NetworkTransport = new DefaultNetworkTransport(),
         baseUrl: string,
-        basePath = "",
+        baseRoute: string = BaseTransport.DEFAULT_BASE_ROUTE,
     ) {
-        this.baseUrl = baseUrl + basePath;
         this.networkTransport = networkTransport;
+        this.baseUrl = baseUrl;
+        this.baseRoute = baseRoute;
     }
 
     /** @inheritdoc */
     public fetch<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>,
+        baseUrl: string = this.baseUrl,
     ): Promise<ResponseBody> {
         const { path, headers, ...restOfRequest } = request;
         return this.networkTransport.fetchAndParse({
             ...restOfRequest,
-            url: this.baseUrl + path,
+            url: baseUrl + this.baseRoute + path,
             headers: { ...BaseTransport.DEFAULT_HEADERS, ...headers },
         });
     }

@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+export { AppTransport } from "./AppTransport";
 export { Transport, Request } from "./Transport";
 export { BaseTransport } from "./BaseTransport";
 export { AuthenticatedTransport } from "./AuthenticatedTransport";

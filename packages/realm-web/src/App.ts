@@ -20,7 +20,12 @@ import { NetworkTransport } from "realm-network-transport";
 
 import { create as createFunctionsFactory } from "./FunctionsFactory";
 import { User, UserState } from "./User";
-import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
+import {
+    AppTransport,
+    AuthenticatedTransport,
+    Transport,
+    BaseTransport,
+} from "./transports";
 import { Credentials } from "./Credentials";
 import { create as createServicesFactory } from "./services";
 import { EmailPasswordAuth } from "./auth-providers";
@@ -67,12 +72,12 @@ export class App<
     /**
      * A transport adding the base route prefix to all requests.
      */
-    public readonly baseTransport: Transport;
+    public readonly baseTransport: BaseTransport;
 
     /**
      * A transport adding the base and app route prefix to all requests.
      */
-    public readonly appTransport: Transport;
+    public readonly appTransport: AppTransport;
 
     /** @inheritdoc */
     public readonly emailPasswordAuth: EmailPasswordAuth;
@@ -81,11 +86,6 @@ export class App<
      * Storage available for the app
      */
     public readonly storage: AppStorage;
-
-    /**
-     * This base route will be prefixed requests issued through by the base transport
-     */
-    private static readonly BASE_ROUTE = "/api/client/v2.0";
 
     /**
      * An array of active and logged-out users.
@@ -113,15 +113,17 @@ export class App<
         } else {
             throw new Error("Missing a MongoDB Realm app-id");
         }
-        const baseUrl = configuration.baseUrl || App.DEFAULT_BASE_URL;
         // Get or construct the network transport
         this.baseTransport = new BaseTransport(
             configuration.transport,
-            baseUrl,
-            App.BASE_ROUTE,
+            configuration.baseUrl || App.DEFAULT_BASE_URL,
         );
         // Construct an object, wrapping the network transport, enabling authenticated requests
-        this.appTransport = this.baseTransport.prefix(`/app/${this.id}`);
+        this.appTransport = new AppTransport(
+            this.baseTransport,
+            this.id,
+            configuration.baseUrl,
+        );
         const authTransport = new AuthenticatedTransport(
             this.appTransport,
             this,
