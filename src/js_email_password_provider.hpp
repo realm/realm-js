@@ -54,6 +54,7 @@ public:
     static void resend_confirmation_email(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void send_reset_password_email(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void reset_password(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void call_reset_password_function(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_registerUser", wrap<register_user>},
@@ -61,6 +62,7 @@ public:
         {"_resendConfirmationEmail", wrap<resend_confirmation_email>},
         {"_sendResetPasswordEmail", wrap<send_reset_password_email>},
         {"_resetPassword", wrap<reset_password>},
+        {"_callResetPasswordFunction", wrap<call_reset_password_function>},
 
     };
 };
@@ -138,6 +140,27 @@ void EmailPasswordProviderClientClass<T>::reset_password(ContextType ctx, Object
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
 
     client.reset_password(password, token, token_id, make_callback_handler<T>(ctx, this_object, callback));
+}
+
+template<typename T>
+void EmailPasswordProviderClientClass<T>::call_reset_password_function(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+    args.validate_count(4);
+
+    auto& client = *get_internal<T, EmailPasswordProviderClientClass<T>>(ctx, this_object);
+
+    auto email = Value::validated_to_string(ctx, args[0], "email");
+    auto password = Value::validated_to_string(ctx, args[1], "password");
+    auto call_args_js = Value::validated_to_array(ctx, args[1], "args");
+    auto callback = Value::validated_to_function(ctx, args[3], "callback");
+
+    bson::BsonArray call_args_bson;
+    uint32_t length = Object::validated_get_length(ctx, call_args_js);
+    for (uint32_t index = 0; index < length; ++index) {
+        auto obj = Object::get_property(ctx, call_args_js, index);
+        call_args_bson.push_back(Value::to_bson(ctx, obj));
+    }
+
+    client.call_reset_password_function(email, password, call_args_bson, make_callback_handler<T>(ctx, this_object, callback));
 }
 
 }

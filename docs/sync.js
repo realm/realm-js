@@ -400,6 +400,17 @@ class EmailPassword {
      * @returns {Promise<void>}
      */
     resetPassword(password, token, id) { }
+
+    /**
+     * Resets the password of an email identity using the
+     * password reset function set up in the application.
+     *
+     * @param {string} email - The email address of the user.
+     * @param {string} password - The desired new password.
+     * @param {Array<BSON>} args - A bson array of arguments.
+     * @return {Promose<void>}
+     */
+    callResetPasswordFunction(email, password, args) { }
 }
 
 /**
