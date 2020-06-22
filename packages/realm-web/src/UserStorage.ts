@@ -40,7 +40,7 @@ export class UserStorage extends PrefixedStorage {
     /**
      * Get the access token from storage
      *
-     * @returns Access token.
+     * @returns Access token (null if unknown).
      */
     get accessToken() {
         return this.get(ACCESS_TOKEN_STORAGE_KEY);
@@ -49,7 +49,7 @@ export class UserStorage extends PrefixedStorage {
     /**
      * Set the access token in storage.
      *
-     * @param value Access token.
+     * @param value Access token (null if unknown).
      */
     set accessToken(value: string | null) {
         if (value === null) {
@@ -62,7 +62,7 @@ export class UserStorage extends PrefixedStorage {
     /**
      * Get the refresh token from storage
      *
-     * @returns Refresh token.
+     * @returns Refresh token (null if unknown and user is logged out).
      */
     get refreshToken() {
         return this.get(REFRESH_TOKEN_STORAGE_KEY);
@@ -71,7 +71,7 @@ export class UserStorage extends PrefixedStorage {
     /**
      * Set the refresh token in storage.
      *
-     * @param value Refresh token.
+     * @param value Refresh token (null if unknown and user is logged out).
      */
     set refreshToken(value: string | null) {
         if (value === null) {
@@ -84,7 +84,7 @@ export class UserStorage extends PrefixedStorage {
     /**
      * Get the user profile from storage.
      *
-     * @returns User profile.
+     * @returns User profile (undefined if its unknown).
      */
     get profile() {
         const value = this.get(PROFILE_STORAGE_KEY);
@@ -99,7 +99,7 @@ export class UserStorage extends PrefixedStorage {
     /**
      * Set the user profile in storage.
      *
-     * @param value User profile.
+     * @param value User profile (undefined if its unknown).
      */
     set profile(value: UserProfile | undefined) {
         if (value === null) {
