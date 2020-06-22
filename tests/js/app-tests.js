@@ -143,7 +143,7 @@ module.exports = {
 
         let user1 = await app.logIn(credentials);
         let user2 = app.currentUser();
-        TestCase.assertEqual(user1.identity, user2.identity);
+        TestCase.assertEqual(user1.id, user2.id);
 
         await user1.logOut();
         TestCase.assertNull(app.currentUser());

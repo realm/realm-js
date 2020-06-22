@@ -469,14 +469,21 @@ class User {
      * The identity is a guaranteed to be unique among all users on MongoDB Realm Cloud .
      * @type {string}
      */
-    get identity() { }
+    get id() { }
+
+    /**
+     * Gets this user's access token. This is the user's credential for accessing the MongoDB
+     * Realm Cloud and should be treated as sensitive data.
+     * @type {string}
+     */
+    get accessToken() { }
 
     /**
      * Gets this user's refresh token. This is the user's credential for accessing the MongoDB
      * Realm Cloud and should be treated as sensitive data.
      * @type {string}
      */
-    get token() { }
+    get refreshToken() { }
 
     /**
      * Gets this user's associated custom data. This is application-specific data provided by the server.

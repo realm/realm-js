@@ -42,16 +42,17 @@ if (isNodeProcess) {
 function assertIsUser(user) {
   TestCase.assertDefined(user);
   TestCase.assertType(user, 'object');
-  TestCase.assertType(user.token, 'string');
-  TestCase.assertType(user.identity, 'string');
+  TestCase.assertType(user.accessToken, 'string');
+  TestCase.assertType(user.refreshToken, 'string');
+  TestCase.assertType(user.id, 'string');
   TestCase.assertType(user.customData, 'object');
   TestCase.assertInstanceOf(user, Realm.User);
 }
 
 function assertIsSameUser(value, user) {
   assertIsUser(value);
-  TestCase.assertEqual(value.token, user.token);
-  TestCase.assertEqual(value.identity, user.identity);
+  TestCase.assertEqual(value.accessToken, user.accessToken);
+  TestCase.assertEqual(value.id, user.id);
 }
 
 function assertIsError(error, message) {
@@ -248,13 +249,13 @@ module.exports = {
     let user1 = await app.logIn(credentials);
     all = app.allUsers();
     TestCase.assertArrayLength(Object.keys(all), 1, "One user");
-    assertIsSameUser(all[user1.identity], user1);
+    assertIsSameUser(all[user1.id], user1);
     let user2 = await app.logIn(Realm.Credentials.anonymous());
     all = app.allUsers();
     TestCase.assertArrayLength(Object.keys(all), 1, "still one user");
     // NOTE: the list of users is in latest-first order.
-    assertIsSameUser(all[user2.identity], user2);
-    assertIsSameUser(all[user1.identity], user1);
+    assertIsSameUser(all[user2.id], user2);
+    assertIsSameUser(all[user1.id], user1);
 
     await user2.logOut(); // logs out the shared anonymous session
     all = app.allUsers();
@@ -306,18 +307,18 @@ module.exports = {
     let user1 = await registerAndLogInEmailUser(app);
     all = app.allUsers();
     TestCase.assertArrayLength(Object.keys(all), 1, "One user");
-    assertIsSameUser(all[user1.identity], user1);
+    assertIsSameUser(all[user1.id], user1);
     let user2 = await registerAndLogInEmailUser(app);
     all = app.allUsers();
     TestCase.assertArrayLength(Object.keys(all), 2, "Two users");
     // NOTE: the list of users is in latest-first order.
-    assertIsSameUser(all[user2.identity], user2);
-    assertIsSameUser(all[user1.identity], user1);
+    assertIsSameUser(all[user2.id], user2);
+    assertIsSameUser(all[user1.id], user1);
 
     await user2.logOut();
     all = app.allUsers();
-    assertIsSameUser(all[user2.identity], user2);
-    assertIsSameUser(all[user1.identity], user1);
+    assertIsSameUser(all[user2.id], user2);
+    assertIsSameUser(all[user1.id], user1);
     TestCase.assertFalse(user2.isLoggedIn);
     TestCase.assertTrue(user1.isLoggedIn);
     TestCase.assertArrayLength(Object.keys(all), 2, "still holds references to both users");

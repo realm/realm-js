@@ -6,9 +6,12 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 
 ### Breaking changes
 * `Realm.Auth.EmailPassword.registerEmail()` has been renamed to `Realm.Auth.EmailPassword.registerUser()`.
+* `Realm.User.identity` has been renamed to `Realm.User.id`.
+* `Realm.User.token` has been renamed to `Realm.User.accessToken`.
 
 ### Enhancements
 * Added RemoteMongoClient functionality to `Realm.User`
+* Added `Realm.User.refreshToken`.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
