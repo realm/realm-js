@@ -18,9 +18,11 @@
 
 import { expect } from "chai";
 
-import { App, Credentials, User } from "realm-web";
+import { App, Credentials, User, createDefaultStorage } from "realm-web";
 
-import { createApp, clearStorage } from "./utils";
+import { createApp } from "./utils";
+
+const storage = createDefaultStorage();
 
 describe("App#constructor", () => {
     it("constructs", () => {
@@ -29,7 +31,7 @@ describe("App#constructor", () => {
     });
 
     afterEach(() => {
-        clearStorage();
+        storage.clear();
     });
 
     it("can login a user", async () => {
@@ -79,7 +81,6 @@ describe("App#constructor", () => {
             const credentials = Credentials.anonymous();
             user = await app.logIn(credentials);
             expect(typeof user.id).equals("string");
-            console.log(window.localStorage);
         }
         // Recreate the app and expect the user to be restored
         {

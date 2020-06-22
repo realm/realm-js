@@ -60,4 +60,15 @@ export class LocalStorage implements Storage {
     public prefix(keyPart: string): Storage {
         return new PrefixedStorage(this, keyPart);
     }
+
+    /** @inheritdoc */
+    public clear(prefix?: string) {
+        // Iterate all keys and delete their values if they have a matching prefix
+        for (let i = 0; i < this.window.localStorage.length; i++) {
+            const key = this.window.localStorage.key(i);
+            if (key && (!prefix || key.startsWith(prefix))) {
+                this.window.localStorage.removeItem(key);
+            }
+        }
+    }
 }

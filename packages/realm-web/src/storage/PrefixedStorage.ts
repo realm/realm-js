@@ -23,6 +23,11 @@ import { Storage } from "./Storage";
  */
 export class PrefixedStorage implements Storage {
     /**
+     * The string separating two parts
+     */
+    private static PART_SEPARATOR = ":";
+
+    /**
      * The underlying storage to use for operations.
      */
     private storage: Storage;
@@ -45,21 +50,35 @@ export class PrefixedStorage implements Storage {
 
     /** @inheritdoc */
     public get(key: string) {
-        return this.storage.get(this.keyPart + ":" + key);
+        return this.storage.get(
+            this.keyPart + PrefixedStorage.PART_SEPARATOR + key,
+        );
     }
 
     /** @inheritdoc */
     public set(key: string, value: string) {
-        return this.storage.set(this.keyPart + ":" + key, value);
+        return this.storage.set(
+            this.keyPart + PrefixedStorage.PART_SEPARATOR + key,
+            value,
+        );
     }
 
     /** @inheritdoc */
     public remove(key: string) {
-        return this.storage.remove(this.keyPart + ":" + key);
+        return this.storage.remove(
+            this.keyPart + PrefixedStorage.PART_SEPARATOR + key,
+        );
     }
 
     /** @inheritdoc */
     public prefix(keyPart: string): Storage {
         return new PrefixedStorage(this, keyPart);
+    }
+
+    /** @inheritdoc */
+    public clear(prefix = "") {
+        return this.storage.clear(
+            this.keyPart + PrefixedStorage.PART_SEPARATOR + prefix,
+        );
     }
 }

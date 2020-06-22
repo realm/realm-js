@@ -24,7 +24,7 @@ export { Storage } from "./Storage";
 import { LocalStorage } from "./LocalStorage";
 import { MemoryStorage } from "./MemoryStorage";
 
-/** We're reusing a singleton to simulate the persistance of the localstorage */
+/** We're reusing a singleton to simulate the persistance of the browsers `localStorage` */
 const memoryStorageSingleton = new MemoryStorage();
 
 /**

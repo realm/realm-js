@@ -50,6 +50,13 @@ describe("Storage", () => {
             expect(storage.get("something")).equals(null);
             expect(storage.get("something else")).equals("is still there");
         });
+
+        it("clears the right values", () => {
+            storage.clear("nothing");
+            expect(storage.get("something else")).equals("is still there");
+            storage.clear("something");
+            expect(storage.get("something else")).equals(null);
+        });
     });
 
     describe("PrefixedStorage", () => {
@@ -58,6 +65,7 @@ describe("Storage", () => {
 
         before(() => {
             parentStorage = new MemoryStorage();
+            parentStorage.set("unremovable", "remains!");
             storage = new PrefixedStorage(parentStorage, "key-prefix");
         });
 
@@ -83,6 +91,19 @@ describe("Storage", () => {
             expect(parentStorage.get("key-prefix:something else")).equals(
                 "is still there",
             );
+        });
+
+        it("clears the right values", () => {
+            storage.set("another", "value");
+            storage.clear("nothing");
+            expect(storage.get("something else")).equals("is still there");
+            storage.clear("something");
+            expect(storage.get("something else")).equals(null);
+            expect(parentStorage.get("key-prefix:something else")).equals(null);
+            expect(storage.get("another")).equals("value");
+            storage.clear();
+            expect(storage.get("another")).equals(null);
+            expect(parentStorage.get("unremovable")).equals("remains!");
         });
     });
 

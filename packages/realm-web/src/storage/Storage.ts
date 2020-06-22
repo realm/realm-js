@@ -39,4 +39,11 @@ export interface Storage {
      * Create a new store prefixed with a part of the key.
      */
     prefix(keyPart: string): Storage;
+
+    /**
+     * Clears all values stored in the storage.
+     *
+     * @param prefix Clear only values starting with this prefix.
+     */
+    clear(prefix?: string): void;
 }

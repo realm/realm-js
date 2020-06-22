@@ -36,9 +36,3 @@ export function createApp<
         baseUrl: BASE_URL,
     });
 }
-
-export function clearStorage() {
-    if (window.localStorage) {
-        localStorage.clear();
-    }
-}

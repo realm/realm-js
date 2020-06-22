@@ -51,4 +51,14 @@ export class MemoryStorage implements Storage {
     public prefix(keyPart: string): Storage {
         return new PrefixedStorage(this, keyPart);
     }
+
+    /** @inheritdoc */
+    public clear(prefix?: string) {
+        // Iterate all keys and delete their values if they have a matching prefix
+        for (const key of Object.keys(this.storage)) {
+            if (!prefix || key.startsWith(prefix)) {
+                delete this.storage[key];
+            }
+        }
+    }
 }
