@@ -358,17 +358,17 @@ class Auth {
 class EmailPassword {
 
     /**
-     * Registers a new email identity with the username/password provider,
+     * Registers a new email identity with the email/password provider,
      * and sends a confirmation email to the provided address.
      *
      * @param {string} email - The email address of the user to register.
      * @param {string} password  - The password that the user created for the new username/password identity.
      * @returns {Promise<void>}
      */
-    registerEmail(email, password) { }
+    registerUser(email, password) { }
 
     /**
-     * Confirms an email identity with the username/password provider.
+     * Confirms an email identity with the email/password provider.
      *
      * @param {string} token - The confirmation token that was emailed to the user.
      * @param {string} id - The confirmation token id that was emailed to the user.

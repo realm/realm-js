@@ -381,7 +381,7 @@ declare namespace Realm {
         }
 
         class EmailPassword {
-            registerEmail(email: string, password: string): Promise<void>;
+            registerUser(email: string, password: string): Promise<void>;
             confirmUser(token: string, id: string): Promise<void>;
             resendConfirmationEmail(email: string): Promise<void>;
             sendResetPasswordEmail(email: string): Promise<void>;
