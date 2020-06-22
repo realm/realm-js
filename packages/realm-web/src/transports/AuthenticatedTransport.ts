@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { Transport, Request } from "./Transport";
-import { PrefixedTransport } from "./PrefixedTransport";
 
 /**
  * Used to control which user is currently active - this would most likely be the {App} instance.
@@ -60,6 +59,7 @@ export class AuthenticatedTransport implements Transport {
      * @param request The request to issue towards the server
      * @param user The user used when fetching, defaults to the `app.currentUser`.
      *             If `null`, the fetch will be unauthenticated.
+     * @returns A response from requesting with authentication.
      */
     public fetch<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>,
