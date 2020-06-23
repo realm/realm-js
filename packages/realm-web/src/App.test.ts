@@ -23,7 +23,6 @@ import { User, UserState } from "./User";
 import { MockNetworkTransport } from "./test/MockNetworkTransport";
 import { Credentials } from "./Credentials";
 import { MemoryStorage } from "./storage";
-import { app } from ".";
 
 const DEFAULT_HEADERS = {
     Accept: "application/json",
