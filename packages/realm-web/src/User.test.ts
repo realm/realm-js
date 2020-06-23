@@ -113,9 +113,9 @@ describe("User", () => {
         const userStorage = user.app.storage.prefix("user(some-user-id)");
         expect(userStorage.get("accessToken")).equals("deadbeef");
         expect(userStorage.get("refreshToken")).equals("very-refreshing");
-        const profile = JSON.parse(userStorage.get("profile") || "");
+        const profileBefore = JSON.parse(userStorage.get("profile") || "");
 
-        expect(profile).deep.equals({
+        expect(profileBefore).deep.equals({
             firstName: "John",
             identities: [],
             type: "normal",
@@ -125,8 +125,8 @@ describe("User", () => {
         expect(userStorage.get("accessToken")).equals(null);
         expect(userStorage.get("refreshToken")).equals(null);
         // Logging out shouldn't delete information about the profile
-        expect(user.profile).deep.equals(profile);
-        const profile2 = JSON.parse(userStorage.get("profile") || "");
-        expect(profile2).deep.equals(profile);
+        expect(user.profile).deep.equals(profileBefore);
+        const profileAfter = JSON.parse(userStorage.get("profile") || "");
+        expect(profileAfter).deep.equals(profileBefore);
     });
 });
