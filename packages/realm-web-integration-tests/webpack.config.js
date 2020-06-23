@@ -47,5 +47,10 @@ module.exports = {
         filename: "bundle.js",
         path: path.resolve(__dirname, "dist"),
     },
-    plugins: [new HtmlWebpackPlugin()],
+    plugins: [
+        new HtmlWebpackPlugin({
+            // To prevent an error being logged to the console
+            favicon: path.resolve(__dirname, "harness/favicon.ico"),
+        }),
+    ],
 };
