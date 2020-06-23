@@ -102,7 +102,7 @@ export class UserStorage extends PrefixedStorage {
      * @param value User profile (undefined if its unknown).
      */
     set profile(value: UserProfile | undefined) {
-        if (value === null) {
+        if (!value) {
             this.remove(PROFILE_STORAGE_KEY);
         } else {
             this.set(PROFILE_STORAGE_KEY, JSON.stringify(value));
