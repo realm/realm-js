@@ -23,6 +23,16 @@ import {
 
 import { Transport, Request } from "./Transport";
 import { PrefixedTransport } from "./PrefixedTransport";
+import { AppLocationContext } from "../AppLocation";
+
+type BaseRequest<RequestBody> = Request<RequestBody> & {
+    /**
+     * Should the location (derived base URL) of the app be ignored for this request?
+     *
+     * @default false
+     */
+    ignoreLocation?: boolean;
+};
 
 /**
  * A basic transport, wrapping a NetworkTransport from the "realm-network-transport" package, injecting a baseUrl.
@@ -47,38 +57,53 @@ export class BaseTransport implements Transport {
     private readonly networkTransport: NetworkTransport;
 
     /**
-     *The base URL to prepend to paths.
+     * The base URL to prepend to paths.
      */
-    private readonly baseUrl: string;
+    private baseUrl: string;
 
     /**
-     *The base URL to prepend to paths.
+     * The base URL to prepend to paths.
      */
     private readonly baseRoute: string;
+
+    /**
+     * An object used to derive the location of the app.
+     */
+    private readonly locationContext?: AppLocationContext;
 
     /**
      * Constructs a base transport, which takes paths (prepended by a base URL) instead of absolute urls.
      *
      * @param networkTransport The underlying network transport.
      * @param baseUrl The base URL to prepend to paths.
-     * @param baseRoute The base route to prepend to the base URL.
+     * @param locationContext Optional object used to determine the actual base URL of the app.
+     * @param baseRoute Optional base route to prepend to the base URL.
      */
     constructor(
         networkTransport: NetworkTransport = new DefaultNetworkTransport(),
         baseUrl: string,
+        locationContext?: AppLocationContext,
         baseRoute: string = BaseTransport.DEFAULT_BASE_ROUTE,
     ) {
         this.networkTransport = networkTransport;
         this.baseUrl = baseUrl;
+        this.locationContext = locationContext;
         this.baseRoute = baseRoute;
     }
 
     /** @inheritdoc */
-    public fetch<RequestBody extends any, ResponseBody extends any>(
-        request: Request<RequestBody>,
-        baseUrl: string = this.baseUrl,
+    public async fetch<RequestBody extends any, ResponseBody extends any>(
+        request: BaseRequest<RequestBody>,
     ): Promise<ResponseBody> {
-        const { path, headers, ...restOfRequest } = request;
+        const {
+            path,
+            headers,
+            ignoreLocation = false,
+            ...restOfRequest
+        } = request;
+        // Determine the base url
+        const baseUrl = await this.determineBaseUrl(ignoreLocation);
+        // Execute the request
         return this.networkTransport.fetchAndParse({
             ...restOfRequest,
             url: baseUrl + this.baseRoute + path,
@@ -89,5 +114,19 @@ export class BaseTransport implements Transport {
     /** @inheritdoc */
     public prefix(pathPrefix: string): Transport {
         return new PrefixedTransport(this, pathPrefix);
+    }
+
+    /**
+     * Determines the base URL from the configuration or from the location context.
+     *
+     * @param ignoreLocation Ignore the location context.
+     */
+    private async determineBaseUrl(ignoreLocation: boolean) {
+        if (ignoreLocation || !this.locationContext) {
+            return this.baseUrl;
+        } else {
+            const location = await this.locationContext.location;
+            return location.hostname;
+        }
     }
 }

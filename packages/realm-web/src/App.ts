@@ -20,26 +20,32 @@ import { NetworkTransport } from "realm-network-transport";
 
 import { create as createFunctionsFactory } from "./FunctionsFactory";
 import { User, UserState } from "./User";
-import {
-    AppTransport,
-    AuthenticatedTransport,
-    Transport,
-    BaseTransport,
-} from "./transports";
+import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
 import { Credentials } from "./Credentials";
 import { create as createServicesFactory } from "./services";
 import { EmailPasswordAuth } from "./auth-providers";
 import { Storage, createDefaultStorage } from "./storage";
 import { AppStorage } from "./AppStorage";
+import { AppLocation, AppLocationContext } from "./AppLocation";
 
 /**
  * Configuration to pass as an argument when constructing an app.
  */
 export interface AppConfiguration extends Realm.AppConfiguration {
-    /** Transport to use when fetching resources */
+    /**
+     * Transport to use when fetching resources.
+     */
     transport?: NetworkTransport;
-    /** Used when persisting app state, such as tokens of authenticated users */
+    /**
+     * Used when persisting app state, such as tokens of authenticated users.
+     */
     storage?: Storage;
+    /**
+     * Should the location of the app be fetched to determine the base URL upon the first request?
+     *
+     * @default true
+     */
+    fetchLocation?: boolean;
 }
 
 /**
@@ -48,7 +54,10 @@ export interface AppConfiguration extends Realm.AppConfiguration {
 export class App<
     FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
     CustomDataType extends object = any
-> implements Realm.App<FunctionsFactoryType, CustomDataType> {
+>
+    implements
+        Realm.App<FunctionsFactoryType, CustomDataType>,
+        AppLocationContext {
     /** @inheritdoc */
     public readonly functions: FunctionsFactoryType &
         Realm.BaseFunctionsFactory;
@@ -77,7 +86,7 @@ export class App<
     /**
      * A transport adding the base and app route prefix to all requests.
      */
-    public readonly appTransport: AppTransport;
+    public readonly appTransport: Transport;
 
     /** @inheritdoc */
     public readonly emailPasswordAuth: EmailPasswordAuth;
@@ -92,6 +101,11 @@ export class App<
      * Elements in the beginning of the array is considered more recent than the later elements.
      */
     private users: User<FunctionsFactoryType, CustomDataType>[] = [];
+
+    /**
+     * An promise of the apps location metadata.
+     */
+    private _location: Promise<AppLocation> | undefined;
 
     /**
      * Construct a Realm App, either from the Realm App id visible from the MongoDB Realm UI or a configuration.
@@ -113,17 +127,19 @@ export class App<
         } else {
             throw new Error("Missing a MongoDB Realm app-id");
         }
-        // Get or construct the network transport
+        const {
+            transport,
+            storage,
+            baseUrl,
+            fetchLocation = true,
+        } = configuration;
+        // Construct the various transports
         this.baseTransport = new BaseTransport(
-            configuration.transport,
-            configuration.baseUrl || App.DEFAULT_BASE_URL,
+            transport,
+            baseUrl || App.DEFAULT_BASE_URL,
+            fetchLocation ? this : undefined,
         );
-        // Construct an object, wrapping the network transport, enabling authenticated requests
-        this.appTransport = new AppTransport(
-            this.baseTransport,
-            this.id,
-            configuration.baseUrl,
-        );
+        this.appTransport = this.baseTransport.prefix(`/app/${this.id}`);
         const authTransport = new AuthenticatedTransport(
             this.appTransport,
             this,
@@ -137,7 +153,7 @@ export class App<
         // Construct the auth providers
         this.emailPasswordAuth = new EmailPasswordAuth(authTransport);
         // Construct the storage
-        const baseStorage = configuration.storage || createDefaultStorage();
+        const baseStorage = storage || createDefaultStorage();
         this.storage = new AppStorage(baseStorage, this.id);
         // Hydrate the app state from storage
         this.hydrate();
@@ -242,10 +258,33 @@ export class App<
     }
 
     /**
+     * Get the location metadata of an app.
+     *
+     * @returns A promise of the app's location metadata.
+     */
+    public get location(): Promise<AppLocation> {
+        // Initiate the fetch of the location metadata only once per app instance.
+        if (!this._location) {
+            this._location = this.baseTransport.fetch({
+                method: "GET",
+                path: `/app/${this.id}/location`,
+                ignoreLocation: true,
+            });
+        }
+        return this._location;
+    }
+
+    /**
      * Restores the state of the app (active and logged-out users) from the storage
      */
     private hydrate() {
-        const userIds = this.storage.getUserIds();
-        this.users = userIds.map(id => User.hydrate(this, id));
+        try {
+            const userIds = this.storage.getUserIds();
+            this.users = userIds.map(id => User.hydrate(this, id));
+        } catch (err) {
+            // The storage was corrupted
+            this.storage.clear();
+            throw err;
+        }
     }
 }

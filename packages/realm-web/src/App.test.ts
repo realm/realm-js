@@ -41,6 +41,7 @@ describe("App", () => {
         const app = new App({
             id: "default-app-id",
             baseUrl: "http://localhost:3000",
+            fetchLocation: false,
         });
         expect(app).to.be.instanceOf(App);
     });
@@ -79,6 +80,45 @@ describe("App", () => {
         expect(typeof App.Credentials.emailPassword).equals("function");
     });
 
+    it("fetches the location first", async () => {
+        const transport = new MockNetworkTransport([
+            {
+                hostname: "http://localhost:1338",
+                location: "US-VA",
+                deployment_model: "GLOBAL",
+            },
+            {
+                user_id: "totally-valid-user-id",
+                access_token: "deadbeef",
+                refresh_token: "very-refreshing",
+            },
+        ]);
+        const app = new App({
+            id: "default-app-id",
+            storage: new MemoryStorage(),
+            transport,
+            baseUrl: "http://localhost:1337",
+        });
+        const credentials = Credentials.anonymous();
+        await app.logIn(credentials, false);
+        // Expect the request made it to the transport
+        expect(transport.requests).deep.equals([
+            {
+                method: "GET",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/default-app-id/location",
+                headers: DEFAULT_HEADERS,
+            },
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1338/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
+                body: {},
+                headers: DEFAULT_HEADERS,
+            },
+        ]);
+    });
+
     it("can log in a user", async () => {
         const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
@@ -109,6 +149,7 @@ describe("App", () => {
             storage,
             transport,
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
         const credentials = Credentials.emailPassword(
             "gilfoyle@testing.mongodb.com",
@@ -162,6 +203,7 @@ describe("App", () => {
             transport,
             storage,
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials, false);
@@ -224,6 +266,7 @@ describe("App", () => {
             id: "default-app-id",
             transport,
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
         // Log in two different users
         {
@@ -296,6 +339,7 @@ describe("App", () => {
             storage,
             transport,
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials, false);
@@ -395,6 +439,7 @@ describe("App", () => {
             storage,
             transport,
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
         const credentials = Credentials.anonymous();
         await app.logIn(credentials, false);
@@ -428,6 +473,7 @@ describe("App", () => {
             id: "default-app-id",
             transport,
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
         expect(app.services).keys(["mongodb", "http"]);
         expect(typeof app.services.mongodb).equals("function");
@@ -462,6 +508,7 @@ describe("App", () => {
             storage,
             transport,
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
 
         expect(app.allUsers.length).equals(2);
@@ -492,6 +539,7 @@ describe("App", () => {
             storage,
             transport,
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
 
         const credentials = App.Credentials.anonymous();
@@ -534,6 +582,7 @@ describe("App", () => {
                 {},
             ]),
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
 
         const app2 = new App({
@@ -547,6 +596,7 @@ describe("App", () => {
                 },
             ]),
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
 
         const credentials = App.Credentials.anonymous();

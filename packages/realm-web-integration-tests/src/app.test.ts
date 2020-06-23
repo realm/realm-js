@@ -78,6 +78,7 @@ describe("App#constructor", () => {
         let user: User<object>;
         {
             const app = createApp();
+            expect(app.allUsers.length).equals(0);
             const credentials = Credentials.anonymous();
             user = await app.logIn(credentials);
             expect(typeof user.id).equals("string");

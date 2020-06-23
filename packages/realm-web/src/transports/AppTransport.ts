@@ -30,49 +30,26 @@ export class AppTransport implements Transport {
     /** The id of the app */
     private readonly appId: string;
 
-    /** The base URL to use for requests */
-    private baseUrl?: string;
-
     /**
      * Construct a transport that will prefix the app id to paths and determine location base URL.
      *
      * @param transport The base transport used to issue requests.
      * @param appId The id of the app.
-     * @param baseUrl An optional URL that we need to use when requesting, will be determined if not provided.
      */
-    constructor(transport: BaseTransport, appId: string, baseUrl?: string) {
+    constructor(transport: BaseTransport, appId: string) {
         this.transport = transport;
         this.appId = appId;
-        this.baseUrl = baseUrl;
     }
 
     /** @inheritdoc */
     public async fetch<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>,
     ): Promise<ResponseBody> {
-        if (this.baseUrl) {
-            const { path, ...restOfRequest } = request;
-            return this.transport.fetch(
-                {
-                    ...restOfRequest,
-                    path: `/app/${this.appId}` + path,
-                },
-                this.baseUrl,
-            );
-        } else {
-            // Determine the hostname associated with the app before we fetch the real request
-            const response = await this.transport.fetch({
-                method: "GET",
-                path: `/app/${this.appId}/location`,
-            });
-            // Read out the hostname from the response and try again
-            if (typeof response.hostname === "string") {
-                this.baseUrl = response.hostname;
-                return this.fetch(request);
-            } else {
-                throw new Error("Expected a hostname in the response body");
-            }
-        }
+        const { path, ...restOfRequest } = request;
+        return this.transport.fetch({
+            ...restOfRequest,
+            path: `/app/${this.appId}${path}`,
+        });
     }
 
     /** @inheritdoc */

@@ -270,19 +270,16 @@ export class User<
         // Hydrate tokens
         const accessToken = this.storage.accessToken;
         const refreshToken = this.storage.refreshToken;
-        if (
-            typeof accessToken === "string" &&
-            typeof refreshToken === "string"
-        ) {
+        const profile = this.storage.profile;
+        if (typeof accessToken === "string") {
             this._accessToken = accessToken;
-            this._refreshToken = refreshToken;
-        } else {
-            throw new Error(
-                `Failed hydrating user (${this.id}), missing access or refresh token`,
-            );
         }
-        // Hydrate any profile
-        this._profile = this.storage.profile;
+        if (typeof refreshToken === "string") {
+            this._refreshToken = refreshToken;
+        }
+        if (typeof profile === "object") {
+            this._profile = profile;
+        }
     }
 
     private async refreshAccessToken() {
