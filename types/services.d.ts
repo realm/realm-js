@@ -22,41 +22,41 @@ declare namespace Realm {
      */
     interface Services {
         /** Get the interface to the remote MongoDB service */
-        mongodb(serviceName?: string): Realm.Services.RemoteMongoDB;
+        mongodb(serviceName?: string): Realm.Services.MongoDB;
         /** Get the interface to the HTTP service */
         http(serviceName?: string): Realm.Services.HTTP;
     }
 
     namespace Services {
         /**
-         * The RemoteMongoDB service can be used to get database and collection objects for interacting with MongoDB data.
+         * The MongoDB service can be used to get database and collection objects for interacting with MongoDB data.
          */
-        interface RemoteMongoDB {
+        interface MongoDB {
             /**
              * Get the interface to a remote MongoDB database.
              *
              * @param databaseName The name of the database.
              * @returns The remote MongoDB database.
              */
-            db(databaseName: string): RemoteMongoDBDatabase;
+            db(databaseName: string): MongoDBDatabase;
         }
 
         /**
-         * The RemoteMongoDB service can be used to get database and collection objects for interacting with MongoDB data.
+         * The MongoDB service can be used to get database and collection objects for interacting with MongoDB data.
          */
-        interface RemoteMongoDBDatabase {
+        interface MongoDBDatabase {
             /**
              * Get the interface to a remote MongoDB collection.
              *
              * @param name The name of the collection.
              * @returns The remote MongoDB collection.
              */
-            collection<T extends Realm.Services.RemoteMongoDB.Document = any>(
+            collection<T extends Realm.Services.MongoDB.Document = any>(
                 name: string,
-            ): RemoteMongoDB.RemoteMongoDBCollection<T>;
+            ): MongoDB.MongoDBCollection<T>;
         }
 
-        namespace RemoteMongoDB {
+        namespace MongoDB {
             /**
              * Options passed when finding a signle document
              */
@@ -211,7 +211,7 @@ declare namespace Realm {
             /**
              * A remote collection of documents in a MongoDB database.
              */
-            interface RemoteMongoDBCollection<T extends Document> {
+            interface MongoDBCollection<T extends Document> {
                 /**
                  * Finds the documents which match the provided query.
                  *

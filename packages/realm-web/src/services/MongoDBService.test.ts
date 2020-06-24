@@ -19,11 +19,11 @@
 import { expect } from "chai";
 import { ObjectID } from "bson";
 
-import { createService } from "./RemoteMongoDBService";
+import { createService } from "./MongoDBService";
 import { MockTransport } from "../test/MockTransport";
 
 /** A test interface that documents in my-collection implements */
-interface MyDocument extends Realm.Services.RemoteMongoDB.Document {
+interface MyDocument extends Realm.Services.MongoDB.Document {
     /** The name of the thing ... */
     name: string;
 }
