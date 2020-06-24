@@ -17,8 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { Transport } from "../transports";
-import { create as createFunctionsFactory } from "../FunctionsFactory";
-import { deserialize, serialize } from "../utils/ejson";
+import { FunctionsFactory } from "../FunctionsFactory";
 
 type Document = Realm.Services.RemoteMongoDB.Document;
 type NewDocument<T extends Document> = Realm.Services.RemoteMongoDB.NewDocument<
@@ -55,9 +54,8 @@ class RemoteMongoDBCollection<T extends Document>
         databaseName: string,
         collectionName: string,
     ) {
-        this.functions = createFunctionsFactory(transport, {
+        this.functions = FunctionsFactory.create(transport, {
             serviceName,
-            responseTransformation: deserialize,
         });
         this.databaseName = databaseName;
         this.collectionName = collectionName;
@@ -71,7 +69,7 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.find({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(filter),
+            query: filter,
             project: options.projection,
             sort: options.sort,
             limit: options.limit,
@@ -86,7 +84,7 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.findOne({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(filter),
+            query: filter,
             project: options.projection,
             sort: options.sort,
         });
@@ -101,8 +99,8 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.findOneAndUpdate({
             database: this.databaseName,
             collection: this.collectionName,
-            filter: serialize(filter),
-            update: serialize(update),
+            filter,
+            update,
             sort: options.sort,
             projection: options.projection,
             upsert: options.upsert,
@@ -119,8 +117,8 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.findOneAndReplace({
             database: this.databaseName,
             collection: this.collectionName,
-            filter: serialize(filter),
-            update: serialize(replacement),
+            filter: filter,
+            update: replacement,
             sort: options.sort,
             projection: options.projection,
             upsert: options.upsert,
@@ -136,7 +134,7 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.findOneAndReplace({
             database: this.databaseName,
             collection: this.collectionName,
-            filter: serialize(filter),
+            filter,
             sort: options.sort,
             projection: options.projection,
         });
@@ -147,7 +145,7 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.aggregate({
             database: this.databaseName,
             collection: this.collectionName,
-            pipeline: pipeline.map(serialize),
+            pipeline,
         });
     }
 
@@ -159,7 +157,7 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.count({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(filter),
+            query: filter,
             limit: options.limit,
         });
     }
@@ -178,7 +176,7 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.insertMany({
             database: this.databaseName,
             collection: this.collectionName,
-            documents: documents.map(serialize),
+            documents,
         });
     }
 
@@ -187,7 +185,7 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.deleteOne({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(filter),
+            query: filter,
         });
     }
 
@@ -196,7 +194,7 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.deleteMany({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(filter),
+            query: filter,
         });
     }
 
@@ -209,7 +207,7 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.updateOne({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(filter),
+            query: filter,
             update,
             upsert: options.upsert,
         });
@@ -224,7 +222,7 @@ class RemoteMongoDBCollection<T extends Document>
         return this.functions.updateMany({
             database: this.databaseName,
             collection: this.collectionName,
-            query: serialize(filter),
+            query: filter,
             update,
             upsert: options.upsert,
         });

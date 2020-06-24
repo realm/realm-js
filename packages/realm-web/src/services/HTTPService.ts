@@ -17,8 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { Transport } from "../transports";
-import { create as createFunctionsFactory } from "../FunctionsFactory";
-import { deserialize } from "../utils/ejson";
+import { FunctionsFactory } from "../FunctionsFactory";
 
 type HTTP = Realm.Services.HTTP;
 type RequestOptions = Realm.Services.HTTP.RequestOptions;
@@ -44,9 +43,8 @@ class HTTPService implements HTTP {
      * @param serviceName An optional service name
      */
     constructor(transport: Transport, serviceName = "http") {
-        this.functions = createFunctionsFactory(transport, {
+        this.functions = FunctionsFactory.create(transport, {
             serviceName,
-            responseTransformation: deserialize,
         });
     }
 

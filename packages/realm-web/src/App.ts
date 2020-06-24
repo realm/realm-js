@@ -18,7 +18,7 @@
 
 import { NetworkTransport } from "realm-network-transport";
 
-import { create as createFunctionsFactory } from "./FunctionsFactory";
+import { FunctionsFactory } from "./FunctionsFactory";
 import { User, UserState } from "./User";
 import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
 import { Credentials } from "./Credentials";
@@ -145,7 +145,7 @@ export class App<
             this,
         );
         // Construct the functions factory
-        this.functions = createFunctionsFactory<FunctionsFactoryType>(
+        this.functions = FunctionsFactory.create<FunctionsFactoryType>(
             authTransport,
         );
         // Construct the services factory

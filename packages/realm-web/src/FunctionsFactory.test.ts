@@ -18,10 +18,7 @@
 
 import { expect } from "chai";
 
-import {
-    create as createFunctionsFactory,
-    FunctionsFactory,
-} from "./FunctionsFactory";
+import { FunctionsFactory } from "./FunctionsFactory";
 import { MockTransport } from "./test/MockTransport";
 
 const DEFAULT_HEADERS = {
@@ -31,17 +28,17 @@ const DEFAULT_HEADERS = {
 
 describe("FunctionsFactory", () => {
     it("can be created", () => {
-        const factory = createFunctionsFactory({} as any);
+        const factory = FunctionsFactory.create({} as any);
         expect(factory).to.be.instanceOf(FunctionsFactory);
     });
 
     it("expose a callFunction method", () => {
-        const factory = createFunctionsFactory({} as any);
+        const factory = FunctionsFactory.create({} as any);
         expect(typeof factory.callFunction).equals("function");
     });
 
     it("expose an interface that allows calling any function", () => {
-        const factory = createFunctionsFactory({} as any);
+        const factory = FunctionsFactory.create({} as any);
         expect(typeof factory.anyFunction).equals("function");
     });
 
@@ -49,7 +46,7 @@ describe("FunctionsFactory", () => {
         const transport = new MockTransport([
             { message: `hello friendly world!` },
         ]);
-        const factory = createFunctionsFactory(transport, {
+        const factory = FunctionsFactory.create(transport, {
             serviceName: "custom-service",
         });
         const response = factory.hello("friendly");
