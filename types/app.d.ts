@@ -107,18 +107,15 @@ declare namespace Realm {
     }
 
     /**
-     * The constructor of MongoDB Realm App.
-     */
-    type AppConstructor = new <
-        FunctionsFactoryType extends object = DefaultFunctionsFactory
-    >(
-        idOrConfiguration: string | AppConfiguration,
-    ) => App<FunctionsFactoryType>;
-
-    /**
      * A MongoDB Realm App.
      */
     class App<FunctionsFactoryType extends object = DefaultFunctionsFactory, CustomDataType extends object = any> {
+        /**
+         * Construct a MongoDB Realm App.
+         *
+         * @param idOrConfiguration The id string or configuration for the app.
+         */
+        constructor(idOrConfiguration: string | AppConfiguration);
 
         /**
          *
