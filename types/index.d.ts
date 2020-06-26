@@ -185,6 +185,11 @@ declare namespace Realm {
          */
         linkingObjectsCount(): number;
 
+<<<<<<< HEAD
+=======
+        _objectId(): string;
+
+>>>>>>> a2aadfa3... Realm.Object TS declaration for objectId() changed to _objectId().
         /**
          * @returns void
          */
