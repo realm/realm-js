@@ -239,15 +239,15 @@
                 "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
               }],
             ],
-            # This inserts ssleay32.lib at the beginning of the linker input list,
+            # This inserts libssl.lib at the beginning of the linker input list,
             # causing it to be considered before node.lib and its OpenSSL symbols.
-            # Additionally, we request that all the symbols from ssleay32.lib are included
+            # Additionally, we request that all the symbols from libssl.lib are included
             # in the final executable.
             "msvs_settings": {
               "VCLinkerTool": {
-                "AdditionalDependencies": [ "libeay32.lib", "ssleay32.lib" ],
+                "AdditionalDependencies": [ "libcrypto.lib", "libssl.lib" ],
                 "AdditionalOptions": [
-                  "/WHOLEARCHIVE:ssleay32.lib"
+                  "/WHOLEARCHIVE:libssl.lib"
                 ]
               }
             }

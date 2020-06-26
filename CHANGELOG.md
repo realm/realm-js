@@ -10,6 +10,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Added missing `SyncConfiguration.error` field in the typescript definitions.
+* Fixed `SSL handshake failed: premature end of input` on Windows ([#2975](https://github.com/realm/realm-js/issues/2975, since v10.0.0-beta.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -17,7 +18,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* None.
+* Now linking against OpenSSL 1.1 on Windows.
 
 10.0.0-beta.6 Release notes (2020-6-9)
 =============================================================
