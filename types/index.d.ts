@@ -410,7 +410,7 @@ declare namespace Realm {
         code: number;
     }
 
-    type ErrorCallback = (session: Session, error: SyncError) => void;
+    type ErrorCallback = (session: Sync.Session, error: SyncError) => void;
 
     const enum SessionStopPolicy {
         AfterUpload = "after-upload",
