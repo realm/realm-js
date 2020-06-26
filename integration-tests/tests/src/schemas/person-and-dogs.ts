@@ -21,13 +21,9 @@ import * as Realm from "realm";
 export interface IPerson {
     name: string;
     age: number;
+    friends: Realm.List<IPerson>;
+    dogs: Realm.Collection<IDog>;
 }
-
-export type Person = {
-    friends: Realm.List<Person>;
-    dogs: Realm.Collection<Dog>;
-} & IPerson &
-    Realm.Object;
 
 export const PersonSchema: Realm.ObjectSchema = {
     name: "Person",
@@ -43,11 +39,6 @@ export interface IDog {
     age: number;
     owner: IPerson;
 }
-
-export type Dog = {
-    owner: Person;
-} & IDog &
-    Realm.Object;
 
 export const DogSchema: Realm.ObjectSchema = {
     name: "Dog",
