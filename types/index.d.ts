@@ -168,6 +168,11 @@ declare namespace Realm {
         entries(): [string, any][];
 
         /**
+         * @returns An object for JSON serialization.
+         */
+        toJSON(): object;
+
+        /**
          * @returns boolean
          */
         isValid(): boolean;
