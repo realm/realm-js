@@ -430,6 +430,14 @@ interface ProgressPromise extends Promise<Realm> {
     progress(callback: Realm.ProgressNotificationCallback): Promise<Realm>;
 }
 
+type ExtractPropertyNamesOfType<T, S> = {
+    [K in keyof T]: T[K] extends S ? K : never
+}[keyof T];
+
+type RealmPartialModel<T> =
+    Omit<T, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
+    & Partial<Pick<T, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>>
+
 declare class Realm {
     static defaultPath: string;
 
@@ -508,7 +516,7 @@ declare class Realm {
      *
      * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
      */
-    create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, update?: boolean): T;
+    create<T>(type: string | Realm.ObjectClass | Function, properties: RealmPartialModel<T>, update?: boolean): T & Realm.Object
 
     /**
      * @param  {string|Realm.ObjectClass|Function} type
@@ -516,7 +524,7 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T
      */
-    create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, mode?: Realm.UpdateMode): T;
+    create<T>(type: string | Realm.ObjectClass | Function, properties: RealmPartialModel<T>, mode?: Realm.UpdateMode): T & Realm.Object
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
