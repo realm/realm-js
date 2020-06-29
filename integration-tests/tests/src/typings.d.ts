@@ -32,3 +32,9 @@ declare namespace Mocha {
         skipIf: (env: Environment | string[] | string, title: string, callback: Mocha.AsyncFunc | Mocha.Func) => void;
     }
 }
+
+// allow import of json files
+declare module "*.json" {
+  const value: any;
+  export = value;
+}

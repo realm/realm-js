@@ -42,6 +42,7 @@ global.it.skipIf = skipIf;
 
 describe(global.title, () => {
     require("./realm-constructor");
+    require("./serialization");
     require("./objects");
     require("./iterators");
     require("./dynamic-schema-updates");
