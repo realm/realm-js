@@ -97,7 +97,7 @@ describe("User", () => {
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
         });
-        // Refresh the profile and expect a firstName
+        // Try calling a function on the user
         const pong = await user.functions.ping();
         expect(pong).deep.equals({
             pong: "ball",
