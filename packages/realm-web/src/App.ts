@@ -138,7 +138,7 @@ export class App<
             // Remove the user from the stack
             const [user] = this.users.splice(index, 1);
             // Insert the user in the beginning of the stack
-            this.users.splice(0, 0, user);
+            this.users.unshift(user);
         } else {
             throw new Error("The user was not logged into this app");
         }
@@ -156,7 +156,7 @@ export class App<
             CustomDataType
         > = await User.logIn(this, credentials, fetchProfile);
         // Add the user at the top of the stack
-        this.users.splice(0, 0, user);
+        this.users.unshift(user);
         // Return the user
         return user;
     }
