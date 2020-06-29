@@ -201,6 +201,12 @@ declare namespace Realm {
     }
 
     /**
+     * RealmJsonSerializeReplacer solves circular structures when serializing Realm entities
+     * @example JSON.stringify(realm.objects("Person"), Realm.RealmJsonSerializeReplacer)
+     */
+    const JsonSerializationReplacer: (key: string, val: any) => any;
+
+    /**
      * SortDescriptor
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
      */
