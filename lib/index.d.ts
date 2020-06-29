@@ -205,6 +205,11 @@ declare namespace Realm {
         readonly type: PropertyType;
         readonly optional: boolean;
 
+        /**
+         * @returns An object for JSON serialization.
+         */
+        toJSON(): Array<any>;
+
         description(): string;
 
         /**
