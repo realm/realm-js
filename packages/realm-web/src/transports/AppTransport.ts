@@ -21,7 +21,7 @@ import { PrefixedTransport } from "./PrefixedTransport";
 import { Transport, Request } from "./Transport";
 
 /**
- * A transport prefixing request paths with the path of the App id and ensuring the corrent location is hit.
+ * A transport prefixing request paths with the path of the App id and ensuring the correct location is hit.
  */
 export class AppTransport implements Transport {
     /** The underlying transport used to issue requests */
