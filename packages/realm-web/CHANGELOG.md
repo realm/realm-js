@@ -2,6 +2,18 @@
 =============================================================
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+### Internal
+* None
+
+0.5.0 Release notes (2020-06-29)
+=============================================================
+
+### Enhancements
 * Users are now persisted across refreshes and browser tabs (using the browser's local-storage). ([#2990](https://github.com/realm/realm-js/pull/2990))
 * App location metadata is now requested before making any requests towards the app server. This removes the need for users to manually resolve the baseUrl. ([#3000](https://github.com/realm/realm-js/pull/3000))
 * MongoDB Realm Functions are now accessable via the `functions` property on an instance of `User`. ([#3001](https://github.com/realm/realm-js/pull/3001))
@@ -12,7 +24,7 @@
 ### Internal
 * Renamed the "RemoteMongoDB*" classes to "MongoDB*". Not considered a breaking changes as these types were not exported from the package. ([#3001](https://github.com/realm/realm-js/pull/3001))
 
-0.4.0 Release notes (2020-6-11)
+0.4.0 Release notes (2020-06-11)
 =============================================================
 
 ### Enhancements
@@ -24,7 +36,7 @@
 ### Internal
 * None
 
-0.3.0 Release notes (2020-6-11)
+0.3.0 Release notes (2020-06-11)
 =============================================================
 
 ### Enhancements
@@ -36,7 +48,7 @@
 ### Internal
 * None
 
-0.2.0 Release notes (2020-6-4)
+0.2.0 Release notes (2020-06-04)
 =============================================================
 
 This was the first external release of the Realm Web package.
