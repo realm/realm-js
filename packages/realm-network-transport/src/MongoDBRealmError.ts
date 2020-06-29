@@ -31,7 +31,10 @@ export class MongoDBRealmError extends Error {
             typeof response === "object" &&
             typeof response.error === "string"
         ) {
-            super(`${response.error} (status ${statusCode} ${statusText})`);
+            const statusSummary = statusText
+                ? `status ${statusCode} ${statusText}`
+                : `status ${statusCode}`;
+            super(`${response.error} (${statusSummary})`);
             this.statusText = statusText;
             this.statusCode = statusCode;
             this.errorCode = response.error_code;
