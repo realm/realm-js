@@ -1,7 +1,7 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"target": "es2015",
+		"target": "es2019",
 		"moduleResolution": "node",
 		"forceConsistentCasingInFileNames": true,
 		"typeRoots": [
@@ -18,7 +18,7 @@
 			"realm"
 		],
 		"lib": [
-			"es2015",
+			"es2019",
 			"dom"
 		]
 	},

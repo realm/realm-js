@@ -106,7 +106,7 @@ export class BaseTransport implements Transport {
         // Execute the request
         return this.networkTransport.fetchAndParse({
             ...restOfRequest,
-            url: baseUrl + this.baseRoute + path,
+            url: baseUrl + path,
             headers: { ...BaseTransport.DEFAULT_HEADERS, ...headers },
         });
     }
@@ -121,12 +121,12 @@ export class BaseTransport implements Transport {
      *
      * @param ignoreLocation Ignore the location context.
      */
-    private async determineBaseUrl(ignoreLocation: boolean) {
+    public async determineBaseUrl(ignoreLocation: boolean) {
         if (ignoreLocation || !this.locationContext) {
-            return this.baseUrl;
+            return this.baseUrl + this.baseRoute;
         } else {
             const location = await this.locationContext.location;
-            return location.hostname;
+            return location.hostname + this.baseRoute;
         }
     }
 }

@@ -1,10 +1,11 @@
 {
 	"compilerOptions": {
 		"strict": true,
+		"sourceMap": true,
 		"module": "commonjs",
-		"target": "es6",
+		"target": "ES2019",
 		"lib": [
-			"ES5",
+			"ES2019",
 			"DOM"
 		],
 		"types": [

@@ -17,15 +17,21 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { MochaRemoteClient } from "mocha-remote-client";
+import { handleAuthRedirect } from "realm-web";
 
-const mochaClient = new MochaRemoteClient({
-    onInstrumented: () => {
-        require("./app.test");
-        require("./credentials.test");
-        require("./user.test");
-        require("./functions.test");
-        require("./services.test");
-        require("./api-key-auth-provider.test");
-        require("./email-password-auth-provider.test");
-    },
-});
+if (location.pathname.endsWith("-callback")) {
+    console.log("This is the callback from Google OAuth 2.0 flow");
+    handleAuthRedirect();
+} else {
+    const mochaClient = new MochaRemoteClient({
+        onInstrumented: () => {
+            require("./app.test");
+            require("./credentials.test");
+            require("./user.test");
+            require("./functions.test");
+            require("./services.test");
+            require("./api-key-auth-provider.test");
+            require("./email-password-auth-provider.test");
+        },
+    });
+}

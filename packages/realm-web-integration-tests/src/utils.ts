@@ -36,3 +36,15 @@ export function createApp<
         baseUrl: BASE_URL,
     });
 }
+
+export function describeIf(
+    condition: boolean,
+    title: string,
+    fn: (this: Mocha.Suite) => void,
+) {
+    if (condition) {
+        describe(title, fn);
+    } else {
+        describe.skip(title, fn);
+    }
+}

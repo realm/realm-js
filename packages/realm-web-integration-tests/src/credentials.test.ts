@@ -20,10 +20,13 @@ import { expect } from "chai";
 
 import { Credentials, User } from "realm-web";
 
-import { createApp } from "./utils";
+import { createApp, describeIf } from "./utils";
 
-describe("Realm.Credentials", () => {
-    describe("AnonymousCredentials", () => {
+// This global is injected by WebPack
+declare const TEST_CREDENTIALS: string[];
+
+describe("Credentials", () => {
+    describeIf(TEST_CREDENTIALS.includes("anonymous"), "anonymous", () => {
         it("can authenticate", async () => {
             const app = createApp();
             const credentials = Credentials.anonymous();
@@ -32,18 +35,61 @@ describe("Realm.Credentials", () => {
         });
     });
 
-    describe("UsernamePasswordCredentials", () => {
-        // TODO: Re-enable when we have a way to register users
-        it.skip("can authenticate", async () => {
+    describeIf(
+        TEST_CREDENTIALS.includes("email-password"),
+        "emailPassword",
+        () => {
+            it("can register and authenticate", async () => {
+                const app = createApp();
+                // Register the user
+                try {
+                    await app.auth.emailPassword.registerUser(
+                        "gilfoil@testing.mongodb.com",
+                        "v3ry-s3cret",
+                    );
+                } catch (err) {
+                    // Allow the user to already be registered in the app
+                    expect(err.message).contains(
+                        "name already in use",
+                        err.message,
+                    );
+                }
+                // Log in
+                const credentials = Credentials.emailPassword(
+                    "gilfoil@testing.mongodb.com",
+                    "v3ry-s3cret",
+                );
+                expect(credentials.payload.username).equals(
+                    "gilfoil@testing.mongodb.com",
+                );
+                expect(credentials.payload.password).equals("v3ry-s3cret");
+                const user = await app.logIn(credentials);
+                expect(user).to.be.instanceOf(User);
+            });
+        },
+    );
+
+    describeIf(TEST_CREDENTIALS.includes("google"), "google", () => {
+        it("can authenticate", async function () {
+            this.timeout(60 * 1000); // 1 min
             const app = createApp();
-            const credentials = Credentials.emailPassword(
-                "gilfoil@testing.mongodb.com",
-                "v3ry-s3cret",
+            // Log in
+            const credentials = Credentials.google(
+                "http://localhost:8080/google-callback",
             );
-            expect(credentials.payload.username).equals(
-                "gilfoil@testing.mongodb.com",
+            const user = await app.logIn(credentials);
+            expect(user).to.be.instanceOf(User);
+        });
+    });
+
+    describeIf(TEST_CREDENTIALS.includes("facebook"), "facebook", () => {
+        it("can authenticate", async function () {
+            this.timeout(60 * 1000); // 1 min
+            const app = createApp();
+            // Log in
+            const credentials = Credentials.facebook(
+                "http://localhost:8080/facebook-callback",
             );
-            expect(credentials.payload.password).equals("v3ry-s3cret");
             const user = await app.logIn(credentials);
             expect(user).to.be.instanceOf(User);
         });

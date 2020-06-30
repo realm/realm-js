@@ -26,6 +26,9 @@ import { importRealmApp } from "./import-realm-app";
 import WEBPACK_CONFIG = require("../webpack.config");
 
 const devtools = "DEV_TOOLS" in process.env;
+// Default to testing only the credentials that does not require manual interactions.
+const testCredentials =
+    process.env.TEST_CREDENTIALS || "anonymous,email-password";
 
 /* eslint-disable no-console */
 
@@ -42,6 +45,7 @@ async function run() {
                 APP_ID: JSON.stringify(appId),
                 // Uses the webpack dev servers proxy
                 BASE_URL: JSON.stringify("http://localhost:8080"),
+                TEST_CREDENTIALS: JSON.stringify(testCredentials.split(",")),
             }),
         ],
     });
@@ -49,6 +53,7 @@ async function run() {
     // Start the webpack-dev-server
     const devServer = new WebpackDevServer(compiler, {
         proxy: { "/api": baseUrl },
+        historyApiFallback: true,
     });
 
     await new Promise((resolve, reject) => {

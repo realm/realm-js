@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Storage } from "./Storage";
+import { Storage, StorageChangeListner } from "./Storage";
 
 /**
  * A `Storage` which will prefix a key part to every operation.
@@ -80,5 +80,15 @@ export class PrefixedStorage implements Storage {
         return this.storage.clear(
             this.keyPart + PrefixedStorage.PART_SEPARATOR + prefix,
         );
+    }
+
+    /** @inheritdoc */
+    public addListener(listener: StorageChangeListner) {
+        return this.storage.addListener(listener);
+    }
+
+    /** @inheritdoc */
+    public removeListener(listener: StorageChangeListner) {
+        return this.storage.addListener(listener);
     }
 }

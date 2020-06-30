@@ -9,8 +9,7 @@
 			"mocha-remote-client"
 		],
 		"lib": [
-			"ES5",
-			"ES6",
+			"ES2020",
 			"DOM"
 		]
 	},

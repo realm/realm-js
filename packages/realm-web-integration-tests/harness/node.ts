@@ -26,7 +26,15 @@ for (const id in require.cache) {
 }
 
 // The APP_ID and BASE_URL are defined and injected into the global when the app has been imported.
-declare const global: { APP_ID: string; BASE_URL: string };
+declare const global: {
+    APP_ID: string;
+    BASE_URL: string;
+    TEST_CREDENTIALS: string[];
+};
+
+global.TEST_CREDENTIALS = (
+    process.env.TEST_CREDENTIALS || "anonymous,email-password"
+).split(",");
 
 before(async function () {
     this.timeout(10000);

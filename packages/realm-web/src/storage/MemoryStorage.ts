@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Storage } from "./Storage";
+import { Storage, StorageChangeListner } from "./Storage";
 import { PrefixedStorage } from "./PrefixedStorage";
 
 /**
@@ -27,6 +27,9 @@ export class MemoryStorage implements Storage {
      * Internal state of the storage
      */
     private readonly storage: { [key: string]: string } = {};
+
+    /** A set of listners */
+    private readonly listeners: Set<StorageChangeListner> = new Set();
 
     /** @inheritdoc */
     public get(key: string): string | null {
@@ -40,11 +43,15 @@ export class MemoryStorage implements Storage {
     /** @inheritdoc */
     public set(key: string, value: string) {
         this.storage[key] = value;
+        // Fire the listeners
+        this.fireListeners();
     }
 
     /** @inheritdoc */
     public remove(key: string) {
         delete this.storage[key];
+        // Fire the listeners
+        this.fireListeners();
     }
 
     /** @inheritdoc */
@@ -60,5 +67,22 @@ export class MemoryStorage implements Storage {
                 delete this.storage[key];
             }
         }
+        // Fire the listeners
+        this.fireListeners();
+    }
+
+    /** @inheritdoc */
+    public addListener(listener: StorageChangeListner) {
+        return this.listeners.add(listener);
+    }
+
+    /** @inheritdoc */
+    public removeListener(listener: StorageChangeListner) {
+        return this.listeners.delete(listener);
+    }
+
+    /** Fire the  */
+    private fireListeners() {
+        this.listeners.forEach(listener => listener());
     }
 }

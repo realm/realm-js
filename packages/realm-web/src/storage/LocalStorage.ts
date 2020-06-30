@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Storage } from "./Storage";
+import { Storage, StorageChangeListner } from "./Storage";
 import { PrefixedStorage } from "./PrefixedStorage";
 
 /**
@@ -26,7 +26,7 @@ export class LocalStorage implements Storage {
     /**
      * Internal state of the storage
      */
-    private readonly window: WindowLocalStorage;
+    private readonly window: Window;
 
     /**
      * Constructs a LocalStorage using the global window
@@ -75,5 +75,15 @@ export class LocalStorage implements Storage {
         for (const key of keys) {
             this.window.localStorage.removeItem(key);
         }
+    }
+
+    /** @inheritdoc */
+    public addListener(listener: StorageChangeListner) {
+        return this.window.addEventListener("storage", listener);
+    }
+
+    /** @inheritdoc */
+    public removeListener(listener: StorageChangeListner) {
+        return this.window.removeEventListener("storage", listener);
     }
 }
