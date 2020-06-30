@@ -22,6 +22,7 @@ export type EmailPasswordPayload = Realm.Credentials.EmailPasswordPayload;
 export type OAuth2RedirectPayload = Realm.Credentials.OAuth2RedirectPayload;
 export type GooglePayload = Realm.Credentials.GooglePayload;
 export type FacebookPayload = Realm.Credentials.FacebookPayload;
+export type FunctionPayload = Realm.Credentials.FunctionPayload;
 
 /**
  * Instances of this class can be passed to the `app.logIn` method to authenticate an end-user.
@@ -65,6 +66,22 @@ export class Credentials<PayloadType extends object>
                 username: email,
                 password,
             },
+        );
+    }
+
+    /**
+     * Creates credentials that logs in using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
+     *
+     * @param payload The custom payload as expected by the server.
+     * @returns The credentials instance, which can be passed to `app.logIn`.
+     */
+    static function<PayloadType extends FunctionPayload = FunctionPayload>(
+        payload: PayloadType,
+    ) {
+        return new Credentials<PayloadType>(
+            "custom-function",
+            "custom-function",
+            payload,
         );
     }
 
@@ -126,6 +143,11 @@ export class Credentials<PayloadType extends object>
         name: string,
         type: "local-userpass",
         payload: EmailPasswordPayload,
+    );
+    constructor(
+        name: string,
+        type: "custom-function",
+        payload: FunctionPayload,
     );
     constructor(
         name: string,

@@ -21,7 +21,7 @@
 exports = async function (loginPayload) {
     // Get a handle for the app.users collection
     const users = context.services
-        .get("mongodb-atlas")
+        .get("local-mongodb")
         .db("app")
         .collection("users");
 

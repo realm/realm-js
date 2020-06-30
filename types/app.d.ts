@@ -57,6 +57,13 @@ declare namespace Realm {
         };
 
         /**
+         * Payload sent when authenticating using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
+         */
+        type FunctionPayload = {
+            [key: string]: string,
+        };
+
+        /**
          * Payload sent when authenticating using an OAuth 2.0 provider:
          * - [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
          * - [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).

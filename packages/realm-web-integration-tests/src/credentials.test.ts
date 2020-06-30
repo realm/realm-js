@@ -69,6 +69,20 @@ describe("Credentials", () => {
         },
     );
 
+    describeIf(TEST_CREDENTIALS.includes("function"), "function", () => {
+        it("can authenticate", async function () {
+            this.timeout(60 * 1000); // 1 min
+            const app = createApp();
+            // Log in
+            const credentials = Credentials.function({
+                username: "my-very-own-username",
+                secret: "v3ry-s3cret",
+            });
+            const user = await app.logIn(credentials);
+            expect(user).to.be.instanceOf(User);
+        });
+    });
+
     describeIf(TEST_CREDENTIALS.includes("google"), "google", () => {
         it("can authenticate", async function () {
             this.timeout(60 * 1000); // 1 min

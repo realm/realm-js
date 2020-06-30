@@ -28,7 +28,7 @@ import WEBPACK_CONFIG = require("../webpack.config");
 const devtools = "DEV_TOOLS" in process.env;
 // Default to testing only the credentials that does not require manual interactions.
 const testCredentials =
-    process.env.TEST_CREDENTIALS || "anonymous,email-password";
+    process.env.TEST_CREDENTIALS || "anonymous,email-password,function";
 
 /* eslint-disable no-console */
 
