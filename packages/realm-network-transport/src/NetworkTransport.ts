@@ -73,8 +73,11 @@ export class DefaultNetworkTransport implements NetworkTransport {
         // Determine the fetch implementation
         if (!DefaultNetworkTransport.fetch) {
             // Try to get it from the global
-            if (typeof fetch === "function" && typeof window === "object") {
-                DefaultNetworkTransport.fetch = fetch.bind(window);
+            if (
+                typeof window === "object" &&
+                typeof window.fetch === "function"
+            ) {
+                DefaultNetworkTransport.fetch = window.fetch.bind(window);
             } else if (isNodeProcess && typeof require === "function") {
                 // Making it harder for the static analyzers see this require call
                 const nodeRequire = require;
@@ -87,8 +90,9 @@ export class DefaultNetworkTransport implements NetworkTransport {
         }
         // Determine the AbortController implementation
         if (!DefaultNetworkTransport.AbortController) {
-            if (typeof AbortController !== "undefined") {
-                DefaultNetworkTransport.AbortController = AbortController;
+            if (typeof window === "object" && window.AbortController) {
+                DefaultNetworkTransport.AbortController =
+                    window.AbortController;
             } else if (isNodeProcess && typeof require === "function") {
                 // Making it harder for the static analyzers see this require call
                 const nodeRequire = require;
