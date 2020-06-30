@@ -19,6 +19,7 @@
 import { expect } from "chai";
 
 import { Credentials, User } from "realm-web";
+import jwtEncode from "jwt-encode";
 
 import { createApp, describeIf } from "./utils";
 
@@ -80,6 +81,28 @@ describe("Credentials", () => {
             });
             const user = await app.logIn(credentials);
             expect(user).to.be.instanceOf(User);
+        });
+    });
+
+    describeIf(TEST_CREDENTIALS.includes("jwt"), "jwt", () => {
+        it("can authenticate", async function () {
+            this.timeout(60 * 1000); // 1 min
+            const app = createApp();
+            // Log in
+            const token = jwtEncode(
+                {
+                    aud: app.id,
+                    exp: 4070908800, // 01/01/2099
+                    sub: "my-awesome-internal-id",
+                    mySecretField: "some-secret-stuff",
+                },
+                // Needs to match the value in the apps secrets.json
+                "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu",
+            );
+            const credentials = Credentials.jwt(token);
+            const user = await app.logIn(credentials);
+            expect(user).to.be.instanceOf(User);
+            // TODO: Expect that we can read "some-secret-stuff" out of the accessToken
         });
     });
 

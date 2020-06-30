@@ -33,7 +33,7 @@ declare const global: {
 };
 
 global.TEST_CREDENTIALS = (
-    process.env.TEST_CREDENTIALS || "anonymous,email-password,function"
+    process.env.TEST_CREDENTIALS || "anonymous,email-password,function,jwt"
 ).split(",");
 
 before(async function () {

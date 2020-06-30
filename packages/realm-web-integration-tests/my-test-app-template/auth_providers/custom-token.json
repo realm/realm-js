@@ -8,7 +8,7 @@
     },
     "secret_config": {
         "signingKeys": [
-            "primary-secret-key"
+            "jwt-secret"
         ]
     },
     "disabled": false,

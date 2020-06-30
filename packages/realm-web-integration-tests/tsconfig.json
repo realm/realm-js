@@ -22,6 +22,6 @@
 	},
 	"include": [
 		"src/**/*.ts",
-		"harness/**/*.ts"
+		"harness/**/*.ts",
 	]
 }

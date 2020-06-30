@@ -23,6 +23,7 @@ export type OAuth2RedirectPayload = Realm.Credentials.OAuth2RedirectPayload;
 export type GooglePayload = Realm.Credentials.GooglePayload;
 export type FacebookPayload = Realm.Credentials.FacebookPayload;
 export type FunctionPayload = Realm.Credentials.FunctionPayload;
+export type JWTPayload = Realm.Credentials.JWTPayload;
 
 /**
  * Instances of this class can be passed to the `app.logIn` method to authenticate an end-user.
@@ -83,6 +84,18 @@ export class Credentials<PayloadType extends object>
             "custom-function",
             payload,
         );
+    }
+
+    /**
+     * Creates credentials that logs in using the [Custom JWT Provider](https://docs.mongodb.com/realm/authentication/custom-jwt/).
+     *
+     * @param token The JSON Web Token (JWT).
+     * @returns The credentials instance, which can be passed to `app.logIn`.
+     */
+    static jwt(token: string) {
+        return new Credentials<ApiKeyPayload>("custom-token", "custom-token", {
+            token,
+        });
     }
 
     /**
@@ -149,6 +162,7 @@ export class Credentials<PayloadType extends object>
         type: "custom-function",
         payload: FunctionPayload,
     );
+    constructor(name: string, type: "custom-token", payload: JWTPayload);
     constructor(
         name: string,
         type: "oauth2-google",
