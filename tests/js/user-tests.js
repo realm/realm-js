@@ -228,7 +228,7 @@ module.exports = {
     let user = await app.logIn(credentials);
 
     let mongo = user.remoteMongoClient('BackingDB');
-    let collection = mongo.db('test').collection('testRemoteMongoClient');
+    let collection = mongo.db('test_data').collection('testRemoteMongoClient');
 
     await collection.deleteMany({});
     await collection.insertOne({hello: "world"});
