@@ -5,7 +5,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed an error "Cannot use 'in' operator to search for 'node' in undefined", which could occur when bundling the package without Node.js stubs available. ([#3001](https://github.com/realm/realm-js/pull/3001))
 
 ### Internal
 * None
