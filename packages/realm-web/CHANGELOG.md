@@ -2,6 +2,18 @@
 =============================================================
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+### Internal
+* None
+
+0.6.0 Release notes (2020-07-01)
+=============================================================
+
+### Enhancements
 * Added more credentials enabling logins via additional authentication providers: Custom Functions, Custom JWT, Google, Facebook & Apple ID. ([#3019](https://github.com/realm/realm-js/pull/3019))
 * Custom data can now be retrieved from an active User. ([#3019](https://github.com/realm/realm-js/pull/3019))
 
