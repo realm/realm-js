@@ -1,89 +1,105 @@
 import { expect } from "chai";
 
 import { IPerson, PersonSchema } from "./schemas/person-and-dogs";
-import * as expectedCircularStructure from "./structures/circular-result.json"
+import * as circularCollectionResult from "./structures/circular-collection-result.json"
 
-describe("Serialization", () => {
+const createRealmWithCircularStructure = () => {
+    const realm = new Realm({ schema: [PersonSchema] });
+
+    realm.write(() => {
+        const john = realm.create<IPerson>(PersonSchema.name, {
+            name: "John Doe",
+            age: 42,
+        });
+        const jane = realm.create<IPerson>(PersonSchema.name, {
+            name: "Jane Doe",
+            age: 40
+        });
+        const tony = realm.create<IPerson>(PersonSchema.name, {
+            name: "Tony Doe",
+            age: 35
+        });
+
+        // ensure circular references
+        john.friends.push(john);
+        john.friends.push(jane);
+        john.friends.push(tony);
+
+        jane.friends.push(tony);
+        jane.friends.push(john);
+        
+        tony.friends.push(jane);
+    });
+
+    return realm;
+};
+
+describe("JSON serialization", () => {
+
     it("JsonSerializationReplacer is exposed on the Realm constructor", () => {
         expect(typeof Realm.JsonSerializationReplacer).equal('function');
         expect(Realm.JsonSerializationReplacer.length).equal(2);
-    })
-
-    it("Realm.Object has 'toJSON' implemented", () => {
-        const realm = new Realm({ schema: [PersonSchema] });
-
-        let john!: IPerson & Realm.Object;
-
-        realm.write(() => {
-            john = realm.create<IPerson>("Person", {
-                name: "John Doe",
-                age: 42
-            });
-
-            john.friends.push(john)
-        });
-
-        expect(typeof john.toJSON).equals('function');
-        expect(john.toJSON().objectSchema).equals(undefined);
-        expect(john.toJSON().friends).instanceOf(Array);
     });
 
-    it("Realm.Results (Collection) has 'toJSON' implemented", () => {
-        const realm = new Realm({ schema: [PersonSchema] });
-
+    describe("Realm.Object", () => {
         let john!: IPerson & Realm.Object;
 
-        realm.write(() => {
-            john = realm.create<IPerson>("Person", {
-                name: "John Doe",
-                age: 42
-            });
+        beforeEach(() => {
+            const realm = createRealmWithCircularStructure();
+            john = realm.objects<IPerson>(PersonSchema.name)[0];
+        })
+
+        it("implements toJSON", () => {
+            expect(typeof john.toJSON).equals('function');
         });
 
-        const persons = realm.objects<IPerson>("Person");
+        it("toJSON returns a circular structure", () => {
+            const serializable = john.toJSON();
 
-        expect(typeof persons.toJSON).equals('function');
-        expect(persons.toJSON()).instanceOf(Array);
+            expect(serializable.objectSchema).equals(undefined);
+            expect(serializable.friends).instanceOf(Array);
+            expect(serializable).equal(serializable.friends[0]);
+        });
+    
+        it("throws correct error on serialization", () => {
+            expect(() => JSON.stringify(john)).throws(TypeError)
+                .property("message", "Converting circular structure to JSON");
+        });
 
-        const first = persons.toJSON()[0];
-        expect(first.objectSchema).equals(undefined);
-        expect(first.friends).instanceOf(Array);
+        it("serializes to expected output using Realm.JsonSerializationReplacer", () => {
+            expect(JSON.stringify(john, Realm.JsonSerializationReplacer))
+                .equals(JSON.stringify(circularCollectionResult[0]));
+        })
     });
 
-    it("Realm.Results can be serialized with circular references", () => {
-        const realm = new Realm({ schema: [PersonSchema] });
+    describe("Realm.Results", () => {
+        let persons!: Realm.Results<IPerson & Realm.Object>;
 
-        let john!: IPerson & Realm.Object;
-        let jane!: IPerson & Realm.Object;
-        let tony!: IPerson & Realm.Object;
+        beforeEach(() => {
+            const realm = createRealmWithCircularStructure();
+            persons = realm.objects<IPerson>(PersonSchema.name);
+        })
 
-        realm.write(() => {
-            john = realm.create<IPerson>("Person", {
-                name: "John Doe",
-                age: 42
-            });
-            jane = realm.create<IPerson>("Person", {
-                name: "Jane Doe",
-                age: 40
-            });
-            tony = realm.create<IPerson>("Person", {
-                name: "Tony Doe",
-                age: 35
-            });
-
-            // ensure circular references
-            john.friends.push(jane);
-            john.friends.push(tony);
-
-            jane.friends.push(tony);
-            jane.friends.push(john);
-            
-            tony.friends.push(jane);
+        it("implements toJSON", () => {
+            expect(typeof persons.toJSON).equals('function');
         });
 
-        const persons = realm.objects<IPerson>("Person");
+        it("toJSON returns a circular structure", () => {
+            const serializable = persons.toJSON();
 
-        expect(JSON.stringify(persons, Realm.JsonSerializationReplacer))
-            .equal(JSON.stringify(expectedCircularStructure));
+            expect(serializable).instanceOf(Array);
+            expect(serializable[0].friends).instanceOf(Array);
+            expect(serializable[0]).equal(serializable[0].friends[0]);
+        });
+
+        it("throws correct error on serialization", () => {
+            expect(() => JSON.stringify(persons)).throws(TypeError)
+                .property("message", "Converting circular structure to JSON");
+        });
+
+        it("serializes to expected output using Realm.JsonSerializationReplacer", () => {
+            expect(JSON.stringify(persons, Realm.JsonSerializationReplacer))
+                .equal(JSON.stringify(circularCollectionResult));
+        })
     });
 });
