@@ -20,6 +20,7 @@ import {
     NetworkTransport,
     Request,
     ResponseHandler,
+    MongoDBRealmError,
 } from "realm-network-transport";
 
 /**
@@ -58,7 +59,11 @@ export class MockNetworkTransport implements NetworkTransport {
         this.requests.push(request);
         if (this.responses.length > 0) {
             const [response] = this.responses.splice(0, 1);
-            return Promise.resolve(response);
+            if (response instanceof MongoDBRealmError) {
+                return Promise.reject(response);
+            } else {
+                return Promise.resolve(response);
+            }
         } else {
             throw new Error(
                 `Unexpected request (method = ${request.method}, url = ${

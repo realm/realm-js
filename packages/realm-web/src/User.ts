@@ -264,6 +264,23 @@ export class User<
         throw new Error("Not yet implemented");
     }
 
+    public async refreshAccessToken() {
+        const response = await this.app.baseTransport.fetch({
+            method: "POST",
+            path: "/auth/session",
+            headers: {
+                Authorization: `Bearer ${this._refreshToken}`,
+            },
+        });
+        const { access_token: accessToken } = response;
+        if (typeof accessToken === "string") {
+            this._accessToken = accessToken;
+            this.storage.accessToken = accessToken;
+        } else {
+            throw new Error("Expected a 'access_token' in the response");
+        }
+    }
+
     public async refreshCustomData() {
         await this.refreshAccessToken();
         return this.customData;
