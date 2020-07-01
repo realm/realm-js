@@ -44,7 +44,7 @@ describe("Credentials", () => {
                 const app = createApp();
                 // Register the user
                 try {
-                    await app.auth.emailPassword.registerUser(
+                    await app.emailPasswordAuth.registerUser(
                         "gilfoil@testing.mongodb.com",
                         "v3ry-s3cret",
                     );
