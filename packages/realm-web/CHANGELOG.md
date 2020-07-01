@@ -7,6 +7,7 @@
 
 ### Fixed
 * Fixed an error "Cannot use 'in' operator to search for 'node' in undefined", which could occur when bundling the package without Node.js stubs available. ([#3001](https://github.com/realm/realm-js/pull/3001))
+* Fixed refreshing of access tokens upon 401 responses from the server. ([#3020](https://github.com/realm/realm-js/pull/3020))
 
 ### Internal
 * None
