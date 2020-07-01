@@ -18,9 +18,8 @@
 
 import {
     NetworkTransport,
-    SuccessCallback,
-    ErrorCallback,
     Request,
+    ResponseHandler,
 } from "realm-network-transport";
 
 /**
@@ -68,9 +67,8 @@ export class MockNetworkTransport implements NetworkTransport {
     /** @inheritdoc */
     fetchWithCallbacks<RequestBody extends any>(
         request: Request<RequestBody>,
-        successCallback: SuccessCallback,
-        errorCallback: ErrorCallback,
+        handler: ResponseHandler,
     ) {
-        this.fetchAndParse(request).then(successCallback, errorCallback);
+        this.fetchAndParse(request).then(handler.onSuccess, handler.onError);
     }
 }
