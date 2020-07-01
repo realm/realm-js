@@ -19,8 +19,7 @@
 import { Transport } from "../transports";
 
 /** @inheritdoc */
-export class EmailPasswordAuthProvider
-    implements Realm.Auth.EmailPasswordProvider {
+export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
     /**
      * The underlying transport.
      */

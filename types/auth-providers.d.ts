@@ -22,16 +22,16 @@ declare namespace Realm {
      */
     interface AuthProviders {
         /** Authentication provider where users identify using email and password. */
-        emailPassword: Realm.Auth.EmailPasswordProvider;
+        emailPassword: Realm.Auth.EmailPasswordAuth;
         /** Authentication provider where users identify using an API-key. */
-        apiKey: Realm.Auth.ApiKeyProvider;
+        apiKey: Realm.Auth.ApiKeyAuth;
     }
 
     namespace Auth {
         /**
          * Authentication provider where users identify using email and password.
          */
-        class EmailPasswordProvider {
+        class EmailPasswordAuth {
             /**
              * Register a new user.
              *
@@ -117,7 +117,7 @@ declare namespace Realm {
         /**
          * Authentication provider where users identify using an API-key.
          */
-        class ApiKeyProvider {
+        class ApiKeyAuth {
             /**
              * Creates an API key that can be used to authenticate as the current user.
              *

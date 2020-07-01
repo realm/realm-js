@@ -174,7 +174,7 @@ export class User<
         throw new Error("Not yet implemented");
     }
 
-    get apiKeys(): Realm.Auth.ApiKeyProvider {
+    get apiKeys(): Realm.Auth.ApiKeyAuth {
         throw new Error("Not yet implemented");
     }
 

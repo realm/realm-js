@@ -20,7 +20,7 @@ import { Transport } from "../transports";
 import { deserialize } from "../utils/ejson";
 
 /** @inheritdoc */
-export class ApiKeyAuthProvider implements Realm.Auth.ApiKeyProvider {
+export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
     /**
      * The transport used to send requests to services.
      */

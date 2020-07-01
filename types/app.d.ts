@@ -138,9 +138,9 @@ declare namespace Realm {
         services: Realm.Services;
 
         /**
-         * Perform operations on an app's authentication providers.
+         * Perform operations related to the email/password auth provider.
          */
-        auth: Realm.AuthProviders;
+        emailPasswordAuth: Realm.Auth.EmailPasswordAuth;
 
         /**
          * The last user to log in or being switched to.
@@ -236,9 +236,9 @@ declare namespace Realm {
         readonly functions: FunctionsFactoryType & BaseFunctionsFactory;
 
         /**
-         * This object allows API keys associated with the user to be retrieved, created, enabled and disabled.
+         * Perform operations related to the API-key auth provider.
          */
-        readonly apiKeys: Realm.Auth.ApiKeyProvider;
+        readonly apiKeys: Realm.Auth.ApiKeyAuth;
 
         /**
          * Log out the user.

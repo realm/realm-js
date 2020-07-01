@@ -23,7 +23,7 @@ import { User, UserState } from "./User";
 import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
 import { Credentials } from "./Credentials";
 import { create as createServicesFactory } from "./services";
-import { create as createAuthProviders } from "./auth-providers";
+import { EmailPasswordAuth } from "./auth-providers";
 
 /**
  * Configuration to pass as an argument when constructing an app.
@@ -48,9 +48,6 @@ export class App<
     public readonly services: Realm.Services;
 
     /** @inheritdoc */
-    public readonly auth: Realm.AuthProviders;
-
-    /** @inheritdoc */
     public readonly id: string;
 
     /**
@@ -72,6 +69,9 @@ export class App<
      * A transport adding the base and app route prefix to all requests.
      */
     public readonly appTransport: Transport;
+
+    /** @inheritdoc */
+    public readonly emailPasswordAuth: EmailPasswordAuth;
 
     /**
      * This base route will be prefixed requests issued through by the base transport
@@ -124,7 +124,7 @@ export class App<
         // Construct the services factory
         this.services = createServicesFactory(authTransport);
         // Construct the auth providers
-        this.auth = createAuthProviders(authTransport);
+        this.emailPasswordAuth = new EmailPasswordAuth(authTransport);
     }
 
     /**
