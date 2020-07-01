@@ -101,6 +101,16 @@ declare namespace Realm {
              */
             accessToken: string;
         };
+
+        /**
+         * Payload sent when authenticating using the [Apple ID Provider](https://docs.mongodb.com/realm/authentication/apple/).
+         */
+        type ApplePayload = {
+            /**
+             * The ID token from Apple.
+             */
+            id_token: string;
+        };
     }
 
     /**

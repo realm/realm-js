@@ -24,6 +24,7 @@ export type GooglePayload = Realm.Credentials.GooglePayload;
 export type FacebookPayload = Realm.Credentials.FacebookPayload;
 export type FunctionPayload = Realm.Credentials.FunctionPayload;
 export type JWTPayload = Realm.Credentials.JWTPayload;
+export type ApplePayload = Realm.Credentials.ApplePayload;
 
 /**
  * Instances of this class can be passed to the `app.logIn` method to authenticate an end-user.
@@ -135,6 +136,27 @@ export class Credentials<PayloadType extends object>
     }
 
     /**
+     * Creates credentials that logs in using the [Apple ID Provider](https://docs.mongodb.com/realm/authentication/apple/).
+     *
+     * @param redirectUrlOrIdToken The URL that users should be redirected to or the id_token returned from Apple.
+     * @returns The credentials instance, which can be passed to `app.logIn`.
+     */
+    static apple<
+        PayloadType extends object = OAuth2RedirectPayload | ApplePayload
+    >(redirectUrlOrIdToken: string) {
+        return new Credentials<PayloadType>(
+            "oauth2-apple",
+            "oauth2-apple",
+            redirectUrlOrIdToken.indexOf("://") !== -1
+                ? { redirectUrl: redirectUrlOrIdToken }
+                : {
+                      // eslint-disable-next-line @typescript-eslint/camelcase
+                      id_token: redirectUrlOrIdToken,
+                  },
+        );
+    }
+
+    /**
      * The name of the authentication provider used when authenticating.
      * Note: This is the same as the type for all current authentication providers in the service and mainly required for forwards-compatibility.
      */
@@ -172,6 +194,11 @@ export class Credentials<PayloadType extends object>
         name: string,
         type: "oauth2-facebook",
         payload: OAuth2RedirectPayload | FacebookPayload,
+    );
+    constructor(
+        name: string,
+        type: "oauth2-apple",
+        payload: OAuth2RedirectPayload | ApplePayload,
     );
 
     /**
