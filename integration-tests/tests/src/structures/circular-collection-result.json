@@ -5,6 +5,9 @@
     "name": "John Doe",
     "friends": [
       {
+        "$ref": "Person{0000-0000}"
+      },
+      {
         "$refId": "Person{0000-0001}",
         "age": 40,
         "name": "Jane Doe",
@@ -67,6 +70,9 @@
         "name": "John Doe",
         "friends": [
           {
+            "$ref": "Person{0000-0000}"
+          },
+          {
             "$ref": "Person{0000-0001}"
           },
           {
@@ -101,6 +107,9 @@
             "age": 42,
             "name": "John Doe",
             "friends": [
+              {
+                "$ref": "Person{0000-0000}"
+              },
               {
                 "$ref": "Person{0000-0001}"
               },
