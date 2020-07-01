@@ -35,5 +35,6 @@ describe("User", () => {
         // TODO: expect(Array.isArray(user.profile.identities)).equals(true);
         // TODO: expect(user.profile.identities.length).equals(1);
         expect(user.profile.name).equals(undefined);
+        expect(user.customData).deep.equals({});
     });
 });
