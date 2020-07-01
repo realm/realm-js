@@ -16,17 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { Method } from "./types";
+
 /**
  * TODO: Determine if the shape of an error response is specific to each service or widely used
  */
 
 export class MongoDBRealmError extends Error {
+    public readonly method: Method;
+    public readonly url: string;
     public readonly statusCode: number;
     public readonly statusText: string;
     public readonly errorCode: string | undefined;
     public readonly link: string | undefined;
 
-    constructor(statusCode: number, statusText: string, response: any) {
+    constructor(
+        method: Method,
+        url: string,
+        statusCode: number,
+        statusText: string,
+        response: any,
+    ) {
         if (
             typeof response === "object" &&
             typeof response.error === "string"
@@ -34,7 +44,11 @@ export class MongoDBRealmError extends Error {
             const statusSummary = statusText
                 ? `status ${statusCode} ${statusText}`
                 : `status ${statusCode}`;
-            super(`${response.error} (${statusSummary})`);
+            super(
+                `Request failed (${method} ${url}): ${response.error} (${statusSummary})`,
+            );
+            this.method = method;
+            this.url = url;
             this.statusText = statusText;
             this.statusCode = statusCode;
             this.errorCode = response.error_code;

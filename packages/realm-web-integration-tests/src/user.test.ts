@@ -20,7 +20,7 @@ import { expect } from "chai";
 
 import { Credentials, UserState } from "realm-web";
 
-import { createApp } from "./utils";
+import { createApp, INVALID_TOKEN } from "./utils";
 
 describe("User", () => {
     it("can login a user", async () => {
@@ -36,5 +36,19 @@ describe("User", () => {
         // TODO: expect(user.profile.identities.length).equals(1);
         expect(user.profile.name).equals(undefined);
         expect(user.customData).deep.equals({});
+    });
+
+    it("refresh invalid access tokens", async () => {
+        const app = createApp();
+        const credentials = Credentials.anonymous();
+        const user = await app.logIn(credentials, false);
+        // Invalidate the token
+        (user as any)._accessToken = INVALID_TOKEN;
+        expect(user.accessToken).equals(INVALID_TOKEN);
+        // Try using the broken access token
+        const response = await user.functions.translate("hello", "en_fr");
+        expect(response).to.equal("bonjour");
+        // Expect the user to have a diffent token now
+        expect(user.accessToken).not.equals(INVALID_TOKEN);
     });
 });

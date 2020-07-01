@@ -421,15 +421,24 @@ describe("App", () => {
     });
 
     it("refreshes access token and retries request exacly once, upon an 'invalid session' (401) response", async () => {
+        const invalidSessionError = new MongoDBRealmError(
+            "POST",
+            "http://invalid",
+            401,
+            "",
+            {
+                error: "invalid session",
+            },
+        );
         const app = new MockApp("default-app-id", [
             {
                 user_id: "bobs-id",
                 access_token: "first-access-token",
                 refresh_token: "very-refreshing",
             },
-            new MongoDBRealmError(401, "", { error: "invalid session" }),
-            new MongoDBRealmError(401, "", { error: "invalid session" }),
-            new MongoDBRealmError(401, "", { error: "invalid session" }),
+            invalidSessionError,
+            invalidSessionError,
+            invalidSessionError,
             {
                 user_id: "bobs-id",
                 access_token: "second-access-token",
@@ -447,7 +456,9 @@ describe("App", () => {
         } catch (err) {
             expect(err).instanceOf(MongoDBRealmError);
             if (err instanceof MongoDBRealmError) {
-                expect(err.message).equals("invalid session (status 401)");
+                expect(err.message).equals(
+                    "Request failed (POST http://invalid): invalid session (status 401)",
+                );
             }
         }
         // Manually try again - this time refreshing the access token correctly

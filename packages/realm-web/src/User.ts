@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import type { App } from "./App";
-import { AuthenticatedTransport } from "./transports";
+import { AuthenticatedTransport, AppTransport } from "./transports";
 import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
@@ -152,7 +152,8 @@ export class User<
         this.transport = new AuthenticatedTransport(app.baseTransport, {
             currentUser: this,
         });
-        this.functions = FunctionsFactory.create(this.transport);
+        const appTransport = new AppTransport(this.transport, app.id);
+        this.functions = FunctionsFactory.create(appTransport);
         this.storage = new UserStorage(app.storage, id);
         // Store tokens in storage for later hydration
         if (accessToken) {

@@ -82,8 +82,7 @@ export class AuthenticatedTransport implements Transport {
                 user &&
                 retries === 0 &&
                 err instanceof MongoDBRealmError &&
-                err.statusCode === 401 &&
-                err.message.startsWith("invalid session")
+                err.statusCode === 401
             ) {
                 // Refresh the access token
                 await user.refreshAccessToken();
