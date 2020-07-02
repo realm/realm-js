@@ -157,7 +157,7 @@ declare namespace Realm {
         /**
          * @returns An object for JSON serialization.
          */
-        toJSON(): object;
+        toJSON(): any;
 
         /**
          * @returns boolean
