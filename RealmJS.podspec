@@ -8,11 +8,16 @@ app_path = File.expand_path('../..', __dir__)
 # The "React" framework is only available and should be used if the Podfile calls use_frameworks!
 # Therefore we make an assumption on the location of the Podfile and check if it contains "use_frameworks!" ...
 podfile_path = File.expand_path('ios/Podfile', app_path)
-begin
-  podfile = File.read(podfile_path)
-  uses_frameworks = podfile.scan(/\n\s*use_frameworks!\n/).any?
-rescue
-  uses_frameworks = false
+
+if !ENV['REALM_USE_FRAMEWORKS'].present?
+  begin
+    podfile = File.read(podfile_path)
+    uses_frameworks = podfile.scan(/\n\s*use_frameworks!\n/).any?
+  rescue
+    uses_frameworks = false
+  end
+else
+  uses_frameworks = ENV['REALM_USE_FRAMEWORKS'] == 'true' ? true : false
 end
 
 if ENV['DEBUG_REALM_JS_PODSPEC'].present?
@@ -57,7 +62,7 @@ Pod::Spec.new do |s|
                              'src/object-store/src/util/apple/*.cpp',
                              'react-native/ios/RealmReact/*.mm',
                              'vendor/*.cpp'
-  
+
   s.frameworks             = uses_frameworks ? ['JavaScriptCore', 'React'] : ['JavaScriptCore']
 
   s.library                = 'c++', 'z'
@@ -87,7 +92,7 @@ Pod::Spec.new do |s|
                                  # "'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting
                                ].join(' ')
                              }
-  
+
   # TODO: Consider providing an option to build with the -dbg binaries instead
   s.ios.vendored_libraries = 'vendor/realm-ios/librealm-ios.a', 'vendor/realm-ios/librealm-parser-ios.a'
   # s.watchos.vendored_libraries = 'vendor/realm-ios/librealm-watchos.a', 'vendor/realm-ios/librealm-parser-watchos.a'
