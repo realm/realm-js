@@ -5,6 +5,9 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Missing `toJSON` TS declaration added for `Realm.Object` ([2903](https://github.com/realm/realm-js/issues/2903))
+* Upgrading older Realm files with String indexes was very slow. ([realm/realm-core#3767](https://github.com/realm/realm-core/issues/3767), since v6.0.0)
+* Upgrading a Realm file could result in the file getting corrupted. ([realm/realm-core#3734](https://github.com/realm/realm-core/issues/3734), since v6.0.0)
+* Pass use frameworks environment variable for Cocoapods. Thanks to @alexeykomov. ([#2839](https://github.com/realm/realm-js/issues/2830))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,7 +16,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
 ### Internal
-* None.
+* Upgraded Realm Core from v6.0.6 to v6.0.8.
+* Upgraded Realm Sync from v5.0.5 to v5.0.7.
 
 6.0.2 Release notes (2020-06-02)
 =============================================================
@@ -52,7 +56,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 6.0.0 Release notes (2020-5-14)
 =============================================================
-NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format. 
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format.
 
 ### Breaking changes
 * Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
