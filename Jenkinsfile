@@ -259,7 +259,7 @@ def reactNativeIntegrationTests(targetPlatform) {
       }
     }
 
-    timeout(30) { // minutes
+    timeout(time: 30, unit: 'MINUTES') {
       try {
         sh "${nvm} npm run test/${targetPlatform} -- --junit-output-path test-results.xml"
       } finally {
@@ -295,27 +295,31 @@ def buildDockerEnv(name, extra_args='') {
 }
 
 def buildCommon(nodeVersion, platform) {
-  sshagent(credentials: ['realm-ci-ssh']) {
-    sh "mkdir -p ~/.ssh"
-    sh "ssh-keyscan github.com >> ~/.ssh/known_hosts"
-    sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
-    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package"
-  }
-  dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
-    stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
+  timeout(time: 1, unit: 'HOURS') {
+    sshagent(credentials: ['realm-ci-ssh']) {
+      sh "mkdir -p ~/.ssh"
+      sh "ssh-keyscan github.com >> ~/.ssh/known_hosts"
+      sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
+      sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package"
+    }
+    dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+      stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
+    }
   }
 }
 
 def buildElectronCommon(electronVersion, platform) {
-  withEnv([
-    "npm_config_target=${electronVersion}",
-    "npm_config_disturl=https://atom.io/download/electron",
-    "npm_config_runtime=electron",
-    "npm_config_devdir=${env.HOME}/.electron-gyp"
-  ]) {
-    sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm run package"
-    dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
-      stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
+  timeout(time: 1, unit: 'HOURS') {
+    withEnv([
+      "npm_config_target=${electronVersion}",
+      "npm_config_disturl=https://atom.io/download/electron",
+      "npm_config_runtime=electron",
+      "npm_config_devdir=${env.HOME}/.electron-gyp"
+    ]) {
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm run package"
+      dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+        stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
+      }
     }
   }
 }
@@ -357,14 +361,16 @@ def buildWindows(nodeVersion, arch) {
 
       bat 'npm install --ignore-scripts --production'
 
-      withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
-        retry(3) {
-          bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
+      timeout(time: 1, unit: 'HOURS') {
+        withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
+          retry(3) {
+            bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
+          }
         }
-      }
-      bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
-      dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
-        stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
+        bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
+        dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+          stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
+        }
       }
     }
   }
@@ -382,10 +388,12 @@ def buildWindowsElectron(electronVersion, arch) {
         'npm_config_runtime=electron',
         "npm_config_devdir=${env.HOME}/.electron-gyp"
       ]) {
-        withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
-          bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --realm_enable_sync'
+        timeout(time: 1, unit: 'HOURS') {
+          withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
+            bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --realm_enable_sync'
+          }
+          bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package'
         }
-        bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package'
       }
       dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
         stash includes: 'realm-*', name: "electron-pre-gyp-windows-${arch}-${electronVersion}"
@@ -403,7 +411,7 @@ def inAndroidContainer(workerFunction) {
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
         image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       }
-      sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+      
       // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
       // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
       lock("${env.NODE_NAME}-android") {
