@@ -7,7 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Missing `toJSON` TS declaration added for `Realm.Object` ([2903](https://github.com/realm/realm-js/issues/2903))
 * Upgrading older Realm files with String indexes was very slow. ([realm/realm-core#3767](https://github.com/realm/realm-core/issues/3767), since v6.0.0)
 * Upgrading a Realm file could result in the file getting corrupted. ([realm/realm-core#3734](https://github.com/realm/realm-core/issues/3734), since v6.0.0)
-* Pass use frameworks environment variable for Cocoapods. Thanks to @alexeykomov. ([#2839](https://github.com/realm/realm-js/issues/2830))
+* Using `REALM_USE_FRAMEWORKS` environment variable to override detection of `use_framework!` in Cocoapods. Thanks to @alexeykomov. ([#2839](https://github.com/realm/realm-js/issues/2830))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
