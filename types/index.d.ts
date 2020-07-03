@@ -367,7 +367,7 @@ declare namespace Realm {
             [name: string] : (...args: any[]) => Promise<any>
         };
 
-        logOut(): void;
+        logOut(): Promise<void>;
         linkCredentials(credentials: Credentials): Promise<void>;
         callFunction(name: string, args: any[]): Promise<any>;
         refreshCustomData(): Promise<Object>;
