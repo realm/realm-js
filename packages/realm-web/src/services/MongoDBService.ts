@@ -91,7 +91,7 @@ class MongoDBCollection<T extends Document>
     /** @inheritdoc */
     findOneAndUpdate(
         filter: Realm.Services.MongoDB.Filter = {},
-        update: Partial<NewDocument<T>>,
+        update: Realm.Services.MongoDB.Update,
         options: Realm.Services.MongoDB.FindOneAndModifyOptions = {},
     ) {
         return this.functions.findOneAndUpdate({
@@ -199,7 +199,7 @@ class MongoDBCollection<T extends Document>
     /** @inheritdoc */
     updateOne(
         filter: Realm.Services.MongoDB.Filter,
-        update: Partial<NewDocument<T>>,
+        update: Realm.Services.MongoDB.Update,
         options: Realm.Services.MongoDB.UpdateOptions = {},
     ) {
         return this.functions.updateOne({
@@ -214,7 +214,7 @@ class MongoDBCollection<T extends Document>
     /** @inheritdoc */
     updateMany(
         filter: Realm.Services.MongoDB.Filter,
-        update: Partial<NewDocument<T>>,
+        update: Realm.Services.MongoDB.Update,
         options: Realm.Services.MongoDB.UpdateOptions = {},
     ) {
         return this.functions.updateMany({

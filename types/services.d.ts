@@ -199,9 +199,14 @@ declare namespace Realm {
             }
 
             /**
-             * A filter applied to limit the documents being queried for
+             * A filter applied to limit the documents being queried for.
              */
             type Filter = object;
+
+            /**
+             * An object specifying the update operations to perform when updating a document.
+             */
+            type Update = object;
 
             /**
              * A stage of an aggregation pipeline.
@@ -243,7 +248,7 @@ declare namespace Realm {
                  */
                 findOneAndUpdate(
                     filter: Filter,
-                    update: Partial<NewDocument<T>>,
+                    update: Update,
                     options?: FindOneAndModifyOptions,
                 ): Promise<T | null>;
 
@@ -333,7 +338,7 @@ declare namespace Realm {
                  */
                 updateOne(
                     filter: Filter,
-                    update: Partial<NewDocument<T>>,
+                    update: Update,
                     options?: UpdateOptions,
                 ): Promise<UpdateResult>;
 
@@ -347,7 +352,7 @@ declare namespace Realm {
                  */
                 updateMany(
                     filter: Filter,
-                    update: Partial<NewDocument<T>>,
+                    update: Update,
                     options?: UpdateOptions,
                 ): Promise<UpdateResult>;
 
