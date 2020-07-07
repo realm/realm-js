@@ -829,7 +829,7 @@ type ExtractPropertyNamesOfType<T, S> = {
 }[keyof T];
 
 type RealmPartialModel<T> =
-    Omit<T, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
+    Omit<Omit<T, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
     & Partial<Pick<T, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>>
 
 declare class Realm {
