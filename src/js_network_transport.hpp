@@ -183,8 +183,8 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
 private:
     ContextType m_ctx;
 
-    static realm::util::EventLoopDispatcher<SendRequestHandler> get_send_request_handler() {
-        static auto dispatcher = realm::util::EventLoopDispatcher([&]
+    static realm::util::EventLoopDispatcher<SendRequestHandler>& get_send_request_handler() {
+        static auto dispatcher = realm::util::EventLoopDispatcher([]
             (ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback) {
                 HANDLESCOPE(m_ctx);
 
