@@ -533,22 +533,40 @@ declare class Realm {
     close(): void;
 
     /**
-     * @param  {string|Realm.ObjectClass|Function} type
-     * @param  {T&Realm.ObjectPropsType} properties
+     * @param  {string} type
+     * @param  {T} properties
+     * @param  {boolean} update?
+     * @returns T & Realm.Object
+     *
+     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
+     */
+    create<T>(type: string, properties: RealmPartialModel<T>, update?: boolean): T & Realm.Object
+
+    /**
+     * @param  {Class} type
+     * @param  {T} properties
      * @param  {boolean} update?
      * @returns T
      *
      * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
      */
-    create<T>(type: string | Realm.ObjectClass | Function, properties: RealmPartialModel<T>, update?: boolean): T & Realm.Object
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmPartialModel<T>, update?: boolean): T
 
     /**
-     * @param  {string|Realm.ObjectClass|Function} type
-     * @param  {T&Realm.ObjectPropsType} properties
+     * @param  {string} type
+     * @param  {T} properties
+     * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
+     * @returns T & Realm.Object
+     */
+    create<T>(type: string, properties: RealmPartialModel<T>, mode?: Realm.UpdateMode): T & Realm.Object
+
+    /**
+     * @param  {Class} type
+     * @param  {T} properties
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T
      */
-    create<T>(type: string | Realm.ObjectClass | Function, properties: RealmPartialModel<T>, mode?: Realm.UpdateMode): T & Realm.Object
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmPartialModel<T>, mode?: Realm.UpdateMode): T
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
@@ -581,10 +599,16 @@ declare class Realm {
     objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, id: string): T & Realm.Object | undefined;
 
     /**
-     * @param  {string|Realm.ObjectType|Function} type
-     * @returns Realm
+     * @param  {string} type
+     * @returns Realm.Results<T & Realm.Object>
      */
-    objects<T>(type: string | Realm.ObjectType | Function): Realm.Results<T & Realm.Object>;
+    objects<T>(type: string): Realm.Results<T & Realm.Object>;
+
+    /**
+     * @param  {Class} type
+     * @returns Realm.Results<T>
+     */
+    objects<T extends Realm.Object>(type: {new(...arg: any[]): T; }): Realm.Results<T>;
 
     /**
      * @param  {string} name
