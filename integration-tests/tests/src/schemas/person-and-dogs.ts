@@ -34,6 +34,22 @@ export const PersonSchema: Realm.ObjectSchema = {
     }
 };
 
+export class Person extends Realm.Object {
+    name: string;
+    age: number;
+    friends: Realm.List<Person>;
+    dogs: Realm.Collection<Dog>;
+
+    constructor(name: string, age: number) {
+      super();
+
+      this.name = name;
+      this.age = age;
+    }
+
+    static schema: Realm.ObjectSchema = PersonSchema;
+}
+
 export interface IDog {
     name: string;
     age: number;
@@ -49,4 +65,18 @@ export const DogSchema: Realm.ObjectSchema = {
     }
 };
 
-export const PersonAndDogSchema = [PersonSchema, DogSchema];
+export class Dog extends Realm.Object {
+    name: string;
+    age: number;
+    owner: Person;
+
+    constructor(name: string, age: number, owner: Person) {
+      super();
+
+      this.name = name;
+      this.age = age;
+      this.owner = owner;
+    }
+
+    static schema: Realm.ObjectSchema = DogSchema;
+}
