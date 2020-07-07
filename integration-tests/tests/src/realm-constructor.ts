@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { IPerson, PersonAndDogSchema } from "./schemas/person-and-dogs";
+import { IPerson, PersonSchema, DogSchema } from "./schemas/person-and-dogs";
 
 const RealmAsAny = Realm as any;
 
@@ -118,7 +118,7 @@ describe("Realm#constructor", () => {
             realm1.close();
             // Re-open with a different version
             const realm2 = new Realm({
-                schema: PersonAndDogSchema,
+                schema: [PersonSchema, DogSchema],
                 schemaVersion: 2
             });
             expect(realm2.schemaVersion).to.equal(2);
@@ -148,7 +148,7 @@ describe("Realm#constructor", () => {
     describe("re-opening without a schema", () => {
         it("has the same schema as before", () => {
             // Open the Realm with a schema
-            const realm = new Realm({ schema: PersonAndDogSchema });
+            const realm = new Realm({ schema: [PersonSchema, DogSchema] });
             realm.close();
             // Re-open it without a schema
             const reopenedRealm = new Realm();
@@ -297,7 +297,7 @@ describe("Realm#constructor", () => {
 describe("#deleteFile", () => {
     function expectDeletion(path?: string) {
         // Create the Realm with a schema
-        const realm = new Realm({ path, schema: PersonAndDogSchema });
+        const realm = new Realm({ path, schema: [PersonSchema, DogSchema] });
         realm.close();
         // Delete the Realm
         Realm.deleteFile({ path });
