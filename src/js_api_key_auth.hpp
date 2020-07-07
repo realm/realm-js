@@ -115,32 +115,9 @@ void ApiKeyAuthClass<T>::create_api_key(ContextType ctx, ObjectType this_object,
     auto name = Value::validated_to_string(ctx, args[0], "name");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback);
-    Protected<ObjectType> protected_this(ctx, this_object);
-
-    auto callback_handler([=](util::Optional<app::App::UserAPIKey> api_key, util::Optional<app::AppError> error) {
-        HANDLESCOPE(protected_ctx)
-
-        if (error) {
-            ObjectType error_object = Object::create_empty(protected_ctx);
-            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
-            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
-
-            ValueType callback_arguments[2];
-            callback_arguments[0] = Value::from_undefined(protected_ctx);
-            callback_arguments[1] = error_object;
-            Function::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-            return;
-        }
-
-        ValueType callback_arguments[2];
-        callback_arguments[0] = make_api_key<T>(protected_ctx, api_key);
-        callback_arguments[1] = Value::from_undefined(protected_ctx);
-        Function::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-    });
-
-    client.create_api_key(name, client.m_user, callback_handler);
+    client.create_api_key(name,
+                          client.m_user,
+                          Function::wrap_callback_result_first(ctx, this_object, callback, make_api_key<T>));
 }
 
 template<typename T>
@@ -152,32 +129,9 @@ void ApiKeyAuthClass<T>::fetch_api_key(ContextType ctx, ObjectType this_object, 
     auto id = Value::validated_to_object_id(ctx, args[0], "id");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback);
-    Protected<ObjectType> protected_this(ctx, this_object);
-
-    auto callback_handler([=](util::Optional<app::App::UserAPIKey> api_key, util::Optional<app::AppError> error) {
-        HANDLESCOPE(protected_ctx)
-
-        if (error) {
-            ObjectType error_object = Object::create_empty(protected_ctx);
-            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
-            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
-
-            ValueType callback_arguments[2];
-            callback_arguments[0] = Value::from_undefined(protected_ctx);
-            callback_arguments[1] = error_object;
-            Function::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-            return;
-        }
-
-        ValueType callback_arguments[2];
-        callback_arguments[0] = make_api_key<T>(protected_ctx, api_key);
-        callback_arguments[1] = Value::from_undefined(protected_ctx);
-        Function::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-    });
-
-    client.fetch_api_key(id, client.m_user, callback_handler);
+    client.fetch_api_key(id,
+                         client.m_user,
+                         Function::wrap_callback_result_first(ctx, this_object, callback, make_api_key<T>));
 }
 
 template<typename T>
@@ -187,36 +141,16 @@ void ApiKeyAuthClass<T>::fetch_all_api_keys(ContextType ctx, ObjectType this_obj
     auto& client = *get_internal<T, ApiKeyAuthClass<T>>(ctx, this_object);
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
 
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback);
-    Protected<ObjectType> protected_this(ctx, this_object);
-
-    auto callback_handler([=](std::vector<app::App::UserAPIKey> api_keys, util::Optional<app::AppError> error) {
-        HANDLESCOPE(protected_ctx)
-
-        if (error) {
-            ObjectType error_object = Object::create_empty(protected_ctx);
-            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
-            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
-
-            ValueType callback_arguments[2];
-            callback_arguments[0] = Value::from_undefined(protected_ctx);
-            callback_arguments[1] = error_object;
-            Function::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-            return;
+    client.fetch_api_keys(client.m_user, Function::wrap_callback_result_first(ctx, this_object, callback,
+        [] (ContextType ctx, const std::vector<app::App::UserAPIKey>& api_keys) {
+            std::vector<ValueType> api_key_vector;
+            api_key_vector.reserve(api_keys.size());
+            for (auto api_key : api_keys) {
+                api_key_vector.push_back(make_api_key<T>(ctx, api_key));
+            }
+            return Object::create_array(ctx, api_key_vector);
         }
-
-        std::vector<ValueType> api_key_vector;
-        for (auto api_key : api_keys) {
-            api_key_vector.push_back(make_api_key<T>(protected_ctx, api_key));
-        }
-        ValueType callback_arguments[2];
-        callback_arguments[0] = Object::create_array(protected_ctx, api_key_vector);
-        callback_arguments[1] = Value::from_undefined(protected_ctx);
-        Function::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-    });
-
-    client.fetch_api_keys(client.m_user, callback_handler);
+    ));
 }
 
 template<typename T>
@@ -263,7 +197,7 @@ void ApiKeyAuthClass<T>::delete_api_key(ContextType ctx, ObjectType this_object,
     auto api_key_id = Value::validated_to_object_id(ctx, args[0], "API key id");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    client.delete_api_key(api_key_id, client.m_user, make_callback_handler<T>(ctx, this_object, callback));
+    client.delete_api_key(api_key_id, client.m_user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
@@ -275,7 +209,7 @@ void ApiKeyAuthClass<T>::enable_api_key(ContextType ctx, ObjectType this_object,
     auto api_key_id = Value::validated_to_object_id(ctx, args[0], "API key id");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    client.enable_api_key(api_key_id, client.m_user, make_callback_handler<T>(ctx, this_object, callback));
+    client.enable_api_key(api_key_id, client.m_user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
@@ -287,7 +221,7 @@ void ApiKeyAuthClass<T>::disable_api_key(ContextType ctx, ObjectType this_object
     auto api_key_id = Value::validated_to_object_id(ctx, args[0], "API key id");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    client.disable_api_key(api_key_id, client.m_user, make_callback_handler<T>(ctx, this_object, callback));
+    client.disable_api_key(api_key_id, client.m_user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 

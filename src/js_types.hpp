@@ -32,7 +32,9 @@
 #include <realm/util/base64.hpp>
 #include <realm/mixed.hpp>
 
-#include <object-store/src/util/bson/bson.hpp>
+#include "object-store/src/util/bson/bson.hpp"
+#include "object-store/src/util/event_loop_dispatcher.hpp"
+#include "object-store/src/sync/generic_network_transport.hpp"
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
@@ -221,6 +223,24 @@ struct Function {
     static ObjectType construct(ContextType ctx, const FunctionType &function, const std::vector<ValueType> &arguments) {
         return construct(ctx, function, arguments.size(), arguments.data());
     }
+
+    /**
+     * These wrap a js callback into a C++ callback that takes an Optional<AppError> and possibly a result.
+     * The versions that accept a result use the converter argument to convert the C++ result into a js result.
+     * The returned callbacks have the following signatures:
+     *
+     * wrap_void_callback         - void(const util::Optional<app::AppError>& error)
+     * wrap_callback_error_first  - void(const util::Optional<app::AppError>& error, auto&& result)
+     * wrap_callback_result_first - void(auto&& result, const util::Optional<app::AppError>& error)
+     *
+     * In all cases, the converter should have a signature like JsResultType(ContextType, CppResultType), possibly with
+     * const and reference qualifiers on CppResultType. The converter will only be called when there is no error.
+     */
+    static auto wrap_void_callback(ContextType, const ObjectType& this_object, const FunctionType& callback);
+    template<typename Converter>
+    static auto wrap_callback_error_first(ContextType, const ObjectType& this_object, const FunctionType& callback, Converter&& converter);
+    template<typename Converter>
+    static auto wrap_callback_result_first(ContextType, const ObjectType& this_object, const FunctionType& callback, Converter&& converter);
 };
 
 template<typename T>
@@ -343,6 +363,9 @@ struct Object {
     static void set_internal(ContextType ctx, const ObjectType &, typename ClassType::Internal*);
 
     static ObjectType create_bson_type(ContextType, StringData type, std::initializer_list<ValueType> args);
+
+    static ObjectType create_from_app_error(ContextType, const app::AppError&);
+    static ValueType create_from_optional_app_error(ContextType, const util::Optional<app::AppError>&);
 };
 
 template<typename ValueType>
@@ -519,6 +542,21 @@ inline typename T::Object Object<T>::create_bson_type(ContextType ctx, StringDat
 }
 
 template<typename T>
+inline typename T::Object Object<T>::create_from_app_error(ContextType ctx, const app::AppError& error) {
+    return Object::create_obj(ctx, {
+        {"message", Value<T>::from_string(ctx, error.message)},
+        {"code", Value<T>::from_number(ctx, error.error_code.value())},
+    });
+}
+
+template<typename T>
+inline typename T::Value Object<T>::create_from_optional_app_error(ContextType ctx, const util::Optional<app::AppError>& error) {
+    if (!error)
+        return Value<T>::from_undefined(ctx);
+    return create_from_app_error(ctx, *error);
+}
+
+template<typename T>
 inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const util::Optional<Mixed>& mixed) {
     if (!mixed) {
         return from_undefined(ctx);
@@ -662,6 +700,44 @@ inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value) {
         Object<T>::create_obj(ctx, {{"relaxed", Value::from_boolean(ctx, false)}}),
     });
     return bson::parse(std::string(Value::to_string(ctx, call_args_json)));
+}
+
+template <typename T>
+auto Function<T>::wrap_void_callback(ContextType ctx, const ObjectType& this_object, const FunctionType& callback) {
+    return [ctx = Protected(Context<T>::get_global_context(ctx)),
+            callback = Protected(ctx, callback),
+            this_object = Protected(ctx, this_object)]
+        (const util::Optional<app::AppError>& error) {
+            HANDLESCOPE(ctx);
+            Function::callback(ctx, callback, this_object, {
+                Object<T>::create_from_optional_app_error(ctx, error),
+            });
+        };
+}
+
+template <typename T>
+template <typename Converter>
+auto Function<T>::wrap_callback_error_first(ContextType ctx, const ObjectType& this_object, const FunctionType& callback, Converter&& converter) {
+    return [ctx = Protected(Context<T>::get_global_context(ctx)),
+            callback = Protected(ctx, callback),
+            this_object = Protected(ctx, this_object),
+            converter = std::forward<Converter>(converter)]
+        (const util::Optional<app::AppError>& error, auto&& result) {
+            HANDLESCOPE(ctx);
+            Function::callback(ctx, callback, this_object, {
+                error ? Value<T>::from_undefined(ctx) : converter(ctx, std::forward<decltype(result)>(result)), 
+                Object<T>::create_from_optional_app_error(ctx, error),
+            });
+        };
+}
+
+template <typename T>
+template <typename Converter>
+auto Function<T>::wrap_callback_result_first(ContextType ctx, const ObjectType& this_object, const FunctionType& callback, Converter&& converter) {
+    return [callback = wrap_callback_error_first(ctx, this_object, callback, std::forward<Converter>(converter))]
+            (auto&& result, const util::Optional<app::AppError>& error) -> decltype(auto) {
+                return callback(error, std::forward<decltype(result)>(result));
+            };
 }
 } // js
 } // realm

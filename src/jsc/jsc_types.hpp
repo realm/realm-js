@@ -22,9 +22,10 @@
 #include <JavaScriptCore/JSObjectRef.h>
 #include <JavaScriptCore/JSStringRef.h>
 
+#define HANDLESCOPE(context)
+
 #include "js_types.hpp"
 
-#define HANDLESCOPE(context)
 
 namespace realm {
 namespace jsc {

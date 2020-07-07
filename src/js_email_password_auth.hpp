@@ -88,7 +88,7 @@ void EmailPasswordAuthClass<T>::register_user(ContextType ctx, ObjectType this_o
     auto password = Value::validated_to_string(ctx, args[1], "password");
     auto callback = Value::validated_to_function(ctx, args[2], "callback");
 
-    client.register_email(email, password, make_callback_handler<T>(ctx, this_object, callback));
+    client.register_email(email, password, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
@@ -101,7 +101,7 @@ void EmailPasswordAuthClass<T>::confirm_user(ContextType ctx, ObjectType this_ob
     auto token_id = Value::validated_to_string(ctx, args[1], "token_id");
     auto callback = Value::validated_to_function(ctx, args[2], "callback");
 
-    client.confirm_user(token, token_id, make_callback_handler<T>(ctx, this_object, callback));
+    client.confirm_user(token, token_id, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
@@ -113,7 +113,7 @@ void EmailPasswordAuthClass<T>::resend_confirmation_email(ContextType ctx, Objec
     auto email = Value::validated_to_string(ctx, args[0], "email");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    client.resend_confirmation_email(email, make_callback_handler<T>(ctx, this_object, callback));
+    client.resend_confirmation_email(email, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
@@ -125,7 +125,7 @@ void EmailPasswordAuthClass<T>::send_reset_password_email(ContextType ctx, Objec
     auto email = Value::validated_to_string(ctx, args[0], "email");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    client.send_reset_password_email(email, make_callback_handler<T>(ctx, this_object, callback));
+    client.send_reset_password_email(email, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
@@ -139,7 +139,7 @@ void EmailPasswordAuthClass<T>::reset_password(ContextType ctx, ObjectType this_
     auto token_id = Value::validated_to_string(ctx, args[2], "token_id");
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
 
-    client.reset_password(password, token, token_id, make_callback_handler<T>(ctx, this_object, callback));
+    client.reset_password(password, token, token_id, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
@@ -160,7 +160,7 @@ void EmailPasswordAuthClass<T>::call_reset_password_function(ContextType ctx, Ob
         call_args_bson.push_back(Value::to_bson(ctx, obj));
     }
 
-    client.call_reset_password_function(email, password, call_args_bson, make_callback_handler<T>(ctx, this_object, callback));
+    client.call_reset_password_function(email, password, call_args_bson, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 }

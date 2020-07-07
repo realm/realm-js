@@ -23,11 +23,11 @@
 #include <map>
 #include <string>
 
-#include "js_types.hpp"
-
 #include "napi.h"
 
 #define HANDLESCOPE(env) Napi::HandleScope handle_scope(env);
+
+#include "js_types.hpp"
 
 namespace realm {
 namespace node {
