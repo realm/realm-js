@@ -39,7 +39,6 @@ namespace js {
 
 template<typename T>
 class AppClass : public ClassDefinition<T, SharedApp> {
-    using AppLoginHandler = std::function<void(SharedUser user, util::Optional<realm::app::AppError> error)>;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -193,32 +192,12 @@ void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args
 
     app::AppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(ctx, credentials_object);
 
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback_function);
-    Protected<ObjectType> protected_this(ctx, this_object);
+    app->log_in_with_credentials(app_credentials, Function::wrap_callback_result_first(ctx, this_object, callback_function,
+        [app] (ContextType ctx, SharedUser user) {
+            REALM_ASSERT_RELEASE(user);
+            return UserClass<T>::create_instance(ctx, std::move(user), std::move(app));
+        }));
 
-    auto callback_handler([=](SharedUser user, util::Optional<realm::app::AppError> error) {
-        HANDLESCOPE(protected_ctx)
-
-        if (error) {
-            ObjectType object = Object::create_empty(protected_ctx);
-            Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error->message));
-            Object::set_property(protected_ctx, object, "code", Value::from_number(protected_ctx, error->error_code.value()));
-
-            ValueType callback_arguments[2];
-            callback_arguments[0] = Value::from_undefined(protected_ctx);
-            callback_arguments[1] = object;
-            Function::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-            return;
-        }
-
-        ValueType callback_arguments[2];
-        callback_arguments[0] = UserClass<T>::create_instance(protected_ctx, std::move(user), std::move(app));
-        callback_arguments[1] = Value::from_undefined(protected_ctx);
-        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
-    });
-
-    app->log_in_with_credentials(app_credentials, std::move(callback_handler));
 }
 
 template<typename T>
@@ -265,30 +244,7 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
     auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback);
-    Protected<ObjectType> protected_this(ctx, this_object);
-
-    auto callback_handler([=](util::Optional<app::AppError> error) {
-        HANDLESCOPE(protected_ctx)
-
-        ValueType result;
-        if (error) {
-            ObjectType error_object = Object::create_empty(protected_ctx);
-            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
-            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
-            result = error_object;
-        }
-        else {
-            result = Value::from_undefined(ctx);
-        }
-
-        ValueType callback_arguments[1];
-        callback_arguments[0] = result;
-        Function::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
-    });
-
-    app->remove_user(*user, callback_handler);
+    app->remove_user(*user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>

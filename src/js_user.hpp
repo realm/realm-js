@@ -216,22 +216,7 @@ void UserClass<T>::logout(ContextType ctx, ObjectType this_object, Arguments& ar
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
 
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
-
-    user->m_app->log_out(
-        *user,
-        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
-                            callback = Protected(ctx, callback),
-                            this_object = Protected(ctx, this_object)]
-                           (util::Optional<app::AppError> error) {
-            HANDLESCOPE(ctx)
-            Function::callback(ctx, callback, this_object, {
-                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
-                    {"message", Value::from_string(ctx, error->message)},
-                    {"code", Value::from_number(ctx, error->error_code.value())},
-                }),
-            });
-        })
-    );
+    user->m_app->log_out(*user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
@@ -242,33 +227,11 @@ void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arg
     auto credentials = *get_internal<T, CredentialsClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "credentials"));
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback);
-    Protected<ObjectType> protected_this(ctx, this_object);
-
-    auto callback_handler([=](SharedUser shared_user, util::Optional<app::AppError> error) {
-        HANDLESCOPE(protected_ctx)
-
-        if (error) {
-            ObjectType error_object = Object::create_empty(protected_ctx);
-            Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error->message));
-            Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error->error_code.value()));
-
-            ValueType callback_arguments[2];
-            callback_arguments[0] = Value::from_undefined(protected_ctx);
-            callback_arguments[1] = error_object;
-            Function::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-            return;
-        }
-
-        ValueType callback_arguments[2];
-        callback_arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new User<T>(std::move(shared_user),
-                                                                                          user->m_app));
-        callback_arguments[1] = Value::from_undefined(protected_ctx);
-        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
-    });
-
-    user->m_app->link_user(*user, credentials, callback_handler);
+    user->m_app->link_user(*user, credentials, Function::wrap_callback_result_first(ctx, this_object, callback,
+        [user] (ContextType ctx, SharedUser shared_user) {
+            REALM_ASSERT_RELEASE(shared_user);
+            return create_object<T, UserClass<T>>(ctx, new User<T>(std::move(shared_user), user->m_app));
+        }));
 }
 
 template<typename T>
@@ -290,20 +253,11 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
         name,
         call_args_bson.operator const bson::BsonArray&(),
         service,
-        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
-                             callback = Protected(ctx, callback),
-                             this_object = Protected(ctx, this_object)]
-                            (util::Optional<app::AppError> error, util::Optional<bson::Bson> result) {
-            HANDLESCOPE(ctx);
-            // Note: reversing argument order.
-            Function::callback(ctx, callback, this_object, {
-                !result ? Value::from_undefined(ctx) : Value::from_bson(ctx, *result),
-                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
-                    {"message", Value::from_string(ctx, error->message)},
-                    {"code", Value::from_number(ctx, error->error_code.value())},
-                }),
-            });
-        }));
+        Function::wrap_callback_error_first(ctx, this_object, callback,
+            [] (ContextType ctx, const util::Optional<bson::Bson>& result) {
+                REALM_ASSERT_RELEASE(result);
+                return Value::from_bson(ctx, *result);
+            }));
 }
 
 template<typename T>
@@ -320,18 +274,7 @@ void UserClass<T>::refresh_custom_data(ContextType ctx, ObjectType this_object, 
 
     user->m_app->refresh_custom_data(
         *user,
-        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
-                            callback = Protected(ctx, callback),
-                            this_object = Protected(ctx, this_object)]
-                           (util::Optional<app::AppError> error) {
-            HANDLESCOPE(ctx)
-            Function::callback(ctx, callback, this_object, {
-                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
-                    {"message", Value::from_string(ctx, error->message)},
-                    {"code", Value::from_number(ctx, error->error_code.value())},
-                }),
-            });
-        }));
+        Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
@@ -345,18 +288,7 @@ void UserClass<T>::push_register(ContextType ctx, ObjectType this_object, Argume
     user->m_app->push_notification_client(service).register_device(
         token,
         *user,
-        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
-                            callback = Protected(ctx, callback),
-                            this_object = Protected(ctx, this_object)]
-                           (util::Optional<app::AppError> error) {
-            HANDLESCOPE(ctx);
-            Function::callback(ctx, callback, this_object, {
-                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
-                    {"message", Value::from_string(ctx, error->message)},
-                    {"code", Value::from_number(ctx, error->error_code.value())},
-                }),
-            });
-        }));
+        Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
@@ -368,18 +300,7 @@ void UserClass<T>::push_deregister(ContextType ctx, ObjectType this_object, Argu
 
     user->m_app->push_notification_client(service).deregister_device(
         *user,
-        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
-                            callback = Protected(ctx, callback),
-                            this_object = Protected(ctx, this_object)]
-                           (util::Optional<app::AppError> error) {
-            HANDLESCOPE(ctx);
-            Function::callback(ctx, callback, this_object, {
-                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
-                    {"message", Value::from_string(ctx, error->message)},
-                    {"code", Value::from_number(ctx, error->error_code.value())},
-                }),
-            });
-        }));
+        Function::wrap_void_callback(ctx, this_object, callback));
 }
 }
 }

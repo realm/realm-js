@@ -53,38 +53,5 @@ inline realm::SyncManager& syncManagerShared(typename T::Context &ctx) {
     return SyncManager::shared();
 }
 
-template<typename T>
-std::function<void(util::Optional<realm::app::AppError>)> make_callback_handler(typename T::Context ctx, typename T::Object this_object, typename T::Function callback) {
-    using FunctionType = typename T::Function;
-    using ObjectType = typename T::Object;
-    using ValueType = typename T::Value;
-
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback);
-    Protected<ObjectType> protected_this(ctx, this_object);
-
-    auto callback_handler([=](util::Optional<realm::app::AppError> error) {
-        HANDLESCOPE(ctx)
-
-        if (error) {
-            ObjectType error_object = Object<T>::create_empty(protected_ctx);
-            Object<T>::set_property(protected_ctx, error_object, "message", Value<T>::from_string(protected_ctx, error->message));
-            Object<T>::set_property(protected_ctx, error_object, "code", Value<T>::from_number(protected_ctx, error->error_code.value()));
-
-            ValueType callback_arguments[1];
-            callback_arguments[0] = error_object;
-            Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
-            return;
-        }
-
-        ValueType callback_arguments[1];
-        callback_arguments[0] = Value<T>::from_undefined(protected_ctx);
-        Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
-    });
-
-    return callback_handler;
-}
-
-
 }
 }

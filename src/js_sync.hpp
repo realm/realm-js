@@ -534,23 +534,19 @@ template<typename T>
 void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments &args) {
     args.validate_count(1);
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
-        auto callback_function = Value::validated_to_function(ctx, args[0]);
-        Protected<FunctionType> protected_callback(ctx, callback_function);
-        Protected<ObjectType> protected_this(ctx, this_object);
-        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+        auto callback = Value::validated_to_function(ctx, args[0]);
 
-        util::EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler([=](std::error_code error) {
-            HANDLESCOPE(protected_ctx)
-            ValueType callback_arguments[1];
-            if (error) {
-                ObjectType error_object = Object::create_empty(protected_ctx);
-                Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error.message()));
-                Object::set_property(protected_ctx, error_object, "errorCode", Value::from_number(protected_ctx, error.value()));
-                callback_arguments[0] = error_object;
-            } else {
-                callback_arguments[0] = Value::from_undefined(protected_ctx);
-            }
-            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
+        util::EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler([
+            ctx=Protected(Context<T>::get_global_context(ctx)),
+            callback=Protected(ctx, callback)
+        ](std::error_code error) {
+            HANDLESCOPE(ctx);
+            Function<T>::callback(ctx, callback, typename T::Object(), {
+                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
+                    {"message", Value::from_string(ctx, error.message())},
+                    {"errorCode", Value::from_number(ctx, error.value())},
+                })
+            });
         });
 
         switch(direction) {
@@ -563,7 +559,7 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
         }
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
-        Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
+        Object::set_property(ctx, callback, "_syncSession", syncSession, attributes);
     }
 }
 
