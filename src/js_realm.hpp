@@ -554,7 +554,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
 
                 // embedded object schemas need to expanded into regular object schemas
-                ObjectType expanded_schema_object = Value::validated_to_array(ctx, Object::call_method(ctx, realm_constructor, "_expandEmbeddedObjectSchemas", 1, &schema_value));
+                ObjectType expanded_schema_object = Value::validated_to_array(ctx, Object::call_method(ctx, realm_constructor, "_expandEmbeddedObjectSchemas", 1, &schema_value), "schema");
 
                 config.schema.emplace(Schema<T>::parse_schema(ctx, expanded_schema_object, defaults, constructors));
                 schema_updated = true;
