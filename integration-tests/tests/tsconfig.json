@@ -3,6 +3,7 @@
 		"target": "es2018",
 		"module": "commonjs",
 		"moduleResolution": "node",
+		"resolveJsonModule": true,
 		"outDir": "dist",
 		"types": [
 			"node",

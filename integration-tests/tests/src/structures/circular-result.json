@@ -1,0 +1,116 @@
+[
+  {
+    "$realmId": "{0000-0000}",
+    "age": 42,
+    "name": "John Doe",
+    "friends": [
+      {
+        "$realmId": "{0000-0001}",
+        "age": 40,
+        "name": "Jane Doe",
+        "friends": [
+          {
+            "$realmId": "{0000-0002}",
+            "age": 35,
+            "name": "Tony Doe",
+            "friends": [
+              {
+                "$ref": "{0000-0001}"
+              }
+            ]
+          },
+          {
+            "$ref": "{0000-0000}"
+          }
+        ]
+      },
+      {
+        "$realmId": "{0000-0002}",
+        "age": 35,
+        "name": "Tony Doe",
+        "friends": [
+          {
+            "$realmId": "{0000-0001}",
+            "age": 40,
+            "name": "Jane Doe",
+            "friends": [
+              {
+                "$ref": "{0000-0002}"
+              },
+              {
+                "$ref": "{0000-0000}"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "$realmId": "{0000-0001}",
+    "age": 40,
+    "name": "Jane Doe",
+    "friends": [
+      {
+        "$realmId": "{0000-0002}",
+        "age": 35,
+        "name": "Tony Doe",
+        "friends": [
+          {
+            "$ref": "{0000-0001}"
+          }
+        ]
+      },
+      {
+        "$realmId": "{0000-0000}",
+        "age": 42,
+        "name": "John Doe",
+        "friends": [
+          {
+            "$ref": "{0000-0001}"
+          },
+          {
+            "$realmId": "{0000-0002}",
+            "age": 35,
+            "name": "Tony Doe",
+            "friends": [
+              {
+                "$ref": "{0000-0001}"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "$realmId": "{0000-0002}",
+    "age": 35,
+    "name": "Tony Doe",
+    "friends": [
+      {
+        "$realmId": "{0000-0001}",
+        "age": 40,
+        "name": "Jane Doe",
+        "friends": [
+          {
+            "$ref": "{0000-0002}"
+          },
+          {
+            "$realmId": "{0000-0000}",
+            "age": 42,
+            "name": "John Doe",
+            "friends": [
+              {
+                "$ref": "{0000-0001}"
+              },
+              {
+                "$ref": "{0000-0002}"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
