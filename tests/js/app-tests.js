@@ -174,11 +174,18 @@ module.exports = {
         Realm.deleteFile(realmConfig);
         let realm = await Realm.open(realmConfig);
         realm.write(() => {
-            realm.create("Dog", { "_id": new ObjectId("0000002a9a7969d24bea4cf5"), name: "King" });
-            realm.create("Dog", { "_id": new ObjectId("0000002a9a7969d24bea4cf4"), name: "King" });
+            realm.create("Dog", { "_id": new ObjectId(), name: "King" });
+            realm.create("Dog", { "_id": new ObjectId(), name: "King" });
         });
 
         await realm.syncSession.uploadAllLocalChanges();
+
+        // This shouldn't be necessary, but it works around a race in both objstore and sync-client that cause
+        // completion notifications to trigger too early, since fulfillment of an earlier notification request
+        // also causes notification of later requests, even if they haven't been completed yet.
+        // TODO remove this once the bug is fixed.
+        await realm.syncSession.uploadAllLocalChanges();
+
         TestCase.assertEqual(realm.objects("Dog").length, 2);
         realm.close();
 
