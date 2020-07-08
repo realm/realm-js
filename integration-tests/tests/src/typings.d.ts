@@ -32,3 +32,11 @@ declare namespace Mocha {
         skipIf: (env: Environment | string[] | string, title: string, callback: Mocha.AsyncFunc | Mocha.Func) => void;
     }
 }
+
+
+interface Console {
+    error(message?: any, ...optionalParams: any[]): void;
+    log(message?: any, ...optionalParams: any[]): void;
+}
+
+declare var console: Console;
