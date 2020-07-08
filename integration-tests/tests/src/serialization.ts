@@ -117,8 +117,8 @@ describe("JSON serialization", () => {
                 });
             
                 it("throws correct error on serialization", () => {
-                    expect(() => JSON.stringify(john)).throws(TypeError)
-                        .property("message", "Converting circular structure to JSON");
+                    expect(() => JSON.stringify(john))
+                        .throws(TypeError, /^Converting circular structure to JSON/);
                 });
         
                 it("serializes to expected output using Realm.JsonSerializationReplacer", () => {
@@ -147,8 +147,8 @@ describe("JSON serialization", () => {
                 });
         
                 it("throws correct error on serialization", () => {
-                    expect(() => JSON.stringify(persons)).throws(TypeError)
-                        .property("message", "Converting circular structure to JSON");
+                    expect(() => JSON.stringify(persons))
+                        .throws(TypeError, /^Converting circular structure to JSON/);
                 });
         
                 it("serializes to expected output using Realm.JsonSerializationReplacer", () => {
