@@ -18,6 +18,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+"use strict";
+
 // This script runs a command in every environment
 
 const concurrently = require("concurrently");
