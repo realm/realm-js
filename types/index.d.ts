@@ -450,14 +450,28 @@ interface ProgressPromise extends Promise<Realm> {
     cancel(): void;
     progress(callback: Realm.ProgressNotificationCallback): Promise<Realm>;
 }
-
-type ExtractPropertyNamesOfType<T, S> = {
-    [K in keyof T]: T[K] extends S ? K : never
+/**
+ * Extracts an intersection of keys from T, where the value extends the given PropType.
+ */
+type ExtractPropertyNamesOfType<T, PropType> = {
+    [K in keyof T]: T[K] extends PropType ? K : never
 }[keyof T];
 
-type RealmPartialModel<T> =
+/**
+ * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
+ */
+type RealmOptionalParMappedModel<T> = {
+    [K in keyof T]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
+}
+
+/**
+ * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
+ * with only the keys which value extends Realm.List, remapped as Arrays.
+ */
+//
+type RealmInsertionModel<T> =
     Omit<Omit<T, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
-    & Partial<Pick<T, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>>
+    & RealmOptionalParMappedModel<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
 
 declare class Realm {
     static defaultPath: string;
@@ -537,7 +551,7 @@ declare class Realm {
      *
      * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
      */
-    create<T>(type: string, properties: RealmPartialModel<T>, update?: boolean): T & Realm.Object
+    create<T>(type: string, properties: RealmInsertionModel<T>, update?: boolean): T & Realm.Object
 
     /**
      * @param  {Class} type
@@ -547,7 +561,7 @@ declare class Realm {
      *
      * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
      */
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmPartialModel<T>, update?: boolean): T
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, update?: boolean): T
 
     /**
      * @param  {string} type
@@ -555,7 +569,7 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T & Realm.Object
      */
-    create<T>(type: string, properties: RealmPartialModel<T>, mode?: Realm.UpdateMode): T & Realm.Object
+    create<T>(type: string, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode): T & Realm.Object
 
     /**
      * @param  {Class} type
@@ -563,7 +577,7 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T
      */
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmPartialModel<T>, mode?: Realm.UpdateMode): T
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode): T
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
