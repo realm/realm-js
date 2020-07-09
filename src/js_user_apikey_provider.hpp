@@ -65,18 +65,18 @@ public:
 
     static void create_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void fetch_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void fetch_api_keys(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void fetch_all_api_keys(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void delete_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void enable_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void disable_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
-        {"_createAPIKey", wrap<create_api_key>},
-        {"_fetchAPIKey", wrap<fetch_api_key>},
-        {"_fetchAPIKeys", wrap<fetch_api_keys>},
-        {"_deleteAPIKey", wrap<delete_api_key>},
-        {"_enableAPIKey", wrap<enable_api_key>},
-        {"_disableAPIKey", wrap<disable_api_key>},
+        {"_create", wrap<create_api_key>},
+        {"_fetch", wrap<fetch_api_key>},
+        {"_fetchAll", wrap<fetch_all_api_keys>},
+        {"_delete", wrap<delete_api_key>},
+        {"_enable", wrap<enable_api_key>},
+        {"_disable", wrap<disable_api_key>},
     };
 };
 
@@ -181,7 +181,7 @@ void ApiKeyAuthClass<T>::fetch_api_key(ContextType ctx, ObjectType this_object, 
 }
 
 template<typename T>
-void ApiKeyAuthClass<T>::fetch_api_keys(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void ApiKeyAuthClass<T>::fetch_all_api_keys(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(1);
 
     auto& client = *get_internal<T, ApiKeyAuthClass<T>>(ctx, this_object);
