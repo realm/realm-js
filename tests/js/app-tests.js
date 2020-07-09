@@ -180,7 +180,6 @@ module.exports = {
         });
 
         await realm.syncSession.uploadAllLocalChanges();
-
         TestCase.assertEqual(realm.objects("Dog").length, 2);
         realm.close();
 
