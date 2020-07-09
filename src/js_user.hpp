@@ -22,7 +22,7 @@
 #include "js_collection.hpp"
 #include "js_sync_util.hpp"
 #include "js_app_credentials.hpp"
-#include "js_user_apikey_provider.hpp"
+#include "js_api_key_auth.hpp"
 
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
