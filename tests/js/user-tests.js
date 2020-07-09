@@ -192,13 +192,13 @@ module.exports = {
     }
   },
 
-  async testUserAPIKeyProvider() {
+  async testApiKeyAuth() {
     let app = new Realm.App(appConfig);
 
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
     let provider = user.auth.apiKeys;
-    TestCase.assertTrue(provider instanceof Realm.Auth.UserAPIKeyProvider);
+    TestCase.assertTrue(provider instanceof Realm.Auth.ApiKeyAuth);
     await user.logOut();
   },
 
