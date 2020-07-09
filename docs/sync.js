@@ -147,6 +147,14 @@
     get auth() { }
  }
 
+
+/**
+ *
+ * Class for interacting with Realm Sync.
+ *
+ * @memberof Realm
+ */
+
 class Sync {
 
     /**

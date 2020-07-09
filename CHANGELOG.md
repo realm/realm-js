@@ -1,13 +1,11 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
-NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
-
-NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
-
+=======
 ### Enhancements
 * None.
 
 ### Fixed
+* Failed to parse arguments correctly, causing the error `callback must be of type 'function', got (undefined)` when calling `Realm.App.emailPassword.sendResetPasswordEmail()` and `Realm.App.emailPassword.resendConfirmationEmail()`. ([#3037](https://github.com/realm/realm-js/issues/3037), since v10.0.0-beta.1)
 * Fixed `user.logOut()` to also log out at MongoDB Realm Cloud. The method now returns `Promise<void>` instead. ([#2980](https://github.com/realm/realm-js/issues/2980), since v10.0.0-beta.1)
 
 ### Compatibility
@@ -17,6 +15,33 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 
 ### Internal
 * None.
+
+10.0.0-beta.8 Release notes (2020-7-07)
+=============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
+
+### Enhancements
+* None.
+
+### Fixed
+* `toJSON()` now declared as returning `any` for easy usage in TS.
+
+### Fixed
+* Fix `401 Unauthorized` when using anonymous login resulting in a `Fatal error in v8::HandleScope::CreateHandle()`
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+
+### Internal
+<<<<<<< HEAD
+* None.
+=======
+* None
+>>>>>>> ada6d80077c1711c230f624fa409729ba32b31c3
 
 10.0.0-beta.7 Release notes (2020-6-26)
 =============================================================

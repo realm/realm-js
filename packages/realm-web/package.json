@@ -17,7 +17,6 @@
   "files": [
     "dist",
     "types/realm",
-    "realm-network-transport-0.1.0.tgz",
     "LICENSE"
   ],
   "keywords": [
