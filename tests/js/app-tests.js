@@ -168,14 +168,15 @@ module.exports = {
               }],
             sync: {
                 user: user,
-                partitionValue: partition
+                partitionValue: partition,
+                _sessionStopPolicy: 'immediately', // Make it safe to delete files after realm.close()
             }
         };
         Realm.deleteFile(realmConfig);
         let realm = await Realm.open(realmConfig);
         realm.write(() => {
-            realm.create("Dog", { "_id": new ObjectId("0000002a9a7969d24bea4cf5"), name: "King" });
-            realm.create("Dog", { "_id": new ObjectId("0000002a9a7969d24bea4cf4"), name: "King" });
+            realm.create("Dog", { "_id": new ObjectId(), name: "King" });
+            realm.create("Dog", { "_id": new ObjectId(), name: "King" });
         });
 
         await realm.syncSession.uploadAllLocalChanges();
