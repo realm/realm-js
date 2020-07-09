@@ -515,6 +515,7 @@ class User {
 
     /**
      * Logs out the user.
+     * @returns {Promise<void>} - resolves when the user has been logged out
      */
     logOut() { }
 
