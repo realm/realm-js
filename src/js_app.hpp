@@ -29,7 +29,7 @@
 #include "js_user.hpp"
 #include "js_app_credentials.hpp"
 #include "js_network_transport.hpp"
-#include "js_email_password_provider.hpp"
+#include "js_email_password_auth.hpp"
 
 using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
@@ -60,23 +60,23 @@ public:
     static FunctionType create_constructor(ContextType);
 
     static void get_app_id(ContextType, ObjectType, ReturnValue &);
-    static void get_auth_email_password(ContextType, ObjectType, ReturnValue &);
+    static void get_email_password_auth(ContextType, ObjectType, ReturnValue &);
+    static void get_current_user(ContextType, ObjectType, ReturnValue &);
+    static void get_all_users(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"id", {wrap<get_app_id>, nullptr}},
-        {"_authEmailPassword", {wrap<get_auth_email_password>, nullptr}},
+        {"emailPasswordAuth", {wrap<get_email_password_auth>, nullptr}},
+        {"currentUser", {wrap<get_current_user>, nullptr}},
+        {"allUsers", {wrap<get_all_users>, nullptr}}
     };
 
     static void login(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void all_users(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void current_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_user(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
-        {"allUsers", wrap<all_users>},
-        {"currentUser", wrap<current_user>},
         {"switchUser", wrap<switch_user>},
         {"_removeUser", wrap<remove_user>},
     };
@@ -222,9 +222,7 @@ void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args
 }
 
 template<typename T>
-void AppClass<T>::all_users(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(0);
-
+void AppClass<T>::get_all_users(ContextType ctx, ObjectType this_object, ReturnValue& return_value) {
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
 
     auto users = Object::create_empty(ctx);
@@ -236,9 +234,7 @@ void AppClass<T>::all_users(ContextType ctx, ObjectType this_object, Arguments& 
 }
 
 template<typename T>
-void AppClass<T>::current_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(0);
-
+void AppClass<T>::get_current_user(ContextType ctx, ObjectType this_object, ReturnValue& return_value) {
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
     auto user = app->current_user();
     if (user) {
@@ -296,9 +292,9 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
 }
 
 template<typename T>
-void AppClass<T>::get_auth_email_password(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
+void AppClass<T>::get_email_password_auth(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
-    return_value.set(EmailPasswordProviderClientClass<T>::create_instance(ctx, app));
+    return_value.set(EmailPasswordAuthClass<T>::create_instance(ctx, app));
 }
 
 }

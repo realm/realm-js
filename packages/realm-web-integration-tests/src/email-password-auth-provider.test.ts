@@ -34,9 +34,9 @@ describe("EmailPasswordAuthProvider", () => {
         const email = `test-user-${runNumber}@testing.mongodb.com`;
         const password = "my-super-secret-password";
         // List all existing keys
-        await app.auth.emailPassword.registerUser(email, password);
+        await app.emailPasswordAuth.registerUser(email, password);
         // Authenticate
-        const newCredentials = Credentials.usernamePassword(email, password);
+        const newCredentials = Credentials.emailPassword(email, password);
         await app.logIn(newCredentials);
     });
 });

@@ -123,30 +123,30 @@ module.exports = {
     async testLogoutAndAllUsers() {
         let app = new Realm.App(config);
         let credentials = Realm.Credentials.anonymous();
-        let users = app.allUsers();
+        let users = app.allUsers;
         const nUsers = Object.keys(users).length;
 
         let user = await app.logIn(credentials);
-        users = app.allUsers();
+        users = app.allUsers;
         TestCase.assertEqual(Object.keys(users).length, nUsers + 1)
         await user.logOut();
 
-        users = app.allUsers();
+        users = app.allUsers;
         TestCase.assertEqual(Object.keys(users).length, nUsers);
     },
 
     async testCurrentUser() {
         let app = new Realm.App(config);
-        TestCase.assertNull(app.currentUser());
+        TestCase.assertNull(app.currentUser);
 
         let credentials = Realm.Credentials.anonymous();
 
         let user1 = await app.logIn(credentials);
-        let user2 = app.currentUser();
-        TestCase.assertEqual(user1.identity, user2.identity);
+        let user2 = app.currentUser;
+        TestCase.assertEqual(user1.id, user2.id);
 
         await user1.logOut();
-        TestCase.assertNull(app.currentUser());
+        TestCase.assertNull(app.currentUser);
     },
 
     async testMongoDBRealmSync() {

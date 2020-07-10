@@ -107,14 +107,14 @@
      *
      * @returns {Realm.User} The current user, `null` is no current user.
      */
-    currentUser() { }
+    get currentUser() { }
 
     /**
      * Returns a dictionary of alll users. Users' identity is used as key.
      *
      * @returns {Array}
      */
-    allUsers() { }
+    get allUsers() { }
 
     /**
      * Switches the current user.
@@ -133,18 +133,18 @@
     removeUser(user) { }
 
     /**
-     * Auth providers. Currently only `emailPassword` provider is support
+     * Client for the email/password authentication provider.
      *
      * @example
      * {
-     * let app = new Realm.App(config);
-     * let provider = app.auth.emailPassword;
+     * // Creating a new user, by registering via email & password
+     * const app = new Realm.App(config);
+     * await app.emailPasswordAuth.registerUser('john@example.com', 'some-secure-password');
      * }
      *
-     * @see Realm.Auth
-     * @see Realm.Auth.EmailPassword
+     * @type {Realm.Auth.EmailPasswordAuth}
      */
-    get auth() { }
+    get emailPasswordAuth() { }
  }
 
 
@@ -351,8 +351,8 @@ class Credentials {
 
 /**
  * A namespace for auth providers
- * @see Realm.Auth.EmailPassword
- * @see Realm.Auth.UserAPIKey
+ * @see Realm.Auth.EmailPasswordAuth
+ * @see Realm.Auth.ApiKeyAuth
  * @memberof Realm
  */
 class Auth {
@@ -363,20 +363,20 @@ class Auth {
  * Class for managing email/password for users
  * @memberof Realm.Auth
  */
-class EmailPassword {
+class EmailPasswordAuth {
 
     /**
-     * Registers a new email identity with the username/password provider,
+     * Registers a new email identity with the email/password provider,
      * and sends a confirmation email to the provided address.
      *
      * @param {string} email - The email address of the user to register.
      * @param {string} password  - The password that the user created for the new username/password identity.
      * @returns {Promise<void>}
      */
-    registerEmail(email, password) { }
+    registerUser(email, password) { }
 
     /**
-     * Confirms an email identity with the username/password provider.
+     * Confirms an email identity with the email/password provider.
      *
      * @param {string} token - The confirmation token that was emailed to the user.
      * @param {string} id - The confirmation token id that was emailed to the user.
@@ -408,6 +408,17 @@ class EmailPassword {
      * @returns {Promise<void>}
      */
     resetPassword(password, token, id) { }
+
+    /**
+     * Resets the password of an email identity using the
+     * password reset function set up in the application.
+     *
+     * @param {string} email - The email address of the user.
+     * @param {string} password - The desired new password.
+     * @param {Array<BSON>} args - A bson array of arguments.
+     * @return {Promose<void>}
+     */
+    callResetPasswordFunction(email, password, args) { }
 }
 
 /**
@@ -416,7 +427,7 @@ class EmailPassword {
  * client should only be used by an authenticated user.
  * @memberof Realm.Auth
  */
-class APIKeys {
+class ApiKeyAuth {
 
     /**
      * Creates a user API key that can be used to authenticate as the current user.
@@ -424,7 +435,7 @@ class APIKeys {
      * @param {string} name - The name of the API key to be created.
      * @returns {Promise<void>}
      */
-    createAPIKey(name) { }
+    create(name) { }
 
     /**
      * Fetches a user API key associated with the current user.
@@ -432,14 +443,14 @@ class APIKeys {
      * @param {string} id - The id of the API key to fetch.
      * @returns {Promise<Object>}
      */
-    fetchAPIKey(id) { }
+    fetch(id) { }
 
     /**
      * Fetches the user API keys associated with the current user.
      *
      * @returns {Promise<Array>}
      */
-    allAPIKeys() { }
+    fetchAll() { }
 
     /**
      * Deletes a user API key associated with the current user.
@@ -447,7 +458,7 @@ class APIKeys {
      * @param {string} id - The id of the API key to delete.
      * @returns {Promise<void>}
      */
-    deleteAPIKey(id) { }
+    delete(id) { }
 
     /**
      * Enables a user API key associated with the current user.
@@ -455,7 +466,7 @@ class APIKeys {
      * @param {string} id - The id of the API key to enable.
      * @returns {Promise<void>}
      */
-    enableAPIKey(id) { }
+    enable(id) { }
 
     /**
      * Disables a user API key associated with the current user.
@@ -463,7 +474,7 @@ class APIKeys {
      * @param {string} id - The id of the API key to disable.
      * @returns {Promise<void>}
      */
-    disableAPIKey(id) { }
+    disable(id) { }
 }
 
 
@@ -477,14 +488,21 @@ class User {
      * The identity is a guaranteed to be unique among all users on MongoDB Realm Cloud .
      * @type {string}
      */
-    get identity() { }
+    get id() { }
+
+    /**
+     * Gets this user's access token. This is the user's credential for accessing the MongoDB
+     * Realm Cloud and should be treated as sensitive data.
+     * @type {string}
+     */
+    get accessToken() { }
 
     /**
      * Gets this user's refresh token. This is the user's credential for accessing the MongoDB
      * Realm Cloud and should be treated as sensitive data.
      * @type {string}
      */
-    get token() { }
+    get refreshToken() { }
 
     /**
      * Gets this user's associated custom data. This is application-specific data provided by the server.
@@ -537,7 +555,7 @@ class User {
 
     /**
      * Returns a provider to interact with API keys.
-     * @return {Realm.Auth.APIKeys} - the provider
+     * @return {Realm.Auth.ApiKeyAuth} - the provider
      */
     apiKeys() { }
 

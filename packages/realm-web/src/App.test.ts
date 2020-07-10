@@ -163,7 +163,7 @@ describe("App", () => {
         // Expect that we logged in
         expect(app.currentUser).equals(user);
         expect(app.allUsers).deep.equals([user]);
-        await app.logOut();
+        await user.logOut();
         expect(app.currentUser).equals(null);
         expect(user.state).equals(UserState.LoggedOut);
         expect(user.state).equals("logged-out");
@@ -228,6 +228,59 @@ describe("App", () => {
                     Authorization: "Bearer very-refreshing",
                     ...DEFAULT_HEADERS,
                 },
+            },
+        ]);
+    });
+
+    it("throws if asked to switch to or remove an unknown user", async () => {
+        const transport = new MockNetworkTransport([
+            {
+                user_id: "totally-valid-user-id",
+                access_token: "deadbeef",
+                refresh_token: "very-refreshing",
+            },
+        ]);
+        const app = new App({
+            id: "default-app-id",
+            transport,
+            baseUrl: "http://localhost:1337",
+        });
+        const credentials = Credentials.anonymous();
+        const user = await app.logIn(credentials, false);
+        // Expect that we logged in
+        expect(app.currentUser).equals(user);
+        expect(app.allUsers).deep.equals([user]);
+        const anotherUser = {} as User;
+        // Switch
+        try {
+            await app.switchUser(anotherUser);
+            throw new Error("Expected an exception");
+        } catch (err) {
+            expect(err.message).equals(
+                "The user was never logged into this app",
+            );
+        }
+        // Remove
+        try {
+            await app.removeUser(anotherUser);
+            throw new Error("Expected an exception");
+        } catch (err) {
+            expect(err.message).equals(
+                "The user was never logged into this app",
+            );
+        }
+        // Expect the first user to remain logged in and known to the app
+        expect(app.currentUser).equals(user);
+        expect(app.allUsers).deep.equals([user]);
+        expect(user.state).equals("active");
+        // Assume the correct requests made it to the transport
+        expect(transport.requests).deep.equals([
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
+                body: {},
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });

@@ -19,8 +19,7 @@
 import { Transport } from "../transports";
 
 /** @inheritdoc */
-export class EmailPasswordAuthProvider
-    implements Realm.AuthProviders.EmailPasswordAuthProvider {
+export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
     /**
      * The underlying transport.
      */
@@ -55,7 +54,7 @@ export class EmailPasswordAuthProvider
     }
 
     /** @inheritdoc */
-    resendConfirmation(email: string): Promise<void> {
+    resendConfirmationEmail(email: string): Promise<void> {
         return this.transport.fetch({
             method: "POST",
             path: "/confirm/send",

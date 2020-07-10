@@ -22,7 +22,7 @@
 #include "js_collection.hpp"
 #include "js_sync_util.hpp"
 #include "js_app_credentials.hpp"
-#include "js_user_apikey_provider.hpp"
+#include "js_api_key_auth.hpp"
 
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
@@ -70,22 +70,24 @@ public:
     static FunctionType create_constructor(ContextType);
     static ObjectType create_instance(ContextType, SharedUser, SharedApp);
 
-    static void get_identity(ContextType, ObjectType, ReturnValue &);
-    static void get_token(ContextType, ObjectType, ReturnValue &);
+    static void get_id(ContextType, ObjectType, ReturnValue &);
+    static void get_access_token(ContextType, ObjectType, ReturnValue &);
+    static void get_refresh_token(ContextType, ObjectType, ReturnValue &);
     static void get_profile(ContextType, ObjectType, ReturnValue &);
     static void is_logged_in(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
     static void get_custom_data(ContextType, ObjectType, ReturnValue &);
-    static void get_auth_api_keys(ContextType, ObjectType, ReturnValue &);
+    static void get_api_keys(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
-        {"identity", {wrap<get_identity>, nullptr}},
-        {"token", {wrap<get_token>, nullptr}},
+        {"id", {wrap<get_id>, nullptr}},
+        {"accessToken", {wrap<get_access_token>, nullptr}},
+        {"refreshToken", {wrap<get_refresh_token>, nullptr}},
         {"profile", {wrap<get_profile>, nullptr}},
         {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
         {"state", {wrap<get_state>, nullptr}},
         {"customData", {wrap<get_custom_data>, nullptr}},
-        {"_authApiKeys", {wrap<get_auth_api_keys>, nullptr}},
+        {"apiKeys", {wrap<get_api_keys>, nullptr}},
     };
 
     MethodMap<T> const static_methods = {
@@ -123,16 +125,23 @@ typename T::Object UserClass<T>::create_instance(ContextType ctx, SharedUser use
 }
 
 template<typename T>
-void UserClass<T>::get_identity(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::string identity = get_internal<T, UserClass<T>>(ctx, object)->get()->identity();
-    return_value.set(identity);
+void UserClass<T>::get_id(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    std::string id = get_internal<T, UserClass<T>>(ctx, object)->get()->identity();
+    return_value.set(id);
 }
 
 template<typename T>
-void UserClass<T>::get_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+void UserClass<T>::get_access_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    std::string token = get_internal<T, UserClass<T>>(ctx, object)->get()->access_token();
+    return_value.set(token);
+}
+
+template<typename T>
+void UserClass<T>::get_refresh_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string token = get_internal<T, UserClass<T>>(ctx, object)->get()->refresh_token();
     return_value.set(token);
 }
+
 
 template<typename T>
 void UserClass<T>::is_logged_in(ContextType ctx, ObjectType object, ReturnValue &return_value) {
@@ -298,9 +307,9 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
 }
 
 template<typename T>
-void UserClass<T>::get_auth_api_keys(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
+void UserClass<T>::get_api_keys(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
-    return_value.set(UserAPIKeyProviderClientClass<T>::create_instance(ctx, user->m_app, *user));
+    return_value.set(ApiKeyAuthClass<T>::create_instance(ctx, user->m_app, *user));
 }
 
 template<typename T>
