@@ -5,6 +5,10 @@ NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has bee
 NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
 
 ### Breaking changes
+* `Realm.Auth.EmailPassword.registerEmail()` has been renamed to `Realm.Auth.EmailPassword.registerUser()`.
+* `Realm.User.identity` has been renamed to `Realm.User.id`.
+* `Realm.User.token` has been renamed to `Realm.User.accessToken`.
+* Change instance methods `Realm.App.currentUser()` and `Realm.App.allUsers()` to instance properties `Realm.App.currentUser` and `Realm.App.allUsers`.
 * `Realm.Auth.UserAPIKeyProvider` has been replaced by `Realm.Auth.ApiKeyProvider`.
 * `user.auth.apiKeys` has been replaced by `user.apiKeys`.
 *  The instance methods on the ApiKeyAuth instance (`user.apiKeys`) have gotten their APIKey(s) suffix removed: Ex. `apiKeys.createAPIKey` has been replaced by `apiKeys.create`.
@@ -12,7 +16,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * `app.auth.emailPassword` has been replaced by `user.emailPasswordAuth`.
 
 ### Enhancements
-* None.
+* Added RemoteMongoClient functionality to `Realm.User`
 
 ### Fixed
 * Failed to parse arguments correctly, causing the error `callback must be of type 'function', got (undefined)` when calling `Realm.App.emailPassword.sendResetPasswordEmail()` and `Realm.App.emailPassword.resendConfirmationEmail()`. ([#3037](https://github.com/realm/realm-js/issues/3037), since v10.0.0-beta.1)

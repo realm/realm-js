@@ -754,7 +754,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     else if (jsc::Object::is_instance<js::UserClass<jsc::Types>>(m_context, js_object)) {
         auto user = jsc::Object::get_internal<js::UserClass<jsc::Types>>(m_context, js_object);
         json user_dict {
-            {"identity", user->get()->identity()},
+            {"id", user->get()->identity()},
         };
         return {
             {"type", RealmObjectTypesUser},

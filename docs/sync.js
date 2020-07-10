@@ -107,14 +107,14 @@
      *
      * @returns {Realm.User} The current user, `null` is no current user.
      */
-    currentUser() { }
+    get currentUser() { }
 
     /**
      * Returns a dictionary of alll users. Users' identity is used as key.
      *
      * @returns {Array}
      */
-    allUsers() { }
+    get allUsers() { }
 
     /**
      * Switches the current user.
@@ -139,7 +139,7 @@
      * {
      * // Creating a new user, by registering via email & password
      * const app = new Realm.App(config);
-     * await app.emailPasswordAuth.registerEmail('john@example.com', 'some-secure-password');
+     * await app.emailPasswordAuth.registerUser('john@example.com', 'some-secure-password');
      * }
      *
      * @type {Realm.Auth.EmailPasswordAuth}
@@ -366,17 +366,17 @@ class Auth {
 class EmailPasswordAuth {
 
     /**
-     * Registers a new email identity with the username/password provider,
+     * Registers a new email identity with the email/password provider,
      * and sends a confirmation email to the provided address.
      *
      * @param {string} email - The email address of the user to register.
      * @param {string} password  - The password that the user created for the new username/password identity.
      * @returns {Promise<void>}
      */
-    registerEmail(email, password) { }
+    registerUser(email, password) { }
 
     /**
-     * Confirms an email identity with the username/password provider.
+     * Confirms an email identity with the email/password provider.
      *
      * @param {string} token - The confirmation token that was emailed to the user.
      * @param {string} id - The confirmation token id that was emailed to the user.
@@ -408,6 +408,17 @@ class EmailPasswordAuth {
      * @returns {Promise<void>}
      */
     resetPassword(password, token, id) { }
+
+    /**
+     * Resets the password of an email identity using the
+     * password reset function set up in the application.
+     *
+     * @param {string} email - The email address of the user.
+     * @param {string} password - The desired new password.
+     * @param {Array<BSON>} args - A bson array of arguments.
+     * @return {Promose<void>}
+     */
+    callResetPasswordFunction(email, password, args) { }
 }
 
 /**
@@ -477,14 +488,21 @@ class User {
      * The identity is a guaranteed to be unique among all users on MongoDB Realm Cloud .
      * @type {string}
      */
-    get identity() { }
+    get id() { }
+
+    /**
+     * Gets this user's access token. This is the user's credential for accessing the MongoDB
+     * Realm Cloud and should be treated as sensitive data.
+     * @type {string}
+     */
+    get accessToken() { }
 
     /**
      * Gets this user's refresh token. This is the user's credential for accessing the MongoDB
      * Realm Cloud and should be treated as sensitive data.
      * @type {string}
      */
-    get token() { }
+    get refreshToken() { }
 
     /**
      * Gets this user's associated custom data. This is application-specific data provided by the server.

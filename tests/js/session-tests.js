@@ -168,9 +168,9 @@ module.exports = {
 
                 const session = realm.syncSession;
                 TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                TestCase.assertEqual(session.user.identity, user.identity);
+                TestCase.assertEqual(session.user.id, user.id);
                 TestCase.assertEqual(session.config.url, config.sync.url);
-                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                TestCase.assertEqual(session.config.user.id, config.sync.user.id);
                 TestCase.assertEqual(session.state, 'active');
                 return user.logOut();
             });
@@ -208,9 +208,9 @@ module.exports = {
 
                 const session = realm.syncSession;
                 TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                TestCase.assertEqual(session.user.identity, user.identity);
+                TestCase.assertEqual(session.user.id, user.id);
                 TestCase.assertEqual(session.config.url, config.sync.url);
-                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                TestCase.assertEqual(session.config.user.id, config.sync.user.id);
                 TestCase.assertEqual(session.state, 'active');
                 realm.close()
             });
@@ -482,11 +482,11 @@ module.exports = {
         realm1.close();
 
         // delete Realm on server
-        let encodedPath = encodeURIComponent(`${user.identity}/myrealm`);
+        let encodedPath = encodeURIComponent(`${user.id}/myrealm`);
         let url = new URL(`/realms/files/${encodedPath}`, user.server);
         let options = {
             headers: {
-                Authorization: `${user.token}`,
+                Authorization: `${user.accessToken}`,
                 'Content-Type': 'application/json',
             },
             method: 'DELETE',
