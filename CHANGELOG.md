@@ -15,6 +15,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 ### Fixed
 * Failed to parse arguments correctly, causing the error `callback must be of type 'function', got (undefined)` when calling `Realm.App.emailPassword.sendResetPasswordEmail()` and `Realm.App.emailPassword.resendConfirmationEmail()`. ([#3037](https://github.com/realm/realm-js/issues/3037), since v10.0.0-beta.1)
 * Fixed `user.logOut()` to also log out at MongoDB Realm Cloud. The method now returns `Promise<void>` instead. ([#2980](https://github.com/realm/realm-js/issues/2980), since v10.0.0-beta.1)
+* Fixed `TypeError: process.versions is not an Object` error being thrown when requiring the package from React Native. ([#3045](https://github.com/realm/realm-js/issues/3045), since v10.0.0-beta.8)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -45,11 +46,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-<<<<<<< HEAD
 * None.
-=======
-* None
->>>>>>> ada6d80077c1711c230f624fa409729ba32b31c3
 
 10.0.0-beta.7 Release notes (2020-6-26)
 =============================================================

@@ -95,7 +95,7 @@
     "node-pre-gyp": "^0.15.0",
     "progress": "^2.0.3",
     "prop-types": "^15.6.2",
-    "realm-network-transport": "^0.4.0",
+    "realm-network-transport": "^0.6.0",
     "request": "^2.88.0",
     "stream-counter": "^1.0.0",
     "sync-request": "^3.0.1",
