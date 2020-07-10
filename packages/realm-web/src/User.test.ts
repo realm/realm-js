@@ -20,6 +20,7 @@ import { expect } from "chai";
 
 import { MockApp } from "./test/MockApp";
 import { UserType, User, UserState } from "./User";
+import { MemoryStorage } from "./storage";
 
 // Since responses from the server uses underscores in field names:
 /* eslint @typescript-eslint/camelcase: "warn" */
@@ -88,5 +89,44 @@ describe("User", () => {
             type: UserType.Normal,
             firstName: "John",
         });
+    });
+
+    it("sets tokens and profile on storage when constructed, removes them on log out", async () => {
+        const user = new User({
+            app: new MockApp("my-mocked-app", [
+                {
+                    data: {
+                        first_name: "John",
+                    },
+                    identities: [],
+                    type: "normal",
+                },
+                {},
+            ]),
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+        });
+        // Fetch the profile
+        await user.refreshProfile();
+
+        const userStorage = user.app.storage.prefix("user(some-user-id)");
+        expect(userStorage.get("accessToken")).equals("deadbeef");
+        expect(userStorage.get("refreshToken")).equals("very-refreshing");
+        const profileBefore = JSON.parse(userStorage.get("profile") || "");
+
+        expect(profileBefore).deep.equals({
+            firstName: "John",
+            identities: [],
+            type: "normal",
+        });
+
+        await user.logOut();
+        expect(userStorage.get("accessToken")).equals(null);
+        expect(userStorage.get("refreshToken")).equals(null);
+        // Logging out shouldn't delete information about the profile
+        expect(user.profile).deep.equals(profileBefore);
+        const profileAfter = JSON.parse(userStorage.get("profile") || "");
+        expect(profileAfter).deep.equals(profileBefore);
     });
 });

@@ -16,23 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { App } from "realm-web";
+/**
+ * Implementors of this provide a simple key-value store
+ */
+export interface Storage {
+    /**
+     * Get the value of a particular key in the storage.
+     */
+    get(key: string): string | null;
 
-// This global is injected by WebPack
-declare const APP_ID: string;
-declare const BASE_URL: string;
+    /**
+     * Set the value of a particular key in the storage.
+     */
+    set(key: string, value: string): void;
 
-export function createApp<
-    FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory
->() {
-    if (typeof APP_ID !== "string") {
-        throw new Error("Expected a global APP_ID");
-    }
-    if (typeof BASE_URL !== "string") {
-        throw new Error("Expected a global BASE_URL");
-    }
-    return new App<FunctionsFactoryType>({
-        id: APP_ID,
-        baseUrl: BASE_URL,
-    });
+    /**
+     * Remove the entry for a particular key from the storage.
+     */
+    remove(key: string): void;
+
+    /**
+     * Create a new store prefixed with a part of the key.
+     */
+    prefix(keyPart: string): Storage;
+
+    /**
+     * Clears all values stored in the storage.
+     *
+     * @param prefix Clear only values starting with this prefix.
+     */
+    clear(prefix?: string): void;
 }

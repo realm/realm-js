@@ -25,7 +25,6 @@ As this is a beta release, it comes with a few caveats:
 
 Some parts of the legacy Stitch SDK is still missing, most notably:
 - The ability to link a user to another identity.
-- Persistance of the users tokens in the browsers local storage (user must reauthenticate after a page reload).
 - The types for the `Realm.Credentials` namespace is not fully implemented.
 - No device information is sent to the service when authenticating a user.
 

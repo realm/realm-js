@@ -1,3 +1,15 @@
+?.?.? Release notes (2020-??-??)
+=============================================================
+
+### Enhancements
+* Users are now persisted across refreshes and browser tabs (using the browser's local-storage). ([#2990](https://github.com/realm/realm-js/pull/2990))
+
+### Fixed
+* None.
+
+### Internal
+* None
+
 0.4.0 Release notes (2020-6-11)
 =============================================================
 

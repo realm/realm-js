@@ -18,14 +18,20 @@
 
 import { expect } from "chai";
 
-import { App, Credentials } from "realm-web";
+import { App, Credentials, User, createDefaultStorage } from "realm-web";
 
 import { createApp } from "./utils";
+
+const storage = createDefaultStorage();
 
 describe("App#constructor", () => {
     it("constructs", () => {
         const app = new App("default-app-id");
         expect(app).to.be.instanceOf(App);
+    });
+
+    afterEach(() => {
+        storage.clear();
     });
 
     it("can login a user", async () => {
@@ -66,5 +72,27 @@ describe("App#constructor", () => {
         expect(app.allUsers).deep.equals([user2, user1]);
         await app.removeUser(user1);
         expect(app.allUsers).deep.equals([user2]);
+    });
+
+    it("restores a user", async () => {
+        let user: User<object>;
+        {
+            const app = createApp();
+            const credentials = Credentials.anonymous();
+            user = await app.logIn(credentials);
+            expect(typeof user.id).equals("string");
+        }
+        // Recreate the app and expect the user to be restored
+        {
+            const app = createApp();
+            expect(app.allUsers.length).equals(1);
+            expect(app.currentUser).instanceOf(User);
+            expect(app.currentUser?.id).equals(user.id);
+            expect(app.currentUser?.profile).deep.equals(user.profile);
+            expect(app.currentUser?.accessToken).equals(user.accessToken);
+            expect(app.currentUser?.refreshToken).deep.equals(
+                user.refreshToken,
+            );
+        }
     });
 });

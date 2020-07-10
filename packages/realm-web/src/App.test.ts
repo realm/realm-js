@@ -22,6 +22,7 @@ import { App } from "./App";
 import { User, UserState } from "./User";
 import { MockNetworkTransport } from "./test/MockNetworkTransport";
 import { Credentials } from "./Credentials";
+import { MemoryStorage } from "./storage";
 
 const DEFAULT_HEADERS = {
     Accept: "application/json",
@@ -79,6 +80,7 @@ describe("App", () => {
     });
 
     it("can log in a user", async () => {
+        const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
             {
                 user_id: "totally-valid-user-id",
@@ -104,6 +106,7 @@ describe("App", () => {
         ]);
         const app = new App({
             id: "default-app-id",
+            storage,
             transport,
             baseUrl: "http://localhost:1337",
         });
@@ -145,6 +148,7 @@ describe("App", () => {
     });
 
     it("can log out a user", async () => {
+        const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
             {
                 user_id: "totally-valid-user-id",
@@ -156,6 +160,7 @@ describe("App", () => {
         const app = new App({
             id: "default-app-id",
             transport,
+            storage,
             baseUrl: "http://localhost:1337",
         });
         const credentials = Credentials.anonymous();
@@ -189,6 +194,7 @@ describe("App", () => {
     });
 
     it("can remove an active user", async () => {
+        const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
             {
                 user_id: "totally-valid-user-id",
@@ -199,6 +205,7 @@ describe("App", () => {
         ]);
         const app = new App({
             id: "default-app-id",
+            storage,
             transport,
             baseUrl: "http://localhost:1337",
         });
@@ -286,6 +293,7 @@ describe("App", () => {
     });
 
     it("expose a callable functions factory", async () => {
+        const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
             {
                 user_id: "totally-valid-user-id",
@@ -296,6 +304,7 @@ describe("App", () => {
         ]);
         const app = new App({
             id: "default-app-id",
+            storage,
             transport,
             baseUrl: "http://localhost:1337",
         });
@@ -334,5 +343,164 @@ describe("App", () => {
         });
         expect(app.services).keys(["mongodb", "http"]);
         expect(typeof app.services.mongodb).equals("function");
+    });
+
+    it("hydrates users from storage", () => {
+        const storage = new MemoryStorage();
+        const transport = new MockNetworkTransport([]);
+
+        // Fill data into the storage that can be hydrated
+        const appStorage = storage.prefix("app(default-app-id)");
+        appStorage.set("userIds", JSON.stringify(["alices-id", "bobs-id"]));
+
+        const alicesStorage = appStorage.prefix("user(alices-id)");
+        alicesStorage.set("accessToken", "alices-access-token");
+        alicesStorage.set("refreshToken", "alices-refresh-token");
+        alicesStorage.set(
+            "profile",
+            JSON.stringify({
+                type: "normal",
+                identities: [],
+                firstName: "Alice",
+            }),
+        );
+
+        const bobsStorage = appStorage.prefix("user(bobs-id)");
+        bobsStorage.set("accessToken", "bobs-access-token");
+        bobsStorage.set("refreshToken", "bobs-refresh-token");
+
+        const app = new App({
+            id: "default-app-id",
+            storage,
+            transport,
+            baseUrl: "http://localhost:1337",
+        });
+
+        expect(app.allUsers.length).equals(2);
+
+        const alice = app.allUsers[0];
+        expect(alice.id).equals("alices-id");
+        expect(alice.accessToken).equals("alices-access-token");
+        expect(alice.refreshToken).equals("alices-refresh-token");
+        expect(alice.profile.firstName).equals("Alice");
+
+        const bob = app.allUsers[1];
+        expect(bob.id).equals("bobs-id");
+        expect(bob.accessToken).equals("bobs-access-token");
+        expect(bob.refreshToken).equals("bobs-refresh-token");
+    });
+
+    it("saves users to storage when logging in", async () => {
+        const storage = new MemoryStorage();
+        const transport = new MockNetworkTransport([
+            {
+                user_id: "totally-valid-user-id",
+                access_token: "deadbeef",
+                refresh_token: "very-refreshing",
+            },
+        ]);
+        const app = new App({
+            id: "default-app-id",
+            storage,
+            transport,
+            baseUrl: "http://localhost:1337",
+        });
+
+        const credentials = App.Credentials.anonymous();
+        const user = await app.logIn(credentials, false);
+
+        expect(user.id).equals("totally-valid-user-id");
+        const appStorage = storage.prefix("app(default-app-id)");
+        expect(appStorage.get("userIds")).equals(
+            JSON.stringify(["totally-valid-user-id"]),
+        );
+        const userStorage = appStorage.prefix("user(totally-valid-user-id)");
+        expect(userStorage.get("accessToken")).equals("deadbeef");
+        expect(userStorage.get("refreshToken")).equals("very-refreshing");
+    });
+
+    it("merges logins and logouts of multiple apps with the same storage", async () => {
+        const storage = new MemoryStorage();
+
+        const app1 = new App({
+            id: "default-app-id",
+            storage,
+            transport: new MockNetworkTransport([
+                {
+                    user_id: "alices-id",
+                    access_token: "alices-access-token",
+                    refresh_token: "alices-refresh-token",
+                },
+                {
+                    user_id: "bobs-id",
+                    access_token: "bobs-access-token",
+                    refresh_token: "bobs-refresh-token",
+                },
+                {
+                    data: {
+                        first_name: "Bobby",
+                    },
+                    identities: [],
+                    type: "normal",
+                },
+                {},
+            ]),
+            baseUrl: "http://localhost:1337",
+        });
+
+        const app2 = new App({
+            id: "default-app-id",
+            storage,
+            transport: new MockNetworkTransport([
+                {
+                    user_id: "charlies-id",
+                    access_token: "charlies-access-token",
+                    refresh_token: "charlies-refresh-token",
+                },
+            ]),
+            baseUrl: "http://localhost:1337",
+        });
+
+        const credentials = App.Credentials.anonymous();
+        const alice = await app1.logIn(credentials, false);
+        const charlie = await app2.logIn(credentials, false);
+        const bob = await app1.logIn(credentials, true);
+
+        const appStorage = storage.prefix("app(default-app-id)");
+        expect(appStorage.get("userIds")).equals(
+            // We expect Charlies id to be last, because the last login was in app1
+            // We expect bobs-id to be first because he was the last login
+            JSON.stringify(["bobs-id", "alices-id", "charlies-id"]),
+        );
+
+        // Logging out bob, we expect:
+        // - The tokens to be removed from storage
+        // - The profile to remain in storage
+        // - The id to remain in the list of ids
+        const bobsStorage = appStorage.prefix("user(bobs-id)");
+        expect(bobsStorage.get("accessToken")).equals("bobs-access-token");
+        expect(bobsStorage.get("refreshToken")).equals("bobs-refresh-token");
+        const bobsProfileBefore = JSON.parse(bobsStorage.get("profile") || "");
+        expect(bobsProfileBefore).deep.equals({
+            type: "normal",
+            identities: [],
+            firstName: "Bobby",
+        });
+
+        await bob.logOut();
+        expect(bobsStorage.get("accessToken")).equals(null);
+        expect(bobsStorage.get("refreshToken")).equals(null);
+        const bobsProfileAfter = JSON.parse(bobsStorage.get("profile") || "");
+        expect(bobsProfileAfter).deep.equals(bobsProfileBefore);
+        expect(appStorage.get("userIds")).equals(
+            JSON.stringify(["bobs-id", "alices-id", "charlies-id"]),
+        );
+
+        // Removing Bob from the app, removes his profile and id from the app's storage
+        await app1.removeUser(bob);
+        expect(bobsStorage.get("profile")).equals(null);
+        expect(appStorage.get("userIds")).equals(
+            JSON.stringify(["alices-id", "charlies-id"]),
+        );
     });
 });

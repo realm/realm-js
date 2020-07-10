@@ -19,6 +19,8 @@
 import type { App } from "./App";
 import { AuthenticatedTransport } from "./transports";
 import { UserProfile } from "./UserProfile";
+import { UserStorage } from "./UserStorage";
+import { Storage } from "./storage";
 
 // Disabling requiring JSDoc for now - as the User class is exported as the Realm.User interface, which is already documented.
 /* eslint-disable jsdoc/require-jsdoc */
@@ -26,8 +28,8 @@ import { UserProfile } from "./UserProfile";
 interface UserParameters {
     app: App<any>;
     id: string;
-    accessToken: string;
-    refreshToken: string;
+    accessToken: string | null;
+    refreshToken: string | null;
 }
 
 export enum UserState {
@@ -107,26 +109,54 @@ export class User<
         return user;
     }
 
+    /**
+     * Creates a user from the data stored in the storage of an `App` instance.
+     *
+     * @param app The app that the user was logged into.
+     * @param userId The id of the user to restore.
+     * @returns The user created from values retrieved from storage.
+     */
+    public static hydrate<
+        FunctionsFactoryType extends object,
+        CustomDataType extends object
+    >(app: App<FunctionsFactoryType, CustomDataType>, userId: string) {
+        const user = new User<FunctionsFactoryType, CustomDataType>({
+            app,
+            id: userId,
+            accessToken: null,
+            refreshToken: null,
+        });
+        user.hydrate();
+        return user;
+    }
+
     private _id: string;
     private _accessToken: string | null;
     private _refreshToken: string | null;
-    private _profile: Realm.UserProfile | undefined;
-    private _state: Realm.UserState;
+    private _profile: UserProfile | undefined;
     private transport: AuthenticatedTransport;
+    private storage: UserStorage;
 
     public constructor({ app, id, accessToken, refreshToken }: UserParameters) {
         this.app = app;
         this._id = id;
         this._accessToken = accessToken;
         this._refreshToken = refreshToken;
-        this._state = UserState.Active;
         this.transport = new AuthenticatedTransport(app.baseTransport, {
             currentUser: this,
         });
+        this.storage = new UserStorage(app.storage, id);
+        // Store tokens in storage for later hydration
+        if (accessToken) {
+            this.storage.accessToken = accessToken;
+        }
+        if (refreshToken) {
+            this.storage.refreshToken = refreshToken;
+        }
     }
 
     /**
-     * The automatically-generated internal ID of the user.
+     * The automatically-generated internal id of the user.
      *
      * @returns The id of the user in the MongoDB Realm database.
      */
@@ -197,6 +227,8 @@ export class User<
         });
         // Create a profile instance
         this._profile = new UserProfile(response);
+        // Store this for later hydration
+        this.storage.profile = this._profile;
     }
 
     public async logOut() {
@@ -209,12 +241,13 @@ export class User<
                     Authorization: `Bearer ${this._refreshToken}`,
                 },
             });
-            // Forget the tokens
-            this._accessToken = null;
-            this._refreshToken = null;
         }
-        // Update the state
-        this._state = UserState.LoggedOut;
+        // Forget the access token
+        this._accessToken = null;
+        this.storage.accessToken = null;
+        // Forget the refresh token
+        this._refreshToken = null;
+        this.storage.refreshToken = null;
     }
 
     /** @inheritdoc */
@@ -231,7 +264,30 @@ export class User<
         return this.functions.callFunction(name, ...args);
     }
 
+    /**
+     * Restore a user from the data stored in the storage of an `App` instance.
+     */
+    public hydrate() {
+        // Hydrate tokens
+        const accessToken = this.storage.accessToken;
+        const refreshToken = this.storage.refreshToken;
+        if (
+            typeof accessToken === "string" &&
+            typeof refreshToken === "string"
+        ) {
+            this._accessToken = accessToken;
+            this._refreshToken = refreshToken;
+        } else {
+            throw new Error(
+                `Failed hydrating user (${this.id}), missing access or refresh token`,
+            );
+        }
+        // Hydrate any profile
+        this._profile = this.storage.profile;
+    }
+
     private async refreshAccessToken() {
+        // TODO: this.storage.set(User.ACCESS_TOKEN_STORAGE_KEY, accessToken);
         throw new Error("Not yet implemented");
     }
 
