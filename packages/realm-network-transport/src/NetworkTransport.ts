@@ -21,7 +21,7 @@ import { MongoDBRealmError } from "./MongoDBRealmError";
 declare const process: any;
 declare const require: ((id: string) => any) | undefined;
 
-const isNodeProcess = typeof process === "object" && "node" in process.versions;
+const isNodeProcess = typeof process === "object";
 
 export type Method = "GET" | "POST" | "DELETE" | "PUT";
 

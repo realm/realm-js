@@ -5,7 +5,7 @@ Accessing MongoDB Realm from a web-browser.
 ## Installation
 
 ```
-npm install realm-web --save
+npm install realm-web
 ```
 
 ## Caveats / limitations
@@ -18,7 +18,7 @@ As this is a beta release, it comes with a few caveats:
   - API key.
   - Email & password.
 - A limited selection of [services](https://docs.mongodb.com/stitch/services/) are implemented at the moment:
-  - Remote MongoDB (watching a collection is not yet implemented).
+  - MongoDB (watching a collection is not yet implemented).
   - HTTP (send requests using the MongoDB service as a proxy).
 
 Some parts of the legacy Stitch SDK is still missing, most notably:

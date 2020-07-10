@@ -22,7 +22,7 @@ import { Credentials } from "realm-web";
 
 import { createApp } from "./utils";
 
-interface TestDocument extends Realm.Services.RemoteMongoDB.Document {
+interface TestDocument extends Realm.Services.MongoDB.Document {
     name: string;
     runId: number;
     hiddenField?: string;

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { Transport } from "./transports/Transport";
-import { deserialize } from "./utils/ejson";
+import { deserialize, serialize } from "./utils/ejson";
 
 /**
  * A list of names that functions cannot have to be callable through the functions proxy.
@@ -28,11 +28,11 @@ const RESERVED_NAMES = ["inspect", "callFunction"];
  * The body of the request sent to call a remote function.
  */
 interface CallFunctionBody {
-    /** Name of the function */
+    /** Name of the function. */
     name: string;
-    /** An array of arguments to pass to the function */
+    /** An array of arguments to pass to the function. */
     arguments: any[];
-    /** An optional name of the service in which the function is defined */
+    /** An optional name of the service in which the function is defined. */
     service?: string;
 }
 
@@ -40,19 +40,19 @@ interface CallFunctionBody {
  * Pass an object implementing this interface when constructing a functions factory.
  */
 export interface FunctionsFactoryConfiguration {
-    /** An optional name of the service in which functions are defined */
+    /** An optional name of the service in which functions are defined. */
     serviceName?: string;
-    /** Call this function to transform the arguments before they're sent to the service */
+    /** Call this function to transform the arguments before they're sent to the service. */
     argsTransformation?: (args: any[]) => any[];
-    /** Call this function to transform a response before it's returned to the caller */
+    /** Call this function to transform a response before it's returned to the caller. */
     responseTransformation?: (response: any) => any;
 }
 
 /**
- * Remove the key for any fields with undefined values
+ * Remove the key for any fields with undefined values.
  *
- * @param args The arguments to clean
- * @returns The cleaned arguments
+ * @param args The arguments to clean.
+ * @returns The cleaned arguments.
  */
 function cleanArgs(args: any[]) {
     for (const arg of args) {
@@ -68,9 +68,51 @@ function cleanArgs(args: any[]) {
 }
 
 /**
+ * Remove keys for any undefined values and serialize to EJSON
+ *
+ * @param args The arguments to clean and serialize.
+ * @returns The cleaned and serialized arguments.
+ */
+function cleanArgsAndSerialize(args: any[]) {
+    const cleaned = cleanArgs(args);
+    return cleaned.map(arg => (typeof arg === "object" ? serialize(arg) : arg));
+}
+
+/**
  * Defines how functions are called
  */
 export class FunctionsFactory {
+    /**
+     * Create a factory of functions, wrapped in a Proxy that returns bound copies of `callFunction` on any property.
+     *
+     * @param transport The underlying transport to use when requesting.
+     * @param config Additional configuration parameters.
+     * @returns The newly created factory of functions.
+     */
+    public static create<
+        FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory
+    >(
+        transport: Transport,
+        config: FunctionsFactoryConfiguration = {},
+    ): FunctionsFactoryType & Realm.BaseFunctionsFactory {
+        // Create a proxy, wrapping a simple object returning methods that calls functions
+        // TODO: Lazily fetch available functions and return these from the ownKeys() trap
+        const factory: Realm.BaseFunctionsFactory = new FunctionsFactory(
+            transport,
+            config,
+        );
+        // Wrap the factory in a promise that calls the internal call method
+        return new Proxy<any>(factory, {
+            get(target, p, receiver) {
+                if (typeof p === "string" && RESERVED_NAMES.indexOf(p) === -1) {
+                    return target.callFunction.bind(target, p);
+                } else {
+                    return Reflect.get(target, p, receiver);
+                }
+            },
+        });
+    }
+
     /** The underlying transport to use when requesting */
     private readonly transport: Transport;
 
@@ -93,7 +135,8 @@ export class FunctionsFactory {
     ) {
         this.transport = transport;
         this.serviceName = config.serviceName;
-        this.argsTransformation = config.argsTransformation || cleanArgs;
+        this.argsTransformation =
+            config.argsTransformation || cleanArgsAndSerialize;
         this.responseTransformation =
             config.responseTransformation || deserialize;
     }
@@ -128,32 +171,4 @@ export class FunctionsFactory {
             return response;
         }
     }
-}
-
-/**
- * Create a factory of functions, wrapped in a Proxy that returns bound copies of `callFunction` on any property.
- *
- * @param transport The underlying transport to use when requesting
- * @param config Additional configuration parameters
- * @returns The newly created factory of functions.
- */
-export function create<
-    FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory
->(transport: Transport, config: FunctionsFactoryConfiguration = {}) {
-    // Create a proxy, wrapping a simple object returning methods that calls functions
-    // TODO: Lazily fetch available functions and return these from the ownKeys() trap
-    const factory: Realm.BaseFunctionsFactory = new FunctionsFactory(
-        transport,
-        config,
-    );
-    // Wrap the factory in a promise that calls the internal call method
-    return new Proxy(factory, {
-        get(target, p, receiver) {
-            if (typeof p === "string" && RESERVED_NAMES.indexOf(p) === -1) {
-                return target.callFunction.bind(target, p);
-            } else {
-                return Reflect.get(target, p, receiver);
-            }
-        },
-    }) as FunctionsFactoryType & Realm.BaseFunctionsFactory;
 }

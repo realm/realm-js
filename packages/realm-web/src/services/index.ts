@@ -18,7 +18,7 @@
 
 import { Transport } from "../transports";
 
-import { createService as createMongoDBRemoteService } from "./RemoteMongoDBService";
+import { createService as createMongoDBRemoteService } from "./MongoDBService";
 import { createService as createHttpService } from "./HTTPService";
 
 /**

@@ -90,6 +90,20 @@ describe("User", () => {
         });
     });
 
+    it("expose a functions factory", async () => {
+        const user = new User({
+            app: new MockApp("my-mocked-app", [{ pong: "ball" }]),
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+        });
+        // Try calling a function on the user
+        const pong = await user.functions.ping();
+        expect(pong).deep.equals({
+            pong: "ball",
+        });
+    });
+
     it("sets tokens and profile on storage when constructed, removes them on log out", async () => {
         const user = new User({
             app: new MockApp("my-mocked-app", [

@@ -20,7 +20,7 @@ import type { App } from "./App";
 import { AuthenticatedTransport } from "./transports";
 import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
-import { Storage } from "./storage";
+import { FunctionsFactory } from "./FunctionsFactory";
 
 // Disabling requiring JSDoc for now - as the User class is exported as the Realm.User interface, which is already documented.
 /* eslint-disable jsdoc/require-jsdoc */
@@ -55,6 +55,9 @@ export class User<
      */
     public readonly app: App<FunctionsFactoryType, CustomDataType>;
 
+    public readonly functions: FunctionsFactoryType &
+        Realm.BaseFunctionsFactory;
+
     /**
      * Log in and create a user
      *
@@ -71,13 +74,11 @@ export class User<
         fetchProfile = true,
     ) {
         // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
-        const response = await app.appTransport.fetch(
-            {
-                method: "POST",
-                path: `/auth/providers/${credentials.providerName}/login`,
-                body: credentials.payload,
-            },
-        );
+        const response = await app.appTransport.fetch({
+            method: "POST",
+            path: `/auth/providers/${credentials.providerName}/login`,
+            body: credentials.payload,
+        });
         // Spread out values from the response and ensure they're valid
         const {
             user_id: userId,
@@ -144,6 +145,7 @@ export class User<
         this.transport = new AuthenticatedTransport(app.baseTransport, {
             currentUser: this,
         });
+        this.functions = FunctionsFactory.create(this.transport);
         this.storage = new UserStorage(app.storage, id);
         // Store tokens in storage for later hydration
         if (accessToken) {
@@ -196,10 +198,6 @@ export class User<
     }
 
     get customData(): CustomDataType {
-        throw new Error("Not yet implemented");
-    }
-
-    get functions(): FunctionsFactoryType & Realm.BaseFunctionsFactory {
         throw new Error("Not yet implemented");
     }
 
