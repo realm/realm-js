@@ -101,7 +101,7 @@ public:
 
 
     MethodMap<T> const methods = {
-        {"logOut", wrap<logout>},
+        {"_logOut", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
         {"_linkCredentials", wrap<link_credentials>},
         {"_callFunction", wrap<call_function>},
@@ -203,8 +203,26 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
 
 template<typename T>
 void UserClass<T>::logout(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
-    args.validate_count(0);
-    get_internal<T, UserClass<T>>(ctx, this_object)->get()->log_out();
+    args.validate_count(1);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
+
+    user->m_app->log_out(
+        *user,
+        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
+                            callback = Protected(ctx, callback),
+                            this_object = Protected(ctx, this_object)]
+                           (util::Optional<app::AppError> error) {
+            HANDLESCOPE(ctx)
+            Function::callback(ctx, callback, this_object, {
+                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
+                    {"message", Value::from_string(ctx, error->message)},
+                    {"code", Value::from_number(ctx, error->error_code.value())},
+                }),
+            });
+        })
+    );
 }
 
 template<typename T>

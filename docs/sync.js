@@ -147,6 +147,14 @@
     get auth() { }
  }
 
+
+/**
+ *
+ * Class for interacting with Realm Sync.
+ *
+ * @memberof Realm
+ */
+
 class Sync {
 
     /**
@@ -507,6 +515,7 @@ class User {
 
     /**
      * Logs out the user.
+     * @returns {Promise<void>} - resolves when the user has been logged out
      */
     logOut() { }
 

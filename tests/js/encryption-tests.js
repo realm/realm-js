@@ -89,7 +89,7 @@ module.exports = {
                     partitionValue: "LoLo"
                 }
             });
-            user.logOut(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work
+            return user.logOut(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work
         });
     }
 };
