@@ -15,8 +15,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 
 ### Enhancements
 * Added RemoteMongoClient functionality to `Realm.User`
-* Added `Realm.User.refreshToken`.
-* Added `Realm.Auth.EmailPassword.callResetPasswordFunction()`.
 
 ### Fixed
 * Failed to parse arguments correctly, causing the error `callback must be of type 'function', got (undefined)` when calling `Realm.App.emailPassword.sendResetPasswordEmail()` and `Realm.App.emailPassword.resendConfirmationEmail()`. ([#3037](https://github.com/realm/realm-js/issues/3037), since v10.0.0-beta.1)
@@ -63,7 +61,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 ### Enhancements
 * Added RemoteMongoClient functionality to `Realm.User`
 * Added Push functionality to `Realm.User`
->>>>>>> a65b534945791b50bdd5539a7304c74e2b220b3d
 
 ### Fixed
 * Added missing `SyncConfiguration.error` field in the typescript definitions.
