@@ -368,6 +368,7 @@ describe("App", () => {
     });
 
     it("throws if asked to switch to or remove an unknown user", async () => {
+        const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
             {
                 user_id: "totally-valid-user-id",
@@ -377,8 +378,10 @@ describe("App", () => {
         ]);
         const app = new App({
             id: "default-app-id",
+            storage,
             transport,
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials, false);

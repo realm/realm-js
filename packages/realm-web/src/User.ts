@@ -310,11 +310,6 @@ export class User<
         }
     }
 
-    private async refreshAccessToken() {
-        // TODO: this.storage.set(User.ACCESS_TOKEN_STORAGE_KEY, accessToken);
-        throw new Error("Not yet implemented");
-    }
-
     push(serviceName = ""): Realm.Services.Push {
         throw new Error("Not yet implemented");
     }
