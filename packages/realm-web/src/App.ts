@@ -134,14 +134,13 @@ export class App<
      */
     public switchUser(nextUser: User<FunctionsFactoryType, CustomDataType>) {
         const index = this.users.findIndex(u => u === nextUser);
-        if (index >= 0) {
-            // Remove the user from the stack
-            const [user] = this.users.splice(index, 1);
-            // Insert the user in the beginning of the stack
-            this.users.unshift(user);
-        } else {
-            throw new Error("The user was not logged into this app");
+        if (index === -1) {
+            throw new Error("The user was never logged into this app");
         }
+        // Remove the user from the stack
+        const [user] = this.users.splice(index, 1);
+        // Insert the user in the beginning of the stack
+        this.users.unshift(user);
     }
 
     /**
@@ -167,6 +166,9 @@ export class App<
     public async removeUser(user: User<FunctionsFactoryType, CustomDataType>) {
         // Remove the user from the list of users
         const index = this.users.findIndex(u => u === user);
+        if (index === -1) {
+            throw new Error("The user was never logged into this app");
+        }
         this.users.splice(index, 1);
         // Log out the user
         await user.logOut();

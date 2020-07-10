@@ -248,14 +248,14 @@ declare namespace Realm {
         logOut(): Promise<void>;
 
         /**
-         * Link the user with a new identity represented by another set of credentials.
+         * Link the user with an identity represented by another set of credentials.
          * 
          * @param credentials The credentials to use when linking.
          */
         linkCredentials(credentials: Credentials): Promise<void>;
 
         /**
-         * Call a remote MongoDB Realm function by it's name.
+         * Call a remote MongoDB Realm function by its name.
          * Note: Consider using `functions[name]()` instead of calling this method.
          *
          * @example
@@ -386,7 +386,7 @@ declare namespace Realm {
      */
     interface BaseFunctionsFactory {
         /**
-         * Call a remote MongoDB Realm function by it's name.
+         * Call a remote MongoDB Realm function by its name.
          * Consider using `functions[name]()` instead of calling this method.
          *
          * @param name Name of the function
