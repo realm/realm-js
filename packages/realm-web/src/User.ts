@@ -278,7 +278,7 @@ export class User<
             this._accessToken = accessToken;
             this.storage.accessToken = accessToken;
         } else {
-            throw new Error("Expected a 'access_token' in the response");
+            throw new Error("Expected an 'access_token' in the response");
         }
     }
 

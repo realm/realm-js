@@ -449,7 +449,7 @@ describe("App", () => {
             },
             { bar: "baz" },
         ]);
-        // Login with an aanonymous user
+        // Login with an anonymous user
         const credentials = Credentials.anonymous();
         await app.logIn(credentials, false);
         // Send a request (which will fail)
