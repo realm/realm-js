@@ -29,7 +29,7 @@
 #include "js_user.hpp"
 #include "js_app_credentials.hpp"
 #include "js_network_transport.hpp"
-#include "js_email_password_provider.hpp"
+#include "js_email_password_auth.hpp"
 
 using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;

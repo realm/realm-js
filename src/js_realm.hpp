@@ -33,7 +33,7 @@
 #include "js_app.hpp"
 #include "js_auth.hpp"
 #include "js_app_credentials.hpp"
-#include "js_email_password_provider.hpp"
+#include "js_email_password_auth.hpp"
 #include "js_api_key_auth.hpp"
 #include "sync/async_open_task.hpp"
 #include "sync/sync_config.hpp"
