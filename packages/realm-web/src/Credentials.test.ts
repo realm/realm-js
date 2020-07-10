@@ -31,12 +31,12 @@ describe("Credentials", () => {
     it("expose the email/password credentials", () => {
         expect(typeof Credentials.emailPassword).equals("function");
         const credentials = Credentials.emailPassword(
-            "gilfoil@testing.mongodb.com",
+            "gilfoyle@testing.mongodb.com",
             "s3cr3t",
         );
         expect(credentials).to.be.instanceOf(Credentials);
         expect(credentials.payload).deep.equals({
-            username: "gilfoil@testing.mongodb.com",
+            username: "gilfoyle@testing.mongodb.com",
             password: "s3cr3t",
         });
     });

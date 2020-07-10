@@ -65,13 +65,7 @@ export class BaseTransport implements Transport {
     /** @inheritdoc */
     public fetch<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>,
-        user: any,
     ): Promise<ResponseBody> {
-        if (user) {
-            throw new Error(
-                "BaseTransport doesn't support fetching as a particular user",
-            );
-        }
         const { path, headers, ...restOfRequest } = request;
         return this.networkTransport.fetchAndParse({
             ...restOfRequest,

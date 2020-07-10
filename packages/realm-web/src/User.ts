@@ -77,7 +77,6 @@ export class User<
                 path: `/auth/providers/${credentials.providerName}/login`,
                 body: credentials.payload,
             },
-            null,
         );
         // Spread out values from the response and ensure they're valid
         const {

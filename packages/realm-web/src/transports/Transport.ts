@@ -41,12 +41,9 @@ export interface Transport {
      * Fetch a network resource.
      *
      * @param request The request to issue towards the server
-     * @param user The user used when fetching, defaults to the `app.currentUser`.
-     *             If `null`, the fetch will be unauthenticated.
      */
     fetch<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>,
-        user?: Realm.User | null,
     ): Promise<ResponseBody>;
 
     /**

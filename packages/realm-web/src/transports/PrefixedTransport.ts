@@ -46,13 +46,12 @@ export class PrefixedTransport implements Transport {
     /** @inheritdoc */
     fetch<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>,
-        user?: Realm.User | null,
     ): Promise<ResponseBody> {
         const prefixedRequest = {
             ...request,
             path: `${this.pathPrefix}${request.path || ""}`,
         };
-        return this.transport.fetch(prefixedRequest, user);
+        return this.transport.fetch(prefixedRequest);
     }
 
     /** @inheritdoc */

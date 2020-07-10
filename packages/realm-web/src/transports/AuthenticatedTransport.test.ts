@@ -84,4 +84,30 @@ describe("AuthenticatedTransport", () => {
             },
         ]);
     });
+
+    it("returns an AuthenticatedTransport when prefixed", async () => {
+        const baseTransport = new MockTransport([{}]);
+        const transport = new AuthenticatedTransport(baseTransport, {
+            currentUser: { accessToken: "my-access-token" } as Realm.User,
+        });
+        const prefixedTransport = transport.prefix("/prefixed-path");
+        expect(prefixedTransport).to.be.instanceOf(AuthenticatedTransport);
+        // Send a request
+        await prefixedTransport.fetch({
+            method: "GET",
+            path: "/w00t",
+        });
+        // Expect something of the request
+        expect(baseTransport.requests).deep.equals([
+            {
+                method: "GET",
+                url: "http://localhost:1337/prefixed-path/w00t",
+                headers: {
+                    Authorization: "Bearer my-access-token",
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            },
+        ]);
+    });
 });
