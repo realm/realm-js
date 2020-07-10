@@ -661,7 +661,7 @@ inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value) {
         value,
         Object<T>::create_obj(ctx, {{"relaxed", Value::from_boolean(ctx, false)}}),
     });
-    return bson::parse(Value::to_string(ctx, call_args_json));
+    return bson::parse(std::string(Value::to_string(ctx, call_args_json)));
 }
 } // js
 } // realm

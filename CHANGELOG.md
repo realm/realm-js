@@ -9,6 +9,9 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * `Realm.User.identity` has been renamed to `Realm.User.id`.
 * `Realm.User.token` has been renamed to `Realm.User.accessToken`.
 * Change instance methods `Realm.App.currentUser()` and `Realm.App.allUsers()` to instance properties `Realm.App.currentUser` and `Realm.App.allUsers`.
+* `Realm.Auth.UserAPIKeyProvider` has been replaced by `Realm.Auth.ApiKeyProvider`.
+* `user.auth.apiKeys` has been replaced by `user.apiKeys`.
+*  The instance methods on the ApiKeyAuth instance (`user.apiKeys`) have gotten their APIKey(s) suffix removed: Ex. `apiKeys.createAPIKey` has been replaced by `apiKeys.create`.
 
 ### Enhancements
 * Added RemoteMongoClient functionality to `Realm.User`
@@ -16,8 +19,9 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Added `Realm.Auth.EmailPassword.callResetPasswordFunction()`.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* Added missing `SyncConfiguration.error` field in the typescript definitions.
+* Failed to parse arguments correctly, causing the error `callback must be of type 'function', got (undefined)` when calling `Realm.App.emailPassword.sendResetPasswordEmail()` and `Realm.App.emailPassword.resendConfirmationEmail()`. ([#3037](https://github.com/realm/realm-js/issues/3037), since v10.0.0-beta.1)
+* Fixed `user.logOut()` to also log out at MongoDB Realm Cloud. The method now returns `Promise<void>` instead. ([#2980](https://github.com/realm/realm-js/issues/2980), since v10.0.0-beta.1)
+* Fixed `TypeError: process.versions is not an Object` error being thrown when requiring the package from React Native. ([#3045](https://github.com/realm/realm-js/issues/3045), since v10.0.0-beta.8)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -26,6 +30,53 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 
 ### Internal
 * None.
+
+10.0.0-beta.8 Release notes (2020-7-07)
+=============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
+
+### Enhancements
+* None.
+
+### Fixed
+* `toJSON()` now declared as returning `any` for easy usage in TS.
+
+### Fixed
+* Fix `401 Unauthorized` when using anonymous login resulting in a `Fatal error in v8::HandleScope::CreateHandle()`
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+
+### Internal
+* None.
+
+10.0.0-beta.7 Release notes (2020-6-26)
+=============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
+
+### Enhancements
+* Added RemoteMongoClient functionality to `Realm.User`
+* Added Push functionality to `Realm.User`
+>>>>>>> a65b534945791b50bdd5539a7304c74e2b220b3d
+
+### Fixed
+* Added missing `SyncConfiguration.error` field in the typescript definitions.
+* Fixed `SSL handshake failed: premature end of input` on Windows ([#2975](https://github.com/realm/realm-js/issues/2975, since v10.0.0-beta.1)
+* Missing `toJSON` TS declaration added for `Realm.Object` ([2903](https://github.com/realm/realm-js/issues/2903))
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+
+### Internal
+* Now linking against OpenSSL 1.1 on Windows.
 
 10.0.0-beta.6 Release notes (2020-6-9)
 =============================================================

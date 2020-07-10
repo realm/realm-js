@@ -19,11 +19,11 @@
 import { NetworkTransport } from "realm-network-transport";
 
 import { create as createFunctionsFactory } from "./FunctionsFactory";
-import { User, UserState, UserControlHandle } from "./User";
+import { User, UserState } from "./User";
 import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
 import { Credentials } from "./Credentials";
 import { create as createServicesFactory } from "./services";
-import { create as createAuthProviders } from "./auth-providers";
+import { EmailPasswordAuth } from "./auth-providers";
 
 /**
  * Configuration to pass as an argument when constructing an app.
@@ -37,16 +37,15 @@ export interface AppConfiguration extends Realm.AppConfiguration {
  * MongoDB Realm App
  */
 export class App<
-    FunctionsFactoryType extends Realm.BaseFunctionsFactory = Realm.DefaultFunctionsFactory
-> implements Realm.App<FunctionsFactoryType> {
+    FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
+    CustomDataType extends object = any
+> implements Realm.App<FunctionsFactoryType, CustomDataType> {
     /** @inheritdoc */
-    public readonly functions: FunctionsFactoryType;
+    public readonly functions: FunctionsFactoryType &
+        Realm.BaseFunctionsFactory;
 
     /** @inheritdoc */
     public readonly services: Realm.Services;
-
-    /** @inheritdoc */
-    public readonly auth: Realm.AuthProviders;
 
     /** @inheritdoc */
     public readonly id: string;
@@ -71,6 +70,9 @@ export class App<
      */
     public readonly appTransport: Transport;
 
+    /** @inheritdoc */
+    public readonly emailPasswordAuth: EmailPasswordAuth;
+
     /**
      * This base route will be prefixed requests issued through by the base transport
      */
@@ -80,7 +82,7 @@ export class App<
      * A (reversed) stack of active and logged-out users.
      * Elements in the beginning of the array is considered more recent than the later elements.
      */
-    private readonly users: UserControlHandle[] = [];
+    private readonly users: User<FunctionsFactoryType, CustomDataType>[] = [];
 
     /**
      * Construct a Realm App, either from the Realm App id visible from the MongoDB Realm UI or a configuration.
@@ -122,7 +124,7 @@ export class App<
         // Construct the services factory
         this.services = createServicesFactory(authTransport);
         // Construct the auth providers
-        this.auth = createAuthProviders(authTransport);
+        this.emailPasswordAuth = new EmailPasswordAuth(authTransport);
     }
 
     /**
@@ -130,28 +132,15 @@ export class App<
      *
      * @param nextUser The user or id of the user to switch to
      */
-    public switchUser(nextUser: User | string) {
-        if (typeof nextUser === "string") {
-            const handle = this.users.find(({ user: u }) => u.id === nextUser);
-            if (handle) {
-                this.switchUser(handle.user);
-            } else {
-                throw new Error(
-                    `Failed to switch user (id = ${nextUser}) - did you log in?`,
-                );
-            }
-        } else if (nextUser instanceof User) {
-            const index = this.users.findIndex(({ user }) => user === nextUser);
-            if (index >= 0) {
-                // Remove the user from the stack
-                const [handle] = this.users.splice(index, 1);
-                // Insert the user in the beginning of the stack
-                this.users.splice(0, 0, handle);
-            } else {
-                throw new Error("The user was not logged into this app");
-            }
+    public switchUser(nextUser: User<FunctionsFactoryType, CustomDataType>) {
+        const index = this.users.findIndex(u => u === nextUser);
+        if (index >= 0) {
+            // Remove the user from the stack
+            const [user] = this.users.splice(index, 1);
+            // Insert the user in the beginning of the stack
+            this.users.unshift(user);
         } else {
-            throw new Error("Expected a user id or a User instance");
+            throw new Error("The user was not logged into this app");
         }
     }
 
@@ -162,45 +151,25 @@ export class App<
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
     public async logIn(credentials: Realm.Credentials, fetchProfile = true) {
-        const handle: UserControlHandle = await User.logIn(
-            this,
-            credentials,
-            fetchProfile,
-        );
+        const user: User<
+            FunctionsFactoryType,
+            CustomDataType
+        > = await User.logIn(this, credentials, fetchProfile);
         // Add the user at the top of the stack
-        this.users.splice(0, 0, handle);
+        this.users.unshift(user);
         // Return the user
-        return handle.user;
+        return user;
     }
 
     /**
-     * Log out a user
-     *
-     * @param userOrId The user or id of the user to log out (default: currentUser)
+     * @inheritdoc
      */
-    public async logOut(
-        userOrId: Realm.User | string | null = this.currentUser,
-    ) {
-        const { user } = this.getUserHandle(userOrId);
-        await user.logOut();
-    }
-
-    /**
-     * Remove a user entirely from the app (logs out the user if they're not already logged out)
-     *
-     * @param userOrId The user or id of the user to remove.
-     */
-    public async removeUser(userOrId: Realm.User | string) {
-        const { user, controller } = this.getUserHandle(userOrId);
-        // If active - log out the user
-        if (user.state === UserState.Active) {
-            await this.logOut(user);
-        }
-        // Set the state of the user
-        controller.setState(UserState.Removed);
+    public async removeUser(user: User<FunctionsFactoryType, CustomDataType>) {
         // Remove the user from the list of users
-        const index = this.users.findIndex(({ user: u }) => u === user);
+        const index = this.users.findIndex(u => u === user);
         this.users.splice(index, 1);
+        // Log out the user
+        await user.logOut();
         // TODO: Delete any data / tokens which were persisted
     }
 
@@ -209,15 +178,18 @@ export class App<
      *
      * @returns the currently active user or null.
      */
-    public get currentUser(): Realm.User | null {
-        const activeUserHandles = this.users.filter(
-            ({ user }) => user.state === UserState.Active,
+    public get currentUser(): User<
+        FunctionsFactoryType,
+        CustomDataType
+    > | null {
+        const activeUsers = this.users.filter(
+            user => user.state === UserState.Active,
         );
-        if (activeUserHandles.length === 0) {
+        if (activeUsers.length === 0) {
             return null;
         } else {
             // Current user is the top of the stack
-            return activeUserHandles[0].user;
+            return activeUsers[0];
         }
     }
 
@@ -228,13 +200,15 @@ export class App<
      *
      * @returns An array of users active or loggedout users (current user being the first).
      */
-    public get allUsers(): Readonly<Realm.User[]> {
-        const allUsers = this.users.map(({ user }) => user);
-        const activeUsers = allUsers.filter(
-            user => user.state === UserState.Active,
+    public get allUsers(): Readonly<
+        Realm.User<FunctionsFactoryType, CustomDataType>[]
+    > {
+        // We need to peek into refresh tokens to avoid cyclic code
+        const activeUsers = this.users.filter(
+            user => user.refreshToken !== null,
         );
-        const loggedOutUsers = allUsers.filter(
-            user => user.state === UserState.LoggedOut,
+        const loggedOutUsers = this.users.filter(
+            user => user.refreshToken === null,
         );
         // Returning a freezed copy of the list of users to prevent outside changes
         return Object.freeze([...activeUsers, ...loggedOutUsers]);
@@ -246,14 +220,12 @@ export class App<
      * @param userOrId A user object or user id
      * @returns A handle containing the user and it's controller.
      */
-    private getUserHandle(userOrId: Realm.User | string | null) {
-        const handle = this.users.find(({ user }) =>
-            typeof userOrId === "string"
-                ? user.id === userOrId
-                : user === userOrId,
+    private getUser(userOrId: Realm.User | string | null) {
+        const user = this.users.find(u =>
+            typeof userOrId === "string" ? u.id === userOrId : u === userOrId,
         );
-        if (handle) {
-            return handle;
+        if (user) {
+            return user;
         } else {
             throw new Error("Invalid user or user id");
         }

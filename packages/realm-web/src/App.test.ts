@@ -163,7 +163,7 @@ describe("App", () => {
         // Expect that we logged in
         expect(app.currentUser).equals(user);
         expect(app.allUsers).deep.equals([user]);
-        await app.logOut();
+        await user.logOut();
         expect(app.currentUser).equals(null);
         expect(user.state).equals(UserState.LoggedOut);
         expect(user.state).equals("logged-out");

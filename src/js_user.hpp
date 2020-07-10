@@ -22,7 +22,7 @@
 #include "js_collection.hpp"
 #include "js_sync_util.hpp"
 #include "js_app_credentials.hpp"
-#include "js_user_apikey_provider.hpp"
+#include "js_api_key_auth.hpp"
 
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
@@ -77,7 +77,7 @@ public:
     static void is_logged_in(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
     static void get_custom_data(ContextType, ObjectType, ReturnValue &);
-    static void get_auth_api_keys(ContextType, ObjectType, ReturnValue &);
+    static void get_api_keys(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"id", {wrap<get_id>, nullptr}},
@@ -87,7 +87,7 @@ public:
         {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
         {"state", {wrap<get_state>, nullptr}},
         {"customData", {wrap<get_custom_data>, nullptr}},
-        {"_authApiKeys", {wrap<get_auth_api_keys>, nullptr}},
+        {"apiKeys", {wrap<get_api_keys>, nullptr}},
     };
 
     MethodMap<T> const static_methods = {
@@ -98,14 +98,18 @@ public:
     static void link_credentials(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void call_function(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void refresh_custom_data(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void push_register(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void push_deregister(ContextType, ObjectType, Arguments&, ReturnValue&);
 
 
     MethodMap<T> const methods = {
-        {"logOut", wrap<logout>},
+        {"_logOut", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
         {"_linkCredentials", wrap<link_credentials>},
         {"_callFunction", wrap<call_function>},
         {"_refreshCustomData", wrap<refresh_custom_data>},
+        {"_pushRegister", wrap<push_register>},
+        {"_pushDeregister", wrap<push_deregister>},
     };
 };
 
@@ -208,8 +212,26 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
 
 template<typename T>
 void UserClass<T>::logout(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &) {
-    args.validate_count(0);
-    get_internal<T, UserClass<T>>(ctx, this_object)->get()->log_out();
+    args.validate_count(1);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
+
+    user->m_app->log_out(
+        *user,
+        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
+                            callback = Protected(ctx, callback),
+                            this_object = Protected(ctx, this_object)]
+                           (util::Optional<app::AppError> error) {
+            HANDLESCOPE(ctx)
+            Function::callback(ctx, callback, this_object, {
+                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
+                    {"message", Value::from_string(ctx, error->message)},
+                    {"code", Value::from_number(ctx, error->error_code.value())},
+                }),
+            });
+        })
+    );
 }
 
 template<typename T>
@@ -285,9 +307,9 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
 }
 
 template<typename T>
-void UserClass<T>::get_auth_api_keys(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
+void UserClass<T>::get_api_keys(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
-    return_value.set(UserAPIKeyProviderClientClass<T>::create_instance(ctx, user->m_app, *user));
+    return_value.set(ApiKeyAuthClass<T>::create_instance(ctx, user->m_app, *user));
 }
 
 template<typename T>
@@ -312,5 +334,52 @@ void UserClass<T>::refresh_custom_data(ContextType ctx, ObjectType this_object, 
         }));
 }
 
+template<typename T>
+void UserClass<T>::push_register(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(3);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+    auto service = Value::validated_to_string(ctx, args[0], "service");
+    auto token = Value::validated_to_string(ctx, args[1], "token");
+    auto callback = Value::validated_to_function(ctx, args[2], "callback");
+
+    user->m_app->push_notification_client(service).register_device(
+        token,
+        *user,
+        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
+                            callback = Protected(ctx, callback),
+                            this_object = Protected(ctx, this_object)]
+                           (util::Optional<app::AppError> error) {
+            HANDLESCOPE(ctx);
+            Function::callback(ctx, callback, this_object, {
+                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
+                    {"message", Value::from_string(ctx, error->message)},
+                    {"code", Value::from_number(ctx, error->error_code.value())},
+                }),
+            });
+        }));
+}
+
+template<typename T>
+void UserClass<T>::push_deregister(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(2);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+    auto service = Value::validated_to_string(ctx, args[0], "service");
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
+
+    user->m_app->push_notification_client(service).deregister_device(
+        *user,
+        realm::util::EventLoopDispatcher([ctx = Protected(Context<T>::get_global_context(ctx)),
+                            callback = Protected(ctx, callback),
+                            this_object = Protected(ctx, this_object)]
+                           (util::Optional<app::AppError> error) {
+            HANDLESCOPE(ctx);
+            Function::callback(ctx, callback, this_object, {
+                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
+                    {"message", Value::from_string(ctx, error->message)},
+                    {"code", Value::from_number(ctx, error->error_code.value())},
+                }),
+            });
+        }));
+}
 }
 }

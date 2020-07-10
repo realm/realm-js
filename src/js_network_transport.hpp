@@ -157,16 +157,7 @@ void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, 
 
 
 template<typename T>
-struct JavaScriptNetworkTransportWrapper : public app::GenericNetworkTransport {
-    using ContextType = typename T::Context;
-
-    JavaScriptNetworkTransportWrapper(ContextType ctx) : GenericNetworkTransport() {};
-
-    void send_request_to_server(const app::Request request, std::function<void(const app::Response)> completion_callback) override {};
-};
-
-template<typename T>
-struct JavaScriptNetworkTransport : public JavaScriptNetworkTransportWrapper<T> {
+struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -175,48 +166,65 @@ struct JavaScriptNetworkTransport : public JavaScriptNetworkTransportWrapper<T> 
     using Object = js::Object<T>;
     using Value = js::Value<T>;
 
-    JavaScriptNetworkTransport(ContextType ctx)  : JavaScriptNetworkTransportWrapper<T>(ctx) , m_ctx(ctx) {
-        realm_constructor = Value::validated_to_object(m_ctx, Object::get_global(m_ctx, "Realm"));
-        network_transport = Object::get_property(m_ctx, realm_constructor, "_networkTransport");
-    };
+    using SendRequestHandler = void(ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback);
+
+    JavaScriptNetworkTransport(ContextType ctx) : m_ctx(ctx) {};
+
+    static void init(ContextType ctx) {
+        //this initializes the EventLoopDispatcher on the main JS thread
+        get_send_request_handler();
+    }
 
     void send_request_to_server(const app::Request request, std::function<void(const app::Response)> completion_callback) override {
-        // Create a response handler
-        ObjectType response_handler = ResponseHandlerClass<T>::create_instance(m_ctx, std::move(completion_callback));
-
-        // Create a JavaScript version of the request
-        ObjectType request_object = Object::create_empty(m_ctx);
-        Object::set_property(m_ctx, request_object, "method", Value::from_string(m_ctx, fromHttpMethod(request.method)));
-        Object::set_property(m_ctx, request_object, "url", Value::from_string(m_ctx, request.url));
-        Object::set_property(m_ctx, request_object, "timeoutMs", Value::from_number(m_ctx, request.timeout_ms));
-        if (!request.body.empty()) {
-            Object::set_property(m_ctx, request_object, "body", Value::from_string(m_ctx, request.body));
-        }
-        ObjectType headers_object = Object::create_empty(m_ctx);
-        for (auto header : request.headers) {
-            Object::set_property(m_ctx, headers_object, header.first, Value::from_string(m_ctx, header.second));
-        }
-        Object::set_property(m_ctx, request_object, "headers", headers_object);
-
-        ValueType arguments[] = {
-            request_object,
-            response_handler,
-        };
-
-        Object::call_method(m_ctx, Value::to_object(m_ctx, network_transport), "fetchWithCallbacks", 2, arguments);
+        auto send_request_handler = get_send_request_handler();
+        send_request_handler(m_ctx, request, completion_callback);
     }
 
 private:
     ContextType m_ctx;
-    ObjectType realm_constructor;
-    ValueType network_transport;
+
+    static realm::util::EventLoopDispatcher<SendRequestHandler>& get_send_request_handler() {
+        static auto dispatcher = realm::util::EventLoopDispatcher([]
+            (ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback) {
+                HANDLESCOPE(m_ctx);
+
+                ObjectType realm_constructor = Value::validated_to_object(m_ctx, Object::get_global(m_ctx, "Realm"));
+                ValueType network_transport = Object::get_property(m_ctx, realm_constructor, "_networkTransport");
+
+                // Create a response handler
+                ObjectType response_handler = ResponseHandlerClass<T>::create_instance(m_ctx, std::move(completion_callback));
+
+                // Create a JavaScript version of the request
+                ObjectType request_object = Object::create_empty(m_ctx);
+                Object::set_property(m_ctx, request_object, "method", Value::from_string(m_ctx, fromHttpMethod(request.method)));
+                Object::set_property(m_ctx, request_object, "url", Value::from_string(m_ctx, request.url));
+                Object::set_property(m_ctx, request_object, "timeoutMs", Value::from_number(m_ctx, request.timeout_ms));
+                if (!request.body.empty()) {
+                    Object::set_property(m_ctx, request_object, "body", Value::from_string(m_ctx, request.body));
+                }
+                ObjectType headers_object = Object::create_empty(m_ctx);
+                for (auto header : request.headers) {
+                    Object::set_property(m_ctx, headers_object, header.first, Value::from_string(m_ctx, header.second));
+                }
+                Object::set_property(m_ctx, request_object, "headers", headers_object);
+
+                ValueType arguments[] = {
+                    request_object,
+                    response_handler,
+                };
+
+                Object::call_method(m_ctx, Value::to_object(m_ctx, network_transport), "fetchWithCallbacks", 2, arguments);
+            });
+
+        return dispatcher;
+    }
 
     std::string static fromHttpMethod(app::HttpMethod method) {
         switch (method) {
             case app::HttpMethod::get:   return "GET";
             case app::HttpMethod::put:   return "PUT";
             case app::HttpMethod::post:  return "POST";
-            case app::HttpMethod::del:   return "DEL";
+            case app::HttpMethod::del:   return "DELETE";
             case app::HttpMethod::patch: return "PATCH";
             default: throw std::runtime_error("Unknown HttpMethod argument");
         }

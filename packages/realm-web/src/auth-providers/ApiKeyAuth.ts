@@ -20,8 +20,7 @@ import { Transport } from "../transports";
 import { deserialize } from "../utils/ejson";
 
 /** @inheritdoc */
-export class ApiKeyAuthProvider
-    implements Realm.AuthProviders.ApiKeyAuthProvider {
+export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
     /**
      * The transport used to send requests to services.
      */
@@ -38,7 +37,7 @@ export class ApiKeyAuthProvider
     }
 
     /** @inheritdoc */
-    create(name: string): Promise<Realm.AuthProviders.ApiKey> {
+    create(name: string): Promise<Realm.Auth.ApiKey> {
         return this.transport
             .fetch({
                 method: "POST",
@@ -48,7 +47,7 @@ export class ApiKeyAuthProvider
     }
 
     /** @inheritdoc */
-    get(keyId: Realm.ObjectId): Promise<Realm.AuthProviders.ApiKey> {
+    fetch(keyId: Realm.ObjectId): Promise<Realm.Auth.ApiKey> {
         return this.transport
             .fetch({
                 method: "GET",
@@ -58,7 +57,7 @@ export class ApiKeyAuthProvider
     }
 
     /** @inheritdoc */
-    list(): Promise<Realm.AuthProviders.ApiKey[]> {
+    fetchAll(): Promise<Realm.Auth.ApiKey[]> {
         return this.transport.fetch({ method: "GET" }).then(deserialize);
     }
 

@@ -193,13 +193,17 @@ module.exports = {
     }
   },
 
-  async testUserAPIKeyProvider() {
+  async testApiKeyAuth() {
     let app = new Realm.App(appConfig);
 
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
-    let provider = user.auth.apiKeys;
-    TestCase.assertTrue(provider instanceof Realm.Auth.UserAPIKeyProvider);
+    TestCase.assertTrue(user.apiKeys instanceof Realm.Auth.ApiKeyAuth);
+
+    // TODO: Fix this to not respond with a 403
+    // const keys = await user.apiKeys.fetchAll();
+    // TestCase.assertTrue(Array.isArray(keys));
+
     await user.logOut();
   },
 
@@ -229,13 +233,30 @@ module.exports = {
     let user = await app.logIn(credentials);
 
     let mongo = user.remoteMongoClient('BackingDB');
-    let collection = mongo.db('test').collection('testRemoteMongoClient');
+    let collection = mongo.db('test_data').collection('testRemoteMongoClient');
 
     await collection.deleteMany({});
     await collection.insertOne({hello: "world"});
     TestCase.assertEqual(await collection.count({}), 1);
     TestCase.assertEqual(await collection.count({hello: "world"}), 1);
     TestCase.assertEqual(await collection.count({hello: "pineapple"}), 0);
+  },
+
+  async testPush() {
+    let app = new Realm.App(appConfig);
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+
+    let push = user.push('gcm');
+
+    await push.deregister(); // deregister never registered not an error
+    await push.register("hello");
+    await push.register("hello"); // double register not an error
+    await push.deregister();
+    await push.deregister(); // double deregister not an error
+
+    const err = await TestCase.assertThrowsAsync(async() => await user.push('nonesuch').register('hello'))
+    TestCase.assertEqual(err.message, "service not found: 'nonesuch'");
   },
 
   async testAllWithAnonymous() {

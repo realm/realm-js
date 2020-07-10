@@ -41,7 +41,7 @@ enum DataKey {
 const DATA_MAPPING: { [k in DataKey]: keyof UserProfile } = {
     [DataKey.NAME]: "name",
     [DataKey.EMAIL]: "email",
-    [DataKey.PICTURE]: "pictureURL",
+    [DataKey.PICTURE]: "pictureUrl",
     [DataKey.FIRST_NAME]: "firstName",
     [DataKey.LAST_NAME]: "lastName",
     [DataKey.GENDER]: "gender",
@@ -59,7 +59,7 @@ export class UserProfile implements Realm.UserProfile {
     public readonly email?: string;
 
     /** @inheritdoc */
-    public readonly pictureURL?: string;
+    public readonly pictureUrl?: string;
 
     /** @inheritdoc */
     public readonly firstName?: string;

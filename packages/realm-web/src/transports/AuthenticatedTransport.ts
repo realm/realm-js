@@ -26,7 +26,7 @@ interface UserContext {
     /**
      * The currently active user
      */
-    currentUser: Realm.User | null;
+    currentUser: Realm.User<any, any> | null;
 }
 
 /**

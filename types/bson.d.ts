@@ -16,41 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-"use strict";
-
-const {promisify} = require("./utils.js");
-
-const instanceMethods = {
-    create(name) {
-        return promisify(cb => this._create(name, cb));
-    },
-
-    fetch(id) {
-        return promisify(cb => this._fetch(id, cb));
-    },
-
-    fetchAll() {
-        return promisify(cb => this._fetchAll(cb));
-    },
-
-    delete(apiKeyId) {
-        return promisify(cb => this._delete(apiKeyId, cb));
-    },
-
-    enable(apiKeyId) {
-        return promisify(cb => this._enable(apiKeyId, cb));
-    },
-
-    disable(apiKeyId) {
-        return promisify(cb => this._disable(apiKeyId, cb));
-    },
-};
-
-const staticMethods = {
-    // none
-};
-
-module.exports = {
-    static: staticMethods,
-    instance: instanceMethods,
-};
+declare namespace Realm {
+    // See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
+    type ObjectId = import("bson").ObjectId;
+    type Binary = import("bson").Binary;
+}

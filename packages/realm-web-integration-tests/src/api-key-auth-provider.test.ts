@@ -28,12 +28,12 @@ describe("ApiKeyAuthProvider", () => {
         const app = createApp();
         // Login a user
         const credentials = Credentials.anonymous();
-        await app.logIn(credentials);
+        const user = await app.logIn(credentials);
         // List all existing keys
-        const keys = await app.auth.apiKey.list();
-        // console.log(keys);
+        const keys = await user.apiKeys.fetchAll();
+        console.log(keys);
         // Create an api key
-        const key = await app.auth.apiKey.create("my-key");
+        const key = await user.apiKeys.create("my-key");
         // console.log(key);
     });
 });

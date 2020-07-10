@@ -3,5 +3,8 @@
 		"strict": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true
-	}
+	},
+	"exclude": [
+		"packages"
+	]
 }

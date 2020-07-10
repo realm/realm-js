@@ -17,7 +17,6 @@
   "files": [
     "dist",
     "types/realm",
-    "realm-network-transport-0.1.0.tgz",
     "LICENSE"
   ],
   "keywords": [
@@ -57,7 +56,7 @@
     "eslint": "file:../../node_modules/eslint",
     "mocha": "^5.2.0",
     "node-fetch": "^2.6.0",
-    "realm-network-transport": "^0.2.0",
+    "realm-network-transport": "^0.4.0",
     "rollup": "^2.6.1",
     "rollup-plugin-dts": "^1.4.0",
     "ts-node": "^8.8.2",

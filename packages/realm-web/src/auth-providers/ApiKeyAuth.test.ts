@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import { ObjectId } from "bson";
 
-import { ApiKeyAuthProvider } from "./ApiKeyAuthProvider";
+import { ApiKeyAuth } from "./ApiKeyAuth";
 import { MockTransport } from "../test/MockTransport";
 
 const DEFAULT_HEADERS = {
@@ -27,7 +27,7 @@ const DEFAULT_HEADERS = {
     "Content-Type": "application/json",
 };
 
-describe("ApiKeyAuthProvider", () => {
+describe("ApiKeyAuth", () => {
     it("can create an api key", async () => {
         const transport = new MockTransport([
             {
@@ -39,7 +39,7 @@ describe("ApiKeyAuthProvider", () => {
                 disabled: true,
             },
         ]);
-        const provider = new ApiKeyAuthProvider(transport);
+        const provider = new ApiKeyAuth(transport);
         const apiKey = await provider.create("my-key-name");
         // Expect something of the newly created key
         expect(typeof apiKey._id).equals("object");
@@ -71,8 +71,8 @@ describe("ApiKeyAuthProvider", () => {
                 disabled: true,
             },
         ]);
-        const provider = new ApiKeyAuthProvider(transport);
-        const apiKey = await provider.get(
+        const provider = new ApiKeyAuth(transport);
+        const apiKey = await provider.fetch(
             ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         );
         // Expect something of the key
@@ -114,8 +114,8 @@ describe("ApiKeyAuthProvider", () => {
                 },
             ],
         ]);
-        const provider = new ApiKeyAuthProvider(transport);
-        const apiKeys = await provider.list();
+        const provider = new ApiKeyAuth(transport);
+        const apiKeys = await provider.fetchAll();
         // Expect something of the first key
         const [firstKey, secondKey] = apiKeys;
         expect(firstKey._id.toHexString()).equals("deadbeefdeadbeefdeadbee1");
@@ -139,7 +139,7 @@ describe("ApiKeyAuthProvider", () => {
 
     it("can delete a key", async () => {
         const transport = new MockTransport([{}]);
-        const provider = new ApiKeyAuthProvider(transport);
+        const provider = new ApiKeyAuth(transport);
         await provider.delete(
             ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         );
@@ -156,7 +156,7 @@ describe("ApiKeyAuthProvider", () => {
 
     it("can enable a key", async () => {
         const transport = new MockTransport([{}]);
-        const provider = new ApiKeyAuthProvider(transport);
+        const provider = new ApiKeyAuth(transport);
         await provider.enable(
             ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         );
@@ -173,7 +173,7 @@ describe("ApiKeyAuthProvider", () => {
 
     it("can disable a key", async () => {
         const transport = new MockTransport([{}]);
-        const provider = new ApiKeyAuthProvider(transport);
+        const provider = new ApiKeyAuth(transport);
         await provider.disable(
             ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         );

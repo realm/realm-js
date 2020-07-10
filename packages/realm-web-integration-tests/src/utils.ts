@@ -22,9 +22,7 @@ import { App } from "realm-web";
 declare const APP_ID: string;
 declare const BASE_URL: string;
 
-export function createApp<
-    FunctionsFactoryType extends Realm.FunctionsFactory
->() {
+export function createApp<FunctionsFactoryType extends object>() {
     if (typeof APP_ID !== "string") {
         throw new Error("Expected a global APP_ID");
     }

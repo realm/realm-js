@@ -147,6 +147,14 @@
     get auth() { }
  }
 
+
+/**
+ *
+ * Class for interacting with Realm Sync.
+ *
+ * @memberof Realm
+ */
+
 class Sync {
 
     /**
@@ -419,7 +427,7 @@ class EmailPassword {
  * client should only be used by an authenticated user.
  * @memberof Realm.Auth
  */
-class APIKeys {
+class ApiKeyAuth {
 
     /**
      * Creates a user API key that can be used to authenticate as the current user.
@@ -427,7 +435,7 @@ class APIKeys {
      * @param {string} name - The name of the API key to be created.
      * @returns {Promise<void>}
      */
-    createAPIKey(name) { }
+    create(name) { }
 
     /**
      * Fetches a user API key associated with the current user.
@@ -435,14 +443,14 @@ class APIKeys {
      * @param {string} id - The id of the API key to fetch.
      * @returns {Promise<Object>}
      */
-    fetchAPIKey(id) { }
+    fetch(id) { }
 
     /**
      * Fetches the user API keys associated with the current user.
      *
      * @returns {Promise<Array>}
      */
-    allAPIKeys() { }
+    fetchAll() { }
 
     /**
      * Deletes a user API key associated with the current user.
@@ -450,7 +458,7 @@ class APIKeys {
      * @param {string} id - The id of the API key to delete.
      * @returns {Promise<void>}
      */
-    deleteAPIKey(id) { }
+    delete(id) { }
 
     /**
      * Enables a user API key associated with the current user.
@@ -458,7 +466,7 @@ class APIKeys {
      * @param {string} id - The id of the API key to enable.
      * @returns {Promise<void>}
      */
-    enableAPIKey(id) { }
+    enable(id) { }
 
     /**
      * Disables a user API key associated with the current user.
@@ -466,7 +474,7 @@ class APIKeys {
      * @param {string} id - The id of the API key to disable.
      * @returns {Promise<void>}
      */
-    disableAPIKey(id) { }
+    disable(id) { }
 }
 
 
@@ -525,6 +533,7 @@ class User {
 
     /**
      * Logs out the user.
+     * @returns {Promise<void>} - resolves when the user has been logged out
      */
     logOut() { }
 
@@ -546,7 +555,7 @@ class User {
 
     /**
      * Returns a provider to interact with API keys.
-     * @return {Realm.Auth.APIKeys} - the provider
+     * @return {Realm.Auth.ApiKeyAuth} - the provider
      */
     apiKeys() { }
 
@@ -587,6 +596,33 @@ class User {
      * @returns {Realm~RemoteMongoDB}
      */
     remoteMongoClient(serviceName) { }
+
+    /**
+     * @class Realm.User~Push Access to the operations of the push service.
+     */
+
+    /**
+     * Registers the provided token with this User's device.
+     *
+     * @function Realm.User~Push#register
+     * @param {string} token
+     * @returns {Promise<void>} completed when the user is registered, or the operation fails.
+     */
+
+    /**
+     * Deregisters this User's device.
+     *
+     * @function Realm.User~Push#deregister
+     * @returns {Promise<void>} completed when the user is deregistered, or the operation fails.
+     */
+
+    /**
+     * Access the operations of the push service.
+     *
+     * @param {string} serviceName
+     * @returns {Realm.User~Push}
+     */
+    push(serviceName) { }
 }
 
 /**

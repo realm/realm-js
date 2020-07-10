@@ -172,7 +172,7 @@ module.exports = {
                 TestCase.assertEqual(session.config.url, config.sync.url);
                 TestCase.assertEqual(session.config.user.id, config.sync.user.id);
                 TestCase.assertEqual(session.state, 'active');
-                user.logOut();
+                return user.logOut();
             });
     },
 

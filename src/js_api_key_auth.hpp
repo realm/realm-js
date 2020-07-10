@@ -29,19 +29,19 @@ using SharedUser = std::shared_ptr<realm::SyncUser>;
 using SharedApp = std::shared_ptr<realm::app::App>;
 
 template<typename T>
-class UserAPIKeyProviderClient : public app::App::UserAPIKeyProviderClient {
+class ApiKeyAuth : public app::App::UserAPIKeyProviderClient {
 public:
-    UserAPIKeyProviderClient(app::App::UserAPIKeyProviderClient client, SharedUser user) : app::App::UserAPIKeyProviderClient(client), m_user(std::move(user)) {}
-    UserAPIKeyProviderClient(UserAPIKeyProviderClient &&) = default;
+    ApiKeyAuth(app::App::UserAPIKeyProviderClient client, SharedUser user) : app::App::UserAPIKeyProviderClient(client), m_user(std::move(user)) {}
+    ApiKeyAuth(ApiKeyAuth &&) = default;
 
-    UserAPIKeyProviderClient& operator=(UserAPIKeyProviderClient &&) = default;
-    UserAPIKeyProviderClient& operator=(UserAPIKeyProviderClient const&) = default;
+    ApiKeyAuth& operator=(ApiKeyAuth &&) = default;
+    ApiKeyAuth& operator=(ApiKeyAuth const&) = default;
 
     SharedUser m_user;
 };
 
 template<typename T>
-class UserAPIKeyProviderClientClass : public ClassDefinition<T, UserAPIKeyProviderClient<T>> {
+class ApiKeyAuthClass : public ClassDefinition<T, ApiKeyAuth<T>> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -55,7 +55,7 @@ class UserAPIKeyProviderClientClass : public ClassDefinition<T, UserAPIKeyProvid
     using Arguments = js::Arguments<T>;
 
 public:
-    std::string const name = "UserAPIKeyProviderClient";
+    std::string const name = "ApiKeyAuth";
 
     static FunctionType create_constructor(ContextType);
     static ObjectType create_instance(ContextType, SharedApp, SharedUser);
@@ -65,30 +65,30 @@ public:
 
     static void create_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void fetch_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void fetch_api_keys(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void fetch_all_api_keys(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void delete_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void enable_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void disable_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
-        {"_createAPIKey", wrap<create_api_key>},
-        {"_fetchAPIKey", wrap<fetch_api_key>},
-        {"_fetchAPIKeys", wrap<fetch_api_keys>},
-        {"_deleteAPIKey", wrap<delete_api_key>},
-        {"_enableAPIKey", wrap<enable_api_key>},
-        {"_disableAPIKey", wrap<disable_api_key>},
+        {"_create", wrap<create_api_key>},
+        {"_fetch", wrap<fetch_api_key>},
+        {"_fetchAll", wrap<fetch_all_api_keys>},
+        {"_delete", wrap<delete_api_key>},
+        {"_enable", wrap<enable_api_key>},
+        {"_disable", wrap<disable_api_key>},
     };
 };
 
 template<typename T>
-inline typename T::Function UserAPIKeyProviderClientClass<T>::create_constructor(ContextType ctx) {
-    FunctionType constructor = ObjectWrap<T, UserAPIKeyProviderClientClass<T>>::create_constructor(ctx);
+inline typename T::Function ApiKeyAuthClass<T>::create_constructor(ContextType ctx) {
+    FunctionType constructor = ObjectWrap<T, ApiKeyAuthClass<T>>::create_constructor(ctx);
     return constructor;
 }
 
 template<typename T>
-typename T::Object UserAPIKeyProviderClientClass<T>::create_instance(ContextType ctx, SharedApp app, SharedUser user) {
-    return create_object<T, UserAPIKeyProviderClientClass<T>>(ctx, new UserAPIKeyProviderClient<T>(app->provider_client<realm::app::App::UserAPIKeyProviderClient>(), user));
+typename T::Object ApiKeyAuthClass<T>::create_instance(ContextType ctx, SharedApp app, SharedUser user) {
+    return create_object<T, ApiKeyAuthClass<T>>(ctx, new ApiKeyAuth<T>(app->provider_client<realm::app::App::UserAPIKeyProviderClient>(), user));
 }
 
 template<typename T>
@@ -107,10 +107,10 @@ typename T::Object make_api_key(typename T::Context ctx, util::Optional<app::App
 }
 
 template<typename T>
-void UserAPIKeyProviderClientClass<T>::create_api_key(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void ApiKeyAuthClass<T>::create_api_key(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(2);
 
-    auto& client = *get_internal<T, UserAPIKeyProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, ApiKeyAuthClass<T>>(ctx, this_object);
 
     auto name = Value::validated_to_string(ctx, args[0], "name");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
@@ -144,10 +144,10 @@ void UserAPIKeyProviderClientClass<T>::create_api_key(ContextType ctx, ObjectTyp
 }
 
 template<typename T>
-void UserAPIKeyProviderClientClass<T>::fetch_api_key(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void ApiKeyAuthClass<T>::fetch_api_key(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(2);
 
-    auto& client = *get_internal<T, UserAPIKeyProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, ApiKeyAuthClass<T>>(ctx, this_object);
 
     auto id = Value::validated_to_object_id(ctx, args[0], "id");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
@@ -181,10 +181,10 @@ void UserAPIKeyProviderClientClass<T>::fetch_api_key(ContextType ctx, ObjectType
 }
 
 template<typename T>
-void UserAPIKeyProviderClientClass<T>::fetch_api_keys(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void ApiKeyAuthClass<T>::fetch_all_api_keys(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(1);
 
-    auto& client = *get_internal<T, UserAPIKeyProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, ApiKeyAuthClass<T>>(ctx, this_object);
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
@@ -255,10 +255,10 @@ app::App::UserAPIKey to_api_key(typename T::Context ctx, typename T::Object api_
 }
 
 template<typename T>
-void UserAPIKeyProviderClientClass<T>::delete_api_key(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void ApiKeyAuthClass<T>::delete_api_key(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(2);
 
-    auto& client = *get_internal<T, UserAPIKeyProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, ApiKeyAuthClass<T>>(ctx, this_object);
 
     auto api_key_id = Value::validated_to_object_id(ctx, args[0], "API key id");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
@@ -267,10 +267,10 @@ void UserAPIKeyProviderClientClass<T>::delete_api_key(ContextType ctx, ObjectTyp
 }
 
 template<typename T>
-void UserAPIKeyProviderClientClass<T>::enable_api_key(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void ApiKeyAuthClass<T>::enable_api_key(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(2);
 
-    auto& client = *get_internal<T, UserAPIKeyProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, ApiKeyAuthClass<T>>(ctx, this_object);
 
     auto api_key_id = Value::validated_to_object_id(ctx, args[0], "API key id");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
@@ -279,10 +279,10 @@ void UserAPIKeyProviderClientClass<T>::enable_api_key(ContextType ctx, ObjectTyp
 }
 
 template<typename T>
-void UserAPIKeyProviderClientClass<T>::disable_api_key(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+void ApiKeyAuthClass<T>::disable_api_key(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(2);
 
-    auto& client = *get_internal<T, UserAPIKeyProviderClientClass<T>>(ctx, this_object);
+    auto& client = *get_internal<T, ApiKeyAuthClass<T>>(ctx, this_object);
 
     auto api_key_id = Value::validated_to_object_id(ctx, args[0], "API key id");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");

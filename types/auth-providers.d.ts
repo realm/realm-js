@@ -22,16 +22,16 @@ declare namespace Realm {
      */
     interface AuthProviders {
         /** Authentication provider where users identify using email and password. */
-        emailPassword: Realm.AuthProviders.EmailPasswordAuthProvider;
+        emailPassword: Realm.Auth.EmailPasswordAuth;
         /** Authentication provider where users identify using an API-key. */
-        apiKey: Realm.AuthProviders.ApiKeyAuthProvider;
+        apiKey: Realm.Auth.ApiKeyAuth;
     }
 
-    namespace AuthProviders {
+    namespace Auth {
         /**
          * Authentication provider where users identify using email and password.
          */
-        interface EmailPasswordAuthProvider {
+        class EmailPasswordAuth {
             /**
              * Register a new user.
              *
@@ -53,7 +53,7 @@ declare namespace Realm {
              *
              * @param email the email associated to resend the confirmation to.
              */
-            resendConfirmation(email: string): Promise<void>;
+            resendConfirmationEmail(email: string): Promise<void>;
 
             /**
              * Complete resetting the password
@@ -92,7 +92,7 @@ declare namespace Realm {
         /**
          * The representation of an API-key stored in the service.
          */
-        interface ApiKey {
+        type ApiKey = {
             /**
              * The internal identifier of the key.
              */
@@ -112,12 +112,12 @@ declare namespace Realm {
              * When disabled, the key cannot authenticate.
              */
             disabled: boolean;
-        }
+        };
 
         /**
          * Authentication provider where users identify using an API-key.
          */
-        interface ApiKeyAuthProvider {
+        class ApiKeyAuth {
             /**
              * Creates an API key that can be used to authenticate as the current user.
              *
@@ -130,12 +130,12 @@ declare namespace Realm {
              *
              * @param keyId the id of the API key to fetch.
              */
-            get(keyId: ObjectId): Promise<ApiKey>;
+            fetch(keyId: ObjectId): Promise<ApiKey>;
 
             /**
              * Fetches the API keys associated with the current user.
              */
-            list(): Promise<ApiKey[]>;
+            fetchAll(): Promise<ApiKey[]>;
 
             /**
              * Deletes an API key associated with the current user.
