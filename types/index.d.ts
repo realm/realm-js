@@ -329,18 +329,6 @@ declare namespace Realm {
         readonly prototype: Results<any>;
     };
 
-    interface UserProfile {
-        name?: string;
-        email?: string;
-        pictureUrl?: string;
-        firstName?: string;
-        lastName?: string;
-        gender?: string;
-        birthday?: string;
-        minAge?: string;
-        maxAge?: string;
-    }
-
     interface UserMap {
         [identity: string]: User
     }

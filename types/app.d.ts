@@ -335,7 +335,7 @@ declare namespace Realm {
         /**
          * A URL referencing a picture associated with the user.
          */
-        pictureURL?: string;
+        pictureUrl?: string;
 
         /**
          * The users first name.
