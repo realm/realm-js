@@ -1,6 +1,6 @@
 # Realm Web integration tests
 
-For ultimate flexability, the tests are written to be able to run from both a Node.js and a browser.
+For ultimate flexability, the tests are written to be able to run from both Node.js and a browser.
 
 ## Running the tests
 
@@ -48,7 +48,7 @@ Currently, these are only available when running in a browser.
 Before running tests which depends on a specific authentication provider:
 1. Run once to import the app,
 2. Go to http://localhost:9090 (or whereever your MongoDB Realm server is listening)
-3. Setup the appropreate authentication providers.
+3. Setup the appropriate authentication providers.
 
 To enable testing credentials that require interaction, run with DEV_TOOLS and TEST_CREDENTIALS set to a comma-separated list of credentials.
 

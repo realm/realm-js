@@ -24,12 +24,12 @@ import { PrefixedStorage } from "./PrefixedStorage";
  */
 export class LocalStorage implements Storage {
     /**
-     * Internal state of the storage
+     * Internal state of the storage.
      */
     private readonly window: Window;
 
     /**
-     * Constructs a LocalStorage using the global window
+     * Constructs a LocalStorage using the global window.
      */
     constructor() {
         if (typeof window === "object") {
@@ -64,14 +64,14 @@ export class LocalStorage implements Storage {
     /** @inheritdoc */
     public clear(prefix?: string) {
         const keys = [];
-        // Iterate all keys to find the once have a matching prefix
+        // Iterate all keys to find the once have a matching prefix.
         for (let i = 0; i < this.window.localStorage.length; i++) {
             const key = this.window.localStorage.key(i);
             if (key && (!prefix || key.startsWith(prefix))) {
                 keys.push(key);
             }
         }
-        // Remove the items in a seperate loop to avoid updating while iterating
+        // Remove the items in a seperate loop to avoid updating while iterating.
         for (const key of keys) {
             this.window.localStorage.removeItem(key);
         }

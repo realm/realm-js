@@ -19,7 +19,7 @@
 export type StorageChangeListner = () => void;
 
 /**
- * Implementors of this provide a simple key-value store
+ * Implementors of this provide a simple key-value store.
  */
 export interface Storage {
     /**

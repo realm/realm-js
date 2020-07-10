@@ -23,24 +23,32 @@ import { Method } from "realm-network-transport";
  * Note: This has a path instead of a url.
  */
 export interface Request<RequestBody> {
-    /** HTTP method used when fetching */
+    /**
+     * HTTP method used when fetching.
+     */
     method: Method;
-    /** Path of the resource to fetch */
+    /**
+     * Path of the resource to fetch.
+     */
     path?: string;
-    /** Body to send when fetching */
+    /**
+     * Body to send when fetching.
+     */
     body?: RequestBody | string;
-    /** Headers to send when fetching */
+    /**
+     * Headers to send when fetching.
+     */
     headers?: { [name: string]: string };
 }
 
 /**
- * A transport takes care of fetching resources, more specialized than the `realm-network-transport`
+ * A transport takes care of fetching resources, more specialized than the `realm-network-transport`.
  */
 export interface Transport {
     /**
      * Fetch a network resource.
      *
-     * @param request The request to issue towards the server
+     * @param request The request to issue towards the server.
      */
     fetch<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>,
@@ -49,7 +57,7 @@ export interface Transport {
     /**
      * Creates another transport from this instance, adding a prefix to its path.
      *
-     * @param pathPrefix Path to prefix
+     * @param pathPrefix Path to prefix.
      */
     prefix(pathPrefix: string): Transport;
 }

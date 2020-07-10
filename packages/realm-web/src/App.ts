@@ -93,7 +93,7 @@ export class App<
     public readonly emailPasswordAuth: EmailPasswordAuth;
 
     /**
-     * Storage available for the app
+     * Storage available for the app.
      */
     public readonly storage: AppStorage;
 
@@ -109,7 +109,7 @@ export class App<
     private _location: Promise<AppLocation> | undefined;
 
     /**
-     * An helper used to open new and close current windows.
+     * A helper used to complete an OAuth 2.0 authentication flow.
      */
     private oauth2: OAuth2Helper;
 

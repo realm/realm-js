@@ -24,11 +24,13 @@ import { PrefixedStorage } from "./PrefixedStorage";
  */
 export class MemoryStorage implements Storage {
     /**
-     * Internal state of the storage
+     * Internal state of the storage.
      */
     private readonly storage: { [key: string]: string } = {};
 
-    /** A set of listners */
+    /**
+     * A set of listners.
+     */
     private readonly listeners: Set<StorageChangeListner> = new Set();
 
     /** @inheritdoc */
@@ -81,7 +83,9 @@ export class MemoryStorage implements Storage {
         return this.listeners.delete(listener);
     }
 
-    /** Fire the  */
+    /**
+     * Tell the listeners that a change occurred.
+     */
     private fireListeners() {
         this.listeners.forEach(listener => listener());
     }

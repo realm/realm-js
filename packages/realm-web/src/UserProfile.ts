@@ -20,9 +20,13 @@
  * The type of a user.
  */
 enum UserType {
-    /** A normal end-user created this user */
+    /**
+     * A normal end-user created this user.
+     */
     Normal = "normal",
-    /** The user was created by the server */
+    /**
+     * The user was created by the server.
+     */
     Server = "server",
 }
 
@@ -96,9 +100,9 @@ export class UserProfile implements Realm.UserProfile {
     public readonly identities: Realm.UserIdentity[] = [];
 
     /**
-     * Construct a user profile from the body of a response
+     * Construct a user profile from the body of a response.
      *
-     * @param response The response of a call fetching the users profile
+     * @param response The response of a call fetching the users profile.
      */
     constructor(response?: any) {
         if (response) {

@@ -136,13 +136,20 @@ export class OAuth2Helper {
         }
     }
 
-    /** The storage used when storing and retriving secrets */
+    /**
+     * The storage used when storing and retriving secrets.
+     */
     private storage: Storage;
 
-    /** The base transport  */
+    /**
+     * A function called to determine the URL of the app.
+     * NOTE: This is needed because the URL isn't known synchroniously, as it requires an initial request to the server.
+     */
     private getAppUrl: DetermineAppUrl;
 
-    /** The function called to open a window */
+    /**
+     * The function called to open a window.
+     */
     private openWindow: WindowOpener;
 
     /**

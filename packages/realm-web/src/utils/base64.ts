@@ -33,9 +33,9 @@ export function encodeBase64(data: string) {
 }
 
 /**
- * Decode a string of base64 as text
+ * Decode a string of base64 as text.
  *
- * @param data The string of base64 encoded text
+ * @param data The string of base64 encoded text.
  * @returns The decoded text.
  */
 export function decodeBase64(data: string) {

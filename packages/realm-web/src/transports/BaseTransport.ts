@@ -39,12 +39,12 @@ type BaseRequest<RequestBody> = Request<RequestBody> & {
  */
 export class BaseTransport implements Transport {
     /**
-     * This base route will be prefixed requests issued through by the base transport
+     * This base route will be prefixed requests issued through by the base transport.
      */
     private static readonly DEFAULT_BASE_ROUTE = "/api/client/v2.0";
 
     /**
-     * Default headers that will always be sat on requests
+     * Default headers that will always be sat on requests.
      */
     private static readonly DEFAULT_HEADERS = {
         Accept: "application/json",

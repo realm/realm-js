@@ -47,10 +47,10 @@ export function encodeQueryString(params: {
 }
 
 /**
- * Decodes a query string into an object
+ * Decodes a query string into an object.
  *
  * @param str The query string to decode.
- * @returns The decoded query string
+ * @returns The decoded query string.
  */
 export function decodeQueryString(str: string) {
     return Object.fromEntries(

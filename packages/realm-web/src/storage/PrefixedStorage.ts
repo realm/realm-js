@@ -23,7 +23,7 @@ import { Storage, StorageChangeListner } from "./Storage";
  */
 export class PrefixedStorage implements Storage {
     /**
-     * The string separating two parts
+     * The string separating two parts.
      */
     private static PART_SEPARATOR = ":";
 

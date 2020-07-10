@@ -68,8 +68,8 @@ export class User<
     /**
      * Log in and create a user
      *
-     * @param app The app used when logging in the user
-     * @param credentials Credentials to use when logging in
+     * @param app The app used when logging in the user.
+     * @param credentials Credentials to use when logging in.
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
     public static async logIn<

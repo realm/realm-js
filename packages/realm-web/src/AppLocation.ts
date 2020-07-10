@@ -28,7 +28,7 @@ export type AppLocation = {
     location: string;
 
     /**
-     * The deployment model of an app
+     * The deployment model of an app.
      */
     deploymentModel: "GLOBAL" | "LOCAL";
 };

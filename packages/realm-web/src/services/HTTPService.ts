@@ -37,10 +37,10 @@ class HTTPService implements HTTP {
     private readonly functions: Realm.DefaultFunctionsFactory;
 
     /**
-     * Construct an HTTP Service
+     * Construct an HTTP Service.
      *
-     * @param transport The underlying transport
-     * @param serviceName An optional service name
+     * @param transport The underlying transport.
+     * @param serviceName An optional service name.
      */
     constructor(transport: Transport, serviceName = "http") {
         this.functions = FunctionsFactory.create(transport, {
@@ -119,9 +119,9 @@ class HTTPService implements HTTP {
  * Creates an HTTP Service.
  * Note: This method exists to enable function binding.
  *
- * @param transport The underlying transport
- * @param serviceName An optional service name
- * @returns The new HTTP Service
+ * @param transport The underlying transport.
+ * @param serviceName An optional service name.
+ * @returns The new HTTP Service.
  */
 export function createService(transport: Transport, serviceName = "http") {
     return new HTTPService(transport, serviceName);
