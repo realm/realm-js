@@ -91,7 +91,7 @@ function randomNonVerifiableEmail() {
 async function registerAndLogInEmailUser(app) {
   const validEmail = randomVerifiableEmail();
   const validPassword = "test1234567890";
-  await app.auth.emailPassword.registerEmail(validEmail, validPassword);
+  await app.emailPasswordAuth.registerEmail(validEmail, validPassword);
   let user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword))
   assertIsUser(user);
   assertIsSameUser(user, app.currentUser());
@@ -140,10 +140,10 @@ module.exports = {
     });
   },
 
-  async testEmailPasswordProvider() {
+  async testEmailPasswordAuth() {
     let app = new Realm.App(appConfig);
-    let provider = app.auth.emailPassword;
-    TestCase.assertTrue(provider instanceof Realm.Auth.EmailPasswordProvider);
+    let provider = app.emailPasswordAuth;
+    TestCase.assertTrue(provider instanceof Realm.Auth.EmailPasswordAuth);
   },
 
   async testRegisterAutoVerifyEmailPassword() {
@@ -157,7 +157,7 @@ module.exports = {
       let credentials = Realm.Credentials.emailPassword(invalidEmail, invalidPassword);
       let err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
-      err = await TestCase.assertThrowsAsync(async() => app.auth.emailPassword.registerEmail(invalidEmail, invalidPassword));
+      err = await TestCase.assertThrowsAsync(async() => app.emailPasswordAuth.registerEmail(invalidEmail, invalidPassword));
       TestCase.assertEqual(err.message, "password must be between 6 and 128 characters");
       err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user did not register
@@ -166,7 +166,7 @@ module.exports = {
       let credentials = Realm.Credentials.emailPassword(invalidEmail, validPassword);
       let err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
-      err = await TestCase.assertThrowsAsync(async() => app.auth.emailPassword.registerEmail(invalidEmail, validPassword));
+      err = await TestCase.assertThrowsAsync(async() => app.emailPasswordAuth.registerEmail(invalidEmail, validPassword));
       TestCase.assertEqual(err.message, `failed to confirm user ${invalidEmail}`);
       err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user did not register
@@ -175,7 +175,7 @@ module.exports = {
       let credentials = Realm.Credentials.emailPassword(validEmail, invalidPassword);
       let err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
-      err = await TestCase.assertThrowsAsync(async() => app.auth.emailPassword.registerEmail(validEmail, invalidPassword));
+      err = await TestCase.assertThrowsAsync(async() => app.emailPasswordAuth.registerEmail(validEmail, invalidPassword));
       TestCase.assertEqual(err.message, "password must be between 6 and 128 characters");
       err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user did not register
@@ -184,7 +184,7 @@ module.exports = {
       let credentials = Realm.Credentials.emailPassword(validEmail, validPassword);
       let err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
-      await app.auth.emailPassword.registerEmail(validEmail, validPassword);
+      await app.emailPasswordAuth.registerEmail(validEmail, validPassword);
       let user = await app.logIn(credentials)
       assertIsUser(user);
       assertIsSameUser(user, app.currentUser());

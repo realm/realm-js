@@ -133,18 +133,18 @@
     removeUser(user) { }
 
     /**
-     * Auth providers. Currently only `emailPassword` provider is support
+     * Client for the email/password authentication provider.
      *
      * @example
      * {
-     * let app = new Realm.App(config);
-     * let provider = app.auth.emailPassword;
+     * // Creating a new user, by registering via email & password
+     * const app = new Realm.App(config);
+     * await app.emailPasswordAuth.registerEmail('john@example.com', 'some-secure-password');
      * }
      *
-     * @see Realm.Auth
-     * @see Realm.Auth.EmailPassword
+     * @type {Realm.Auth.EmailPasswordAuth}
      */
-    get auth() { }
+    get emailPasswordAuth() { }
  }
 
 
@@ -351,8 +351,8 @@ class Credentials {
 
 /**
  * A namespace for auth providers
- * @see Realm.Auth.EmailPassword
- * @see Realm.Auth.UserAPIKey
+ * @see Realm.Auth.EmailPasswordAuth
+ * @see Realm.Auth.ApiKeyAuth
  * @memberof Realm
  */
 class Auth {
@@ -363,7 +363,7 @@ class Auth {
  * Class for managing email/password for users
  * @memberof Realm.Auth
  */
-class EmailPassword {
+class EmailPasswordAuth {
 
     /**
      * Registers a new email identity with the username/password provider,

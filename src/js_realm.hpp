@@ -33,7 +33,7 @@
 #include "js_app.hpp"
 #include "js_auth.hpp"
 #include "js_app_credentials.hpp"
-#include "js_email_password_provider.hpp"
+#include "js_email_password_auth.hpp"
 #include "js_api_key_auth.hpp"
 #include "sync/async_open_task.hpp"
 #include "sync/sync_config.hpp"
@@ -467,8 +467,8 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType auth_constructor = AuthClass<T>::create_constructor(ctx);
     Object::set_property(ctx, realm_constructor, "Auth", auth_constructor, attributes);
 
-    FunctionType email_password_provider_client_constructor = EmailPasswordProviderClientClass<T>::create_constructor(ctx);
-    Object::set_property(ctx, auth_constructor, "EmailPasswordProvider", email_password_provider_client_constructor, attributes);
+    FunctionType email_password_provider_client_constructor = EmailPasswordAuthClass<T>::create_constructor(ctx);
+    Object::set_property(ctx, auth_constructor, "EmailPasswordAuth", email_password_provider_client_constructor, attributes);
 
     FunctionType user_apikey_provider_client_constructor = ApiKeyAuthClass<T>::create_constructor(ctx);
     Object::set_property(ctx, auth_constructor, "ApiKeyAuth", user_apikey_provider_client_constructor, attributes);
