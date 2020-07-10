@@ -25,6 +25,11 @@ if (location.pathname.endsWith("-callback")) {
 } else {
     const mochaClient = new MochaRemoteClient({
         onInstrumented: () => {
+            beforeEach(function () {
+                this.slow(1000);
+                this.timeout(10000);
+            });
+
             require("./app.test");
             require("./credentials.test");
             require("./user.test");

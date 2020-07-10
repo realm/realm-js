@@ -25,6 +25,7 @@ import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
 import { Credentials } from "./Credentials";
+import { ApiKeyAuth } from "./auth-providers";
 
 // Disabling requiring JSDoc for now - as the User class is exported as the Realm.User interface, which is already documented.
 /* eslint-disable jsdoc/require-jsdoc */
@@ -93,6 +94,9 @@ export class User<
     public readonly functions: FunctionsFactoryType &
         Realm.BaseFunctionsFactory;
 
+    /** @inheritdoc */
+    public apiKeys: ApiKeyAuth;
+
     /**
      * Creates a user from the data stored in the storage of an `App` instance.
      *
@@ -130,6 +134,7 @@ export class User<
             currentUser: this,
         });
         const appTransport = new AppTransport(this.transport, app.id);
+        this.apiKeys = new ApiKeyAuth(this.transport);
         this.functions = FunctionsFactory.create(appTransport);
         this.storage = new UserStorage(app.storage, id);
         // Store tokens in storage for later hydration
@@ -205,10 +210,6 @@ export class User<
         } else {
             throw new Error("Cannot read custom data without an access token");
         }
-    }
-
-    get apiKeys(): Realm.Auth.ApiKeyAuth {
-        throw new Error("Not yet implemented");
     }
 
     /**

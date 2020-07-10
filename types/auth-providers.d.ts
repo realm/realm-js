@@ -96,7 +96,7 @@ declare namespace Realm {
             /**
              * The internal identifier of the key.
              */
-            _id: ObjectId;
+            _id: string;
 
             /**
              * The secret part of the key.
@@ -130,7 +130,7 @@ declare namespace Realm {
              *
              * @param keyId the id of the API key to fetch.
              */
-            fetch(keyId: ObjectId): Promise<ApiKey>;
+            fetch(keyId: string): Promise<ApiKey>;
 
             /**
              * Fetches the API keys associated with the current user.
@@ -142,21 +142,21 @@ declare namespace Realm {
              *
              * @param keyId the id of the API key to delete
              */
-            delete(keyId: ObjectId): Promise<void>;
+            delete(keyId: string): Promise<void>;
 
             /**
              * Enables an API key associated with the current user.
              *
              * @param keyId the id of the API key to enable
              */
-            enable(keyId: ObjectId): Promise<void>;
+            enable(keyId: string): Promise<void>;
 
             /**
              * Disable an API key associated with the current user.
              *
              * @param keyId the id of the API key to disable
              */
-            disable(keyId: ObjectId): Promise<void>;
+            disable(keyId: string): Promise<void>;
         }
     }
 }

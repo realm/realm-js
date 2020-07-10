@@ -326,14 +326,14 @@ class Credentials {
      * @param {string} key A string identifying the user by API key.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static userAPIKey(token) { }
+    static userApiKey(token) { }
 
     /**
      * Creates credentials from a server API key.
      * @param {string} key A string identifying the user by API key.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static serverAPIKey(token) { }
+    static serverApiKey(token) { }
 
     /**
      * Creates credentials based on an Apple login.
