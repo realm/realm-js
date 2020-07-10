@@ -34,7 +34,7 @@ export class MockTransport extends BaseTransport implements Transport {
      */
     constructor(responses: object[] = [], baseUrl = "http://localhost:1337") {
         const networkTransport = new MockNetworkTransport(responses);
-        super(networkTransport, baseUrl);
+        super(networkTransport, baseUrl, undefined, "");
         this.mockNetworkTransport = networkTransport;
     }
 

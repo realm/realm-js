@@ -16,8 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { AppTransport } from "./AppTransport";
-export { Transport, Request } from "./Transport";
-export { BaseTransport } from "./BaseTransport";
-export { AuthenticatedTransport } from "./AuthenticatedTransport";
-export { PrefixedTransport } from "./PrefixedTransport";
+export type AppLocation = {
+    /**
+     * The hostname to be used when communicating with the app server.
+     */
+    hostname: string;
+
+    /**
+     * The physical location of the app server.
+     */
+    location: string;
+
+    /**
+     * The deployment model of an app
+     */
+    deploymentModel: "GLOBAL" | "LOCAL";
+};
+
+export type AppLocationContext = {
+    /**
+     * An object with a property representing the location of an app.
+     */
+    location: Promise<AppLocation>;
+};

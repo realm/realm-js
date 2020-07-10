@@ -13,8 +13,6 @@ npm install realm-web --save
 As this is a beta release, it comes with a few caveats:
 
 - Most importantly, the Realm Web project *will not* include a Realm Sync client in any foreseeable future.
-- Automatically fetching the location of an app in the production environment, is not yet implemented.
-  To get the correct base URL, you must set the `baseUrl` of the app to the value of `hostname` in the response you get from visiting `'https://stitch.mongodb.com/api/client/v2.0/app/<your-app-id>/location` in your browser.
 - A limited selection of types of [credentials for authentication providers](https://docs.mongodb.com/stitch/authentication/providers/) are implemented at the moment:
   - Anonymous.
   - API key.

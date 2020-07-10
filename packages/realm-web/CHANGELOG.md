@@ -3,6 +3,7 @@
 
 ### Enhancements
 * Users are now persisted across refreshes and browser tabs (using the browser's local-storage). ([#2990](https://github.com/realm/realm-js/pull/2990))
+* App location metadata is now requested before making any requests towards the app server. This removes the need for users to manually resolve the baseUrl. ([#3000](https://github.com/realm/realm-js/pull/3000))
 
 ### Fixed
 * None.

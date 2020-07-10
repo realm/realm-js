@@ -43,6 +43,7 @@ export class MockApp extends App<any> {
             baseUrl: "http://localhost:1337",
             storage,
             transport,
+            fetchLocation: false,
         });
         this.mockTransport = transport;
     }
