@@ -2,7 +2,8 @@
 =============================================================
 
 ### Enhancements
-* None
+* Added `Credentials.userApiKey` and `Credentials.serverApiKey` as aliases for `Credentials.apiKey`.
+* Exposed the `ApiKeyAuth` auth provider client on `user.apiKeys`.
 
 ### Fixed
 * Fixed an issue with reuse of the users in an apps list of users. Logging in with the same user multiple times will now update and reuse the same `Realm.User` object. ([#3052](https://github.com/realm/realm-js/pull/3052))
