@@ -108,7 +108,7 @@ void EmailPasswordProviderClientClass<T>::resend_confirmation_email(ContextType 
     auto& client = *get_internal<T, EmailPasswordProviderClientClass<T>>(ctx, this_object);
 
     auto email = Value::validated_to_string(ctx, args[0], "email");
-    auto callback = Value::validated_to_function(ctx, args[2], "callback");
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     client.resend_confirmation_email(email, make_callback_handler<T>(ctx, this_object, callback));
 }
@@ -120,7 +120,7 @@ void EmailPasswordProviderClientClass<T>::send_reset_password_email(ContextType 
     auto& client = *get_internal<T, EmailPasswordProviderClientClass<T>>(ctx, this_object);
 
     auto email = Value::validated_to_string(ctx, args[0], "email");
-    auto callback = Value::validated_to_function(ctx, args[2], "callback");
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     client.send_reset_password_email(email, make_callback_handler<T>(ctx, this_object, callback));
 }
