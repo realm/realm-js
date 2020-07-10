@@ -626,17 +626,10 @@ declare class Realm {
 
     /**
      * @param  {string|Realm.ObjectType|Function} type
-     * @param  {number|string} key
+     * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string): T & Realm.Object | undefined;
-
-    /**
-     * @param  {string|Realm.ObjectType|Function} type
-     * @param  {string} id
-     * @returns {T | undefined}
-     */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, id: string): T & Realm.Object | undefined;
+    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string | ObjectId): T & Realm.Object | undefined;
 
     /**
      * @param  {string|Realm.ObjectType|Function} type
