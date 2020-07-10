@@ -185,7 +185,7 @@
 		3FCE2A991F58BE3600D4855B /* feature_checks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = feature_checks.hpp; path = "object-store/src/feature_checks.hpp"; sourceTree = SOURCE_ROOT; };
 		42BD57A824640A94008679D5 /* js_app.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_app.hpp; sourceTree = "<group>"; };
 		42BD57A924640A94008679D5 /* js_app_credentials.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_app_credentials.hpp; sourceTree = "<group>"; };
-		42BD57AA24640A94008679D5 /* js_email_password_provider.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_email_password_provider.hpp; sourceTree = "<group>"; };
+		42BD57AA24640A94008679D5 /* js_email_password_auth.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_email_password_auth.hpp; sourceTree = "<group>"; };
 		42BD57AB24640A94008679D5 /* js_user.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_user.hpp; sourceTree = "<group>"; };
 		42BD57AC24640A94008679D5 /* js_network_transport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_network_transport.hpp; sourceTree = "<group>"; };
 		42BD57AD24640A95008679D5 /* js_sync_util.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_sync_util.hpp; sourceTree = "<group>"; };
@@ -362,7 +362,7 @@
 				42BD57AD24640A95008679D5 /* js_sync_util.hpp */,
 				42BD57AE24640A95008679D5 /* js_api_key_auth.hpp */,
 				42BD57AB24640A94008679D5 /* js_user.hpp */,
-				42BD57AA24640A94008679D5 /* js_email_password_provider.hpp */,
+				42BD57AA24640A94008679D5 /* js_email_password_auth.hpp */,
 				F62A35131C18E6E2004A917D /* iOS */,
 				F6874A441CAD2ACD00EEEE36 /* JSC */,
 				F6BCCFDF1C83809A00FE31AE /* lib */,
