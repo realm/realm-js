@@ -4,15 +4,13 @@ Accessing MongoDB Realm from a web-browser.
 
 ## Installation
 
-In its current form, the package has not been published to NPM, instead its distributed using a direct HTTP URL:
-
 ```
-npm install https://static.realm.io/downloads/realm-web/realm-web-0.1.0.tgz
+npm install realm-web --save
 ```
 
 ## Caveats / limitations
 
-As this is a *very early* preview release, it comes with a few caveats:
+As this is a beta release, it comes with a few caveats:
 
 - Most importantly, the Realm Web project *will not* include a Realm Sync client in any foreseeable future.
 - Automatically fetching the location of an app in the production environment, is not yet implemented.

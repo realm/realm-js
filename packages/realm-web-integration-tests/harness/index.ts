@@ -87,9 +87,31 @@ async function run() {
 
     // Navigate to the pages served by the webpack dev server
     const page = await browser.newPage();
+    const issues: string[] = [];
+    page.on("console", message => {
+        const type = message.type();
+        if (type === "error") {
+            const text = message.text();
+            issues.push(text);
+            console.error(`[ERROR] ${text}`);
+        } else if (type === "warning") {
+            const text = message.text();
+            issues.push(text);
+            console.warn(`[WARNING] ${text}`);
+        } else if (type === "info") {
+            const text = message.text();
+            console.log(`[INFO] ${text}`);
+        }
+    });
     await page.goto("http://localhost:8080");
     // Wait for the tests to complete
     await mochaServer.stopped;
+    if (issues.length > 0) {
+        const summary = issues.join("\n");
+        throw new Error(
+            `An error or warning was logged in the browser:\n${summary}`,
+        );
+    }
 }
 
 run().then(

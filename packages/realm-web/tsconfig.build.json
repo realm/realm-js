@@ -3,13 +3,16 @@
 	"compilerOptions": {
 		"types": [
 			"realm-network-transport",
-			"bson",
-			"realm"
+			"bson"
 		]
 	},
+	"include": [
+		"types/realm/app.d.ts",
+		"types/realm/bson.d.ts",
+		"src/**/*.ts"
+	],
 	"exclude": [
 		"src/**/*.test.ts",
-		"src/test/",
-		"types/"
+		"src/test/"
 	]
 }
