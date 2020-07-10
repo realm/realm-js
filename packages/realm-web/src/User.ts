@@ -234,4 +234,8 @@ export class User<
     private async refreshAccessToken() {
         throw new Error("Not yet implemented");
     }
+
+    push(serviceName = ""): Realm.Services.Push {
+        throw new Error("Not yet implemented");
+    }
 }
