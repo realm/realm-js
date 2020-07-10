@@ -287,19 +287,7 @@ declare namespace Realm {
          * 
          * @returns An service client with methods to register and deregister the device on the user.
          */
-        push(serviceName: string): {
-            /**
-             * Register this device with the user.
-             * 
-             * @param token A Firebase Cloud Messaging (FCM) token, retrieved via the firebase SDK.
-             */
-            register(token: string): Promise<void>,
-
-            /**
-             * Deregister this device with the user, to disable sending messages to this device.
-             */
-            deregister(): Promise<void>,
-        };
+        push(serviceName: string): Realm.Services.Push;
     }
 
     /**

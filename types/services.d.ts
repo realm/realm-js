@@ -515,5 +515,22 @@ declare namespace Realm {
                 body: Binary;
             }
         }
+
+        /** 
+         * Use the Push service to enable sending push messages to this user via Firebase Cloud Messaging (FCM).
+         */
+        interface Push {
+            /**
+             * Register this device with the user.
+             * 
+             * @param token A Firebase Cloud Messaging (FCM) token, retrieved via the firebase SDK.
+             */
+            register(token: string): Promise<void>,
+    
+            /**
+             * Deregister this device with the user, to disable sending messages to this device.
+             */
+            deregister(): Promise<void>,
+        }
     }
 }
