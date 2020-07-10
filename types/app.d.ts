@@ -145,7 +145,15 @@ declare namespace Realm {
          * @param key The secret content of the API key.
          * @returns The credentials instance, which can be passed to `app.logIn`.
          */
-        static apiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
+        static userApiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
+
+        /**
+         * Creates credentials that logs in using the [API Key Provider](https://docs.mongodb.com/stitch/authentication/api-key/).
+         *
+         * @param key The secret content of the API key.
+         * @returns The credentials instance, which can be passed to `app.logIn`.
+         */
+        static serverApiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
 
         /**
          * Creates credentials that logs in using the [Email/Password Provider](https://docs.mongodb.com/stitch/authentication/userpass/).

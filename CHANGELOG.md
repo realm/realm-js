@@ -14,6 +14,8 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 *  The instance methods on the ApiKeyAuth instance (`user.apiKeys`) have gotten their APIKey(s) suffix removed: Ex. `apiKeys.createAPIKey` has been replaced by `apiKeys.create`.
 * `Realm.Auth.EmailPasswordProvider` has been replaced by `Realm.Auth.EmailPasswordAuth`.
 * `app.auth.emailPassword` has been replaced by `user.emailPasswordAuth`.
+* `Credentials.userAPIKey` has been replaced by `Credentials.userApiKey`.
+* `Credentials.serverAPIKey` has been replaced by `Credentials.serverApiKey`.
 
 ### Enhancements
 * Added RemoteMongoClient functionality to `Realm.User`
