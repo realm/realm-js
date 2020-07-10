@@ -60,11 +60,11 @@ public:
     static FunctionType create_constructor(ContextType);
 
     static void get_app_id(ContextType, ObjectType, ReturnValue &);
-    static void get_auth_email_password(ContextType, ObjectType, ReturnValue &);
+    static void get_email_password_auth(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"id", {wrap<get_app_id>, nullptr}},
-        {"_authEmailPassword", {wrap<get_auth_email_password>, nullptr}},
+        {"emailPasswordAuth", {wrap<get_email_password_auth>, nullptr}},
     };
 
     static void login(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -296,9 +296,9 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
 }
 
 template<typename T>
-void AppClass<T>::get_auth_email_password(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
+void AppClass<T>::get_email_password_auth(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
-    return_value.set(EmailPasswordProviderClientClass<T>::create_instance(ctx, app));
+    return_value.set(EmailPasswordAuthClass<T>::create_instance(ctx, app));
 }
 
 }
