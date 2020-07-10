@@ -32,14 +32,18 @@ class MongoDBCollection<T extends Document>
      */
     private functions: Realm.DefaultFunctionsFactory;
 
-    /** The name of the database */
+    /**
+     * The name of the database.
+     */
     private readonly databaseName: string;
 
-    /** The name of the collection */
+    /**
+     * The name of the collection.
+     */
     private readonly collectionName: string;
 
     /**
-     * Construct a remote collection of documents
+     * Construct a remote collection of documents.
      *
      * @param transport The transport to use when requesting the service.
      * @param serviceName The name of the remote service.
@@ -228,14 +232,14 @@ class MongoDBCollection<T extends Document>
 }
 
 /**
- * Creates an Remote MongoDB Collection
+ * Creates an Remote MongoDB Collection.
  * Note: This method exists to enable function binding.
  *
- * @param transport The underlying transport
- * @param serviceName A service name
- * @param databaseName A database name
- * @param collectionName A collection name
- * @returns The new Remote MongoDB Database
+ * @param transport The underlying transport.
+ * @param serviceName A service name.
+ * @param databaseName A database name.
+ * @param collectionName A collection name.
+ * @returns The collection.
  */
 export function createCollection<
     T extends Realm.Services.MongoDB.Document = any
@@ -254,13 +258,13 @@ export function createCollection<
 }
 
 /**
- * Creates a Remote MongoDB Database
+ * Creates a Remote MongoDB Database.
  * Note: This method exists to enable function binding.
  *
  * @param transport The underlying transport
  * @param serviceName A service name
  * @param databaseName A database name
- * @returns The new Remote MongoDB Database
+ * @returns The database.
  */
 export function createDatabase(
     transport: Transport,
@@ -278,12 +282,12 @@ export function createDatabase(
 }
 
 /**
- * Creates a Remote MongoDB Service
+ * Creates a Remote MongoDB Service.
  * Note: This method exists to enable function binding.
  *
- * @param transport The underlying transport
- * @param serviceName An optional service name
- * @returns The new Remote MongoDB Service
+ * @param transport The underlying transport.
+ * @param serviceName An optional service name.
+ * @returns The service.
  */
 export function createService(transport: Transport, serviceName = "mongo-db") {
     return { db: createDatabase.bind(null, transport, serviceName) };

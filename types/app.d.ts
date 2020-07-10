@@ -24,8 +24,14 @@
 
 declare namespace Realm {
     namespace Credentials {
+
         /**
-         * Payload sent when authenticating using the [Email/Password Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
+         * Payload sent when authenticating using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
+         */
+        type AnonymousPayload = {};
+
+        /**
+         * Payload sent when authenticating using the [Email/Password Provider](https://docs.mongodb.com/realm/authentication/email-password/).
          */
         type EmailPasswordPayload = {
             /**
@@ -41,7 +47,7 @@ declare namespace Realm {
         };
 
         /**
-         * Payload sent when authenticating using the [API Key Provider](https://docs.mongodb.com/stitch/authentication/api-key/).
+         * Payload sent when authenticating using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
          */
         type ApiKeyPayload = {
             /**
@@ -51,9 +57,60 @@ declare namespace Realm {
         };
 
         /**
-         * Payload sent when authenticating using the [Anonymous Provider](https://docs.mongodb.com/stitch/authentication/anonymous/).
+         * Payload sent when authenticating using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
          */
-        type AnonymousPayload = {};
+        type FunctionPayload = {
+            [key: string]: string,
+        };
+
+        /**
+         * Payload sent when authenticating using the [Custom JWT Provider](https://docs.mongodb.com/realm/authentication/custom-jwt/).
+         */
+        type JWTPayload = {
+            token: string;
+        };
+
+        /**
+         * Payload sent when authenticating using an OAuth 2.0 provider:
+         * - [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         * - [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
+         */
+        type OAuth2RedirectPayload = {
+            /**
+             * The auth code returned from Google.
+             */
+            redirectUrl: string;
+        };
+
+        /**
+         * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         */
+        type GooglePayload = {
+            /**
+             * The auth code returned from Google.
+             */
+            authCode: string;
+        };
+
+        /**
+         * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         */
+        type FacebookPayload = {
+            /**
+             * The auth code returned from Google.
+             */
+            accessToken: string;
+        };
+
+        /**
+         * Payload sent when authenticating using the [Apple ID Provider](https://docs.mongodb.com/realm/authentication/apple/).
+         */
+        type ApplePayload = {
+            /**
+             * The ID token from Apple.
+             */
+            id_token: string;
+        };
     }
 
     /**
@@ -102,6 +159,14 @@ declare namespace Realm {
             email: string,
             password: string,
         ): Credentials<Credentials.EmailPasswordPayload>;
+
+        /**
+         * Creates credentials that logs in using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         *
+         * @param authCode The auth code returned from Google.
+         * @returns The credentials instance, which can be passed to `app.logIn`.
+         */
+        static google(authCode: string): Credentials<Credentials.GooglePayload>;
 
         // TODO: Add providerCapabilities?
     }

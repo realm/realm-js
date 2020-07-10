@@ -16,8 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+export type StorageChangeListner = () => void;
+
 /**
- * Implementors of this provide a simple key-value store
+ * Implementors of this provide a simple key-value store.
  */
 export interface Storage {
     /**
@@ -46,4 +48,18 @@ export interface Storage {
      * @param prefix Clear only values starting with this prefix.
      */
     clear(prefix?: string): void;
+
+    /**
+     * Add a callback function which will be called when the store updates.
+     *
+     * @param listener The listener callback to add.
+     */
+    addListener(listener: StorageChangeListner): void;
+
+    /**
+     * Remove a callback function which was previously added.
+     *
+     * @param listener The listener callback to remove.
+     */
+    removeListener(listener: StorageChangeListner): void;
 }

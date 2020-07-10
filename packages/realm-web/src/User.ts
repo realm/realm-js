@@ -21,6 +21,7 @@ import { AuthenticatedTransport } from "./transports";
 import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
+import { decodeBase64 } from "./utils/base64";
 
 // Disabling requiring JSDoc for now - as the User class is exported as the Realm.User interface, which is already documented.
 /* eslint-disable jsdoc/require-jsdoc */
@@ -31,6 +32,12 @@ interface UserParameters {
     accessToken: string | null;
     refreshToken: string | null;
 }
+
+type JWT<CustomDataType extends object = any> = {
+    expires: number;
+    issuedAt: number;
+    userData: CustomDataType;
+};
 
 export enum UserState {
     Active = "active",
@@ -61,8 +68,8 @@ export class User<
     /**
      * Log in and create a user
      *
-     * @param app The app used when logging in the user
-     * @param credentials Credentials to use when logging in
+     * @param app The app used when logging in the user.
+     * @param credentials Credentials to use when logging in.
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
     public static async logIn<
@@ -198,7 +205,12 @@ export class User<
     }
 
     get customData(): CustomDataType {
-        throw new Error("Not yet implemented");
+        if (this._accessToken) {
+            const decodedToken = this.decodeAccessToken();
+            return decodedToken.userData;
+        } else {
+            throw new Error("Cannot read custom data without an access token");
+        }
     }
 
     get apiKeys(): Realm.Auth.ApiKeyAuth {
@@ -287,5 +299,32 @@ export class User<
 
     push(serviceName = ""): Realm.Services.Push {
         throw new Error("Not yet implemented");
+    }
+
+    private decodeAccessToken(): JWT<CustomDataType> {
+        if (this._accessToken) {
+            // Decode and spread the token
+            const parts = this._accessToken.split(".");
+            if (parts.length !== 3) {
+                throw new Error("Expected three parts");
+            }
+            // Decode the payload
+            const encodedPayload = parts[1];
+            const decodedPayload = JSON.parse(decodeBase64(encodedPayload));
+            const {
+                exp: expires,
+                iat: issuedAt,
+                user_data: userData = {},
+            } = decodedPayload;
+            // Validate the types
+            if (typeof expires !== "number") {
+                throw new Error("Failed to decode access token 'exp'");
+            } else if (typeof issuedAt !== "number") {
+                throw new Error("Failed to decode access token 'iat'");
+            }
+            return { expires, issuedAt, userData };
+        } else {
+            throw new Error("Missing an access token");
+        }
     }
 }

@@ -28,7 +28,7 @@ const PROFILE_STORAGE_KEY = "profile";
  */
 export class UserStorage extends PrefixedStorage {
     /**
-     * Construct a storage for a `User`
+     * Construct a storage for a `User`.
      *
      * @param storage The underlying storage to wrap.
      * @param userId The id of the user.
@@ -38,7 +38,7 @@ export class UserStorage extends PrefixedStorage {
     }
 
     /**
-     * Get the access token from storage
+     * Get the access token from storage.
      *
      * @returns Access token (null if unknown).
      */
@@ -60,7 +60,7 @@ export class UserStorage extends PrefixedStorage {
     }
 
     /**
-     * Get the refresh token from storage
+     * Get the refresh token from storage.
      *
      * @returns Refresh token (null if unknown and user is logged out).
      */

@@ -19,7 +19,7 @@
 import { Transport, Request } from "./Transport";
 
 /**
- * Prefixes all request with a path prefix
+ * Prefixes all request with a path prefix.
  */
 export class PrefixedTransport implements Transport {
     /**

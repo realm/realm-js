@@ -26,10 +26,14 @@ import {
  * Perform mocked requests and get pre-recorded responses
  */
 export class MockNetworkTransport implements NetworkTransport {
-    /** List of all requests captured */
+    /**
+     * List of all requests captured.
+     */
     public readonly requests: Request<any>[] = [];
 
-    /** Responses sent back on each expected request */
+    /**
+     * Responses sent back on each expected request.
+     */
     public readonly responses: any[];
 
     /**

@@ -27,6 +27,7 @@ import { EmailPasswordAuth } from "./auth-providers";
 import { Storage, createDefaultStorage } from "./storage";
 import { AppStorage } from "./AppStorage";
 import { AppLocation, AppLocationContext } from "./AppLocation";
+import { OAuth2Helper } from "./OAuth2Helper";
 
 /**
  * Configuration to pass as an argument when constructing an app.
@@ -92,7 +93,7 @@ export class App<
     public readonly emailPasswordAuth: EmailPasswordAuth;
 
     /**
-     * Storage available for the app
+     * Storage available for the app.
      */
     public readonly storage: AppStorage;
 
@@ -106,6 +107,11 @@ export class App<
      * An promise of the apps location metadata.
      */
     private _location: Promise<AppLocation> | undefined;
+
+    /**
+     * A helper used to complete an OAuth 2.0 authentication flow.
+     */
+    private oauth2: OAuth2Helper;
 
     /**
      * Construct a Realm App, either from the Realm App id visible from the MongoDB Realm UI or a configuration.
@@ -155,6 +161,11 @@ export class App<
         // Construct the storage
         const baseStorage = storage || createDefaultStorage();
         this.storage = new AppStorage(baseStorage, this.id);
+        // Constructing the oauth2 helper, passing in the baseStorage to avoid an app scope.
+        this.oauth2 = new OAuth2Helper(baseStorage, async () => {
+            const baseUrl = await this.baseTransport.determineBaseUrl(false);
+            return `${baseUrl}/app/${this.id}`;
+        });
         // Hydrate the app state from storage
         this.hydrate();
     }
@@ -181,11 +192,11 @@ export class App<
      * @param credentials Credentials to use when logging in
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
-    public async logIn(credentials: Realm.Credentials, fetchProfile = true) {
-        const user: User<
-            FunctionsFactoryType,
-            CustomDataType
-        > = await User.logIn(this, credentials, fetchProfile);
+    public async logIn(
+        credentials: Realm.Credentials<any>,
+        fetchProfile = true,
+    ): Promise<User<FunctionsFactoryType, CustomDataType>> {
+        const user = await this.performLogIn(credentials, fetchProfile);
         // Add the user at the top of the stack
         this.users.unshift(user);
         // Persist the user id in the storage,
@@ -272,6 +283,39 @@ export class App<
             });
         }
         return this._location;
+    }
+
+    /**
+     * Perform the actual login, based on the credentials.
+     * Either it decodes the credentials and instantiates a user directly or it calls User.logIn to perform a fetch.
+     *
+     * @param credentials Credentials to use when logging in
+     * @param fetchProfile Should the users profile be fetched? (default: true)
+     */
+    private async performLogIn(
+        credentials: Realm.Credentials<any>,
+        fetchProfile = true,
+    ): Promise<User<FunctionsFactoryType, CustomDataType>> {
+        if (
+            credentials.providerType.startsWith("oauth2") &&
+            typeof credentials.payload.redirectUrl === "string"
+        ) {
+            // Initiate the OAuth2 and use the next credentials once they're known
+            const result = await this.oauth2.initiate(credentials);
+            const {
+                userId,
+                accessToken,
+                refreshToken,
+            } = OAuth2Helper.decodeAuthInfo(result.userAuth);
+            return new User<FunctionsFactoryType, CustomDataType>({
+                app: this,
+                id: userId,
+                accessToken,
+                refreshToken,
+            });
+        } else {
+            return User.logIn(this, credentials, fetchProfile);
+        }
     }
 
     /**

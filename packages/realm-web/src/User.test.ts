@@ -90,6 +90,21 @@ describe("User", () => {
         });
     });
 
+    it("exposes custom data", async () => {
+        const user = new User({
+            app: new MockApp("my-mocked-app"),
+            id: "some-user-id",
+            // { "exp": 1598640312, "iat": 1593456312, "user_data": { "name": "Johnny" } }
+            accessToken:
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTg2NDAzMTIsImlhdCI6MTU5MzQ1NjMxMiwidXNlcl9kYXRhIjp7Im5hbWUiOiJKb2hubnkifX0.l-ElbkTTcmMmM4EqO6gm--cIH6dmgtb5vdYfArPtBAE",
+            refreshToken: "very-refreshing",
+        });
+        // Try calling a function on the user
+        expect(user.customData).deep.equals({
+            name: "Johnny",
+        });
+    });
+
     it("expose a functions factory", async () => {
         const user = new User({
             app: new MockApp("my-mocked-app", [{ pong: "ball" }]),

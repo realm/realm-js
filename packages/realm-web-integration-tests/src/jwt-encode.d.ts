@@ -16,22 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { MochaRemoteClient } from "mocha-remote-client";
-import { handleAuthRedirect } from "realm-web";
-
-if (location.pathname.endsWith("-callback")) {
-    console.log("This is the callback from Google OAuth 2.0 flow");
-    handleAuthRedirect();
-} else {
-    const mochaClient = new MochaRemoteClient({
-        onInstrumented: () => {
-            require("./app.test");
-            require("./credentials.test");
-            require("./user.test");
-            require("./functions.test");
-            require("./services.test");
-            require("./api-key-auth-provider.test");
-            require("./email-password-auth-provider.test");
-        },
-    });
+declare module "jwt-encode" {
+    type Options = { alg: "HS256"; typ: "JWT"; [key: string]: any };
+    /**
+     * Create a very basic JWT signature.
+     *
+     * @param data The data object you want to have signed.
+     * @param secret Secret to use to sign token with.
+     * @param options JWT header options.
+     * @returns The signed JSON Web Token.
+     */
+    function sign(data: object, secret: string, options?: Options): string;
+    export = sign;
 }

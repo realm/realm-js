@@ -2,7 +2,8 @@
 =============================================================
 
 ### Enhancements
-* None
+* Added more credentials enabling logins via additional authentication providers: Custom Functions, Custom JWT, Google, Facebook & Apple ID. ([#3019](https://github.com/realm/realm-js/pull/3019))
+* Custom data can now be retrieved from an active User. ([#3019](https://github.com/realm/realm-js/pull/3019))
 
 ### Fixed
 * Fixed an error "Cannot use 'in' operator to search for 'node' in undefined", which could occur when bundling the package without Node.js stubs available. ([#3001](https://github.com/realm/realm-js/pull/3001))

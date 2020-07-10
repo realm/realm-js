@@ -23,7 +23,9 @@ import { MockNetworkTransport } from "./MockNetworkTransport";
  * A mocked network transport, which gets created with a list of responses to return in the order it's being requested.
  */
 export class MockTransport extends BaseTransport implements Transport {
-    /** Underlying (mocked) network transport */
+    /**
+     * Underlying (mocked) network transport.
+     */
     private readonly mockNetworkTransport: MockNetworkTransport;
 
     /**

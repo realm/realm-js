@@ -24,10 +24,14 @@ import { Transport, Request } from "./Transport";
  * A transport prefixing request paths with the path of the App id and ensuring the correct location is hit.
  */
 export class AppTransport implements Transport {
-    /** The underlying transport used to issue requests */
+    /**
+     * The underlying transport used to issue requests.
+     */
     private readonly transport: BaseTransport;
 
-    /** The id of the app */
+    /**
+     * The id of the app.
+     */
     private readonly appId: string;
 
     /**

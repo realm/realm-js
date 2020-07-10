@@ -23,7 +23,7 @@ import { Transport, Request } from "./Transport";
  */
 interface UserContext {
     /**
-     * The currently active user
+     * The currently active user.
      */
     currentUser: Realm.User<any, any> | null;
 }
@@ -56,7 +56,7 @@ export class AuthenticatedTransport implements Transport {
     /**
      * Fetch a network resource as an authenticated user.
      *
-     * @param request The request to issue towards the server
+     * @param request The request to issue towards the server.
      * @param user The user used when fetching, defaults to the `app.currentUser`.
      *             If `null`, the fetch will be unauthenticated.
      * @returns A response from requesting with authentication.
