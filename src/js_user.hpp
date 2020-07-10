@@ -22,7 +22,7 @@
 #include "js_collection.hpp"
 #include "js_sync_util.hpp"
 #include "js_app_credentials.hpp"
-#include "js_user_apikey_provider.hpp"
+#include "js_api_key_auth.hpp"
 
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
@@ -76,7 +76,7 @@ public:
     static void is_logged_in(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
     static void get_custom_data(ContextType, ObjectType, ReturnValue &);
-    static void get_auth_api_keys(ContextType, ObjectType, ReturnValue &);
+    static void get_api_keys(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"identity", {wrap<get_identity>, nullptr}},
@@ -85,7 +85,7 @@ public:
         {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
         {"state", {wrap<get_state>, nullptr}},
         {"customData", {wrap<get_custom_data>, nullptr}},
-        {"_authApiKeys", {wrap<get_auth_api_keys>, nullptr}},
+        {"apiKeys", {wrap<get_api_keys>, nullptr}},
     };
 
     MethodMap<T> const static_methods = {
@@ -280,9 +280,9 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
 }
 
 template<typename T>
-void UserClass<T>::get_auth_api_keys(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
+void UserClass<T>::get_api_keys(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
-    return_value.set(UserAPIKeyProviderClientClass<T>::create_instance(ctx, user->m_app, *user));
+    return_value.set(ApiKeyAuthClass<T>::create_instance(ctx, user->m_app, *user));
 }
 
 template<typename T>

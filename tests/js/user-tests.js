@@ -192,13 +192,17 @@ module.exports = {
     }
   },
 
-  async testUserAPIKeyProvider() {
+  async testApiKeyAuth() {
     let app = new Realm.App(appConfig);
 
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
-    let provider = user.auth.apiKeys;
-    TestCase.assertTrue(provider instanceof Realm.Auth.UserAPIKeyProvider);
+    TestCase.assertTrue(user.apiKeys instanceof Realm.Auth.ApiKeyAuth);
+
+    // TODO: Fix this to not respond with a 403
+    // const keys = await user.apiKeys.fetchAll();
+    // TestCase.assertTrue(Array.isArray(keys));
+
     await user.logOut();
   },
 

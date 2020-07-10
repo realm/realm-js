@@ -189,7 +189,7 @@
 		42BD57AB24640A94008679D5 /* js_user.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_user.hpp; sourceTree = "<group>"; };
 		42BD57AC24640A94008679D5 /* js_network_transport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_network_transport.hpp; sourceTree = "<group>"; };
 		42BD57AD24640A95008679D5 /* js_sync_util.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_sync_util.hpp; sourceTree = "<group>"; };
-		42BD57AE24640A95008679D5 /* js_user_apikey_provider.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_user_apikey_provider.hpp; sourceTree = "<group>"; };
+		42BD57AE24640A95008679D5 /* js_api_key_auth.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_api_key_auth.hpp; sourceTree = "<group>"; };
 		42BD57AF24640AA8008679D5 /* keypath_helpers.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = keypath_helpers.hpp; path = src/keypath_helpers.hpp; sourceTree = "<group>"; };
 		42BD57B024640AE4008679D5 /* generic_network_transport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = generic_network_transport.hpp; path = src/sync/generic_network_transport.hpp; sourceTree = "<group>"; };
 		42BD57B124640AE4008679D5 /* app_credentials.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = app_credentials.hpp; path = src/sync/app_credentials.hpp; sourceTree = "<group>"; };
@@ -360,7 +360,7 @@
 				42BD57A824640A94008679D5 /* js_app.hpp */,
 				42BD57AC24640A94008679D5 /* js_network_transport.hpp */,
 				42BD57AD24640A95008679D5 /* js_sync_util.hpp */,
-				42BD57AE24640A95008679D5 /* js_user_apikey_provider.hpp */,
+				42BD57AE24640A95008679D5 /* js_api_key_auth.hpp */,
 				42BD57AB24640A94008679D5 /* js_user.hpp */,
 				42BD57AA24640A94008679D5 /* js_email_password_provider.hpp */,
 				F62A35131C18E6E2004A917D /* iOS */,
