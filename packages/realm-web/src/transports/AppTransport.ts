@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BaseTransport } from "./BaseTransport";
 import { PrefixedTransport } from "./PrefixedTransport";
 import { Transport, Request } from "./Transport";
 
@@ -27,7 +26,7 @@ export class AppTransport implements Transport {
     /**
      * The underlying transport used to issue requests.
      */
-    private readonly transport: BaseTransport;
+    private readonly transport: Transport;
 
     /**
      * The id of the app.
@@ -40,7 +39,7 @@ export class AppTransport implements Transport {
      * @param transport The base transport used to issue requests.
      * @param appId The id of the app.
      */
-    constructor(transport: BaseTransport, appId: string) {
+    constructor(transport: Transport, appId: string) {
         this.transport = transport;
         this.appId = appId;
     }

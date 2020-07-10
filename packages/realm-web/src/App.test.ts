@@ -20,14 +20,10 @@ import { expect } from "chai";
 
 import { App } from "./App";
 import { User, UserState } from "./User";
-import { MockNetworkTransport } from "./test/MockNetworkTransport";
+import { DEFAULT_HEADERS, MockApp, MockNetworkTransport } from "./test";
 import { Credentials } from "./Credentials";
 import { MemoryStorage } from "./storage";
-
-const DEFAULT_HEADERS = {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-};
+import { MongoDBRealmError } from "./transports/Transport";
 
 /* eslint-disable @typescript-eslint/camelcase */
 
@@ -372,6 +368,7 @@ describe("App", () => {
     });
 
     it("throws if asked to switch to or remove an unknown user", async () => {
+        const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
             {
                 user_id: "totally-valid-user-id",
@@ -381,8 +378,10 @@ describe("App", () => {
         ]);
         const app = new App({
             id: "default-app-id",
+            storage,
             transport,
             baseUrl: "http://localhost:1337",
+            fetchLocation: false,
         });
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials, false);
@@ -420,6 +419,108 @@ describe("App", () => {
                     "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
                 body: {},
                 headers: DEFAULT_HEADERS,
+            },
+        ]);
+    });
+
+    it("refreshes access token and retries request exacly once, upon an 'invalid session' (401) response", async () => {
+        const invalidSessionError = new MongoDBRealmError(
+            "POST",
+            "http://invalid",
+            401,
+            "",
+            {
+                error: "invalid session",
+            },
+        );
+        const app = new MockApp("default-app-id", [
+            {
+                user_id: "bobs-id",
+                access_token: "first-access-token",
+                refresh_token: "very-refreshing",
+            },
+            invalidSessionError,
+            invalidSessionError,
+            invalidSessionError,
+            {
+                user_id: "bobs-id",
+                access_token: "second-access-token",
+                refresh_token: "very-refreshing",
+            },
+            { bar: "baz" },
+        ]);
+        // Login with an anonymous user
+        const credentials = Credentials.anonymous();
+        await app.logIn(credentials, false);
+        // Send a request (which will fail)
+        try {
+            await app.functions.foo({ bar: "baz" });
+            throw new Error("Expected the request to fail");
+        } catch (err) {
+            expect(err).instanceOf(MongoDBRealmError);
+            if (err instanceof MongoDBRealmError) {
+                expect(err.message).equals(
+                    "Request failed (POST http://invalid): invalid session (status 401)",
+                );
+            }
+        }
+        // Manually try again - this time refreshing the access token correctly
+        const response = await app.functions.foo({ bar: "baz" });
+        expect(response).deep.equals({ bar: "baz" });
+        // Expect something of the request and response
+        expect(app.mockTransport.requests).deep.equals([
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
+                body: {},
+                headers: DEFAULT_HEADERS,
+            },
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/default-app-id/functions/call",
+                body: { name: "foo", arguments: [{ bar: "baz" }] },
+                headers: {
+                    Authorization: "Bearer first-access-token",
+                    ...DEFAULT_HEADERS,
+                },
+            },
+            {
+                method: "POST",
+                url: "http://localhost:1337/api/client/v2.0/auth/session",
+                headers: {
+                    Authorization: "Bearer very-refreshing",
+                    ...DEFAULT_HEADERS,
+                },
+            },
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/default-app-id/functions/call",
+                body: { name: "foo", arguments: [{ bar: "baz" }] },
+                headers: {
+                    Authorization: "Bearer first-access-token",
+                    ...DEFAULT_HEADERS,
+                },
+            },
+            {
+                method: "POST",
+                url: "http://localhost:1337/api/client/v2.0/auth/session",
+                headers: {
+                    Authorization: "Bearer very-refreshing",
+                    ...DEFAULT_HEADERS,
+                },
+            },
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/default-app-id/functions/call",
+                body: { name: "foo", arguments: [{ bar: "baz" }] },
+                headers: {
+                    Authorization: "Bearer second-access-token",
+                    ...DEFAULT_HEADERS,
+                },
             },
         ]);
     });

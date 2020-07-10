@@ -48,3 +48,6 @@ export function describeIf(
         describe.skip(title, fn);
     }
 }
+
+export const INVALID_TOKEN =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MDAwMDAwMDAsImlhdCI6MTUwMDAwMDAwMCwic3ViIjoiMTIzNDU2Nzg5MCJ9.x3-ZWVJGjEltXWWa1uaBaN4oo7dOjPbgA46STVD5KKY";

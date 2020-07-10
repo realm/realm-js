@@ -19,7 +19,8 @@
 import { expect } from "chai";
 
 import { AuthenticatedTransport } from "./AuthenticatedTransport";
-import { MockTransport } from "../test/MockTransport";
+import { MockTransport } from "../test";
+import { User } from "../User";
 
 describe("AuthenticatedTransport", () => {
     it("constructs", () => {
@@ -32,7 +33,7 @@ describe("AuthenticatedTransport", () => {
     it("sends access token when requesting", async () => {
         const baseTransport = new MockTransport([{ foo: "bar" }]);
         const transport = new AuthenticatedTransport(baseTransport, {
-            currentUser: { accessToken: "my-access-token" } as Realm.User,
+            currentUser: { accessToken: "my-access-token" } as User,
         });
         // Send a request
         const response = await transport.fetch({
@@ -61,7 +62,7 @@ describe("AuthenticatedTransport", () => {
     it("allows overwriting headers", async () => {
         const baseTransport = new MockTransport([{}]);
         const transport = new AuthenticatedTransport(baseTransport, {
-            currentUser: { accessToken: "my-access-token" } as Realm.User,
+            currentUser: { accessToken: "my-access-token" } as User,
         });
         // Send a request
         await transport.fetch({
@@ -88,7 +89,7 @@ describe("AuthenticatedTransport", () => {
     it("returns an AuthenticatedTransport when prefixed", async () => {
         const baseTransport = new MockTransport([{}]);
         const transport = new AuthenticatedTransport(baseTransport, {
-            currentUser: { accessToken: "my-access-token" } as Realm.User,
+            currentUser: { accessToken: "my-access-token" } as User,
         });
         const prefixedTransport = transport.prefix("/prefixed-path");
         expect(prefixedTransport).to.be.instanceOf(AuthenticatedTransport);

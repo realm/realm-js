@@ -17,48 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { MongoDBRealmError } from "./MongoDBRealmError";
+import { NetworkTransport, Request, ResponseHandler, Headers } from "./types";
 
 declare const process: any;
 declare const require: ((id: string) => any) | undefined;
 
 const isNodeProcess = typeof process === "object";
-
-export type Method = "GET" | "POST" | "DELETE" | "PUT";
-
-export type Headers = { [name: string]: string };
-
-export interface Request<RequestBody> {
-    method: Method;
-    url: string;
-    timeoutMs?: number;
-    headers?: Headers;
-    body?: RequestBody | string;
-}
-
-export interface Response {
-    statusCode: number;
-    headers: Headers;
-    body: string;
-}
-
-export type SuccessCallback = (response: Response) => void;
-
-export type ErrorCallback = (err: Error) => void;
-
-export interface ResponseHandler {
-    onSuccess: SuccessCallback;
-    onError: ErrorCallback;
-}
-
-export interface NetworkTransport {
-    fetchAndParse<RequestBody extends any, ResponseBody extends any>(
-        request: Request<RequestBody>,
-    ): Promise<ResponseBody>;
-    fetchWithCallbacks<RequestBody extends any>(
-        request: Request<RequestBody>,
-        handler: ResponseHandler,
-    ): void;
-}
 
 export class DefaultNetworkTransport implements NetworkTransport {
     public static fetch: typeof fetch;
@@ -128,6 +92,8 @@ export class DefaultNetworkTransport implements NetworkTransport {
                 contentType.startsWith("application/json")
             ) {
                 throw new MongoDBRealmError(
+                    request.method,
+                    request.url,
                     response.status,
                     response.statusText,
                     await response.json(),
@@ -138,9 +104,13 @@ export class DefaultNetworkTransport implements NetworkTransport {
                 );
             }
         } catch (err) {
-            throw new Error(
-                `Request failed (${request.method} ${request.url}): ${err.message}`,
-            );
+            if (err instanceof MongoDBRealmError) {
+                throw err;
+            } else {
+                throw new Error(
+                    `Request failed (${request.method} ${request.url}): ${err.message}`,
+                );
+            }
         }
     }
 

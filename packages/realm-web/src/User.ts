@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import type { App } from "./App";
-import { AuthenticatedTransport } from "./transports";
+import { AuthenticatedTransport, AppTransport } from "./transports";
 import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
@@ -152,7 +152,8 @@ export class User<
         this.transport = new AuthenticatedTransport(app.baseTransport, {
             currentUser: this,
         });
-        this.functions = FunctionsFactory.create(this.transport);
+        const appTransport = new AppTransport(this.transport, app.id);
+        this.functions = FunctionsFactory.create(appTransport);
         this.storage = new UserStorage(app.storage, id);
         // Store tokens in storage for later hydration
         if (accessToken) {
@@ -264,6 +265,23 @@ export class User<
         throw new Error("Not yet implemented");
     }
 
+    public async refreshAccessToken() {
+        const response = await this.app.baseTransport.fetch({
+            method: "POST",
+            path: "/auth/session",
+            headers: {
+                Authorization: `Bearer ${this._refreshToken}`,
+            },
+        });
+        const { access_token: accessToken } = response;
+        if (typeof accessToken === "string") {
+            this._accessToken = accessToken;
+            this.storage.accessToken = accessToken;
+        } else {
+            throw new Error("Expected an 'access_token' in the response");
+        }
+    }
+
     public async refreshCustomData() {
         await this.refreshAccessToken();
         return this.customData;
@@ -290,11 +308,6 @@ export class User<
         if (typeof profile === "object") {
             this._profile = profile;
         }
-    }
-
-    private async refreshAccessToken() {
-        // TODO: this.storage.set(User.ACCESS_TOKEN_STORAGE_KEY, accessToken);
-        throw new Error("Not yet implemented");
     }
 
     push(serviceName = ""): Realm.Services.Push {

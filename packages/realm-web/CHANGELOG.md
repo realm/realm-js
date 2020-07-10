@@ -2,11 +2,24 @@
 =============================================================
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+### Internal
+* None
+
+0.6.0 Release notes (2020-07-01)
+=============================================================
+
+### Enhancements
 * Added more credentials enabling logins via additional authentication providers: Custom Functions, Custom JWT, Google, Facebook & Apple ID. ([#3019](https://github.com/realm/realm-js/pull/3019))
 * Custom data can now be retrieved from an active User. ([#3019](https://github.com/realm/realm-js/pull/3019))
 
 ### Fixed
 * Fixed an error "Cannot use 'in' operator to search for 'node' in undefined", which could occur when bundling the package without Node.js stubs available. ([#3001](https://github.com/realm/realm-js/pull/3001))
+* Fixed refreshing of access tokens upon 401 responses from the server. ([#3020](https://github.com/realm/realm-js/pull/3020))
 
 ### Internal
 * None

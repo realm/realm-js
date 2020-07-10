@@ -92,9 +92,10 @@ export class BaseTransport implements Transport {
     }
 
     /** @inheritdoc */
-    public async fetch<RequestBody extends any, ResponseBody extends any>(
-        request: BaseRequest<RequestBody>,
-    ): Promise<ResponseBody> {
+    public async fetch<
+        RequestBody extends any = any,
+        ResponseBody extends any = any
+    >(request: BaseRequest<RequestBody>): Promise<ResponseBody> {
         const {
             path,
             headers,

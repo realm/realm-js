@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Method } from "realm-network-transport";
+import { Method, MongoDBRealmError } from "realm-network-transport";
+
+export { MongoDBRealmError };
 
 /**
  * A request to be sent via the transport.

@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Transport, Request } from "./Transport";
+import { Transport, Request, MongoDBRealmError } from "./Transport";
+import { User } from "../User";
 
 /**
  * Used to control which user is currently active - this would most likely be the {App} instance.
@@ -25,7 +26,7 @@ interface UserContext {
     /**
      * The currently active user.
      */
-    currentUser: Realm.User<any, any> | null;
+    currentUser: User<any, any> | null;
 }
 
 /**
@@ -59,19 +60,37 @@ export class AuthenticatedTransport implements Transport {
      * @param request The request to issue towards the server.
      * @param user The user used when fetching, defaults to the `app.currentUser`.
      *             If `null`, the fetch will be unauthenticated.
+     * @param retries How many times was this request retried?
      * @returns A response from requesting with authentication.
      */
-    public fetch<RequestBody extends any, ResponseBody extends any>(
+    public async fetch<RequestBody extends any, ResponseBody extends any>(
         request: Request<RequestBody>,
-        user: Realm.User | null = this.userContext.currentUser,
+        user: User | null = this.userContext.currentUser,
+        retries = 0,
     ): Promise<ResponseBody> {
-        return this.transport.fetch({
-            ...request,
-            headers: {
-                ...this.buildAuthorizationHeader(user),
-                ...request.headers,
-            },
-        });
+        try {
+            // Awaiting to intercept errors being thrown
+            return await this.transport.fetch({
+                ...request,
+                headers: {
+                    ...this.buildAuthorizationHeader(user),
+                    ...request.headers,
+                },
+            });
+        } catch (err) {
+            if (
+                user &&
+                retries === 0 &&
+                err instanceof MongoDBRealmError &&
+                err.statusCode === 401
+            ) {
+                // Refresh the access token
+                await user.refreshAccessToken();
+                // Retry
+                return this.fetch(request, user, retries + 1);
+            }
+            throw err;
+        }
     }
 
     /** @inheritdoc */
@@ -86,7 +105,7 @@ export class AuthenticatedTransport implements Transport {
      * @param user An optional user to generate the header for
      * @returns An object containing with the users access token as authorization header or undefined if no user is given.
      */
-    private buildAuthorizationHeader(user: Realm.User | null) {
+    private buildAuthorizationHeader(user: User | null) {
         if (user) {
             // TODO: Ensure the access token is valid
             return {
