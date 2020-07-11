@@ -44,7 +44,9 @@ export class AppStorage extends PrefixedStorage {
             const userIdsString = this.get(USER_IDS_STORAGE_KEY);
             const userIds = userIdsString ? JSON.parse(userIdsString) : [];
             if (Array.isArray(userIds)) {
-                return userIds;
+                // Remove any duplicates that might have been added
+                // The Set preserves insertion order
+                return [...new Set(userIds)];
             } else {
                 throw new Error("Expected an array");
             }

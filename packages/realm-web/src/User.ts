@@ -22,6 +22,7 @@ import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
 import { decodeBase64 } from "./utils/base64";
+import { Credentials } from "./Credentials";
 
 // Disabling requiring JSDoc for now - as the User class is exported as the Realm.User interface, which is already documented.
 /* eslint-disable jsdoc/require-jsdoc */
@@ -50,6 +51,31 @@ export enum UserType {
     Server = "server",
 }
 
+export async function performLogIn(app: App<any>, credentials: Credentials) {
+    // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
+    const response = await app.appTransport.fetch<object, any>({
+        method: "POST",
+        path: `/auth/providers/${credentials.providerName}/login`,
+        body: credentials.payload,
+    });
+    // Spread out values from the response and ensure they're valid
+    const {
+        user_id: id,
+        access_token: accessToken,
+        refresh_token: refreshToken,
+    } = response;
+    if (typeof id !== "string") {
+        throw new Error("Expected a user id in the response");
+    }
+    if (typeof accessToken !== "string") {
+        throw new Error("Expected an access token in the response");
+    }
+    if (typeof refreshToken !== "string") {
+        throw new Error("Expected an refresh token in the response");
+    }
+    return { id, accessToken, refreshToken };
+}
+
 /**
  * Representation of an authenticated user of an app.
  */
@@ -64,57 +90,6 @@ export class User<
 
     public readonly functions: FunctionsFactoryType &
         Realm.BaseFunctionsFactory;
-
-    /**
-     * Log in and create a user
-     *
-     * @param app The app used when logging in the user.
-     * @param credentials Credentials to use when logging in.
-     * @param fetchProfile Should the users profile be fetched? (default: true)
-     */
-    public static async logIn<
-        FunctionsFactoryType extends object,
-        CustomDataType extends object
-    >(
-        app: App<FunctionsFactoryType, CustomDataType>,
-        credentials: Realm.Credentials,
-        fetchProfile = true,
-    ) {
-        // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
-        const response = await app.appTransport.fetch({
-            method: "POST",
-            path: `/auth/providers/${credentials.providerName}/login`,
-            body: credentials.payload,
-        });
-        // Spread out values from the response and ensure they're valid
-        const {
-            user_id: userId,
-            access_token: accessToken,
-            refresh_token: refreshToken,
-        } = response;
-        if (typeof userId !== "string") {
-            throw new Error("Expected a user id in the response");
-        }
-        if (typeof accessToken !== "string") {
-            throw new Error("Expected an access token in the response");
-        }
-        if (typeof refreshToken !== "string") {
-            throw new Error("Expected an refresh token in the response");
-        }
-        // Create the user
-        const user = new User<FunctionsFactoryType, CustomDataType>({
-            app,
-            id: userId,
-            accessToken,
-            refreshToken,
-        });
-        // If neeeded, fetch and set the profile on the user
-        if (fetchProfile) {
-            await user.refreshProfile();
-        }
-        // Return the user handle
-        return user;
-    }
 
     /**
      * Creates a user from the data stored in the storage of an `App` instance.
@@ -181,10 +156,26 @@ export class User<
     }
 
     /**
+     * @param token The new access token.
+     */
+    set accessToken(token: string | null) {
+        this._accessToken = token;
+        this.storage.accessToken = token;
+    }
+
+    /**
      * @returns The refresh token used to issue new access tokens.
      */
     get refreshToken() {
         return this._refreshToken;
+    }
+
+    /**
+     * @param token The new refresh token.
+     */
+    set refreshToken(token: string | null) {
+        this._refreshToken = token;
+        this.storage.refreshToken = token;
     }
 
     /**
@@ -199,14 +190,14 @@ export class User<
         if (this.app.allUsers.indexOf(this) === -1) {
             return UserState.Removed;
         } else {
-            return this._refreshToken === null
+            return this.refreshToken === null
                 ? UserState.LoggedOut
                 : UserState.Active;
         }
     }
 
     get customData(): CustomDataType {
-        if (this._accessToken) {
+        if (this.accessToken) {
             const decodedToken = this.decodeAccessToken();
             return decodedToken.userData;
         } else {
@@ -252,12 +243,27 @@ export class User<
                 },
             });
         }
-        // Forget the access token
-        this._accessToken = null;
-        this.storage.accessToken = null;
-        // Forget the refresh token
-        this._refreshToken = null;
-        this.storage.refreshToken = null;
+        // Forget the access and refresh token
+        this.accessToken = null;
+        this.refreshToken = null;
+    }
+
+    /**
+     * Authenticate and retrieve the access and refresh token.
+     *
+     * @param credentials Credentials to use when logging in.
+     */
+    public async logIn(credentials: Realm.Credentials) {
+        const { id, accessToken, refreshToken } = await performLogIn(
+            this.app,
+            credentials,
+        );
+        if (id !== this.id) {
+            throw new Error("Logged into a different user");
+        }
+        // Store the access and refresh token
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 
     /** @inheritdoc */
@@ -270,13 +276,12 @@ export class User<
             method: "POST",
             path: "/auth/session",
             headers: {
-                Authorization: `Bearer ${this._refreshToken}`,
+                Authorization: `Bearer ${this.refreshToken}`,
             },
         });
         const { access_token: accessToken } = response;
         if (typeof accessToken === "string") {
-            this._accessToken = accessToken;
-            this.storage.accessToken = accessToken;
+            this.accessToken = accessToken;
         } else {
             throw new Error("Expected an 'access_token' in the response");
         }
@@ -300,10 +305,10 @@ export class User<
         const refreshToken = this.storage.refreshToken;
         const profile = this.storage.profile;
         if (typeof accessToken === "string") {
-            this._accessToken = accessToken;
+            this.accessToken = accessToken;
         }
         if (typeof refreshToken === "string") {
-            this._refreshToken = refreshToken;
+            this.refreshToken = refreshToken;
         }
         if (typeof profile === "object") {
             this._profile = profile;
@@ -315,9 +320,9 @@ export class User<
     }
 
     private decodeAccessToken(): JWT<CustomDataType> {
-        if (this._accessToken) {
+        if (this.accessToken) {
             // Decode and spread the token
-            const parts = this._accessToken.split(".");
+            const parts = this.accessToken.split(".");
             if (parts.length !== 3) {
                 throw new Error("Expected three parts");
             }
