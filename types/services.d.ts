@@ -195,7 +195,7 @@ declare namespace Realm {
                  *
                  * See [[RemoteUpdateOptions.upsert]].
                  */
-                readonly upsertedId: any;
+                readonly upsertedId?: ObjectId;
             }
 
             /**
