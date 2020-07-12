@@ -19,6 +19,7 @@
 import * as Realm from "realm";
 
 export interface IPerson {
+    _id: string;
     name: string;
     age: number;
     friends: Realm.List<IPerson>;
@@ -27,7 +28,9 @@ export interface IPerson {
 
 export const PersonSchema: Realm.ObjectSchema = {
     name: "Person",
+    primaryKey: "_id",
     properties: {
+        _id: "string",
         age: "int",
         name: "string",
         friends: "Person[]"
@@ -36,20 +39,15 @@ export const PersonSchema: Realm.ObjectSchema = {
 
 export class Person extends Realm.Object {
     public static schema: Realm.ObjectSchema = PersonSchema;
+    public _id: string;
     public name: string;
     public age: number;
     public friends: Realm.List<Person>;
     public dogs: Realm.Collection<Dog>;
-
-    constructor(name: string, age: number) {
-        super();
-
-        this.name = name;
-        this.age = age;
-    }
 }
 
 export interface IDog {
+    _id: string;
     name: string;
     age: number;
     owner: IPerson;
@@ -57,7 +55,9 @@ export interface IDog {
 
 export const DogSchema: Realm.ObjectSchema = {
     name: "Dog",
+    primaryKey: "_id",
     properties: {
+        _id: "string",
         age: "int",
         name: "string",
         owner: "Person"
@@ -66,15 +66,8 @@ export const DogSchema: Realm.ObjectSchema = {
 
 export class Dog extends Realm.Object {
     public static schema: Realm.ObjectSchema = DogSchema;
+    public _id: string;
     public name: string;
     public age: number;
     public owner: Person;
-
-    constructor(name: string, age: number, owner: Person) {
-        super();
-
-        this.name = name;
-        this.age = age;
-        this.owner = owner;
-    }
 }

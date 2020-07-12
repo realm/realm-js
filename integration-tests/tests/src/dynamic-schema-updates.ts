@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { PersonSchema, DogSchema } from "./schemas/person-and-dogs";
+import { DogSchema, PersonSchema } from "./schemas/person-and-dogs";
 
 describe("realm._updateSchema", () => {
     it("is a function", () => {

@@ -13,6 +13,14 @@
       { "tabWidth": 4 }
     ],
     "no-var-requires": false,
-    "object-literal-sort-keys": false
+    "object-literal-sort-keys": false,
+    "max-classes-per-file": false,
+    "variable-name": {
+      "options": [
+        "allow-pascal-case",
+        "allow-leading-underscore",
+        "require-const-for-all-caps"
+      ]
+    }
   }
 }

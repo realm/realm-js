@@ -824,12 +824,15 @@ interface NamedSubscription {
     timeToLive: number;
 }
 
+// Exchange for Omit if TypeScript is bumped beyond v3.5
+type Omitter<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+
 type ExtractPropertyNamesOfType<T, S> = {
     [K in keyof T]: T[K] extends S ? K : never
 }[keyof T];
 
 type RealmPartialModel<T> =
-    Omit<Omit<T, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
+    Omitter<Omitter<T, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
     & Partial<Pick<T, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>>
 
 declare class Realm {
