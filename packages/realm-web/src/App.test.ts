@@ -742,4 +742,100 @@ describe("App", () => {
             JSON.stringify(["alices-id", "charlies-id"]),
         );
     });
+
+    it("returns the same user when logged in twice", async () => {
+        const storage = new MemoryStorage();
+        const app = new App({
+            id: "default-app-id",
+            storage,
+            transport: new MockNetworkTransport([
+                {
+                    user_id: "gilfoyles-id",
+                    access_token: "gilfoyles-first-access-token",
+                    refresh_token: "gilfoyles-first-refresh-token",
+                },
+                {
+                    user_id: "dineshs-id",
+                    access_token: "dineshs-first-access-token",
+                    refresh_token: "dineshs-first-refresh-token",
+                },
+                {
+                    user_id: "gilfoyles-id",
+                    access_token: "gilfoyles-second-access-token",
+                    refresh_token: "gilfoyles-second-refresh-token",
+                },
+                {},
+                {
+                    user_id: "gilfoyles-id",
+                    access_token: "gilfoyles-third-access-token",
+                    refresh_token: "gilfoyles-third-refresh-token",
+                },
+                {},
+                {
+                    user_id: "gilfoyles-id",
+                    access_token: "gilfoyles-forth-access-token",
+                    refresh_token: "gilfoyles-forth-refresh-token",
+                },
+            ]),
+            baseUrl: "http://localhost:1337",
+            fetchLocation: false,
+        });
+        // Login twice with the same user
+        const credentials1 = Credentials.emailPassword(
+            "gilfoyle@testing.mongodb.com",
+            "v3ry-s3cret",
+        );
+        const credentials2 = Credentials.emailPassword(
+            "dinesh@testing.mongodb.com",
+            "v3ry-s3cret-2",
+        );
+        const gilfoyle1 = await app.logIn(credentials1, false);
+        expect(app.allUsers).deep.equals([gilfoyle1]);
+        const dinesh = await app.logIn(credentials2, false);
+        const gilfoyle2 = await app.logIn(credentials1, false);
+        // Expect all users to equal the user being returned on either login
+        expect(app.allUsers).deep.equals([gilfoyle1, dinesh]);
+        expect(app.allUsers).deep.equals([gilfoyle2, dinesh]);
+        // Expect that the current user has the tokens from the second login
+        {
+            const { currentUser } = app;
+            const { accessToken, refreshToken } = currentUser || {};
+            expect(accessToken).equals("gilfoyles-second-access-token");
+            expect(refreshToken).equals("gilfoyles-second-refresh-token");
+            expect(
+                storage.get(
+                    "app(default-app-id):user(gilfoyles-id):accessToken",
+                ),
+            ).equals("gilfoyles-second-access-token");
+        }
+        // Logout and back in and expect the same
+        await gilfoyle2.logOut();
+        // Expect that the current user is null
+        {
+            const { currentUser } = app;
+            expect(currentUser).equals(dinesh);
+        }
+        const gilfoyle3 = await app.logIn(credentials1, false);
+        expect(app.allUsers).deep.equals([gilfoyle2, dinesh]);
+        expect(app.allUsers).deep.equals([gilfoyle3, dinesh]);
+        // Expect that the current user has the tokens from the third login
+        {
+            const { currentUser } = app;
+            const { accessToken, refreshToken } = currentUser || {};
+            expect(accessToken).equals("gilfoyles-third-access-token");
+            expect(refreshToken).equals("gilfoyles-third-refresh-token");
+        }
+        // Removing the user and logging in, will give two different user objects
+        await app.removeUser(gilfoyle3);
+        const gilfoyle4 = await app.logIn(credentials1, false);
+        expect(app.allUsers).deep.equals([gilfoyle4, dinesh]);
+        expect(gilfoyle4).not.equals(gilfoyle3);
+        // Expect that the current user has the tokens from the forth login
+        {
+            const { currentUser } = app;
+            const { accessToken, refreshToken } = currentUser || {};
+            expect(accessToken).equals("gilfoyles-forth-access-token");
+            expect(refreshToken).equals("gilfoyles-forth-refresh-token");
+        }
+    });
 });

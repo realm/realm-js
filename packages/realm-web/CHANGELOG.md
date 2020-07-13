@@ -5,7 +5,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed an issue with reuse of the users in an apps list of users. Logging in with the same user multiple times will now update and reuse the same `Realm.User` object. ([#3052](https://github.com/realm/realm-js/pull/3052))
 
 ### Internal
 * None

@@ -19,7 +19,7 @@
 import { NetworkTransport } from "realm-network-transport";
 
 import { FunctionsFactory } from "./FunctionsFactory";
-import { User, UserState } from "./User";
+import { User, UserState, performLogIn } from "./User";
 import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
 import { Credentials } from "./Credentials";
 import { create as createServicesFactory } from "./services";
@@ -196,9 +196,13 @@ export class App<
         credentials: Realm.Credentials<any>,
         fetchProfile = true,
     ): Promise<User<FunctionsFactoryType, CustomDataType>> {
-        const user = await this.performLogIn(credentials, fetchProfile);
-        // Add the user at the top of the stack
-        this.users.unshift(user);
+        const user = await this.performLogIn(credentials);
+        // Let's ensure this will be the current user, in case the user object was reused.
+        this.switchUser(user);
+        // If neeeded, fetch and set the profile on the user
+        if (fetchProfile) {
+            await user.refreshProfile();
+        }
         // Persist the user id in the storage,
         // merging to avoid overriding logins from other apps using the same underlying storage
         this.storage.setUserIds(
@@ -290,11 +294,9 @@ export class App<
      * Either it decodes the credentials and instantiates a user directly or it calls User.logIn to perform a fetch.
      *
      * @param credentials Credentials to use when logging in
-     * @param fetchProfile Should the users profile be fetched? (default: true)
      */
     private async performLogIn(
         credentials: Realm.Credentials<any>,
-        fetchProfile = true,
     ): Promise<User<FunctionsFactoryType, CustomDataType>> {
         if (
             credentials.providerType.startsWith("oauth2") &&
@@ -307,14 +309,46 @@ export class App<
                 accessToken,
                 refreshToken,
             } = OAuth2Helper.decodeAuthInfo(result.userAuth);
-            return new User<FunctionsFactoryType, CustomDataType>({
+            return this.createOrUpdateUser(userId, accessToken, refreshToken);
+        } else {
+            const { id, accessToken, refreshToken } = await performLogIn(
+                this,
+                credentials,
+            );
+            return this.createOrUpdateUser(id, accessToken, refreshToken);
+        }
+    }
+
+    /**
+     * Create (and store) a new user or update an existing user's access and refresh tokens.
+     * This helps de-duplicating users in the list of users known to the app.
+     *
+     * @param userId The id of the user.
+     * @param accessToken The new access token of the user.
+     * @param refreshToken The new refresh token of the user.
+     * @returns A new or an existing user.
+     */
+    private createOrUpdateUser(
+        userId: string,
+        accessToken: string,
+        refreshToken: string,
+    ): User<FunctionsFactoryType, CustomDataType> {
+        const existingUser = this.users.find(u => u.id === userId);
+        if (existingUser) {
+            // Update the users access and refresh tokens
+            existingUser.accessToken = accessToken;
+            existingUser.refreshToken = refreshToken;
+            return existingUser;
+        } else {
+            // Create and store a new user
+            const user = new User<FunctionsFactoryType, CustomDataType>({
                 app: this,
                 id: userId,
                 accessToken,
                 refreshToken,
             });
-        } else {
-            return User.logIn(this, credentials, fetchProfile);
+            this.users.unshift(user);
+            return user;
         }
     }
 

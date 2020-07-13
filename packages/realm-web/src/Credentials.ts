@@ -29,7 +29,7 @@ export type ApplePayload = Realm.Credentials.ApplePayload;
 /**
  * Instances of this class can be passed to the `app.logIn` method to authenticate an end-user.
  */
-export class Credentials<PayloadType extends object>
+export class Credentials<PayloadType extends object = any>
     implements Realm.Credentials<PayloadType> {
     /**
      * Creates credentials that logs in using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
