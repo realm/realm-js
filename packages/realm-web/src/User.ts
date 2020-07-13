@@ -16,12 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+// We're using a dependency to decode Base64 to UTF-8, because of https://stackoverflow.com/a/30106551/503899
+import { Base64 } from "js-base64";
+
 import type { App } from "./App";
 import { AuthenticatedTransport, AppTransport } from "./transports";
 import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
-import { decodeBase64 } from "./utils/base64";
 
 // Disabling requiring JSDoc for now - as the User class is exported as the Realm.User interface, which is already documented.
 /* eslint-disable jsdoc/require-jsdoc */
@@ -323,12 +325,13 @@ export class User<
             }
             // Decode the payload
             const encodedPayload = parts[1];
-            const decodedPayload = JSON.parse(decodeBase64(encodedPayload));
+            const decodedPayload = Base64.decode(encodedPayload);
+            const parsedPayload = JSON.parse(decodedPayload);
             const {
                 exp: expires,
                 iat: issuedAt,
                 user_data: userData = {},
-            } = decodedPayload;
+            } = parsedPayload;
             // Validate the types
             if (typeof expires !== "number") {
                 throw new Error("Failed to decode access token 'exp'");

@@ -3,6 +3,7 @@
 	"compilerOptions": {
 		"types": [
 			"realm-network-transport",
+			"js-base64",
 			"bson"
 		]
 	},
