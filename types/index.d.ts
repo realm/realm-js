@@ -629,7 +629,7 @@ declare class Realm {
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string | ObjectId): T & Realm.Object | undefined;
+    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string | Realm.ObjectId): T & Realm.Object | undefined;
 
     /**
      * @param  {string|Realm.ObjectType|Function} type
