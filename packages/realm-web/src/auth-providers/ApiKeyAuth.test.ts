@@ -21,8 +21,11 @@ import { ObjectId } from "bson";
 
 import { ApiKeyAuth } from "./ApiKeyAuth";
 import { MockTransport } from "../test/MockTransport";
+import { AuthenticatedTransport } from "../transports";
+import { User } from "../User";
 
 const DEFAULT_HEADERS = {
+    Authorization: "Bearer very-refreshing",
     Accept: "application/json",
     "Content-Type": "application/json",
 };
@@ -39,7 +42,14 @@ describe("ApiKeyAuth", () => {
                 disabled: true,
             },
         ]);
-        const provider = new ApiKeyAuth(transport);
+
+        const currentUser = { refreshToken: "very-refreshing" } as User;
+        const provider = new ApiKeyAuth(
+            new AuthenticatedTransport(transport, {
+                currentUser,
+            }),
+        );
+
         const apiKey = await provider.create("my-key-name");
         // Expect something of the newly created key
         expect(typeof apiKey._id).equals("object");
@@ -63,22 +73,23 @@ describe("ApiKeyAuth", () => {
     it("can get an api key", async () => {
         const transport = new MockTransport([
             {
-                _id: {
-                    $oid: "deadbeefdeadbeefdeadbeef",
-                },
+                _id: "deadbeefdeadbeefdeadbeef",
                 name: "my-key-name",
                 key: "super-secret-key",
                 disabled: true,
             },
         ]);
-        const provider = new ApiKeyAuth(transport);
-        const apiKey = await provider.fetch(
-            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
+
+        const currentUser = { refreshToken: "very-refreshing" } as User;
+        const provider = new ApiKeyAuth(
+            new AuthenticatedTransport(transport, {
+                currentUser,
+            }),
         );
+
+        const apiKey = await provider.fetch("deadbeefdeadbeefdeadbeef");
         // Expect something of the key
-        expect(typeof apiKey._id).equals("object");
-        expect(apiKey._id.constructor.name).equals("ObjectId");
-        expect(apiKey._id.toHexString()).equals("deadbeefdeadbeefdeadbeef");
+        expect(apiKey._id).equals("deadbeefdeadbeefdeadbeef");
         expect(apiKey.name).equals("my-key-name");
         expect(apiKey.key).equals("super-secret-key");
         expect(apiKey.disabled).equals(true);
@@ -97,33 +108,36 @@ describe("ApiKeyAuth", () => {
         const transport = new MockTransport([
             [
                 {
-                    _id: {
-                        $oid: "deadbeefdeadbeefdeadbee1",
-                    },
+                    _id: "deadbeefdeadbeefdeadbee1",
                     name: "my-key-name-1",
                     key: "super-secret-key-1",
                     disabled: true,
                 },
                 {
-                    _id: {
-                        $oid: "deadbeefdeadbeefdeadbee2",
-                    },
+                    _id: "deadbeefdeadbeefdeadbee2",
                     name: "my-key-name-2",
                     key: "super-secret-key-2",
                     disabled: true,
                 },
             ],
         ]);
-        const provider = new ApiKeyAuth(transport);
+
+        const currentUser = { refreshToken: "very-refreshing" } as User;
+        const provider = new ApiKeyAuth(
+            new AuthenticatedTransport(transport, {
+                currentUser,
+            }),
+        );
+
         const apiKeys = await provider.fetchAll();
         // Expect something of the first key
         const [firstKey, secondKey] = apiKeys;
-        expect(firstKey._id.toHexString()).equals("deadbeefdeadbeefdeadbee1");
+        expect(firstKey._id).equals("deadbeefdeadbeefdeadbee1");
         expect(firstKey.name).equals("my-key-name-1");
         expect(firstKey.key).equals("super-secret-key-1");
         expect(firstKey.disabled).equals(true);
         // Expect something of the second key
-        expect(secondKey._id.toHexString()).equals("deadbeefdeadbeefdeadbee2");
+        expect(secondKey._id).equals("deadbeefdeadbeefdeadbee2");
         expect(secondKey.name).equals("my-key-name-2");
         expect(secondKey.key).equals("super-secret-key-2");
         expect(secondKey.disabled).equals(true);
@@ -139,10 +153,15 @@ describe("ApiKeyAuth", () => {
 
     it("can delete a key", async () => {
         const transport = new MockTransport([{}]);
-        const provider = new ApiKeyAuth(transport);
-        await provider.delete(
-            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
+
+        const currentUser = { refreshToken: "very-refreshing" } as User;
+        const provider = new ApiKeyAuth(
+            new AuthenticatedTransport(transport, {
+                currentUser,
+            }),
         );
+
+        await provider.delete("deadbeefdeadbeefdeadbeef");
         // Expect something of the request
         expect(transport.requests).deep.equals([
             {
@@ -156,16 +175,21 @@ describe("ApiKeyAuth", () => {
 
     it("can enable a key", async () => {
         const transport = new MockTransport([{}]);
-        const provider = new ApiKeyAuth(transport);
-        await provider.enable(
-            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
+
+        const currentUser = { refreshToken: "very-refreshing" } as User;
+        const provider = new ApiKeyAuth(
+            new AuthenticatedTransport(transport, {
+                currentUser,
+            }),
         );
+
+        await provider.enable("deadbeefdeadbeefdeadbeef");
         // Expect something of the request
         expect(transport.requests).deep.equals([
             {
                 method: "PUT",
                 url:
-                    "http://localhost:1337/auth/api_keys/enable/deadbeefdeadbeefdeadbeef",
+                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef/enable",
                 headers: DEFAULT_HEADERS,
             },
         ]);
@@ -173,16 +197,21 @@ describe("ApiKeyAuth", () => {
 
     it("can disable a key", async () => {
         const transport = new MockTransport([{}]);
-        const provider = new ApiKeyAuth(transport);
-        await provider.disable(
-            ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
+
+        const currentUser = { refreshToken: "very-refreshing" } as User;
+        const provider = new ApiKeyAuth(
+            new AuthenticatedTransport(transport, {
+                currentUser,
+            }),
         );
+
+        await provider.disable("deadbeefdeadbeefdeadbeef");
         // Expect something of the request
         expect(transport.requests).deep.equals([
             {
                 method: "PUT",
                 url:
-                    "http://localhost:1337/auth/api_keys/disable/deadbeefdeadbeefdeadbeef",
+                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef/disable",
                 headers: DEFAULT_HEADERS,
             },
         ]);

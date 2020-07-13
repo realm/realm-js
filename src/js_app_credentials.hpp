@@ -59,8 +59,8 @@ public:
         {"google",           wrap<google>},
         {"emailPassword",    wrap<email_password>},
         {"_function",        wrap<function>},
-        {"userAPIKey",       wrap<user_api_key>},
-        {"serverAPIKey",     wrap<server_api_key>},
+        {"userApiKey",       wrap<user_api_key>},
+        {"serverApiKey",     wrap<server_api_key>},
         {"custom",           wrap<custom>},
     };
 

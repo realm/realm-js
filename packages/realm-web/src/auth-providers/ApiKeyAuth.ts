@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Transport } from "../transports";
+import { AuthenticatedTransport } from "../transports/AuthenticatedTransport";
 import { deserialize } from "../utils/ejson";
 
 /** @inheritdoc */
@@ -24,7 +24,7 @@ export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
     /**
      * The transport used to send requests to services.
      */
-    private readonly transport: Transport;
+    private readonly transport: AuthenticatedTransport;
 
     /**
      * Construct an interface to the API-key authentication provider.
@@ -32,7 +32,7 @@ export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
      * @param transport The transport used to send requests to services.
      * @param providerName Optional custom name of the authentication provider.
      */
-    constructor(transport: Transport, providerName = "api-key") {
+    constructor(transport: AuthenticatedTransport, providerName = "api-key") {
         this.transport = transport.prefix("/auth/api_keys");
     }
 
@@ -42,51 +42,58 @@ export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
             .fetch({
                 method: "POST",
                 body: { name },
+                tokenType: "refresh",
             })
             .then(deserialize);
     }
 
     /** @inheritdoc */
-    fetch(keyId: Realm.ObjectId): Promise<Realm.Auth.ApiKey> {
+    fetch(keyId: string): Promise<Realm.Auth.ApiKey> {
         return this.transport
             .fetch({
                 method: "GET",
-                path: "/" + keyId.toHexString(),
+                path: `/${keyId}`,
+                tokenType: "refresh",
             })
             .then(deserialize);
     }
 
     /** @inheritdoc */
     fetchAll(): Promise<Realm.Auth.ApiKey[]> {
-        return this.transport.fetch({ method: "GET" }).then(deserialize);
+        return this.transport
+            .fetch({ method: "GET", tokenType: "refresh" })
+            .then(deserialize);
     }
 
     /** @inheritdoc */
-    delete(keyId: Realm.ObjectId): Promise<void> {
+    delete(keyId: string): Promise<void> {
         return this.transport
             .fetch({
                 method: "DELETE",
-                path: "/" + keyId.toHexString(),
+                path: `/${keyId}`,
+                tokenType: "refresh",
             })
             .then(deserialize);
     }
 
     /** @inheritdoc */
-    enable(keyId: Realm.ObjectId): Promise<void> {
+    enable(keyId: string): Promise<void> {
         return this.transport
             .fetch({
                 method: "PUT",
-                path: "/enable/" + keyId.toHexString(),
+                path: `/${keyId}/enable`,
+                tokenType: "refresh",
             })
             .then(deserialize);
     }
 
     /** @inheritdoc */
-    disable(keyId: Realm.ObjectId): Promise<void> {
+    disable(keyId: string): Promise<void> {
         return this.transport
             .fetch({
                 method: "PUT",
-                path: "/disable/" + keyId.toHexString(),
+                path: `/${keyId}/disable`,
+                tokenType: "refresh",
             })
             .then(deserialize);
     }

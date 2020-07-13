@@ -36,6 +36,11 @@ global.TEST_CREDENTIALS = (
     process.env.TEST_CREDENTIALS || "anonymous,email-password,function,jwt"
 ).split(",");
 
+beforeEach(function () {
+    this.slow(1000);
+    this.timeout(10000);
+});
+
 before(async function () {
     this.timeout(10000);
     // This enables app re-use when in --watch mode

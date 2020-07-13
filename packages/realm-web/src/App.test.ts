@@ -72,6 +72,8 @@ describe("App", () => {
     it("expose a static Credentials factory", () => {
         expect(typeof App.Credentials).not.equals("undefined");
         expect(typeof App.Credentials.anonymous).equals("function");
+        expect(typeof App.Credentials.userApiKey).equals("function");
+        expect(typeof App.Credentials.serverApiKey).equals("function");
         expect(typeof App.Credentials.apiKey).equals("function");
         expect(typeof App.Credentials.emailPassword).equals("function");
     });

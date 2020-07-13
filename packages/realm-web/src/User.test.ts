@@ -119,6 +119,34 @@ describe("User", () => {
         });
     });
 
+    it("expose an api key auth provider client", async () => {
+        const user = new User({
+            app: new MockApp("my-mocked-app", [
+                [
+                    {
+                        _id: "key-1-id",
+                        key: "something-secret",
+                        name: "key-1-name",
+                        disabled: false,
+                    },
+                ],
+            ]),
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+        });
+        // Try calling a function on the user
+        const keys = await user.apiKeys.fetchAll();
+        expect(keys).deep.equals([
+            {
+                _id: "key-1-id",
+                key: "something-secret",
+                name: "key-1-name",
+                disabled: false,
+            },
+        ]);
+    });
+
     it("sets tokens and profile on storage when constructed, removes them on log out", async () => {
         const user = new User({
             app: new MockApp("my-mocked-app", [

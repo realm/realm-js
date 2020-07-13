@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Transport } from "../transports";
+import { Transport } from "../transports/Transport";
 
 /** @inheritdoc */
 export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {

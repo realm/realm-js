@@ -29,6 +29,20 @@ interface UserContext {
     currentUser: User<any, any> | null;
 }
 
+type TokenType = "access" | "refresh";
+
+/**
+ * A request which will send the access or refresh token of the current user.
+ */
+interface AuthenticatedRequest<RequestBody> extends Request<RequestBody> {
+    /**
+     * Which token should be used when requesting?
+     *
+     * @default "access"
+     */
+    tokenType?: TokenType;
+}
+
 /**
  * Fetches resources as a particular user.
  */
@@ -64,16 +78,17 @@ export class AuthenticatedTransport implements Transport {
      * @returns A response from requesting with authentication.
      */
     public async fetch<RequestBody extends any, ResponseBody extends any>(
-        request: Request<RequestBody>,
+        request: AuthenticatedRequest<RequestBody>,
         user: User | null = this.userContext.currentUser,
         retries = 0,
     ): Promise<ResponseBody> {
         try {
+            const { tokenType = "access", ...rest } = request;
             // Awaiting to intercept errors being thrown
             return await this.transport.fetch({
-                ...request,
+                ...rest,
                 headers: {
-                    ...this.buildAuthorizationHeader(user),
+                    ...this.buildAuthorizationHeader(user, tokenType),
                     ...request.headers,
                 },
             });
@@ -102,15 +117,15 @@ export class AuthenticatedTransport implements Transport {
     /**
      * Generate an object with an authorization header to issue requests as a specific user.
      *
-     * @param user An optional user to generate the header for
+     * @param user An optional user to generate the header for.
+     * @param tokenType The type of token (access or refresh).
      * @returns An object containing with the users access token as authorization header or undefined if no user is given.
      */
-    private buildAuthorizationHeader(user: User | null) {
-        if (user) {
-            // TODO: Ensure the access token is valid
-            return {
-                Authorization: `Bearer ${user.accessToken}`,
-            };
+    private buildAuthorizationHeader(user: User | null, tokenType: TokenType) {
+        if (user && tokenType === "access") {
+            return { Authorization: `Bearer ${user.accessToken}` };
+        } else if (user && tokenType === "refresh") {
+            return { Authorization: `Bearer ${user.refreshToken}` };
         }
     }
 }

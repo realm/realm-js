@@ -29,14 +29,17 @@ export interface Request<RequestBody> {
      * HTTP method used when fetching.
      */
     method: Method;
+
     /**
      * Path of the resource to fetch.
      */
     path?: string;
+
     /**
      * Body to send when fetching.
      */
     body?: RequestBody | string;
+
     /**
      * Headers to send when fetching.
      */

@@ -17,23 +17,60 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-
 import { Credentials } from "realm-web";
 
 import { createApp } from "./utils";
 
+// This global is injected by WebPack
+declare const TEST_CREDENTIALS: string[];
+
+// The function credential is used to authenticate the user
 describe("ApiKeyAuthProvider", () => {
-    // TODO: Fix this test
-    it.skip("lists, creates, gets, enables, authenticates, disables and deletes api keys", async () => {
+    it("lists, creates, gets, enables, authenticates, disables and deletes api keys", async () => {
         const app = createApp();
         // Login a user
-        const credentials = Credentials.anonymous();
+        // const credentials = Credentials.anonymous();
+        const credentials = Credentials.function({
+            username: "my-very-own-username",
+            secret: "v3ry-s3cret",
+        });
         const user = await app.logIn(credentials);
         // List all existing keys
-        const keys = await user.apiKeys.fetchAll();
-        console.log(keys);
+        const keysBefore = await user.apiKeys.fetchAll();
+        // Delete any existing keys
+        for (const key of keysBefore) {
+            await user.apiKeys.delete(key._id);
+        }
         // Create an api key
-        const key = await user.apiKeys.create("my-key");
-        // console.log(key);
+        const keyName = `api-key-${keysBefore.length}`;
+        const { _id, key, name, disabled } = await user.apiKeys.create(keyName);
+        expect(typeof _id).equals("string");
+        expect(typeof key).equals("string");
+        expect(name).equals(keyName);
+        expect(disabled).equals(false);
+        // List all existing keys
+        const keysAfter = await user.apiKeys.fetchAll();
+        // Expect a new key
+        expect(keysAfter.length).equals(1);
+        // Disable the key and fetch the key
+        await user.apiKeys.disable(_id);
+        const disabledKey = await user.apiKeys.fetch(_id);
+        expect(disabledKey).deep.equals({ _id, name, disabled: true });
+        // Re-enable the key
+        await user.apiKeys.enable(_id);
+        // Get the specific key
+        const retrievedKey = await user.apiKeys.fetch(_id);
+        expect(retrievedKey).deep.equals({ _id, name, disabled: false });
+        // Try authenticating
+        const apiKeyCredentials = Credentials.apiKey(key);
+        const apiKeyUser = await app.logIn(apiKeyCredentials);
+        expect(apiKeyUser.id).equals(user.id);
+        // Delete the key again
+        // But reauthenticate first, since deleting the key in use will fail with a "403 Forbidden".
+        await app.logIn(credentials);
+        await user.apiKeys.delete(_id);
+        // Verify its no longer there
+        const keysAfterDeletion = await user.apiKeys.fetchAll();
+        expect(keysAfterDeletion).deep.equals([]);
     });
 });
