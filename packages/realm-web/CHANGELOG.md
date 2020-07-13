@@ -20,7 +20,7 @@
 ### Fixed
 * Fixed an error "Cannot use 'in' operator to search for 'node' in undefined", which could occur when bundling the package without Node.js stubs available. ([#3001](https://github.com/realm/realm-js/pull/3001))
 * Fixed refreshing of access tokens upon 401 responses from the server. ([#3020](https://github.com/realm/realm-js/pull/3020))
-* Fixed decoding custom data from the access token. The browsers built in base64 decoder could produce UTF-8 decoding errors for some special charecters. ([#3055](https://github.com/realm/realm-js/pull/3055))
+* Fixed decoding custom data from the access token. The browser's built-in base64 decoder could produce UTF-8 decoding errors for some special characters. ([#3055](https://github.com/realm/realm-js/pull/3055))
 
 ### Internal
 * None
