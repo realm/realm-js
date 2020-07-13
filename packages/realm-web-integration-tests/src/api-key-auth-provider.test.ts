@@ -66,6 +66,8 @@ describe("ApiKeyAuthProvider", () => {
         const apiKeyUser = await app.logIn(apiKeyCredentials);
         expect(apiKeyUser.id).equals(user.id);
         // Delete the key again
+        // But reauthenticate first, since deleting the key in use will fail with a "403 Forbidden".
+        await app.logIn(credentials);
         await user.apiKeys.delete(_id);
         // Verify its no longer there
         const keysAfterDeletion = await user.apiKeys.fetchAll();
