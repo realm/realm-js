@@ -320,7 +320,7 @@ export class App<
     }
 
     /**
-     * Create (and store) a new user or update an existing users access and refresh tokens.
+     * Create (and store) a new user or update an existing user's access and refresh tokens.
      * This helps de-duplicating users in the list of users known to the app.
      *
      * @param userId The id of the user.

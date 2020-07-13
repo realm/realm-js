@@ -71,7 +71,7 @@ export async function performLogIn(app: App<any>, credentials: Credentials) {
         throw new Error("Expected an access token in the response");
     }
     if (typeof refreshToken !== "string") {
-        throw new Error("Expected an refresh token in the response");
+        throw new Error("Expected a refresh token in the response");
     }
     return { id, accessToken, refreshToken };
 }
@@ -249,7 +249,7 @@ export class User<
     }
 
     /**
-     * Authenticate and retrieve the access and refresh token.
+     * Authenticate and retrieve the access and refresh tokens.
      *
      * @param credentials Credentials to use when logging in.
      */
