@@ -129,7 +129,7 @@ declare namespace Realm {
             /**
              * A document from a MongoDB collection
              */
-            interface Document<IdType = ObjectId> {
+            interface Document<IdType = any> {
                 /**
                  * The id of the document.
                  */
@@ -267,8 +267,7 @@ declare namespace Realm {
             } & object;
 
             /**
-             * Represents a change event communicated via a MongoDB change stream.
-             * This type of stream always includes a fullDocument for update events, and also includes the change event ID and namespace of the event as returned by MongoDB.
+             * A base change event containing the properties which apply across operation types.
              */
             type BaseChangeEvent = {
                 /** The id of the change event. */
@@ -377,13 +376,14 @@ declare namespace Realm {
             } & BaseChangeEvent;
 
             /**
-             * Occurs when a database is dropped.
+             * Invalidate events close the change stream cursor.
              */
             type InvalidateEvent = BaseChangeEvent;
 
             /**
              * Represents a change event communicated via a MongoDB change stream.
-             * This type of stream always includes a fullDocument for update events, and also includes the change event ID and namespace of the event as returned by MongoDB.
+             *
+             * @see https://docs.mongodb.com/manual/reference/change-events/
              */
             type ChangeEvent<T extends Document> =
                 | InsertEvent<T>
@@ -473,9 +473,10 @@ declare namespace Realm {
                     options?: FindOneOptions,
                 ): Promise<T | null>;
 
+                // TODO: Verify pipeline and return type
+
                 /**
                  * Runs an aggregation framework pipeline against this collection.
-                 * // TODO: Verify pipeline and return type
                  *
                  * @param pipeline An array of aggregation pipeline stages.
                  * @returns The result.
@@ -654,9 +655,10 @@ declare namespace Realm {
              * Options to use when sending a request.
              */
             interface RequestOptions {
+                // TODO: Add a link to its documentation.
+
                 /**
                  * A url to request from the service to retrieve the authorization header.
-                 * // TODO: Add a link to its documentation.
                  */
                 authUrl?: string;
 

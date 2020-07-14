@@ -117,7 +117,6 @@ declare namespace Realm {
 
     /**
      * End-users enter credentials to authenticate toward your MongoDB Realm App.
-     *
      */
     class Credentials<PayloadType extends object = object> {
         /**
@@ -437,10 +436,10 @@ declare namespace Realm {
         Server = "server",
     }
 
+    // TODO: Implement storing these identities on the user
+
     /**
-     * A users identity with a particular authentication provider.
-     *
-     * TODO: Implement storing these identities on the user
+     * A user's identity with a particular authentication provider.
      */
     interface UserIdentity {
         /**
@@ -485,15 +484,13 @@ declare namespace Realm {
 
         /**
          * The users gender.
-         * // TODO: Determine if this is free-text or actually an enum type.
          */
-        gender?: string;
+        gender?: string; // TODO: Determine if this is free-text or actually an enum type.
 
         /**
          * The users birthday.
-         * // TODO: Determine the format.
          */
-        birthday?: string;
+        birthday?: string; // TODO: Determine the format.
 
         /**
          * The minimal age of the user.

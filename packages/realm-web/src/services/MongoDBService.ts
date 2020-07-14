@@ -21,6 +21,8 @@ import { FunctionsFactory } from "../FunctionsFactory";
 
 type Document = Realm.Services.MongoDB.Document;
 type NewDocument<T extends Document> = Realm.Services.MongoDB.NewDocument<T>;
+type WatchOptions<IdType> = Realm.Services.MongoDB.WatchOptions<IdType>;
+type ChangeEvent<T extends Document> = Realm.Services.MongoDB.ChangeEvent<T>;
 
 /**
  * A remote collection of documents.
@@ -231,7 +233,9 @@ class MongoDBCollection<T extends Document>
     }
 
     /** @inheritdoc */
-    watch(): AsyncGenerator<any> {
+    watch(
+        options?: WatchOptions<T["_id"]>,
+    ): AsyncGenerator<ChangeEvent<T>> {
         throw new Error("Not yet implemented");
     }
 }
