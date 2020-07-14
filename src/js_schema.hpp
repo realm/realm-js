@@ -280,7 +280,7 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
             std::string property_name = Object::validated_get_string(ctx, property_object, name_string);
             Property property;
             try {
-                property = parse_property(ctx, property_object, object_schema, property_name, object_defaults);
+                property = parse_property(ctx, property_object, object_schema.name, property_name, object_defaults);
             }
             catch (std::invalid_argument ex) {
                 std::string message = util::format("Error while parsing property '%1' of object with name '%2'. Error: %3", property_name, object_schema.name, ex.what());
@@ -302,7 +302,7 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
             ValueType property_value = Object::get_property(ctx, properties_object, property_name);
             Property property;
             try {
-                property = parse_property(ctx, property_value, object_schema, property_name, object_defaults);
+                property = parse_property(ctx, property_value, object_schema.name, property_name, object_defaults);
             }
             catch (std::invalid_argument ex) {
                 std::string message = util::format("Error while parsing property '%1' of object with name '%2'. Error: %3", property_name, object_schema.name, ex.what());
