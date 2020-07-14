@@ -26,6 +26,9 @@ export type FunctionPayload = Realm.Credentials.FunctionPayload;
 export type JWTPayload = Realm.Credentials.JWTPayload;
 export type ApplePayload = Realm.Credentials.ApplePayload;
 
+// TODO: Ensure the static interface of the Credentials class implements the static interface of Realm.Credentials
+// See https://stackoverflow.com/a/43484801
+
 /**
  * Instances of this class can be passed to the `app.logIn` method to authenticate an end-user.
  */
@@ -116,7 +119,7 @@ export class Credentials<PayloadType extends object = any>
      * @returns The credentials instance, which can be passed to `app.logIn`.
      */
     static jwt(token: string) {
-        return new Credentials<ApiKeyPayload>("custom-token", "custom-token", {
+        return new Credentials<JWTPayload>("custom-token", "custom-token", {
             token,
         });
     }
@@ -133,7 +136,7 @@ export class Credentials<PayloadType extends object = any>
         return new Credentials<PayloadType>(
             "oauth2-google",
             "oauth2-google",
-            redirectUrlOrAuthCode.indexOf("://") !== -1
+            redirectUrlOrAuthCode.includes("://")
                 ? { redirectUrl: redirectUrlOrAuthCode }
                 : { authCode: redirectUrlOrAuthCode },
         );
@@ -151,7 +154,7 @@ export class Credentials<PayloadType extends object = any>
         return new Credentials<PayloadType>(
             "oauth2-facebook",
             "oauth2-facebook",
-            redirectUrlOrAccessToken.indexOf("://") !== -1
+            redirectUrlOrAccessToken.includes("://")
                 ? { redirectUrl: redirectUrlOrAccessToken }
                 : { accessToken: redirectUrlOrAccessToken },
         );
@@ -169,7 +172,7 @@ export class Credentials<PayloadType extends object = any>
         return new Credentials<PayloadType>(
             "oauth2-apple",
             "oauth2-apple",
-            redirectUrlOrIdToken.indexOf("://") !== -1
+            redirectUrlOrIdToken.includes("://")
                 ? { redirectUrl: redirectUrlOrIdToken }
                 : {
                       // eslint-disable-next-line @typescript-eslint/camelcase
