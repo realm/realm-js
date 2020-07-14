@@ -229,6 +229,11 @@ class MongoDBCollection<T extends Document>
             upsert: options.upsert,
         });
     }
+
+    /** @inheritdoc */
+    watch(): AsyncGenerator<any> {
+        throw new Error("Not yet implemented");
+    }
 }
 
 /**
