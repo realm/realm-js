@@ -20,6 +20,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 ### Enhancements
 * Added RemoteMongoClient functionality to `Realm.User`
 * Added `watch()` to `RemoteMongoDBCollection` to enable streaming notifications of changes events from the database. Only supported in node.js for now.
+* Throwing more descriptive messages when parsing schema properties
 
 ### Fixed
 * Failed to parse arguments correctly, causing the error `callback must be of type 'function', got (undefined)` when calling `Realm.App.emailPassword.sendResetPasswordEmail()` and `Realm.App.emailPassword.resendConfirmationEmail()`. ([#3037](https://github.com/realm/realm-js/issues/3037), since v10.0.0-beta.1)

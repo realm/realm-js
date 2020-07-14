@@ -278,7 +278,15 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         for (uint32_t i = 0; i < length; i++) {
             ObjectType property_object = Object::validated_get_object(ctx, properties_object, i);
             std::string property_name = Object::validated_get_string(ctx, property_object, name_string);
-            Property property = parse_property(ctx, property_object, object_schema.name, std::move(property_name), object_defaults);
+            Property property;
+            try {
+                property = parse_property(ctx, property_object, object_schema, property_name, object_defaults);
+            }
+            catch (std::invalid_argument ex) {
+                std::string message = util::format("Error while parsing property '%1' of object with name '%2'. Error: %3", property_name, object_schema.name, ex.what());
+                throw std::logic_error(message);
+            }
+
             if (property.type == realm::PropertyType::LinkingObjects) {
                 object_schema.computed_properties.emplace_back(std::move(property));
             }
@@ -292,7 +300,14 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         auto property_names = Object::get_property_names(ctx, properties_object);
         for (auto& property_name : property_names) {
             ValueType property_value = Object::get_property(ctx, properties_object, property_name);
-            Property property = parse_property(ctx, property_value, object_schema.name, property_name, object_defaults);
+            Property property;
+            try {
+                property = parse_property(ctx, property_value, object_schema, property_name, object_defaults);
+            }
+            catch (std::invalid_argument ex) {
+                std::string message = util::format("Error while parsing property '%1' of object with name '%2'. Error: %3", property_name, object_schema.name, ex.what());
+                throw std::logic_error(message);
+            }
             if (property.type == realm::PropertyType::LinkingObjects) {
                 object_schema.computed_properties.emplace_back(std::move(property));
             }
