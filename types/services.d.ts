@@ -294,7 +294,7 @@ declare namespace Realm {
             type InsertEvent<T extends Document> = {
                 /** The type of operation which was performed on the document. */
                 operationType: OperationType.Insert;
-                /** The namespace (database and collection) the document got inserted into. */
+                /** The namespace (database and collection) of the document got inserted into. */
                 ns: DocumentNamespace;
                 /** A document that contains the _id of the inserted document. */
                 documentKey: DocumentKey<T["_id"]>;
@@ -305,7 +305,7 @@ declare namespace Realm {
             type UpdateEvent<T extends Document> = {
                 /** The type of operation which was performed on the document. */
                 operationType: OperationType.Update;
-                /** The namespace (database and or collection) affected by the event. */
+                /** The namespace (database and collection) of the updated document. */
                 ns: DocumentNamespace;
                 /** A document that contains the _id of the updated document. */
                 documentKey: DocumentKey<T["_id"]>;
@@ -323,7 +323,7 @@ declare namespace Realm {
             type ReplaceEvent<T extends Document> = {
                 /** The type of operation which was performed on the document. */
                 operationType: OperationType.Replace;
-                /** The namespace (database and collection) the document got replaced within. */
+                /** The namespace (database and collection) of the document got replaced within. */
                 ns: DocumentNamespace;
                 /** A document that contains the _id of the replaced document. */
                 documentKey: DocumentKey<T["_id"]>;
@@ -337,7 +337,7 @@ declare namespace Realm {
             type DeleteEvent<T extends Document> = {
                 /** The type of operation which was performed on the document. */
                 operationType: OperationType.Delete;
-                /** The namespace (database and collection) the document got inserted into. */
+                /** The namespace (database and collection) which the document got deleted from. */
                 ns: DocumentNamespace;
                 /** A document that contains the _id of the deleted document. */
                 documentKey: DocumentKey<T["_id"]>;
@@ -349,7 +349,7 @@ declare namespace Realm {
             type DropEvent = {
                 /** The type of operation which was performed on the document. */
                 operationType: OperationType.Drop;
-                /** The namespace (database and collection) the collection that got dropped. */
+                /** The namespace (database and collection) of the collection that got dropped. */
                 ns: DocumentNamespace;
             } & BaseChangeEvent;
 
@@ -359,9 +359,9 @@ declare namespace Realm {
             type RenameEvent = {
                 /** The type of operation which was performed on the document. */
                 operationType: OperationType.Rename;
-                /** The namespace (database and collection) the collection that got renamed. */
+                /** The original namespace (database and collection) that got renamed. */
                 ns: DocumentNamespace;
-                /** The namespace (database and collection) of the collection going forward. */
+                /** The namespace (database and collection) going forward. */
                 to: DocumentNamespace;
             } & BaseChangeEvent;
 
@@ -371,7 +371,7 @@ declare namespace Realm {
             type DropDatabaseEvent = {
                 /** The type of operation which was performed on the document. */
                 operationType: OperationType.DropDatabase;
-                /** The namespace (database and collection) the collection that got dropped. */
+                /** The namespace (specifying the database name) of the database that got dropped. */
                 ns: Omit<DocumentNamespace, "coll">;
             } & BaseChangeEvent;
 
