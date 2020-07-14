@@ -2,6 +2,18 @@
 =============================================================
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+### Internal
+* None
+
+0.7.0 Release notes (2020-07-13)
+=============================================================
+
+### Enhancements
 * Added `Credentials.userApiKey` and `Credentials.serverApiKey` as aliases for `Credentials.apiKey`.
 * Exposed the `ApiKeyAuth` auth provider client on `user.apiKeys`.
 
