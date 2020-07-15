@@ -135,14 +135,14 @@ declare namespace Realm {
         readonly payload: PayloadType;
 
         /**
-         * Creates credentials that logs in using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
+         * Creates credentials that authenticates using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
          *
          * @returns The credentials instance, which can be passed to `app.logIn`.
          */
         static anonymous(): Credentials<Credentials.AnonymousPayload>;
 
         /**
-         * Creates credentials that logs in using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
+         * Creates credentials that authenticates using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
          *
          * @deprecated Use `Credentials.apiKey`.
          *
@@ -152,7 +152,7 @@ declare namespace Realm {
         static userApiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
 
         /**
-         * Creates credentials that logs in using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
+         * Creates credentials that authenticates using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
          *
          * @deprecated Use `Credentials.apiKey`.
          *
@@ -164,7 +164,7 @@ declare namespace Realm {
         ): Credentials<Credentials.ApiKeyPayload>;
 
         /**
-         * Creates credentials that logs in using the [Email/Password Provider](https://docs.mongodb.com/realm/authentication/email-password/).
+         * Creates credentials that authenticates using the [Email/Password Provider](https://docs.mongodb.com/realm/authentication/email-password/).
          * Note: This was formerly known as the "Username/Password" provider.
          *
          * @param email The end-users email address.
@@ -177,7 +177,7 @@ declare namespace Realm {
         ): Credentials<Credentials.EmailPasswordPayload>;
 
         /**
-         * Creates credentials that logs in using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
+         * Creates credentials that authenticates using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
          *
          * @param payload The custom payload as expected by the server.
          * @returns The credentials instance, which can be passed to `app.logIn`.
@@ -187,7 +187,7 @@ declare namespace Realm {
         >(payload: PayloadType): Credentials<PayloadType>;
 
         /**
-         * Creates credentials that logs in using the [Custom JWT Provider](https://docs.mongodb.com/realm/authentication/custom-jwt/).
+         * Creates credentials that authenticates using the [Custom JWT Provider](https://docs.mongodb.com/realm/authentication/custom-jwt/).
          *
          * @param token The JSON Web Token (JWT).
          * @returns The credentials instance, which can be passed to `app.logIn`.
@@ -195,7 +195,7 @@ declare namespace Realm {
         static jwt(token: string): Credentials<Credentials.JWTPayload>;
 
         /**
-         * Creates credentials that logs in using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         * Creates credentials that authenticates using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
          *
          * @param authCode The auth code returned from Google.
          * @returns The credentials instance, which can be passed to `app.logIn`.
@@ -203,7 +203,7 @@ declare namespace Realm {
         static google(authCode: string): Credentials<Credentials.GooglePayload>;
 
         /**
-         * Creates credentials that logs in using the [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
+         * Creates credentials that authenticates using the [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
          *
          * @param accessToken The access token returned from Facebook.
          * @returns The credentials instance, which can be passed to `app.logIn`.
@@ -213,7 +213,7 @@ declare namespace Realm {
         ): Credentials<Credentials.FacebookPayload>;
 
         /**
-         * Creates credentials that logs in using the [Apple ID Provider](https://docs.mongodb.com/realm/authentication/apple/).
+         * Creates credentials that authenticates using the [Apple ID Provider](https://docs.mongodb.com/realm/authentication/apple/).
          *
          * @param idToken The id_token returned from Apple.
          * @returns The credentials instance, which can be passed to `app.logIn`.
