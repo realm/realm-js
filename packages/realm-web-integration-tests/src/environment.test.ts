@@ -20,9 +20,11 @@ import { describeIf } from "./utils";
 import { LocalStorage, getEnvironment } from "realm-web";
 import { expect } from "chai";
 
-describeIf(typeof LocalStorage !== "undefined", "", () => {
-    it("default storage is LocalStorage", () => {
-        const environment = getEnvironment();
-        expect(environment.defaultStorage).instanceOf(LocalStorage);
+describeIf(typeof LocalStorage !== "undefined", "Environment", () => {
+    it("default storage writes to local storage", () => {
+        const { defaultStorage } = getEnvironment();
+        defaultStorage.set("some-key", "some-value");
+        expect(localStorage.getItem("realm-web:some-key")).equals("some-value");
+        defaultStorage.clear();
     });
 });

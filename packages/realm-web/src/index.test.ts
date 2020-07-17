@@ -33,11 +33,11 @@ describe("Realm Web module", () => {
 
     describe("static app function", () => {
         it("return the same App instance only if ids match", () => {
-            const app1 = Realm.app("default-app-id");
+            const app1 = Realm.getApp("default-app-id");
             expect(app1).to.be.instanceOf(Realm.App);
-            const app2 = Realm.app("default-app-id");
+            const app2 = Realm.getApp("default-app-id");
             expect(app2).equals(app1);
-            const app3 = Realm.app("another-app-id");
+            const app3 = Realm.getApp("another-app-id");
             expect(app2).to.not.equal(app3);
         });
     });

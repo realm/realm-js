@@ -26,7 +26,7 @@ const appCache: { [id: string]: Realm.App } = {};
  * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
  * @returns The Realm App instance. Calling this function multiple times with the same id will return the same instance.
  */
-export function app(id: string) {
+export function getApp(id: string) {
     if (id in appCache) {
         return appCache[id];
     } else {
@@ -40,3 +40,7 @@ export { App };
 export { Credentials } from "./Credentials";
 export { User, UserState } from "./User";
 export * from "./environment";
+
+// Export a selection of the bson types
+import { ObjectId } from "bson";
+export const BSON = { ObjectId };
