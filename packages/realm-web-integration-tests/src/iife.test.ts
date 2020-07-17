@@ -16,6 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./types";
-export { DefaultNetworkTransport } from "./NetworkTransport";
-export { MongoDBRealmError } from "./MongoDBRealmError";
+import { expect } from "chai";
+
+import { describeIf } from "./utils";
+
+declare const IIFE_BUNDLE_URL: string;
+
+describeIf(typeof window === "object", "IIFE bundle", () => {
+    before(() => {
+        // Load the IIFE bundle into the browser
+        console.log("Loading bundle from", IIFE_BUNDLE_URL);
+        expect(typeof Realm).equals("undefined");
+    });
+
+    it("exports a constructor", () => {
+        expect(typeof Realm).equals("function");
+    });
+});

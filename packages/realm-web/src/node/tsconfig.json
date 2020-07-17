@@ -1,0 +1,19 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"types": [
+			"realm-network-transport",
+			"js-base64",
+			"bson",
+			"node"
+		],
+		"lib": [
+			"es2019"
+		]
+	},
+	"exclude": [
+		"../**/*.test.ts",
+		"../dom/",
+		"../test/"
+	]
+}

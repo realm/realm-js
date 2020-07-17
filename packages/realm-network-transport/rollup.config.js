@@ -17,14 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import typescript from "@rollup/plugin-typescript";
+import nodeResolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
 import dts from "rollup-plugin-dts";
-import resolve from "@rollup/plugin-node-resolve";
 
 import pkg from "./package.json";
 
 export default [
     {
-        input: "src/index.ts",
+        input: "src/index.node.ts",
         output: [
             {
                 file: pkg.main,
@@ -36,18 +37,38 @@ export default [
             },
         ],
         plugins: [
+            commonjs(),
             typescript({
-                tsconfig: "tsconfig.build.json",
+                tsconfig: "tsconfig.node.json",
             }),
-            resolve(),
+        ],
+        external: ["abort-controller", "node-fetch"],
+    },
+    {
+        input: "src/index.dom.ts",
+        output: [
+            {
+                file: pkg.browser[pkg.main],
+                format: "cjs",
+            },
+            {
+                file: pkg.browser[pkg.module],
+                format: "es",
+            },
+        ],
+        plugins: [
+            typescript({
+                tsconfig: "tsconfig.dom.json",
+            }),
+            nodeResolve(),
         ],
     },
     {
-        input: "types/index.d.ts",
+        input: "types/generated/index.d.ts",
         output: {
             file: "dist/bundle.d.ts",
             format: "es",
         },
-        plugins: [dts(), resolve()],
+        plugins: [dts(), nodeResolve()],
     },
 ];

@@ -16,6 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./types";
-export { DefaultNetworkTransport } from "./NetworkTransport";
-export { MongoDBRealmError } from "./MongoDBRealmError";
+declare module "node-fetch" {
+    export default fetch;
+}

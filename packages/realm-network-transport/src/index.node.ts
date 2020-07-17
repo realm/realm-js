@@ -16,6 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./types";
-export { DefaultNetworkTransport } from "./NetworkTransport";
-export { MongoDBRealmError } from "./MongoDBRealmError";
+export * from "./index";
+
+import { DefaultNetworkTransport } from "./NetworkTransport";
+
+import fetch from "node-fetch";
+import AbortController from "abort-controller";
+
+DefaultNetworkTransport.fetch = fetch;
+DefaultNetworkTransport.AbortController = AbortController;

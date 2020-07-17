@@ -18,15 +18,28 @@
 
 const LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
-import { Storage, createDefaultStorage } from "./storage";
+import { Storage } from "./storage";
 import { Credentials, OAuth2RedirectPayload } from "./Credentials";
 import {
     generateRandomString,
     encodeQueryString,
     decodeQueryString,
 } from "./utils/string";
+import { getEnvironment } from "./environment";
 
 type DetermineAppUrl = () => Promise<string>;
+
+export type Window = {
+    /**
+     * Attempt to close the window.
+     */
+    close: () => void;
+
+    /**
+     * Has the window been closed?
+     */
+    closed: boolean;
+};
 
 type WindowOpener = (url: string) => Window | null;
 
@@ -55,15 +68,6 @@ type RedirectResult = {
      * Was this originally a request to link a user with other credentials?
      */
     link?: string;
-};
-
-const defaultOpenWindow: WindowOpener = url => {
-    if (typeof window === "object") {
-        return window.open(url);
-    } else {
-        console.log(`Please open this URL: ${url}`);
-        return null;
-    }
 };
 
 /* eslint-disable @typescript-eslint/camelcase */
@@ -111,7 +115,7 @@ export class OAuth2Helper {
      */
     public static handleRedirect(
         queryString: string,
-        storage = createDefaultStorage(),
+        storage = getEnvironment().defaultStorage,
     ) {
         const helper = new OAuth2Helper(storage, async () => {
             throw new Error("This instance cannot be used to initiate a flow");
@@ -162,7 +166,7 @@ export class OAuth2Helper {
     constructor(
         storage: Storage,
         getAppUrl: DetermineAppUrl,
-        openWindow = defaultOpenWindow,
+        openWindow = getEnvironment().openWindow,
     ) {
         this.storage = storage.prefix("oauth2");
         this.getAppUrl = getAppUrl;

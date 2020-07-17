@@ -20,11 +20,7 @@ import { expect } from "chai";
 
 import { Storage } from "./Storage";
 import { MemoryStorage } from "./MemoryStorage";
-import { LocalStorage } from "./LocalStorage";
-import { Suite } from "mocha";
 import { PrefixedStorage } from "./PrefixedStorage";
-
-const skipIfBrowser = typeof window === "object" ? it.skip : it;
 
 describe("Storage", () => {
     describe("MemoryStorage", function () {
@@ -104,14 +100,6 @@ describe("Storage", () => {
             storage.clear();
             expect(storage.get("another")).equals(null);
             expect(parentStorage.get("unremovable")).equals("remains!");
-        });
-    });
-
-    describe("LocalStorage", () => {
-        skipIfBrowser("throws when constructed outside of a browser", () => {
-            expect(() => {
-                new LocalStorage();
-            }).throws("Cannot use LocalStorage without a global window object");
         });
     });
 });

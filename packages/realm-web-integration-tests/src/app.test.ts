@@ -18,11 +18,17 @@
 
 import { expect } from "chai";
 
-import { App, Credentials, User, createDefaultStorage } from "realm-web";
+import {
+    App,
+    Credentials,
+    User,
+    LocalStorage,
+    getEnvironment,
+} from "realm-web";
 
 import { createApp } from "./utils";
 
-const storage = createDefaultStorage();
+const environment = getEnvironment();
 
 describe("App#constructor", () => {
     it("constructs", () => {
@@ -31,7 +37,7 @@ describe("App#constructor", () => {
     });
 
     afterEach(() => {
-        storage.clear();
+        environment.defaultStorage.clear();
     });
 
     it("can login a user", async () => {

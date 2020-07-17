@@ -23,6 +23,9 @@
 		]
 	},
 	"include": [
+		"types/realm/app.d.ts",
+		"types/realm/bson.d.ts",
+		"src/index.d.ts",
 		"src/**/*.ts"
 	],
 	"exclude": []

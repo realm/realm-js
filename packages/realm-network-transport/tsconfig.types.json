@@ -4,6 +4,8 @@
 		"types": []
 	},
 	"exclude": [
+		"src/index.node.ts",
+		"src/index.dom.ts",
 		"src/**/*.test.ts"
 	]
 }

@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { expect } from "chai";
-
 import { Credentials } from "realm-web";
 
 import { createApp } from "./utils";

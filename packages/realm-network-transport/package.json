@@ -2,11 +2,16 @@
   "name": "realm-network-transport",
   "version": "0.6.0",
   "description": "Implements cross-platform fetching used by Realm JS",
-  "main": "dist/bundle.cjs.js",
-  "module": "dist/bundle.es.js",
-  "types": "dist/bundle.d.ts",
+  "main": "./dist/bundle.cjs.js",
+  "module": "./dist/bundle.es.js",
+  "types": "./dist/bundle.d.ts",
+  "browser": {
+    "./dist/bundle.cjs.js": "./dist/bundle.dom.cjs.js",
+    "./dist/bundle.es.js": "./dist/bundle.dom.es.js",
+    "./dist/bundle.d.ts": "./dist/bundle.dom.d.ts"
+  },
   "scripts": {
-    "generate-types": "tsc --project tsconfig.build.json --declaration --emitDeclarationOnly --declarationDir types",
+    "generate-types": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
     "build": "npm run generate-types && rollup --config",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha 'src/**/*.test.ts'",
@@ -33,6 +38,7 @@
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^14.0.0",
     "@rollup/plugin-node-resolve": "^7.1.3",
     "@rollup/plugin-typescript": "^4.1.1",
     "@types/chai": "^4.2.10",
