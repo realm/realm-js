@@ -98,7 +98,7 @@ typename T::Object make_api_key(typename T::Context ctx, util::Optional<app::App
     ObjectType api_key_object = Object<T>::create_empty(ctx);
     if (api_key) {
         Object<T>::set_property(ctx, api_key_object, "id", Value<T>::from_object_id(ctx, api_key->id));
-        Object<T>::set_property(ctx, api_key_object, "key", Value<T>::from_string(ctx, *(api_key->key)));
+        Object<T>::set_property(ctx, api_key_object, "key", api_key->key ? Value<T>::from_string(ctx, *(api_key->key)) : Value<T>::from_undefined(ctx));
         Object<T>::set_property(ctx, api_key_object, "name", Value<T>::from_string(ctx, api_key->name));
         Object<T>::set_property(ctx, api_key_object, "disabled", Value<T>::from_boolean(ctx, api_key->disabled));
     }
