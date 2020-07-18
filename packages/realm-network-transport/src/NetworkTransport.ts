@@ -17,11 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { MongoDBRealmError } from "./MongoDBRealmError";
-import { NetworkTransport, Request, ResponseHandler, Headers } from "./types";
+import {
+    NetworkTransport,
+    Request,
+    ResponseHandler,
+    Headers,
+    Fetch,
+    AbortController,
+} from "./types";
 
 export class DefaultNetworkTransport implements NetworkTransport {
-    public static fetch: typeof fetch;
-    public static AbortController: typeof AbortController;
+    public static fetch: Fetch;
+    public static AbortController: AbortController;
 
     public static DEFAULT_HEADERS = {
         Accept: "application/json",

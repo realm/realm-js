@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./index";
+export * from "../index";
 
-import { DefaultNetworkTransport } from "./NetworkTransport";
+import { DefaultNetworkTransport } from "../NetworkTransport";
+import { AbortController, Fetch } from "../types";
 
-DefaultNetworkTransport.fetch = window.fetch.bind(window);
-DefaultNetworkTransport.AbortController = window.AbortController;
+DefaultNetworkTransport.fetch = window.fetch.bind(window) as Fetch;
+DefaultNetworkTransport.AbortController = window.AbortController as AbortController;

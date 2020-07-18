@@ -43,6 +43,7 @@
     "@rollup/plugin-typescript": "^4.1.1",
     "@types/chai": "^4.2.10",
     "@types/mocha": "^5",
+    "@types/node-fetch": "^2.5.7",
     "chai": "^4.2.0",
     "eslint": "file:../../node_modules/eslint",
     "mocha": "^5.2.0",

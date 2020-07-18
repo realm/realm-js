@@ -16,12 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./index";
+export * from "../index";
 
-import { DefaultNetworkTransport } from "./NetworkTransport";
+import { DefaultNetworkTransport } from "../NetworkTransport";
+import { Fetch, AbortController } from "../types";
 
 import fetch from "node-fetch";
-import AbortController from "abort-controller";
+import NodeAbortController from "abort-controller";
 
-DefaultNetworkTransport.fetch = fetch;
-DefaultNetworkTransport.AbortController = AbortController;
+DefaultNetworkTransport.fetch = fetch as Fetch;
+DefaultNetworkTransport.AbortController = NodeAbortController as AbortController;

@@ -25,7 +25,7 @@ import pkg from "./package.json";
 
 export default [
     {
-        input: "src/index.node.ts",
+        input: "src/node/index.ts",
         output: [
             {
                 file: pkg.main,
@@ -39,13 +39,13 @@ export default [
         plugins: [
             commonjs(),
             typescript({
-                tsconfig: "tsconfig.node.json",
+                tsconfig: "src/node/tsconfig.json",
             }),
         ],
         external: ["abort-controller", "node-fetch"],
     },
     {
-        input: "src/index.dom.ts",
+        input: "src/dom/index.ts",
         output: [
             {
                 file: pkg.browser[pkg.main],
@@ -58,7 +58,7 @@ export default [
         ],
         plugins: [
             typescript({
-                tsconfig: "tsconfig.dom.json",
+                tsconfig: "src/dom/tsconfig.json",
             }),
             nodeResolve(),
         ],

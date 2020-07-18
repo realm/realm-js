@@ -19,12 +19,8 @@
 import { expect } from "chai";
 import { createServer, RequestListener, Server } from "http";
 
-import {
-    DefaultNetworkTransport,
-    Response,
-    NetworkTransport,
-    Request,
-} from "./NetworkTransport";
+import { DefaultNetworkTransport } from "./NetworkTransport";
+import { Response, NetworkTransport, Request } from "./types";
 
 function getServerUrl(server: Server) {
     const address = server.address();
@@ -103,7 +99,10 @@ describe("Realm Network Transport", () => {
             request: Request<any>,
         ) {
             return new Promise<Response>((resolve, reject) => {
-                transport.fetchWithCallbacks(request, resolve, reject);
+                transport.fetchWithCallbacks(request, {
+                    onSuccess: resolve,
+                    onError: reject,
+                });
             });
         }
 
