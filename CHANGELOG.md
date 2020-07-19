@@ -9,6 +9,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 
 ### Fixed
 * A crash when calling `user.apiKeys.fetchAll()`
+* Fixed Android and XCode build files. ([#3069](https://github.com/realm/realm-js/issues/3069), since v10.0.0-beta.9)
 
 ### Compatibility
 * MongoDB Realm Cloud.
