@@ -135,41 +135,41 @@ declare namespace Realm {
         readonly payload: PayloadType;
 
         /**
-         * Creates credentials which authenticates using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
+         * Factory for `Credentials` which authenticate using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
          *
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static anonymous(): Credentials<Credentials.AnonymousPayload>;
 
         /**
-         * Creates credentials which authenticates using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
+         * Factory for `Credentials` which authenticate using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
          *
          * @deprecated Use `Credentials.apiKey`.
          *
          * @param key The secret content of the API key.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static userApiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
 
         /**
-         * Creates credentials which authenticates using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
+         * Factory for `Credentials` which authenticate using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
          *
          * @deprecated Use `Credentials.apiKey`.
          *
          * @param key The secret content of the API key.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static serverApiKey(
             key: string,
         ): Credentials<Credentials.ApiKeyPayload>;
 
         /**
-         * Creates credentials which authenticates using the [Email/Password Provider](https://docs.mongodb.com/realm/authentication/email-password/).
+         * Factory for `Credentials` which authenticate using the [Email/Password Provider](https://docs.mongodb.com/realm/authentication/email-password/).
          * Note: This was formerly known as the "Username/Password" provider.
          *
          * @param email The end-users email address.
          * @param password The end-users password.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static emailPassword(
             email: string,
@@ -177,46 +177,46 @@ declare namespace Realm {
         ): Credentials<Credentials.EmailPasswordPayload>;
 
         /**
-         * Creates credentials which authenticates using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
+         * Factory for `Credentials` which authenticate using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
          *
          * @param payload The custom payload as expected by the server.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static function<
             PayloadType extends Credentials.FunctionPayload = Credentials.FunctionPayload
         >(payload: PayloadType): Credentials<PayloadType>;
 
         /**
-         * Creates credentials which authenticates using the [Custom JWT Provider](https://docs.mongodb.com/realm/authentication/custom-jwt/).
+         * Factory for `Credentials` which authenticate using the [Custom JWT Provider](https://docs.mongodb.com/realm/authentication/custom-jwt/).
          *
          * @param token The JSON Web Token (JWT).
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static jwt(token: string): Credentials<Credentials.JWTPayload>;
 
         /**
-         * Creates credentials which authenticates using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         * Factory for `Credentials` which authenticate using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
          *
          * @param authCode The auth code returned from Google.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static google(authCode: string): Credentials<Credentials.GooglePayload>;
 
         /**
-         * Creates credentials which authenticates using the [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
+         * Factory for `Credentials` which authenticate using the [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
          *
          * @param accessToken The access token returned from Facebook.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static facebook(
             accessToken: string,
         ): Credentials<Credentials.FacebookPayload>;
 
         /**
-         * Creates credentials which authenticates using the [Apple ID Provider](https://docs.mongodb.com/realm/authentication/apple/).
+         * Factory for `Credentials` which authenticate using the [Apple ID Provider](https://docs.mongodb.com/realm/authentication/apple/).
          *
          * @param idToken The id_token returned from Apple.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static apple(idToken: string): Credentials<Credentials.ApplePayload>;
     }
