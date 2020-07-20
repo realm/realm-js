@@ -4,7 +4,8 @@
 		"types": [
 			"realm-network-transport",
 			"js-base64",
-			"bson"
+			"bson",
+			"simplified-node"
 		],
 		"lib": [
 			"es2019",

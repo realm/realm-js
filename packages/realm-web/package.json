@@ -12,7 +12,7 @@
   "scripts": {
     "prepack": "npm run build",
     "prepare": "npm run update-types",
-    "update-types": "ts-node --project tsconfig.scripts.json scripts/update-types.ts",
+    "update-types": "ts-node --project scripts/tsconfig.json scripts/update-types.ts",
     "generate-types": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
     "build": "npm run generate-types && rollup --config",
     "lint": "eslint --ext .js,.ts .",
