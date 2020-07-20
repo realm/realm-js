@@ -40,7 +40,3 @@ export { App };
 export { Credentials } from "./Credentials";
 export { User, UserState } from "./User";
 export * from "./environment";
-
-// Export a selection of the bson types
-import { ObjectId } from "bson";
-export const BSON = { ObjectId };
