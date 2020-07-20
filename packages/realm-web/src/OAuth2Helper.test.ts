@@ -32,7 +32,7 @@ describe("OAuth2Helper", () => {
                 const url = new URL(urlString);
                 windowsOpened.push(url);
                 // Simulating another tab updating the storage
-                setTimeout(() => {
+                process.nextTick(() => {
                     const state = url.searchParams.get("state");
                     storage.set(
                         `oauth2:state(${state}):result`,
@@ -41,7 +41,7 @@ describe("OAuth2Helper", () => {
                             userAuth: "our-little-secret",
                         }),
                     );
-                }, 10);
+                });
                 return null;
             },
         );
