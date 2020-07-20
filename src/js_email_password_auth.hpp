@@ -150,7 +150,7 @@ void EmailPasswordAuthClass<T>::call_reset_password_function(ContextType ctx, Ob
 
     auto email = Value::validated_to_string(ctx, args[0], "email");
     auto password = Value::validated_to_string(ctx, args[1], "password");
-    auto call_args_js = Value::validated_to_array(ctx, args[1], "args");
+    auto call_args_js = Value::validated_to_array(ctx, args[2], "args");
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
 
     bson::BsonArray call_args_bson;
