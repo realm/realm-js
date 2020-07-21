@@ -15,7 +15,7 @@
 			"chai",
 			"node",
 			"realm",
-			"node"
+			"js-base64"
 		],
 		"lib": [
 			"es2019"
