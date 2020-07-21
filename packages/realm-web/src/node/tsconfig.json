@@ -1,6 +1,7 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
+		"noResolve": false,
 		"types": [
 			"realm-network-transport",
 			"js-base64",

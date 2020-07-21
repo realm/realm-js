@@ -18,8 +18,7 @@
 			"realm"
 		],
 		"lib": [
-			"es2019",
-			"dom"
+			"es2019"
 		]
 	},
 	"include": [
