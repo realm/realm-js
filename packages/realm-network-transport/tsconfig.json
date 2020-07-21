@@ -4,14 +4,14 @@
 		"target": "es2018",
 		"forceConsistentCasingInFileNames": true,
 		"esModuleInterop": true,
+		"noResolve": true,
 		"typeRoots": [
 			"./types",
 			"./node_modules/@types"
 		],
 		"types": [
 			"mocha",
-			"chai",
-			"node"
+			"chai"
 		],
 		"lib": [
 			"ES2015"
