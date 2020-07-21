@@ -85,19 +85,12 @@ export type AbortController = {
 type FetchRequestInfo = FetchRequest | string;
 type FetchBodyInit = unknown;
 type FetchHeadersInit = FetchHeaders | string[][] | Record<string, string>;
-type FetchRequestCache = unknown;
-type FetchRequestCredentials = unknown;
-type FetchRequestMode = unknown;
-type FetchRequestRedirect = unknown;
-type FetchReferrerPolicy = unknown;
-type FetchRequestDestination = unknown;
 
 interface FetchBody {
     readonly body: unknown | null;
     readonly bodyUsed: boolean;
     arrayBuffer(): Promise<ArrayBuffer>;
     blob(): Promise<unknown>;
-    // formData(): Promise<unknown>;
     json(): Promise<any>;
     text(): Promise<string>;
 }
@@ -108,40 +101,15 @@ interface FetchHeaders {
     get(name: string): string | null;
     has(name: string): boolean;
     set(name: string, value: string): void;
-    // forEach(callbackfn: (value: string, key: string, parent: Headers) => void, thisArg?: any): void;
     forEach(callback: (value: string, name: string) => void): void;
 }
 
 /** This Fetch API interface represents a resource request. */
 interface FetchRequest extends FetchBody {
     /**
-     * Returns the cache mode associated with request, which is a string indicating how the request will interact with the browser's cache when fetching.
-     */
-    readonly cache: FetchRequestCache;
-    /**
-     * Returns the credentials mode associated with request, which is a string indicating whether credentials will be sent with the request always, never, or only when sent to a same-origin URL.
-     */
-    readonly credentials: FetchRequestCredentials;
-    /**
-     * Returns the kind of resource requested by request, e.g., "document" or "script".
-     */
-    readonly destination: FetchRequestDestination;
-    /**
      * Returns a Headers object consisting of the headers associated with request. Note that headers added in the network layer by the user agent will not be accounted for in this object, e.g., the "Host" header.
      */
     readonly headers: FetchHeaders;
-    /**
-     * Returns request's subresource integrity metadata, which is a cryptographic hash of the resource being fetched. Its value consists of multiple hashes separated by whitespace. [SRI]
-     */
-    readonly integrity: string;
-    /**
-     * Returns a boolean indicating whether or not request is for a history navigation (a.k.a. back-foward navigation).
-     */
-    readonly isHistoryNavigation: boolean;
-    /**
-     * Returns a boolean indicating whether or not request is for a reload navigation.
-     */
-    readonly isReloadNavigation: boolean;
     /**
      * Returns a boolean indicating whether or not request can outlive the global in which it was created.
      */
@@ -151,22 +119,6 @@ interface FetchRequest extends FetchBody {
      */
     readonly method: string;
     /**
-     * Returns the mode associated with request, which is a string indicating whether the request will use CORS, or will be restricted to same-origin URLs.
-     */
-    readonly mode: FetchRequestMode;
-    /**
-     * Returns the redirect mode associated with request, which is a string indicating how redirects for the request will be handled during fetching. A request will follow redirects by default.
-     */
-    readonly redirect: FetchRequestRedirect;
-    /**
-     * Returns the referrer of request. Its value can be a same-origin URL if explicitly set in init, the empty string to indicate no referrer, and "about:client" when defaulting to the global's default. This is used during fetching to determine the value of the `Referer` header of the request being made.
-     */
-    readonly referrer: string;
-    /**
-     * Returns the referrer policy associated with request. This is used during fetching to compute the value of the request's referrer.
-     */
-    readonly referrerPolicy: FetchReferrerPolicy;
-    /**
      * Returns the signal associated with request, which is an AbortSignal object indicating whether or not request has been aborted, and its abort event handler.
      */
     readonly signal: AbortSignal;
@@ -175,9 +127,6 @@ interface FetchRequest extends FetchBody {
      */
     readonly url: string;
     clone(): FetchRequest;
-
-    // Allow the individual environments to extend this
-    // [ key: string ]: any;
 }
 
 interface FetchResponse extends FetchBody {
@@ -186,7 +135,6 @@ interface FetchResponse extends FetchBody {
     readonly redirected: boolean;
     readonly status: number;
     readonly statusText: string;
-    // readonly trailer: Promise<Headers>;
     readonly type: unknown;
     readonly url: string;
     clone(): FetchResponse;
@@ -197,14 +145,6 @@ interface FetchRequestInit {
      * A BodyInit object or null to set request's body.
      */
     body?: FetchBodyInit | null;
-    /**
-     * A string indicating how the request will interact with the browser's cache to set request's cache.
-     */
-    cache?: FetchRequestCache;
-    /**
-     * A string indicating whether credentials will be sent with the request always, never, or only when sent to a same-origin URL. Sets request's credentials.
-     */
-    credentials?: FetchRequestCredentials;
     /**
      * A Headers object, an object literal, or an array of two-item arrays to set request's headers.
      */
@@ -222,29 +162,9 @@ interface FetchRequestInit {
      */
     method?: string;
     /**
-     * A string to indicate whether the request will use CORS, or will be restricted to same-origin URLs. Sets request's mode.
-     */
-    mode?: FetchRequestMode;
-    /**
-     * A string indicating whether request follows redirects, results in an error upon encountering a redirect, or returns the redirect (in an opaque fashion). Sets request's redirect.
-     */
-    redirect?: FetchRequestRedirect;
-    /**
-     * A string whose value is a same-origin URL, "about:client", or the empty string, to set request's referrer.
-     */
-    referrer?: string;
-    /**
-     * A referrer policy to set request's referrerPolicy.
-     */
-    referrerPolicy?: FetchReferrerPolicy;
-    /**
      * An AbortSignal to set request's signal.
      */
     signal?: AbortSignal | null;
-    /**
-     * Can only be null. Used to disassociate request from any Window.
-     */
-    window?: any;
 }
 
 export type Fetch = (
