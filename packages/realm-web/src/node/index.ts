@@ -38,7 +38,6 @@ import { setEnvironment, Environment } from "../environment";
 import { MemoryStorage } from "../storage";
 
 const environment: Environment = {
-    console,
     defaultStorage: new MemoryStorage(),
     openWindow: url => {
         console.log(`Please open this URL: ${url}`);

@@ -16,12 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Our version of Node.js types are very restricted
-// This file will get resolved when realm's dependency on bson resolves a dependency on @types/node.
-// We need this file to prevent the NodeJS globals to be accessable from within the test source files.
-
 /**
- * The simples buffer we can come up with.
- * NOTE: This is needed because the "bson" package's types depends on it.
+ * A simplified interface for the console.
+ * This should reflect the lowest common denominator across environemnts.
  */
-type Buffer = Uint8Array;
+interface Console {
+    /**
+     * Log something.
+     */
+    log(...data: any[]): void;
+
+    /**
+     * Log a warning.
+     */
+    warn(...data: any[]): void;
+
+    /**
+     * Log an error.
+     */
+    error(...data: any[]): void;
+}
+
+declare const console: Console;

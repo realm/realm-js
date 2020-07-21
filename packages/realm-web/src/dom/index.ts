@@ -25,7 +25,6 @@ import { LocalStorage } from "./LocalStorage";
 export { LocalStorage };
 
 const environment: Environment = {
-    console,
     defaultStorage: new LocalStorage().prefix("realm-web"),
     openWindow: url => window.open(url),
 };

@@ -26,7 +26,7 @@
 		"types/realm/bson.d.ts",
 		"types/realm/services.d.ts",
 		"types/realm/auth-providers.d.ts",
-		"src/index.d.ts",
+		"types/environment.d.ts",
 		"src/**/*.ts"
 	],
 	"exclude": []

@@ -182,7 +182,6 @@ export class OAuth2Helper {
     public async initiate(
         credentials: Credentials<OAuth2RedirectPayload>,
     ): Promise<RedirectResult> {
-        console.log("");
         // TODO: Implement a timeout and an option to cancel.
         const state = this.generateState();
         const stateStorage = this.getStateStorage(state);

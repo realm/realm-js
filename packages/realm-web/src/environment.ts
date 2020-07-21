@@ -19,30 +19,7 @@
 import { Storage } from "./storage";
 import { Window } from "./OAuth2Helper";
 
-/**
- * A simplified interface for the console.
- * This should reflect the lowest common denominator across environemnts.
- */
-interface Console {
-    /**
-     *
-     */
-    error(...data: any[]): void;
-    /**
-     *
-     */
-    log(...data: any[]): void;
-    /**
-     *
-     */
-    warn(...data: any[]): void;
-}
-
 export type Environment = {
-    /**
-     * A console object used to log stuff.
-     */
-    console: Console;
     /**
      * The default storage instance on the environment.
      */
