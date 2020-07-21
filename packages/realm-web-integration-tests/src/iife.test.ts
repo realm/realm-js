@@ -28,7 +28,7 @@ declare const BASE_URL: string;
 declare const Realm: typeof RealmWeb;
 
 describeIf(typeof window === "object", "IIFE bundle", () => {
-    let globalsBefore = new Set(Object.keys(window));
+    let globalsBefore = new Set();
 
     function getNewGlobals() {
         const globalsAfter = new Set(Object.keys(window));
