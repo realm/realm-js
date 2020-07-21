@@ -9,10 +9,7 @@
 			"./types",
 			"./node_modules/@types"
 		],
-		"types": [
-			"mocha",
-			"chai"
-		],
+		"types": [],
 		"lib": [
 			"ES2015"
 		]

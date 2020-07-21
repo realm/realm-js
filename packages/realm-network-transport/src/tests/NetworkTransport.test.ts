@@ -19,8 +19,8 @@
 import { expect } from "chai";
 import { createServer, RequestListener, Server } from "http";
 
-import { DefaultNetworkTransport } from "./NetworkTransport";
-import { Response, NetworkTransport, Request } from "./types";
+import { DefaultNetworkTransport } from "../NetworkTransport";
+import { Response, NetworkTransport, Request } from "../types";
 
 function getServerUrl(server: Server) {
     const address = server.address();
