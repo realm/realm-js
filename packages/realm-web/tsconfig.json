@@ -11,11 +11,11 @@
 			"../../node_modules/@types",
 		],
 		"types": [
-			"bson",
-			"realm-network-transport",
 			"mocha",
 			"chai",
-			"realm"
+			"node",
+			"realm",
+			"node"
 		],
 		"lib": [
 			"es2019"
