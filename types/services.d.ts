@@ -248,7 +248,7 @@ declare namespace Realm {
              */
             type UpdateDescription = {
                 /** Names of fields that got updated. */
-                updatedFields: object;
+                updatedFields: Record<string, any>;
                 /** Names of fields that got removed. */
                 removedFields: string[];
             };
@@ -264,7 +264,7 @@ declare namespace Realm {
             type DocumentKey<IdType> = {
                 /** The id of the document. */
                 _id: IdType;
-            } & object;
+            } & Record<string, any>;
 
             /**
              * A base change event containing the properties which apply across operation types.
@@ -399,6 +399,7 @@ declare namespace Realm {
              * Options provided when initiating a watch.
              */
             type WatchOptions<IdType> =
+                | {}
                 | {
                       /** Filter events. */
                       filter: Filter;
