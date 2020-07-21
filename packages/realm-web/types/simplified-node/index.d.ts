@@ -21,7 +21,7 @@
 // We need this file to prevent the NodeJS globals to be accessable from within the test source files.
 
 /**
- * The simples buffer we can come up with.
+ * The simplest buffer we can come up with.
  * NOTE: This is needed because the "bson" package's types depends on it.
  */
 type Buffer = Uint8Array;
