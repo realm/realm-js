@@ -18,9 +18,9 @@
 
 import { expect } from "chai";
 
-import { Storage } from "./Storage";
-import { MemoryStorage } from "./MemoryStorage";
-import { PrefixedStorage } from "./PrefixedStorage";
+import { Storage } from "../storage/Storage";
+import { MemoryStorage } from "../storage/MemoryStorage";
+import { PrefixedStorage } from "../storage/PrefixedStorage";
 
 describe("Storage", () => {
     describe("MemoryStorage", function () {

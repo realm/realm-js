@@ -1,0 +1,15 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "noResolve": false,
+        "types": [
+            "mocha",
+            "chai",
+            "node",
+            "realm"
+        ]
+    },
+    "include": [
+        "./**/*.ts"
+    ]
+}

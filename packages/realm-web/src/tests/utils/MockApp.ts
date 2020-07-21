@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { App } from "../App";
+import { App } from "../../App";
+import { MemoryStorage } from "../../storage";
+
 import { MockNetworkTransport } from "./MockNetworkTransport";
-import { MemoryStorage } from "../storage";
 
 /**
  * An App using the MockTransport

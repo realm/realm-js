@@ -36,7 +36,8 @@ export function getApp(id: string) {
     }
 }
 
-export { App };
-export { Credentials } from "./Credentials";
-export { User, UserState } from "./User";
-export * from "./environment";
+export * from "./App";
+export * from "./Credentials";
+export * from "./User";
+export { MongoDBRealmError } from "./transports";
+export { getEnvironment, setEnvironment } from "./environment";

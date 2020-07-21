@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { Credentials } from "./Credentials";
+import { Credentials } from "..";
 
 describe("Credentials", () => {
     it("expose the anonymous credentials", () => {

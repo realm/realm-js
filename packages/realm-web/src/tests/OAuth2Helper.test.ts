@@ -18,9 +18,9 @@
 import { expect } from "chai";
 import { URL } from "url";
 
-import { OAuth2Helper } from "./OAuth2Helper";
-import { MemoryStorage } from "./storage";
-import { Credentials, OAuth2RedirectPayload } from "./Credentials";
+import { Credentials, OAuth2RedirectPayload } from "..";
+import { OAuth2Helper } from "../OAuth2Helper";
+import { MemoryStorage } from "../storage";
 
 describe("OAuth2Helper", () => {
     it("can initiate a flow", async () => {

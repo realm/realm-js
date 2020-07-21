@@ -16,7 +16,7 @@
     "generate-types": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
     "build": "npm run generate-types && rollup --config",
     "lint": "eslint --ext .js,.ts .",
-    "test": "mocha 'src/**/*.test.ts'"
+    "test": "mocha 'src/tests/**/*.test.ts'"
   },
   "files": [
     "dist",

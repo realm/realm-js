@@ -20,6 +20,6 @@
 
 const path = require("path");
 
-const tsConfigPath = path.resolve(__dirname, "./tsconfig.json");
+const tsConfigPath = path.resolve(__dirname, "../src/tests/tsconfig.json");
 process.env.TS_NODE_PROJECT = tsConfigPath;
 console.log(`Loading TypeScript configuration from ${tsConfigPath}`);

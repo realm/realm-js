@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import * as Realm from ".";
+import * as Realm from "..";
 
 describe("Realm Web module", () => {
     it("expose the App constructor", () => {
