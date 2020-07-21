@@ -36,13 +36,11 @@ export class DefaultNetworkTransport implements NetworkTransport {
     };
 
     constructor() {
-        // Determine the fetch implementation
         if (!DefaultNetworkTransport.fetch) {
             throw new Error(
                 "DefaultNetworkTransport.fetch must be set before it's used",
             );
         }
-        // Determine the AbortController implementation
         if (!DefaultNetworkTransport.AbortController) {
             throw new Error(
                 "DefaultNetworkTransport.AbortController must be set before it's used",
