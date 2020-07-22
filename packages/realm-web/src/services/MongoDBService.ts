@@ -21,7 +21,6 @@ import { FunctionsFactory } from "../FunctionsFactory";
 
 type Document = Realm.Services.MongoDB.Document;
 type NewDocument<T extends Document> = Realm.Services.MongoDB.NewDocument<T>;
-type WatchOptions<IdType> = Realm.Services.MongoDB.WatchOptions<IdType>;
 type ChangeEvent<T extends Document> = Realm.Services.MongoDB.ChangeEvent<T>;
 
 /**
@@ -233,9 +232,7 @@ class MongoDBCollection<T extends Document>
     }
 
     /** @inheritdoc */
-    watch(
-        options?: WatchOptions<T["_id"]>,
-    ): AsyncGenerator<ChangeEvent<T>> {
+    watch(): AsyncGenerator<ChangeEvent<T>> {
         throw new Error("Not yet implemented");
     }
 }
@@ -286,7 +283,7 @@ export function createDatabase(
             transport,
             serviceName,
             databaseName,
-        ),
+        ) as Realm.Services.MongoDBDatabase["collection"],
     };
 }
 
