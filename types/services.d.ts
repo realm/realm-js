@@ -380,20 +380,6 @@ declare namespace Realm {
                 | InvalidateEvent;
 
             /**
-             * Options provided when initiating a watch.
-             */
-            type WatchOptions<IdType> =
-                | {}
-                | {
-                      /** Filter events. */
-                      filter: Filter;
-                  }
-                | {
-                      /** A list of document ids to watch. */
-                      ids: IdType[];
-                  };
-
-            /**
              * A remote collection of documents in a MongoDB database.
              */
             interface MongoDBCollection<T extends Document> {
@@ -550,9 +536,39 @@ declare namespace Realm {
                  *
                  * @see https://docs.mongodb.com/manual/reference/change-events/
                  */
-                watch(
-                    options?: WatchOptions<T["_id"]>,
-                ): AsyncGenerator<ChangeEvent<T>>;
+                watch(options?: {}): AsyncGenerator<ChangeEvent<T>>;
+
+                /**
+                 * Creates an asynchronous change stream to monitor this collection for changes.
+                 *
+                 * By default, yields all change events for this collection. You may specify at most one of
+                 * the `filter` or `ids` options.
+                 *
+                 * @param options.filter A filter for which change events you are interested in.
+                 * @param options.ids A list of ids that you are interested in watching.
+                 *
+                 * @see https://docs.mongodb.com/manual/reference/change-events/
+                 */
+                watch(options: {
+                    /** List of ids to watch */
+                    ids: T["_id"][];
+                }): AsyncGenerator<ChangeEvent<T>>;
+
+                /**
+                 * Creates an asynchronous change stream to monitor this collection for changes.
+                 *
+                 * By default, yields all change events for this collection.
+                 * You may specify at most one of the `filter` or `ids` options.
+                 *
+                 * @param options.filter A filter for which change events you are interested in.
+                 * @param options.ids A list of ids that you are interested in watching.
+                 *
+                 * @see https://docs.mongodb.com/manual/reference/change-events/
+                 */
+                watch(options: {
+                    /** A filter document */
+                    filter: Filter;
+                }): AsyncGenerator<ChangeEvent<T>>;
             }
         }
 
