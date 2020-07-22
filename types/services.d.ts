@@ -355,7 +355,7 @@ declare namespace Realm {
              * Occurs when a database is dropped.
              */
             type DropDatabaseEvent = {
-                /** The namespace (specifying the database name) of the database that got dropped. */
+                /** The namespace (specifying only the database name) of the database that got dropped. */
                 ns: Omit<DocumentNamespace, "coll">;
             } & BaseChangeEvent<"dropDatabase">;
 
