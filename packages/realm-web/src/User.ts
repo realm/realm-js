@@ -54,31 +54,6 @@ export enum UserType {
     Server = "server",
 }
 
-export async function performLogIn(app: App<any>, credentials: Credentials) {
-    // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
-    const response = await app.appTransport.fetch<object, any>({
-        method: "POST",
-        path: `/auth/providers/${credentials.providerName}/login`,
-        body: credentials.payload,
-    });
-    // Spread out values from the response and ensure they're valid
-    const {
-        user_id: id,
-        access_token: accessToken,
-        refresh_token: refreshToken,
-    } = response;
-    if (typeof id !== "string") {
-        throw new Error("Expected a user id in the response");
-    }
-    if (typeof accessToken !== "string") {
-        throw new Error("Expected an access token in the response");
-    }
-    if (typeof refreshToken !== "string") {
-        throw new Error("Expected a refresh token in the response");
-    }
-    return { id, accessToken, refreshToken };
-}
-
 /**
  * Representation of an authenticated user of an app.
  */

@@ -19,7 +19,7 @@
 import { NetworkTransport } from "realm-network-transport";
 
 import { FunctionsFactory } from "./FunctionsFactory";
-import { User, UserState, performLogIn } from "./User";
+import { User, UserState } from "./User";
 import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
 import { Credentials } from "./Credentials";
 import { create as createServicesFactory } from "./services";
@@ -29,6 +29,7 @@ import { AppStorage } from "./AppStorage";
 import { AppLocation, AppLocationContext } from "./AppLocation";
 import { OAuth2Helper } from "./OAuth2Helper";
 import { getEnvironment } from "./environment";
+import { AuthResponse, Authenticator } from "./Authenticator";
 
 /**
  * Configuration to pass as an argument when constructing an app.
@@ -76,11 +77,6 @@ export class App<
     public static readonly Credentials = Credentials;
 
     /**
-     * Default base url to prefix all requests if no baseUrl is specified in the configuration.
-     */
-    public static readonly DEFAULT_BASE_URL = "https://stitch.mongodb.com";
-
-    /**
      * A transport adding the base route prefix to all requests.
      */
     public readonly baseTransport: BaseTransport;
@@ -99,6 +95,11 @@ export class App<
     public readonly storage: AppStorage;
 
     /**
+     * Internal authenticator used to complete authentication requests.
+     */
+    public readonly authenticator: Authenticator;
+
+    /**
      * An array of active and logged-out users.
      * Elements in the beginning of the array is considered more recent than the later elements.
      */
@@ -108,11 +109,6 @@ export class App<
      * An promise of the apps location metadata.
      */
     private _location: Promise<AppLocation> | undefined;
-
-    /**
-     * A helper used to complete an OAuth 2.0 authentication flow.
-     */
-    private oauth2: OAuth2Helper;
 
     /**
      * Construct a Realm App, either from the Realm App id visible from the MongoDB Realm UI or a configuration.
@@ -162,11 +158,11 @@ export class App<
         // Construct the storage
         const baseStorage = storage || getEnvironment().defaultStorage;
         this.storage = new AppStorage(baseStorage, this.id);
-        // Constructing the oauth2 helper, passing in the baseStorage to avoid an app scope.
-        this.oauth2 = new OAuth2Helper(baseStorage, async () => {
-            const baseUrl = await this.baseTransport.determineBaseUrl(false);
-            return `${baseUrl}/app/${this.id}`;
-        });
+        this.authenticator = new Authenticator(
+            this.id,
+            baseStorage,
+            this.baseTransport,
+        );
         // Hydrate the app state from storage
         this.hydrate();
     }
@@ -197,7 +193,8 @@ export class App<
         credentials: Realm.Credentials<any>,
         fetchProfile = true,
     ): Promise<User<FunctionsFactoryType, CustomDataType>> {
-        const user = await this.performLogIn(credentials);
+        const response = await this.authenticator.authenticate(credentials);
+        const user = this.createOrUpdateUser(response);
         // Let's ensure this will be the current user, in case the user object was reused.
         this.switchUser(user);
         // If neeeded, fetch and set the profile on the user
@@ -291,62 +288,31 @@ export class App<
     }
 
     /**
-     * Perform the actual login, based on the credentials.
-     * Either it decodes the credentials and instantiates a user directly or it calls User.logIn to perform a fetch.
-     *
-     * @param credentials Credentials to use when logging in
-     */
-    private async performLogIn(
-        credentials: Realm.Credentials<any>,
-    ): Promise<User<FunctionsFactoryType, CustomDataType>> {
-        if (
-            credentials.providerType.startsWith("oauth2") &&
-            typeof credentials.payload.redirectUrl === "string"
-        ) {
-            // Initiate the OAuth2 and use the next credentials once they're known
-            const result = await this.oauth2.initiate(credentials);
-            const {
-                userId,
-                accessToken,
-                refreshToken,
-            } = OAuth2Helper.decodeAuthInfo(result.userAuth);
-            return this.createOrUpdateUser(userId, accessToken, refreshToken);
-        } else {
-            const { id, accessToken, refreshToken } = await performLogIn(
-                this,
-                credentials,
-            );
-            return this.createOrUpdateUser(id, accessToken, refreshToken);
-        }
-    }
-
-    /**
      * Create (and store) a new user or update an existing user's access and refresh tokens.
      * This helps de-duplicating users in the list of users known to the app.
      *
      * @param userId The id of the user.
      * @param accessToken The new access token of the user.
+     * @param response
      * @param refreshToken The new refresh token of the user.
      * @returns A new or an existing user.
      */
     private createOrUpdateUser(
-        userId: string,
-        accessToken: string,
-        refreshToken: string,
+        response: AuthResponse,
     ): User<FunctionsFactoryType, CustomDataType> {
-        const existingUser = this.users.find(u => u.id === userId);
+        const existingUser = this.users.find(u => u.id === response.userId);
         if (existingUser) {
             // Update the users access and refresh tokens
-            existingUser.accessToken = accessToken;
-            existingUser.refreshToken = refreshToken;
+            existingUser.accessToken = response.accessToken;
+            existingUser.refreshToken = response.refreshToken;
             return existingUser;
         } else {
             // Create and store a new user
             const user = new User<FunctionsFactoryType, CustomDataType>({
                 app: this,
-                id: userId,
-                accessToken,
-                refreshToken,
+                id: response.userId,
+                accessToken: response.accessToken,
+                refreshToken: response.refreshToken,
             });
             this.users.unshift(user);
             return user;

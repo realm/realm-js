@@ -59,7 +59,7 @@ export class BaseTransport implements Transport {
     /**
      * The base URL to prepend to paths.
      */
-    private baseUrl: string;
+    private readonly baseUrl: string;
 
     /**
      * The base URL to prepend to paths.
