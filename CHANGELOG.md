@@ -8,7 +8,8 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * None.
 
 ### Fixed
-* A crash when calling `user.apiKeys.fetchAll()`
+* Fixed a crash when calling `user.apiKeys.fetchAll()`. ([#3067](https://github.com/realm/realm-js/pull/3067))
+* Fixed calling `app.emailPasswordAuth.resetPassword` and `app.emailPasswordAuth.callResetPasswordFunction`, which would throw an error of mismatch in count of arguments. ([#3079](https://github.com/realm/realm-js/pull/3079))
 
 ### Compatibility
 * MongoDB Realm Cloud.
