@@ -16,11 +16,39 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/**
+ * The default headers added by the Fetcher
+ */
 export const DEFAULT_HEADERS = {
     Accept: "application/json",
+};
+
+/**
+ * The default headers added by the Fetcher
+ */
+export const DEFAULT_BODY_HEADERS = {
+    ...DEFAULT_HEADERS,
     "Content-Type": "application/json",
 };
 
-export { MockApp } from "./MockApp";
-export { MockNetworkTransport } from "./MockNetworkTransport";
-export { MockTransport } from "./MockTransport";
+/**
+ * A typical location request
+ */
+export const LOCATION_REQUEST = {
+    method: "GET",
+    url: "http://localhost:1234/api/client/v2.0/app/my-mocked-app/location",
+    headers: DEFAULT_HEADERS,
+};
+
+/**
+ * A typical location response
+ */
+export const LOCATION_RESPONSE = {
+    hostname: "http://localhost:1337",
+    location: "US-VA",
+    deployment_model: "GLOBAL", // eslint-disable-line @typescript-eslint/camelcase
+};
+
+export * from "./MockApp";
+export * from "./MockFetcher";
+export * from "./MockNetworkTransport";

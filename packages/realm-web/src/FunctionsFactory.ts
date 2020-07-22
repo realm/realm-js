@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Transport } from "./transports/Transport";
-import { deserialize, serialize } from "./utils/ejson";
+import { Fetcher } from "./Fetcher";
+import { serialize } from "./utils/ejson";
 
 /**
  * A list of names that functions cannot have to be callable through the functions proxy.
@@ -54,10 +54,6 @@ export interface FunctionsFactoryConfiguration {
      * Call this function to transform the arguments before they're sent to the service.
      */
     argsTransformation?: (args: any[]) => any[];
-    /**
-     * Call this function to transform a response before it's returned to the caller.
-     */
-    responseTransformation?: (response: any) => any;
 }
 
 /**
@@ -97,20 +93,20 @@ export class FunctionsFactory {
     /**
      * Create a factory of functions, wrapped in a Proxy that returns bound copies of `callFunction` on any property.
      *
-     * @param transport The underlying transport to use when requesting.
+     * @param fetcher The underlying fetcher to use when requesting.
      * @param config Additional configuration parameters.
      * @returns The newly created factory of functions.
      */
     public static create<
         FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory
     >(
-        transport: Transport,
+        fetcher: Fetcher,
         config: FunctionsFactoryConfiguration = {},
     ): FunctionsFactoryType & Realm.BaseFunctionsFactory {
         // Create a proxy, wrapping a simple object returning methods that calls functions
         // TODO: Lazily fetch available functions and return these from the ownKeys() trap
         const factory: Realm.BaseFunctionsFactory = new FunctionsFactory(
-            transport,
+            fetcher,
             config,
         );
         // Wrap the factory in a proxy that calls the internal call method
@@ -129,9 +125,9 @@ export class FunctionsFactory {
     }
 
     /**
-     * The underlying transport to use when requesting.
+     * The underlying fetcher to use when requesting.
      */
-    private readonly transport: Transport;
+    private readonly fetcher: Fetcher;
 
     /**
      * An optional name of the service in which functions are defined.
@@ -144,26 +140,16 @@ export class FunctionsFactory {
     private readonly argsTransformation?: (args: any[]) => any[];
 
     /**
-     * Call this function to transform a response before it's returned to the caller.
-     */
-    private readonly responseTransformation?: (response: any) => any;
-
-    /**
      * Construct a functions factory.
      *
-     * @param transport The underlying transport to use when sending requests.
+     * @param fetcher The underlying fetcher to use when sending requests.
      * @param config Additional configuration parameters.
      */
-    constructor(
-        transport: Transport,
-        config: FunctionsFactoryConfiguration = {},
-    ) {
-        this.transport = transport;
+    constructor(fetcher: Fetcher, config: FunctionsFactoryConfiguration = {}) {
+        this.fetcher = fetcher;
         this.serviceName = config.serviceName;
         this.argsTransformation =
             config.argsTransformation || cleanArgsAndSerialize;
-        this.responseTransformation =
-            config.responseTransformation || deserialize;
     }
 
     /**
@@ -184,16 +170,11 @@ export class FunctionsFactory {
         if (this.serviceName) {
             body.service = this.serviceName;
         }
-        const response = await this.transport.fetch({
+        const appUrl = await this.fetcher.getAppUrl();
+        return this.fetcher.fetchJSON({
             method: "POST",
-            path: "/functions/call",
+            url: appUrl.functionsCall().url,
             body,
         });
-        // Transform the response, if needed
-        if (this.responseTransformation) {
-            return this.responseTransformation(response);
-        } else {
-            return response;
-        }
     }
 }

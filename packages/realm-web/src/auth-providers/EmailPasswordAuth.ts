@@ -16,83 +16,88 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Transport } from "../transports/Transport";
+import { Fetcher } from "../Fetcher";
 
 /** @inheritdoc */
 export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
-    /**
-     * The underlying transport.
-     */
-    private readonly transport: Transport;
+    private readonly fetcher: Fetcher;
+    private readonly providerName: string;
 
     /**
      * Construct an interface to the email / password authentication provider.
      *
-     * @param transport The underlying transport used to request the services.
+     * @param fetcher The underlying fetcher used to request the services.
      * @param providerName Optional custom name of the authentication provider.
      */
-    constructor(transport: Transport, providerName = "local-userpass") {
-        this.transport = transport.prefix(`/auth/providers/${providerName}`);
+    constructor(fetcher: Fetcher, providerName = "local-userpass") {
+        this.fetcher = fetcher;
+        this.providerName = providerName;
     }
 
     /** @inheritdoc */
-    registerUser(email: string, password: string): Promise<void> {
-        return this.transport.fetch({
+    async registerUser(email: string, password: string): Promise<void> {
+        const appUrl = await this.fetcher.getAppUrl();
+        await this.fetcher.fetchJSON({
             method: "POST",
-            path: "/register",
+            url: appUrl.emailPasswordAuth(this.providerName).register().url,
             body: { email, password },
         });
     }
 
     /** @inheritdoc */
-    confirmUser(token: string, tokenId: string): Promise<void> {
-        return this.transport.fetch({
+    async confirmUser(token: string, tokenId: string): Promise<void> {
+        const appUrl = await this.fetcher.getAppUrl();
+        await this.fetcher.fetchJSON({
             method: "POST",
-            path: "/confirm",
+            url: appUrl.emailPasswordAuth(this.providerName).confirm().url,
             body: { token, tokenId },
         });
     }
 
     /** @inheritdoc */
-    resendConfirmationEmail(email: string): Promise<void> {
-        return this.transport.fetch({
+    async resendConfirmationEmail(email: string): Promise<void> {
+        const appUrl = await this.fetcher.getAppUrl();
+        await this.fetcher.fetchJSON({
             method: "POST",
-            path: "/confirm/send",
+            url: appUrl.emailPasswordAuth(this.providerName).confirmSend().url,
             body: { email },
         });
     }
 
     /** @inheritdoc */
-    resetPassword(
+    async resetPassword(
         token: string,
         tokenId: string,
         password: string,
     ): Promise<void> {
-        return this.transport.fetch({
+        const appUrl = await this.fetcher.getAppUrl();
+        await this.fetcher.fetchJSON({
             method: "POST",
-            path: "/reset",
+            url: appUrl.emailPasswordAuth(this.providerName).reset().url,
             body: { token, tokenId, password },
         });
     }
 
     /** @inheritdoc */
-    sendResetPasswordEmail(email: string): Promise<void> {
-        return this.transport.fetch({
+    async sendResetPasswordEmail(email: string): Promise<void> {
+        const appUrl = await this.fetcher.getAppUrl();
+        await this.fetcher.fetchJSON({
             method: "POST",
-            path: "/reset/send",
+            url: appUrl.emailPasswordAuth(this.providerName).resetSend().url,
             body: { email },
         });
     }
 
     /** @inheritdoc */
-    callResetPasswordFunction(
+    async callResetPasswordFunction(
         email: string,
         password: string,
         ...args: any[]
     ): Promise<void> {
-        return this.transport.fetch({
+        const appUrl = await this.fetcher.getAppUrl();
+        await this.fetcher.fetchJSON({
             method: "POST",
-            path: "/reset/call",
+            url: appUrl.emailPasswordAuth(this.providerName).resetCall().url,
             body: { email, password, arguments: args },
         });
     }

@@ -31,6 +31,9 @@ const CLOSE_CHECK_INTERVAL = 100; // 10 times per second
 
 type DetermineAppUrl = () => Promise<string>;
 
+/**
+ *
+ */
 export type Window = {
     /**
      * Attempt to close the window.

@@ -20,13 +20,12 @@ import { expect } from "chai";
 
 import { User } from "..";
 import { ApiKeyAuth } from "../auth-providers/ApiKeyAuth";
-import { AuthenticatedTransport } from "../transports";
 
-import { DEFAULT_HEADERS, MockTransport } from "./utils";
+import { DEFAULT_HEADERS, DEFAULT_BODY_HEADERS, MockFetcher } from "./utils";
 
 describe("ApiKeyAuth", () => {
     it("can create an api key", async () => {
-        const transport = new MockTransport([
+        const fetcher = new MockFetcher([
             {
                 _id: {
                     $oid: "deadbeefdeadbeefdeadbeef",
@@ -37,38 +36,31 @@ describe("ApiKeyAuth", () => {
             },
         ]);
 
-        const currentUser = { refreshToken: "very-refreshing" } as User;
-        const provider = new ApiKeyAuth(
-            new AuthenticatedTransport(transport, {
-                currentUser,
-            }),
-        );
+        const provider = new ApiKeyAuth(fetcher);
 
         const apiKey = await provider.create("my-key-name");
         // Expect something of the newly created key
+        console.log(typeof apiKey._id);
         expect(typeof apiKey._id).equals("object");
         expect(apiKey._id.constructor.name).equals("ObjectId");
         expect(apiKey.name).equals("my-key-name");
         expect(apiKey.key).equals("super-secret-key");
         expect(apiKey.disabled).equals(true);
         // Expect something of the request
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
-                url: "http://localhost:1337/auth/api_keys",
+                url: "http://localhost:1337/api/client/v2.0/auth/api_keys",
                 body: {
                     name: "my-key-name",
                 },
-                headers: {
-                    ...DEFAULT_HEADERS,
-                    Authorization: "Bearer very-refreshing",
-                },
+                headers: DEFAULT_BODY_HEADERS,
             },
         ]);
     });
 
     it("can get an api key", async () => {
-        const transport = new MockTransport([
+        const fetcher = new MockFetcher([
             {
                 _id: "deadbeefdeadbeefdeadbeef",
                 name: "my-key-name",
@@ -77,12 +69,7 @@ describe("ApiKeyAuth", () => {
             },
         ]);
 
-        const currentUser = { refreshToken: "very-refreshing" } as User;
-        const provider = new ApiKeyAuth(
-            new AuthenticatedTransport(transport, {
-                currentUser,
-            }),
-        );
+        const provider = new ApiKeyAuth(fetcher);
 
         const apiKey = await provider.fetch("deadbeefdeadbeefdeadbeef");
         // Expect something of the key
@@ -91,21 +78,18 @@ describe("ApiKeyAuth", () => {
         expect(apiKey.key).equals("super-secret-key");
         expect(apiKey.disabled).equals(true);
         // Expect something of the request
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "GET",
                 url:
-                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef",
-                headers: {
-                    ...DEFAULT_HEADERS,
-                    Authorization: "Bearer very-refreshing",
-                },
+                    "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
 
     it("can list all api keys", async () => {
-        const transport = new MockTransport([
+        const fetcher = new MockFetcher([
             [
                 {
                     _id: "deadbeefdeadbeefdeadbee1",
@@ -122,12 +106,7 @@ describe("ApiKeyAuth", () => {
             ],
         ]);
 
-        const currentUser = { refreshToken: "very-refreshing" } as User;
-        const provider = new ApiKeyAuth(
-            new AuthenticatedTransport(transport, {
-                currentUser,
-            }),
-        );
+        const provider = new ApiKeyAuth(fetcher);
 
         const apiKeys = await provider.fetchAll();
         // Expect something of the first key
@@ -142,35 +121,28 @@ describe("ApiKeyAuth", () => {
         expect(secondKey.key).equals("super-secret-key-2");
         expect(secondKey.disabled).equals(true);
         // Expect something of the request
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "GET",
-                url: "http://localhost:1337/auth/api_keys",
-                headers: {
-                    ...DEFAULT_HEADERS,
-                    Authorization: "Bearer very-refreshing",
-                },
+                url: "http://localhost:1337/api/client/v2.0/auth/api_keys",
+                headers: DEFAULT_HEADERS,
             },
         ]);
     });
 
     it("can delete a key", async () => {
-        const transport = new MockTransport([{}]);
-
-        const currentUser = { refreshToken: "very-refreshing" } as User;
-        const provider = new ApiKeyAuth(
-            new AuthenticatedTransport(transport, {
-                currentUser,
-            }),
-        );
+        const fetcher = new MockFetcher([{}], {
+            currentUser: { refreshToken: "very-refreshing" } as User,
+        });
+        const provider = new ApiKeyAuth(fetcher);
 
         await provider.delete("deadbeefdeadbeefdeadbeef");
         // Expect something of the request
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "DELETE",
                 url:
-                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef",
+                    "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef",
                 headers: {
                     ...DEFAULT_HEADERS,
                     Authorization: "Bearer very-refreshing",
@@ -180,22 +152,18 @@ describe("ApiKeyAuth", () => {
     });
 
     it("can enable a key", async () => {
-        const transport = new MockTransport([{}]);
-
-        const currentUser = { refreshToken: "very-refreshing" } as User;
-        const provider = new ApiKeyAuth(
-            new AuthenticatedTransport(transport, {
-                currentUser,
-            }),
-        );
+        const fetcher = new MockFetcher([{}], {
+            currentUser: { refreshToken: "very-refreshing" } as User,
+        });
+        const provider = new ApiKeyAuth(fetcher);
 
         await provider.enable("deadbeefdeadbeefdeadbeef");
         // Expect something of the request
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "PUT",
                 url:
-                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef/enable",
+                    "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef/enable",
                 headers: {
                     ...DEFAULT_HEADERS,
                     Authorization: "Bearer very-refreshing",
@@ -205,22 +173,18 @@ describe("ApiKeyAuth", () => {
     });
 
     it("can disable a key", async () => {
-        const transport = new MockTransport([{}]);
-
-        const currentUser = { refreshToken: "very-refreshing" } as User;
-        const provider = new ApiKeyAuth(
-            new AuthenticatedTransport(transport, {
-                currentUser,
-            }),
-        );
+        const fetcher = new MockFetcher([{}], {
+            currentUser: { refreshToken: "very-refreshing" } as User,
+        });
+        const provider = new ApiKeyAuth(fetcher);
 
         await provider.disable("deadbeefdeadbeefdeadbeef");
         // Expect something of the request
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "PUT",
                 url:
-                    "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef/disable",
+                    "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef/disable",
                 headers: {
                     ...DEFAULT_HEADERS,
                     Authorization: "Bearer very-refreshing",

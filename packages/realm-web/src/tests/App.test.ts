@@ -21,7 +21,14 @@ import { expect } from "chai";
 import { App, User, UserState, Credentials, MongoDBRealmError } from "..";
 import { MemoryStorage } from "../storage";
 
-import { DEFAULT_HEADERS, MockApp, MockNetworkTransport } from "./utils";
+import {
+    DEFAULT_HEADERS,
+    DEFAULT_BODY_HEADERS,
+    LOCATION_RESPONSE,
+    LOCATION_REQUEST,
+    MockApp,
+    MockNetworkTransport,
+} from "./utils";
 
 /* eslint-disable @typescript-eslint/camelcase */
 
@@ -35,7 +42,6 @@ describe("App", () => {
         const app = new App({
             id: "default-app-id",
             baseUrl: "http://localhost:3000",
-            fetchLocation: false,
         });
         expect(app).to.be.instanceOf(App);
     });
@@ -78,11 +84,7 @@ describe("App", () => {
 
     it("fetches the location first", async () => {
         const transport = new MockNetworkTransport([
-            {
-                hostname: "http://localhost:1338",
-                location: "US-VA",
-                deployment_model: "GLOBAL",
-            },
+            LOCATION_RESPONSE,
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
@@ -90,27 +92,22 @@ describe("App", () => {
             },
         ]);
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             storage: new MemoryStorage(),
             transport,
-            baseUrl: "http://localhost:1337",
+            baseUrl: "http://localhost:1234",
         });
         const credentials = Credentials.anonymous();
         await app.logIn(credentials, false);
         // Expect the request made it to the transport
         expect(transport.requests).deep.equals([
-            {
-                method: "GET",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/location",
-                headers: DEFAULT_HEADERS,
-            },
+            LOCATION_REQUEST,
             {
                 method: "POST",
                 url:
-                    "http://localhost:1338/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_HEADERS,
+                headers: DEFAULT_BODY_HEADERS,
             },
         ]);
     });
@@ -118,6 +115,7 @@ describe("App", () => {
     it("can log in a user", async () => {
         const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
+            { hostname: "http://localhost:1337" },
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
@@ -141,11 +139,10 @@ describe("App", () => {
             },
         ]);
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             storage,
             transport,
-            baseUrl: "http://localhost:1337",
-            fetchLocation: false,
+            baseUrl: "http://localhost:1234",
         });
         const credentials = Credentials.emailPassword(
             "gilfoyle@testing.mongodb.com",
@@ -163,15 +160,16 @@ describe("App", () => {
         expect(user.state).equals(UserState.Active);
         // Expect the request made it to the transport
         expect(transport.requests).deep.equals([
+            LOCATION_REQUEST,
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/local-userpass/login",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login",
                 body: {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "v3ry-s3cret",
                 },
-                headers: DEFAULT_HEADERS,
+                headers: DEFAULT_BODY_HEADERS,
             },
             {
                 method: "GET",
@@ -187,6 +185,7 @@ describe("App", () => {
     it("can log out a user", async () => {
         const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
+            { hostname: "http://localhost:1337" },
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
@@ -195,11 +194,10 @@ describe("App", () => {
             {},
         ]);
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             transport,
             storage,
-            baseUrl: "http://localhost:1337",
-            fetchLocation: false,
+            baseUrl: "http://localhost:1234",
         });
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials, false);
@@ -213,12 +211,13 @@ describe("App", () => {
         expect(app.allUsers).deep.equals([user]);
         // Assume the correct requests made it to the transport
         expect(transport.requests).deep.equals([
+            LOCATION_REQUEST,
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_HEADERS,
+                headers: DEFAULT_BODY_HEADERS,
             },
             {
                 method: "DELETE",
@@ -233,6 +232,7 @@ describe("App", () => {
 
     it("can log in a user, when another user is already logged in", async () => {
         const transport = new MockNetworkTransport([
+            { hostname: "http://localhost:1337" },
             {
                 user_id: "totally-valid-user-id-1",
                 access_token: "deadbeef1",
@@ -259,10 +259,9 @@ describe("App", () => {
             },
         ]);
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             transport,
-            baseUrl: "http://localhost:1337",
-            fetchLocation: false,
+            baseUrl: "http://localhost:1234",
         });
         // Log in two different users
         {
@@ -281,15 +280,16 @@ describe("App", () => {
         }
         // Expect the request made it to the transport
         expect(transport.requests).deep.equals([
+            LOCATION_REQUEST,
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/local-userpass/login",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login",
                 body: {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "v3ry-s3cret-1",
                 },
-                headers: DEFAULT_HEADERS,
+                headers: DEFAULT_BODY_HEADERS,
             },
             {
                 method: "GET",
@@ -302,12 +302,12 @@ describe("App", () => {
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/local-userpass/login",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login",
                 body: {
                     username: "dinesh@testing.mongodb.com",
                     password: "v3ry-s3cret-2",
                 },
-                headers: DEFAULT_HEADERS,
+                headers: DEFAULT_BODY_HEADERS,
             },
             {
                 method: "GET",
@@ -323,6 +323,7 @@ describe("App", () => {
     it("can remove an active user", async () => {
         const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
+            { hostname: "http://localhost:1337" },
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
@@ -331,11 +332,10 @@ describe("App", () => {
             {},
         ]);
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             storage,
             transport,
-            baseUrl: "http://localhost:1337",
-            fetchLocation: false,
+            baseUrl: "http://localhost:1234",
         });
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials, false);
@@ -349,12 +349,13 @@ describe("App", () => {
         expect(app.allUsers).deep.equals([]);
         // Assume the correct requests made it to the transport
         expect(transport.requests).deep.equals([
+            LOCATION_REQUEST,
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_HEADERS,
+                headers: DEFAULT_BODY_HEADERS,
             },
             {
                 method: "DELETE",
@@ -370,6 +371,7 @@ describe("App", () => {
     it("throws if asked to switch to or remove an unknown user", async () => {
         const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
+            { hostname: "http://localhost:1337" },
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
@@ -377,11 +379,10 @@ describe("App", () => {
             },
         ]);
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             storage,
             transport,
-            baseUrl: "http://localhost:1337",
-            fetchLocation: false,
+            baseUrl: "http://localhost:1234",
         });
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials, false);
@@ -413,12 +414,13 @@ describe("App", () => {
         expect(user.state).equals("active");
         // Assume the correct requests made it to the transport
         expect(transport.requests).deep.equals([
+            LOCATION_REQUEST,
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_HEADERS,
+                headers: DEFAULT_BODY_HEADERS,
             },
         ]);
     });
@@ -426,14 +428,15 @@ describe("App", () => {
     it("refreshes access token and retries request exacly once, upon an 'invalid session' (401) response", async () => {
         const invalidSessionError = new MongoDBRealmError(
             "POST",
-            "http://invalid",
+            "http://localhost:1337/some-path",
             401,
             "",
             {
                 error: "invalid session",
             },
         );
-        const app = new MockApp("default-app-id", [
+        const app = new MockApp("my-mocked-app", [
+            LOCATION_RESPONSE,
             {
                 user_id: "bobs-id",
                 access_token: "first-access-token",
@@ -460,7 +463,7 @@ describe("App", () => {
             expect(err).instanceOf(MongoDBRealmError);
             if (err instanceof MongoDBRealmError) {
                 expect(err.message).equals(
-                    "Request failed (POST http://invalid): invalid session (status 401)",
+                    "Request failed (POST http://localhost:1337/some-path): invalid session (status 401)",
                 );
             }
         }
@@ -468,58 +471,59 @@ describe("App", () => {
         const response = await app.functions.foo({ bar: "baz" });
         expect(response).deep.equals({ bar: "baz" });
         // Expect something of the request and response
-        expect(app.mockTransport.requests).deep.equals([
+        expect(app.requests).deep.equals([
+            LOCATION_REQUEST,
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_HEADERS,
+                headers: DEFAULT_BODY_HEADERS,
             },
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/functions/call",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "foo", arguments: [{ bar: "baz" }] },
                 headers: {
+                    ...DEFAULT_BODY_HEADERS,
                     Authorization: "Bearer first-access-token",
-                    ...DEFAULT_HEADERS,
                 },
             },
             {
                 method: "POST",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
-                    Authorization: "Bearer very-refreshing",
                     ...DEFAULT_HEADERS,
+                    Authorization: "Bearer very-refreshing",
                 },
             },
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/functions/call",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "foo", arguments: [{ bar: "baz" }] },
                 headers: {
+                    ...DEFAULT_BODY_HEADERS,
                     Authorization: "Bearer first-access-token",
-                    ...DEFAULT_HEADERS,
                 },
             },
             {
                 method: "POST",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
-                    Authorization: "Bearer very-refreshing",
                     ...DEFAULT_HEADERS,
+                    Authorization: "Bearer very-refreshing",
                 },
             },
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/functions/call",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "foo", arguments: [{ bar: "baz" }] },
                 headers: {
+                    ...DEFAULT_BODY_HEADERS,
                     Authorization: "Bearer second-access-token",
-                    ...DEFAULT_HEADERS,
                 },
             },
         ]);
@@ -528,6 +532,7 @@ describe("App", () => {
     it("expose a callable functions factory", async () => {
         const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
+            { hostname: "http://localhost:1337" },
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
@@ -536,11 +541,10 @@ describe("App", () => {
             { msg: "hi there!" },
         ]);
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             storage,
             transport,
-            baseUrl: "http://localhost:1337",
-            fetchLocation: false,
+            baseUrl: "http://localhost:1234",
         });
         const credentials = Credentials.anonymous();
         await app.logIn(credentials, false);
@@ -548,21 +552,22 @@ describe("App", () => {
         const response = await app.functions.hello();
         expect(response).to.deep.equal({ msg: "hi there!" });
         expect(transport.requests).to.deep.equal([
+            LOCATION_REQUEST,
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/auth/providers/anon-user/login",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_HEADERS,
+                headers: DEFAULT_BODY_HEADERS,
             },
             {
                 method: "POST",
                 url:
-                    "http://localhost:1337/api/client/v2.0/app/default-app-id/functions/call",
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "hello", arguments: [] },
                 headers: {
                     Authorization: "Bearer deadbeef",
-                    ...DEFAULT_HEADERS,
+                    ...DEFAULT_BODY_HEADERS,
                 },
             },
         ]);
@@ -571,10 +576,9 @@ describe("App", () => {
     it("expose a collection of service factories", () => {
         const transport = new MockNetworkTransport([]);
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             transport,
             baseUrl: "http://localhost:1337",
-            fetchLocation: false,
         });
         expect(app.services).keys(["mongodb", "http"]);
         expect(typeof app.services.mongodb).equals("function");
@@ -585,7 +589,7 @@ describe("App", () => {
         const transport = new MockNetworkTransport([]);
 
         // Fill data into the storage that can be hydrated
-        const appStorage = storage.prefix("app(default-app-id)");
+        const appStorage = storage.prefix("app(my-mocked-app)");
         appStorage.set("userIds", JSON.stringify(["alices-id", "bobs-id"]));
 
         const alicesStorage = appStorage.prefix("user(alices-id)");
@@ -605,11 +609,10 @@ describe("App", () => {
         bobsStorage.set("refreshToken", "bobs-refresh-token");
 
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             storage,
             transport,
             baseUrl: "http://localhost:1337",
-            fetchLocation: false,
         });
 
         expect(app.allUsers.length).equals(2);
@@ -629,6 +632,7 @@ describe("App", () => {
     it("saves users to storage when logging in", async () => {
         const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
+            { hostname: "http://localhost:1337" },
             {
                 user_id: "totally-valid-user-id",
                 access_token: "deadbeef",
@@ -636,18 +640,17 @@ describe("App", () => {
             },
         ]);
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             storage,
             transport,
-            baseUrl: "http://localhost:1337",
-            fetchLocation: false,
+            baseUrl: "http://localhost:1234",
         });
 
         const credentials = App.Credentials.anonymous();
         const user = await app.logIn(credentials, false);
 
         expect(user.id).equals("totally-valid-user-id");
-        const appStorage = storage.prefix("app(default-app-id)");
+        const appStorage = storage.prefix("app(my-mocked-app)");
         expect(appStorage.get("userIds")).equals(
             JSON.stringify(["totally-valid-user-id"]),
         );
@@ -660,9 +663,10 @@ describe("App", () => {
         const storage = new MemoryStorage();
 
         const app1 = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             storage,
             transport: new MockNetworkTransport([
+                LOCATION_RESPONSE,
                 {
                     user_id: "alices-id",
                     access_token: "alices-access-token",
@@ -683,13 +687,13 @@ describe("App", () => {
                 {},
             ]),
             baseUrl: "http://localhost:1337",
-            fetchLocation: false,
         });
 
         const app2 = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             storage,
             transport: new MockNetworkTransport([
+                LOCATION_RESPONSE,
                 {
                     user_id: "charlies-id",
                     access_token: "charlies-access-token",
@@ -697,7 +701,6 @@ describe("App", () => {
                 },
             ]),
             baseUrl: "http://localhost:1337",
-            fetchLocation: false,
         });
 
         const credentials = App.Credentials.anonymous();
@@ -705,7 +708,7 @@ describe("App", () => {
         const charlie = await app2.logIn(credentials, false);
         const bob = await app1.logIn(credentials, true);
 
-        const appStorage = storage.prefix("app(default-app-id)");
+        const appStorage = storage.prefix("app(my-mocked-app)");
         expect(appStorage.get("userIds")).equals(
             // We expect Charlies id to be last, because the last login was in app1
             // We expect bobs-id to be first because he was the last login
@@ -746,9 +749,10 @@ describe("App", () => {
     it("returns the same user when logged in twice", async () => {
         const storage = new MemoryStorage();
         const app = new App({
-            id: "default-app-id",
+            id: "my-mocked-app",
             storage,
             transport: new MockNetworkTransport([
+                LOCATION_RESPONSE,
                 {
                     user_id: "gilfoyles-id",
                     access_token: "gilfoyles-first-access-token",
@@ -778,7 +782,6 @@ describe("App", () => {
                 },
             ]),
             baseUrl: "http://localhost:1337",
-            fetchLocation: false,
         });
         // Login twice with the same user
         const credentials1 = Credentials.emailPassword(
@@ -804,7 +807,7 @@ describe("App", () => {
             expect(refreshToken).equals("gilfoyles-second-refresh-token");
             expect(
                 storage.get(
-                    "app(default-app-id):user(gilfoyles-id):accessToken",
+                    "app(my-mocked-app):user(gilfoyles-id):accessToken",
                 ),
             ).equals("gilfoyles-second-access-token");
         }

@@ -17,86 +17,103 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /**
- * Default base url to prefix all requests if no baseUrl is specified in the configuration.
- */
-export const DEFAULT_BASE_URL = "https://stitch.mongodb.com";
-
-/**
- * This base route will be prefixed requests issued through by the base transport.
- */
-export const DEFAULT_BASE_PATH = "/api/client/v2.0";
-
-/**
- * Get the URL of the API.
- *
  * @param baseUrl The base URL of the server.
  * @returns The base url concatinated with the base route.
  */
 export function api(baseUrl: string) {
-    return baseUrl + DEFAULT_BASE_PATH;
-}
-
-/**
- * Get the URL of an app.
- *
- * @param baseUrl The base URL of the server.
- * @param appId The id of the app.
- * @returns The URL of the app endpoint.
- */
-export function appUrl(baseUrl: string, appId: string) {
-    return apiUrl(baseUrl) + `/app/${appId}`;
-}
-
-/**
- * Get the URL of an app location.
- *
- * @param baseUrl The base URL of the server.
- * @param appId The id of the app.
- * @returns The URL of the app location endpoint.
- */
-export function appLocationUrl(baseUrl: string, appId: string) {
-    return appUrl(baseUrl, appId) + "/location";
-}
-
-/**
- * Get the URL of the API Key management API.
- *
- * @param baseUrl The base URL of the server.
- * @param appId The id of the app.
- * @returns The API keys endpoint.
- */
-export function apiKeyAuthUrl(baseUrl: string, appId: string) {
-    return appUrl(baseUrl, appId) + `/auth/api_keys`;
-}
-
-/**
- * Get the URL of an authentication provider.
- *
- * @param baseUrl The base URL of the server.
- * @param appId The id of the app.
- * @param providerName The name of the provider.
- * @returns The app url concatinated with the /auth/providers/{providerName}
- */
-export function authProviderUrl(
-    baseUrl: string,
-    appId: string,
-    providerName: string,
-) {
-    return appUrl(baseUrl, appId) + `/auth/providers/${providerName}`;
-}
-
-/**
- * Get the URL of an authentication provider.
- *
- * @param baseUrl The base URL of the server.
- * @param appId The id of the app.
- * @param providerName The name of the provider.
- * @returns The app url concatinated with the /auth/providers/{providerName}
- */
-export function authProviderLoginUrl(
-    baseUrl = DEFAULT_BASE_URL,
-    appId: string,
-    providerName: string,
-) {
-    return authProviderUrl(baseUrl, appId, providerName) + "/login";
+    return {
+        url: baseUrl + "/api/client/v2.0",
+        /**
+         * @param appId The id of the app.
+         * @returns The URL of the app endpoint.
+         */
+        app(appId: string) {
+            return {
+                url: this.url + `/app/${appId}`,
+                /**
+                 * @returns The URL of the app location endpoint.
+                 */
+                location() {
+                    return {
+                        url: this.url + "/location",
+                    };
+                },
+                /**
+                 * @param providerName The name of the provider.
+                 * @returns The app url concatinated with the /auth/providers/{providerName}
+                 */
+                authProvider(providerName: string) {
+                    return {
+                        url: this.url + `/auth/providers/${providerName}`,
+                        /**
+                         * @returns Get the URL of an authentication provider.
+                         */
+                        login() {
+                            return { url: this.url + "/login" };
+                        },
+                    };
+                },
+                /**
+                 * @param providerName The name of the provider.
+                 * @returns The app url concatinated with the /auth/providers/{providerName}
+                 */
+                emailPasswordAuth(providerName: string) {
+                    const authProviderRoutes = this.authProvider(providerName);
+                    return {
+                        ...authProviderRoutes,
+                        register() {
+                            return { url: this.url + "/register" };
+                        },
+                        confirm() {
+                            return { url: this.url + "/confirm" };
+                        },
+                        confirmSend() {
+                            return { url: this.url + "/confirm/send" };
+                        },
+                        reset() {
+                            return { url: this.url + "/reset" };
+                        },
+                        resetSend() {
+                            return { url: this.url + "/reset/send" };
+                        },
+                        resetCall() {
+                            return { url: this.url + "/reset/call" };
+                        },
+                    };
+                },
+                functionsCall() {
+                    return {
+                        url: this.url + "/functions/call",
+                    };
+                },
+            };
+        },
+        auth() {
+            return {
+                url: this.url + "/auth",
+                apiKeys() {
+                    return {
+                        url: this.url + "/api_keys",
+                        key(id: string) {
+                            return {
+                                url: this.url + `/${id}`,
+                                enable() {
+                                    return { url: this.url + "/enable" };
+                                },
+                                disable() {
+                                    return { url: this.url + "/disable" };
+                                },
+                            };
+                        },
+                    };
+                },
+                profile() {
+                    return { url: this.url + "/profile" };
+                },
+                session() {
+                    return { url: this.url + "/session" };
+                },
+            };
+        },
+    };
 }

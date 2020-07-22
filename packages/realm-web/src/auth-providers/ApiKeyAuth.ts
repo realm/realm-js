@@ -16,85 +16,83 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { AuthenticatedTransport } from "../transports/AuthenticatedTransport";
-import { deserialize } from "../utils/ejson";
+import { Fetcher } from "../Fetcher";
 
 /** @inheritdoc */
 export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
     /**
-     * The transport used to send requests to services.
+     * The fetcher used to send requests to services.
      */
-    private readonly transport: AuthenticatedTransport;
+    private readonly fetcher: Fetcher;
 
     /**
      * Construct an interface to the API-key authentication provider.
      *
-     * @param transport The transport used to send requests to services.
+     * @param fetcher The fetcher used to send requests to services.
      * @param providerName Optional custom name of the authentication provider.
      */
-    constructor(transport: AuthenticatedTransport, providerName = "api-key") {
-        this.transport = transport.prefix("/auth/api_keys");
+    constructor(fetcher: Fetcher, providerName = "api-key") {
+        this.fetcher = fetcher;
     }
 
     /** @inheritdoc */
-    create(name: string): Promise<Realm.Auth.ApiKey> {
-        return this.transport
-            .fetch({
-                method: "POST",
-                body: { name },
-                tokenType: "refresh",
-            })
-            .then(deserialize);
+    async create(name: string): Promise<Realm.Auth.ApiKey> {
+        const locationUrl = await this.fetcher.getLocationUrl();
+        return this.fetcher.fetchJSON({
+            method: "POST",
+            body: { name },
+            url: locationUrl.auth().apiKeys().url,
+            tokenType: "refresh",
+        });
     }
 
     /** @inheritdoc */
-    fetch(keyId: string): Promise<Realm.Auth.ApiKey> {
-        return this.transport
-            .fetch({
-                method: "GET",
-                path: `/${keyId}`,
-                tokenType: "refresh",
-            })
-            .then(deserialize);
+    async fetch(keyId: string): Promise<Realm.Auth.ApiKey> {
+        const locationUrl = await this.fetcher.getLocationUrl();
+        return this.fetcher.fetchJSON({
+            method: "GET",
+            url: locationUrl.auth().apiKeys().key(keyId).url,
+            tokenType: "refresh",
+        });
     }
 
     /** @inheritdoc */
-    fetchAll(): Promise<Realm.Auth.ApiKey[]> {
-        return this.transport
-            .fetch({ method: "GET", tokenType: "refresh" })
-            .then(deserialize);
+    async fetchAll(): Promise<Realm.Auth.ApiKey[]> {
+        const locationUrl = await this.fetcher.getLocationUrl();
+        return this.fetcher.fetchJSON({
+            method: "GET",
+            tokenType: "refresh",
+            url: locationUrl.auth().apiKeys().url,
+        });
     }
 
     /** @inheritdoc */
-    delete(keyId: string): Promise<void> {
-        return this.transport
-            .fetch({
-                method: "DELETE",
-                path: `/${keyId}`,
-                tokenType: "refresh",
-            })
-            .then(deserialize);
+    async delete(keyId: string): Promise<void> {
+        const locationUrl = await this.fetcher.getLocationUrl();
+        await this.fetcher.fetchJSON({
+            method: "DELETE",
+            url: locationUrl.auth().apiKeys().key(keyId).url,
+            tokenType: "refresh",
+        });
     }
 
     /** @inheritdoc */
-    enable(keyId: string): Promise<void> {
-        return this.transport
-            .fetch({
-                method: "PUT",
-                path: `/${keyId}/enable`,
-                tokenType: "refresh",
-            })
-            .then(deserialize);
+    async enable(keyId: string): Promise<void> {
+        const locationUrl = await this.fetcher.getLocationUrl();
+        await this.fetcher.fetchJSON({
+            method: "PUT",
+            url: locationUrl.auth().apiKeys().key(keyId).enable().url,
+            tokenType: "refresh",
+        });
     }
 
     /** @inheritdoc */
-    disable(keyId: string): Promise<void> {
-        return this.transport
-            .fetch({
-                method: "PUT",
-                path: `/${keyId}/disable`,
-                tokenType: "refresh",
-            })
-            .then(deserialize);
+    async disable(keyId: string): Promise<void> {
+        const locationUrl = await this.fetcher.getLocationUrl();
+        await this.fetcher.fetchJSON({
+            method: "PUT",
+            url: locationUrl.auth().apiKeys().key(keyId).disable().url,
+            tokenType: "refresh",
+        });
     }
 }

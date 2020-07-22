@@ -20,24 +20,25 @@ import { expect } from "chai";
 
 import { createService } from "../services/HTTPService";
 
-import { DEFAULT_HEADERS, MockTransport } from "./utils";
+import { DEFAULT_BODY_HEADERS, MockFetcher } from "./utils";
 
 describe("HTTP service", () => {
     it("sends a GET request", async () => {
-        const transport = new MockTransport([
+        const fetcher = new MockFetcher([
             {
                 hello: "world",
             },
         ]);
-        const service = createService(transport, "my-http-service");
+        const service = createService(fetcher, "my-http-service");
         const result = await service.get("http://localhost:1234/some-path", {
             headers: { "content-type": ["application/json"] },
         });
         expect(result).deep.equals({ hello: "world" });
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
-                url: "http://localhost:1337/functions/call",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 body: {
                     name: "get",
                     service: "my-http-service",
@@ -48,43 +49,43 @@ describe("HTTP service", () => {
                         },
                     ],
                 },
-                headers: DEFAULT_HEADERS,
+                headers: DEFAULT_BODY_HEADERS,
             },
         ]);
     });
 
     it("sends a POST request", async () => {
-        const transport = new MockTransport([{}]);
-        const service = createService(transport);
+        const fetcher = new MockFetcher([{}]);
+        const service = createService(fetcher);
         await service.post("http://localhost:1234/some-path");
-        expect(transport.requests[0].body.name).equals("post");
+        expect(fetcher.requests[0].body.name).equals("post");
     });
 
     it("sends a PUT request", async () => {
-        const transport = new MockTransport([{}]);
-        const service = createService(transport);
+        const fetcher = new MockFetcher([{}]);
+        const service = createService(fetcher);
         await service.put("http://localhost:1234/some-path");
-        expect(transport.requests[0].body.name).equals("put");
+        expect(fetcher.requests[0].body.name).equals("put");
     });
 
     it("sends a DELETE request", async () => {
-        const transport = new MockTransport([{}]);
-        const service = createService(transport);
+        const fetcher = new MockFetcher([{}]);
+        const service = createService(fetcher);
         await service.delete("http://localhost:1234/some-path");
-        expect(transport.requests[0].body.name).equals("delete");
+        expect(fetcher.requests[0].body.name).equals("delete");
     });
 
     it("sends a HEAD request", async () => {
-        const transport = new MockTransport([{}]);
-        const service = createService(transport);
+        const fetcher = new MockFetcher([{}]);
+        const service = createService(fetcher);
         await service.head("http://localhost:1234/some-path");
-        expect(transport.requests[0].body.name).equals("head");
+        expect(fetcher.requests[0].body.name).equals("head");
     });
 
     it("sends a PATCH request", async () => {
-        const transport = new MockTransport([{}]);
-        const service = createService(transport);
+        const fetcher = new MockFetcher([{}]);
+        const service = createService(fetcher);
         await service.patch("http://localhost:1234/some-path");
-        expect(transport.requests[0].body.name).equals("patch");
+        expect(fetcher.requests[0].body.name).equals("patch");
     });
 });

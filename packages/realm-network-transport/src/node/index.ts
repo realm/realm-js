@@ -18,7 +18,7 @@
 
 export * from "../index";
 
-import { DefaultNetworkTransport } from "../NetworkTransport";
+import { DefaultNetworkTransport } from "../DefaultNetworkTransport";
 import { Fetch, AbortController } from "../types";
 
 import fetch from "node-fetch";

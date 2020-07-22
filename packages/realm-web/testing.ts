@@ -16,8 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { AppTransport } from "./AppTransport";
-export { Transport, Request, MongoDBRealmError } from "./Transport";
-export { BaseTransport } from "./BaseTransport";
-export { AuthenticatedTransport } from "./AuthenticatedTransport";
-export { PrefixedTransport } from "./PrefixedTransport";
+/**
+ *
+ */
+export class MyClass {
+    /**
+     *
+     */
+    public fetchJSON() {
+        throw new Error("Not yet implemented");
+    }
+}

@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/**
+ * A location of an app as returned from the server.
+ */
 export type AppLocation = {
     /**
      * The hostname to be used when communicating with the app server.
@@ -31,11 +34,4 @@ export type AppLocation = {
      * The deployment model of an app.
      */
     deploymentModel: "GLOBAL" | "LOCAL";
-};
-
-export type AppLocationContext = {
-    /**
-     * An object with a property representing the location of an app.
-     */
-    location: Promise<AppLocation>;
 };

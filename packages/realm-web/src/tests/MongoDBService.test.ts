@@ -21,7 +21,7 @@ import { ObjectID } from "bson";
 
 import { createService } from "../services/MongoDBService";
 
-import { MockTransport } from "./utils";
+import { MockFetcher } from "./utils";
 
 /** A test interface that documents in my-collection implements */
 interface MyDocument extends Realm.Services.MongoDB.Document {
@@ -38,7 +38,7 @@ const DEFAULT_HEADERS = {
 
 describe("MongoDB Remote service", () => {
     it("can find documents", async () => {
-        const transport = new MockTransport([
+        const fetcher = new MockFetcher([
             [
                 {
                     _id: {
@@ -48,7 +48,7 @@ describe("MongoDB Remote service", () => {
                 },
             ],
         ]);
-        const service = createService(transport, "my-mongodb-service");
+        const service = createService(fetcher, "my-mongodb-service");
         const result = await service
             .db("my-database")
             .collection<MyDocument>("my-collection")
@@ -61,7 +61,7 @@ describe("MongoDB Remote service", () => {
                 { limit: 10 },
             );
         // Expect the service to issue a request via the functions factory
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
                 body: {
@@ -80,7 +80,8 @@ describe("MongoDB Remote service", () => {
                         },
                     ],
                 },
-                url: "http://localhost:1337/functions/call",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 headers: DEFAULT_HEADERS,
             },
         ]);
@@ -95,7 +96,7 @@ describe("MongoDB Remote service", () => {
     });
 
     it("can find one document", async () => {
-        const transport = new MockTransport([
+        const fetcher = new MockFetcher([
             {
                 _id: {
                     $oid: "deadbeefdeadbeefdeadbeef",
@@ -103,7 +104,7 @@ describe("MongoDB Remote service", () => {
                 name: "Some document name ...",
             },
         ]);
-        const service = createService(transport, "my-mongodb-service");
+        const service = createService(fetcher, "my-mongodb-service");
         const result = await service
             .db("my-database")
             .collection<MyDocument>("my-collection")
@@ -119,7 +120,7 @@ describe("MongoDB Remote service", () => {
                 },
             );
         // Expect the service to issue a request via the functions factory
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
                 body: {
@@ -137,7 +138,8 @@ describe("MongoDB Remote service", () => {
                         },
                     ],
                 },
-                url: "http://localhost:1337/functions/call",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 headers: DEFAULT_HEADERS,
             },
         ]);
@@ -154,12 +156,12 @@ describe("MongoDB Remote service", () => {
 
     it("can insert a document", async () => {
         const now = new Date();
-        const transport = new MockTransport([
+        const fetcher = new MockFetcher([
             {
                 insertedId: { $oid: "deadbeefdeadbeefdeadbeef" },
             },
         ]);
-        const service = createService(transport, "my-mongodb-service");
+        const service = createService(fetcher, "my-mongodb-service");
         const result = await service
             .db("my-database")
             .collection<MyDocument>("my-collection")
@@ -171,7 +173,7 @@ describe("MongoDB Remote service", () => {
         expect(typeof result.insertedId).equals("object");
         expect(result.insertedId.constructor.name).equals("ObjectId");
 
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
                 body: {
@@ -192,7 +194,8 @@ describe("MongoDB Remote service", () => {
                         },
                     ],
                 },
-                url: "http://localhost:1337/functions/call",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 headers: DEFAULT_HEADERS,
             },
         ]);
@@ -200,7 +203,7 @@ describe("MongoDB Remote service", () => {
 
     it("can insert many documents", async () => {
         const now = new Date();
-        const transport = new MockTransport([
+        const fetcher = new MockFetcher([
             {
                 insertedIds: [
                     { $oid: "deadbeefdeadbeefdead0001" },
@@ -208,7 +211,7 @@ describe("MongoDB Remote service", () => {
                 ],
             },
         ]);
-        const service = createService(transport, "my-mongodb-service");
+        const service = createService(fetcher, "my-mongodb-service");
         const result = await service
             .db("my-database")
             .collection<MyDocument>("my-collection")
@@ -229,7 +232,7 @@ describe("MongoDB Remote service", () => {
             expect(id.constructor.name).equals("ObjectId");
         }
 
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
                 body: {
@@ -264,21 +267,22 @@ describe("MongoDB Remote service", () => {
                         },
                     ],
                 },
-                url: "http://localhost:1337/functions/call",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 headers: DEFAULT_HEADERS,
             },
         ]);
     });
 
     it("can count documents", async () => {
-        const transport = new MockTransport([{ $numberLong: "1337" }]);
-        const service = createService(transport, "my-mongodb-service");
+        const fetcher = new MockFetcher([{ $numberLong: "1337" }]);
+        const service = createService(fetcher, "my-mongodb-service");
         const result = await service
             .db("my-database")
             .collection<MyDocument>("my-collection")
             .count({}, { limit: 9999 });
         expect(result).equals(1337);
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
                 body: {
@@ -293,7 +297,8 @@ describe("MongoDB Remote service", () => {
                         },
                     ],
                 },
-                url: "http://localhost:1337/functions/call",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 headers: DEFAULT_HEADERS,
             },
         ]);

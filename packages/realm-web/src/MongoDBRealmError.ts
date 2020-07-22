@@ -16,18 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Method } from "./types";
+import { Method } from "realm-network-transport";
+
+// TODO: Determine if the shape of an error response is specific to each service or widely used.
 
 /**
- * TODO: Determine if the shape of an error response is specific to each service or widely used
+ * An error produced while communicating with the MongoDB Realm server.
  */
-
 export class MongoDBRealmError extends Error {
+    /**
+     * The method used when requesting.
+     */
     public readonly method: Method;
+    /**
+     * The URL of the resource which got fetched.
+     */
     public readonly url: string;
+    /**
+     * The status code of the response.
+     */
     public readonly statusCode: number;
+    /**
+     * A human readable version of the status.
+     */
     public readonly statusText: string;
+    /**
+     * Any application-level error code.
+     */
     public readonly errorCode: string | undefined;
+    /**
+     * Any application-level (URL) link containing details about the error.
+     */
     public readonly link: string | undefined;
 
     constructor(

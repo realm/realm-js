@@ -19,9 +19,11 @@
 import {
     NetworkTransport,
     Request,
-    ResponseHandler,
-    MongoDBRealmError,
+    FetchResponse,
+    FetchHeaders,
 } from "realm-network-transport";
+
+import { MongoDBRealmError } from "../..";
 
 /**
  * Perform mocked requests and get pre-recorded responses
@@ -47,11 +49,16 @@ export class MockNetworkTransport implements NetworkTransport {
     }
 
     /** @inheritdoc */
-    fetchAndParse<RequestBody extends any, ResponseBody extends any>(
+    fetch<RequestBody extends any>(
         request: Request<RequestBody>,
-    ): Promise<ResponseBody> {
+    ): Promise<FetchResponse> {
         if (!request.headers || Object.keys(request.headers).length === 0) {
             delete request.headers;
+        }
+        // Save a parsed body, instead of a string
+        const { body } = request;
+        if (typeof body === "string") {
+            request.body = JSON.parse(body);
         }
         if (!request.body) {
             delete request.body;
@@ -62,7 +69,17 @@ export class MockNetworkTransport implements NetworkTransport {
             if (response instanceof MongoDBRealmError) {
                 return Promise.reject(response);
             } else {
-                return Promise.resolve(response);
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve(response),
+                    headers: {
+                        get(name: string) {
+                            if (name.toLowerCase() === "content-type") {
+                                return "application/json";
+                            }
+                        },
+                    } as FetchHeaders,
+                } as FetchResponse);
             }
         } else {
             throw new Error(
@@ -74,10 +91,7 @@ export class MockNetworkTransport implements NetworkTransport {
     }
 
     /** @inheritdoc */
-    fetchWithCallbacks<RequestBody extends any>(
-        request: Request<RequestBody>,
-        handler: ResponseHandler,
-    ) {
-        this.fetchAndParse(request).then(handler.onSuccess, handler.onError);
+    fetchWithCallbacks() {
+        throw new Error("Not yet implemented");
     }
 }

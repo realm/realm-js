@@ -20,7 +20,7 @@
 import { Base64 } from "js-base64";
 
 import type { App } from "./App";
-import { AuthenticatedTransport, AppTransport } from "./transports";
+import { Fetcher } from "./Fetcher";
 import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
@@ -97,7 +97,7 @@ export class User<
     private _accessToken: string | null;
     private _refreshToken: string | null;
     private _profile: UserProfile | undefined;
-    private transport: AuthenticatedTransport;
+    private fetcher: Fetcher;
     private storage: UserStorage;
 
     public constructor({ app, id, accessToken, refreshToken }: UserParameters) {
@@ -105,12 +105,11 @@ export class User<
         this._id = id;
         this._accessToken = accessToken;
         this._refreshToken = refreshToken;
-        this.transport = new AuthenticatedTransport(app.baseTransport, {
-            currentUser: this,
+        this.fetcher = app.fetcher.clone({
+            userContext: { currentUser: this },
         });
-        const appTransport = new AppTransport(this.transport, app.id);
-        this.apiKeys = new ApiKeyAuth(this.transport);
-        this.functions = FunctionsFactory.create(appTransport);
+        this.apiKeys = new ApiKeyAuth(this.fetcher);
+        this.functions = FunctionsFactory.create(this.fetcher);
         this.storage = new UserStorage(app.storage, id);
         // Store tokens in storage for later hydration
         if (accessToken) {
@@ -200,9 +199,10 @@ export class User<
 
     public async refreshProfile() {
         // Fetch the latest profile
-        const response = await this.transport.fetch({
+        const locationUrl = await this.fetcher.getLocationUrl();
+        const response = await this.fetcher.fetchJSON({
             method: "GET",
-            path: "/auth/profile",
+            url: locationUrl.auth().profile().url,
         });
         // Create a profile instance
         this._profile = new UserProfile(response);
@@ -213,12 +213,11 @@ export class User<
     public async logOut() {
         // Invalidate the refresh token
         if (this._refreshToken !== null) {
-            await this.app.baseTransport.fetch({
+            const locationUrl = await this.fetcher.getLocationUrl();
+            await this.fetcher.fetchJSON({
                 method: "DELETE",
-                path: "/auth/session",
-                headers: {
-                    Authorization: `Bearer ${this._refreshToken}`,
-                },
+                url: locationUrl.auth().session().url,
+                tokenType: "refresh",
             });
         }
         // Forget the access and refresh token
@@ -231,18 +230,19 @@ export class User<
      *
      * @param credentials Credentials to use when logging in.
      */
-    public async logIn(credentials: Realm.Credentials) {
-        const { id, accessToken, refreshToken } = await performLogIn(
-            this.app,
-            credentials,
-        );
-        if (id !== this.id) {
-            throw new Error("Logged into a different user");
-        }
-        // Store the access and refresh token
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
-    }
+    // public async logIn(credentials: Realm.Credentials) {
+    //     const {
+    //         userId,
+    //         accessToken,
+    //         refreshToken,
+    //     } = await this.app.authenticator.authenticate(credentials);
+    //     if (userId !== this.id) {
+    //         throw new Error("Logged into a different user");
+    //     }
+    //     // Store the access and refresh token
+    //     this.accessToken = accessToken;
+    //     this.refreshToken = refreshToken;
+    // }
 
     /** @inheritdoc */
     public async linkCredentials(credentials: Realm.Credentials) {
@@ -250,12 +250,11 @@ export class User<
     }
 
     public async refreshAccessToken() {
-        const response = await this.app.baseTransport.fetch({
+        const locationUrl = await this.fetcher.getLocationUrl();
+        const response = await this.fetcher.fetchJSON({
             method: "POST",
-            path: "/auth/session",
-            headers: {
-                Authorization: `Bearer ${this.refreshToken}`,
-            },
+            url: locationUrl.auth().session().url,
+            tokenType: "refresh",
         });
         const { access_token: accessToken } = response;
         if (typeof accessToken === "string") {
