@@ -119,10 +119,6 @@ declare namespace Realm {
                 /**
                  * When true, creates a new document if no document matches the query.
                  */
-
-                /**
-                 *
-                 */
                 readonly upsert?: boolean;
             }
 
@@ -212,24 +208,23 @@ declare namespace Realm {
             /**
              * An operation performed on a document.
              */
-            enum OperationType {
+            type OperationType =
                 /** A document got inserted into the collection. */
-                Insert = "insert",
+                | "insert"
                 /** A document got deleted from the collection. */
-                Delete = "delete",
+                | "delete"
                 /** A document got replaced in the collection. */
-                Replace = "replace",
+                | "replace"
                 /** A document got updated in the collection. */
-                Update = "update",
+                | "update"
                 /** Occurs when a collection is dropped from a database. */
-                Drop = "drop",
+                | "drop"
                 /** Occurs when a collection is renamed. */
-                Rename = "renamed",
+                | "rename"
                 /** Occurs when a database is dropped. */
-                DropDatabase = "dropDatabase",
+                | "dropDatabase"
                 /** Invalidate events close the change stream cursor. */
-                Invalidate = "invalidate",
-            }
+                | "invalidate";
 
             /**
              * The namespace of a document.
@@ -269,11 +264,11 @@ declare namespace Realm {
             /**
              * A base change event containing the properties which apply across operation types.
              */
-            type BaseChangeEvent = {
+            type BaseChangeEvent<T extends OperationType> = {
                 /** The id of the change event. */
                 _id: ChangeEventId;
                 /** The type of operation which was performed on the document. */
-                operationType: OperationType;
+                operationType: T;
                 /** The timestamp from the oplog entry associated with the event. */
                 clusterTime: Timestamp;
                 /**
@@ -292,19 +287,18 @@ declare namespace Realm {
              * A document got inserted into the collection.
              */
             type InsertEvent<T extends Document> = {
-                /** The type of operation which was performed on the document. */
-                operationType: OperationType.Insert;
                 /** The namespace (database and collection) of the document got inserted into. */
                 ns: DocumentNamespace;
                 /** A document that contains the _id of the inserted document. */
                 documentKey: DocumentKey<T["_id"]>;
                 /** The new document created by the operation */
                 fullDocument: T;
-            } & BaseChangeEvent;
+            } & BaseChangeEvent<"insert">;
 
+            /**
+             * A document got updated in the collection.
+             */
             type UpdateEvent<T extends Document> = {
-                /** The type of operation which was performed on the document. */
-                operationType: OperationType.Update;
                 /** The namespace (database and collection) of the updated document. */
                 ns: DocumentNamespace;
                 /** A document that contains the _id of the updated document. */
@@ -315,70 +309,60 @@ declare namespace Realm {
                  * For change streams opened with the `fullDocument: updateLookup` option, this will represents the most current majority-committed version of the document modified by the update operation.
                  */
                 fullDocument?: T;
-            } & BaseChangeEvent;
+            } & BaseChangeEvent<"update">;
 
             /**
              * A document got replaced in the collection.
              */
             type ReplaceEvent<T extends Document> = {
-                /** The type of operation which was performed on the document. */
-                operationType: OperationType.Replace;
                 /** The namespace (database and collection) of the document got replaced within. */
                 ns: DocumentNamespace;
                 /** A document that contains the _id of the replaced document. */
                 documentKey: DocumentKey<T["_id"]>;
                 /** The document after the insert of the replacement document. */
                 fullDocument: T;
-            } & BaseChangeEvent;
+            } & BaseChangeEvent<"replace">;
 
             /**
              * A document got deleted from the collection.
              */
             type DeleteEvent<T extends Document> = {
-                /** The type of operation which was performed on the document. */
-                operationType: OperationType.Delete;
                 /** The namespace (database and collection) which the document got deleted from. */
                 ns: DocumentNamespace;
                 /** A document that contains the _id of the deleted document. */
                 documentKey: DocumentKey<T["_id"]>;
-            } & BaseChangeEvent;
+            } & BaseChangeEvent<"delete">;
 
             /**
              * Occurs when a collection is dropped from a database.
              */
             type DropEvent = {
-                /** The type of operation which was performed on the document. */
-                operationType: OperationType.Drop;
                 /** The namespace (database and collection) of the collection that got dropped. */
                 ns: DocumentNamespace;
-            } & BaseChangeEvent;
+            } & BaseChangeEvent<"drop">;
 
             /**
              * Occurs when a collection is renamed.
              */
             type RenameEvent = {
-                /** The type of operation which was performed on the document. */
-                operationType: OperationType.Rename;
                 /** The original namespace (database and collection) that got renamed. */
                 ns: DocumentNamespace;
                 /** The namespace (database and collection) going forward. */
                 to: DocumentNamespace;
-            } & BaseChangeEvent;
+            } & BaseChangeEvent<"rename">;
 
             /**
              * Occurs when a database is dropped.
              */
             type DropDatabaseEvent = {
-                /** The type of operation which was performed on the document. */
-                operationType: OperationType.DropDatabase;
                 /** The namespace (specifying the database name) of the database that got dropped. */
                 ns: Omit<DocumentNamespace, "coll">;
-            } & BaseChangeEvent;
+            } & BaseChangeEvent<"dropDatabase">;
 
             /**
              * Invalidate events close the change stream cursor.
              */
-            type InvalidateEvent = BaseChangeEvent;
+            type InvalidateEvent = BaseChangeEvent<"invalidate">;
 
             /**
              * Represents a change event communicated via a MongoDB change stream.
