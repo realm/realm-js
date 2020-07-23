@@ -89,10 +89,10 @@
     /**
      * Creates a new app and connects to a MongoDB Realm instance.
      *
-     * @param {Realm.App~AppConfiguration} config - The configuration of the app.
+     * @param {(Realm.App~AppConfiguration|string)} configOrId - The configuration of the app or a string app id.
      * @throws If no app id is provided.
      */
-    constructor(config) { }
+    constructor(configOrId) { }
 
     /**
      * Logs in a user.
