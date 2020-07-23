@@ -21,6 +21,7 @@ import { FunctionsFactory } from "../FunctionsFactory";
 
 type Document = Realm.Services.MongoDB.Document;
 type NewDocument<T extends Document> = Realm.Services.MongoDB.NewDocument<T>;
+type ChangeEvent<T extends Document> = Realm.Services.MongoDB.ChangeEvent<T>;
 
 /**
  * A remote collection of documents.
@@ -229,6 +230,11 @@ class MongoDBCollection<T extends Document>
             upsert: options.upsert,
         });
     }
+
+    /** @inheritdoc */
+    watch(): AsyncGenerator<ChangeEvent<T>> {
+        throw new Error("Not yet implemented");
+    }
 }
 
 /**
@@ -277,7 +283,7 @@ export function createDatabase(
             transport,
             serviceName,
             databaseName,
-        ),
+        ) as Realm.Services.MongoDBDatabase["collection"],
     };
 }
 
