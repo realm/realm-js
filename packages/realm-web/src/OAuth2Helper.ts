@@ -191,7 +191,7 @@ export class OAuth2Helper {
         // Return a promise that resolves when the  gets known
         return new Promise((resolve, reject) => {
             let redirectWindow: Window | null = null;
-            let windowClosedInterval = 0;
+            let windowClosedInterval: TimerHandle = 0;
 
             const handleStorageUpdate = () => {
                 // Trying to get the secret from storage
