@@ -11,9 +11,6 @@
 			"../../node_modules/@types",
 		],
 		"types": [
-			"mocha",
-			"chai",
-			"node",
 			"realm",
 			"js-base64"
 		],
