@@ -18,7 +18,7 @@
 
 import { Fetcher, AuthenticatedRequest, UserContext } from "../../Fetcher";
 import { User } from "../../User";
-import * as urls from "../../urls";
+import urls from "../../urls";
 
 import { MockNetworkTransport } from "./MockNetworkTransport";
 

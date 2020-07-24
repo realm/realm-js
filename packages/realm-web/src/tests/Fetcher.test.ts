@@ -20,12 +20,11 @@ import { expect } from "chai";
 
 import { Fetcher } from "../Fetcher";
 import { User } from "../User";
-import * as urls from "../urls";
 
 import {
     MockNetworkTransport,
-    DEFAULT_BODY_HEADERS,
-    DEFAULT_HEADERS,
+    SENDING_JSON_HEADERS,
+    ACCEPT_JSON_HEADERS,
 } from "./utils";
 
 describe("Fetcher", () => {
@@ -63,7 +62,7 @@ describe("Fetcher", () => {
                 url: "http://localhost:1337/w00t",
                 body: { something: "interesting" },
                 headers: {
-                    ...DEFAULT_BODY_HEADERS,
+                    ...SENDING_JSON_HEADERS,
                     Cookie: "yes-please",
                     Authorization: "Bearer my-access-token",
                 },
@@ -96,7 +95,7 @@ describe("Fetcher", () => {
                 method: "GET",
                 url: "http://localhost:1337/w00t",
                 headers: {
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                     Authorization: "Bearer my-custom-token",
                 },
             },

@@ -20,7 +20,7 @@ import { expect } from "chai";
 
 import { createService } from "../services/HTTPService";
 
-import { DEFAULT_BODY_HEADERS, MockFetcher } from "./utils";
+import { SENDING_JSON_HEADERS, MockFetcher } from "./utils";
 
 describe("HTTP service", () => {
     it("sends a GET request", async () => {
@@ -49,7 +49,7 @@ describe("HTTP service", () => {
                         },
                     ],
                 },
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
         ]);
     });

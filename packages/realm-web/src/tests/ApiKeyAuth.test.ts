@@ -21,7 +21,11 @@ import { expect } from "chai";
 import { User } from "..";
 import { ApiKeyAuth } from "../auth-providers/ApiKeyAuth";
 
-import { DEFAULT_HEADERS, DEFAULT_BODY_HEADERS, MockFetcher } from "./utils";
+import {
+    ACCEPT_JSON_HEADERS,
+    SENDING_JSON_HEADERS,
+    MockFetcher,
+} from "./utils";
 
 describe("ApiKeyAuth", () => {
     it("can create an api key", async () => {
@@ -40,7 +44,6 @@ describe("ApiKeyAuth", () => {
 
         const apiKey = await provider.create("my-key-name");
         // Expect something of the newly created key
-        console.log(typeof apiKey._id);
         expect(typeof apiKey._id).equals("object");
         expect(apiKey._id.constructor.name).equals("ObjectId");
         expect(apiKey.name).equals("my-key-name");
@@ -54,7 +57,7 @@ describe("ApiKeyAuth", () => {
                 body: {
                     name: "my-key-name",
                 },
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
         ]);
     });
@@ -83,7 +86,7 @@ describe("ApiKeyAuth", () => {
                 method: "GET",
                 url:
                     "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef",
-                headers: DEFAULT_HEADERS,
+                headers: ACCEPT_JSON_HEADERS,
             },
         ]);
     });
@@ -125,7 +128,7 @@ describe("ApiKeyAuth", () => {
             {
                 method: "GET",
                 url: "http://localhost:1337/api/client/v2.0/auth/api_keys",
-                headers: DEFAULT_HEADERS,
+                headers: ACCEPT_JSON_HEADERS,
             },
         ]);
     });
@@ -144,7 +147,7 @@ describe("ApiKeyAuth", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef",
                 headers: {
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                     Authorization: "Bearer very-refreshing",
                 },
             },
@@ -165,7 +168,7 @@ describe("ApiKeyAuth", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef/enable",
                 headers: {
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                     Authorization: "Bearer very-refreshing",
                 },
             },
@@ -186,7 +189,7 @@ describe("ApiKeyAuth", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef/disable",
                 headers: {
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                     Authorization: "Bearer very-refreshing",
                 },
             },

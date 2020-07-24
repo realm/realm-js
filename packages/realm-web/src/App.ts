@@ -145,9 +145,9 @@ export class App<
     }
 
     /**
-     * Switch user
+     * Switch user.
      *
-     * @param nextUser The user or id of the user to switch to
+     * @param nextUser The user or id of the user to switch to.
      */
     public switchUser(nextUser: User<FunctionsFactoryType, CustomDataType>) {
         const index = this.users.findIndex(u => u === nextUser);
@@ -161,9 +161,9 @@ export class App<
     }
 
     /**
-     * Log in a user
+     * Log in a user.
      *
-     * @param credentials Credentials to use when logging in
+     * @param credentials Credentials to use when logging in.
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
     public async logIn(
@@ -207,7 +207,7 @@ export class App<
     }
 
     /**
-     * The currently active user (or null if no active users exists)
+     * The currently active user (or null if no active users exists).
      *
      * @returns the currently active user or null.
      */

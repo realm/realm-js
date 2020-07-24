@@ -20,7 +20,7 @@
  * @param baseUrl The base URL of the server.
  * @returns The base url concatinated with the base route.
  */
-export function api(baseUrl: string) {
+function api(baseUrl: string) {
     return {
         url: baseUrl + "/api/client/v2.0",
         /**
@@ -117,3 +117,5 @@ export function api(baseUrl: string) {
         },
     };
 }
+
+export default { api };

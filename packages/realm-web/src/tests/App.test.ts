@@ -22,8 +22,8 @@ import { App, User, UserState, Credentials, MongoDBRealmError } from "..";
 import { MemoryStorage } from "../storage";
 
 import {
-    DEFAULT_HEADERS,
-    DEFAULT_BODY_HEADERS,
+    ACCEPT_JSON_HEADERS,
+    SENDING_JSON_HEADERS,
     LOCATION_RESPONSE,
     LOCATION_REQUEST,
     MockApp,
@@ -107,7 +107,7 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
         ]);
     });
@@ -169,14 +169,14 @@ describe("App", () => {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "v3ry-s3cret",
                 },
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
             {
                 method: "GET",
                 url: "http://localhost:1337/api/client/v2.0/auth/profile",
                 headers: {
                     Authorization: "Bearer deadbeef",
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                 },
             },
         ]);
@@ -217,14 +217,14 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
             {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
                     Authorization: "Bearer very-refreshing",
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                 },
             },
         ]);
@@ -289,14 +289,14 @@ describe("App", () => {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "v3ry-s3cret-1",
                 },
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
             {
                 method: "GET",
                 url: "http://localhost:1337/api/client/v2.0/auth/profile",
                 headers: {
                     Authorization: "Bearer deadbeef1",
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                 },
             },
             {
@@ -307,14 +307,14 @@ describe("App", () => {
                     username: "dinesh@testing.mongodb.com",
                     password: "v3ry-s3cret-2",
                 },
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
             {
                 method: "GET",
                 url: "http://localhost:1337/api/client/v2.0/auth/profile",
                 headers: {
                     Authorization: "Bearer deadbeef2",
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                 },
             },
         ]);
@@ -355,14 +355,14 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
             {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
                     Authorization: "Bearer very-refreshing",
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                 },
             },
         ]);
@@ -420,7 +420,7 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
         ]);
     });
@@ -478,7 +478,7 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
             {
                 method: "POST",
@@ -486,7 +486,7 @@ describe("App", () => {
                     "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "foo", arguments: [{ bar: "baz" }] },
                 headers: {
-                    ...DEFAULT_BODY_HEADERS,
+                    ...SENDING_JSON_HEADERS,
                     Authorization: "Bearer first-access-token",
                 },
             },
@@ -494,7 +494,7 @@ describe("App", () => {
                 method: "POST",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                     Authorization: "Bearer very-refreshing",
                 },
             },
@@ -504,7 +504,7 @@ describe("App", () => {
                     "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "foo", arguments: [{ bar: "baz" }] },
                 headers: {
-                    ...DEFAULT_BODY_HEADERS,
+                    ...SENDING_JSON_HEADERS,
                     Authorization: "Bearer first-access-token",
                 },
             },
@@ -512,7 +512,7 @@ describe("App", () => {
                 method: "POST",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                     Authorization: "Bearer very-refreshing",
                 },
             },
@@ -522,7 +522,7 @@ describe("App", () => {
                     "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "foo", arguments: [{ bar: "baz" }] },
                 headers: {
-                    ...DEFAULT_BODY_HEADERS,
+                    ...SENDING_JSON_HEADERS,
                     Authorization: "Bearer second-access-token",
                 },
             },
@@ -558,7 +558,7 @@ describe("App", () => {
                 url:
                     "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login",
                 body: {},
-                headers: DEFAULT_BODY_HEADERS,
+                headers: SENDING_JSON_HEADERS,
             },
             {
                 method: "POST",
@@ -567,7 +567,7 @@ describe("App", () => {
                 body: { name: "hello", arguments: [] },
                 headers: {
                     Authorization: "Bearer deadbeef",
-                    ...DEFAULT_BODY_HEADERS,
+                    ...SENDING_JSON_HEADERS,
                 },
             },
         ]);

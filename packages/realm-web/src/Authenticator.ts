@@ -43,19 +43,10 @@ export type AuthResponse = {
  * Handles authentication and linking of users.
  */
 export class Authenticator {
-    /**
-     * A transport adding the base route prefix to all requests.
-     */
-    public readonly fetcher: Fetcher;
-
-    /**
-     * A helper used to complete an OAuth 2.0 authentication flow.
-     */
+    private readonly fetcher: Fetcher;
     private oauth2: OAuth2Helper;
 
     /**
-     * Constructs the Authenticator.
-     *
      * @param fetcher The fetcher used to fetch responses from the server.
      * @param storage The storage used when completing OAuth 2.0 flows (should not be scoped to a specific app).
      */
@@ -67,8 +58,6 @@ export class Authenticator {
     }
 
     /**
-     * Perform the login, based on the credentials.
-     *
      * @param credentials Credentials to use when logging in.
      * @param link Should the request link with the current user?
      */

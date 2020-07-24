@@ -24,7 +24,7 @@ import {
     MockApp,
     LOCATION_RESPONSE,
     LOCATION_REQUEST,
-    DEFAULT_HEADERS,
+    ACCEPT_JSON_HEADERS,
 } from "./utils";
 
 // Since responses from the server uses underscores in field names:
@@ -60,7 +60,7 @@ describe("User", () => {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
-                    ...DEFAULT_HEADERS,
+                    ...ACCEPT_JSON_HEADERS,
                     // It's important that the refresh and not the access token is sent here ..
                     Authorization: "Bearer very-refreshing",
                 },

@@ -105,7 +105,7 @@ export interface FetchHeaders {
 }
 
 /** This Fetch API interface represents a resource request. */
-interface FetchRequest extends FetchBody {
+export interface FetchRequest extends FetchBody {
     /**
      * Returns a Headers object consisting of the headers associated with request. Note that headers added in the network layer by the user agent will not be accounted for in this object, e.g., the "Host" header.
      */

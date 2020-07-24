@@ -17,37 +17,37 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /**
- * The default headers added by the Fetcher
+ * The headers added by the Fetcher when fetching JSON.
  */
-export const DEFAULT_HEADERS = {
+export const ACCEPT_JSON_HEADERS = Object.freeze({
     Accept: "application/json",
-};
+});
 
 /**
- * The default headers added by the Fetcher
+ * The headers added by the Fetcher when fetching JSON while sending a JSON body.
  */
-export const DEFAULT_BODY_HEADERS = {
-    ...DEFAULT_HEADERS,
+export const SENDING_JSON_HEADERS = Object.freeze({
+    ...ACCEPT_JSON_HEADERS,
     "Content-Type": "application/json",
-};
+});
 
 /**
- * A typical location request
+ * A typical location request.
  */
-export const LOCATION_REQUEST = {
+export const LOCATION_REQUEST = Object.freeze({
     method: "GET",
     url: "http://localhost:1234/api/client/v2.0/app/my-mocked-app/location",
-    headers: DEFAULT_HEADERS,
-};
+    headers: ACCEPT_JSON_HEADERS,
+});
 
 /**
- * A typical location response
+ * A typical location response.
  */
-export const LOCATION_RESPONSE = {
+export const LOCATION_RESPONSE = Object.freeze({
     hostname: "http://localhost:1337",
     location: "US-VA",
     deployment_model: "GLOBAL", // eslint-disable-line @typescript-eslint/camelcase
-};
+});
 
 export * from "./MockApp";
 export * from "./MockFetcher";

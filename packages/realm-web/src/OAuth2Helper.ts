@@ -32,7 +32,7 @@ const CLOSE_CHECK_INTERVAL = 100; // 10 times per second
 type DetermineAppUrl = () => Promise<string>;
 
 /**
- *
+ * Simplified handle to a browser window.
  */
 export type Window = {
     /**
@@ -162,8 +162,6 @@ export class OAuth2Helper {
     private openWindow: WindowOpener;
 
     /**
-     * Construct a helper implementing the OAuth2 flow.
-     *
      * @param storage The underlying storage to use when storing and retriving secrets.
      * @param getAppUrl Call this to determine the app url.
      * @param openWindow An optional function called when a browser window needs to open.

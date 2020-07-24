@@ -27,9 +27,6 @@ import { FunctionsFactory } from "./FunctionsFactory";
 import { Credentials } from "./Credentials";
 import { ApiKeyAuth } from "./auth-providers";
 
-// Disabling requiring JSDoc for now - as the User class is exported as the Realm.User interface, which is already documented.
-/* eslint-disable jsdoc/require-jsdoc */
-
 interface UserParameters {
     app: App<any>;
     id: string;
@@ -43,14 +40,21 @@ type JWT<CustomDataType extends object = any> = {
     userData: CustomDataType;
 };
 
+/** The state of a user within the app */
 export enum UserState {
+    /** Active, with both access and refresh tokens */
     Active = "active",
+    /** Logged out, but there might still be data persisted about the user, in the browser. */
     LoggedOut = "logged-out",
+    /** Logged out and all data about the user has been removed. */
     Removed = "removed",
 }
 
+/** The type of a user. */
 export enum UserType {
+    /** Created by the user itself. */
     Normal = "normal",
+    /** Created by an administrator of the app. */
     Server = "server",
 }
 
@@ -66,6 +70,7 @@ export class User<
      */
     public readonly app: App<FunctionsFactoryType, CustomDataType>;
 
+    /** @inheritdoc */
     public readonly functions: FunctionsFactoryType &
         Realm.BaseFunctionsFactory;
 
@@ -100,6 +105,9 @@ export class User<
     private fetcher: Fetcher;
     private storage: UserStorage;
 
+    /**
+     * @param parameters Parameters of the user.
+     */
     public constructor({ app, id, accessToken, refreshToken }: UserParameters) {
         this.app = app;
         this._id = id;
@@ -121,8 +129,6 @@ export class User<
     }
 
     /**
-     * The automatically-generated internal id of the user.
-     *
      * @returns The id of the user in the MongoDB Realm database.
      */
     get id() {
@@ -160,11 +166,6 @@ export class User<
     }
 
     /**
-     * The state of the user is one of:
-     * - "active" The user is logged in and ready.
-     * - "logged-out" The user was logged in, but is no longer logged in.
-     * - "removed" The user was logged in, but removed entirely from the app again.
-     *
      * @returns The current state of the user.
      */
     get state(): UserState {
@@ -197,6 +198,9 @@ export class User<
         }
     }
 
+    /**
+     * Refresh the users profile data.
+     */
     public async refreshProfile() {
         // Fetch the latest profile
         const locationUrl = await this.fetcher.getLocationUrl();
@@ -210,6 +214,9 @@ export class User<
         this.storage.profile = this._profile;
     }
 
+    /**
+     * Log out the user, invalidating the session (and its refresh token).
+     */
     public async logOut() {
         // Invalidate the refresh token
         if (this._refreshToken !== null) {
@@ -225,30 +232,14 @@ export class User<
         this.refreshToken = null;
     }
 
-    /**
-     * Authenticate and retrieve the access and refresh tokens.
-     *
-     * @param credentials Credentials to use when logging in.
-     */
-    // public async logIn(credentials: Realm.Credentials) {
-    //     const {
-    //         userId,
-    //         accessToken,
-    //         refreshToken,
-    //     } = await this.app.authenticator.authenticate(credentials);
-    //     if (userId !== this.id) {
-    //         throw new Error("Logged into a different user");
-    //     }
-    //     // Store the access and refresh token
-    //     this.accessToken = accessToken;
-    //     this.refreshToken = refreshToken;
-    // }
-
     /** @inheritdoc */
-    public async linkCredentials(credentials: Realm.Credentials) {
+    public async linkCredentials(credentials: Credentials) {
         throw new Error("Not yet implemented");
     }
 
+    /**
+     * Request a new access token, using the refresh token.
+     */
     public async refreshAccessToken() {
         const locationUrl = await this.fetcher.getLocationUrl();
         const response = await this.fetcher.fetchJSON({
@@ -264,11 +255,13 @@ export class User<
         }
     }
 
+    /** @inheritdoc */
     public async refreshCustomData() {
         await this.refreshAccessToken();
         return this.customData;
     }
 
+    /** @inheritdoc */
     public callFunction(name: string, ...args: any[]) {
         return this.functions.callFunction(name, ...args);
     }
@@ -292,6 +285,7 @@ export class User<
         }
     }
 
+    /** @inheritdoc */
     push(serviceName = ""): Realm.Services.Push {
         throw new Error("Not yet implemented");
     }

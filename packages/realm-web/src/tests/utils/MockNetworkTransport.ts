@@ -92,6 +92,6 @@ export class MockNetworkTransport implements NetworkTransport {
 
     /** @inheritdoc */
     fetchWithCallbacks() {
-        throw new Error("Not yet implemented");
+        throw new Error("Not implemented");
     }
 }

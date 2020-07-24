@@ -26,7 +26,7 @@ import {
 import { MongoDBRealmError } from "./MongoDBRealmError";
 
 import { User } from "./User";
-import * as urls from "./urls";
+import urls from "./urls";
 import { AppLocation } from "./AppLocation";
 import { deserialize, serialize } from "./utils/ejson";
 
@@ -85,7 +85,12 @@ export type FetcherConfig = {
 };
 
 /**
- * A basic transport, wrapping a NetworkTransport from the "realm-network-transport" package, injecting a baseUrl.
+ * Wraps a NetworkTransport from the "realm-network-transport" package.
+ * Extracts error messages and throws `MongoDBRealmError` objects upon failures.
+ * Injects access or refresh tokens for a current or specific user.
+ * Refreshes access tokens if requests fails due to a 401 error.
+ * Optionally parses response as JSON before returning it.
+ * Fetches and exposes an apps location url.
  */
 export class Fetcher {
     /**
@@ -98,8 +103,6 @@ export class Fetcher {
     private location: Promise<AppLocation> | null = null;
 
     /**
-     * Constructs a base transport, which takes paths (prepended by a base URL) instead of absolute urls.
-     *
      * @param config A configuration of the fetcher.
      */
     constructor({
@@ -132,13 +135,12 @@ export class Fetcher {
      *
      * @param request The request to issue towards the server.
      * @param retries How many times was this request retried?
-     * @returns A response from requesting with authentication.
+     * @returns The response from the server.
      */
     public async fetch<RequestBody = any>(
         request: AuthenticatedRequest<RequestBody>,
         retries = 0,
     ): Promise<FetchResponse> {
-        // console.log("Fetching", request.url);
         const {
             tokenType = "access",
             user = this.userContext.currentUser,
@@ -146,43 +148,36 @@ export class Fetcher {
             ...rest
         } = request;
 
-        try {
-            // Awaiting to intercept errors being thrown
-            const response = await this.transport.fetch({
-                ...rest,
-                headers: {
-                    ...this.buildAuthorizationHeader(user, tokenType),
-                    ...headers,
-                },
-            });
-            // Throw an error if response is not OK
-            const contentType = response.headers.get("content-type");
-            if (!response.ok && contentType?.startsWith("application/json")) {
-                throw new MongoDBRealmError(
-                    request.method,
-                    request.url,
-                    response.status,
-                    response.statusText,
-                    await response.json(),
-                );
-            }
-            // Return the raw response
-            return response;
-        } catch (err) {
+        // Awaiting to intercept errors being thrown
+        const response = await this.transport.fetch({
+            ...rest,
+            headers: {
+                ...this.buildAuthorizationHeader(user, tokenType),
+                ...headers,
+            },
+        });
+        // Throw an error if response is not OK
+        if (!response.ok) {
             if (
+                response.status === 401 &&
                 user &&
                 tokenType === "access" &&
-                retries === 0 &&
-                err instanceof MongoDBRealmError &&
-                err.statusCode === 401
+                retries === 0
             ) {
                 // Refresh the access token
                 await user.refreshAccessToken();
                 // Retry
                 return this.fetch(request, retries + 1);
             }
-            throw err;
+
+            // Throw an error with a message extracted from the body
+            throw await MongoDBRealmError.fromRequestAndResponse(
+                request,
+                response,
+            );
         }
+        // Return the raw response
+        return response;
     }
 
     /**

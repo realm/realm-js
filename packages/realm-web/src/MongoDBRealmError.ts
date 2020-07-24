@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Method } from "realm-network-transport";
+import { Method, FetchResponse, Request } from "realm-network-transport";
 
 // TODO: Determine if the shape of an error response is specific to each service or widely used.
 
@@ -49,31 +49,66 @@ export class MongoDBRealmError extends Error {
      */
     public readonly link: string | undefined;
 
+    /**
+     * Construct an error from a request and a response.
+     *
+     * @param request The request.
+     * @param response The response.
+     */
+    public static async fromRequestAndResponse(
+        request: Request<unknown>,
+        response: FetchResponse,
+    ): Promise<MongoDBRealmError> {
+        const { url, method } = request;
+        const { status, statusText } = response;
+        if (
+            response.headers.get("content-type")?.startsWith("application/json")
+        ) {
+            const body = await response.json();
+            const message = body.error || "No message";
+            const errorCode = body.error_code;
+            const link = body.link;
+            return new MongoDBRealmError(
+                method as Method,
+                url,
+                status,
+                statusText,
+                message,
+                errorCode,
+                link,
+            );
+        } else {
+            return new MongoDBRealmError(
+                method as Method,
+                url,
+                status,
+                statusText,
+            );
+        }
+    }
+
     constructor(
         method: Method,
         url: string,
         statusCode: number,
         statusText: string,
-        response: any,
+        message?: string,
+        errorCode?: string,
+        link?: string,
     ) {
-        if (
-            typeof response === "object" &&
-            typeof response.error === "string"
-        ) {
-            const statusSummary = statusText
-                ? `status ${statusCode} ${statusText}`
-                : `status ${statusCode}`;
-            super(
-                `Request failed (${method} ${url}): ${response.error} (${statusSummary})`,
-            );
-            this.method = method;
-            this.url = url;
-            this.statusText = statusText;
-            this.statusCode = statusCode;
-            this.errorCode = response.error_code;
-            this.link = response.link;
+        const summary = statusText
+            ? `status ${statusCode} ${statusText}`
+            : `status ${statusCode}`;
+        if (typeof message === "string") {
+            super(`Request failed (${method} ${url}): ${message} (${summary})`);
         } else {
-            throw new Error("Unexpected error response format");
+            super(`Request failed (${method} ${url}): (${summary})`);
         }
+        this.method = method;
+        this.url = url;
+        this.statusText = statusText;
+        this.statusCode = statusCode;
+        this.errorCode = errorCode;
+        this.link = link;
     }
 }

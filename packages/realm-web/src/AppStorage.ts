@@ -25,8 +25,6 @@ const USER_IDS_STORAGE_KEY = "userIds";
  */
 export class AppStorage extends PrefixedStorage {
     /**
-     * Construct a storage for an `App`
-     *
      * @param storage The underlying storage to wrap.
      * @param appId The id of the app.
      */

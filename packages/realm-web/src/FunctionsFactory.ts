@@ -140,8 +140,6 @@ export class FunctionsFactory {
     private readonly argsTransformation?: (args: any[]) => any[];
 
     /**
-     * Construct a functions factory.
-     *
      * @param fetcher The underlying fetcher to use when sending requests.
      * @param config Additional configuration parameters.
      */
