@@ -67,7 +67,25 @@ export class MockNetworkTransport implements NetworkTransport {
         if (this.responses.length > 0) {
             const [response] = this.responses.splice(0, 1);
             if (response instanceof MongoDBRealmError) {
-                return Promise.reject(response);
+                return Promise.resolve({
+                    ok: false,
+                    status: response.statusCode,
+                    statusText: response.statusText,
+                    url: response.url,
+                    json: () =>
+                        Promise.resolve({
+                            error: response.error,
+                            errorCode: response.errorCode,
+                            link: response.link,
+                        }),
+                    headers: {
+                        get(name: string) {
+                            if (name.toLowerCase() === "content-type") {
+                                return "application/json";
+                            }
+                        },
+                    } as FetchHeaders,
+                } as FetchResponse);
             } else {
                 return Promise.resolve({
                     ok: true,

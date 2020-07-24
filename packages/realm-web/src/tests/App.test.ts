@@ -431,9 +431,7 @@ describe("App", () => {
             "http://localhost:1337/some-path",
             401,
             "",
-            {
-                error: "invalid session",
-            },
+            "invalid session",
         );
         const app = new MockApp("my-mocked-app", [
             LOCATION_RESPONSE,
@@ -463,7 +461,7 @@ describe("App", () => {
             expect(err).instanceOf(MongoDBRealmError);
             if (err instanceof MongoDBRealmError) {
                 expect(err.message).equals(
-                    "Request failed (POST http://localhost:1337/some-path): invalid session (status 401)",
+                    "Request failed (POST http://localhost:1337/api/client/v2.0/auth/session): invalid session (status 401)",
                 );
             }
         }

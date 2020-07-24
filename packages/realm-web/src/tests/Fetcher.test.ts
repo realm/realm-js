@@ -101,4 +101,35 @@ describe("Fetcher", () => {
             },
         ]);
     });
+
+    it("allows overwriting headers", async () => {
+        const transport = new MockNetworkTransport([{}]);
+        const fetcher = new Fetcher({
+            appId: "test-app-id",
+            baseUrl: "http://localhost:1337",
+            transport,
+            userContext: {
+                currentUser: { accessToken: "my-access-token" } as User,
+            },
+        });
+        // Send a request
+        await fetcher.fetchJSON({
+            method: "GET",
+            url: "http://localhost:1337/w00t",
+            headers: {
+                Authorization: "Bearer my-custom-token",
+            },
+        });
+        // Expect something of the request
+        expect(transport.requests).deep.equals([
+            {
+                method: "GET",
+                url: "http://localhost:1337/w00t",
+                headers: {
+                    ...ACCEPT_JSON_HEADERS,
+                    Authorization: "Bearer my-custom-token",
+                },
+            },
+        ]);
+    });
 });

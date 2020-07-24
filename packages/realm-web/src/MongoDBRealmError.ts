@@ -43,6 +43,10 @@ export class MongoDBRealmError extends Error {
     /**
      * Any application-level error code.
      */
+    public readonly error: string | undefined;
+    /**
+     * Any application-level error code.
+     */
     public readonly errorCode: string | undefined;
     /**
      * Any application-level (URL) link containing details about the error.
@@ -65,7 +69,7 @@ export class MongoDBRealmError extends Error {
             response.headers.get("content-type")?.startsWith("application/json")
         ) {
             const body = await response.json();
-            const message = body.error || "No message";
+            const error = body.error || "No message";
             const errorCode = body.error_code;
             const link = body.link;
             return new MongoDBRealmError(
@@ -73,7 +77,7 @@ export class MongoDBRealmError extends Error {
                 url,
                 status,
                 statusText,
-                message,
+                error,
                 errorCode,
                 link,
             );
@@ -92,15 +96,15 @@ export class MongoDBRealmError extends Error {
         url: string,
         statusCode: number,
         statusText: string,
-        message?: string,
+        error?: string,
         errorCode?: string,
         link?: string,
     ) {
         const summary = statusText
             ? `status ${statusCode} ${statusText}`
             : `status ${statusCode}`;
-        if (typeof message === "string") {
-            super(`Request failed (${method} ${url}): ${message} (${summary})`);
+        if (typeof error === "string") {
+            super(`Request failed (${method} ${url}): ${error} (${summary})`);
         } else {
             super(`Request failed (${method} ${url}): (${summary})`);
         }
@@ -108,6 +112,7 @@ export class MongoDBRealmError extends Error {
         this.url = url;
         this.statusText = statusText;
         this.statusCode = statusCode;
+        this.error = error;
         this.errorCode = errorCode;
         this.link = link;
     }

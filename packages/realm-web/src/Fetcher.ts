@@ -156,6 +156,7 @@ export class Fetcher {
                 ...headers,
             },
         });
+
         // Throw an error if response is not OK
         if (!response.ok) {
             if (
