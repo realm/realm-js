@@ -234,6 +234,32 @@ export class Fetcher {
         }
     }
 
+    public makeStreamingRequest(
+        name: string,
+        func_args: any[],
+        service_name: string,
+    ): RequestWithPath<undefined> {
+        let full_args: any = {
+            "arguments": func_args,
+            name,
+        };
+        if (service_name) {
+            full_args.service = service_name;
+        }
+        const args_json = JSON.stringify(full_args);
+        const args_base64 = Base64.encode(args_json);
+
+        let path = this.getAppPath().functionsCall().path + "?stitch_request=" + encodeURIComponent(args_base64);
+
+        return {
+            method: "GET",
+            path,
+            headers: {
+                Accept: "text/event-stream",
+            },
+        };
+    }
+
     /**
      * @returns A promise of the app URL, with the app location resolved.
      */

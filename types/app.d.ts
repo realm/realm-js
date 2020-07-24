@@ -412,6 +412,17 @@ declare namespace Realm {
          * @returns An service client with methods to register and deregister the device on the user.
          */
         push(serviceName: string): Realm.Services.Push;
+
+        /**
+         * Returns a connection to the MongoDB service.
+         *
+         * @example
+         * let blueWidgets = user.remoteMongoClient('myClusterName')
+         *                       .db('myDb')
+         *                       .collection('widgets')
+         *                       .find({color: 'blue'});
+         */
+        remoteMongoClient(serviceName:string): Realm.Services.MongoDB;
     }
 
     /**

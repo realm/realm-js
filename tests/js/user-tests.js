@@ -253,6 +253,8 @@ module.exports = {
     let user = await app.logIn(credentials);
     let collection = user.remoteMongoClient('BackingDB').db('test_data').collection('testRemoteMongoClient');
 
+    await collection.deleteMany({});
+
     const sleep = async time => new Promise(resolve => setInterval(resolve, time));
     const str = 'use some odd chars to force weird encoding %\n\r\n\\????>>>>';
     await Promise.all([

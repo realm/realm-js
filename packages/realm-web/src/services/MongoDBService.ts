@@ -17,11 +17,235 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { Fetcher } from "../Fetcher";
-import { FunctionsFactory } from "../FunctionsFactory";
+import { FunctionsFactory, cleanArgs } from "../FunctionsFactory";
+import { EJSON } from "bson";
+import { getEnvironment } from "../environment"
 
 type Document = Realm.Services.MongoDB.Document;
 type NewDocument<T extends Document> = Realm.Services.MongoDB.NewDocument<T>;
 type ChangeEvent<T extends Document> = Realm.Services.MongoDB.ChangeEvent<T>;
+
+type ServerSentEvent = {
+    data: string;
+    eventType?: string;
+};
+
+// NOTE: this is a fully processed event, not a single "data: foo" line!
+export enum StreamState {
+    NEED_DATA = 'NEED_DATA',   // Need to call one of the feed functions.
+    HAVE_EVENT = 'HAVE_EVENT', // Call nextEvent() to consume an event.
+    HAVE_ERROR = 'HAVE_ERROR', // Call error().
+};
+
+function asyncIterForReadableStream(stream: any): AsyncIterable<Uint8Array> {
+    if (Symbol.asyncIterator in stream)
+        return stream as AsyncIterable<Uint8Array>;
+    return {
+        [Symbol.asyncIterator]() {
+            let reader = stream.getReader();
+            return {
+                next() {
+                    return reader.read();
+                },
+                async return() {
+                    await reader.cancel();
+                    return {done: true, value: null};
+                },
+            }
+        }
+    }
+}
+
+export class WatchStream<T extends Document> {
+    // Call these when you have data, in whatever shape is easiest for your SDK to get.
+    // Pick one, mixing and matching on a single instance isn't supported.
+    // These can only be called in NEED_DATA state, which is the initial state.
+    feedBuffer(buffer: Uint8Array) {
+        this.assertState(StreamState.NEED_DATA);
+        this._buffer += this._textDecoder.decode(buffer, {stream: true});
+        this.advanceBufferState();
+    }
+
+    feedLine(line: string) {
+        this.assertState(StreamState.NEED_DATA);
+        // This is an implementation of the algorithm described at
+        // https://html.spec.whatwg.org/multipage/server-sent-events.html#event-stream-interpretation.
+        // Currently the server does not use id or retry lines, so that processing isn't implemented.
+
+        // ignore trailing LF if not removed by SDK.
+        if (line.endsWith('\n'))
+            line = line.substr(0, line.length - 1);
+
+        // ignore trailing CR from CRLF
+        if (line.endsWith('\r'))
+            line = line.substr(0, line.length - 1);
+
+        if (line.length == 0) {
+            // This is the "dispatch the event" portion of the algorithm.
+            if (this._data_buffer.length == 0) {
+                this._event_type = "";
+                return;
+            }
+
+            if (this._data_buffer.endsWith('\n'))
+                this._data_buffer = this._data_buffer.substr(0, this._data_buffer.length - 1)
+
+            this.feedSse({data: this._data_buffer, eventType: this._event_type});
+            this._data_buffer = "";
+            this._event_type = "";
+        }
+
+        if (line[0] == ':')
+            return;
+
+        const colon = line.indexOf(':');
+        const field = line.substr(0, colon);
+        let value = colon == -1 ? '' : line.substr(colon + 1);
+        if (value.startsWith(' '))
+            value = value.substr(1);
+
+        if (field == "event") {
+            this._event_type = value;
+        } else if (field == "data") {
+            this._data_buffer += value;
+            this._data_buffer += '\n';
+        } else {
+            // line is ignored (even if field is id or retry).
+        }
+    }
+
+    feedSse(sse: ServerSentEvent) {
+        this.assertState(StreamState.NEED_DATA);
+        let first_percent = sse.data.indexOf('%');
+        if (first_percent != -1) {
+            // For some reason, the stich server decided to add percent-encoding for '%', '\n', and '\r' to its
+            // event-stream replies. But it isn't real urlencoding, since most characters pass through, so we can't use
+            // uri_percent_decode() here.
+            let buffer = ''
+            let start = 0;
+            while (true) {
+                let percent = start == 0 ? first_percent : sse.data.indexOf('%', start);
+                if (percent == -1) {
+                    buffer += sse.data.substr(start);
+                    break;
+                }
+
+                buffer += sse.data.substr(start, percent - start);
+
+                let encoded = sse.data.substr(percent, 3); // may be smaller than 3 if string ends with %
+                if (encoded == "%25") {
+                    buffer += '%';
+                } else if (encoded == "%0A") {
+                    buffer += '\x0A'; // '\n'
+                } else if (encoded == "%0D") {
+                    buffer += '\x0D'; // '\r'
+                } else {
+                    buffer += encoded; // propagate as-is
+                }
+                start = percent + encoded.length;
+            }
+
+            sse.data = buffer;
+        }
+
+        if (sse.eventType === undefined || sse.eventType.length == 0 || sse.eventType == "message") {
+            try {
+                let parsed = EJSON.parse(sse.data);
+                if (typeof parsed == 'object') { // ???
+                    this._nextEvent = parsed;
+                    this._state = StreamState.HAVE_EVENT;
+                    return;
+                }
+            } catch {
+                // fallthrough to same handling as for non-document value.
+            }
+            this._state = StreamState.HAVE_ERROR;
+            this._error = {err: "bad bson parse", message: "server returned malformed event: " + sse.data}
+        } else if (sse.eventType == "error") {
+            this._state = StreamState.HAVE_ERROR;
+
+            // default error message if we have issues parsing the reply.
+            this._error = {err: "unknown", message: sse.data}
+            try {
+                const {error_code, error}= EJSON.parse(sse.data) as any; 
+                if (typeof error_code != 'string') return;
+                if (typeof error != 'string') return;
+                // XXX in realm-js, object-store will error if the error_code is not one of the known
+                // error code enum values.
+                this._error = {err: error_code, message: error};
+            } catch {
+                return; // Use the default state.
+            }
+        } else {
+            // Ignore other event types
+        }
+
+    }
+
+    get state() { return this._state; }
+
+    // Consumes the returned event. If you used feedBuffer(), there may be another event or error after this one,
+    // so you need to call state() again to see what to do next.
+    nextEvent() {
+        this.assertState(StreamState.HAVE_EVENT);
+        const out = this._nextEvent;
+        this._state = StreamState.NEED_DATA;
+        this.advanceBufferState();
+        return out;
+    }
+
+    // Once this enters the error state, it stays that way. You should not feed any more data.
+    get error() { return this._error; }
+
+    ////////////////////////////////////////////
+
+    private advanceBufferState() {
+        this.assertState(StreamState.NEED_DATA);
+        while (this.state == StreamState.NEED_DATA) {
+            if (this._bufferOffset == this._buffer.length) {
+                this._buffer = "";
+                this._bufferOffset = 0;
+                return;
+            }
+
+            // NOTE not supporting CR-only newlines, just LF and CRLF.
+            const next_newline = this._buffer.indexOf('\n', this._bufferOffset);
+            if (next_newline == -1) {
+                // We have a partial line.
+                if (this._bufferOffset != 0) {
+                    // Slide the partial line down to the front of the buffer.
+                    this._buffer = this._buffer.substr(this._bufferOffset, this._buffer.length - this._bufferOffset);
+                    this._bufferOffset = 0;
+                }
+                return;
+            }
+
+            this.feedLine(this._buffer.substr(this._bufferOffset, next_newline - this._bufferOffset));
+            this._bufferOffset = next_newline + 1; // Advance past this line, including its newline.
+        }
+    }
+
+    private assertState(state: StreamState) {
+        if (this._state != state) {
+            throw Error(`Expected WatchStream to be in state ${state}, but in state ${this._state}`);
+        }
+    }
+
+    private _nextEvent?: object;
+
+    private _state: StreamState = StreamState.NEED_DATA;
+
+    private _error: any = null;
+
+    // Used by feedBuffer to construct lines
+    private _textDecoder = getEnvironment().makeTextDecoder();
+    private _buffer = "";
+    private _bufferOffset = 0;
+
+    // Used by feedLine for building the next SSE
+    private _event_type = "";
+    private _data_buffer = "";
+}
 
 /**
  * A remote collection of documents.
@@ -43,6 +267,9 @@ class MongoDBCollection<T extends Document>
      */
     private readonly collectionName: string;
 
+    private readonly serviceName: string;
+    private readonly fetcher: Fetcher;
+
     /**
      * Construct a remote collection of documents.
      *
@@ -62,6 +289,8 @@ class MongoDBCollection<T extends Document>
         });
         this.databaseName = databaseName;
         this.collectionName = collectionName;
+        this.serviceName = serviceName;
+        this.fetcher = fetcher;
     }
 
     /** @inheritdoc */
@@ -232,8 +461,33 @@ class MongoDBCollection<T extends Document>
     }
 
     /** @inheritdoc */
-    watch(): AsyncGenerator<ChangeEvent<T>> {
-        throw new Error("Not yet implemented");
+    async* watch(
+        {ids = undefined, filter = undefined}: {ids?: T["_id"][], filter?: Realm.Services.MongoDB.Filter}  = {},
+    ): AsyncGenerator<ChangeEvent<T>> {
+        let args = {
+            database: this.databaseName,
+            collection: this.collectionName,
+            ids,
+            filter,
+        };
+        const reply = await this.fetcher.fetch(
+            this.fetcher.makeStreamingRequest(
+                "watch",
+                cleanArgs([args]),
+                this.serviceName));
+        let watchStream = new WatchStream<T>();
+        for await (let chunk of asyncIterForReadableStream(reply.body)) {
+            if (!chunk) continue;
+            watchStream.feedBuffer(chunk);
+            while (watchStream.state == StreamState.HAVE_EVENT) {
+                let next = watchStream.nextEvent() as Realm.Services.MongoDB.ChangeEvent<T>;
+                yield next;
+            }
+            if (watchStream.state == StreamState.HAVE_ERROR)
+                // XXX this is just throwing an error like {error_code: "BadRequest, error: "message"},
+                // which matches realm-js, but is different from how errors are handled in realm-web
+                throw watchStream.error;
+        }
     }
 }
 

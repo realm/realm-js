@@ -19,6 +19,10 @@
 import { Storage } from "./storage";
 import { Window } from "./OAuth2Helper";
 
+interface TextDecoder {
+    decode(buffer: Uint8Array, options?: {stream: boolean}): string;
+}
+
 /** An object with values specific to the runtime environment. */
 export type Environment = {
     /**
@@ -30,6 +34,8 @@ export type Environment = {
      * Open a browser window.
      */
     openWindow: (url: string) => Window | null;
+
+    makeTextDecoder(): TextDecoder;
 };
 
 let environment: Environment | null = null;

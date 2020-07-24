@@ -62,7 +62,7 @@ export interface FunctionsFactoryConfiguration {
  * @param args The arguments to clean.
  * @returns The cleaned arguments.
  */
-function cleanArgs(args: any[]) {
+export function cleanArgs(args: any[]) {
     for (const arg of args) {
         if (typeof arg === "object") {
             for (const [key, value] of Object.entries(arg)) {
