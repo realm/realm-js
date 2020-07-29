@@ -154,15 +154,15 @@ module.exports = {
             TestCase.assertEqual(car.make, "Audi");
             TestCase.assertEqual(car.model, "A4");
             TestCase.assertEqual(car.kilometers, 24);
-            TestCase.assertTrue(car instanceof Realm.Object);
-            
+            TestCase.assertInstanceOf(car, Realm.Object, "car not an instance of Realm.Object");
+
             let cars = realm.objects("Car");
             TestCase.assertUndefined(cars[""]);
             let carZero = cars[0];
             TestCase.assertEqual(carZero.make, "Audi");
             TestCase.assertEqual(carZero.model, "A4");
             TestCase.assertEqual(carZero.kilometers, 24);
-            TestCase.assertTrue(carZero instanceof Realm.Object);
+            TestCase.assertInstanceOf(carZero, Realm.Object, "carZero not an instance of Realm.Object");
 
             constructorCalled = false;
             let car1 = realm.create('Car', { make: 'VW', model: 'Touareg', kilometers: 13 });
@@ -170,21 +170,21 @@ module.exports = {
             TestCase.assertEqual(car1.make, "VW");
             TestCase.assertEqual(car1.model, "Touareg");
             TestCase.assertEqual(car1.kilometers, 13);
-            TestCase.assertTrue(car1 instanceof Realm.Object);
+            TestCase.assertInstanceOf(car1, Realm.Object, "car1 not an instance of Realm.Object");
 
             let car2 = realm.create('Car2', { make: 'Audi', model: 'A4', kilometers: 24 });
             TestCase.assertTrue(calledAsConstructor);
             TestCase.assertEqual(car2.make, "Audi");
             TestCase.assertEqual(car2.model, "A4");
             TestCase.assertEqual(car2.kilometers, 24);
-            TestCase.assertTrue(car2 instanceof Realm.Object);
+            TestCase.assertInstanceOf(car2, Realm.Object, "car2 not an instance of Realm.Object");
 
             let car2_1 = realm.create('Car2', { make: 'VW', model: 'Touareg', kilometers: 13 });
             TestCase.assertTrue(calledAsConstructor);
             TestCase.assertEqual(car2_1.make, "VW");
             TestCase.assertEqual(car2_1.model, "Touareg");
             TestCase.assertEqual(car2_1.kilometers, 13);
-            TestCase.assertTrue(car2_1 instanceof Realm.Object);
+            TestCase.assertInstanceOf(car2_1, Realm.Object, "car2_1 not an instance of Realm.Object");
 
             let car3 = realm.create('Car3', { make: 'Audi', model: 'A4', kilometers: 24 });
             TestCase.assertTrue(car3ConstructorCalled);
@@ -194,7 +194,7 @@ module.exports = {
             TestCase.assertFalse(car3 instanceof Realm.Object);
             //methods from Realm.Objects should be present
             TestCase.assertDefined(car3.addListener);
-            
+
         });
         realm.close();
     },
