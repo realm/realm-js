@@ -72,7 +72,23 @@ function printProgress(input, totalBytes, archive) {
     });
 }
 
+function copyLocal(archive, destination) {
+    const archivePath = `${process.env.HOME}/${archive}`;
+    const exists = fs.existsSync(archivePath);
+    if (exists) {
+        console.log(`Skipping download for ${archive}. Local archive available at ${archivePath}`);
+        fs.copySync(archivePath, destination);
+        return true;
+    }
+
+    return false;
+}
+
 function download(serverFolder, archive, destination) {
+    if (copyLocal(archive, destination)) {
+        return;
+    }
+     
     const url = `https://static.realm.io/downloads/${serverFolder}/${archive}`;
     console.log(`Download url: ${url}`);
     const proxyUrl = process.env.HTTP_PROXY || process.env.http_proxy || process.env.HTTPS_PROXY || process.env.https_proxy;
@@ -221,16 +237,16 @@ function shouldSkipAcquire(target, requirements, force) {
     const existingLockfile = readLockfile(target);
 
     if (!existingLockfile) {
-        console.log('No lockfile found at the target, proceeding.');
+        console.log(`No lockfile found at the target ${target}, proceeding.`);
         return false;
     }
 
     if (!Object.keys(requirements).every(key => existingLockfile[key] === requirements[key])) {
-        console.log('Target directory has a differing lockfile, overwriting.');
+        console.log(`Target directory ${target} has a differing lockfile, overwriting.`);
         return false;
     }
 
-    console.log('Matching lockfile already exists at target - nothing to do (use --force to override)');
+    console.log(`Matching lockfile already exists at target ${target} - nothing to do (use --force to override)`);
     return true;
 }
 
