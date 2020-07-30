@@ -600,6 +600,7 @@ bool ObjectWrap<ClassType>::has_instance(JSContextRef ctx, JSValueRef value) {
             return false;
         }
 
+        //search for RealmObjectClassConstructor on the prototype chain of the object
         JSObjectRef proto = try_get_prototype(ctx, object);
         while (proto != nullptr && !JSValueIsNull(ctx, proto)) {
             if (JSValueIsStrictEqual(ctx, proto, RealmObjectClassConstructorPrototype)) {
@@ -609,6 +610,14 @@ bool ObjectWrap<ClassType>::has_instance(JSContextRef ctx, JSValueRef value) {
             proto = try_get_prototype(ctx, proto);
         }
 
+        //handle RealmObjects using user defined ctors without extending RealmObject. 
+        //In this case we just check for existing internal value to identify RealmObject instances
+        auto internal = ObjectWrap<ClassType>::get_internal(ctx, object);
+        if (internal != nullptr) {
+            return true;
+        }
+
+        //if there is no RealmObjectClass on the prototype chain and the object does not have existing internal value then this is not an RealmObject instance
         return false;
     }
 
