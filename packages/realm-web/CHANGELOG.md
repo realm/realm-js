@@ -1,8 +1,12 @@
 ?.?.? Release notes (2020-??-??)
 =============================================================
 
+### Breaking changes
+* Renamed `Realm.app` to `Realm.getApp` to make it less conflicting with a local `app` variable.
+
 ### Enhancements
-* None
+* Added an export of the `ObjectId` BSON type on the package namespace. ([#3071](https://github.com/realm/realm-js/pull/3071))
+* Added an IIFE bundle enabling users to consume the package from a script-tag. ([#3071](https://github.com/realm/realm-js/pull/3071))
 
 ### Fixed
 * None

@@ -18,12 +18,10 @@
 
 import { expect } from "chai";
 
-import { App } from "./App";
-import { User, UserState } from "./User";
-import { DEFAULT_HEADERS, MockApp, MockNetworkTransport } from "./test";
-import { Credentials } from "./Credentials";
-import { MemoryStorage } from "./storage";
-import { MongoDBRealmError } from "./transports/Transport";
+import { App, User, UserState, Credentials, MongoDBRealmError } from "..";
+import { MemoryStorage } from "../storage";
+
+import { DEFAULT_HEADERS, MockApp, MockNetworkTransport } from "./utils";
 
 /* eslint-disable @typescript-eslint/camelcase */
 

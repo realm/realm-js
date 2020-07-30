@@ -16,8 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { AppTransport } from "./AppTransport";
-export { Transport, Request, MongoDBRealmError } from "./Transport";
-export { BaseTransport } from "./BaseTransport";
-export { AuthenticatedTransport } from "./AuthenticatedTransport";
-export { PrefixedTransport } from "./PrefixedTransport";
+export * from "../index";
+
+import { DefaultNetworkTransport } from "../NetworkTransport";
+import { AbortController, Fetch } from "../types";
+
+DefaultNetworkTransport.fetch = window.fetch.bind(window) as Fetch;
+DefaultNetworkTransport.AbortController = window.AbortController as AbortController;

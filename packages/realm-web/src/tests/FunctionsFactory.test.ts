@@ -18,8 +18,9 @@
 
 import { expect } from "chai";
 
-import { FunctionsFactory } from "./FunctionsFactory";
-import { MockTransport } from "./test/MockTransport";
+import { FunctionsFactory } from "../FunctionsFactory";
+
+import { MockTransport } from "./utils";
 
 const DEFAULT_HEADERS = {
     Accept: "application/json",

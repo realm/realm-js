@@ -16,8 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { AppTransport } from "./AppTransport";
-export { Transport, Request, MongoDBRealmError } from "./Transport";
-export { BaseTransport } from "./BaseTransport";
-export { AuthenticatedTransport } from "./AuthenticatedTransport";
-export { PrefixedTransport } from "./PrefixedTransport";
+/* eslint-disable @typescript-eslint/no-var-requires  */
+
+const path = require("path");
+
+const tsConfigPath = path.resolve(__dirname, "../src/tests/tsconfig.json");
+process.env.TS_NODE_PROJECT = tsConfigPath;
+console.log(`Loading TypeScript configuration from ${tsConfigPath}`);

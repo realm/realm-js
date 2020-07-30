@@ -16,25 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Credentials } from "realm-web";
+import { expect } from "chai";
 
-import { createApp } from "./utils";
+import { Credentials } from "..";
 
-const runNumber = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-
-describe("EmailPasswordAuthProvider", () => {
-    // TODO: Fix this test
-    it.skip("registers a user", async () => {
-        const app = createApp();
-        // Login a user
+describe("Credentials", () => {
+    it("expose the anonymous credentials", () => {
+        expect(typeof Credentials.anonymous).equals("function");
         const credentials = Credentials.anonymous();
-        await app.logIn(credentials);
-        const email = `test-user-${runNumber}@testing.mongodb.com`;
-        const password = "my-super-secret-password";
-        // List all existing keys
-        await app.emailPasswordAuth.registerUser(email, password);
-        // Authenticate
-        const newCredentials = Credentials.emailPassword(email, password);
-        await app.logIn(newCredentials);
+        expect(credentials).to.be.instanceOf(Credentials);
+        expect(credentials.payload).deep.equals({});
+    });
+
+    it("expose the email/password credentials", () => {
+        expect(typeof Credentials.emailPassword).equals("function");
+        const credentials = Credentials.emailPassword(
+            "gilfoyle@testing.mongodb.com",
+            "s3cr3t",
+        );
+        expect(credentials).to.be.instanceOf(Credentials);
+        expect(credentials.payload).deep.equals({
+            username: "gilfoyle@testing.mongodb.com",
+            password: "s3cr3t",
+        });
     });
 });

@@ -24,11 +24,14 @@ import { MochaRemoteServer } from "mocha-remote";
 import { importRealmApp } from "./import-realm-app";
 
 import WEBPACK_CONFIG = require("../webpack.config");
+import path = require("path");
 
 const devtools = "DEV_TOOLS" in process.env;
 // Default to testing only the credentials that does not require manual interactions.
 const testCredentials =
     process.env.TEST_CREDENTIALS || "anonymous,email-password,function,jwt";
+
+const { BASE_URL = "http://localhost:8080" } = process.env;
 
 /* eslint-disable no-console */
 
@@ -44,8 +47,11 @@ async function run() {
             new webpack.DefinePlugin({
                 APP_ID: JSON.stringify(appId),
                 // Uses the webpack dev servers proxy
-                BASE_URL: JSON.stringify("http://localhost:8080"),
+                BASE_URL: JSON.stringify(BASE_URL),
                 TEST_CREDENTIALS: JSON.stringify(testCredentials.split(",")),
+                IIFE_BUNDLE_URL: JSON.stringify(
+                    `${BASE_URL}/realm-web/dist/bundle.iife.js`,
+                ),
             }),
         ],
     });
@@ -54,6 +60,8 @@ async function run() {
     const devServer = new WebpackDevServer(compiler, {
         proxy: { "/api": baseUrl },
         historyApiFallback: true,
+        contentBase: path.join(__dirname, "../node_modules/realm-web"),
+        contentBasePublicPath: "/realm-web",
     });
 
     await new Promise((resolve, reject) => {

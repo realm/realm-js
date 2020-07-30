@@ -16,8 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { AppTransport } from "./AppTransport";
-export { Transport, Request, MongoDBRealmError } from "./Transport";
-export { BaseTransport } from "./BaseTransport";
-export { AuthenticatedTransport } from "./AuthenticatedTransport";
-export { PrefixedTransport } from "./PrefixedTransport";
+import { setEnvironment, Environment } from "../environment";
+import { MemoryStorage } from "../storage";
+
+const environment: Environment = {
+    defaultStorage: new MemoryStorage(),
+    openWindow: url => {
+        console.log(`Please open this URL: ${url}`);
+        return null;
+    },
+};
+
+setEnvironment(environment);
+
+/**
+ * Handle an OAuth 2.0 redirect.
+ */
+export function handleAuthRedirect() {
+    throw new Error(
+        "Handling OAuth 2.0 redirects is not supported outside a browser",
+    );
+}
+
+// Export here to avoid getting the enviroment before its been sat (since this will be translated to commonjs)
+export * from "../index";

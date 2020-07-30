@@ -18,9 +18,10 @@
 
 import { expect } from "chai";
 
-import { AuthenticatedTransport } from "./AuthenticatedTransport";
-import { MockTransport } from "../test";
+import { AuthenticatedTransport } from "../transports/AuthenticatedTransport";
 import { User } from "../User";
+
+import { MockTransport } from "./utils";
 
 describe("AuthenticatedTransport", () => {
     it("constructs", () => {

@@ -16,8 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { AppTransport } from "./AppTransport";
-export { Transport, Request, MongoDBRealmError } from "./Transport";
-export { BaseTransport } from "./BaseTransport";
-export { AuthenticatedTransport } from "./AuthenticatedTransport";
-export { PrefixedTransport } from "./PrefixedTransport";
+// Unfortunately no @types/abort-controller package has been published.
+
+declare module "abort-controller" {
+    class AbortController {
+        readonly signal: AbortSignal;
+        abort(): void;
+    }
+    export default AbortController;
+}

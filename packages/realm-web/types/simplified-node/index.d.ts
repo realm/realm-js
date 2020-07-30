@@ -16,8 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { AppTransport } from "./AppTransport";
-export { Transport, Request, MongoDBRealmError } from "./Transport";
-export { BaseTransport } from "./BaseTransport";
-export { AuthenticatedTransport } from "./AuthenticatedTransport";
-export { PrefixedTransport } from "./PrefixedTransport";
+// Our version of Node.js types are very restricted
+// This file will get resolved when realm's dependency on bson resolves a dependency on @types/node.
+// We need this file to prevent the NodeJS globals to be accessable from within the test source files.
+
+/**
+ * The simplest buffer we can come up with.
+ * NOTE: This is needed because the "bson" package's types depends on it.
+ */
+type Buffer = Uint8Array;

@@ -3,19 +3,21 @@
 	"compilerOptions": {
 		"target": "es2018",
 		"forceConsistentCasingInFileNames": true,
-		"types": [
-			"mocha",
-			"chai",
-			"express",
-			"node"
+		"esModuleInterop": true,
+		"noResolve": true,
+		"typeRoots": [
+			"./types",
+			"./node_modules/@types"
 		],
+		"types": [],
 		"lib": [
-			"ES2015",
-			"DOM"
+			"ES2015"
 		]
 	},
 	"include": [
 		"src/**/*.ts",
-		"types/app.d.ts"
-	]
+		"types/index.d.ts",
+		"types/generated/app.d.ts"
+	],
+	"exclude": []
 }

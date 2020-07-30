@@ -1,9 +1,12 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"types": []
+		"types": [],
+		"emitDeclarationOnly": true
 	},
 	"exclude": [
+		"src/node/index.ts",
+		"src/dom/index.ts",
 		"src/**/*.test.ts"
 	]
 }

@@ -16,29 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { describeIf } from "./utils";
+import { LocalStorage, getEnvironment } from "realm-web";
 import { expect } from "chai";
 
-import * as Realm from ".";
-
-describe("Realm Web module", () => {
-    it("expose the App constructor", () => {
-        expect(typeof Realm.App).equals("function");
-    });
-
-    describe("Credentials", () => {
-        it("expose a credentials factory", () => {
-            expect(typeof Realm.Credentials).equals("function");
-        });
-    });
-
-    describe("static app function", () => {
-        it("return the same App instance only if ids match", () => {
-            const app1 = Realm.app("default-app-id");
-            expect(app1).to.be.instanceOf(Realm.App);
-            const app2 = Realm.app("default-app-id");
-            expect(app2).equals(app1);
-            const app3 = Realm.app("another-app-id");
-            expect(app2).to.not.equal(app3);
-        });
+describeIf(typeof LocalStorage !== "undefined", "Environment", () => {
+    it("default storage writes to local storage", () => {
+        const { defaultStorage } = getEnvironment();
+        defaultStorage.set("some-key", "some-value");
+        expect(localStorage.getItem("realm-web:some-key")).equals("some-value");
+        defaultStorage.clear();
     });
 });
