@@ -191,7 +191,7 @@ module.exports = {
             TestCase.assertEqual(car3.make, "Audi");
             TestCase.assertEqual(car3.model, "A4");
             TestCase.assertEqual(car3.kilometers, 24);
-            TestCase.assertFalse(car3 instanceof Realm.Object);
+            TestCase.assertTrue(car3 instanceof Realm.Object);
             //methods from Realm.Objects should be present
             TestCase.assertDefined(car3.addListener);
 
