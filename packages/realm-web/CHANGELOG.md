@@ -7,6 +7,7 @@
 ### Enhancements
 * Added an export of the `ObjectId` BSON type on the package namespace. ([#3071](https://github.com/realm/realm-js/pull/3071))
 * Added an IIFE bundle enabling users to consume the package from a script-tag. ([#3071](https://github.com/realm/realm-js/pull/3071))
+* Upon authenticating with an OAuth 2.0 authentication provider (Google, Facebook or Apple), the promise returned by `logIn` will get rejected with an error, messaged "Window closed". ([#3064](https://github.com/realm/realm-js/pull/3064))
 
 ### Fixed
 * None

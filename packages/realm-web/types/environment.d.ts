@@ -40,16 +40,17 @@ interface Console {
 declare const console: Console;
 
 // Timer related stuff
+type TimerHandle = any;
 type TimerHandler = string | Function;
 declare function setTimeout(
     handler: TimerHandler,
     timeout?: number,
     ...arguments: any[]
-): number;
+): TimerHandle;
 declare function setInterval(
     handler: TimerHandler,
     timeout?: number,
     ...arguments: any[]
-): number;
-declare function clearInterval(handle?: number): void;
-declare function clearTimeout(handle?: number): void;
+): TimerHandle;
+declare function clearInterval(handle?: TimerHandle): void;
+declare function clearTimeout(handle?: TimerHandle): void;

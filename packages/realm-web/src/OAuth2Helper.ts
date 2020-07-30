@@ -27,6 +27,8 @@ import {
 } from "./utils/string";
 import { getEnvironment } from "./environment";
 
+const CLOSE_CHECK_INTERVAL = 100; // 10 times per second
+
 type DetermineAppUrl = () => Promise<string>;
 
 export type Window = {
@@ -187,8 +189,10 @@ export class OAuth2Helper {
         const stateStorage = this.getStateStorage(state);
         const url = await this.generateOAuth2Url(credentials, state);
         // Return a promise that resolves when the  gets known
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             let redirectWindow: Window | null = null;
+            let windowClosedInterval: TimerHandle = 0;
+
             const handleStorageUpdate = () => {
                 // Trying to get the secret from storage
                 const result = stateStorage.get("result");
@@ -201,6 +205,8 @@ export class OAuth2Helper {
                     // Try closing the newly created window
                     try {
                         if (redirectWindow) {
+                            // Stop checking if the window closed
+                            clearInterval(windowClosedInterval);
                             redirectWindow.close();
                         }
                     } catch (err) {
@@ -210,10 +216,22 @@ export class OAuth2Helper {
                     }
                 }
             };
+
             // Add a listener to the state storage, awaiting an update to the secret
             stateStorage.addListener(handleStorageUpdate);
             // Open up a window
             redirectWindow = this.openWindow(url);
+            // No using a const, because we need the two listeners to reference each other when removing the other.
+            windowClosedInterval = setInterval(() => {
+                if (redirectWindow && redirectWindow.closed) {
+                    clearInterval(windowClosedInterval);
+                    // Stop listening for changes to the storage
+                    stateStorage.removeListener(handleStorageUpdate);
+                    // Reject the promise
+                    const err = new Error("Window closed");
+                    reject(err);
+                }
+            }, CLOSE_CHECK_INTERVAL);
         });
     }
 
