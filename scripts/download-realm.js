@@ -86,7 +86,7 @@ function copyLocal(archive, destination) {
 
 function download(serverFolder, archive, destination) {
     if (copyLocal(archive, destination)) {
-        return;
+        return Promise.resolve();
     }
      
     const url = `https://static.realm.io/downloads/${serverFolder}/${archive}`;
