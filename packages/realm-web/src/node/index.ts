@@ -16,6 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+declare global {
+    type TimerHandle = ReturnType<typeof setTimeout>;
+}
+
 import { setEnvironment, Environment } from "../environment";
 import { MemoryStorage } from "../storage";
 
