@@ -490,6 +490,18 @@ inline bool WrappedObject<ClassType>::is_instance(Napi::Env env, const Napi::Obj
 		isInstanceOf = instance.InstanceOf(ctor);
 	}
 
+	//handle RealmObjects with user defined ctors without extending RealmObject
+	//In this case we just check for existing internal value to identify RealmObject instances
+	if (!isInstanceOf) {
+		bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
+		if (isRealmObjectClass) {
+			Napi::External<typename ClassType::Internal> external = object.Get(ExternalSymbol).As<Napi::External<typename ClassType::Internal>>();
+			if (!external.IsUndefined()) {
+				return true;
+			}
+		}
+	}
+
 	return isInstanceOf;
 }
 
