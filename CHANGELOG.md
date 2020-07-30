@@ -12,6 +12,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Fixed calling `app.emailPasswordAuth.resetPassword` and `app.emailPasswordAuth.callResetPasswordFunction`, which would throw an error of mismatch in count of arguments. ([#3079](https://github.com/realm/realm-js/pull/3079))
 * realm.delete throws an exception `Argument to 'delete' must be a Realm object or a collection of Realm objects.` for schema objects defined with JS class syntax and not inheriting from RealmObject [2848](https://github.com/realm/realm-js/issues/2848).
 * Fixed `Realm.Object` TS declaration to allow inheritance. ([#1226](https://github.com/realm/realm-js/issues/1226))
+* Fixed TS declaration for `CollectionChangeSet` in `CollectionChangeCallback` when adding a change listener to a collection ([#3093](https://github.com/realm/realm-js/pull/3093)).
 
 ### Compatibility
 * MongoDB Realm Cloud.
