@@ -130,7 +130,7 @@ module.exports = {
         Object.setPrototypeOf(Car2, Realm.Object);
 
         //test class syntax support without extending Realm.Object
-        let car3ConstructorCalled = true;
+        let car3ConstructorCalled = false;
         class Car3 {
             constructor() {
                 car3ConstructorCalled = true;
