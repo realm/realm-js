@@ -179,7 +179,7 @@ declare namespace Realm {
          */
         linkingObjectsCount(): number;
 
-        objectId(): string;
+        _objectId(): string;
 
         /**
          * @returns void
