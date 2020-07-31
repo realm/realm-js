@@ -26,5 +26,9 @@
 		"types/environment.d.ts",
 		"src/**/*.ts"
 	],
-	"exclude": []
+	"exclude": [
+		"src/dom/**/*.ts",
+		"src/node/**/*.ts",
+		"src/tests/**/*.ts"
+	]
 }

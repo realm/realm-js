@@ -191,7 +191,8 @@ export class OAuth2Helper {
         // Return a promise that resolves when the  gets known
         return new Promise((resolve, reject) => {
             let redirectWindow: Window | null = null;
-            let windowClosedInterval: TimerHandle = 0;
+            // We're declaring the interval now to enable referencing before its initialized
+            let windowClosedInterval: TimerHandle; // eslint-disable-line prefer-const
 
             const handleStorageUpdate = () => {
                 // Trying to get the secret from storage
