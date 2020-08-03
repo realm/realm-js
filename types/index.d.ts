@@ -26,19 +26,11 @@ declare namespace Realm {
     interface CollectionChangeSet {
         insertions: number[];
         deletions: number[];
-        modifications: number[];
         newModifications: number[];
         oldModifications: number[];
     }
 
-    interface ObjectChanges {
-        insertions: Object[];
-        deletions: Object[];
-        newModifications: Object[];
-        oldModifications: Object[];
-    }
-
-    type CollectionChangeCallback<T> = (collection: Collection<T>, change: ObjectChanges) => void;
+    type CollectionChangeCallback<T> = (collection: Collection<T>, changes: CollectionChangeSet) => void;
 
     /**
      * PropertyType
