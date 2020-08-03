@@ -143,7 +143,7 @@ declare namespace Realm {
      * Object
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
      */
-    interface Object {
+    abstract class Object {
         /**
          * @returns An array of the names of the object's properties.
          */
@@ -179,7 +179,7 @@ declare namespace Realm {
          */
         linkingObjectsCount(): number;
 
-        objectId(): string;
+        _objectId(): string;
 
         /**
          * @returns void
@@ -189,10 +189,6 @@ declare namespace Realm {
         removeListener(callback: ObjectChangeCallback): void;
 
         removeAllListeners(): void;
-    }
-
-    const Object: {
-        readonly prototype: Object;
     }
 
     /**
