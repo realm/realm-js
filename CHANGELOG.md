@@ -14,7 +14,8 @@
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
 ### Internal
-* None.
+* Upgraded Realm Core from v6.0.9 to v6.0.14.
+* Upgraded Realm Sync from v5.0.8 to v5.0.14.
 
 6.0.3 Release notes (2020-7-15)
 =============================================================
