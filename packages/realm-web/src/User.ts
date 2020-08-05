@@ -199,6 +199,14 @@ export class User<
         }
     }
 
+    get identities(): Realm.UserIdentity[] {
+        if (this._profile) {
+            return this._profile.identities;
+        } else {
+            throw new Error("A profile was never fetched for this user");
+        }
+    }
+
     /**
      * Refresh the users profile data.
      */
@@ -233,7 +241,14 @@ export class User<
 
     /** @inheritdoc */
     public async linkCredentials(credentials: Credentials) {
-        throw new Error("Not yet implemented");
+        const response = await this.app.authenticator.authenticate(
+            credentials,
+            this,
+        );
+        // Update the access token
+        this.accessToken = response.accessToken;
+        // Refresh the profile to include the new identity
+        await this.refreshProfile();
     }
 
     /**

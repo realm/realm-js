@@ -328,8 +328,10 @@ declare namespace Realm {
          */
         readonly state: UserState;
 
-        // TODO: Populate the list of identities
-        // readonly identities: UserIdentity[];
+        /**
+         * The identities of the user at any of the app's authentication providers.
+         */
+        readonly identities: UserIdentity[];
 
         /**
          * The access token used when requesting a new access token.
