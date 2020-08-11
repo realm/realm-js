@@ -26,19 +26,11 @@ declare namespace Realm {
     interface CollectionChangeSet {
         insertions: number[];
         deletions: number[];
-        modifications: number[];
         newModifications: number[];
         oldModifications: number[];
     }
 
-    interface ObjectChanges {
-        insertions: Object[];
-        deletions: Object[];
-        newModifications: Object[];
-        oldModifications: Object[];
-    }
-
-    type CollectionChangeCallback<T> = (collection: Collection<T>, change: ObjectChanges) => void;
+    type CollectionChangeCallback<T> = (collection: Collection<T>, changes: CollectionChangeSet) => void;
 
     /**
      * PropertyType
@@ -157,7 +149,7 @@ declare namespace Realm {
      * Object
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
      */
-    interface Object {
+    abstract class Object {
         /**
          * @returns An array of the names of the object's properties.
          */
@@ -201,10 +193,6 @@ declare namespace Realm {
         removeListener(callback: ObjectChangeCallback): void;
 
         removeAllListeners(): void;
-    }
-
-    const Object: {
-        readonly prototype: Object;
     }
 
     /**

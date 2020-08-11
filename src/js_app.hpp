@@ -139,6 +139,10 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
                 config.local_app_version = util::Optional<std::string>(Value::validated_to_string(ctx, config_app_version_value, "version"));
             }
         }
+    } else if (Value::is_string(ctx, args[0])) {
+        config.app_id = Value::validated_to_string(ctx, args[0]);
+    } else {
+        throw std::runtime_error("Expected either a configuration object or an app id string.");
     }
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));

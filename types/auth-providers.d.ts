@@ -85,7 +85,7 @@ declare namespace Realm {
             callResetPasswordFunction(
                 email: string,
                 password: string,
-                args: any[],
+                ...args: any[],
             ): Promise<void>;
         }
 

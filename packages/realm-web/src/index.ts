@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { App } from "./App";
-import { OAuth2Helper } from "./OAuth2Helper";
-import { createDefaultStorage } from "./storage";
 
 const appCache: { [id: string]: Realm.App } = {};
 
@@ -28,7 +26,7 @@ const appCache: { [id: string]: Realm.App } = {};
  * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
  * @returns The Realm App instance. Calling this function multiple times with the same id will return the same instance.
  */
-export function app(id: string) {
+export function getApp(id: string) {
     if (id in appCache) {
         return appCache[id];
     } else {
@@ -38,26 +36,8 @@ export function app(id: string) {
     }
 }
 
-/**
- * Handle an OAuth 2.0 redirect.
- *
- * @param location An optional location to use (defaults to the windows current location).
- * @param storage Optional storage used to save any results from the location.
- */
-export function handleAuthRedirect(
-    location = window.location,
-    storage = createDefaultStorage(),
-) {
-    try {
-        const queryString = location.hash.substr(1); // Strip the initial # from the hash
-        OAuth2Helper.handleRedirect(queryString, storage);
-    } catch (err) {
-        // Ensure calling this never throws: It should not interrupt a users flow.
-        console.warn(err);
-    }
-}
-
-export { App };
-export { Credentials } from "./Credentials";
-export { User, UserState } from "./User";
-export { createDefaultStorage } from "./storage";
+export * from "./App";
+export * from "./Credentials";
+export * from "./User";
+export { MongoDBRealmError } from "./transports";
+export { getEnvironment, setEnvironment } from "./environment";

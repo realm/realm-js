@@ -89,10 +89,10 @@
     /**
      * Creates a new app and connects to a MongoDB Realm instance.
      *
-     * @param {Realm.App~AppConfiguration} config - The configuration of the app.
+     * @param {(Realm.App~AppConfiguration|string)} configOrId - The configuration of the app or a string app id.
      * @throws If no app id is provided.
      */
-    constructor(config) { }
+    constructor(configOrId) { }
 
     /**
      * Logs in a user.
@@ -415,10 +415,10 @@ class EmailPasswordAuth {
      *
      * @param {string} email - The email address of the user.
      * @param {string} password - The desired new password.
-     * @param {Array<BSON>} args - A bson array of arguments.
+     * @param {Array<BSON>} args - Arguments passed onto the function.
      * @return {Promose<void>}
      */
-    callResetPasswordFunction(email, password, args) { }
+    callResetPasswordFunction(email, password, ...args) { }
 }
 
 /**

@@ -16,29 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { LocalStorage } from "./LocalStorage";
+export { Storage } from "./Storage";
 export { MemoryStorage } from "./MemoryStorage";
 export { PrefixedStorage } from "./PrefixedStorage";
-export { Storage } from "./Storage";
-
-import { LocalStorage } from "./LocalStorage";
-import { MemoryStorage } from "./MemoryStorage";
-
-/**
- * We're reusing a singleton to simulate the persistance of the browsers `localStorage`.
- */
-const memoryStorageSingleton = new MemoryStorage();
-
-/**
- * Create a `Storage` instance, default to the current environment.
- *
- * @returns A LocalStorage instance if the window global is an object, MemoryStorage otherwise.
- *          Both will prefix keys with "realm-web".
- */
-export function createDefaultStorage() {
-    const storage =
-        typeof window === "object"
-            ? new LocalStorage()
-            : memoryStorageSingleton;
-    return storage.prefix("realm-web");
-}

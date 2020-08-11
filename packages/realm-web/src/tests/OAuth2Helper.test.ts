@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
+import { URL } from "url";
 
-import { OAuth2Helper } from "./OAuth2Helper";
-import { MemoryStorage } from "./storage";
-import { Credentials, OAuth2RedirectPayload } from "./Credentials";
+import { Credentials, OAuth2RedirectPayload } from "..";
+import { OAuth2Helper } from "../OAuth2Helper";
+import { MemoryStorage } from "../storage";
 
 describe("OAuth2Helper", () => {
     it("can initiate a flow", async () => {
@@ -32,7 +33,7 @@ describe("OAuth2Helper", () => {
                 const url = new URL(urlString);
                 windowsOpened.push(url);
                 // Simulating another tab updating the storage
-                process.nextTick(() => {
+                setTimeout(() => {
                     const state = url.searchParams.get("state");
                     storage.set(
                         `oauth2:state(${state}):result`,
@@ -41,7 +42,7 @@ describe("OAuth2Helper", () => {
                             userAuth: "our-little-secret",
                         }),
                     );
-                });
+                }, 0);
                 return null;
             },
         );

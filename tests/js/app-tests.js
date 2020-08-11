@@ -53,6 +53,28 @@ module.exports = {
         TestCase.assertInstanceOf(app, Realm.App);
     },
 
+    testNewAppFromString() {
+        let app = new Realm.App(config.id);
+        TestCase.assertInstanceOf(app, Realm.App);
+        TestCase.assertEqual(app.id, config.id);
+    },
+
+    testNewAppFromUndefined() {
+        const error = TestCase.assertThrows(() =>  new Realm.App());
+        TestCase.assertEqual(
+            error.message,
+            'Invalid arguments: 1 expected, but 0 supplied.',
+        );
+    },
+
+    testNewAppFromOther() {
+        const error = TestCase.assertThrows(() => new Realm.App(1234));
+        TestCase.assertEqual(
+            error.message,
+            'Expected either a configuration object or an app id string.',
+        );
+    },
+
     async testInvalidServer() {
         const conf = {
             id: 'smurf',

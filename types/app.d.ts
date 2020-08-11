@@ -24,7 +24,6 @@
 
 declare namespace Realm {
     namespace Credentials {
-
         /**
          * Payload sent when authenticating using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
          */
@@ -59,14 +58,15 @@ declare namespace Realm {
         /**
          * Payload sent when authenticating using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
          */
-        type FunctionPayload = {
-            [key: string]: string,
-        };
+        type FunctionPayload = object;
 
         /**
          * Payload sent when authenticating using the [Custom JWT Provider](https://docs.mongodb.com/realm/authentication/custom-jwt/).
          */
         type JWTPayload = {
+            /**
+             * The JSON Web Token signed by another service.
+             */
             token: string;
         };
 
@@ -113,6 +113,8 @@ declare namespace Realm {
         };
     }
 
+    // TODO: Add providerCapabilities?
+
     /**
      * End-users enter credentials to authenticate toward your MongoDB Realm App.
      */
@@ -133,35 +135,41 @@ declare namespace Realm {
         readonly payload: PayloadType;
 
         /**
-         * Creates credentials that logs in using the [Anonymous Provider](https://docs.mongodb.com/stitch/authentication/anonymous/).
+         * Factory for `Credentials` which authenticate using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
          *
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static anonymous(): Credentials<Credentials.AnonymousPayload>;
 
         /**
-         * Creates credentials that logs in using the [API Key Provider](https://docs.mongodb.com/stitch/authentication/api-key/).
+         * Factory for `Credentials` which authenticate using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
+         *
+         * @deprecated Use `Credentials.apiKey`.
          *
          * @param key The secret content of the API key.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static userApiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
 
         /**
-         * Creates credentials that logs in using the [API Key Provider](https://docs.mongodb.com/stitch/authentication/api-key/).
+         * Factory for `Credentials` which authenticate using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
+         *
+         * @deprecated Use `Credentials.apiKey`.
          *
          * @param key The secret content of the API key.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
-        static serverApiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
+        static serverApiKey(
+            key: string,
+        ): Credentials<Credentials.ApiKeyPayload>;
 
         /**
-         * Creates credentials that logs in using the [Email/Password Provider](https://docs.mongodb.com/stitch/authentication/userpass/).
+         * Factory for `Credentials` which authenticate using the [Email/Password Provider](https://docs.mongodb.com/realm/authentication/email-password/).
          * Note: This was formerly known as the "Username/Password" provider.
          *
          * @param email The end-users email address.
          * @param password The end-users password.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static emailPassword(
             email: string,
@@ -169,20 +177,57 @@ declare namespace Realm {
         ): Credentials<Credentials.EmailPasswordPayload>;
 
         /**
-         * Creates credentials that logs in using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         * Factory for `Credentials` which authenticate using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
+         *
+         * @param payload The custom payload as expected by the server.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
+         */
+        static function<
+            PayloadType extends Credentials.FunctionPayload = Credentials.FunctionPayload
+        >(payload: PayloadType): Credentials<PayloadType>;
+
+        /**
+         * Factory for `Credentials` which authenticate using the [Custom JWT Provider](https://docs.mongodb.com/realm/authentication/custom-jwt/).
+         *
+         * @param token The JSON Web Token (JWT).
+         * @returns A `Credentials` object for logging in using `app.logIn`.
+         */
+        static jwt(token: string): Credentials<Credentials.JWTPayload>;
+
+        /**
+         * Factory for `Credentials` which authenticate using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
          *
          * @param authCode The auth code returned from Google.
-         * @returns The credentials instance, which can be passed to `app.logIn`.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
          */
         static google(authCode: string): Credentials<Credentials.GooglePayload>;
 
-        // TODO: Add providerCapabilities?
+        /**
+         * Factory for `Credentials` which authenticate using the [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
+         *
+         * @param accessToken The access token returned from Facebook.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
+         */
+        static facebook(
+            accessToken: string,
+        ): Credentials<Credentials.FacebookPayload>;
+
+        /**
+         * Factory for `Credentials` which authenticate using the [Apple ID Provider](https://docs.mongodb.com/realm/authentication/apple/).
+         *
+         * @param idToken The id_token returned from Apple.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
+         */
+        static apple(idToken: string): Credentials<Credentials.ApplePayload>;
     }
 
     /**
      * A MongoDB Realm App.
      */
-    class App<FunctionsFactoryType extends object = DefaultFunctionsFactory, CustomDataType extends object = any> {
+    class App<
+        FunctionsFactoryType extends object = DefaultFunctionsFactory,
+        CustomDataType extends object = any
+    > {
         /**
          * Construct a MongoDB Realm App.
          *
@@ -191,7 +236,7 @@ declare namespace Realm {
         constructor(idOrConfiguration: string | AppConfiguration);
 
         /**
-         *
+         * All credentials available for authentication.
          */
         static readonly Credentials: typeof Credentials;
 
@@ -223,14 +268,18 @@ declare namespace Realm {
         /**
          * All authenticated users.
          */
-        readonly allUsers: Readonly<User<FunctionsFactoryType, CustomDataType>[]>;
+        readonly allUsers: Readonly<
+            User<FunctionsFactoryType, CustomDataType>[]
+        >;
 
         /**
          * Log in a user using a specific credential
          *
          * @param credentials the credentials to use when logging in
          */
-        logIn(credentials: Credentials): Promise<User<FunctionsFactoryType, CustomDataType>>;
+        logIn(
+            credentials: Credentials,
+        ): Promise<User<FunctionsFactoryType, CustomDataType>>;
 
         /**
          * Switch current user, from an instance of `User` or the string id of the user.
@@ -239,10 +288,12 @@ declare namespace Realm {
 
         /**
          * Logs out and removes a user from the app.
-         * 
+         *
          * @returns A promise that resolves once the user has been logged out and removed from the app.
          */
-        removeUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void>;
+        removeUser(
+            user: User<FunctionsFactoryType, CustomDataType>,
+        ): Promise<void>;
     }
 
     /**
@@ -315,14 +366,14 @@ declare namespace Realm {
 
         /**
          * Log out the user.
-         * 
+         *
          * @returns A promise that resolves once the user has been logged out of the app.
          */
         logOut(): Promise<void>;
 
         /**
          * Link the user with an identity represented by another set of credentials.
-         * 
+         *
          * @param credentials The credentials to use when linking.
          */
         linkCredentials(credentials: Credentials): Promise<void>;
@@ -343,21 +394,21 @@ declare namespace Realm {
          * await doThing(a1);
          * await doThing(a2);
          *
-         * @param name Name of the function
-         * @param args Arguments passed to the function
+         * @param name Name of the function.
+         * @param args Arguments passed to the function.
          */
         callFunction(name: string, ...args: any[]): Promise<any>;
 
         /**
          * Refresh the access token and derive custom data from it.
-         * 
+         *
          * @returns The newly fetched custom data.
          */
         refreshCustomData(): Promise<CustomDataType>;
 
-        /** 
+        /**
          * Use the Push service to enable sending push messages to this user via Firebase Cloud Messaging (FCM).
-         * 
+         *
          * @returns An service client with methods to register and deregister the device on the user.
          */
         push(serviceName: string): Realm.Services.Push;
@@ -386,8 +437,19 @@ declare namespace Realm {
     }
 
     // TODO: Implement storing these identities on the user
+
+    /**
+     * A user's identity with a particular authentication provider.
+     */
     interface UserIdentity {
+        /**
+         * The id of the user.
+         */
         userId: string;
+
+        /**
+         * The type of the provider associated with the identity.
+         */
         providerType: string;
     }
 
@@ -422,15 +484,13 @@ declare namespace Realm {
 
         /**
          * The users gender.
-         * // TODO: Determine if this is free-text or actually an enum type.
          */
-        gender?: string;
+        gender?: string; // TODO: Determine if this is free-text or actually an enum type.
 
         /**
          * The users birthday.
-         * // TODO: Determine the format.
          */
-        birthday?: string;
+        birthday?: string; // TODO: Determine the format.
 
         /**
          * The minimal age of the user.
@@ -462,8 +522,8 @@ declare namespace Realm {
          * Call a remote MongoDB Realm function by its name.
          * Consider using `functions[name]()` instead of calling this method.
          *
-         * @param name Name of the function
-         * @param args Arguments passed to the function
+         * @param name Name of the function.
+         * @param args Arguments passed to the function.
          */
         callFunction(name: string, ...args: any[]): Promise<any>;
     }

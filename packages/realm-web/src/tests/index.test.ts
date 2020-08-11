@@ -18,26 +18,27 @@
 
 import { expect } from "chai";
 
-import { Credentials } from "./Credentials";
+import * as Realm from "..";
 
-describe("Credentials", () => {
-    it("expose the anonymous credentials", () => {
-        expect(typeof Credentials.anonymous).equals("function");
-        const credentials = Credentials.anonymous();
-        expect(credentials).to.be.instanceOf(Credentials);
-        expect(credentials.payload).deep.equals({});
+describe("Realm Web module", () => {
+    it("expose the App constructor", () => {
+        expect(typeof Realm.App).equals("function");
     });
 
-    it("expose the email/password credentials", () => {
-        expect(typeof Credentials.emailPassword).equals("function");
-        const credentials = Credentials.emailPassword(
-            "gilfoyle@testing.mongodb.com",
-            "s3cr3t",
-        );
-        expect(credentials).to.be.instanceOf(Credentials);
-        expect(credentials.payload).deep.equals({
-            username: "gilfoyle@testing.mongodb.com",
-            password: "s3cr3t",
+    describe("Credentials", () => {
+        it("expose a credentials factory", () => {
+            expect(typeof Realm.Credentials).equals("function");
+        });
+    });
+
+    describe("static app function", () => {
+        it("return the same App instance only if ids match", () => {
+            const app1 = Realm.getApp("default-app-id");
+            expect(app1).to.be.instanceOf(Realm.App);
+            const app2 = Realm.getApp("default-app-id");
+            expect(app2).equals(app1);
+            const app3 = Realm.getApp("another-app-id");
+            expect(app2).to.not.equal(app3);
         });
     });
 });

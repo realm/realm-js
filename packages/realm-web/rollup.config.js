@@ -18,14 +18,14 @@
 
 import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
-import resolve from "@rollup/plugin-node-resolve";
+import nodeResolve from "@rollup/plugin-node-resolve";
 import dts from "rollup-plugin-dts";
 
 import pkg from "./package.json";
 
 export default [
     {
-        input: "src/index.ts",
+        input: "src/node/index.ts",
         output: [
             {
                 file: pkg.main,
@@ -39,14 +39,57 @@ export default [
         plugins: [
             commonjs(),
             typescript({
-                tsconfig: "tsconfig.build.json",
+                tsconfig: "src/node/tsconfig.json",
             }),
-            resolve(),
+            nodeResolve(),
+        ],
+        external: ["bson", "node-fetch", "abort-controller"],
+    },
+    {
+        input: "src/dom/index.ts",
+        output: [
+            {
+                file: pkg.browser[pkg.main],
+                format: "cjs",
+            },
+            {
+                file: pkg.browser[pkg.module],
+                format: "es",
+            },
+        ],
+        plugins: [
+            commonjs(),
+            typescript({
+                tsconfig: "src/dom/tsconfig.json",
+            }),
+            nodeResolve({
+                browser: true,
+            }),
         ],
         external: ["bson"],
     },
     {
-        input: "types/generated/index.d.ts",
+        input: "src/dom/index.ts",
+        output: [
+            {
+                file: "dist/bundle.iife.js",
+                name: "Realm",
+                format: "iife",
+            },
+        ],
+        plugins: [
+            commonjs(),
+            typescript({
+                tsconfig: "src/dom/tsconfig.json",
+            }),
+            nodeResolve({
+                browser: true,
+                preferBuiltins: false,
+            }),
+        ],
+    },
+    {
+        input: "types/generated/dom/index.d.ts",
         output: {
             file: "dist/bundle.d.ts",
             format: "es",
@@ -60,7 +103,7 @@ export default [
                 // Ensures that the realm-network-transport types are included in the bundle
                 respectExternal: true,
             }),
-            resolve(),
+            nodeResolve(),
         ],
     },
 ];
