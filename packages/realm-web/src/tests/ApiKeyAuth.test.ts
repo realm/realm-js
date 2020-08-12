@@ -17,18 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { ObjectId } from "bson";
 
-import { ApiKeyAuth } from "./ApiKeyAuth";
-import { MockTransport } from "../test/MockTransport";
+import { User } from "..";
+import { ApiKeyAuth } from "../auth-providers/ApiKeyAuth";
 import { AuthenticatedTransport } from "../transports";
-import { User } from "../User";
 
-const DEFAULT_HEADERS = {
-    Authorization: "Bearer very-refreshing",
-    Accept: "application/json",
-    "Content-Type": "application/json",
-};
+import { DEFAULT_HEADERS, MockTransport } from "./utils";
 
 describe("ApiKeyAuth", () => {
     it("can create an api key", async () => {
@@ -65,7 +59,10 @@ describe("ApiKeyAuth", () => {
                 body: {
                     name: "my-key-name",
                 },
-                headers: DEFAULT_HEADERS,
+                headers: {
+                    ...DEFAULT_HEADERS,
+                    Authorization: "Bearer very-refreshing",
+                },
             },
         ]);
     });
@@ -99,7 +96,10 @@ describe("ApiKeyAuth", () => {
                 method: "GET",
                 url:
                     "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef",
-                headers: DEFAULT_HEADERS,
+                headers: {
+                    ...DEFAULT_HEADERS,
+                    Authorization: "Bearer very-refreshing",
+                },
             },
         ]);
     });
@@ -146,7 +146,10 @@ describe("ApiKeyAuth", () => {
             {
                 method: "GET",
                 url: "http://localhost:1337/auth/api_keys",
-                headers: DEFAULT_HEADERS,
+                headers: {
+                    ...DEFAULT_HEADERS,
+                    Authorization: "Bearer very-refreshing",
+                },
             },
         ]);
     });
@@ -168,7 +171,10 @@ describe("ApiKeyAuth", () => {
                 method: "DELETE",
                 url:
                     "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef",
-                headers: DEFAULT_HEADERS,
+                headers: {
+                    ...DEFAULT_HEADERS,
+                    Authorization: "Bearer very-refreshing",
+                },
             },
         ]);
     });
@@ -190,7 +196,10 @@ describe("ApiKeyAuth", () => {
                 method: "PUT",
                 url:
                     "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef/enable",
-                headers: DEFAULT_HEADERS,
+                headers: {
+                    ...DEFAULT_HEADERS,
+                    Authorization: "Bearer very-refreshing",
+                },
             },
         ]);
     });
@@ -212,7 +221,10 @@ describe("ApiKeyAuth", () => {
                 method: "PUT",
                 url:
                     "http://localhost:1337/auth/api_keys/deadbeefdeadbeefdeadbeef/disable",
-                headers: DEFAULT_HEADERS,
+                headers: {
+                    ...DEFAULT_HEADERS,
+                    Authorization: "Bearer very-refreshing",
+                },
             },
         ]);
     });

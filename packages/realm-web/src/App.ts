@@ -24,10 +24,11 @@ import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
 import { Credentials } from "./Credentials";
 import { create as createServicesFactory } from "./services";
 import { EmailPasswordAuth } from "./auth-providers";
-import { Storage, createDefaultStorage } from "./storage";
+import { Storage } from "./storage";
 import { AppStorage } from "./AppStorage";
 import { AppLocation, AppLocationContext } from "./AppLocation";
 import { OAuth2Helper } from "./OAuth2Helper";
+import { getEnvironment } from "./environment";
 
 /**
  * Configuration to pass as an argument when constructing an app.
@@ -159,7 +160,7 @@ export class App<
         // Construct the auth providers
         this.emailPasswordAuth = new EmailPasswordAuth(authTransport);
         // Construct the storage
-        const baseStorage = storage || createDefaultStorage();
+        const baseStorage = storage || getEnvironment().defaultStorage;
         this.storage = new AppStorage(baseStorage, this.id);
         // Constructing the oauth2 helper, passing in the baseStorage to avoid an app scope.
         this.oauth2 = new OAuth2Helper(baseStorage, async () => {

@@ -16,14 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export {
-    NetworkTransport,
-    Request,
-    Response,
-    Method,
-    SuccessCallback,
-    ErrorCallback,
-    ResponseHandler,
-} from "./types";
+export * from "./types";
 export { DefaultNetworkTransport } from "./NetworkTransport";
 export { MongoDBRealmError } from "./MongoDBRealmError";

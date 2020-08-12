@@ -19,8 +19,9 @@
 import { expect } from "chai";
 import { ObjectID } from "bson";
 
-import { createService } from "./MongoDBService";
-import { MockTransport } from "../test/MockTransport";
+import { createService } from "../services/MongoDBService";
+
+import { MockTransport } from "./utils";
 
 /** A test interface that documents in my-collection implements */
 interface MyDocument extends Realm.Services.MongoDB.Document {

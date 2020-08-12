@@ -18,8 +18,8 @@
 
 import { expect } from "chai";
 
-import { AppStorage } from "./AppStorage";
-import { MemoryStorage } from "./storage";
+import { AppStorage } from "../AppStorage";
+import { MemoryStorage } from "../storage";
 
 describe("AppStorage", () => {
     describe("user ids", () => {

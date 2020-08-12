@@ -17,11 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { MochaRemoteClient } from "mocha-remote-client";
-import { handleAuthRedirect } from "realm-web";
+import Realm from "realm-web";
 
 if (location.pathname.endsWith("-callback")) {
     console.log("This is the callback from Google OAuth 2.0 flow");
-    handleAuthRedirect();
+    Realm.handleAuthRedirect();
 } else {
     const mochaClient = new MochaRemoteClient({
         onInstrumented: () => {
@@ -30,6 +30,7 @@ if (location.pathname.endsWith("-callback")) {
                 this.timeout(10000);
             });
 
+            require("./environment.test");
             require("./app.test");
             require("./credentials.test");
             require("./user.test");
@@ -37,6 +38,7 @@ if (location.pathname.endsWith("-callback")) {
             require("./services.test");
             require("./api-key-auth-provider.test");
             require("./email-password-auth-provider.test");
+            require("./iife.test");
         },
     });
 }
