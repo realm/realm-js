@@ -8,7 +8,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Adding the possibility of passing a string argument when constructing an App. ([#3082](https://github.com/realm/realm-js/pull/3082))
 
 ### Fixed
-* A crash when calling `user.apiKeys.fetchAll()`
 * Fixed Android and XCode build files. ([#3069](https://github.com/realm/realm-js/issues/3069), since v10.0.0-beta.9)
 * Fixed a crash when calling `user.apiKeys.fetchAll()`. ([#3067](https://github.com/realm/realm-js/pull/3067))
 * Fixed calling `app.emailPasswordAuth.resetPassword` and `app.emailPasswordAuth.callResetPasswordFunction`, which would throw an error of mismatch in count of arguments. ([#3079](https://github.com/realm/realm-js/pull/3079))
