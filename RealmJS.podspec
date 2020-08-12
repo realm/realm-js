@@ -39,9 +39,9 @@ Pod::Spec.new do |s|
   # 1) As "prepare_command" (executed when running `pod install`), to have the files available when  to modify the XCode project correctly.
   # 2) As "script_phase" (executed by XCode when building), to allow developers to commit their `ios/Pods` directory to their repository (and not run `pod install` after cloning it).
   # Note: It leaves a lock file, ensuring it will only download the archive once.
-  s.prepare_command        = 'node ./scripts/download-realm.js ios --sync'
+  s.prepare_command        = './scripts/xcode-download-realm.sh'
   s.script_phase           = { :name => 'Download Realm Core & Sync',
-                               :script => 'echo "Using Node.js $(node --version)" && node ${PODS_TARGET_SRCROOT}/scripts/download-realm.js ios --sync',
+                               :script => '${PODS_TARGET_SRCROOT}/scripts/xcode-download-realm.sh',
                                :execution_position => :before_compile }
 
   s.source_files           = 'src/*.cpp',
