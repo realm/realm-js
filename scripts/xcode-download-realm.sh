@@ -29,6 +29,6 @@ if ! which node > /dev/null; then
   export NODE_COMMAND="nvm run $NODE_CURRENT_VERSION"
 fi
 
-$NODE_COMMAND ${SCRIPTS_DIR}/scripts/download-realm.js ios --sync
+$NODE_COMMAND "${SCRIPTS_DIR}/scripts/download-realm.js" ios --sync
 
 exit 0
