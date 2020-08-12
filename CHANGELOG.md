@@ -17,7 +17,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* None.
+* Realm Object Store updated to commit 9c80160881f2af76d99c356a9d6017c88c9b7e52.
 
 10.0.0-beta.9 Release notes (2020-7-15)
 =============================================================
