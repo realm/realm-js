@@ -4,10 +4,27 @@
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"outDir": "dist",
-		"types": ["realm", "node", "mocha", "chai"],
-		"noResolve": true,
+		"types": [
+			"node",
+			"realm",
+			"mocha",
+			"chai"
+		],
+		"typeRoots": [
+			"types",
+			"node_modules/@types"
+		],
 		"noImplicitAny": true,
-		"lib": ["es5", "es2015", "es2015.promise", "es2015.symbol", "es2015.iterable"]
+		"lib": [
+			"es5",
+			"es2015",
+			"es2015.promise",
+			"es2015.symbol",
+			"es2015.iterable"
+		]
 	},
-	"include": ["src/**/*.ts"]
+	"include": [
+		"src/**/typings.d.ts",
+		"src/**/*.ts"
+	]
 }
