@@ -18,15 +18,30 @@
 
 const LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
-import { Storage, createDefaultStorage } from "./storage";
+import { Storage } from "./storage";
 import { Credentials, OAuth2RedirectPayload } from "./Credentials";
 import {
     generateRandomString,
     encodeQueryString,
     decodeQueryString,
 } from "./utils/string";
+import { getEnvironment } from "./environment";
+
+const CLOSE_CHECK_INTERVAL = 100; // 10 times per second
 
 type DetermineAppUrl = () => Promise<string>;
+
+export type Window = {
+    /**
+     * Attempt to close the window.
+     */
+    close: () => void;
+
+    /**
+     * Has the window been closed?
+     */
+    closed: boolean;
+};
 
 type WindowOpener = (url: string) => Window | null;
 
@@ -55,15 +70,6 @@ type RedirectResult = {
      * Was this originally a request to link a user with other credentials?
      */
     link?: string;
-};
-
-const defaultOpenWindow: WindowOpener = url => {
-    if (typeof window === "object") {
-        return window.open(url);
-    } else {
-        console.log(`Please open this URL: ${url}`);
-        return null;
-    }
 };
 
 /* eslint-disable @typescript-eslint/camelcase */
@@ -111,7 +117,7 @@ export class OAuth2Helper {
      */
     public static handleRedirect(
         queryString: string,
-        storage = createDefaultStorage(),
+        storage = getEnvironment().defaultStorage,
     ) {
         const helper = new OAuth2Helper(storage, async () => {
             throw new Error("This instance cannot be used to initiate a flow");
@@ -162,7 +168,7 @@ export class OAuth2Helper {
     constructor(
         storage: Storage,
         getAppUrl: DetermineAppUrl,
-        openWindow = defaultOpenWindow,
+        openWindow = getEnvironment().openWindow,
     ) {
         this.storage = storage.prefix("oauth2");
         this.getAppUrl = getAppUrl;
@@ -183,8 +189,11 @@ export class OAuth2Helper {
         const stateStorage = this.getStateStorage(state);
         const url = await this.generateOAuth2Url(credentials, state);
         // Return a promise that resolves when the  gets known
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             let redirectWindow: Window | null = null;
+            // We're declaring the interval now to enable referencing before its initialized
+            let windowClosedInterval: TimerHandle; // eslint-disable-line prefer-const
+
             const handleStorageUpdate = () => {
                 // Trying to get the secret from storage
                 const result = stateStorage.get("result");
@@ -197,6 +206,8 @@ export class OAuth2Helper {
                     // Try closing the newly created window
                     try {
                         if (redirectWindow) {
+                            // Stop checking if the window closed
+                            clearInterval(windowClosedInterval);
                             redirectWindow.close();
                         }
                     } catch (err) {
@@ -206,10 +217,22 @@ export class OAuth2Helper {
                     }
                 }
             };
+
             // Add a listener to the state storage, awaiting an update to the secret
             stateStorage.addListener(handleStorageUpdate);
             // Open up a window
             redirectWindow = this.openWindow(url);
+            // No using a const, because we need the two listeners to reference each other when removing the other.
+            windowClosedInterval = setInterval(() => {
+                if (redirectWindow && redirectWindow.closed) {
+                    clearInterval(windowClosedInterval);
+                    // Stop listening for changes to the storage
+                    stateStorage.removeListener(handleStorageUpdate);
+                    // Reject the promise
+                    const err = new Error("Window closed");
+                    reject(err);
+                }
+            }, CLOSE_CHECK_INTERVAL);
         });
     }
 

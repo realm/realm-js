@@ -88,7 +88,7 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
     callResetPasswordFunction(
         email: string,
         password: string,
-        args: any[],
+        ...args: any[]
     ): Promise<void> {
         return this.transport.fetch({
             method: "POST",

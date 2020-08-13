@@ -37,7 +37,7 @@ describe("Realm#constructor", () => {
     it("creates a Realm instance with an empty schema", () => {
         const realm = new Realm({ schema: [] });
         expect(realm instanceof Realm).to.equal(true);
-        expect(realm.schema).to.deep.equal([]);
+        expect(realm.schema).deep.equals([]);
     });
 
     it("creates multiple Realm files when called with a non-empty string", async () => {
@@ -109,7 +109,7 @@ describe("Realm#constructor", () => {
             // Open it ...
             const realm0 = new Realm({ schema: [], schemaVersion: 0 });
             expect(realm0.schemaVersion).to.equal(0);
-            expect(realm0.schema).to.deep.equal([]);
+            expect(realm0.schema).deep.equals([]);
             realm0.close();
             // Re-open with a different version
             const realm1 = new Realm({ schema: [], schemaVersion: 1 });
@@ -154,7 +154,7 @@ describe("Realm#constructor", () => {
             const reopenedRealm = new Realm();
             // Expect the schemas to match
             expect(reopenedRealm.schema.length).to.equal(2);
-            expect(reopenedRealm.schema).to.deep.equal(realm.schema);
+            expect(reopenedRealm.schema).deep.equals(realm.schema);
         });
     });
 
@@ -303,7 +303,7 @@ describe("#deleteFile", () => {
         Realm.deleteFile({ path });
         // Re-open the Realm without a schema and expect it to be empty
         const reopenedRealm = new Realm({ path });
-        expect(reopenedRealm.schema).to.deep.equal([]);
+        expect(reopenedRealm.schema).deep.equals([]);
     }
 
     it("deletes the default Realm", () => {

@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Storage, StorageChangeListner } from "./Storage";
-import { PrefixedStorage } from "./PrefixedStorage";
+import { Storage, StorageChangeListner } from "../storage/Storage";
+import { PrefixedStorage } from "../storage/PrefixedStorage";
 
 /**
  * In-memory storage that will not be persisted.

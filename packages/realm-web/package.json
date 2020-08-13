@@ -2,17 +2,21 @@
   "name": "realm-web",
   "version": "0.7.0",
   "description": "Authenticate and communicate with the MongoDB Realm platform, from your web-browser",
-  "main": "dist/bundle.cjs.js",
-  "module": "dist/bundle.es.js",
-  "types": "dist/bundle.d.ts",
+  "main": "./dist/bundle.cjs.js",
+  "module": "./dist/bundle.es.js",
+  "types": "./dist/bundle.d.ts",
+  "browser": {
+    "./dist/bundle.cjs.js": "./dist/bundle.dom.cjs.js",
+    "./dist/bundle.es.js": "./dist/bundle.dom.es.js"
+  },  
   "scripts": {
     "prepack": "npm run build",
     "prepare": "npm run update-types",
-    "update-types": "ts-node scripts/update-types.ts",
-    "generate-types": "tsc --project tsconfig.build.json --declaration --emitDeclarationOnly --declarationDir types/generated",
+    "update-types": "ts-node --project scripts/tsconfig.json scripts/update-types.ts",
+    "generate-types": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
     "build": "npm run generate-types && rollup --config",
     "lint": "eslint --ext .js,.ts .",
-    "test": "mocha 'src/**/*.test.ts'"
+    "test": "mocha 'src/tests/**/*.test.ts'"
   },
   "files": [
     "dist",
@@ -62,6 +66,7 @@
     "realm-network-transport": "^0.6.0",
     "rollup": "^2.6.1",
     "rollup-plugin-dts": "^1.4.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "ts-node": "^8.8.2",
     "typescript": "file:../../node_modules/typescript"
   }

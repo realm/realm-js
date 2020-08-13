@@ -25,7 +25,10 @@ import { createApp } from "./utils";
 declare const TEST_CREDENTIALS: string[];
 
 // The function credential is used to authenticate the user
-describe("ApiKeyAuthProvider", () => {
+describe("ApiKeyAuthProvider", function () {
+    this.slow(1000);
+    this.timeout(10000);
+
     it("lists, creates, gets, enables, authenticates, disables and deletes api keys", async () => {
         const app = createApp();
         // Login a user

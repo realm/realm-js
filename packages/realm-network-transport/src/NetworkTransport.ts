@@ -17,16 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { MongoDBRealmError } from "./MongoDBRealmError";
-import { NetworkTransport, Request, ResponseHandler, Headers } from "./types";
-
-declare const process: any;
-declare const require: ((id: string) => any) | undefined;
-
-const isNodeProcess = typeof process === "object";
+import {
+    NetworkTransport,
+    Request,
+    ResponseHandler,
+    Headers,
+    Fetch,
+    AbortController,
+} from "./types";
 
 export class DefaultNetworkTransport implements NetworkTransport {
-    public static fetch: typeof fetch;
-    public static AbortController: typeof AbortController;
+    public static fetch: Fetch;
+    public static AbortController: AbortController;
 
     public static DEFAULT_HEADERS = {
         Accept: "application/json",
@@ -34,40 +36,15 @@ export class DefaultNetworkTransport implements NetworkTransport {
     };
 
     constructor() {
-        // Determine the fetch implementation
         if (!DefaultNetworkTransport.fetch) {
-            // Try to get it from the global
-            if (
-                typeof window === "object" &&
-                typeof window.fetch === "function"
-            ) {
-                DefaultNetworkTransport.fetch = window.fetch.bind(window);
-            } else if (isNodeProcess && typeof require === "function") {
-                // Making it harder for the static analyzers see this require call
-                const nodeRequire = require;
-                DefaultNetworkTransport.fetch = nodeRequire("node-fetch");
-            } else {
-                throw new Error(
-                    "DefaultNetworkTransport.fetch must be set before it's used",
-                );
-            }
+            throw new Error(
+                "DefaultNetworkTransport.fetch must be set before it's used",
+            );
         }
-        // Determine the AbortController implementation
         if (!DefaultNetworkTransport.AbortController) {
-            if (typeof window === "object" && window.AbortController) {
-                DefaultNetworkTransport.AbortController =
-                    window.AbortController;
-            } else if (isNodeProcess && typeof require === "function") {
-                // Making it harder for the static analyzers see this require call
-                const nodeRequire = require;
-                DefaultNetworkTransport.AbortController = nodeRequire(
-                    "abort-controller",
-                );
-            } else {
-                throw new Error(
-                    "DefaultNetworkTransport.AbortController must be set before it's used",
-                );
-            }
+            throw new Error(
+                "DefaultNetworkTransport.AbortController must be set before it's used",
+            );
         }
     }
 

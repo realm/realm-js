@@ -4,26 +4,31 @@
 		"target": "es2019",
 		"moduleResolution": "node",
 		"forceConsistentCasingInFileNames": true,
+		"noResolve": true,
 		"typeRoots": [
 			"./types",
 			"./node_modules/@types",
 			"../../node_modules/@types",
 		],
 		"types": [
-			"bson",
-			"realm-network-transport",
-			"node",
-			"mocha",
-			"chai",
-			"realm"
+			"realm",
+			"js-base64"
 		],
 		"lib": [
-			"es2019",
-			"dom"
+			"es2019"
 		]
 	},
 	"include": [
+		"types/realm/app.d.ts",
+		"types/realm/bson.d.ts",
+		"types/realm/services.d.ts",
+		"types/realm/auth-providers.d.ts",
+		"types/environment.d.ts",
 		"src/**/*.ts"
 	],
-	"exclude": []
+	"exclude": [
+		"src/dom/**/*.ts",
+		"src/node/**/*.ts",
+		"src/tests/**/*.ts"
+	]
 }

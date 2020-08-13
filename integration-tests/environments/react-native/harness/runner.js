@@ -135,7 +135,7 @@ async function runApp(platform, junitFilePath, isWatching) {
     await server.start();
 
     // Spawn a react-native metro server
-    const metro = rn.async("start" /*"--verbose", "--reset-cache"*/);
+    const metro = rn.async("start", "--reset-cache" /*, "--verbose"*/);
     // Kill metro when the process is killed
     process.on("exit", code => {
         metro.kill("SIGHUP");

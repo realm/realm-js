@@ -8,7 +8,7 @@
     "test": "node ./runner.js --js-flags=\"--expose-gc\""
   },
   "devDependencies": {
-    "electron": "^8.1.1",
+    "electron": "^8.4.1",
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
     "spectron": "^10.0.1"

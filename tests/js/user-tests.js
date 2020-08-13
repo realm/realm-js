@@ -200,9 +200,14 @@ module.exports = {
     let user = await app.logIn(credentials);
     TestCase.assertTrue(user.apiKeys instanceof Realm.Auth.ApiKeyAuth);
 
-    // TODO: Fix this to not respond with a 403
+    //TODO: Enable when fixed: Disabling this test since the CI stitch integration returns cryptic error.
+    // const apikey = await user.apiKeys.create("mykey");
     // const keys = await user.apiKeys.fetchAll();
     // TestCase.assertTrue(Array.isArray(keys));
+    
+    // TestCase.assertEqual(keys.length, 1);
+    // TestCase.assertDefined(keys[0].id);
+    // TestCase.assertEqual(keys[0].name, mykey);
 
     await user.logOut();
   },

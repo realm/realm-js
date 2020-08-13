@@ -1,0 +1,48 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+        "@typescript-eslint",
+        "jsdoc",
+        "prettier",
+        "header"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:prettier/recommended",
+        "plugin:jsdoc/recommended"
+    ],
+    "ignorePatterns": "index.d.ts",
+    "rules": {
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "jsdoc/require-param-type": "off",
+        "jsdoc/require-returns-type": "off",
+        "jsdoc/require-jsdoc": [
+            "warn",
+            {
+                "require": {
+                    "ClassDeclaration": true,
+                    "MethodDefinition": true
+                },
+                "contexts": [
+                    "ClassProperty",
+                    "TSInterfaceDeclaration",
+                    "TSMethodSignature",
+                    "TSPropertySignature",
+                    "TSEnumDeclaration",
+                    "TSEnumMember"
+                ]
+            }
+        ],
+        "header/header": [
+            2,
+            "./header.js"
+        ]
+    },
+    "settings": {
+        "jsdoc": {
+            "mode": "typescript"
+        }
+    }
+}

@@ -18,13 +18,9 @@
 
 import { expect } from "chai";
 
-import { createService } from "./HTTPService";
-import { MockTransport } from "../test/MockTransport";
+import { createService } from "../services/HTTPService";
 
-const DEFAULT_HEADERS = {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-};
+import { DEFAULT_HEADERS, MockTransport } from "./utils";
 
 describe("HTTP service", () => {
     it("sends a GET request", async () => {

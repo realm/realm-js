@@ -18,8 +18,9 @@
 
 import { expect } from "chai";
 
-import { MockApp } from "./test/MockApp";
-import { UserType, User } from "./User";
+import { UserType, User } from "..";
+
+import { MockApp } from "./utils";
 
 // Since responses from the server uses underscores in field names:
 /* eslint @typescript-eslint/camelcase: "warn" */
