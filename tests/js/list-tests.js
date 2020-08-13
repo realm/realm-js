@@ -1479,6 +1479,10 @@ module.exports = {
         let addrs1 = owners[0].addresses;
         realm.write(() => {
             TestCase.assertThrows(() => {
+                realm.create(schemas.AddressSchema.name, { street: "Njalsgade", city: "Islands Brygge" });
+            });
+
+            TestCase.assertThrows(() => {
                 addrs1.push({ street: "Njalsgade", city: "Islands Brygge" });
             });
         });
