@@ -1,3 +1,22 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* Realm Studio: 3.11 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
+* File format: Generates Realms with format v10 (reads and upgrades previous file format).
+
+### Internal
+* Upgraded Realm Core from v6.0.14 to v6.0.17.
+* Upgraded Realm Sync from v5.0.14 to v5.0.15.
+
 6.0.4 Release notes (2020-08-04)
 =============================================================
 ### Enhancements
