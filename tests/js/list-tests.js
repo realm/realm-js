@@ -1475,6 +1475,24 @@ module.exports = {
             TestCase.assertEqual(addresses[i]["street"], streets[i]);
         }
 
+        // creating standalone embedded object is not allowed
+        let addrs1 = owners[0].addresses;
+        realm.write(() => {
+            TestCase.assertThrows(() => {
+                addrs1.push({ street: "Njalsgade", city: "Islands Brygge" });
+            });
+        });
+
+        // update an exiting object
+        realm.write(() => {
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Ib", addresses: [
+                { street: "Njalsgade", city: "Islands Brygge" }
+            ]}, "modified");
+        });
+        let ib = realm.objectForPrimaryKey(schemas.HouseOwnerSchema.name, "Ib");
+        TestCase.assertEqual(ib.addresses.length, 1);
+        TestCase.assertEqual(ib.addresses[0]["street"], "Njalsgade");
+
         realm.close();
     }
 };

@@ -113,6 +113,10 @@ public:
     T unbox(ValueType value, realm::CreatePolicy policy = realm::CreatePolicy::Skip, ObjKey current_obj = ObjKey());
 
     Obj create_embedded_object() {
+        if (!m_parent) {
+            throw std::runtime_error("Embedded objects cannot be created directly.");
+        }
+
         return m_parent.create_and_set_linked_object(m_property->column_key);
     }
 
