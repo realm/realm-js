@@ -14,14 +14,7 @@
 			"types",
 			"node_modules/@types"
 		],
-		"noImplicitAny": true,
-		"lib": [
-			"es5",
-			"es2015",
-			"es2015.promise",
-			"es2015.symbol",
-			"es2015.iterable"
-		]
+		"noImplicitAny": true
 	},
 	"include": [
 		"src/**/typings.d.ts",
