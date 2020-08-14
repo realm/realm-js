@@ -1,0 +1,125 @@
+[
+  {
+    "$refId": "Person{0000-0000}",
+    "age": 42,
+    "name": "John Doe",
+    "friends": [
+      {
+        "$ref": "Person{0000-0000}"
+      },
+      {
+        "$refId": "Person{0000-0001}",
+        "age": 40,
+        "name": "Jane Doe",
+        "friends": [
+          {
+            "$refId": "Person{0000-0002}",
+            "age": 35,
+            "name": "Tony Doe",
+            "friends": [
+              {
+                "$ref": "Person{0000-0001}"
+              }
+            ]
+          },
+          {
+            "$ref": "Person{0000-0000}"
+          }
+        ]
+      },
+      {
+        "$refId": "Person{0000-0002}",
+        "age": 35,
+        "name": "Tony Doe",
+        "friends": [
+          {
+            "$refId": "Person{0000-0001}",
+            "age": 40,
+            "name": "Jane Doe",
+            "friends": [
+              {
+                "$ref": "Person{0000-0002}"
+              },
+              {
+                "$ref": "Person{0000-0000}"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "$refId": "Person{0000-0001}",
+    "age": 40,
+    "name": "Jane Doe",
+    "friends": [
+      {
+        "$refId": "Person{0000-0002}",
+        "age": 35,
+        "name": "Tony Doe",
+        "friends": [
+          {
+            "$ref": "Person{0000-0001}"
+          }
+        ]
+      },
+      {
+        "$refId": "Person{0000-0000}",
+        "age": 42,
+        "name": "John Doe",
+        "friends": [
+          {
+            "$ref": "Person{0000-0000}"
+          },
+          {
+            "$ref": "Person{0000-0001}"
+          },
+          {
+            "$refId": "Person{0000-0002}",
+            "age": 35,
+            "name": "Tony Doe",
+            "friends": [
+              {
+                "$ref": "Person{0000-0001}"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "$refId": "Person{0000-0002}",
+    "age": 35,
+    "name": "Tony Doe",
+    "friends": [
+      {
+        "$refId": "Person{0000-0001}",
+        "age": 40,
+        "name": "Jane Doe",
+        "friends": [
+          {
+            "$ref": "Person{0000-0002}"
+          },
+          {
+            "$refId": "Person{0000-0000}",
+            "age": 42,
+            "name": "John Doe",
+            "friends": [
+              {
+                "$ref": "Person{0000-0000}"
+              },
+              {
+                "$ref": "Person{0000-0001}"
+              },
+              {
+                "$ref": "Person{0000-0002}"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
