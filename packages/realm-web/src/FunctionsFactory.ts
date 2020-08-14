@@ -113,13 +113,16 @@ export class FunctionsFactory {
             transport,
             config,
         );
-        // Wrap the factory in a promise that calls the internal call method
+        // Wrap the factory in a proxy that calls the internal call method
         return new Proxy<any>(factory, {
             get(target, p, receiver) {
                 if (typeof p === "string" && RESERVED_NAMES.indexOf(p) === -1) {
                     return target.callFunction.bind(target, p);
                 } else {
-                    return Reflect.get(target, p, receiver);
+                    const prop = Reflect.get(target, p, receiver);
+                    return typeof prop === "function"
+                        ? prop.bind(target)
+                        : prop;
                 }
             },
         });
