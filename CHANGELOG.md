@@ -20,6 +20,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * `toJSON()` no longer throws `"RangeError: Maximum call stack size exceeded"` when a circular structure is encountered (applies for both `Realm.Object` & `Realm.Collection`). ([#3044](https://github.com/realm/realm-js/pull/3044))
 * TS: `objects<T>(...)` now sets return types reflecting underlying implementation. ([#3044](https://github.com/realm/realm-js/pull/3044))
 * TS: `_objectId()` added to TS declaration for `Realm.Object`. ([#3044](https://github.com/realm/realm-js/pull/3044))
+* Fixed performance regresion when creating `Realm.Object` in RN on iOS. ([#2845]https://github.com/realm/realm-js/issues/2845))
 
 ### Compatibility
 * MongoDB Realm Cloud.
