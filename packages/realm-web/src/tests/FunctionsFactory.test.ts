@@ -43,7 +43,32 @@ describe("FunctionsFactory", () => {
         expect(typeof factory.anyFunction).equals("function");
     });
 
-    it("calls the network transport correctly", async () => {
+    it("calls the network transport correctly through callFunction", async () => {
+        const transport = new MockTransport([
+            { message: `hello friendly world!` },
+        ]);
+        const factory = FunctionsFactory.create(transport, {
+            serviceName: "custom-service",
+        });
+        const response = factory.callFunction("hello", "friendly");
+        expect(response).to.be.instanceOf(Promise);
+        const { message } = await response;
+        expect(message).equals("hello friendly world!");
+        expect(transport.requests).deep.equals([
+            {
+                url: "http://localhost:1337/functions/call",
+                method: "POST",
+                body: {
+                    name: "hello",
+                    service: "custom-service",
+                    arguments: ["friendly"],
+                },
+                headers: DEFAULT_HEADERS,
+            },
+        ]);
+    });
+
+    it("calls the network transport correctly via proxy", async () => {
         const transport = new MockTransport([
             { message: `hello friendly world!` },
         ]);
