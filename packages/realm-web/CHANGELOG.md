@@ -5,6 +5,18 @@
 * None
 
 ### Fixed
+* None
+
+### Internal
+* None
+
+0.8.1 Release notes (2020-08-17)
+=============================================================
+
+### Enhancements
+* None
+
+### Fixed
 * Fixed error `"function not found: 'argsTransformation'"` when calling `user.functions.callFunction('functionName', args)` [#3134](https://github.com/realm/realm-js/pull/3134)
 
 ### Internal
