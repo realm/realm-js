@@ -33,10 +33,14 @@ declare namespace Mocha {
     }
 }
 
-
 interface Console {
     error(message?: any, ...optionalParams: any[]): void;
     log(message?: any, ...optionalParams: any[]): void;
 }
 
 declare var console: Console;
+// allow import of json files
+declare module "*.json" {
+  const value: any;
+  export = value;
+}

@@ -4,8 +4,16 @@ Accessing MongoDB Realm from a web-browser.
 
 ## Installation
 
+Via NPM, when used in a project with a bundler, such as Webpack, Parcel or Rollup:
+
 ```
 npm install realm-web
+```
+
+As a script-tag in the head of a browser:
+
+```html
+<script src="https://unpkg.com/realm-web@0.8.0/dist/bundle.iife.js"></script>
 ```
 
 ## Caveats / limitations

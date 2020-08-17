@@ -185,6 +185,8 @@ declare namespace Realm {
          */
         linkingObjectsCount(): number;
 
+        _objectId(): string;
+
         /**
          * @returns void
          */
@@ -194,6 +196,12 @@ declare namespace Realm {
 
         removeAllListeners(): void;
     }
+
+    /**
+     * RealmJsonSerializeReplacer solves circular structures when serializing Realm entities
+     * @example JSON.stringify(realm.objects("Person"), Realm.RealmJsonSerializeReplacer)
+     */
+    const JsonSerializationReplacer: (key: string, val: any) => any;
 
     /**
      * SortDescriptor
@@ -208,6 +216,11 @@ declare namespace Realm {
     interface Collection<T> extends ReadonlyArray<T> {
         readonly type: PropertyType;
         readonly optional: boolean;
+
+        /**
+         * @returns An object for JSON serialization.
+         */
+        toJSON(): Array<any>;
 
         description(): string;
 
@@ -429,6 +442,28 @@ interface ProgressPromise extends Promise<Realm> {
     cancel(): void;
     progress(callback: Realm.ProgressNotificationCallback): Promise<Realm>;
 }
+/**
+ * Extracts an intersection of keys from T, where the value extends the given PropType.
+ */
+type ExtractPropertyNamesOfType<T, PropType> = {
+    [K in keyof T]: T[K] extends PropType ? K : never
+}[keyof T];
+
+/**
+ * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
+ */
+type RealmOptionalParMappedModel<T> = {
+    [K in keyof T]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
+}
+
+/**
+ * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
+ * with only the keys which value extends Realm.List, remapped as Arrays.
+ */
+//
+type RealmInsertionModel<T> =
+    Omit<Omit<T, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
+    & RealmOptionalParMappedModel<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
 
 declare class Realm {
     static defaultPath: string;
@@ -501,22 +536,40 @@ declare class Realm {
     close(): void;
 
     /**
-     * @param  {string|Realm.ObjectClass|Function} type
-     * @param  {T&Realm.ObjectPropsType} properties
+     * @param  {string} type
+     * @param  {T} properties
+     * @param  {boolean} update?
+     * @returns T & Realm.Object
+     *
+     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
+     */
+    create<T>(type: string, properties: RealmInsertionModel<T>, update?: boolean): T & Realm.Object
+
+    /**
+     * @param  {Class} type
+     * @param  {T} properties
      * @param  {boolean} update?
      * @returns T
      *
      * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
      */
-    create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, update?: boolean): T;
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, update?: boolean): T
 
     /**
-     * @param  {string|Realm.ObjectClass|Function} type
-     * @param  {T&Realm.ObjectPropsType} properties
+     * @param  {string} type
+     * @param  {T} properties
+     * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
+     * @returns T & Realm.Object
+     */
+    create<T>(type: string, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode): T & Realm.Object
+
+    /**
+     * @param  {Class} type
+     * @param  {T} properties
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T
      */
-    create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, mode?: Realm.UpdateMode): T;
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode): T
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
@@ -542,10 +595,16 @@ declare class Realm {
     objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string | Realm.ObjectId): T & Realm.Object | undefined;
 
     /**
-     * @param  {string|Realm.ObjectType|Function} type
-     * @returns Realm
+     * @param  {string} type
+     * @returns Realm.Results<T & Realm.Object>
      */
-    objects<T>(type: string | Realm.ObjectType | Function): Realm.Results<T & Realm.Object>;
+    objects<T>(type: string): Realm.Results<T & Realm.Object>;
+
+    /**
+     * @param  {Class} type
+     * @returns Realm.Results<T>
+     */
+    objects<T extends Realm.Object>(type: {new(...arg: any[]): T; }): Realm.Results<T>;
 
     /**
      * @param  {string} name

@@ -87,6 +87,7 @@ LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_client.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_collection.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_database.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/generic_network_transport.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/push_client.cpp
 endif
 
 LOCAL_C_INCLUDES := src
