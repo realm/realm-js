@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Rare crash when a schema was updated ([#6680](https://github.com/realm/realm-cocoa/issues/6680))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
