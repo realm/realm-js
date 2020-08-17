@@ -14,7 +14,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Fixed `Realm.Object` TS declaration to allow inheritance. ([#1226](https://github.com/realm/realm-js/issues/1226))
 * Fixed TS declaration for `CollectionChangeSet` in `CollectionChangeCallback` when adding a change listener to a collection ([#3093](https://github.com/realm/realm-js/pull/3093)).
 * Fixed an error Error: `Invalid arguments: 2 expected, but 1 supplied.` when calling `app.removeUser` [#3091](https://github.com/realm/realm-js/issues/3091)
-* Creating standalone embedded objects crashed with a seg. fault. It is not allowed to create such objects, and an exception is thrown. ([RJS#636](https://jira.mongodb.org/browse/RJS-636), since v10.0.0-beta.1)
+* Creating standalone embedded objects crashed with a seg. fault. Temporarily an exception is thrown. Later we will introduce a way to add a new object to a list.  ([RJS#636](https://jira.mongodb.org/browse/RJS-636), since v10.0.0-beta.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
