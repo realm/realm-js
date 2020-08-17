@@ -19,18 +19,16 @@
 import { expect } from "chai";
 
 import {
-    Dog,
     DogSchema,
     IDog,
     IPerson,
-    Person,
     PersonSchema
 } from "./schemas/person-and-dogs";
 
 describe("Iterating", () => {
     let realm: Realm;
-    let dogs: { [name: string]: Dog };
-    let persons: { [name: string]: Person };
+    let dogs: { [name: string]: IDog };
+    let persons: { [name: string]: IPerson };
 
     beforeEach(() => {
         // Add linkingObjects to the PersonAndDogs schema
@@ -51,32 +49,32 @@ describe("Iterating", () => {
                 alice: realm.create<IPerson>("Person", {
                     name: "Alice",
                     age: 16
-                }) as Person,
+                }),
                 bob: realm.create<IPerson>("Person", {
                     name: "Bob",
                     age: 42
-                }) as Person,
+                }),
                 charlie: realm.create<IPerson>("Person", {
                     name: "Charlie",
                     age: 62
-                }) as Person
+                })
             };
             dogs = {
                 max: realm.create<IDog>("Dog", {
                     age: 1,
                     name: "Max",
                     owner: persons.alice
-                }) as Dog,
+                }),
                 rex: realm.create<IDog>("Dog", {
                     age: 3,
                     name: "Rex",
                     owner: persons.alice
-                }) as Dog,
+                }),
                 bobby: realm.create<IDog>("Dog", {
                     age: 5,
                     name: "Bobby",
                     owner: persons.bob
-                }) as Dog
+                })
             };
             // Make Bob and Charlie frieds
             persons.bob.friends.push(persons.charlie);

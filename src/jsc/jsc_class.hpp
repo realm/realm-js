@@ -573,9 +573,13 @@ void ObjectWrap<ClassType>::set_internal_property(JSContextRef ctx, JSObjectRef 
 static inline JSObjectRef try_get_prototype(JSContextRef ctx, JSObjectRef object) {
     JSValueRef exception = nullptr;
     JSValueRef protoValue = JSObjectGetPrototype(ctx, object);
+    if (JSValueIsNull(ctx, protoValue)){
+        return nullptr;
+    }
+
     JSObjectRef proto = JSValueToObject(ctx, protoValue, &exception);
     if (exception) {
-        return nullptr;
+        throw jsc::Exception(ctx, exception);
     }
 
     return proto;
