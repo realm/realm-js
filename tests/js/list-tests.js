@@ -1476,5 +1476,40 @@ module.exports = {
         }
 
         realm.close();
-    }
+    },
+
+    testCreateFreeFloatingEmbeddedObject: function() {
+        const realm = new Realm({schema: [schemas.HouseOwnerSchema, schemas.AddressSchema]});
+
+        // creating standalone embedded object is not allowed
+        realm.write(() => {
+            TestCase.assertThrows(() => {
+                realm.create(schemas.AddressSchema.name, { street: "Njalsgade", city: "Islands Brygge" });
+            });
+        });
+
+        realm.close();
+    },
+
+    testAddEmbeddedObject: function() {
+        const realm = new Realm({schema: [schemas.HouseOwnerSchema, schemas.AddressSchema]});
+
+        realm.write(() => {
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Ib", addresses: [
+                { street: "Algade", city: "Nordby" },
+                { street: "Skolevej", city: "Sydpynten" }
+            ]});
+        });
+
+        let ib = realm.objectForPrimaryKey(schemas.HouseOwnerSchema.name, "Ib");
+        TestCase.assertEqual(ib.addresses.length, 2);
+
+        realm.write(() => {
+            TestCase.assertThrows(() => {
+                ib.addresses.push({ street: "Njalsgade", city: "Islands Brygge" });
+            });
+        });
+
+        realm.close();
+    },
 };

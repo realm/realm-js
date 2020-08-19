@@ -72,6 +72,8 @@ LOCAL_SRC_FILES += src/object-store/src/schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
 LOCAL_SRC_FILES += src/object-store/src/thread_safe_reference.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/scheduler.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/bson/bson.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/bson/regular_expression.cpp
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_SRC_FILES += src/object-store/src/sync/async_open_task.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_manager.cpp
@@ -85,8 +87,6 @@ LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_client.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_collection.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_database.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/generic_network_transport.cpp
-LOCAL_SRC_FILES += src/object-store/src/util/bson/bson.cpp
-LOCAL_SRC_FILES += src/object-store/src/util/bson/regular_expression.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/push_client.cpp
 endif
 
