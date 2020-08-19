@@ -18,6 +18,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Fixed `Realm.Object` TS declaration to allow inheritance. ([#1226](https://github.com/realm/realm-js/issues/1226))
 * Fixed TS declaration for `CollectionChangeSet` in `CollectionChangeCallback` when adding a change listener to a collection ([#3093](https://github.com/realm/realm-js/pull/3093)).
 * Fixed an error Error: `Invalid arguments: 2 expected, but 1 supplied.` when calling `app.removeUser` [#3091](https://github.com/realm/realm-js/issues/3091)
+* Fixed a missing import in the RN debugger support causing the debug session to fail with the error `ReferenceError: createSession is not defined`. Thanks for @deckyfx to investigating and refactoring the cache. ([#3085](https://github.com/realm/realm-js/issues/3085), since v10.0.0-beta.9)
 * `toJSON()` no longer throws `"RangeError: Maximum call stack size exceeded"` when a circular structure is encountered (applies for both `Realm.Object` & `Realm.Collection`). ([#3044](https://github.com/realm/realm-js/pull/3044))
 * TS: `objects<T>(...)` now sets return types reflecting underlying implementation. ([#3044](https://github.com/realm/realm-js/pull/3044))
 * TS: `_objectId()` added to TS declaration for `Realm.Object`. ([#3044](https://github.com/realm/realm-js/pull/3044))
