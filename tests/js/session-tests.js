@@ -402,7 +402,6 @@ module.exports = {
             return new Promise((resolve, _reject) => {
                 var realm;
                 const config = getSyncConfiguration(user, partition);
-                //config.sync.clientResyncMode = 'manual';
                 config.sync.error = (sender, error) => {
                     try {
                         TestCase.assertEqual(error.name, 'ClientReset');
