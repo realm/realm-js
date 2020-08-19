@@ -447,8 +447,9 @@ exports.ContactSchema = {
 
 exports.HouseOwnerSchema = {
     name: 'HouseOwner',
+    primaryKey: "name",
     properties: {
-        name: 'string',
+        name: "string",
         addresses: { type: "list", objectType: "Address" }
     }
 };

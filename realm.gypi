@@ -109,6 +109,8 @@
         "src/object-store/src/util/apple/scheduler.hpp",
         "src/object-store/src/util/generic/scheduler.hpp",
         "src/object-store/src/util/uv/scheduler.hpp",
+        "src/object-store/src/util/bson/bson.cpp",
+        "src/object-store/src/util/bson/regular_expression.cpp",
       ],
       "conditions": [
         ["OS=='win'", {
@@ -145,8 +147,6 @@
             "src/object-store/src/sync/remote_mongo_database.cpp",
             "src/object-store/src/sync/generic_network_transport.cpp",
             "src/object-store/src/sync/push_client.cpp",
-            "src/object-store/src/util/bson/bson.cpp",
-            "src/object-store/src/util/bson/regular_expression.cpp",
           ],
         }, {
           "dependencies": [ "realm-core" ]
