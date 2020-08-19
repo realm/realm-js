@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-m-dd)
+10.0.0-beta.10 Release notes (2020-8-18)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
 
@@ -24,6 +24,9 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * TS: `objects<T>(...)` now sets return types reflecting underlying implementation. ([#3044](https://github.com/realm/realm-js/pull/3044))
 * TS: `_objectId()` added to TS declaration for `Realm.Object`. ([#3044](https://github.com/realm/realm-js/pull/3044))
 * Fixed performance regresion when creating `Realm.Object` in RN on iOS. ([#2845]https://github.com/realm/realm-js/issues/2845))
+* Rare crash when a schema was updated ([#6680](https://github.com/realm/realm-cocoa/issues/6680))
+* Bug in memory mapping management. This bug could result in multiple different asserts as well as segfaults. In many cases stack backtraces would include members of the EncyptedFileMapping near the top - even if encryption was not used at all. In other cases asserts or crashes would be in methods reading an array header or array element. In all cases the application would terminate immediately. (Realm Core PR #3838, since 7.0.0)
+* Fixed the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth ([#3109])(https://github.com/realm/realm-js/issues/3109)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -31,7 +34,9 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Realm Object Store updated to commit 9c80160881f2af76d99c356a9d6017c88c9b7e52.
+* Realm Object Store updated to commit 9c80160881f2af76d99c356a9d6017c88c9b7e52
+* Upgraded Realm Core from v10.0.0-beta.1 to v10.0.0-beta.4
+* Upgraded Realm Sync from v10.0.0-beta.3 to v10.0.0-beta.6
 
 10.0.0-beta.9 Release notes (2020-7-15)
 =============================================================

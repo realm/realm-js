@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "10.0.0-beta.9",
+  "version": "10.0.0-beta.10",
   "license": "See the actual license in the file LICENSE",
   "homepage": "https://realm.io",
   "keywords": [
@@ -142,7 +142,7 @@
   },
   "binary": {
     "module_name": "realm",
-    "module_path": "./compiled/{node_abi}_{platform}_{arch}/",
+    "module_path": "./compiled/node-v10_{platform}_{arch}/",
     "host": "https://static.realm.io",
     "remote_path": "./node-pre-gyp/{version}/"
   }
