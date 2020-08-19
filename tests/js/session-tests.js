@@ -388,18 +388,21 @@ module.exports = {
             }).then(() => TestCase.assertTrue(progressCalled));
     },
 
-    /*
+
     testClientReset() {
         // FIXME: try to enable for React Native
         if (!platformSupported) {
             return;
         }
 
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        const partition = Utils.genPartition();
+        let creds = Realm.Credentials.anonymous();
+        let app = new Realm.App(appConfig);
+        return app.logIn(creds).then(user => {
             return new Promise((resolve, _reject) => {
                 var realm;
-                const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
-                config.sync.clientResyncMode = 'manual';
+                const config = getSyncConfiguration(user, partition);
+                //config.sync.clientResyncMode = 'manual';
                 config.sync.error = (sender, error) => {
                     try {
                         TestCase.assertEqual(error.name, 'ClientReset');
@@ -423,7 +426,7 @@ module.exports = {
             });
         });
     },
-    */
+
 
     /*
     testClientResyncMode() {
