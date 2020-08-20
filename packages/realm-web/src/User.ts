@@ -129,7 +129,7 @@ export class User<
     }
 
     /**
-     * @returns The id of the user in the MongoDB Realm database.
+     * @returns The automatically-generated internal id of the user in the MongoDB Realm database.
      */
     get id() {
         return this._id;

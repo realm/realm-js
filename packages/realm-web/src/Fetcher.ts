@@ -90,7 +90,7 @@ export type FetcherConfig = {
  * Injects access or refresh tokens for a current or specific user.
  * Refreshes access tokens if requests fails due to a 401 error.
  * Optionally parses response as JSON before returning it.
- * Fetches and exposes an apps location url.
+ * Fetches and exposes an app's location url.
  */
 export class Fetcher {
     /**
@@ -133,7 +133,7 @@ export class Fetcher {
     /**
      * Fetch a network resource as an authenticated user.
      *
-     * @param request The request to issue towards the server.
+     * @param request The request which should be sent to the server.
      * @param retries How many times was this request retried?
      * @returns The response from the server.
      */
@@ -148,7 +148,6 @@ export class Fetcher {
             ...rest
         } = request;
 
-        // Awaiting to intercept errors being thrown
         const response = await this.transport.fetch({
             ...rest,
             headers: {
@@ -157,35 +156,32 @@ export class Fetcher {
             },
         });
 
-        // Throw an error if response is not OK
-        if (!response.ok) {
-            if (
-                response.status === 401 &&
-                user &&
-                tokenType === "access" &&
-                retries === 0
-            ) {
-                // Refresh the access token
-                await user.refreshAccessToken();
-                // Retry
-                return this.fetch(request, retries + 1);
-            }
-
+        if (response.ok) {
+            return response;
+        } else if (
+            user &&
+            response.status === 401 &&
+            tokenType === "access" &&
+            retries === 0
+        ) {
+            // Refresh the access token
+            await user.refreshAccessToken();
+            // Retry, with the specific user, since the currentUser might have changed.
+            return this.fetch({ ...request, user }, retries + 1);
+        } else {
             // Throw an error with a message extracted from the body
             throw await MongoDBRealmError.fromRequestAndResponse(
                 request,
                 response,
             );
         }
-        // Return the raw response
-        return response;
     }
 
     /**
-     * Fetch and parse the result as extended JSON.
+     * Fetch a network resource as an authenticated user and parse the result as extended JSON.
      *
-     * @param request The request to issue towards the server.
-     * @returns A response from requesting with authentication.
+     * @param request The request which should be sent to the server.
+     * @returns The response from the server, parsed as extended JSON.
      */
     public async fetchJSON<
         RequestBody extends object = any,

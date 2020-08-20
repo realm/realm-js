@@ -41,7 +41,7 @@ export class MongoDBRealmError extends Error {
      */
     public readonly statusText: string;
     /**
-     * Any application-level error code.
+     * Any application-level error message.
      */
     public readonly error: string | undefined;
     /**
@@ -56,8 +56,8 @@ export class MongoDBRealmError extends Error {
     /**
      * Construct an error from a request and a response.
      *
-     * @param request The request.
-     * @param response The response.
+     * @param request The request sent to the server.
+     * @param response A raw response, as returned from the server.
      */
     public static async fromRequestAndResponse(
         request: Request<unknown>,
@@ -73,7 +73,7 @@ export class MongoDBRealmError extends Error {
             const errorCode = body.error_code;
             const link = body.link;
             return new MongoDBRealmError(
-                method as Method,
+                method,
                 url,
                 status,
                 statusText,
@@ -82,12 +82,7 @@ export class MongoDBRealmError extends Error {
                 link,
             );
         } else {
-            return new MongoDBRealmError(
-                method as Method,
-                url,
-                status,
-                statusText,
-            );
+            return new MongoDBRealmError(method, url, status, statusText);
         }
     }
 

@@ -60,7 +60,8 @@ export class MockNetworkTransport implements NetworkTransport {
         if (typeof body === "string") {
             request.body = JSON.parse(body);
         }
-        if (!request.body) {
+        // Delete any keys with a missing value, to make it easier to expect.deepEquals.
+        if (request.body === undefined) {
             delete request.body;
         }
         this.requests.push(request);
