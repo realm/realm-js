@@ -6,7 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Rare crash when a schema was updated ([realm/realm-cocoa#6680](https://github.com/realm/realm-cocoa/issues/6680))
 * Rare crash when updating Realm file from v9 to v10. ([realm/realm-core#3836](https://github.com/realm/realm-core/issues/3836))
-* Upgrading a table with only backlink columns could result in a crash.
+* Upgrading a table with only linkingObjects properties could result in a crash.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
