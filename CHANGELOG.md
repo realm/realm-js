@@ -1,3 +1,23 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Rare crash (EXC_BAD_ACCESS KERN_INVALID_ADDRESS in realm::Table::migrate_links) when a schema was updated ([realm/realm-cocoa#6680](https://github.com/realm/realm-cocoa/issues/6680))
+* Rare crash (Attempted to insert null into non-nullable column) when updating Realm file from v9 to v10. ([realm/realm-core#3836](https://github.com/realm/realm-core/issues/3836))
+* Upgrading a table with only linkingObjects properties could result in a crash.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* Realm Studio: 3.11 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
+* File format: Generates Realms with format v10 (reads and upgrades previous file format).
+
+### Internal
+* Upgraded Realm Core from v6.0.14 to v6.0.19.
+* Upgraded Realm Sync from v5.0.14 to v5.0.16.
+
 6.0.4 Release notes (2020-08-04)
 =============================================================
 ### Enhancements
