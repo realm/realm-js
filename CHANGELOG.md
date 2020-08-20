@@ -6,6 +6,8 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Rare crash when a schema was updated ([#6680](https://github.com/realm/realm-cocoa/issues/6680))
+* Rare crash when updating Realm file from v9 to v10. ([#3836](https://github.com/realm/realm-core/issues/3836))
+* Upgrading a table with only backlink columns could result in a crash.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -14,8 +16,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v6.0.14 to v6.0.18.
-* Upgraded Realm Sync from v5.0.14 to v5.0.15.
+* Upgraded Realm Core from v6.0.14 to v6.0.19.
+* Upgraded Realm Sync from v5.0.14 to v5.0.16.
 
 6.0.4 Release notes (2020-08-04)
 =============================================================
