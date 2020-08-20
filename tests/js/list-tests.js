@@ -1470,6 +1470,21 @@ module.exports = {
             addresses[0]["street"] = "Strandvejen";
         });
 
+        // insert an extra address into Ib's list (add embedded object)
+        let ibs_addrs = owners[0].addresses;
+        realm.write(() => {
+            ibs_addrs.push({ street: "Njalsgade", city: "Islands Brygge" });
+        });
+
+        streets = ["Algade", "Njalsgade", "Skolevej", "Strandvejen"];
+        for (let i = 0; i < streets.length; i++) {
+            TestCase.assertEqual(addresses[i]["street"], streets[i]);
+        }
+
+        // remove the last of Ib's addresses
+        realm.write(() => {
+            ibs_addrs.pop();
+        });
         streets = ["Algade", "Skolevej", "Strandvejen"];
         for (let i = 0; i < streets.length; i++) {
             TestCase.assertEqual(addresses[i]["street"], streets[i]);
