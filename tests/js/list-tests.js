@@ -1521,8 +1521,11 @@ module.exports = {
 
         realm.write(() => {
             TestCase.assertThrows(() => {
-                ib.addresses.push({ street: "Njalsgade", city: "Islands Brygge" });
+                realm.create(schemas.AddressSchema.name, { street: "Njalsgade", city: "Islands Brygge" });
             });
+
+            ib.addresses.push({ street: "Njalsgade", city: "Islands Brygge" });
+            TestCase.assertEqual(3, ib.addresses.length);
         });
 
         realm.close();
