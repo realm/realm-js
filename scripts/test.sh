@@ -219,7 +219,6 @@ setup_ios_simulator() {
   printf "Waiting for springboard to ensure device is ready..."
   xcrun simctl launch ${SIM_DEVICE_NAME} com.apple.springboard 1>/dev/null 2>/dev/null || true
   echo "  done"
-  xcrun simctl list
 }
 
 shutdown_ios_simulator() {

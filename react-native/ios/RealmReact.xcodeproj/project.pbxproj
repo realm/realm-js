@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5F1AAC93F04AC9E8BE7D14C8 /* libPods-RealmReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D7B24CBFE7BE8A12644DF9D2 /* libPods-RealmReact.a */; };
 		85CA5FE61F1536720038172D /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F606902F1CA277CD0003FB26 /* libRealmJS.a */; };
 		F60690171CA2766F0003FB26 /* RealmReact.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = F60690161CA2766F0003FB26 /* RealmReact.h */; };
 		F60690191CA2766F0003FB26 /* RealmReact.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690181CA2766F0003FB26 /* RealmReact.mm */; };
@@ -68,9 +67,6 @@
 
 /* Begin PBXFileReference section */
 		3F8D968A220CE21400327C8C /* RealmReact.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = RealmReact.xcconfig; sourceTree = "<group>"; };
-		58168A50715950016E946BDC /* Pods-RealmReact.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RealmReact.debug.xcconfig"; path = "Target Support Files/Pods-RealmReact/Pods-RealmReact.debug.xcconfig"; sourceTree = "<group>"; };
-		8E22767C3537335E08B6F4B7 /* Pods-RealmReact.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RealmReact.release.xcconfig"; path = "Target Support Files/Pods-RealmReact/Pods-RealmReact.release.xcconfig"; sourceTree = "<group>"; };
-		D7B24CBFE7BE8A12644DF9D2 /* libPods-RealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RealmReact.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60690131CA2766F0003FB26 /* libRealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60690161CA2766F0003FB26 /* RealmReact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RealmReact.h; sourceTree = "<group>"; };
 		F60690181CA2766F0003FB26 /* RealmReact.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmReact.mm; sourceTree = "<group>"; };
@@ -85,7 +81,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				85CA5FE61F1536720038172D /* libRealmJS.a in Frameworks */,
-				5F1AAC93F04AC9E8BE7D14C8 /* libPods-RealmReact.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,8 +93,6 @@
 				F60690221CA277BE0003FB26 /* Libraries */,
 				F60690151CA2766F0003FB26 /* RealmReact */,
 				F60690141CA2766F0003FB26 /* Products */,
-				1DF0F2F45FC0C4D870C2DBA7 /* Pods */,
-				2C99C41E2321448ED2F4A8A9 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -160,7 +153,6 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 			);
 			mainGroup = F606900A1CA2766F0003FB26;
@@ -374,7 +366,6 @@
 		};
 		F606901D1CA2766F0003FB26 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 58168A50715950016E946BDC /* Pods-RealmReact.debug.xcconfig */;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -397,7 +388,6 @@
 		};
 		F606901E1CA2766F0003FB26 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8E22767C3537335E08B6F4B7 /* Pods-RealmReact.release.xcconfig */;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
