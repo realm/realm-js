@@ -207,17 +207,19 @@ setup_ios_simulator() {
   delete_ios_simulator >/dev/null 2>&1
 
   #parse devices
-  IOS_RUNTIME=$(xcrun simctl list runtimes | grep -v unavailable | grep -m1 -o 'com.apple.CoreSimulator.SimRuntime.iOS.*' | sed 's/[()]//g')
+  IOS_RUNTIME=$(xcrun simctl list runtimes | grep -v unavailable | grep -o 'com.apple.CoreSimulator.SimRuntime.iOS.*' | sort | tail -1 | sed 's/[()]//g')
   echo using iOS Runtime ${IOS_RUNTIME} to create new simulator ${SIM_DEVICE_NAME}
 
   #create new test simulator
   IOS_SIM_DEVICE_ID=$(xcrun simctl create ${SIM_DEVICE_NAME} com.apple.CoreSimulator.SimDeviceType.iPhone-SE ${IOS_RUNTIME})
   #boot new test simulator
+  echo "Booting ${SIM_DEVICE_NAME}"
   xcrun simctl boot ${SIM_DEVICE_NAME}
 
   printf "Waiting for springboard to ensure device is ready..."
   xcrun simctl launch ${SIM_DEVICE_NAME} com.apple.springboard 1>/dev/null 2>/dev/null || true
   echo "  done"
+  xcrun simctl list
 }
 
 shutdown_ios_simulator() {

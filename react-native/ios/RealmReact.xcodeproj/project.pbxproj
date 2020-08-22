@@ -92,24 +92,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1DF0F2F45FC0C4D870C2DBA7 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				58168A50715950016E946BDC /* Pods-RealmReact.debug.xcconfig */,
-				8E22767C3537335E08B6F4B7 /* Pods-RealmReact.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		2C99C41E2321448ED2F4A8A9 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				D7B24CBFE7BE8A12644DF9D2 /* libPods-RealmReact.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		F606900A1CA2766F0003FB26 = {
 			isa = PBXGroup;
 			children = (
@@ -160,29 +142,6 @@
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
-
-/* Begin PBXNativeTarget section */
-		F60690121CA2766F0003FB26 /* RealmReact */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F606901C1CA2766F0003FB26 /* Build configuration list for PBXNativeTarget "RealmReact" */;
-			buildPhases = (
-				9217260C310374596E34AE2F /* [CP] Check Pods Manifest.lock */,
-				F606900F1CA2766F0003FB26 /* Sources */,
-				F60690111CA2766F0003FB26 /* Copy Headers */,
-				85CA5FE41F1536660038172D /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				F606903B1CA278F10003FB26 /* PBXTargetDependency */,
-				F60690391CA278E10003FB26 /* PBXTargetDependency */,
-			);
-			name = RealmReact;
-			productName = RealmReact;
-			productReference = F60690131CA2766F0003FB26 /* libRealmReact.a */;
-			productType = "com.apple.product-type.library.static";
-		};
-/* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		F606900B1CA2766F0003FB26 /* Project object */ = {
@@ -344,7 +303,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
@@ -400,7 +359,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
