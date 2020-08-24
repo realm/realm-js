@@ -73,12 +73,11 @@ export class MockNetworkTransport implements NetworkTransport {
                     status: response.statusCode,
                     statusText: response.statusText,
                     url: response.url,
-                    json: () =>
-                        Promise.resolve({
-                            error: response.error,
-                            errorCode: response.errorCode,
-                            link: response.link,
-                        }),
+                    json: async () => ({
+                        error: response.error,
+                        errorCode: response.errorCode,
+                        link: response.link,
+                    }),
                     headers: {
                         get(name: string) {
                             if (name.toLowerCase() === "content-type") {
