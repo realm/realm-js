@@ -1240,8 +1240,8 @@
 					"$(SRCROOT)/../vendor/core/include/**",
 				);
 				"HEADER_SEARCH_PATHS[arch=*]" = (
-					"$(SRCROOT)/object-store/external/json",
-					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/object-store/external/json/**",
+					"$(SRCROOT)/object-store/src/**",
 					"$(SRCROOT)/../vendor/**",
 					"$(SRCROOT)/../vendor/realm-ios/include/**",
 					"$(SRCROOT)/../vendor/realm-ios/include/realm/**",
@@ -1256,6 +1256,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/external/json/**",
 					"$(SRCROOT)/object-store/src/**",
 					"$(SRCROOT)/../vendor/**",
 					"$(SRCROOT)/../vendor/core/include/**",
