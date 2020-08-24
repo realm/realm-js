@@ -223,9 +223,11 @@ export class OAuth2Helper {
             stateStorage.addListener(handleStorageUpdate);
             // Open up a window
             redirectWindow = this.openWindow(url);
-            // No using a const, because we need the two listeners to reference each other when removing the other.
+            // Not using a const, because we need the two listeners to reference each other when removing the other.
             windowClosedInterval = setInterval(() => {
-                if (redirectWindow && redirectWindow.closed) {
+                // Polling "closed" because registering listeners on the window violates cross-origin policies
+                if (!redirectWindow || redirectWindow.closed) {
+                    // Stop polling the window state
                     clearInterval(windowClosedInterval);
                     // Stop listening for changes to the storage
                     stateStorage.removeListener(handleStorageUpdate);
