@@ -12,5 +12,6 @@
     "include": [
         "../../types/environment.d.ts",
         "./**/*.ts"
-    ]
+    ],
+    "exclude": []
 }
