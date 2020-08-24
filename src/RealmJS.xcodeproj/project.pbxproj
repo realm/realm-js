@@ -56,6 +56,7 @@
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
 		832C1D2F229D3035001A20C1 /* async_open_task.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 832C1D2E229D3035001A20C1 /* async_open_task.cpp */; };
 		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
+		A4DD71E524F3D1CA00B77603 /* scheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F50A4462447C09D003A6F4C /* scheduler.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
@@ -903,6 +904,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A4DD71E524F3D1CA00B77603 /* scheduler.cpp in Sources */,
 				42D9B5F52465185C00AB3349 /* app_credentials.cpp in Sources */,
 				42D9B5F72465185C00AB3349 /* app.cpp in Sources */,
 				42D9B5F82465185D00AB3349 /* generic_network_transport.cpp in Sources */,
@@ -1175,9 +1177,16 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/object-store/external/json",
 					"$(SRCROOT)/object-store/src",
-					"$(SRCROOT)/../vendor",
-					"$(SRCROOT)/../vendor/realm-ios/include",
-					"$(SRCROOT)/../vendor/realm-ios/include/realm",
+					"$(SRCROOT)/../vendor/**",
+					"$(SRCROOT)/../vendor/realm-ios/include/**",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm/**",
+				);
+				"HEADER_SEARCH_PATHS[arch=*]" = (
+					"$(SRCROOT)/object-store/external/json/**",
+					"$(SRCROOT)/object-store/src/**",
+					"$(SRCROOT)/../vendor/**",
+					"$(SRCROOT)/../vendor/realm-ios/include/**",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm/**",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(inherited)",
@@ -1204,9 +1213,9 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/object-store/external/json",
 					"$(SRCROOT)/object-store/src",
-					"$(SRCROOT)/../vendor",
-					"$(SRCROOT)/../vendor/realm-ios/include",
-					"$(SRCROOT)/../vendor/realm-ios/include/realm",
+					"$(SRCROOT)/../vendor/**",
+					"$(SRCROOT)/../vendor/realm-ios/include/**",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm/**",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(inherited)",
@@ -1226,9 +1235,16 @@
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/src/**",
+					"$(SRCROOT)/../vendor/**",
+					"$(SRCROOT)/../vendor/core/include/**",
+				);
+				"HEADER_SEARCH_PATHS[arch=*]" = (
+					"$(SRCROOT)/object-store/external/json",
 					"$(SRCROOT)/object-store/src",
-					"$(SRCROOT)/../vendor",
-					"$(SRCROOT)/../vendor/core/include",
+					"$(SRCROOT)/../vendor/**",
+					"$(SRCROOT)/../vendor/realm-ios/include/**",
+					"$(SRCROOT)/../vendor/realm-ios/include/realm/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1240,9 +1256,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/object-store/src",
-					"$(SRCROOT)/../vendor",
-					"$(SRCROOT)/../vendor/core/include",
+					"$(SRCROOT)/object-store/src/**",
+					"$(SRCROOT)/../vendor/**",
+					"$(SRCROOT)/../vendor/core/include/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
