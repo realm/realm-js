@@ -69,7 +69,9 @@ describe("MongoDB Remote service", () => {
                         {
                             database: "my-database",
                             collection: "my-collection",
-                            limit: 10,
+                            limit: {
+                                $numberInt: "10",
+                            },
                             query: {
                                 _id: { $oid: "deadbeefdeadbeefdeadbeef" },
                             },
@@ -125,8 +127,8 @@ describe("MongoDB Remote service", () => {
                         {
                             database: "my-database",
                             collection: "my-collection",
-                            sort: { name: 1 },
-                            project: { name: 1 },
+                            sort: { name: { $numberInt: "1" } },
+                            project: { name: { $numberInt: "1" } },
                             query: {
                                 _id: { $oid: "deadbeefdeadbeefdeadbeef" },
                             },
@@ -248,7 +250,7 @@ describe("MongoDB Remote service", () => {
                         {
                             database: "my-database",
                             collection: "my-collection",
-                            limit: 9999,
+                            limit: { $numberInt: "9999" },
                             query: {},
                         },
                     ],
