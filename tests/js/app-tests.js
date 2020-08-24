@@ -17,7 +17,6 @@ const AppConfig = require('./support/testConfig')
 const Utils = require('./test-utils');
 
 const tmp = require('tmp');
-const fs = require('fs');
 const execFile = require('child_process').execFile;
 tmp.setGracefulCleanup();
 const path = require("path");
