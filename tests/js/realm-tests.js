@@ -448,6 +448,10 @@ module.exports = {
     },
 
     testRealmExists: function() {
+        //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+        if (!isNodeProcess) {
+            return Promise.resolve();
+        }
 
         // Local Realms
         let config = {schema: [schemas.TestObject]};
@@ -457,7 +461,7 @@ module.exports = {
 
         // Sync Realms
         if (!global.enableSyncTests) {
-            return;
+            return Promise.resolve();
         }
 
         const appConfig = require('./support/testConfig').integrationAppConfig;
@@ -1579,7 +1583,12 @@ module.exports = {
 
     testRealmDeleteFileSyncConfig: function() {
         if (!global.enableSyncTests) {
-            return;
+            return Promise.resolve();
+        }
+
+        //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+        if (!isNodeProcess) {
+            return Promise.resolve();
         }
 
         const appConfig = require('./support/testConfig').integrationAppConfig;

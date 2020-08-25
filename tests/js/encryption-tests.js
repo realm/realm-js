@@ -74,6 +74,11 @@ module.exports = {
     },
 
     testEncryptionWithSync: function() {
+        //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+        if (!isNodeProcess) {
+            return Promise.resolve();;
+        }
+
         if (!global.enableSyncTests) {
             return Promise.resolve();
         }
