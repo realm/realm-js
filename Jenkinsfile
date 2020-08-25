@@ -305,6 +305,7 @@ def buildCommon(nodeVersion, platform, extraFlags='') {
     sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
   }
   dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+      archiveArtifacts("realm-*")
     stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
   }
 }
