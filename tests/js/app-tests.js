@@ -4,11 +4,6 @@
 
 const require_method = require;
 
-// Prevent React Native packager from seeing modules required with this
-function node_require(module) {
-    return require_method(module);
-}
-
 const { ObjectId } = require("bson");
 
 const Realm = require('realm');

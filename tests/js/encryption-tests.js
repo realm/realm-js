@@ -25,6 +25,7 @@ var Schemas = require('./schemas');
 const { ObjectId } = require("bson");
 
 // Prevent React Native packager from seeing modules required with this
+const require_method = require;
 function nodeRequire(module) {
     return require_method(module);
 }
