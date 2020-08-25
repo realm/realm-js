@@ -20,6 +20,9 @@
 
 // If the docker instance has imported this stitch config, it will have written the app id
 // back into the config file, so we can read it out again here.
+
+// Prevent React Native packager from seeing modules required with this
+const require_method = require;
 function nodeRequire(module) {
     return require_method(module);
 }
