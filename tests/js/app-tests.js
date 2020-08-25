@@ -16,34 +16,6 @@ const TestCase = require('./asserts');
 const AppConfig = require('./support/testConfig')
 const Utils = require('./test-utils');
 
-const tmp = require('tmp');
-const execFile = require('child_process').execFile;
-tmp.setGracefulCleanup();
-const path = require("path");
-
-function runOutOfProcess() {
-    const args = Array.prototype.slice.call(arguments);
-    let tmpDir = tmp.dirSync();
-    console.log(`runOutOfProcess : ${args.join(' ')}`);
-    return new Promise((resolve, reject) => {
-        try {
-            execFile(process.execPath, args, { cwd: tmpDir.name }, (error, stdout, stderr) => {
-                if (error) {
-                    console.error("runOutOfProcess failed\n", error, stdout, stderr);
-                    reject(new Error(`Running ${args[0]} failed. error: ${error}`));
-                    return;
-                }
-
-                console.log('runOutOfProcess success\n' + stdout);
-                resolve();
-            });
-        }
-        catch (e) {
-            reject(e);
-        }
-    });
-}
-
 const config = AppConfig.integrationAppConfig;
 
 module.exports = {
