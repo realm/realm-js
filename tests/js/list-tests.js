@@ -1493,6 +1493,55 @@ module.exports = {
         realm.close();
     },
 
+    testCreateNestedEmbeddedObjects: function() {
+        const realm = new Realm({schema: [schemas.ScoutDivisionSchema, schemas.ScoutGroupSchema, schemas.ScoutBranchSchema]});
+
+        realm.write(() => {
+            realm.create(schemas.ScoutDivisionSchema.name, {
+                name: "Oeresund Division", 
+                groups: [
+                    {
+                        name: "RungstedSpejderne",
+                        branches: [ { name: "Micro" }, { name: "Mini" }, { name: "Junior" }, {name: "Trop" } ]
+                    },
+                    {
+                        name: "Bent Byg",
+                        branches: [ { name: "Mini" }, { name: "Junior" }, { name: "Trop" }, { name: "Klan" } ]
+                    }
+                ]
+            });
+            realm.create(schemas.ScoutDivisionSchema.name, {
+                name: "Bernstorff Division",
+                groups: [
+                    {
+                        name: 'HellerupSpejderne',
+                        branches: [ { name: 'Mini' }, { name: 'Flok' }, { name: 'Klan' } ]
+                    }
+                ]
+            });
+        });
+
+        let divisions = realm.objects(schemas.ScoutDivisionSchema.name).sorted("name");
+        let groups = realm.objects(schemas.ScoutGroupSchema.name).sorted("name");
+        TestCase.assertEqual(divisions.length, 2);
+        TestCase.assertEqual(groups.length, 3);
+
+        let bernstorff_groups = divisions[0].groups;
+        TestCase.assertEqual(bernstorff_groups.length, 1);
+
+        // add a Group to Bernstorff Division
+        realm.write(() => {
+            bernstorff_groups.push({
+                name: "1. Ordrup",
+                branches: [ { name: 'FamilieSpejd' }, { name: 'Mikro' }, { name: 'Ulve' }, { name: 'Hvalpe' }, { name: 'Trop' }, { name: 'Klan' } ]
+            });
+        });
+
+        // check that we have successfully added a Group
+        TestCase.assertEqual(groups.length, 4);
+        realm.close();
+    },
+
     testCreateFreeFloatingEmbeddedObject: function() {
         const realm = new Realm({schema: [schemas.HouseOwnerSchema, schemas.AddressSchema]});
 
