@@ -464,7 +464,7 @@ module.exports = {
             return Promise.resolve();
         }
 
-        const appConfig = require('./support/testConfig').integrationAppConfig;
+        const appConfig = nodeRequire('./support/testConfig').integrationAppConfig;
 
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
@@ -1591,7 +1591,7 @@ module.exports = {
             return Promise.resolve();
         }
 
-        const appConfig = require('./support/testConfig').integrationAppConfig;
+        const appConfig = nodeRequire('./support/testConfig').integrationAppConfig;
 
         let app = new Realm.App(appConfig);
         return app.logIn(Realm.Credentials.anonymous())
