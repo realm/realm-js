@@ -168,10 +168,10 @@ export class FunctionsFactory {
         if (this.serviceName) {
             body.service = this.serviceName;
         }
-        const appUrl = await this.fetcher.getAppUrl();
+        const appPath = this.fetcher.getAppPath();
         return this.fetcher.fetchJSON({
             method: "POST",
-            url: appUrl.functionsCall().url,
+            path: appPath.functionsCall().path,
             body,
         });
     }

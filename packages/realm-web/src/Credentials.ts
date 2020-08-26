@@ -16,15 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type AnonymousPayload = Realm.Credentials.AnonymousPayload;
-export type ApiKeyPayload = Realm.Credentials.ApiKeyPayload;
-export type EmailPasswordPayload = Realm.Credentials.EmailPasswordPayload;
-export type OAuth2RedirectPayload = Realm.Credentials.OAuth2RedirectPayload;
-export type GooglePayload = Realm.Credentials.GooglePayload;
-export type FacebookPayload = Realm.Credentials.FacebookPayload;
-export type FunctionPayload = Realm.Credentials.FunctionPayload;
-export type JWTPayload = Realm.Credentials.JWTPayload;
-export type ApplePayload = Realm.Credentials.ApplePayload;
+type AnonymousPayload = Realm.Credentials.AnonymousPayload;
+type ApiKeyPayload = Realm.Credentials.ApiKeyPayload;
+type EmailPasswordPayload = Realm.Credentials.EmailPasswordPayload;
+type OAuth2RedirectPayload = Realm.Credentials.OAuth2RedirectPayload;
+type GooglePayload = Realm.Credentials.GooglePayload;
+type FacebookPayload = Realm.Credentials.FacebookPayload;
+type FunctionPayload = Realm.Credentials.FunctionPayload;
+type JWTPayload = Realm.Credentials.JWTPayload;
+type ApplePayload = Realm.Credentials.ApplePayload;
 
 // TODO: Ensure the static interface of the Credentials class implements the static interface of Realm.Credentials
 // See https://stackoverflow.com/a/43484801

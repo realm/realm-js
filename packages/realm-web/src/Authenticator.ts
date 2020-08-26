@@ -19,7 +19,6 @@
 import { Fetcher } from "./Fetcher";
 import { Storage } from "./storage";
 import { OAuth2Helper } from "./OAuth2Helper";
-import { Credentials } from "./Credentials";
 
 /**
  * The response from an authentication request.
@@ -53,7 +52,9 @@ export class Authenticator {
     constructor(fetcher: Fetcher, storage: Storage) {
         this.fetcher = fetcher;
         this.oauth2 = new OAuth2Helper(storage, () =>
-            fetcher.getAppUrl().then(({ url }) => url),
+            fetcher
+                .getLocationUrl()
+                .then(url => url + this.fetcher.getAppPath().path),
         );
     }
 
@@ -78,10 +79,11 @@ export class Authenticator {
             return OAuth2Helper.decodeAuthInfo(result.userAuth);
         } else {
             // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
-            const appUrl = await this.fetcher.getAppUrl();
+            const appPath = this.fetcher.getAppPath();
             const response = await this.fetcher.fetchJSON<object, any>({
                 method: "POST",
-                url: appUrl.authProvider(credentials.providerName).login().url,
+                path: appPath.authProvider(credentials.providerName).login()
+                    .path,
                 body: credentials.payload,
                 tokenType: "none",
             });

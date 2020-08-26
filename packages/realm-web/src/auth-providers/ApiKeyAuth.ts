@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { Fetcher } from "../Fetcher";
+import routes from "../routes";
 
 /** @inheritdoc */
 export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
@@ -36,62 +37,56 @@ export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
     }
 
     /** @inheritdoc */
-    async create(name: string): Promise<Realm.Auth.ApiKey> {
-        const locationUrl = await this.fetcher.getLocationUrl();
+    create(name: string): Promise<Realm.Auth.ApiKey> {
         return this.fetcher.fetchJSON({
             method: "POST",
             body: { name },
-            url: locationUrl.auth().apiKeys().url,
+            path: routes.api().auth().apiKeys().path,
             tokenType: "refresh",
         });
     }
 
     /** @inheritdoc */
-    async fetch(keyId: string): Promise<Realm.Auth.ApiKey> {
-        const locationUrl = await this.fetcher.getLocationUrl();
+    fetch(keyId: string): Promise<Realm.Auth.ApiKey> {
         return this.fetcher.fetchJSON({
             method: "GET",
-            url: locationUrl.auth().apiKeys().key(keyId).url,
+            path: routes.api().auth().apiKeys().key(keyId).path,
             tokenType: "refresh",
         });
     }
 
     /** @inheritdoc */
-    async fetchAll(): Promise<Realm.Auth.ApiKey[]> {
-        const locationUrl = await this.fetcher.getLocationUrl();
+    fetchAll(): Promise<Realm.Auth.ApiKey[]> {
         return this.fetcher.fetchJSON({
             method: "GET",
             tokenType: "refresh",
-            url: locationUrl.auth().apiKeys().url,
+            path: routes.api().auth().apiKeys().path,
         });
     }
 
     /** @inheritdoc */
     async delete(keyId: string): Promise<void> {
-        const locationUrl = await this.fetcher.getLocationUrl();
         await this.fetcher.fetchJSON({
             method: "DELETE",
-            url: locationUrl.auth().apiKeys().key(keyId).url,
+            path: routes.api().auth().apiKeys().key(keyId).path,
             tokenType: "refresh",
         });
     }
 
     /** @inheritdoc */
     async enable(keyId: string): Promise<void> {
-        const locationUrl = await this.fetcher.getLocationUrl();
         await this.fetcher.fetchJSON({
             method: "PUT",
-            url: locationUrl.auth().apiKeys().key(keyId).enable().url,
+            path: routes.api().auth().apiKeys().key(keyId).enable().path,
             tokenType: "refresh",
         });
     }
 
     /** @inheritdoc */
     async disable(keyId: string): Promise<void> {
-        const locationUrl = await this.fetcher.getLocationUrl();
         await this.fetcher.fetchJSON({
             method: "PUT",
-            url: locationUrl.auth().apiKeys().key(keyId).disable().url,
+            path: routes.api().auth().apiKeys().key(keyId).disable().path,
             tokenType: "refresh",
         });
     }

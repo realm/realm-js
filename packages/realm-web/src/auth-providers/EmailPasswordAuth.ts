@@ -36,30 +36,31 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
 
     /** @inheritdoc */
     async registerUser(email: string, password: string): Promise<void> {
-        const appUrl = await this.fetcher.getAppUrl();
+        const appPath = this.fetcher.getAppPath();
         await this.fetcher.fetchJSON({
             method: "POST",
-            url: appUrl.emailPasswordAuth(this.providerName).register().url,
+            path: appPath.emailPasswordAuth(this.providerName).register().path,
             body: { email, password },
         });
     }
 
     /** @inheritdoc */
     async confirmUser(token: string, tokenId: string): Promise<void> {
-        const appUrl = await this.fetcher.getAppUrl();
+        const appPath = this.fetcher.getAppPath();
         await this.fetcher.fetchJSON({
             method: "POST",
-            url: appUrl.emailPasswordAuth(this.providerName).confirm().url,
+            path: appPath.emailPasswordAuth(this.providerName).confirm().path,
             body: { token, tokenId },
         });
     }
 
     /** @inheritdoc */
     async resendConfirmationEmail(email: string): Promise<void> {
-        const appUrl = await this.fetcher.getAppUrl();
+        const appPath = this.fetcher.getAppPath();
         await this.fetcher.fetchJSON({
             method: "POST",
-            url: appUrl.emailPasswordAuth(this.providerName).confirmSend().url,
+            path: appPath.emailPasswordAuth(this.providerName).confirmSend()
+                .path,
             body: { email },
         });
     }
@@ -70,20 +71,20 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
         tokenId: string,
         password: string,
     ): Promise<void> {
-        const appUrl = await this.fetcher.getAppUrl();
+        const appPath = this.fetcher.getAppPath();
         await this.fetcher.fetchJSON({
             method: "POST",
-            url: appUrl.emailPasswordAuth(this.providerName).reset().url,
+            url: appPath.emailPasswordAuth(this.providerName).reset().path,
             body: { token, tokenId, password },
         });
     }
 
     /** @inheritdoc */
     async sendResetPasswordEmail(email: string): Promise<void> {
-        const appUrl = await this.fetcher.getAppUrl();
+        const appPath = this.fetcher.getAppPath();
         await this.fetcher.fetchJSON({
             method: "POST",
-            url: appUrl.emailPasswordAuth(this.providerName).resetSend().url,
+            url: appPath.emailPasswordAuth(this.providerName).resetSend().path,
             body: { email },
         });
     }
@@ -94,10 +95,10 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
         password: string,
         ...args: any[]
     ): Promise<void> {
-        const appUrl = await this.fetcher.getAppUrl();
+        const appPath = this.fetcher.getAppPath();
         await this.fetcher.fetchJSON({
             method: "POST",
-            url: appUrl.emailPasswordAuth(this.providerName).resetCall().url,
+            url: appPath.emailPasswordAuth(this.providerName).resetCall().path,
             body: { email, password, arguments: args },
         });
     }

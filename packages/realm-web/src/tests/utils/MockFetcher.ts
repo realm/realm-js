@@ -18,7 +18,6 @@
 
 import { Fetcher, AuthenticatedRequest, UserContext } from "../../Fetcher";
 import { User } from "../../User";
-import urls from "../../urls";
 
 import { MockNetworkTransport } from "./MockNetworkTransport";
 
@@ -33,7 +32,7 @@ export class MockFetcher extends Fetcher {
      * Construct a mocked network transport which returns pre-recorded requests.
      *
      * @param responses An array of pre-recorded requests.
-     * @param userContext
+     * @param userContext An object defining the current user.
      */
     constructor(
         responses: object[] = [],
@@ -64,7 +63,7 @@ export class MockFetcher extends Fetcher {
     /**
      * @returns A promise of the app URL, with the app location resolved.
      */
-    public getLocationUrl() {
-        return Promise.resolve(urls.api(this.baseUrl));
+    public async getLocationUrl() {
+        return this.baseUrl;
     }
 }

@@ -16,10 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+type OAuth2RedirectPayload = Realm.Credentials.OAuth2RedirectPayload;
+
 const LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
 import { Storage } from "./storage";
-import { Credentials, OAuth2RedirectPayload } from "./Credentials";
+import { Credentials } from "./Credentials";
 import {
     generateRandomString,
     encodeQueryString,

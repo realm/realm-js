@@ -26,6 +26,7 @@ import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
 import { Credentials } from "./Credentials";
 import { ApiKeyAuth } from "./auth-providers";
+import routes from "./routes";
 
 interface UserParameters {
     app: App<any>;
@@ -203,10 +204,9 @@ export class User<
      */
     public async refreshProfile() {
         // Fetch the latest profile
-        const locationUrl = await this.fetcher.getLocationUrl();
         const response = await this.fetcher.fetchJSON({
             method: "GET",
-            url: locationUrl.auth().profile().url,
+            path: routes.api().auth().profile().path,
         });
         // Create a profile instance
         this._profile = new UserProfile(response);
@@ -220,10 +220,9 @@ export class User<
     public async logOut() {
         // Invalidate the refresh token
         if (this._refreshToken !== null) {
-            const locationUrl = await this.fetcher.getLocationUrl();
             await this.fetcher.fetchJSON({
                 method: "DELETE",
-                url: locationUrl.auth().session().url,
+                path: routes.api().auth().session().path,
                 tokenType: "refresh",
             });
         }
@@ -241,10 +240,9 @@ export class User<
      * Request a new access token, using the refresh token.
      */
     public async refreshAccessToken() {
-        const locationUrl = await this.fetcher.getLocationUrl();
         const response = await this.fetcher.fetchJSON({
             method: "POST",
-            url: locationUrl.auth().session().url,
+            path: routes.api().auth().session().path,
             tokenType: "refresh",
         });
         const { access_token: accessToken } = response;

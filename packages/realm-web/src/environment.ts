@@ -19,6 +19,7 @@
 import { Storage } from "./storage";
 import { Window } from "./OAuth2Helper";
 
+/** An object with values specific to the runtime environment. */
 export type Environment = {
     /**
      * The default storage instance on the environment.

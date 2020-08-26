@@ -17,25 +17,24 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /**
- * @param baseUrl The base URL of the server.
- * @returns The base url concatinated with the base route.
+ * @returns The base api route.
  */
-function api(baseUrl: string) {
+function api() {
     return {
-        url: baseUrl + "/api/client/v2.0",
+        path: "/api/client/v2.0",
         /**
          * @param appId The id of the app.
          * @returns The URL of the app endpoint.
          */
         app(appId: string) {
             return {
-                url: this.url + `/app/${appId}`,
+                path: this.path + `/app/${appId}`,
                 /**
                  * @returns The URL of the app location endpoint.
                  */
                 location() {
                     return {
-                        url: this.url + "/location",
+                        path: this.path + "/location",
                     };
                 },
                 /**
@@ -44,12 +43,12 @@ function api(baseUrl: string) {
                  */
                 authProvider(providerName: string) {
                     return {
-                        url: this.url + `/auth/providers/${providerName}`,
+                        path: this.path + `/auth/providers/${providerName}`,
                         /**
                          * @returns Get the URL of an authentication provider.
                          */
                         login() {
-                            return { url: this.url + "/login" };
+                            return { path: this.path + "/login" };
                         },
                     };
                 },
@@ -62,56 +61,56 @@ function api(baseUrl: string) {
                     return {
                         ...authProviderRoutes,
                         register() {
-                            return { url: this.url + "/register" };
+                            return { path: this.path + "/register" };
                         },
                         confirm() {
-                            return { url: this.url + "/confirm" };
+                            return { path: this.path + "/confirm" };
                         },
                         confirmSend() {
-                            return { url: this.url + "/confirm/send" };
+                            return { path: this.path + "/confirm/send" };
                         },
                         reset() {
-                            return { url: this.url + "/reset" };
+                            return { path: this.path + "/reset" };
                         },
                         resetSend() {
-                            return { url: this.url + "/reset/send" };
+                            return { path: this.path + "/reset/send" };
                         },
                         resetCall() {
-                            return { url: this.url + "/reset/call" };
+                            return { path: this.path + "/reset/call" };
                         },
                     };
                 },
                 functionsCall() {
                     return {
-                        url: this.url + "/functions/call",
+                        path: this.path + "/functions/call",
                     };
                 },
             };
         },
         auth() {
             return {
-                url: this.url + "/auth",
+                path: this.path + "/auth",
                 apiKeys() {
                     return {
-                        url: this.url + "/api_keys",
+                        path: this.path + "/api_keys",
                         key(id: string) {
                             return {
-                                url: this.url + `/${id}`,
+                                path: this.path + `/${id}`,
                                 enable() {
-                                    return { url: this.url + "/enable" };
+                                    return { path: this.path + "/enable" };
                                 },
                                 disable() {
-                                    return { url: this.url + "/disable" };
+                                    return { path: this.path + "/disable" };
                                 },
                             };
                         },
                     };
                 },
                 profile() {
-                    return { url: this.url + "/profile" };
+                    return { path: this.path + "/profile" };
                 },
                 session() {
-                    return { url: this.url + "/session" };
+                    return { path: this.path + "/session" };
                 },
             };
         },

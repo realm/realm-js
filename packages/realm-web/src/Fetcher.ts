@@ -26,7 +26,7 @@ import {
 import { MongoDBRealmError } from "./MongoDBRealmError";
 
 import { User } from "./User";
-import urls from "./urls";
+import routes from "./routes";
 import { AppLocation } from "./AppLocation";
 import { deserialize, serialize } from "./utils/ejson";
 
@@ -42,6 +42,11 @@ export type UserContext = {
 
 type TokenType = "access" | "refresh" | "none";
 
+type RequestByPath<RequestBody> = Omit<Request<RequestBody>, "url"> & {
+    /** Construct a URL from the location URL prepended is path */
+    path?: string;
+};
+
 /**
  * A request which will send the access or refresh token of the current user.
  */
@@ -56,7 +61,7 @@ export type AuthenticatedRequest<RequestBody> = {
      * The user issuing the request.
      */
     user?: User;
-} & Request<RequestBody>;
+} & (Request<RequestBody> | RequestByPath<RequestBody>);
 
 /**
  *
@@ -141,39 +146,50 @@ export class Fetcher {
         request: AuthenticatedRequest<RequestBody>,
         retries = 0,
     ): Promise<FetchResponse> {
-        const {
-            tokenType = "access",
-            user = this.userContext.currentUser,
-            headers,
-            ...rest
-        } = request;
-
-        const response = await this.transport.fetch({
-            ...rest,
-            headers: {
-                ...this.buildAuthorizationHeader(user, tokenType),
-                ...headers,
-            },
-        });
-
-        if (response.ok) {
-            return response;
-        } else if (
-            user &&
-            response.status === 401 &&
-            tokenType === "access" &&
-            retries === 0
-        ) {
-            // Refresh the access token
-            await user.refreshAccessToken();
-            // Retry, with the specific user, since the currentUser might have changed.
-            return this.fetch({ ...request, user }, retries + 1);
+        const { path, url, ...restOfRequest } = request as Request<
+            RequestBody
+        > &
+            RequestByPath<RequestBody>;
+        if (path && url) {
+            throw new Error("Use of 'url' and 'path' mutually exclusive");
+        } else if (path) {
+            const url = (await this.getLocationUrl()) + path;
+            return this.fetch({ ...restOfRequest, url });
         } else {
-            // Throw an error with a message extracted from the body
-            throw await MongoDBRealmError.fromRequestAndResponse(
-                request,
-                response,
-            );
+            const {
+                tokenType = "access",
+                user = this.userContext.currentUser,
+                ...restOfRequest
+            } = request;
+
+            const response = await this.transport.fetch({
+                url,
+                ...restOfRequest,
+                headers: {
+                    ...this.buildAuthorizationHeader(user, tokenType),
+                    ...request.headers,
+                },
+            });
+
+            if (response.ok) {
+                return response;
+            } else if (
+                user &&
+                response.status === 401 &&
+                tokenType === "access" &&
+                retries === 0
+            ) {
+                // Refresh the access token
+                await user.refreshAccessToken();
+                // Retry, with the specific user, since the currentUser might have changed.
+                return this.fetch({ ...request, user }, retries + 1);
+            } else {
+                // Throw an error with a message extracted from the body
+                throw await MongoDBRealmError.fromRequestAndResponse(
+                    request as Request<RequestBody>,
+                    response,
+                );
+            }
         }
     }
 
@@ -187,17 +203,17 @@ export class Fetcher {
         RequestBody extends object = any,
         ResponseBody extends object = any
     >(request: AuthenticatedRequest<RequestBody>): Promise<ResponseBody> {
-        const { headers, body, ...rest } = request;
+        const { body } = request;
         const serializedBody =
             typeof body === "object" ? JSON.stringify(serialize(body)) : body;
         const contentTypeHeaders = this.buildJsonHeader(body);
         const response = await this.fetch<RequestBody>({
+            ...request,
             body: serializedBody,
-            ...rest,
             headers: {
                 Accept: "application/json",
                 ...contentTypeHeaders,
-                ...headers,
+                ...request.headers,
             },
         });
         const contentType = response.headers.get("content-type");
@@ -216,9 +232,10 @@ export class Fetcher {
      */
     public async getLocationUrl() {
         if (!this.location) {
+            const path = routes.api().app(this.appId).location().path;
             this.location = this.fetchJSON({
                 method: "GET",
-                url: urls.api(this.baseUrl).app(this.appId).location().url,
+                url: this.baseUrl + path,
                 tokenType: "none",
             });
         }
@@ -227,15 +244,14 @@ export class Fetcher {
         if (typeof hostname !== "string") {
             throw new Error("Expected response to contain a 'hostname'");
         }
-        return urls.api(hostname);
+        return hostname;
     }
 
     /**
      * @returns A promise of the app URL, with the app location resolved.
      */
-    public async getAppUrl() {
-        const locationUrl = await this.getLocationUrl();
-        return locationUrl.app(this.appId);
+    public getAppPath() {
+        return routes.api().app(this.appId);
     }
 
     /**
