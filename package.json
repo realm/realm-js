@@ -142,7 +142,7 @@
   },
   "binary": {
     "module_name": "realm",
-    "module_path": "./compiled/node-v10_{platform}_{arch}/",
+    "module_path": "./compiled/{node_abi}_{platform}_{arch}/",
     "host": "https://static.realm.io",
     "remote_path": "./node-pre-gyp/{version}/"
   }
