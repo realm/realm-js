@@ -302,8 +302,7 @@ def buildCommon(nodeVersion, platform, extraFlags='') {
     sh "mkdir -p ~/.ssh"
     sh "ssh-keyscan github.com >> ~/.ssh/known_hosts"
     sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
-    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm ci --build-from-source=realm ${extraFlags}"
-    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npx node-pre-gyp package ${extraFlags}"
+    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
   }
   dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
       archiveArtifacts("realm-*")
