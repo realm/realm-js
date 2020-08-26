@@ -1,12 +1,16 @@
 6.0.5 Release notes (2020-08-24)
 =============================================================
 ### Enhancements
-* None.
+* `toJSON()` implemented for `Realm.Collection`, to return a nicer serializable Array. ([#3013](https://github.com/realm/realm-js/pull/3013))
+* `Realm.JsonSerializationReplacer` exposed as a replacer (for usage with `JSON.stringify`) to handle circular structures.([#3013](https://github.com/realm/realm-js/pull/3013))
+* TS: Stricter model validation for `create<T>(...)`. ([#3013](https://github.com/realm/realm-js/pull/3013))
 
 ### Fixed
 * Rare crash (EXC_BAD_ACCESS KERN_INVALID_ADDRESS in realm::Table::migrate_links) when a schema was updated ([realm/realm-cocoa#6680](https://github.com/realm/realm-cocoa/issues/6680))
 * Rare crash (Attempted to insert null into non-nullable column) when updating Realm file from v9 to v10. ([realm/realm-core#3836](https://github.com/realm/realm-core/issues/3836))
 * Upgrading a table with only linkingObjects properties could result in a crash.
+* `toJSON()` no longer throws `"RangeError: Maximum call stack size exceeded"` when a circular structure is encountered (applies for both `Realm.Object` & `Realm.Collection`). ([#3013](https://github.com/realm/realm-js/pull/3013))
+* TS: `objects<T>(...)` now sets return types reflecting underlying implementation. ([#3013](https://github.com/realm/realm-js/pull/3013))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.

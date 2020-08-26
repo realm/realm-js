@@ -3,6 +3,7 @@
 		"target": "es6",
 		"module": "commonjs",
 		"moduleResolution": "node",
+		"resolveJsonModule": true,
 		"outDir": "dist",
 		"types": ["realm", "node", "mocha", "chai"],
 		"noResolve": true,
