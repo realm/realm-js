@@ -57,7 +57,7 @@
     "build": "npm run isWin -s && SET REALMJS_USE_DEBUG_CORE=1 && npm run build-changes || REALMJS_USE_DEBUG_CORE=1 && npm run build-changes",
     "build-changes": "node-pre-gyp build --debug -j 8 --target_arch=${npm_config_arch}",
     "rebuild-changes": "node-pre-gyp rebuild --debug -j 8 --target_arch=${npm_config_arch} && cd tests && npm install",
-    "prepublish": "echo prepublishing && node ../scripts/prepublish.js",
+    "prepublish": "echo prepublishing && node scripts/prepublish.js",
     "eslint": "npm install && npm run lint .",
     "license-check": "npm install && license-checker --exclude \"MIT,ISC,BSD,Apache-2.0,BSD-2-Clause,BSD-3-Clause,WTFPL,Unlicense,(MIT AND CC-BY-3.0)\" | node scripts/handle-license-check.js",
     "jsdoc:clean": "rimraf ./docs/output",
