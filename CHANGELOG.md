@@ -39,7 +39,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Upgraded Realm Core from v10.0.0-beta.4 to v10.0.0-beta.5
 * Upgraded Realm Sync from v10.0.0-beta.6 to v10.0.0-beta.8
 * Upgraded Realm Network Transport from v0.6.0 to v0.7.0
-* When creating objects without primary keys, it is now checked that the generated ObjKey does not collide with an already existing object. This was a problem in some migration scenarios in ObjectStore.
+* When creating objects without primary keys, it is now checked that the generated ObjKey does not collide with an already existing object. This was a problem in some migration scenarios in ObjectStore
 
 10.0.0-beta.9 Release notes (2020-7-15)
 =============================================================
