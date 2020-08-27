@@ -375,7 +375,10 @@ struct Unbox<JSEngine, Obj> {
             if (!updating && !policy.create) {
                 throw std::runtime_error("Realm object is from another Realm");
             }
+        }
 
+        if (!policy.create) {
+            return Obj();
         }
 
         if (Value::is_array(ctx->m_ctx, object)) {

@@ -27,6 +27,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Rare crash when a schema was updated ([#6680](https://github.com/realm/realm-cocoa/issues/6680))
 * Bug in memory mapping management. This bug could result in multiple different asserts as well as segfaults. In many cases stack backtraces would include members of the EncyptedFileMapping near the top - even if encryption was not used at all. In other cases asserts or crashes would be in methods reading an array header or array element. In all cases the application would terminate immediately. (Realm Core PR #3838, since 7.0.0)
 * Fixed the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth ([#3109])(https://github.com/realm/realm-js/issues/3109)
+* Fixed segfault when `push()`ing onto a list of embedded objects ([RJS-732](https://jira.mongodb.org/browse/RJS-732))
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -37,6 +38,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Realm Object Store updated to commit 9c80160881f2af76d99c356a9d6017c88c9b7e52
 * Upgraded Realm Core from v10.0.0-beta.1 to v10.0.0-beta.4
 * Upgraded Realm Sync from v10.0.0-beta.3 to v10.0.0-beta.6
+* Upgraded Realm Network Transport from v0.6.0 to v0.7.0
 
 10.0.0-beta.9 Release notes (2020-7-15)
 =============================================================

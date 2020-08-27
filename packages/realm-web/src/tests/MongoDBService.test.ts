@@ -27,6 +27,8 @@ import { MockTransport } from "./utils";
 interface MyDocument extends Realm.Services.MongoDB.Document {
     /** The name of the thing ... */
     name: string;
+    /** Date the thing was created ... */
+    createdAt: Date;
 }
 
 const DEFAULT_HEADERS = {
@@ -69,7 +71,9 @@ describe("MongoDB Remote service", () => {
                         {
                             database: "my-database",
                             collection: "my-collection",
-                            limit: 10,
+                            limit: {
+                                $numberInt: "10",
+                            },
                             query: {
                                 _id: { $oid: "deadbeefdeadbeefdeadbeef" },
                             },
@@ -125,8 +129,8 @@ describe("MongoDB Remote service", () => {
                         {
                             database: "my-database",
                             collection: "my-collection",
-                            sort: { name: 1 },
-                            project: { name: 1 },
+                            sort: { name: { $numberInt: "1" } },
+                            project: { name: { $numberInt: "1" } },
                             query: {
                                 _id: { $oid: "deadbeefdeadbeefdeadbeef" },
                             },
@@ -149,6 +153,7 @@ describe("MongoDB Remote service", () => {
     });
 
     it("can insert a document", async () => {
+        const now = new Date();
         const transport = new MockTransport([
             {
                 insertedId: { $oid: "deadbeefdeadbeefdeadbeef" },
@@ -158,7 +163,10 @@ describe("MongoDB Remote service", () => {
         const result = await service
             .db("my-database")
             .collection<MyDocument>("my-collection")
-            .insertOne({ name: "My awesome new document" });
+            .insertOne({
+                name: "My awesome new document",
+                createdAt: now,
+            });
         expect(typeof result).equals("object");
         expect(typeof result.insertedId).equals("object");
         expect(result.insertedId.constructor.name).equals("ObjectId");
@@ -173,7 +181,14 @@ describe("MongoDB Remote service", () => {
                         {
                             database: "my-database",
                             collection: "my-collection",
-                            document: { name: "My awesome new document" },
+                            document: {
+                                name: "My awesome new document",
+                                createdAt: {
+                                    $date: {
+                                        $numberLong: now.getTime().toString(),
+                                    },
+                                },
+                            },
                         },
                     ],
                 },
@@ -184,6 +199,7 @@ describe("MongoDB Remote service", () => {
     });
 
     it("can insert many documents", async () => {
+        const now = new Date();
         const transport = new MockTransport([
             {
                 insertedIds: [
@@ -197,8 +213,14 @@ describe("MongoDB Remote service", () => {
             .db("my-database")
             .collection<MyDocument>("my-collection")
             .insertMany([
-                { name: "My first document" },
-                { name: "My second document" },
+                {
+                    name: "My first document",
+                    createdAt: now,
+                },
+                {
+                    name: "My second document",
+                    createdAt: now,
+                },
             ]);
         expect(typeof result).equals("object");
         expect(Array.isArray(result.insertedIds));
@@ -218,8 +240,26 @@ describe("MongoDB Remote service", () => {
                             database: "my-database",
                             collection: "my-collection",
                             documents: [
-                                { name: "My first document" },
-                                { name: "My second document" },
+                                {
+                                    name: "My first document",
+                                    createdAt: {
+                                        $date: {
+                                            $numberLong: now
+                                                .getTime()
+                                                .toString(),
+                                        },
+                                    },
+                                },
+                                {
+                                    name: "My second document",
+                                    createdAt: {
+                                        $date: {
+                                            $numberLong: now
+                                                .getTime()
+                                                .toString(),
+                                        },
+                                    },
+                                },
                             ],
                         },
                     ],
@@ -248,7 +288,7 @@ describe("MongoDB Remote service", () => {
                         {
                             database: "my-database",
                             collection: "my-collection",
-                            limit: 9999,
+                            limit: { $numberInt: "9999" },
                             query: {},
                         },
                     ],
