@@ -1,4 +1,4 @@
-6.0.5 Release notes (2020-08-24)
+6.1.0 Release notes (2020-08-27)
 =============================================================
 ### Enhancements
 * `toJSON()` implemented for `Realm.Collection`, to return a nicer serializable Array. ([#3013](https://github.com/realm/realm-js/pull/3013))
@@ -6,11 +6,30 @@
 * TS: Stricter model validation for `create<T>(...)`. ([#3013](https://github.com/realm/realm-js/pull/3013))
 
 ### Fixed
+* `toJSON()` no longer throws `"RangeError: Maximum call stack size exceeded"` when a circular structure is encountered (applies for both `Realm.Object` & `Realm.Collection`). ([#3013](https://github.com/realm/realm-js/pull/3013))
+* TS: `objects<T>(...)` now sets return types reflecting underlying implementation. ([#3013](https://github.com/realm/realm-js/pull/3013))
+* Holding a shared lock while being suspended on iOS would cause the app to be terminated. ([#6671])(https://github.com/realm/realm-cocoa/issues/6671)
+* If an attempt to upgrade a realm has ended with a crash with "migrate_links" in the call stack, the realm ended in a corrupt state where further upgrade was not possible.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* Realm Studio: 3.11 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
+* File format: Generates Realms with format v10 (reads and upgrades previous file format).
+
+### Internal
+* Upgraded Realm Core from v6.0.19 to v6.0.21.
+* Upgraded Realm Sync from v5.0.16 to v5.0.18
+
+6.0.5 Release notes (2020-08-24)
+=============================================================
+### Enhancements
+* None
+
+### Fixed
 * Rare crash (EXC_BAD_ACCESS KERN_INVALID_ADDRESS in realm::Table::migrate_links) when a schema was updated ([realm/realm-cocoa#6680](https://github.com/realm/realm-cocoa/issues/6680))
 * Rare crash (Attempted to insert null into non-nullable column) when updating Realm file from v9 to v10. ([realm/realm-core#3836](https://github.com/realm/realm-core/issues/3836))
 * Upgrading a table with only linkingObjects properties could result in a crash.
-* `toJSON()` no longer throws `"RangeError: Maximum call stack size exceeded"` when a circular structure is encountered (applies for both `Realm.Object` & `Realm.Collection`). ([#3013](https://github.com/realm/realm-js/pull/3013))
-* TS: `objects<T>(...)` now sets return types reflecting underlying implementation. ([#3013](https://github.com/realm/realm-js/pull/3013))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.

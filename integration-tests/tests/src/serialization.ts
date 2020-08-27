@@ -32,7 +32,7 @@ import {
     Person,
     PersonSchema
 } from "./schemas/person-and-dogs";
-import * as circularCollectionResultWithIds from "./structures/circular-collection-result-with-object-ids.json";
+import * as circularCollectionResultWithIds from "./structures/circular-collection-result-with-primary-ids.json";
 import * as circularCollectionResult from "./structures/circular-collection-result.json";
 
 describe("JSON serialization (exposed properties)", () => {
