@@ -1,4 +1,4 @@
-10.0.0-beta.10 Release notes (2020-8-18)
+10.0.0-beta.10 Release notes (2020-08-27)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
 
