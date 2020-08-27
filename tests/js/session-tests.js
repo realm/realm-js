@@ -450,7 +450,7 @@ module.exports = {
                 let objects = realm.objects('ParentObject');
 
                 let json = JSON.stringify(objects);
-                TestCase.assertEqual(json, '{"0":{"id":1,"name":{"0":{"family":"Larsen","given":{"0":"Hans","1":"Jørgen"},"prefix":{}},"1":{"family":"Hansen","given":{"0":"Ib"},"prefix":{}}}},"1":{"id":2,"name":{"0":{"family":"Petersen","given":{"0":"Gurli","1":"Margrete"},"prefix":{}}}}}');
+                TestCase.assertEqual(json, '[{"id":1,"name":[{"family":"Larsen","given":["Hans","Jørgen"],"prefix":[]},{"family":"Hansen","given":["Ib"],"prefix":[]}]},{"id":2,"name":[{"family":"Petersen","given":["Gurli","Margrete"],"prefix":[]}]}]');
                 TestCase.assertEqual(objects.length, 2);
                 TestCase.assertEqual(objects[0].name.length, 2);
                 TestCase.assertEqual(objects[0].name[0].given.length, 2);
