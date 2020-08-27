@@ -46,8 +46,8 @@
     "@types/fs-extra": "^8.1.0",
     "@types/node-fetch": "^2.5.5",
     "@types/yargs": "^15.0.4",
-    "eslint": "file:../../node_modules/eslint",
+    "eslint": "^6.8.0",
     "ts-node": "^8.6.2",
-    "typescript": "file:../../node_modules/typescript"
+    "typescript": "^3.8.2"
   }
 }
