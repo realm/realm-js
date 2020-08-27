@@ -20,6 +20,7 @@
 ### Internal
 * Upgraded Realm Core from v6.0.19 to v6.0.21
 * Upgraded Realm Sync from v5.0.16 to v5.0.18
+* When creating objects without primary keys, it is now checked that the generated ObjKey does not collide with an already existing object. This was a problem in some migration scenarios in ObjectStore.
 
 6.0.5 Release notes (2020-08-24)
 =============================================================
