@@ -308,11 +308,11 @@ class Credentials {
     static anonymous() { }
 
     /**
-     * Creates credentials with a custom provider and user identifier.
+     * Creates credentials with a JSON Web Token (JWT) provider and user identifier.
      * @param {string} token A string identifying the user. Usually an identity token or a username.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static custom(token) { }
+    static jwt(token) { }
 
     /**
      * Creates credentials with a MongoDB Realm function and user identifier.
@@ -1070,7 +1070,7 @@ class RemoteMongoDBCollection {
      * By default, yields all change events for this collection. You may specify at most one of
      * the `filter` or `ids` options.
      *
-     * @param {object} [options={}] 
+     * @param {object} [options={}]
      * @param {object} [options.filter] A filter for which change events you are interested in.
      * @param {any[]} [options.ids] A list of ids that you are interested in watching
      *
