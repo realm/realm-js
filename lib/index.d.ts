@@ -192,8 +192,8 @@ declare namespace Realm {
     }
 
     /**
-     * RealmJsonSerializeReplacer solves circular structures when serializing Realm entities
-     * @example JSON.stringify(realm.objects("Person"), Realm.RealmJsonSerializeReplacer)
+     * JsonSerializeReplacer solves circular structures when serializing Realm entities
+     * @example JSON.stringify(realm.objects("Person"), Realm.JsonSerializeReplacer)
      */
     const JsonSerializationReplacer: (key: string, val: any) => any;
 
