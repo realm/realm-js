@@ -1,7 +1,9 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Breaking changes
-* Rename `Realm.Credentials.custom()` to `Realm.Credentials.jwt()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Renamed `Realm.Credentials.custom()` to `Realm.Credentials.jwt()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Renamed `Realm.User.remoteMongoClient()` to `Realm.User.mongoClient()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Removed `Remote` prefix from all `MongoDB` related classes.
 
 ### Enhancements
 * Added property `Realm.User.deviceId`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))

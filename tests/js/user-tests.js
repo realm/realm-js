@@ -204,7 +204,7 @@ module.exports = {
     // const apikey = await user.apiKeys.create("mykey");
     // const keys = await user.apiKeys.fetchAll();
     // TestCase.assertTrue(Array.isArray(keys));
-    
+
     // TestCase.assertEqual(keys.length, 1);
     // TestCase.assertDefined(keys[0].id);
     // TestCase.assertEqual(keys[0].name, mykey);
@@ -232,12 +232,12 @@ module.exports = {
     TestCase.assertEqual(err.message, "function not found: 'error'");
   },
 
-  async testRemoteMongoClient() {
+  async testMongoClient() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
-    let mongo = user.remoteMongoClient('BackingDB');
+    let mongo = user.mongoClient('BackingDB');
     let collection = mongo.db('test_data').collection('testRemoteMongoClient');
 
     await collection.deleteMany({});
@@ -247,18 +247,18 @@ module.exports = {
     TestCase.assertEqual(await collection.count({hello: "pineapple"}), 0);
   },
 
-  async testRemoteMongoClientWatch() {
+  async testMongoClientWatch() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
-    let collection = user.remoteMongoClient('BackingDB').db('test_data').collection('testRemoteMongoClient');
+    let collection = user.mongoClient('BackingDB').db('test_data').collection('testRemoteMongoClient');
 
     const sleep = async time => new Promise(resolve => setInterval(resolve, time));
     const str = 'use some odd chars to force weird encoding %\n\r\n\\????>>>>';
     await Promise.all([
       (async () => {
         // There is a race with creating the watch() streams, since they won't
-        // see inserts from before they are created. 
+        // see inserts from before they are created.
         // Wait 500ms (490+10) before first insert to try to avoid it.
         await sleep(490);
         for (let i = 0; i < 10; i++) {
