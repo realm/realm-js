@@ -16,7 +16,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* None.
+* None
 
 10.0.0-beta.10 Release notes (2020-08-27)
 =============================================================
