@@ -851,6 +851,12 @@ class Worker {
  */
 class MongoDB {
     /**
+     * Get the service name.
+     * @return {string} The service name.
+     */
+    get serviceName() { }
+
+    /**
      * Get the interface to a remote MongoDB database.
      *
      * @param {string} databaseName The name of the database.
@@ -865,6 +871,12 @@ class MongoDB {
  */
 class MongoDBDatabase {
     /**
+     * Get the database name.
+     * @return {string} The database name.
+     */
+    get name() { }
+
+    /**
      * Get the interface to a remote MongoDB collection.
      *
      * @param {string} name The name of the collection.
@@ -878,6 +890,12 @@ class MongoDBDatabase {
  * @memberof Realm
  */
 class MongoDBCollection {
+    /**
+     * Gets the name of the collection.
+     * @return {string} The name.
+     */
+    get name() { }
+
     /**
      * Finds the documents which match the provided query.
      *

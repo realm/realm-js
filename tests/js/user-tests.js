@@ -238,7 +238,12 @@ module.exports = {
     let user = await app.logIn(credentials);
 
     let mongo = user.mongoClient('BackingDB');
-    let collection = mongo.db('test_data').collection('testRemoteMongoClient');
+    TestCase.assertEqual(mongo.serviceName, 'BackingDB');
+    let database = mongo.db('test_data');
+    TestCase.assertEqual(database.name, 'test_data');
+
+    let collection = database.collection('testRemoteMongoClient');
+    TestCase.assertEqual(collection.name, 'testRemoteMongoClient');
 
     await collection.deleteMany({});
     await collection.insertOne({hello: "world"});
