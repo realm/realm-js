@@ -146,6 +146,7 @@ public:
     static ObjectType create_instance(ContextType, SharedUser, SharedApp);
 
     static void get_id(ContextType, ObjectType, ReturnValue &);
+    static void get_identities(ContextType, ObjectType, ReturnValue &);
     static void get_access_token(ContextType, ObjectType, ReturnValue &);
     static void get_refresh_token(ContextType, ObjectType, ReturnValue &);
     static void get_profile(ContextType, ObjectType, ReturnValue &);
@@ -158,6 +159,7 @@ public:
 
     PropertyMap<T> const properties = {
         {"id", {wrap<get_id>, nullptr}},
+        {"identities", {wrap<get_identities>, nullptr}},
         {"accessToken", {wrap<get_access_token>, nullptr}},
         {"refreshToken", {wrap<get_refresh_token>, nullptr}},
         {"profile", {wrap<get_profile>, nullptr}},
@@ -214,6 +216,20 @@ template<typename T>
 void UserClass<T>::get_id(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string id = get_internal<T, UserClass<T>>(ctx, object)->get()->identity();
     return_value.set(id);
+}
+
+template<typename T>
+void UserClass<T>::get_identities(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    std::vector<SyncUserIdentity> identities = get_internal<T, UserClass<T>>(ctx, object)->get()->identities();
+
+    std::vector<ValueType> identity_objects;
+    for (auto identity : identities) {
+        auto identity_object = Object::create_empty(ctx);
+        Object::set_property(ctx, identity_object, "userId", Value::from_string(ctx, identity.id));
+        Object::set_property(ctx, identity_object, "providerType", Value::from_string(ctx, identity.provider_type));
+        identity_objects.push_back(identity_object);
+    }
+    return_value.set(Object::create_array(ctx, identity_objects));
 }
 
 template<typename T>

@@ -338,8 +338,10 @@ declare namespace Realm {
          */
         readonly state: UserState;
 
-        // TODO: Populate the list of identities
-        // readonly identities: UserIdentity[];
+        /**
+         * An array of all identities
+         */
+        readonly identities: UserIdentity[];
 
         /**
          * The access token used when requesting a new access token.

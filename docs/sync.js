@@ -491,6 +491,13 @@ class User {
     get id() { }
 
     /**
+     * Gets an array of identities for this user on MongoDB Realm Cloud.
+     * Each element in the array is an object with properties userId and providerType.
+     * @type {Array<Object>}
+     */
+    get identities() { }
+
+    /**
      * Gets the provider type for the identity.
      * @type {string}
      */
