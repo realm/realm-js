@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Enhancements
 * Added property `Realm.User.deviceId`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Added property `Realm.User.providerType`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

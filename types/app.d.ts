@@ -324,6 +324,11 @@ declare namespace Realm {
         readonly id: string;
 
         /**
+         * The provider type for the user.
+         */
+        readonly providerType: string;
+
+        /**
          * The id of the device.
          */
         readonly deviceId: string | null;

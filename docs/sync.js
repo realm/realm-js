@@ -491,6 +491,12 @@ class User {
     get id() { }
 
     /**
+     * Gets the provider type for the identity.
+     * @type {string}
+     */
+    get providerType() { }
+
+    /**
      * Gets the device id. `null` if no device id.
      * @type {string}
      */

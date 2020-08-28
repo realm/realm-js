@@ -154,6 +154,7 @@ public:
     static void get_custom_data(ContextType, ObjectType, ReturnValue &);
     static void get_api_keys(ContextType, ObjectType, ReturnValue &);
     static void get_device_id(ContextType, ObjectType, ReturnValue &);
+    static void get_provider_type(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"id", {wrap<get_id>, nullptr}},
@@ -165,6 +166,7 @@ public:
         {"customData", {wrap<get_custom_data>, nullptr}},
         {"apiKeys", {wrap<get_api_keys>, nullptr}},
         {"deviceId", {wrap<get_device_id>, nullptr}},
+        {"providerType", {wrap<get_provider_type>, nullptr}},
     };
 
     MethodMap<T> const static_methods = {
@@ -223,6 +225,12 @@ void UserClass<T>::get_device_id(ContextType ctx, ObjectType object, ReturnValue
     else {
         return_value.set_null();
     }
+}
+
+template<typename T>
+void UserClass<T>::get_provider_type(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    std::string provider_type = get_internal<T, UserClass<T>>(ctx, object)->get()->provider_type();
+    return_value.set(provider_type);
 }
 
 template<typename T>
