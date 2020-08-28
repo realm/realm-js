@@ -1,3 +1,23 @@
+10.0.0-beta.11 Release notes (2020-09-28)
+=============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
+
+### Enhancements
+* None.
+
+### Fixed
+* Remove extra `scripts/` in path to `download-realm.js`. Fixes `Cannot find module '/my-app/node_modules/realm/scripts/scripts/download-realm.js'` ([3168])https://github.com/realm/realm-js/issues/3168
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+
+### Internal
+* None.
+
 10.0.0-beta.10 Release notes (2020-08-27)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
