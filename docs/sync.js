@@ -491,6 +491,12 @@ class User {
     get id() { }
 
     /**
+     * Gets the device id. `null` if no device id.
+     * @type {string}
+     */
+    get deviceId() { }
+
+    /**
      * Gets this user's access token. This is the user's credential for accessing the MongoDB
      * Realm Cloud and should be treated as sensitive data.
      * @type {string}

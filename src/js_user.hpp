@@ -153,6 +153,7 @@ public:
     static void get_state(ContextType, ObjectType, ReturnValue &);
     static void get_custom_data(ContextType, ObjectType, ReturnValue &);
     static void get_api_keys(ContextType, ObjectType, ReturnValue &);
+    static void get_device_id(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"id", {wrap<get_id>, nullptr}},
@@ -163,6 +164,7 @@ public:
         {"state", {wrap<get_state>, nullptr}},
         {"customData", {wrap<get_custom_data>, nullptr}},
         {"apiKeys", {wrap<get_api_keys>, nullptr}},
+        {"deviceId", {wrap<get_device_id>, nullptr}},
     };
 
     MethodMap<T> const static_methods = {
@@ -210,6 +212,17 @@ template<typename T>
 void UserClass<T>::get_id(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string id = get_internal<T, UserClass<T>>(ctx, object)->get()->identity();
     return_value.set(id);
+}
+
+template<typename T>
+void UserClass<T>::get_device_id(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto user = get_internal<T, UserClass<T>>(ctx, object)->get();
+    if (user->has_device_id()) {
+        return_value.set(user->device_id());
+    }
+    else {
+        return_value.set_null();
+    }
 }
 
 template<typename T>

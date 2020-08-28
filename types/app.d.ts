@@ -324,6 +324,11 @@ declare namespace Realm {
         readonly id: string;
 
         /**
+         * The id of the device.
+         */
+        readonly deviceId: string | null;
+
+        /**
          * The state of the user.
          */
         readonly state: UserState;

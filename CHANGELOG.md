@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Rename `Realm.Credentials.custom()` to `Realm.Credentials.jwt()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 
 ### Enhancements
-* None.
+* Added property `Realm.User.deviceId`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
