@@ -68,12 +68,12 @@ function getSyncConfiguration(user, partition) {
             name: 'Dog',
             primaryKey: '_id',
             properties: {
-              _id: 'objectId?',
-              breed: 'string?',
-              name: 'string',
-              realm_id: 'string?',
+                _id: 'objectId?',
+                breed: 'string?',
+                name: 'string',
+                realm_id: 'string?',
             }
-          }],
+        }],
         sync: {
             user: user,
             partitionValue: partition
@@ -377,7 +377,7 @@ module.exports = {
         const credentials = Realm.Credentials.anonymous();
         let app = new Realm.App(appConfig);
         return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
-            .then(() => { return app.logIn(credentials)})
+            .then(() => { return app.logIn(credentials) })
             .then(user => {
                 let config = getSyncConfiguration(user, partition);
 
@@ -681,7 +681,7 @@ module.exports = {
                 });
             })
             .then(() => {
-                TestCase.assertEqual(1,  realm2.objects('Dog').length);
+                TestCase.assertEqual(1, realm2.objects('Dog').length);
             });
     },
 
@@ -792,7 +792,23 @@ module.exports = {
                 const config4 = config1;
                 config4.sync._sessionStopPolicy = "foo";
                 TestCase.assertThrows(() => new Realm(config4));
-        });
+            });
+    },
+
+    testNullPartitionValue() {
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+
+        return app.logIn(credentials)
+            .then((user) => {
+                // Set up a sync configuration on a null partition value
+                let config1 = getSyncConfiguration(user, null);
+                TestCase.assertNull(config1.sync.partitionValue);
+
+                let newRealm = new Realm(config1);
+                TestCase.assertDefined(newRealm);
+                newRealm.close();
+            });
     },
 
     testSessionStopPolicyImmediately() {

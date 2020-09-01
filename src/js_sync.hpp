@@ -741,8 +741,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 auto pv = Value::validated_to_object_id(ctx, partition_value_value);
                 partition_bson = bson::Bson(pv);
             }
+            else if (Value::is_null(ctx, partition_value_value)) {
+                partition_bson = bson::Bson();
+            }
             else {
-                throw std::runtime_error("partitionValue must be of type 'string', 'number', or 'objectId'.");
+                throw std::runtime_error("partitionValue must be of type 'string', 'number', 'objectId', or 'null'.");
             }
 
             std::ostringstream s;
