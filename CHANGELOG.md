@@ -1,3 +1,24 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
+
+### Enhancements
+* None.
+
+### Fixed
+* Fixed validation of idempotent `AddColumn` instruction. This could lead to crashes with the error message `Failed to parse, or apply received changeset: ERROR: AddColumn 'class_X.%3' which already exists`. ([HELP#18016](https://jira.mongodb.org/browse/HELP-18016))
+* Fixed a syntax error in `lib/browser/index.js` preventing RN debugger to launch. Thanks to @ioveracker. ([#3178](https://github.com/realm/realm-js/issues/3178), since v10.0.0-beta.10)
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+
+### Internal
+* Upgraded from Realm Sync v10.0.0-beta.8 to v10.0.0-beta.9.
+
 10.0.0-beta.11 Release notes (2020-08-28)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
