@@ -60,14 +60,14 @@
     "@types/node": "^13.7.6",
     "abort-controller": "^3.0.0",
     "chai": "^4.2.0",
-    "eslint": "file:../../node_modules/eslint",
+    "eslint": "^6.8.0",
     "mocha": "^5.2.0",
     "node-fetch": "^2.6.0",
-    "realm-network-transport": "^0.6.0",
+    "realm-network-transport": "^0.7.0",
     "rollup": "^2.6.1",
     "rollup-plugin-dts": "^1.4.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "ts-node": "^8.8.2",
-    "typescript": "file:../../node_modules/typescript"
+    "typescript": "^4.0.2"
   }
 }

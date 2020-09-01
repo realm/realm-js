@@ -462,3 +462,29 @@ exports.AddressSchema = {
         city: 'string'
     }
 };
+
+exports.ScoutDivisionSchema = {
+    name: 'ScoutDivision',
+    primaryKey: 'name',
+    properties: {
+        name: 'string',
+        groups: { type: 'list', objectType: 'ScoutGroup' }
+    }
+};
+
+exports.ScoutGroupSchema = {
+    name: 'ScoutGroup',
+    embedded: true,
+    properties: {
+        name: 'string',
+        branches: { type: 'list', objectType: 'ScoutBranch' }
+    }
+};
+
+exports.ScoutBranchSchema = {
+    name: 'ScoutBranch',
+    embedded: true,
+    properties: {
+        name: 'string'
+    }
+};

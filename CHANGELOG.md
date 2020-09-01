@@ -1,4 +1,24 @@
-10.0.0-beta.10 Release notes (2020-8-18)
+10.0.0-beta.11 Release notes (2020-08-28)
+=============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
+
+### Enhancements
+* None.
+
+### Fixed
+* Remove extra `scripts/` in path to `download-realm.js`. Fixes `Cannot find module '/my-app/node_modules/realm/scripts/scripts/download-realm.js'` ([3168])https://github.com/realm/realm-js/issues/3168
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+
+### Internal
+* None
+
+10.0.0-beta.10 Release notes (2020-08-27)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
 
@@ -27,6 +47,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Rare crash when a schema was updated ([#6680](https://github.com/realm/realm-cocoa/issues/6680))
 * Bug in memory mapping management. This bug could result in multiple different asserts as well as segfaults. In many cases stack backtraces would include members of the EncyptedFileMapping near the top - even if encryption was not used at all. In other cases asserts or crashes would be in methods reading an array header or array element. In all cases the application would terminate immediately. (Realm Core PR #3838, since 7.0.0)
 * Fixed the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth ([#3109])(https://github.com/realm/realm-js/issues/3109)
+* Fixed segfault when `push()`ing onto a list of embedded objects ([RJS-732](https://jira.mongodb.org/browse/RJS-732))
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -35,8 +56,10 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 
 ### Internal
 * Realm Object Store updated to commit 9c80160881f2af76d99c356a9d6017c88c9b7e52
-* Upgraded Realm Core from v10.0.0-beta.1 to v10.0.0-beta.4
-* Upgraded Realm Sync from v10.0.0-beta.3 to v10.0.0-beta.6
+* Upgraded Realm Core from v10.0.0-beta.4 to v10.0.0-beta.5
+* Upgraded Realm Sync from v10.0.0-beta.6 to v10.0.0-beta.8
+* Upgraded Realm Network Transport from v0.6.0 to v0.7.0
+* When creating objects without primary keys, it is now checked that the generated ObjKey does not collide with an already existing object. This was a problem in some migration scenarios in ObjectStore.
 
 10.0.0-beta.9 Release notes (2020-7-15)
 =============================================================

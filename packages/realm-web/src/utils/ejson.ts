@@ -18,6 +18,10 @@
 
 import { EJSON } from "bson";
 
+const SERIALIZATION_OPTIONS = {
+    relaxed: false, // Ensure Canonical mode
+};
+
 /**
  * Serialize an object containing BSON types into extended-JSON.
  *
@@ -25,7 +29,7 @@ import { EJSON } from "bson";
  * @returns The document in extended-JSON format.
  */
 export function serialize(obj: object): object {
-    return EJSON.serialize(obj);
+    return EJSON.serialize(obj, SERIALIZATION_OPTIONS);
 }
 
 /**
