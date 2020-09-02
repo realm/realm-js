@@ -1,4 +1,21 @@
-10.0.0 Release notes (2020-9-2)
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+
+### Internal
+* None.
+
+10.0.0-beta.12 Release notes (2020-9-2)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
 
