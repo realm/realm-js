@@ -56,11 +56,10 @@ export class MockNetworkTransport implements NetworkTransport {
             delete request.headers;
         }
         // Save a parsed body, instead of a string
-        const { body } = request;
-        if (typeof body === "string") {
-            request.body = JSON.parse(body);
+        if (typeof request.body === "string") {
+            request.body = JSON.parse(request.body);
         }
-        // Delete any keys with a missing value, to make it easier to expect.deepEquals.
+        // Delete the body if it's missing a value, which makes it easier to expect.deepEquals.
         if (request.body === undefined) {
             delete request.body;
         }

@@ -33,11 +33,11 @@ export class MongoDBRealmError extends Error {
      */
     public readonly url: string;
     /**
-     * The status code of the response.
+     * The HTTP status code of the response.
      */
     public readonly statusCode: number;
     /**
-     * A human readable version of the status.
+     * A human readable version of the HTTP status.
      */
     public readonly statusText: string;
     /**

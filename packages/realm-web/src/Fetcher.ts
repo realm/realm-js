@@ -139,12 +139,12 @@ export class Fetcher {
      * Fetch a network resource as an authenticated user.
      *
      * @param request The request which should be sent to the server.
-     * @param retries How many times was this request retried?
+     * @param attempts Number of times this request has been attempted. Used when retrying, callers don't need to pass a value.
      * @returns The response from the server.
      */
     public async fetch<RequestBody = any>(
         request: AuthenticatedRequest<RequestBody>,
-        retries = 0,
+        attempts = 0,
     ): Promise<FetchResponse> {
         const { path, url, ...restOfRequest } = request as Request<
             RequestBody
@@ -177,12 +177,12 @@ export class Fetcher {
                 user &&
                 response.status === 401 &&
                 tokenType === "access" &&
-                retries === 0
+                attempts === 0
             ) {
                 // Refresh the access token
                 await user.refreshAccessToken();
-                // Retry, with the specific user, since the currentUser might have changed.
-                return this.fetch({ ...request, user }, retries + 1);
+                // Retry with the specific user, since the currentUser might have changed.
+                return this.fetch({ ...request, user }, attempts + 1);
             } else {
                 // Throw an error with a message extracted from the body
                 throw await MongoDBRealmError.fromRequestAndResponse(
@@ -248,7 +248,7 @@ export class Fetcher {
     }
 
     /**
-     * @returns A promise of the app URL, with the app location resolved.
+     * @returns The path of the app route.
      */
     public getAppPath() {
         return routes.api().app(this.appId);
@@ -257,7 +257,7 @@ export class Fetcher {
     /**
      * @param user An optional user to generate the header for.
      * @param tokenType The type of token (access or refresh).
-     * @returns An object containing with the users access token as authorization header or undefined if no user is given.
+     * @returns An object containing the users token as "Authorization" header or undefined if no user is given.
      */
     private buildAuthorizationHeader(user: User | null, tokenType: TokenType) {
         if (user && tokenType === "access") {
@@ -268,8 +268,8 @@ export class Fetcher {
     }
 
     /**
-     * @param body The body strin or object passed from a request.
-     * @returns An object containing the accept and optionally the content-type header.
+     * @param body The body string or object passed from a request.
+     * @returns An object optionally specifying the "Content-Type" header.
      */
     private buildJsonHeader<RequestBody = any>(
         body: string | undefined | RequestBody,
