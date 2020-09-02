@@ -8,7 +8,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * None.
 
 ### Fixed
-* Fixed validation of idempotent `AddColumn` instruction. This could lead to crashes with the error message `Failed to parse, or apply received changeset: ERROR: AddColumn 'class_X.%3' which already exists`. ([HELP#18016](https://jira.mongodb.org/browse/HELP-18016))
+* Fixed validation of idempotent `AddColumn` instruction. This could lead to crashes with an error message like`Failed to parse, or apply received changeset: ERROR: AddColumn 'class_Person.name' which already exists`.
 * Fixed a syntax error in `lib/browser/index.js` preventing RN debugger to launch. Thanks to @ioveracker. ([#3178](https://github.com/realm/realm-js/issues/3178), since v10.0.0-beta.10)
 
 ### Compatibility
