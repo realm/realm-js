@@ -46,7 +46,7 @@ Pod::Spec.new do |s|
   # Note: It leaves a lock file, ensuring it will only download the archive once.
   s.prepare_command        = 'node ./scripts/download-realm.js ios --sync'
   s.script_phase           = { :name => 'Download Realm Core & Sync',
-                               :script => 'echo "Using Node.js $(node --version)" && node ${PODS_TARGET_SRCROOT}/scripts/download-realm.js ios --sync',
+                               :script => 'echo "Using Node.js $(node --version)" && node "${PODS_TARGET_SRCROOT}/scripts/download-realm.js" ios --sync',
                                :execution_position => :before_compile }
 
   s.source_files           = 'src/*.cpp',
