@@ -17,7 +17,8 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded from Realm Sync v10.0.0-beta.8 to v10.0.0-beta.9.
+* Upgraded from Realm Core v10.0.0-beta.5 to v10.0.0-beta.6.
+* Upgraded from Realm Sync v10.0.0-beta.8 to v10.0.0-beta.10.
 
 10.0.0-beta.11 Release notes (2020-08-28)
 =============================================================
