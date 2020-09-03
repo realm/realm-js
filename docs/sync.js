@@ -38,7 +38,7 @@
  * This describes the different options used to create a {@link Realm} instance with Realm Cloud synchronization.
  * @typedef {Object} Realm.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
- * @property {string|number|BSON.ObjectId} partitionValue - The value of the partition key.
+ * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key.
  * @property {function} [error] - A callback function which is called in error situations.
  *    The `error` callback can take up to five optional arguments: `name`, `message`, `isFatal`,
  *    `category`, and `code`.
