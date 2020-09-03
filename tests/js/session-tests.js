@@ -796,16 +796,16 @@ module.exports = {
     },
 
     testNullPartitionValue() {
-        let app = new Realm.App(appConfig);
-        let credentials = Realm.Credentials.anonymous();
+        const app = new Realm.App(appConfig);
+        const credentials = Realm.Credentials.anonymous();
 
         return app.logIn(credentials)
             .then((user) => {
                 // Set up a sync configuration on a null partition value
-                let config1 = getSyncConfiguration(user, null);
-                TestCase.assertNull(config1.sync.partitionValue);
+                const config = getSyncConfiguration(user, null);
+                TestCase.assertNull(config.sync.partitionValue);
 
-                let newRealm = new Realm(config1);
+                const newRealm = new Realm(config);
                 TestCase.assertDefined(newRealm);
                 newRealm.close();
             });
