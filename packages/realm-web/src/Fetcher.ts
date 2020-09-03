@@ -42,10 +42,17 @@ export type UserContext = {
 
 type TokenType = "access" | "refresh" | "none";
 
-type RequestByPath<RequestBody> = Omit<Request<RequestBody>, "url"> & {
+interface RequestWithUrl<RequestBody> extends Request<RequestBody> {
+    path?: never;
+    url: string;
+}
+
+interface RequestWithPath<RequestBody>
+    extends Omit<Request<RequestBody>, "url"> {
     /** Construct a URL from the location URL prepended is path */
-    path?: string;
-};
+    path: string;
+    url?: never;
+}
 
 /**
  * A request which will send the access or refresh token of the current user.
@@ -61,7 +68,7 @@ export type AuthenticatedRequest<RequestBody> = {
      * The user issuing the request.
      */
     user?: User;
-} & (Request<RequestBody> | RequestByPath<RequestBody>);
+} & (RequestWithUrl<RequestBody> | RequestWithPath<RequestBody>);
 
 /**
  *
@@ -146,25 +153,24 @@ export class Fetcher {
         request: AuthenticatedRequest<RequestBody>,
         attempts = 0,
     ): Promise<FetchResponse> {
-        const { path, url, ...restOfRequest } = request as Request<
-            RequestBody
-        > &
-            RequestByPath<RequestBody>;
-        if (path && url) {
-            throw new Error("Use of 'url' and 'path' mutually exclusive");
-        } else if (path) {
-            const url = (await this.getLocationUrl()) + path;
-            return this.fetch({ ...restOfRequest, url });
-        } else {
-            const {
-                tokenType = "access",
-                user = this.userContext.currentUser,
-                ...restOfRequest
-            } = request;
+        const {
+            path,
+            url,
+            tokenType = "access",
+            user = this.userContext.currentUser,
+            ...restOfRequest
+        } = request;
 
+        if (typeof path === "string" && typeof url === "string") {
+            throw new Error("Use of 'url' and 'path' mutually exclusive");
+        } else if (typeof path === "string") {
+            // Derive the URL
+            const url = (await this.getLocationUrl()) + path;
+            return this.fetch({ ...request, path: undefined, url });
+        } else if (typeof url === "string") {
             const response = await this.transport.fetch({
-                url,
                 ...restOfRequest,
+                url,
                 headers: {
                     ...this.buildAuthorizationHeader(user, tokenType),
                     ...request.headers,
@@ -190,6 +196,8 @@ export class Fetcher {
                     response,
                 );
             }
+        } else {
+            throw new Error("Expected either 'url' or 'path'");
         }
     }
 
