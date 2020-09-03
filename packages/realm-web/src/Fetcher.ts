@@ -245,6 +245,11 @@ export class Fetcher {
                 method: "GET",
                 url: this.baseUrl + path,
                 tokenType: "none",
+            }).catch(err => {
+                // Reset the location to allow another request to fetch again
+                this.location = null;
+                // Rethrow the error
+                throw err;
             });
         }
         // Return the hostname as the location URL.
