@@ -541,7 +541,7 @@ class User {
      * Links a user to another credentials. This is useful when linking
      * different account togteher.
      * @param {Realm.Credentials} credentials
-     * @returns {Promise<Realm.User>} - updated user object
+     * @returns {Promise<void>} - resolves when the user has been linked with the other credentials.
      */
     linkCredentials(credentials) { }
 
