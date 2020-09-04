@@ -37,7 +37,7 @@ declare namespace Realm {
         oldModifications: Object[];
     }
 
-    type CollectionChangeCallback<T> = (collection: Collection<T>, change: ObjectChanges) => void;
+    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
 
     /**
      * PropertyType
