@@ -37,14 +37,13 @@ export type UserContext = {
     /**
      * The currently active user.
      */
-    currentUser: User<any, any> | null;
+    currentUser: User<object, object> | null;
 };
 
 type TokenType = "access" | "refresh" | "none";
 
 interface RequestWithUrl<RequestBody> extends Request<RequestBody> {
     path?: never;
-    url: string;
 }
 
 interface RequestWithPath<RequestBody>
@@ -67,7 +66,7 @@ export type AuthenticatedRequest<RequestBody> = {
     /**
      * The user issuing the request.
      */
-    user?: User;
+    user?: User<object, object>;
 } & (RequestWithUrl<RequestBody> | RequestWithPath<RequestBody>);
 
 /**
@@ -246,9 +245,8 @@ export class Fetcher {
                 url: this.baseUrl + path,
                 tokenType: "none",
             }).catch(err => {
-                // Reset the location to allow another request to fetch again
+                // Reset the location to allow another request to fetch again.
                 this.location = null;
-                // Rethrow the error
                 throw err;
             });
         }
@@ -270,13 +268,20 @@ export class Fetcher {
     /**
      * @param user An optional user to generate the header for.
      * @param tokenType The type of token (access or refresh).
-     * @returns An object containing the users token as "Authorization" header or undefined if no user is given.
+     * @returns An object containing the user's token as "Authorization" header or undefined if no user is given.
      */
-    private buildAuthorizationHeader(user: User | null, tokenType: TokenType) {
-        if (user && tokenType === "access") {
+    private buildAuthorizationHeader(
+        user: User<object, object> | null,
+        tokenType: TokenType,
+    ): Headers {
+        if (!user || tokenType === "none") {
+            return {};
+        } else if (tokenType === "access") {
             return { Authorization: `Bearer ${user.accessToken}` };
-        } else if (user && tokenType === "refresh") {
+        } else if (tokenType === "refresh") {
             return { Authorization: `Bearer ${user.refreshToken}` };
+        } else {
+            throw new Error(`Unexpected token type (${tokenType})`);
         }
     }
 
@@ -284,9 +289,7 @@ export class Fetcher {
      * @param body The body string or object passed from a request.
      * @returns An object optionally specifying the "Content-Type" header.
      */
-    private buildJsonHeader<RequestBody = any>(
-        body: string | undefined | RequestBody,
-    ): Headers {
+    private buildJsonHeader(body: string | object | undefined): Headers {
         if (body) {
             return { "Content-Type": "application/json" };
         } else {
