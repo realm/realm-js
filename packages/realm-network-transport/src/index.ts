@@ -17,5 +17,4 @@
 ////////////////////////////////////////////////////////////////////////////
 
 export * from "./types";
-export { DefaultNetworkTransport } from "./NetworkTransport";
-export { MongoDBRealmError } from "./MongoDBRealmError";
+export { DefaultNetworkTransport } from "./DefaultNetworkTransport";

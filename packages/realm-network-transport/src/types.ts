@@ -28,13 +28,13 @@ export interface Request<RequestBody> {
     body?: RequestBody | string;
 }
 
-export interface Response {
+export interface CallbackResponse {
     statusCode: number;
     headers: Headers;
     body: string;
 }
 
-export type SuccessCallback = (response: Response) => void;
+export type SuccessCallback = (response: CallbackResponse) => void;
 
 export type ErrorCallback = (err: Error) => void;
 
@@ -44,9 +44,9 @@ export interface ResponseHandler {
 }
 
 export interface NetworkTransport {
-    fetchAndParse<RequestBody extends any, ResponseBody extends any>(
+    fetch<RequestBody extends any>(
         request: Request<RequestBody>,
-    ): Promise<ResponseBody>;
+    ): Promise<FetchResponse>;
     fetchWithCallbacks<RequestBody extends any>(
         request: Request<RequestBody>,
         handler: ResponseHandler,
@@ -95,7 +95,7 @@ interface FetchBody {
     text(): Promise<string>;
 }
 
-interface FetchHeaders {
+export interface FetchHeaders {
     append(name: string, value: string): void;
     delete(name: string): void;
     get(name: string): string | null;
@@ -105,7 +105,7 @@ interface FetchHeaders {
 }
 
 /** This Fetch API interface represents a resource request. */
-interface FetchRequest extends FetchBody {
+export interface FetchRequest extends FetchBody {
     /**
      * Returns a Headers object consisting of the headers associated with request. Note that headers added in the network layer by the user agent will not be accounted for in this object, e.g., the "Host" header.
      */
@@ -129,7 +129,7 @@ interface FetchRequest extends FetchBody {
     clone(): FetchRequest;
 }
 
-interface FetchResponse extends FetchBody {
+export interface FetchResponse extends FetchBody {
     readonly headers: FetchHeaders;
     readonly ok: boolean;
     readonly redirected: boolean;

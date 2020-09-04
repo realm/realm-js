@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Transport } from "../transports";
+import { Fetcher } from "../Fetcher";
 import { FunctionsFactory } from "../FunctionsFactory";
 
 type Document = Realm.Services.MongoDB.Document;
@@ -46,18 +46,18 @@ class MongoDBCollection<T extends Document>
     /**
      * Construct a remote collection of documents.
      *
-     * @param transport The transport to use when requesting the service.
+     * @param fetcher The fetcher to use when requesting the service.
      * @param serviceName The name of the remote service.
      * @param databaseName The name of the database.
      * @param collectionName The name of the remote collection.
      */
     constructor(
-        transport: Transport,
+        fetcher: Fetcher,
         serviceName: string,
         databaseName: string,
         collectionName: string,
     ) {
-        this.functions = FunctionsFactory.create(transport, {
+        this.functions = FunctionsFactory.create(fetcher, {
             serviceName,
         });
         this.databaseName = databaseName;
@@ -241,7 +241,7 @@ class MongoDBCollection<T extends Document>
  * Creates an Remote MongoDB Collection.
  * Note: This method exists to enable function binding.
  *
- * @param transport The underlying transport.
+ * @param fetcher The underlying fetcher.
  * @param serviceName A service name.
  * @param databaseName A database name.
  * @param collectionName A collection name.
@@ -250,13 +250,13 @@ class MongoDBCollection<T extends Document>
 export function createCollection<
     T extends Realm.Services.MongoDB.Document = any
 >(
-    transport: Transport,
+    fetcher: Fetcher,
     serviceName: string,
     databaseName: string,
     collectionName: string,
 ): MongoDBCollection<T> {
     return new MongoDBCollection<T>(
-        transport,
+        fetcher,
         serviceName,
         databaseName,
         collectionName,
@@ -267,20 +267,20 @@ export function createCollection<
  * Creates a Remote MongoDB Database.
  * Note: This method exists to enable function binding.
  *
- * @param transport The underlying transport
+ * @param fetcher The underlying fetcher
  * @param serviceName A service name
  * @param databaseName A database name
  * @returns The database.
  */
 export function createDatabase(
-    transport: Transport,
+    fetcher: Fetcher,
     serviceName: string,
     databaseName: string,
 ): Realm.Services.MongoDBDatabase {
     return {
         collection: createCollection.bind(
             null,
-            transport,
+            fetcher,
             serviceName,
             databaseName,
         ) as Realm.Services.MongoDBDatabase["collection"],
@@ -291,10 +291,10 @@ export function createDatabase(
  * Creates a Remote MongoDB Service.
  * Note: This method exists to enable function binding.
  *
- * @param transport The underlying transport.
+ * @param fetcher The underlying fetcher.
  * @param serviceName An optional service name.
  * @returns The service.
  */
-export function createService(transport: Transport, serviceName = "mongo-db") {
-    return { db: createDatabase.bind(null, transport, serviceName) };
+export function createService(fetcher: Fetcher, serviceName = "mongo-db") {
+    return { db: createDatabase.bind(null, fetcher, serviceName) };
 }

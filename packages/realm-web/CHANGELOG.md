@@ -37,7 +37,7 @@
 * None
 
 ### Internal
-* None
+* Refactored the concept of base, authenticated, prefixed transports into a single "fetcher" built on-top-of the "realm-network-package". ([#3086](https://github.com/realm/realm-js/pull/3086))
 
 0.7.0 Release notes (2020-07-13)
 =============================================================
