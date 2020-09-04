@@ -65,10 +65,6 @@ export class Authenticator {
         credentials: Realm.Credentials<any>,
         link = false,
     ): Promise<AuthResponse> {
-        if (link) {
-            throw new Error("Linking accounts are not yet implemented");
-        }
-
         if (
             credentials.providerType.startsWith("oauth2") &&
             typeof credentials.payload.redirectUrl === "string"
@@ -78,13 +74,17 @@ export class Authenticator {
             return OAuth2Helper.decodeAuthInfo(result.userAuth);
         } else {
             // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
-            const appPath = this.fetcher.getAppPath();
-            const response = await this.fetcher.fetchJSON<object, any>({
+            const appRoute = this.fetcher.appRoute;
+            const loginRoute = appRoute
+                .authProvider(credentials.providerName)
+                .login();
+            const qs = encodeQueryString({ link: link ? "true" : undefined });
+            const path = loginRoute.path + qs;
+            const response = await this.fetcher.fetchJSON({
                 method: "POST",
-                path: appPath.authProvider(credentials.providerName).login()
-                    .path,
+                path,
                 body: credentials.payload,
-                tokenType: "none",
+                tokenType: link ? "access" : "none",
             });
             // Spread out values from the response and ensure they're valid
             const {
