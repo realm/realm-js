@@ -21,16 +21,20 @@
             "warn",
             {
                 "require": {
-                    "ClassDeclaration": true,
-                    "MethodDefinition": true
+                    "ClassDeclaration": true
                 },
                 "contexts": [
-                    "ClassProperty",
-                    "TSInterfaceDeclaration",
-                    "TSMethodSignature",
-                    "TSPropertySignature",
-                    "TSEnumDeclaration",
-                    "TSEnumMember"
+                    "ExportNamedDeclaration[declaration.type=ClassDeclaration] ClassProperty[accessibility=public]",
+                    "ExportNamedDeclaration[declaration.type=ClassDeclaration] MethodDefinition[accessibility=public]",
+                    "ExportNamedDeclaration[declaration.type=VariableDeclaration]",
+                    "ExportNamedDeclaration[declaration.type=TSMethodSignature]",
+                    "ExportNamedDeclaration[declaration.type=TSEnumDeclaration]",
+                    "ExportNamedDeclaration[declaration.type=TSEnumDeclaration] TSEnumMember",
+                    "ExportNamedDeclaration[declaration.type=TSInterfaceDeclaration]",
+                    "ExportNamedDeclaration[declaration.type=TSInterfaceDeclaration] TSPropertySignature",
+                    "ExportNamedDeclaration[declaration.type=TSInterfaceDeclaration] TSMethodSignature",
+                    "ExportNamedDeclaration[declaration.type=TSTypeAliasDeclaration]",
+                    "ExportNamedDeclaration[declaration.type=TSTypeAliasDeclaration] TSPropertySignature"
                 ]
             }
         ],

@@ -18,42 +18,53 @@
 
 import { expect } from "chai";
 
-import { AuthenticatedTransport } from "../transports/AuthenticatedTransport";
+import { Fetcher } from "../Fetcher";
 import { User } from "../User";
 
-import { MockTransport } from "./utils";
+import {
+    MockNetworkTransport,
+    SENDING_JSON_HEADERS,
+    ACCEPT_JSON_HEADERS,
+} from "./utils";
 
-describe("AuthenticatedTransport", () => {
+describe("Fetcher", () => {
     it("constructs", () => {
-        const transport = new AuthenticatedTransport(new MockTransport(), {
-            currentUser: null,
+        const fetcher = new Fetcher({
+            appId: "test-app-id",
+            baseUrl: "http://localhost:1337",
+            transport: new MockNetworkTransport(),
+            userContext: { currentUser: null },
         });
-        expect(typeof transport.fetch).equals("function");
+        expect(typeof fetcher.fetch).equals("function");
     });
 
     it("sends access token when requesting", async () => {
-        const baseTransport = new MockTransport([{ foo: "bar" }]);
-        const transport = new AuthenticatedTransport(baseTransport, {
-            currentUser: { accessToken: "my-access-token" } as User,
+        const transport = new MockNetworkTransport([{ foo: "bar" }]);
+        const fetcher = new Fetcher({
+            appId: "test-app-id",
+            baseUrl: "http://localhost:1337",
+            transport,
+            userContext: {
+                currentUser: { accessToken: "my-access-token" } as User,
+            },
         });
         // Send a request
-        const response = await transport.fetch({
+        const response = await fetcher.fetchJSON({
             method: "POST",
-            path: "/w00t",
+            url: "http://localhost:1337/w00t",
             body: { something: "interesting" },
             headers: { Cookie: "yes-please" },
         });
         // Expect something of the request and response
-        expect(baseTransport.requests).deep.equals([
+        expect(transport.requests).deep.equals([
             {
                 method: "POST",
                 url: "http://localhost:1337/w00t",
                 body: { something: "interesting" },
                 headers: {
+                    ...SENDING_JSON_HEADERS,
                     Cookie: "yes-please",
-                    Accept: "application/json",
                     Authorization: "Bearer my-access-token",
-                    "Content-Type": "application/json",
                 },
             },
         ]);
@@ -61,53 +72,62 @@ describe("AuthenticatedTransport", () => {
     });
 
     it("allows overwriting headers", async () => {
-        const baseTransport = new MockTransport([{}]);
-        const transport = new AuthenticatedTransport(baseTransport, {
-            currentUser: { accessToken: "my-access-token" } as User,
+        const transport = new MockNetworkTransport([{}]);
+        const fetcher = new Fetcher({
+            appId: "test-app-id",
+            baseUrl: "http://localhost:1337",
+            transport,
+            userContext: {
+                currentUser: { accessToken: "my-access-token" } as User,
+            },
         });
         // Send a request
-        await transport.fetch({
+        await fetcher.fetchJSON({
             method: "GET",
-            path: "/w00t",
+            url: "http://localhost:1337/w00t",
             headers: {
                 Authorization: "Bearer my-custom-token",
             },
         });
         // Expect something of the request
-        expect(baseTransport.requests).deep.equals([
+        expect(transport.requests).deep.equals([
             {
                 method: "GET",
                 url: "http://localhost:1337/w00t",
                 headers: {
+                    ...ACCEPT_JSON_HEADERS,
                     Authorization: "Bearer my-custom-token",
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
                 },
             },
         ]);
     });
 
-    it("returns an AuthenticatedTransport when prefixed", async () => {
-        const baseTransport = new MockTransport([{}]);
-        const transport = new AuthenticatedTransport(baseTransport, {
-            currentUser: { accessToken: "my-access-token" } as User,
+    it("allows overwriting headers", async () => {
+        const transport = new MockNetworkTransport([{}]);
+        const fetcher = new Fetcher({
+            appId: "test-app-id",
+            baseUrl: "http://localhost:1337",
+            transport,
+            userContext: {
+                currentUser: { accessToken: "my-access-token" } as User,
+            },
         });
-        const prefixedTransport = transport.prefix("/prefixed-path");
-        expect(prefixedTransport).to.be.instanceOf(AuthenticatedTransport);
         // Send a request
-        await prefixedTransport.fetch({
+        await fetcher.fetchJSON({
             method: "GET",
-            path: "/w00t",
+            url: "http://localhost:1337/w00t",
+            headers: {
+                Authorization: "Bearer my-custom-token",
+            },
         });
         // Expect something of the request
-        expect(baseTransport.requests).deep.equals([
+        expect(transport.requests).deep.equals([
             {
                 method: "GET",
-                url: "http://localhost:1337/prefixed-path/w00t",
+                url: "http://localhost:1337/w00t",
                 headers: {
-                    Authorization: "Bearer my-access-token",
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
+                    ...ACCEPT_JSON_HEADERS,
+                    Authorization: "Bearer my-custom-token",
                 },
             },
         ]);

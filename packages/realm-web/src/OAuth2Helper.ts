@@ -16,10 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+type OAuth2RedirectPayload = Realm.Credentials.OAuth2RedirectPayload;
+
 const LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
 import { Storage } from "./storage";
-import { Credentials, OAuth2RedirectPayload } from "./Credentials";
+import { Credentials } from "./Credentials";
 import {
     generateRandomString,
     encodeQueryString,
@@ -31,6 +33,9 @@ const CLOSE_CHECK_INTERVAL = 100; // 10 times per second
 
 type DetermineAppUrl = () => Promise<string>;
 
+/**
+ * Simplified handle to a browser window.
+ */
 export type Window = {
     /**
      * Attempt to close the window.
@@ -159,8 +164,6 @@ export class OAuth2Helper {
     private openWindow: WindowOpener;
 
     /**
-     * Construct a helper implementing the OAuth2 flow.
-     *
      * @param storage The underlying storage to use when storing and retriving secrets.
      * @param getAppUrl Call this to determine the app url.
      * @param openWindow An optional function called when a browser window needs to open.
@@ -222,9 +225,11 @@ export class OAuth2Helper {
             stateStorage.addListener(handleStorageUpdate);
             // Open up a window
             redirectWindow = this.openWindow(url);
-            // No using a const, because we need the two listeners to reference each other when removing the other.
+            // Not using a const, because we need the two listeners to reference each other when removing the other.
             windowClosedInterval = setInterval(() => {
-                if (redirectWindow && redirectWindow.closed) {
+                // Polling "closed" because registering listeners on the window violates cross-origin policies
+                if (!redirectWindow || redirectWindow.closed) {
+                    // Stop polling the window state
                     clearInterval(windowClosedInterval);
                     // Stop listening for changes to the storage
                     stateStorage.removeListener(handleStorageUpdate);

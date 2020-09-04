@@ -20,7 +20,12 @@ import { expect } from "chai";
 
 import { UserType, User } from "..";
 
-import { MockApp } from "./utils";
+import {
+    MockApp,
+    LOCATION_RESPONSE,
+    LOCATION_REQUEST,
+    ACCEPT_JSON_HEADERS,
+} from "./utils";
 
 // Since responses from the server uses underscores in field names:
 /* eslint @typescript-eslint/camelcase: "warn" */
@@ -39,7 +44,7 @@ describe("User", () => {
     });
 
     it("deletes session when logging out", async () => {
-        const app = new MockApp("my-mocked-app", [{}]);
+        const app = new MockApp("my-mocked-app", [LOCATION_RESPONSE, {}]);
         const user = new User({
             app,
             id: "some-user-id",
@@ -49,15 +54,15 @@ describe("User", () => {
         // Log out the user
         await user.logOut();
         // Expect that a request was made
-        expect(app.mockTransport.requests).deep.equals([
+        expect(app.requests).deep.equals([
+            LOCATION_REQUEST,
             {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
+                    ...ACCEPT_JSON_HEADERS,
                     // It's important that the refresh and not the access token is sent here ..
                     Authorization: "Bearer very-refreshing",
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
                 },
             },
         ]);
@@ -66,6 +71,7 @@ describe("User", () => {
     it("can refresh the user profile", async () => {
         const user = new User({
             app: new MockApp("my-mocked-app", [
+                LOCATION_RESPONSE,
                 {
                     data: {
                         first_name: "John",
@@ -108,7 +114,10 @@ describe("User", () => {
 
     it("expose a functions factory", async () => {
         const user = new User({
-            app: new MockApp("my-mocked-app", [{ pong: "ball" }]),
+            app: new MockApp("my-mocked-app", [
+                LOCATION_RESPONSE,
+                { pong: "ball" },
+            ]),
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
@@ -123,6 +132,7 @@ describe("User", () => {
     it("expose an api key auth provider client", async () => {
         const user = new User({
             app: new MockApp("my-mocked-app", [
+                LOCATION_RESPONSE,
                 [
                     {
                         _id: "key-1-id",
@@ -151,6 +161,7 @@ describe("User", () => {
     it("sets tokens and profile on storage when constructed, removes them on log out", async () => {
         const user = new User({
             app: new MockApp("my-mocked-app", [
+                LOCATION_RESPONSE,
                 {
                     data: {
                         first_name: "John",

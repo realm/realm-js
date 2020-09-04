@@ -16,19 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NetworkTransport } from "realm-network-transport";
-
 import { FunctionsFactory } from "./FunctionsFactory";
-import { User, UserState, performLogIn } from "./User";
-import { AuthenticatedTransport, Transport, BaseTransport } from "./transports";
+import { User, UserState } from "./User";
 import { Credentials } from "./Credentials";
 import { create as createServicesFactory } from "./services";
 import { EmailPasswordAuth } from "./auth-providers";
 import { Storage } from "./storage";
 import { AppStorage } from "./AppStorage";
-import { AppLocation, AppLocationContext } from "./AppLocation";
-import { OAuth2Helper } from "./OAuth2Helper";
 import { getEnvironment } from "./environment";
+import { AuthResponse, Authenticator } from "./Authenticator";
+import { Fetcher } from "./Fetcher";
+import {
+    NetworkTransport,
+    DefaultNetworkTransport,
+} from "realm-network-transport";
+
+/**
+ * Default base url to prefix all requests if no baseUrl is specified in the configuration.
+ */
+export const DEFAULT_BASE_URL = "https://stitch.mongodb.com";
 
 /**
  * Configuration to pass as an argument when constructing an app.
@@ -42,12 +48,6 @@ export interface AppConfiguration extends Realm.AppConfiguration {
      * Used when persisting app state, such as tokens of authenticated users.
      */
     storage?: Storage;
-    /**
-     * Should the location of the app be fetched to determine the base URL upon the first request?
-     *
-     * @default true
-     */
-    fetchLocation?: boolean;
 }
 
 /**
@@ -56,10 +56,7 @@ export interface AppConfiguration extends Realm.AppConfiguration {
 export class App<
     FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
     CustomDataType extends object = any
->
-    implements
-        Realm.App<FunctionsFactoryType, CustomDataType>,
-        AppLocationContext {
+> implements Realm.App<FunctionsFactoryType, CustomDataType> {
     /** @inheritdoc */
     public readonly functions: FunctionsFactoryType &
         Realm.BaseFunctionsFactory;
@@ -76,19 +73,9 @@ export class App<
     public static readonly Credentials = Credentials;
 
     /**
-     * Default base url to prefix all requests if no baseUrl is specified in the configuration.
+     * An object which can be used to fetch responses from the server.
      */
-    public static readonly DEFAULT_BASE_URL = "https://stitch.mongodb.com";
-
-    /**
-     * A transport adding the base route prefix to all requests.
-     */
-    public readonly baseTransport: BaseTransport;
-
-    /**
-     * A transport adding the base and app route prefix to all requests.
-     */
-    public readonly appTransport: Transport;
+    public readonly fetcher: Fetcher;
 
     /** @inheritdoc */
     public readonly emailPasswordAuth: EmailPasswordAuth;
@@ -99,20 +86,15 @@ export class App<
     public readonly storage: AppStorage;
 
     /**
+     * Internal authenticator used to complete authentication requests.
+     */
+    public readonly authenticator: Authenticator;
+
+    /**
      * An array of active and logged-out users.
      * Elements in the beginning of the array is considered more recent than the later elements.
      */
     private users: User<FunctionsFactoryType, CustomDataType>[] = [];
-
-    /**
-     * An promise of the apps location metadata.
-     */
-    private _location: Promise<AppLocation> | undefined;
-
-    /**
-     * A helper used to complete an OAuth 2.0 authentication flow.
-     */
-    private oauth2: OAuth2Helper;
 
     /**
      * Construct a Realm App, either from the Realm App id visible from the MongoDB Realm UI or a configuration.
@@ -135,46 +117,37 @@ export class App<
             throw new Error("Missing a MongoDB Realm app-id");
         }
         const {
-            transport,
             storage,
-            baseUrl,
-            fetchLocation = true,
+            baseUrl = DEFAULT_BASE_URL,
+            transport = new DefaultNetworkTransport(),
         } = configuration;
-        // Construct the various transports
-        this.baseTransport = new BaseTransport(
+        // Construct a fetcher wrapping the network transport
+        this.fetcher = new Fetcher({
+            baseUrl,
+            appId: this.id,
+            userContext: this,
             transport,
-            baseUrl || App.DEFAULT_BASE_URL,
-            fetchLocation ? this : undefined,
-        );
-        this.appTransport = this.baseTransport.prefix(`/app/${this.id}`);
-        const authTransport = new AuthenticatedTransport(
-            this.appTransport,
-            this,
-        );
+        });
         // Construct the functions factory
         this.functions = FunctionsFactory.create<FunctionsFactoryType>(
-            authTransport,
+            this.fetcher,
         );
         // Construct the services factory
-        this.services = createServicesFactory(authTransport);
+        this.services = createServicesFactory(this.fetcher);
         // Construct the auth providers
-        this.emailPasswordAuth = new EmailPasswordAuth(authTransport);
+        this.emailPasswordAuth = new EmailPasswordAuth(this.fetcher);
         // Construct the storage
         const baseStorage = storage || getEnvironment().defaultStorage;
         this.storage = new AppStorage(baseStorage, this.id);
-        // Constructing the oauth2 helper, passing in the baseStorage to avoid an app scope.
-        this.oauth2 = new OAuth2Helper(baseStorage, async () => {
-            const baseUrl = await this.baseTransport.determineBaseUrl(false);
-            return `${baseUrl}/app/${this.id}`;
-        });
+        this.authenticator = new Authenticator(this.fetcher, baseStorage);
         // Hydrate the app state from storage
         this.hydrate();
     }
 
     /**
-     * Switch user
+     * Switch user.
      *
-     * @param nextUser The user or id of the user to switch to
+     * @param nextUser The user or id of the user to switch to.
      */
     public switchUser(nextUser: User<FunctionsFactoryType, CustomDataType>) {
         const index = this.users.findIndex(u => u === nextUser);
@@ -188,16 +161,17 @@ export class App<
     }
 
     /**
-     * Log in a user
+     * Log in a user.
      *
-     * @param credentials Credentials to use when logging in
+     * @param credentials Credentials to use when logging in.
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
     public async logIn(
         credentials: Realm.Credentials<any>,
         fetchProfile = true,
     ): Promise<User<FunctionsFactoryType, CustomDataType>> {
-        const user = await this.performLogIn(credentials);
+        const response = await this.authenticator.authenticate(credentials);
+        const user = this.createOrUpdateUser(response);
         // Let's ensure this will be the current user, in case the user object was reused.
         this.switchUser(user);
         // If neeeded, fetch and set the profile on the user
@@ -233,7 +207,7 @@ export class App<
     }
 
     /**
-     * The currently active user (or null if no active users exists)
+     * The currently active user (or null if no active users exists).
      *
      * @returns the currently active user or null.
      */
@@ -274,79 +248,28 @@ export class App<
     }
 
     /**
-     * Get the location metadata of an app.
-     *
-     * @returns A promise of the app's location metadata.
-     */
-    public get location(): Promise<AppLocation> {
-        // Initiate the fetch of the location metadata only once per app instance.
-        if (!this._location) {
-            this._location = this.baseTransport.fetch({
-                method: "GET",
-                path: `/app/${this.id}/location`,
-                ignoreLocation: true,
-            });
-        }
-        return this._location;
-    }
-
-    /**
-     * Perform the actual login, based on the credentials.
-     * Either it decodes the credentials and instantiates a user directly or it calls User.logIn to perform a fetch.
-     *
-     * @param credentials Credentials to use when logging in
-     */
-    private async performLogIn(
-        credentials: Realm.Credentials<any>,
-    ): Promise<User<FunctionsFactoryType, CustomDataType>> {
-        if (
-            credentials.providerType.startsWith("oauth2") &&
-            typeof credentials.payload.redirectUrl === "string"
-        ) {
-            // Initiate the OAuth2 and use the next credentials once they're known
-            const result = await this.oauth2.initiate(credentials);
-            const {
-                userId,
-                accessToken,
-                refreshToken,
-            } = OAuth2Helper.decodeAuthInfo(result.userAuth);
-            return this.createOrUpdateUser(userId, accessToken, refreshToken);
-        } else {
-            const { id, accessToken, refreshToken } = await performLogIn(
-                this,
-                credentials,
-            );
-            return this.createOrUpdateUser(id, accessToken, refreshToken);
-        }
-    }
-
-    /**
      * Create (and store) a new user or update an existing user's access and refresh tokens.
      * This helps de-duplicating users in the list of users known to the app.
      *
-     * @param userId The id of the user.
-     * @param accessToken The new access token of the user.
-     * @param refreshToken The new refresh token of the user.
+     * @param response A response from the Authenticator.
      * @returns A new or an existing user.
      */
     private createOrUpdateUser(
-        userId: string,
-        accessToken: string,
-        refreshToken: string,
+        response: AuthResponse,
     ): User<FunctionsFactoryType, CustomDataType> {
-        const existingUser = this.users.find(u => u.id === userId);
+        const existingUser = this.users.find(u => u.id === response.userId);
         if (existingUser) {
             // Update the users access and refresh tokens
-            existingUser.accessToken = accessToken;
-            existingUser.refreshToken = refreshToken;
+            existingUser.accessToken = response.accessToken;
+            existingUser.refreshToken = response.refreshToken;
             return existingUser;
         } else {
             // Create and store a new user
             const user = new User<FunctionsFactoryType, CustomDataType>({
                 app: this,
-                id: userId,
-                accessToken,
-                refreshToken,
+                id: response.userId,
+                accessToken: response.accessToken,
+                refreshToken: response.refreshToken,
             });
             this.users.unshift(user);
             return user;

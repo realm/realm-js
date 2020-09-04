@@ -36,16 +36,20 @@ export class MockApp extends App<any> {
      * @param id The id of the app.
      * @param requests An array of requests returned by the underlying mocked network transport.
      */
-    constructor(id: string, requests: object[] = []) {
+    constructor(id = "my-mocked-app", requests: object[] = []) {
         const transport = new MockNetworkTransport(requests);
         const storage = new MemoryStorage();
         super({
             id,
-            baseUrl: "http://localhost:1337",
+            baseUrl: "http://localhost:1234",
             storage,
             transport,
-            fetchLocation: false,
         });
         this.mockTransport = transport;
+    }
+
+    /** @returns All the requests issued via this mocked app. */
+    get requests() {
+        return this.mockTransport.requests;
     }
 }
