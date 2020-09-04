@@ -19,6 +19,7 @@
 import { Fetcher } from "./Fetcher";
 import { Storage } from "./storage";
 import { OAuth2Helper } from "./OAuth2Helper";
+import { encodeQueryString } from "./utils/string";
 
 // TODO: Add the deviceId to the auth response.
 
@@ -53,11 +54,7 @@ export class Authenticator {
      */
     constructor(fetcher: Fetcher, storage: Storage) {
         this.fetcher = fetcher;
-        this.oauth2 = new OAuth2Helper(storage, () =>
-            fetcher
-                .getLocationUrl()
-                .then(url => url + this.fetcher.getAppPath().path),
-        );
+        this.oauth2 = new OAuth2Helper(storage, () => fetcher.appUrl);
     }
 
     /**
