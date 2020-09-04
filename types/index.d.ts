@@ -342,7 +342,7 @@ declare namespace Realm {
         code: number;
     }
 
-    type ErrorCallback = (session: Sync.Session, error: SyncError) => void;
+    type ErrorCallback = (session: App.Sync.Session, error: SyncError) => void;
 
     const enum SessionStopPolicy {
         AfterUpload = "after-upload",
@@ -381,7 +381,7 @@ declare namespace Realm {
 
     type ConnectionNotificationCallback = (newState: ConnectionState, oldState: ConnectionState) => void;
 
-    namespace Sync {
+    namespace App.Sync {
         class Session {
             readonly config: SyncConfiguration;
             readonly state: 'invalid' | 'active' | 'inactive';
@@ -407,7 +407,7 @@ declare namespace Realm {
 
         /**
         * AuthError
-        * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.AuthError.html }
+        * @see { @link https://realm.io/docs/javascript/latest/api/Realm.App.Sync.AuthError.html }
         */
         class AuthError {
             readonly code: number;
@@ -476,7 +476,7 @@ declare class Realm {
     readonly isInTransaction: boolean;
     readonly isClosed: boolean;
 
-    readonly syncSession: Realm.Sync.Session | null;
+    readonly syncSession: Realm.App.Sync.Session | null;
 
     /**
      * Get the current schema version of the Realm at the given path.

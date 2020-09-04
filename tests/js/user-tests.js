@@ -64,7 +64,7 @@ function assertIsError(error, message) {
 }
 
 function assertIsAuthError(error, code, title) {
-  TestCase.assertInstanceOf(error, Realm.Sync.AuthError, 'The API should return an AuthError');
+  TestCase.assertInstanceOf(error, Realm.App.Sync.AuthError, 'The API should return an AuthError');
   if (code) {
     TestCase.assertEqual(error.code, code);
   }

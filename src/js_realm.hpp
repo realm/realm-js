@@ -447,11 +447,6 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 
 #if REALM_ENABLE_SYNC
-    FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
-    Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
-
-    AsyncOpenTaskClass<T>::create_constructor(ctx);
-
     FunctionType app_constructor = AppClass<T>::create_constructor(ctx);
     Object::set_property(ctx, realm_constructor, "App", app_constructor, attributes);
 
@@ -472,6 +467,11 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
 
     FunctionType user_apikey_provider_client_constructor = ApiKeyAuthClass<T>::create_constructor(ctx);
     Object::set_property(ctx, auth_constructor, "ApiKeyAuth", user_apikey_provider_client_constructor, attributes);
+
+    FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
+    Object::set_property(ctx, app_constructor, "Sync", sync_constructor, attributes);
+
+    AsyncOpenTaskClass<T>::create_constructor(ctx);
 #endif
 
     if (getenv("REALM_DISABLE_SYNC_TO_DISK")) {

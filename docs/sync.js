@@ -36,7 +36,7 @@
 
 /**
  * This describes the different options used to create a {@link Realm} instance with Realm Cloud synchronization.
- * @typedef {Object} Realm.Sync~SyncConfiguration
+ * @typedef {Object} Realm.App.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
  * @property {string|number|BSON.ObjectId} partitionValue - The value of the partition key.
  * @property {function} [error] - A callback function which is called in error situations.
@@ -44,21 +44,21 @@
  *    `category`, and `code`.
  *
  * @property {Object} [customHttpHeaders] - A map (string, string) of custom HTTP headers.
- * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
+ * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
        If not set, the Realm will be downloaded before opened.
- * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
+ * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
  *    file to complete and then open. If not set, the Realm will be downloaded before opened.
  */
 
 /**
  * Specify how to open a synced Realm.
  *
- * @typedef {Object} Realm.Sync~OpenRealmBehaviorConfiguration
+ * @typedef {Object} Realm.App.Sync~OpenRealmBehaviorConfiguration
  * @property {string} type - how to open a Realm - 'downloadBeforeOpen' to wait for download to complete or 'openImmediately' to open the local Realm
  * @property {number} [timeOut] - how long to wait for a download (in ms). Default: infinity
  * @property {string} [timeOutBehavior] - what to do when download times out - 'openLocalRealm' to open the local Realm or 'throwException' to throw an exception.
- * @see {@link Realm.Sync~openLocalRealmBehavior}
- * @see {@link Realm.Sync~downloadBeforeOpenBehavior}
+ * @see {@link Realm.App.Sync~openLocalRealmBehavior}
+ * @see {@link Realm.App.Sync~downloadBeforeOpenBehavior}
  */
 
 /**
@@ -66,13 +66,13 @@
  * If this is the first time you open the Realm, it will be empty while the server data is being downloaded
  * in the background.
  *
- * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~openLocalRealmBehavior
+ * @typedef {Realm.App.Sync~OpenRealmBehaviorConfiguration} Realm.App.Sync~openLocalRealmBehavior
  */
 
 /**
  * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
  *
- * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~downloadBeforeOpenBehavior
+ * @typedef {Realm.App.Sync~OpenRealmBehaviorConfiguration} Realm.App.Sync~downloadBeforeOpenBehavior
  */
 
  /**
@@ -169,7 +169,7 @@ class Sync {
 
     /**
      * Set the sync log level.
-     * @param {Realm.Sync~LogLevel} level - The new log level.
+     * @param {Realm.App.Sync~LogLevel} level - The new log level.
      */
     static setLogLevel(level) { }
 
@@ -184,8 +184,8 @@ class Sync {
     static enableSessionMultiplexing() { }
 
     /**
-     * A callback passed to `Realm.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
-     * @callback Realm.Sync~logCallback
+     * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
+     * @callback Realm.App.Sync~logCallback
      * @param {number} level The level of the log entry between 0 and 8 inclusively.
      * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
      * @param {string} message The message of the log entry.
@@ -193,7 +193,7 @@ class Sync {
 
     /**
      * Capture the sync client's log.
-     * @param {Realm.Sync~logCallback} logger - The log callback.
+     * @param {Realm.App.Sync~logCallback} logger - The log callback.
      */
     static setLogger(logger) { }
 
@@ -217,7 +217,7 @@ class Sync {
      *   const config = { sync: { user, partitionValue } };
      *   config.sync.error = (sender, error) => {
      *     if (error.name === 'ClientReset') {
-     *       Realm.Sync.initiateClientReset(original_path);
+     *       Realm.App.Sync.initiateClientReset(original_path);
      *       // copy required objects from Realm at error.config.path
      *     }
      *   }
@@ -233,13 +233,13 @@ class Sync {
 }
 
 /**
- * @typedef Realm.Sync~LogLevel
+ * @typedef Realm.App.Sync~LogLevel
  * @type {("all"|"trace"|"debug"|"detail"|"info"|"warn"|"error"|"fatal"|"off")}
  */
 
 /**
  * Class that describes authentication errors in the Realm Object Server
- * @memberof Realm.Sync
+ * @memberof Realm.App.Sync
  */
 class AuthError extends Error {
     /**
@@ -257,7 +257,7 @@ class AuthError extends Error {
 
 /**
  * Describes an error when an incompatible synced Realm is opened. The old version of the Realm can be accessed in readonly mode using the configuration() member
- * @memberof Realm.Sync
+ * @memberof Realm.App.Sync
  */
 class IncompatibleSyncedRealmError {
     /**
@@ -649,7 +649,7 @@ class User {
  * client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
  * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions
  * associated with Realms are managed automatically.
- * @memberof Realm.Sync
+ * @memberof Realm.App.Sync
  */
 class Session {
     /**
@@ -726,9 +726,9 @@ class Session {
      * connection. In that case, any connection change is sent to all sessions.
      *
      * Can be either:
-     *  - Realm.Sync.ConnectionState.Disconnected: No connection to the server is available.
-     *  - Realm.Sync.ConnectionState.Connecting: An attempt to connect to the server is in progress.
-     *  - Realm.Sync.ConnectionState.Connected: The connection to the server is active and data can be synchronized.
+     *  - Realm.App.Sync.ConnectionState.Disconnected: No connection to the server is available.
+     *  - Realm.App.Sync.ConnectionState.Connecting: An attempt to connect to the server is in progress.
+     *  - Realm.App.Sync.ConnectionState.Connected: The connection to the server is active and data can be synchronized.
      *
      * Data will only be synchronized with the Realm ObjectServer if this method returns `Connected` and `state()`
      * returns `Active` or `Dying`.
@@ -802,7 +802,7 @@ class Session {
  *    or the listener being added. The virtual path (i.e. the portion of the
  *    URL after the protocol and hostname) is passed as an argument.
  *  * `'change'`: Emitted whenever the data within a Realm matching the filter
- *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
+ *    regex has changed. A [ChangeEvent]{@link Realm.App.Sync.ChangeEvent} argument
  *    is passed containing information about which Realm changed and what
  *    objects within the Realm changed.
  *  * `'delete'`: Emitted whenever a Realm matching the filter regex has been
@@ -831,7 +831,7 @@ class Session {
  * module.exports = {onchange, oncavailable, ondelete};
  *
  * // server script
- * Realm.Sync.addListener(realmServerURL, adminUser, '.*', new Realm.Worker('my-worker'));
+ * Realm.App.Sync.addListener(realmServerURL, adminUser, '.*', new Realm.Worker('my-worker'));
  *
  * @memberof Realm
  */

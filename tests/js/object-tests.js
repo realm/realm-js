@@ -304,7 +304,7 @@ module.exports = {
         });
         TestCase.assertArraysEqual(new Uint8Array(object.dataCol), RANDOM_DATA);
 
-        if (Realm.Sync) {
+        if (Realm.App.Sync) {
             // The base64 decoder comes from realm-sync
             // Should be able to also set a data property to base64-encoded string.
             realm.write(function() {

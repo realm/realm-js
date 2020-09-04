@@ -8,6 +8,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Renamed `Realm.Credentials.custom()` to `Realm.Credentials.jwt()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 * Renamed `Realm.User.remoteMongoClient()` to `Realm.User.mongoClient()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 * Removed `Remote` prefix from all `MongoDB` related classes.
+* Renamed `Realm.Sync` to `Realm.App.Sync` including all methods and properties. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 
 ### Enhancements
 * Added property `Realm.User.deviceId`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
@@ -49,7 +50,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Upgraded from Realm Core v10.0.0-beta.5 to v10.0.0-beta.6.
 * Upgraded from Realm Sync v10.0.0-beta.8 to v10.0.0-beta.10.
 
->>>>>>> b823a08e52b4e00ec5eb5e5ae1ee78ab249158dc
 10.0.0-beta.11 Release notes (2020-08-28)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
