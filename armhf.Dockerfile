@@ -23,6 +23,7 @@ RUN mkdir -p $NVM_DIR \
  && curl -s https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash \
  && . $NVM_DIR/nvm.sh \
  && nvm install 10 \
+ && nvm install 11 \
  && nvm install 12 \
  && nvm install 13 \
  && nvm install 14 \
