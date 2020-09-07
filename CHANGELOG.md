@@ -15,6 +15,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+* Stopped building binary releases for Node.js 11
 
 ### Internal
 * None.
