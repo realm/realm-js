@@ -5,7 +5,7 @@ import groovy.json.JsonOutput
 repoName = 'realm-js' // This is a global variable
 
 // These versions must be written in ascending order (lowest version is used when testing)
-def nodeVersions = ['10.22.0', "11.15.0", "12.18.3", "13.14.0", "14.7.0"]
+def nodeVersions = ['10.22.0', "12.18.3", "13.14.0", "14.7.0"]
 nodeTestVersion = nodeVersions[0]
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
