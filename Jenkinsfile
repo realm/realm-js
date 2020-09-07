@@ -305,7 +305,8 @@ def buildCommon(nodeVersion, platform, extraFlags='') {
     sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
   }
   dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
-      archiveArtifacts("realm-*")
+    // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
+    // archiveArtifacts("realm-*")
     stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
   }
 }
