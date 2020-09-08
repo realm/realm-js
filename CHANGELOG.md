@@ -1,3 +1,23 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade version 10 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. 
+
+### Enhancements
+* None.
+
+### Fixed
+* Upgrading files with string primary keys would result in a file where it was not possible to find the objects by primary key. ([realm/realm-cocoa#6716](https://github.com/realm/realm-cocoa/issues/6716), since v6.0.4)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* Realm Studio: 3.11 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
+* File format: Generates Realms with format v11 (reads and upgrades previous file format).
+
+### Internal
+* Upgraded Realm Core from v6.0.21 to v6.0.24.
+* Upgraded Realm Sync from v5.0.18 to v5.0.21.
+
 6.1.0 Release notes (2020-08-27)
 =============================================================
 ### Enhancements
