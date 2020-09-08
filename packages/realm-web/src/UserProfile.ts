@@ -100,8 +100,6 @@ export class UserProfile implements Realm.UserProfile {
     public readonly identities: Realm.UserIdentity[] = [];
 
     /**
-     * Construct a user profile from the body of a response.
-     *
      * @param response The response of a call fetching the users profile.
      */
     constructor(response?: any) {

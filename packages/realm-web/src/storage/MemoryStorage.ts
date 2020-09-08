@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Storage, StorageChangeListner } from "./Storage";
+import { Storage, StorageChangeListener } from "./Storage";
 import { PrefixedStorage } from "./PrefixedStorage";
 
 /**
@@ -31,7 +31,7 @@ export class MemoryStorage implements Storage {
     /**
      * A set of listners.
      */
-    private readonly listeners: Set<StorageChangeListner> = new Set();
+    private readonly listeners: Set<StorageChangeListener> = new Set();
 
     /** @inheritdoc */
     public get(key: string): string | null {
@@ -74,12 +74,12 @@ export class MemoryStorage implements Storage {
     }
 
     /** @inheritdoc */
-    public addListener(listener: StorageChangeListner) {
+    public addListener(listener: StorageChangeListener) {
         return this.listeners.add(listener);
     }
 
     /** @inheritdoc */
-    public removeListener(listener: StorageChangeListner) {
+    public removeListener(listener: StorageChangeListener) {
         return this.listeners.delete(listener);
     }
 

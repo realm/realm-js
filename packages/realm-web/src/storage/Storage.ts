@@ -16,7 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type StorageChangeListner = () => void;
+/**
+ * A function that can be called when the storage changes.
+ */
+export type StorageChangeListener = () => void;
 
 /**
  * Implementors of this provide a simple key-value store.
@@ -54,12 +57,12 @@ export interface Storage {
      *
      * @param listener The listener callback to add.
      */
-    addListener(listener: StorageChangeListner): void;
+    addListener(listener: StorageChangeListener): void;
 
     /**
      * Remove a callback function which was previously added.
      *
      * @param listener The listener callback to remove.
      */
-    removeListener(listener: StorageChangeListner): void;
+    removeListener(listener: StorageChangeListener): void;
 }

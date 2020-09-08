@@ -19,8 +19,8 @@
 import { expect } from "chai";
 import { createServer, RequestListener, Server } from "http";
 
-import { DefaultNetworkTransport } from "../NetworkTransport";
-import { Response, NetworkTransport, Request } from "../types";
+import { DefaultNetworkTransport } from "../DefaultNetworkTransport";
+import { NetworkTransport, Request, CallbackResponse } from "../types";
 
 function getServerUrl(server: Server) {
     const address = server.address();
@@ -37,7 +37,7 @@ async function createTestServer(listener: RequestListener): Promise<Server> {
     return server;
 }
 
-describe("Realm Network Transport", () => {
+describe("DefaultNetworkTransport", () => {
     // Create some tests!
     it("constructs", () => {
         const transport = new DefaultNetworkTransport();
@@ -48,17 +48,23 @@ describe("Realm Network Transport", () => {
         it("sends and receives GET requests", async () => {
             const transport = new DefaultNetworkTransport();
             const server = await createTestServer((req, res) => {
+                expect(req.headers.accept).equals("application/json");
+                expect(req.headers["content-type"]).equals(undefined);
                 res.setHeader("content-type", "application/json");
                 res.end(JSON.stringify({ pong: "Hi GET request" }));
             });
 
             try {
                 const url = getServerUrl(server);
-                const response = await transport.fetchAndParse({
+                const response = await transport.fetch({
                     method: "GET",
                     url,
+                    headers: {
+                        accept: "application/json",
+                    },
                 });
-                expect(response).deep.equals({ pong: "Hi GET request" });
+                const responseBody = await response.json();
+                expect(responseBody).deep.equals({ pong: "Hi GET request" });
             } finally {
                 server.close();
             }
@@ -68,6 +74,7 @@ describe("Realm Network Transport", () => {
             const transport = new DefaultNetworkTransport();
             const server = await createTestServer((req, res) => {
                 expect(req.headers.accept).equals("application/json");
+                expect(req.headers["content-type"]).equals("application/json");
                 res.setHeader("content-type", "application/json");
                 req.once("data", (chunk: Buffer) => {
                     const body = chunk.toString("utf8");
@@ -81,12 +88,17 @@ describe("Realm Network Transport", () => {
 
             try {
                 const url = getServerUrl(server);
-                const response = await transport.fetchAndParse({
+                const response = await transport.fetch({
                     method: "POST",
                     url,
-                    body: { ping: "Hello" },
+                    body: JSON.stringify({ ping: "Hello" }),
+                    headers: {
+                        accept: "application/json",
+                        "content-type": "application/json",
+                    },
                 });
-                expect(response).deep.equals({ pong: "Hello World" });
+                const responseBody = await response.json();
+                expect(responseBody).deep.equals({ pong: "Hello World" });
             } finally {
                 server.close();
             }
@@ -98,7 +110,7 @@ describe("Realm Network Transport", () => {
             transport: NetworkTransport,
             request: Request<any>,
         ) {
-            return new Promise<Response>((resolve, reject) => {
+            return new Promise<CallbackResponse>((resolve, reject) => {
                 transport.fetchWithCallbacks(request, {
                     onSuccess: resolve,
                     onError: reject,
@@ -109,6 +121,8 @@ describe("Realm Network Transport", () => {
         it("sends and receives GET requests", async () => {
             const transport = new DefaultNetworkTransport();
             const server = await createTestServer((req, res) => {
+                expect(req.headers.accept).equals("application/json");
+                expect(req.headers["content-type"]).equals("application/json");
                 res.setHeader("content-type", "application/json");
                 res.end(JSON.stringify({ pong: "Hi GET request" }));
             });
@@ -118,6 +132,10 @@ describe("Realm Network Transport", () => {
                 const response = await fetchWithCallbacksPromised(transport, {
                     url,
                     method: "GET",
+                    headers: {
+                        accept: "application/json",
+                        "content-type": "application/json",
+                    },
                 });
                 expect(response.statusCode).equals(200);
                 const decodedBody = JSON.parse(response.body);
@@ -134,6 +152,7 @@ describe("Realm Network Transport", () => {
             const transport = new DefaultNetworkTransport();
             const server = await createTestServer((req, res) => {
                 expect(req.headers.accept).equals("application/json");
+                expect(req.headers["content-type"]).equals("application/json");
                 res.setHeader("content-type", "application/json");
                 req.once("data", (chunk: Buffer) => {
                     const body = chunk.toString("utf8");
@@ -150,7 +169,11 @@ describe("Realm Network Transport", () => {
                 const response = await fetchWithCallbacksPromised(transport, {
                     method: "POST",
                     url,
-                    body: { ping: "Hello" },
+                    body: JSON.stringify({ ping: "Hello" }),
+                    headers: {
+                        accept: "application/json",
+                        "content-type": "application/json",
+                    },
                 });
                 const decodedBody = JSON.parse(response.body);
                 expect(decodedBody).deep.equals({ pong: "Hello World" });
@@ -159,4 +182,6 @@ describe("Realm Network Transport", () => {
             }
         });
     });
+
+    // TODO: Test timeouts
 });

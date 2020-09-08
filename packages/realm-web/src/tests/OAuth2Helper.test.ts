@@ -18,7 +18,7 @@
 import { expect } from "chai";
 import { URL } from "url";
 
-import { Credentials, OAuth2RedirectPayload } from "..";
+import { Credentials } from "..";
 import { OAuth2Helper } from "../OAuth2Helper";
 import { MemoryStorage } from "../storage";
 
@@ -47,9 +47,9 @@ describe("OAuth2Helper", () => {
             },
         );
 
-        const credentials = Credentials.google<OAuth2RedirectPayload>(
-            "http://localhost:1337/callback",
-        );
+        const credentials = Credentials.google<
+            Realm.Credentials.OAuth2RedirectPayload
+        >("http://localhost:1337/callback");
         expect(typeof credentials.payload.redirectUrl).equals("string");
 
         const result = await helper.initiate(credentials);
