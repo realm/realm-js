@@ -321,6 +321,8 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
         // TODO: add app id
+        bson::Bson partition_value_bson = bson::parse(session->config().partition_value);
+        Object::set_property(ctx, config, "partitionValue", Value::from_bson(ctx, partition_value_bson));
         if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());

@@ -170,6 +170,7 @@ module.exports = {
                 TestCase.assertInstanceOf(session, Realm.App.Sync.Session);
                 TestCase.assertEqual(session.user.id, user.id);
                 TestCase.assertEqual(session.config.url, config.sync.url);
+                TestCase.assertEqual(session.config.partitionValue, config.sync.partitionValue);
                 TestCase.assertEqual(session.config.user.id, config.sync.user.id);
                 TestCase.assertEqual(session.state, 'active');
                 return user.logOut();
@@ -829,20 +830,35 @@ module.exports = {
             });
     },
 
-    testNullPartitionValue() {
-        const app = new Realm.App(appConfig);
-        const credentials = Realm.Credentials.anonymous();
+    async testPartitionValueTypes() {
+        const testPartitionValues = [
+            Utils.genPartition(), // string
+            Math.floor(Math.random() * Math.floor(1000000)), // number
+            new ObjectId(), // ObjectId
+            null // null...
+        ];
 
-        return app.logIn(credentials)
-            .then((user) => {
-                // Set up a sync configuration on a null partition value
-                const config = getSyncConfiguration(user, null);
-                TestCase.assertNull(config.sync.partitionValue);
+        
+        for (const partitionValue of testPartitionValues) {
+            const app = new Realm.App(appConfig);
 
-                const newRealm = new Realm(config);
-                TestCase.assertDefined(newRealm);
-                newRealm.close();
-            });
+            const user = await app.logIn(Realm.Credentials.anonymous())
+
+            const config = getSyncConfiguration(user, partitionValue);
+            TestCase.assertEqual(partitionValue, config.sync.partitionValue);
+
+            const realm = new Realm(config);
+            TestCase.assertDefined(realm);
+
+            // ObjectId has it's own 'equals' comparrer
+            if (partitionValue instanceof ObjectId) {
+                TestCase.assertTrue(config.sync.partitionValue.equals(realm.syncSession.config.partitionValue));
+            } else {
+                TestCase.assertEqual(config.sync.partitionValue, realm.syncSession.config.partitionValue);
+            }
+
+            realm.close();
+        }
     },
 
     testSessionStopPolicyImmediately() {
