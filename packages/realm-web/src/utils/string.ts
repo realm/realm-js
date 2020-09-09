@@ -54,8 +54,7 @@ export function encodeQueryString(
     return (
         prefix +
         entriesWithValue
-            .map(([k, v]) => [k, encodeURIComponent(v)])
-            .map(([k, v]) => `${k}=${v}`)
+            .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
             .join("&")
     );
 }

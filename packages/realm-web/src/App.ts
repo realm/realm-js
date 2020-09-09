@@ -270,22 +270,20 @@ export class App<
                     url: this.baseUrl + path,
                     tokenType: "none",
                 })
-                .then(
-                    ({ hostname }) => {
-                        if (typeof hostname !== "string") {
-                            throw new Error(
-                                "Expected response to contain a 'hostname'",
-                            );
-                        } else {
-                            return hostname;
-                        }
-                    },
-                    err => {
-                        // Reset the location to allow another request to fetch again.
-                        this._locationUrl = null;
-                        throw err;
-                    },
-                );
+                .then(({ hostname }) => {
+                    if (typeof hostname !== "string") {
+                        throw new Error(
+                            "Expected response to contain a 'hostname'",
+                        );
+                    } else {
+                        return hostname;
+                    }
+                })
+                .catch(err => {
+                    // Reset the location to allow another request to fetch again.
+                    this._locationUrl = null;
+                    throw err;
+                });
         }
         return this._locationUrl;
     }

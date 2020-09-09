@@ -61,12 +61,7 @@ describe("User", () => {
         const nonce = now.getTime();
         const email = `dinesh-${nonce}@testing.mongodb.com`;
         const password = "v3ry-s3cret";
-        try {
-            await app.emailPasswordAuth.registerUser(email, password);
-        } catch (err) {
-            // Allow the user to already be registered in the app
-            expect(err.message).contains("name already in use", err.message);
-        }
+        await app.emailPasswordAuth.registerUser(email, password);
         const emailCredentials = Credentials.emailPassword(email, password);
         await user.linkCredentials(emailCredentials);
         expect(user.identities.length).equals(2);

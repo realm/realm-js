@@ -241,7 +241,7 @@ export class Fetcher implements LocationUrlContext {
     }
 
     /**
-     * @returns The location URL of the app.
+     * @returns A promise of the location URL of the app.
      */
     public get locationUrl() {
         return this.locationUrlContext.locationUrl;
