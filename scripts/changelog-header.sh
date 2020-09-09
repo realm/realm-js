@@ -15,7 +15,6 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* Realm Studio: 3.11 or later.
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
