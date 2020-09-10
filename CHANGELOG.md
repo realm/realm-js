@@ -1,3 +1,20 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
+* File format: Generates Realms with format v11 (reads and upgrades previous file format).
+
+### Internal
+* None.
+
 6.1.1 Release notes (2020-9-10)
 =============================================================
 NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade version 10 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. 
