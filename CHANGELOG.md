@@ -15,6 +15,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Added property `Realm.User.providerType`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 * Added property `Realm.User.identities`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 * Added property `name` to `Realm.MongoDB`, `Realm.MongoDB.Database` and `Realm.MongoDB.Collection`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Added methods `Realm.App.Sync.syncSession()` and `Realm.App.Sync.allSyncSessions()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 
 ### Fixed
 * Reapplied fix for the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth. ([#3109])(https://github.com/realm/realm-js/issues/3109)

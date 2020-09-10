@@ -601,6 +601,8 @@ public:
     static void has_existing_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void enable_multiplexing(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void deserialize_change_set(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void all_sync_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void sync_session(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
@@ -613,6 +615,8 @@ public:
         {"enableSessionMultiplexing", wrap<enable_multiplexing>},
         {"setUserAgent", wrap<set_sync_user_agent>},
         {"_initializeSyncManager", wrap<initialize_sync_manager>},
+        {"allSyncSessions", wrap<all_sync_sessions>},
+        {"syncSession", wrap<sync_session>},
 
 #if REALM_PLATFORM_NODE
         {"setLogger", wrap<set_sync_logger>},
@@ -643,6 +647,64 @@ void SyncClass<T>::initialize_sync_manager(ContextType ctx, ObjectType this_obje
     config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
     config.user_agent_binding_info = user_agent_binding_info;
     SyncManager::shared().configure(config);
+}
+
+template<typename T>
+void SyncClass<T>::sync_session(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(2);
+
+    auto user_object = Value::validated_to_object(ctx, args[0], "user");
+    SharedUser user = *get_internal<T, UserClass<T>>(ctx, user_object);
+
+    auto partition_value_value = args[1];
+    if (Value::is_undefined(ctx, partition_value_value)) {
+        return_value.set(Value::from_null(ctx));
+    }
+    else {
+        bson::Bson partition_bson;
+        if (Value::is_string(ctx, partition_value_value)) {
+            std::string pv = Value::validated_to_string(ctx, partition_value_value);
+            partition_bson = bson::Bson(pv);
+        }
+        else if (Value::is_number(ctx, partition_value_value)) {
+            auto pv = Value::validated_to_number(ctx, partition_value_value);
+            partition_bson = bson::Bson(static_cast<int64_t>(pv));
+        }
+        else if (Value::is_object_id(ctx, partition_value_value)) {
+            auto pv = Value::validated_to_object_id(ctx, partition_value_value);
+            partition_bson = bson::Bson(pv);
+        }
+        else {
+            throw std::runtime_error("partitionValue must be of type 'string', 'number', or 'objectId'.");
+        }
+
+        std::ostringstream s;
+        s << partition_bson;
+        std::string partition_value = s.str();
+
+        auto sync_config = SyncConfig(user, partition_value);
+        auto path = SyncManager::shared().path_for_realm(sync_config);
+        if (auto session = user->session_for_on_disk_path(path)) {
+            return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+        }
+        else {
+            return_value.set(Value::from_null(ctx));
+        }
+    }
+}
+
+template<typename T>
+void SyncClass<T>::all_sync_sessions(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
+
+    auto user_object = Value::validated_to_object(ctx, args[0], "user");
+    SharedUser user = *get_internal<T, UserClass<T>>(ctx, user_object);
+    auto all_sessions = user->all_sessions();
+    std::vector<ValueType> session_objects;
+    for (auto session : all_sessions) {
+        session_objects.push_back(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+    }
+    return_value.set(Object::create_array(ctx, session_objects));
 }
 
 template<typename T>

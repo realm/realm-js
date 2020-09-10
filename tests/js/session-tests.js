@@ -767,6 +767,40 @@ module.exports = {
         });
     },
 
+    async test_syncSession() {
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+        const realmPartition = Utils.genPartition();
+        let user = await app.logIn(credentials);
+        let session1 = Realm.App.Sync.syncSession(user, realmPartition);
+        TestCase.assertNull(session1);
+
+        const config = getSyncConfiguration(user, realmPartition);
+        let realm = new Realm(config);
+        console.log('HEST', realmPartition);
+        let session2 = Realm.App.Sync.syncSession(user, realmPartition);
+        TestCase.assertNotNull(session2);
+        realm.close();
+    },
+
+    async test_allSyncSessions() {
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+        const realmPartition = Utils.genPartition();
+        let user = await app.logIn(credentials);
+        let sessions1 = Realm.App.Sync.allSyncSessions(user);
+        TestCase.assertArrayLength(sessions1, 0);
+
+        const config = getSyncConfiguration(user, realmPartition);
+        let realm = new Realm(config);
+
+        let sessions2 = Realm.App.Sync.allSyncSessions(user);
+        TestCase.assertArrayLength(sessions2, 1);
+        TestCase.assertNotNull(sessions2[0]);
+        realm.close();
+    },
+
+
     testSessionStopPolicy() {
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();

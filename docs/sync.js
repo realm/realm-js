@@ -230,6 +230,25 @@ class Sync {
      * If `false` is returned it means that no sessions currently exist.
      */
     static _hasExistingSessions() { }
+
+    /**
+     * Returns all sync sessions for a user.
+     *
+     * @param {Realm.User} user  - the user.
+     * @returns{Array<Realm.App.Sync.Session>} an array of sessions
+     * @since 10.0.0
+     */
+    static allSyncSessions(user) { }
+
+    /**
+     * Returns the session associated with a user and partition value.
+     *
+     * @param {Realm.User} user
+     * @param {string|number|ObjectId|null} partitionValue
+     * @returns {Realm.App.Sync.Session} the session
+     * @since 10.0.0
+     */
+    static syncSession(user, partitionValue) { }
 }
 
 /**
