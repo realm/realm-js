@@ -165,13 +165,9 @@
 		02F59EDE1C88F2BB007F774C /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = transact_log_handler.hpp; sourceTree = "<group>"; };
 		3F50A43C2447C09D003A6F4C /* copyable_atomic.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = copyable_atomic.hpp; sourceTree = "<group>"; };
 		3F50A43D2447C09D003A6F4C /* event_loop_dispatcher.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = event_loop_dispatcher.hpp; sourceTree = "<group>"; };
-		3F50A43F2447C09D003A6F4C /* scheduler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = scheduler.hpp; sourceTree = "<group>"; };
-		3F50A4412447C09D003A6F4C /* scheduler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = scheduler.hpp; sourceTree = "<group>"; };
-		3F50A4432447C09D003A6F4C /* scheduler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = scheduler.hpp; sourceTree = "<group>"; };
 		3F50A4442447C09D003A6F4C /* scheduler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = scheduler.hpp; sourceTree = "<group>"; };
 		3F50A4452447C09D003A6F4C /* checked_mutex.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = checked_mutex.hpp; sourceTree = "<group>"; };
 		3F50A4462447C09D003A6F4C /* scheduler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = scheduler.cpp; sourceTree = "<group>"; };
-		3F50A4482447C09D003A6F4C /* scheduler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = scheduler.hpp; sourceTree = "<group>"; };
 		3FCE2A871F58BDE500D4855B /* object_accessor_impl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = object_accessor_impl.hpp; sourceTree = "<group>"; };
 		3FCE2A8C1F58BDFF00D4855B /* aligned_union.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = aligned_union.hpp; sourceTree = "<group>"; };
 		3FCE2A8E1F58BDFF00D4855B /* tagged_bool.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = tagged_bool.hpp; sourceTree = "<group>"; };
@@ -302,10 +298,6 @@
 		02022A6B1DA47EC8000F0C4F /* util */ = {
 			isa = PBXGroup;
 			children = (
-				02022A6C1DA47EC8000F0C4F /* android */,
-				02022A6E1DA47EC8000F0C4F /* apple */,
-				02022A751DA47EC8000F0C4F /* generic */,
-				02022A771DA47EC8000F0C4F /* uv */,
 				3FCE2A8C1F58BDFF00D4855B /* aligned_union.hpp */,
 				02022A701DA47EC8000F0C4F /* atomic_shared_ptr.hpp */,
 				3F50A4452447C09D003A6F4C /* checked_mutex.hpp */,
@@ -439,38 +431,6 @@
 				4BA4035F23C6664700DE6856 /* object_changeset.cpp */,
 			);
 			name = "Recovered References";
-			sourceTree = "<group>";
-		};
-		3F50A43E2447C09D003A6F4C /* uv */ = {
-			isa = PBXGroup;
-			children = (
-				3F50A43F2447C09D003A6F4C /* scheduler.hpp */,
-			);
-			path = uv;
-			sourceTree = "<group>";
-		};
-		3F50A4402447C09D003A6F4C /* generic */ = {
-			isa = PBXGroup;
-			children = (
-				3F50A4412447C09D003A6F4C /* scheduler.hpp */,
-			);
-			path = generic;
-			sourceTree = "<group>";
-		};
-		3F50A4422447C09D003A6F4C /* android */ = {
-			isa = PBXGroup;
-			children = (
-				3F50A4432447C09D003A6F4C /* scheduler.hpp */,
-			);
-			path = android;
-			sourceTree = "<group>";
-		};
-		3F50A4472447C09D003A6F4C /* apple */ = {
-			isa = PBXGroup;
-			children = (
-				3F50A4482447C09D003A6F4C /* scheduler.hpp */,
-			);
-			path = apple;
 			sourceTree = "<group>";
 		};
 		504CF8521EBCAE3600A9A4B6 /* impl */ = {
@@ -1140,7 +1100,7 @@
 					"-isystem",
 					"$(SRCROOT)/../vendor/sync/include",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios-dbg.a $(SRCROOT)/../vendor/realm-ios/librealm-ios-dbg.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios-dbg.a $(SRCROOT)/../vendor/realm-ios/librealm-sync-ios-dbg.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
@@ -1168,7 +1128,7 @@
 					"-isystem",
 					"$(SRCROOT)/../vendor/sync/include",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios.a $(SRCROOT)/../vendor/realm-ios/librealm-ios.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios.a $(SRCROOT)/../vendor/realm-ios/librealm-sync-ios.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
