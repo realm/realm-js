@@ -101,7 +101,7 @@ declare namespace Realm {
 
     interface SyncConfiguration {
         user: User;
-        partitionValue: string|number|ObjectId;
+        partitionValue: string|number|ObjectId|null;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;

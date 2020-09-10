@@ -16,6 +16,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Added property `Realm.User.identities`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 * Added property `name` to `Realm.MongoDB`, `Realm.MongoDB.Database` and `Realm.MongoDB.Collection`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 * Added methods `Realm.App.Sync.syncSession()` and `Realm.App.Sync.allSyncSessions()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Allow synchronization on the nil partition by specifying `null` as `partitionValue` in sync configuration (RJS-726).
 
 ### Fixed
 * Reapplied fix for the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth. ([#3109])(https://github.com/realm/realm-js/issues/3109)
@@ -25,6 +26,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+* Stopped building binary releases for Node.js 11
 
 ### Internal
 * None.
