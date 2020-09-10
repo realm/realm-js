@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+6.1.1 Release notes (2020-9-10)
 =============================================================
 NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade version 10 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. 
 NOTE: Realm Studio is not able to open Realm file format version 11.
