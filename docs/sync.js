@@ -168,8 +168,16 @@ class Sync {
     static reconnect() { }
 
     /**
-     * Set the sync log level.
-     * @param {Realm.Sync~LogLevel} level - The new log level.
+     * Set the sync log level. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     * @example
+     * {
+     * let app = new Realm.App(getAppConfig());
+     * Realm.Sync.setLogLevel("all");
+     * let user = await app.logIn(credentials);
+     * let realm = await Realm.open(getRealmConfig(user));
+     * }
+     * @param {Realm.Sync~LogLevel} level - The log level.
      */
     static setLogLevel(level) { }
 
@@ -192,8 +200,17 @@ class Sync {
      */
 
     /**
-     * Capture the sync client's log.
+     * Capture the sync client's log. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     * @example
+     * {
+     * let app = new Realm.App(getAppConfig());
+     * Realm.Sync.setLogger((level, message) => console.log(`[${level}] ${message}`);
+     * let user = await app.logIn(credentials);
+     * let realm = await Realm.open(getRealmConfig(user));
+     * }
      * @param {Realm.Sync~logCallback} logger - The log callback.
+     * @see {Realm.Sync~setLogLevel}
      */
     static setLogger(logger) { }
 
@@ -1070,7 +1087,7 @@ class RemoteMongoDBCollection {
      * By default, yields all change events for this collection. You may specify at most one of
      * the `filter` or `ids` options.
      *
-     * @param {object} [options={}] 
+     * @param {object} [options={}]
      * @param {object} [options.filter] A filter for which change events you are interested in.
      * @param {any[]} [options.ids] A list of ids that you are interested in watching
      *
