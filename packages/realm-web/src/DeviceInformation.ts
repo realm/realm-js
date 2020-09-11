@@ -23,6 +23,11 @@ import { getEnvironment } from "./environment";
 import { Storage } from "./storage";
 import { removeKeysWithUndefinedValues } from "./utils/objects";
 
+/**
+ * The key in a storage on which the device id is stored.
+ */
+export const DEVICE_ID_STORAGE_KEY = "deviceId";
+
 /** Provided by Rollup */
 declare const __SDK_VERSION__: string;
 
@@ -97,7 +102,7 @@ export class DeviceInformation implements DeviceInformationValues {
         this.platformVersion = environment.platformVersion;
         this.appId = appId;
         this.appVersion = appVersion;
-        const storedDeviceId = storage.get("deviceId");
+        const storedDeviceId = storage.get(DEVICE_ID_STORAGE_KEY);
         this.deviceId =
             typeof storedDeviceId === "string"
                 ? new ObjectId(storedDeviceId)
@@ -109,6 +114,6 @@ export class DeviceInformation implements DeviceInformationValues {
      */
     public encode(): string {
         const obj = removeKeysWithUndefinedValues(this);
-        return Base64.encodeURI(JSON.stringify(obj));
+        return Base64.encode(JSON.stringify(obj));
     }
 }

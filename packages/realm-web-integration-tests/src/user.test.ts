@@ -17,10 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { Base64 } from "js-base64";
 
 import { Credentials, UserState } from "realm-web";
 
 import { createApp, INVALID_TOKEN } from "./utils";
+
+function deviceIdFromToken(token: string) {
+    const payload = token.split(".")[1];
+    const parsedPayload = JSON.parse(Base64.decode(payload));
+    return parsedPayload["baas_device_id"];
+}
 
 describe("User", () => {
     it("can login a user", async () => {
@@ -67,5 +74,22 @@ describe("User", () => {
         expect(user.identities.length).equals(2);
         const identityTypes = user.identities.map(i => i.providerType);
         expect(identityTypes).deep.equals(["anon-user", "local-userpass"]);
+    });
+
+    it("retrieves and resends device ids when authenticating", async () => {
+        const app = createApp();
+        // Clear any device id already in the storage.
+        app.storage.remove("deviceId");
+        // First log in
+        const credentials = Credentials.anonymous();
+        const user1 = await app.logIn(credentials);
+        // Log in again
+        const user2 = await app.logIn(credentials);
+        // Expect the two device ids to equal to that in storage
+        const storedDeviceId = app.storage.get("deviceId");
+        const deviceId1 = deviceIdFromToken(user1.accessToken || "");
+        const deviceId2 = deviceIdFromToken(user2.accessToken || "");
+        expect(deviceId1).equals(storedDeviceId);
+        expect(deviceId2).equals(storedDeviceId);
     });
 });

@@ -16,6 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import {
+    NetworkTransport,
+    DefaultNetworkTransport,
+} from "realm-network-transport";
+
 import { FunctionsFactory } from "./FunctionsFactory";
 import { User, UserState } from "./User";
 import { Credentials } from "./Credentials";
@@ -26,12 +31,8 @@ import { AppStorage } from "./AppStorage";
 import { getEnvironment } from "./environment";
 import { AuthResponse, Authenticator } from "./Authenticator";
 import { Fetcher } from "./Fetcher";
-import {
-    NetworkTransport,
-    DefaultNetworkTransport,
-} from "realm-network-transport";
 import routes from "./routes";
-import { DeviceInformation } from "./DeviceInformation";
+import { DeviceInformation, DEVICE_ID_STORAGE_KEY } from "./DeviceInformation";
 
 /**
  * Default base url to prefix all requests if no baseUrl is specified in the configuration.
@@ -200,6 +201,11 @@ export class App<
             this.users.map(u => u.id),
             true,
         );
+        // Read out and store the device id from the server
+        const deviceId = user.deviceId;
+        if (deviceId) {
+            this.storage.set(DEVICE_ID_STORAGE_KEY, deviceId);
+        }
         // Return the user
         return user;
     }
