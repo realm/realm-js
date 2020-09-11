@@ -165,7 +165,7 @@ export class OAuth2Helper {
 
     /**
      * @param storage The underlying storage to use when storing and retriving secrets.
-     * @param getAppUrl Call this to determine the app url.
+     * @param getAppUrl Call this to determine the app url - using a function to prevent fetching before it's needed.
      * @param openWindow An optional function called when a browser window needs to open.
      */
     constructor(
@@ -259,7 +259,7 @@ export class OAuth2Helper {
             state,
             // TODO: Add the device information.
         });
-        return `${appUrl}/auth/providers/${credentials.providerName}/login?${qs}`;
+        return `${appUrl}/auth/providers/${credentials.providerName}/login${qs}`;
     }
 
     /**

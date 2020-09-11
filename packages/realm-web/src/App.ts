@@ -30,6 +30,7 @@ import {
     NetworkTransport,
     DefaultNetworkTransport,
 } from "realm-network-transport";
+import routes from "./routes";
 
 /**
  * Default base url to prefix all requests if no baseUrl is specified in the configuration.
@@ -97,6 +98,16 @@ export class App<
     private users: User<FunctionsFactoryType, CustomDataType>[] = [];
 
     /**
+     * The base URL of the app.
+     */
+    private baseUrl: string;
+
+    /**
+     * A promise resolving to the App's location url.
+     */
+    private _locationUrl: Promise<string> | null = null;
+
+    /**
      * Construct a Realm App, either from the Realm App id visible from the MongoDB Realm UI or a configuration.
      *
      * @param idOrConfiguration The Realm App id or a configuration to use for this app.
@@ -116,16 +127,16 @@ export class App<
         } else {
             throw new Error("Missing a MongoDB Realm app-id");
         }
+        this.baseUrl = configuration.baseUrl || DEFAULT_BASE_URL;
         const {
             storage,
-            baseUrl = DEFAULT_BASE_URL,
             transport = new DefaultNetworkTransport(),
         } = configuration;
         // Construct a fetcher wrapping the network transport
         this.fetcher = new Fetcher({
-            baseUrl,
             appId: this.id,
             userContext: this,
+            locationUrlContext: this,
             transport,
         });
         // Construct the functions factory
@@ -245,6 +256,36 @@ export class App<
         );
         // Returning a freezed copy of the list of users to prevent outside changes
         return Object.freeze([...activeUsers, ...loggedOutUsers]);
+    }
+
+    /**
+     * @returns A promise of the app URL, with the app location resolved.
+     */
+    public get locationUrl(): Promise<string> {
+        if (!this._locationUrl) {
+            const path = routes.api().app(this.id).location().path;
+            this._locationUrl = this.fetcher
+                .fetchJSON({
+                    method: "GET",
+                    url: this.baseUrl + path,
+                    tokenType: "none",
+                })
+                .then(({ hostname }) => {
+                    if (typeof hostname !== "string") {
+                        throw new Error(
+                            "Expected response to contain a 'hostname'",
+                        );
+                    } else {
+                        return hostname;
+                    }
+                })
+                .catch(err => {
+                    // Reset the location to allow another request to fetch again.
+                    this._locationUrl = null;
+                    throw err;
+                });
+        }
+        return this._locationUrl;
     }
 
     /**

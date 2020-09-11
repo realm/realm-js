@@ -19,6 +19,9 @@
 import { Fetcher } from "./Fetcher";
 import { Storage } from "./storage";
 import { OAuth2Helper } from "./OAuth2Helper";
+import { encodeQueryString } from "./utils/string";
+
+// TODO: Add the deviceId to the auth response.
 
 /**
  * The response from an authentication request.
@@ -35,7 +38,7 @@ export type AuthResponse = {
     /**
      * The refresh token for the session.
      */
-    refreshToken: string;
+    refreshToken: string | null;
 };
 
 /**
@@ -51,11 +54,7 @@ export class Authenticator {
      */
     constructor(fetcher: Fetcher, storage: Storage) {
         this.fetcher = fetcher;
-        this.oauth2 = new OAuth2Helper(storage, () =>
-            fetcher
-                .getLocationUrl()
-                .then(url => url + this.fetcher.getAppPath().path),
-        );
+        this.oauth2 = new OAuth2Helper(storage, () => fetcher.appUrl);
     }
 
     /**
@@ -66,10 +65,6 @@ export class Authenticator {
         credentials: Realm.Credentials<any>,
         link = false,
     ): Promise<AuthResponse> {
-        if (link) {
-            throw new Error("Linking accounts are not yet implemented");
-        }
-
         if (
             credentials.providerType.startsWith("oauth2") &&
             typeof credentials.payload.redirectUrl === "string"
@@ -79,28 +74,29 @@ export class Authenticator {
             return OAuth2Helper.decodeAuthInfo(result.userAuth);
         } else {
             // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
-            const appPath = this.fetcher.getAppPath();
-            const response = await this.fetcher.fetchJSON<object, any>({
+            const appRoute = this.fetcher.appRoute;
+            const loginRoute = appRoute
+                .authProvider(credentials.providerName)
+                .login();
+            const qs = encodeQueryString({ link: link ? "true" : undefined });
+            const path = loginRoute.path + qs;
+            const response = await this.fetcher.fetchJSON({
                 method: "POST",
-                path: appPath.authProvider(credentials.providerName).login()
-                    .path,
+                path,
                 body: credentials.payload,
-                tokenType: "none",
+                tokenType: link ? "access" : "none",
             });
             // Spread out values from the response and ensure they're valid
             const {
                 user_id: userId,
                 access_token: accessToken,
-                refresh_token: refreshToken,
+                refresh_token: refreshToken = null,
             } = response;
             if (typeof userId !== "string") {
                 throw new Error("Expected a user id in the response");
             }
             if (typeof accessToken !== "string") {
                 throw new Error("Expected an access token in the response");
-            }
-            if (typeof refreshToken !== "string") {
-                throw new Error("Expected a refresh token in the response");
             }
             return { userId, accessToken, refreshToken };
         }
