@@ -31,6 +31,7 @@ import {
     DefaultNetworkTransport,
 } from "realm-network-transport";
 import routes from "./routes";
+import { DeviceInformation } from "./DeviceInformation";
 
 /**
  * Default base url to prefix all requests if no baseUrl is specified in the configuration.
@@ -150,7 +151,11 @@ export class App<
         // Construct the storage
         const baseStorage = storage || getEnvironment().defaultStorage;
         this.storage = new AppStorage(baseStorage, this.id);
-        this.authenticator = new Authenticator(this.fetcher, baseStorage);
+        this.authenticator = new Authenticator(
+            this.fetcher,
+            baseStorage,
+            () => this.deviceInformation,
+        );
         // Hydrate the app state from storage
         this.hydrate();
     }
@@ -286,6 +291,13 @@ export class App<
                 });
         }
         return this._locationUrl;
+    }
+
+    /**
+     * @returns Information about the current device, sent to the server when authenticating.
+     */
+    public get deviceInformation() {
+        return new DeviceInformation({ storage: this.storage });
     }
 
     /**

@@ -20,6 +20,7 @@ import { Fetcher } from "./Fetcher";
 import { Storage } from "./storage";
 import { OAuth2Helper } from "./OAuth2Helper";
 import { encodeQueryString } from "./utils/string";
+import { DeviceInformation } from "./DeviceInformation";
 
 // TODO: Add the deviceId to the auth response.
 
@@ -41,20 +42,29 @@ export type AuthResponse = {
     refreshToken: string | null;
 };
 
+type DeviceInformationGetter = () => DeviceInformation;
+
 /**
  * Handles authentication and linking of users.
  */
 export class Authenticator {
     private readonly fetcher: Fetcher;
-    private oauth2: OAuth2Helper;
+    private readonly oauth2: OAuth2Helper;
+    private readonly getDeviceInformation: DeviceInformationGetter;
 
     /**
      * @param fetcher The fetcher used to fetch responses from the server.
      * @param storage The storage used when completing OAuth 2.0 flows (should not be scoped to a specific app).
+     * @param getDeviceInformation Called to get device information to be sent to the server.
      */
-    constructor(fetcher: Fetcher, storage: Storage) {
+    constructor(
+        fetcher: Fetcher,
+        storage: Storage,
+        getDeviceInformation: DeviceInformationGetter,
+    ) {
         this.fetcher = fetcher;
         this.oauth2 = new OAuth2Helper(storage, () => fetcher.appUrl);
+        this.getDeviceInformation = getDeviceInformation;
     }
 
     /**
@@ -78,7 +88,12 @@ export class Authenticator {
             const loginRoute = appRoute
                 .authProvider(credentials.providerName)
                 .login();
-            const qs = encodeQueryString({ link: link ? "true" : undefined });
+
+            const deviceInformation = this.getDeviceInformation();
+            const qs = encodeQueryString({
+                link: link ? "true" : undefined,
+                device: deviceInformation.encode(),
+            });
             const path = loginRoute.path + qs;
             const response = await this.fetcher.fetchJSON({
                 method: "POST",
