@@ -1186,7 +1186,7 @@
 					"-isystem",
 					"$(SRCROOT)/../vendor/sync/include",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios-dbg.a $(SRCROOT)/../vendor/realm-ios/librealm-ios-dbg.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios-dbg.a $(SRCROOT)/../vendor/realm-ios/librealm-sync-ios-dbg.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
@@ -1215,7 +1215,7 @@
 					"-isystem",
 					"$(SRCROOT)/../vendor/sync/include",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios.a $(SRCROOT)/../vendor/realm-ios/librealm-ios.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios.a $(SRCROOT)/../vendor/realm-ios/librealm-sync-ios.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
