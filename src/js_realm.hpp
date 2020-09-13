@@ -831,7 +831,10 @@ void RealmClass<T>::get_is_closed(ContextType ctx, ObjectType object, ReturnValu
 template<typename T>
 void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto realm = *get_internal<T, RealmClass<T>>(ctx, object);
-    if (std::shared_ptr<SyncSession> session = SyncManager::shared().get_existing_active_session(realm->config().path)) {
+    auto config = realm->config();
+    auto user = config.sync_config->user;
+
+    if (std::shared_ptr<SyncSession> session = user->sync_manager()->get_existing_active_session(config.path)) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
     } else {
         return_value.set_null();

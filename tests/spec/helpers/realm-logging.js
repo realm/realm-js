@@ -27,11 +27,11 @@ function patch(Realm) {
         const originalClearTestState = Realm.clearTestState;
         Realm.clearTestState = function patchedClearTestState() {
             originalClearTestState.call(Realm);
-            setupLogging(Realm);
+            //setupLogging(Realm);
         }
 
         // Setup the logger initially
-        setupLogging(Realm);
+        //setupLogging(Realm);
     }
 }
 

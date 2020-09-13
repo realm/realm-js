@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "js_sync_util.hpp"
 #include "sync/generic_network_transport.hpp"
 #include "sync/sync_user.hpp"
 #include "sync/app.hpp"
@@ -140,7 +139,12 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
             }
         }
     } else if (Value::is_string(ctx, args[0])) {
-        config.app_id = Value::validated_to_string(ctx, args[0]);
+        auto app_id = Value::validated_to_string(ctx, args[0]);
+        if (auto app = app::App::get_cached_app(app_id)) {
+            set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(app));
+            return;
+        }
+        throw std::runtime_error(util::format("No app with id '%$' has been created.", app_id));
     } else {
         throw std::runtime_error("Expected either a configuration object or an app id string.");
     }
@@ -175,8 +179,10 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     client_config.base_file_path = default_realm_file_directory();
     client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
     client_config.user_agent_binding_info = user_agent_binding_info;
-    SyncManager::shared().configure(client_config, config);
-    set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(SyncManager::shared().app()));
+
+    SharedApp app = app::App::get_shared_app(config, client_config);
+
+    set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(app));
 }
 
 template<typename T>
