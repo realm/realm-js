@@ -172,10 +172,10 @@ class Sync {
      * but before opening any Realms.
      * @example
      * {
-     * let app = new Realm.App(getAppConfig());
+     * const app = new Realm.App(getAppConfig());
      * Realm.Sync.setLogLevel("all");
-     * let user = await app.logIn(credentials);
-     * let realm = await Realm.open(getRealmConfig(user));
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
      * }
      * @param {Realm.Sync~LogLevel} level - The log level.
      */
@@ -204,10 +204,10 @@ class Sync {
      * but before opening any Realms.
      * @example
      * {
-     * let app = new Realm.App(getAppConfig());
+     * const app = new Realm.App(getAppConfig());
      * Realm.Sync.setLogger((level, message) => console.log(`[${level}] ${message}`);
-     * let user = await app.logIn(credentials);
-     * let realm = await Realm.open(getRealmConfig(user));
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
      * }
      * @param {Realm.Sync~logCallback} logger - The log callback.
      * @see {Realm.Sync~setLogLevel}
