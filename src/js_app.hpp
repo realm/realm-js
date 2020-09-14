@@ -144,7 +144,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
             set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(app));
             return;
         }
-        throw std::runtime_error(util::format("No app with id '%$' has been created.", app_id));
+        throw std::runtime_error(util::format("No app with id '%1' has been created.", app_id));
     } else {
         throw std::runtime_error("Expected either a configuration object or an app id string.");
     }

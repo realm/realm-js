@@ -34,6 +34,9 @@ if (isNodeProcess && process.platform === 'win32') {
     global.enableSyncTests = false;
 }
 
+const SegfaultHandler = node_require('segfault-handler');
+SegfaultHandler.registerHandler("crash.log");
+
 var TESTS = {
     ListTests: require('./list-tests'),
     LinkingObjectsTests: require('./linkingobjects-tests'),
@@ -102,7 +105,17 @@ exports.runTest = function(suiteName, testName) {
     const testMethod = testSuite && testSuite[testName];
 
     if (testMethod) {
-        Realm.clearTestState();
+      Realm.clearTestState();
+      if (Realm.Sync) {
+        try {
+          const name = initial; AppConfig = require('./support/testConfig');
+          let app = new Realm.App(AppConfig.integrationAppConfig.id);
+          app.allUsers.forEach(u => {
+            u.logOut();
+          });
+        } catch (e) { }
+      }
+        
         console.warn("Starting test " + testName);
         var result = testMethod.call(testSuite);
 

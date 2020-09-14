@@ -832,14 +832,15 @@ template<typename T>
 void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto realm = *get_internal<T, RealmClass<T>>(ctx, object);
     auto config = realm->config();
-    auto user = config.sync_config->user;
-
-    if (std::shared_ptr<SyncSession> session = user->sync_manager()->get_existing_active_session(config.path)) {
-        return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
-    } else {
-        return_value.set_null();
+    if (config.sync_config) {
+        auto user = config.sync_config->user;
+        if (user) {
+            if (std::shared_ptr<SyncSession>session = user->sync_manager()->get_existing_active_session(config.path)) {
+                return return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+            }
+        }
     }
-
+    return_value.set(Value::from_null(ctx));
 }
 #endif
 
