@@ -51,4 +51,21 @@ describe("User", () => {
         // Expect the user to have a diffent token now
         expect(user.accessToken).not.equals(INVALID_TOKEN);
     });
+
+    it("can link credentials", async () => {
+        const app = createApp();
+        const credentials = Credentials.anonymous();
+        const user = await app.logIn(credentials);
+
+        const now = new Date();
+        const nonce = now.getTime();
+        const email = `dinesh-${nonce}@testing.mongodb.com`;
+        const password = "v3ry-s3cret";
+        await app.emailPasswordAuth.registerUser(email, password);
+        const emailCredentials = Credentials.emailPassword(email, password);
+        await user.linkCredentials(emailCredentials);
+        expect(user.identities.length).equals(2);
+        const identityTypes = user.identities.map(i => i.providerType);
+        expect(identityTypes).deep.equals(["anon-user", "local-userpass"]);
+    });
 });

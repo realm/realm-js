@@ -40,9 +40,11 @@ export class MockFetcher extends Fetcher {
     ) {
         const mockTransport = new MockNetworkTransport(responses);
         super({
-            baseUrl: "http://localhost:1337",
             appId: "mocked-app-id",
             userContext: userContext,
+            locationUrlContext: {
+                locationUrl: Promise.resolve("http://localhost:1337"),
+            },
             transport: mockTransport,
         });
         this.mockTransport = mockTransport;
@@ -58,12 +60,5 @@ export class MockFetcher extends Fetcher {
      */
     public get requests(): AuthenticatedRequest<any>[] {
         return this.mockTransport.requests;
-    }
-
-    /**
-     * @returns A promise of the app URL, with the app location resolved.
-     */
-    public async getLocationUrl() {
-        return this.baseUrl;
     }
 }

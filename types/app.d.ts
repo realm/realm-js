@@ -339,7 +339,7 @@ declare namespace Realm {
         readonly state: UserState;
 
         /**
-         * An array of all identities
+         * The identities of the user at any of the app's authentication providers.
          */
         readonly identities: UserIdentity[];
 

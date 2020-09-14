@@ -18,13 +18,14 @@
 
 import { expect } from "chai";
 
-import { UserType, User } from "..";
+import { UserType, User, Credentials } from "..";
 
 import {
     MockApp,
     LOCATION_RESPONSE,
     LOCATION_REQUEST,
     ACCEPT_JSON_HEADERS,
+    SENDING_JSON_HEADERS,
 } from "./utils";
 
 // Since responses from the server uses underscores in field names:
@@ -196,5 +197,56 @@ describe("User", () => {
         expect(user.profile).deep.equals(profileBefore);
         const profileAfter = JSON.parse(userStorage.get("profile") || "");
         expect(profileAfter).deep.equals(profileBefore);
+    });
+
+    it("can link credentials", async () => {
+        const app = new MockApp("my-mocked-app", [
+            LOCATION_RESPONSE,
+            {
+                user_id: "some-user-id",
+                access_token: "new-access-token",
+            },
+            {
+                data: {
+                    first_name: "John",
+                },
+                identities: [],
+                type: "normal",
+            },
+        ]);
+        const user = new User({
+            app,
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+        });
+
+        const credentials = Credentials.emailPassword(
+            "gilfoyle@testing.mongodb.com",
+            "s3cr3t",
+        );
+        await user.linkCredentials(credentials);
+
+        expect(app.requests).deep.equals([
+            LOCATION_REQUEST,
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?link=true",
+                headers: SENDING_JSON_HEADERS,
+                body: {
+                    username: "gilfoyle@testing.mongodb.com",
+                    password: "s3cr3t",
+                },
+            },
+            {
+                method: "GET",
+                headers: {
+                    ...ACCEPT_JSON_HEADERS,
+                    Authorization: "Bearer new-access-token",
+                },
+                url: "http://localhost:1337/api/client/v2.0/auth/profile",
+            },
+        ]);
     });
 });

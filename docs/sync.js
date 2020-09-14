@@ -170,6 +170,16 @@ class Sync {
     /**
      * Set the sync log level.
      * @param {Realm.App.Sync~LogLevel} level - The new log level.
+     * Set the sync log level. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     * @example
+     * {
+     * const app = new Realm.App(getAppConfig());
+     * Realm.App.Sync.setLogLevel("all");
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
+     * }
+     * @param {Realm.App.Sync~LogLevel} level - The log level.
      */
     static setLogLevel(level) { }
 
@@ -192,8 +202,17 @@ class Sync {
      */
 
     /**
-     * Capture the sync client's log.
+     * Capture the sync client's log. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     * @example
+     * {
+     * const app = new Realm.App(getAppConfig());
+     * Realm.App.Sync.setLogger((level, message) => console.log(`[${level}] ${message}`);
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
+     * }
      * @param {Realm.App.Sync~logCallback} logger - The log callback.
+     * @see {Realm.App.Sync~setLogLevel}
      */
     static setLogger(logger) { }
 
@@ -579,7 +598,7 @@ class User {
      * Links a user to another credentials. This is useful when linking
      * different account togteher.
      * @param {Realm.Credentials} credentials
-     * @returns {Promise<Realm.User>} - updated user object
+     * @returns {Promise<void>} - resolves when the user has been linked with the other credentials.
      */
     linkCredentials(credentials) { }
 
