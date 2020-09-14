@@ -5,12 +5,15 @@ import groovy.json.JsonOutput
 repoName = 'realm-js' // This is a global variable
 
 // These versions must be written in ascending order (lowest version is used when testing)
-def nodeVersions = ['10.19.0', "11.15.0", "12.16.1", "13.0.0", "14.0.0"]
+//def nodeVersions = ['10.19.0', "11.15.0", "12.16.1", "13.0.0", "14.0.0"]
+def nodeVersions = ['10.19.0']
 nodeTestVersion = nodeVersions[0]
+nodePublishVersion = '10.19.0';
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
 //For more see https://www.npmjs.com/package/spectron
-def electronVersions = ['8.1.1', '7.2.3']
+//def electronVersions = ['8.1.1', '7.2.3']
+def electronVersions = ['8.1.1']
 electronTestVersion = electronVersions[0]
 
 def gitTag = null
@@ -113,7 +116,7 @@ stage('build') {
 
 if (gitTag) {
   stage('publish') {
-    publish(nodeVersions, electronVersions, dependencies, gitTag)
+    publish(dependencies, gitTag)
   }
 }
 
@@ -441,23 +444,24 @@ def buildAndroid() {
   }
 }
 
-def publish(nodeVersions, electronVersions, dependencies, tag) {
+def publish(dependencies, tag) {
   myNode('docker') {
-    for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
-      for (def version in nodeVersions) {
-        unstash "pre-gyp-${platform}-${version}"
-      }
-      for (def version in electronVersions) {
-        unstash "electron-pre-gyp-${platform}-${version}"
-      }
-    }
+    // for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
+    //   for (def version in nodeVersions) {
+    //     unstash "pre-gyp-${platform}-${version}"
+    //   }
+    //   for (def version in electronVersions) {
+    //     unstash "electron-pre-gyp-${platform}-${version}"
+    //   }
+    // }
+
+    unstash "pre-gyp-${platform}-${nodePublishVersion}"
 
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
-      sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/${dependencies.VERSION}/'"
+      sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}/'"
     }
   }
 }
-
 
 def readGitTag() {
   return sh(returnStdout: true, script: 'git describe --exact-match --tags HEAD || echo ""').readLines().last().trim()
