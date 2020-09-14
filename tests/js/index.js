@@ -34,9 +34,6 @@ if (isNodeProcess && process.platform === 'win32') {
     global.enableSyncTests = false;
 }
 
-const SegfaultHandler = node_require('segfault-handler');
-SegfaultHandler.registerHandler("crash.log");
-
 var TESTS = {
     ListTests: require('./list-tests'),
     LinkingObjectsTests: require('./linkingobjects-tests'),
