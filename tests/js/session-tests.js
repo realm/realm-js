@@ -26,7 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
-const { ObjectId } = require("bson");
+const { ObjectId, Long } = require("bson");
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
@@ -830,15 +830,16 @@ module.exports = {
             });
     },
 
-    async testPartitionValueTypes() {
+    async testAcceptedPartitionValueTypes() {
+        const lowRndNumber =Math.floor(Math.random() * Math.floor(100000));
         const testPartitionValues = [
             Utils.genPartition(), // string
-            Math.floor(Math.random() * Math.floor(1000000)), // number
+            lowRndNumber, // low random number
+            Number.MAX_SAFE_INTEGER - lowRndNumber, // high random number
             new ObjectId(), // ObjectId
             null // null...
         ];
 
-        
         for (const partitionValue of testPartitionValues) {
             const app = new Realm.App(appConfig);
 
@@ -850,14 +851,29 @@ module.exports = {
             const realm = new Realm(config);
             TestCase.assertDefined(realm);
 
-            // ObjectId has it's own 'equals' comparrer
-            if (partitionValue instanceof ObjectId) {
-                TestCase.assertTrue(config.sync.partitionValue.equals(realm.syncSession.config.partitionValue));
+            const spv = realm.syncSession.config.partitionValue;
+
+            // ObjectId & Long have their own 'equals' comparrer
+            if (spv instanceof ObjectId || spv instanceof Long) {
+                TestCase.assertTrue(spv.equals(partitionValue));
             } else {
-                TestCase.assertEqual(config.sync.partitionValue, realm.syncSession.config.partitionValue);
+                TestCase.assertEqual(spv, partitionValue);
             }
 
             realm.close();
+        }
+    },
+
+    async testNonAcceptedPartitionValueTypes() {
+        const testPartitionValues = ["", 1.2];
+
+        for (const partitionValue of testPartitionValues) {
+            const app = new Realm.App(appConfig);
+
+            const user = await app.logIn(Realm.Credentials.anonymous())
+
+            const config = getSyncConfiguration(user, partitionValue);
+            TestCase.assertThrows(() => new Realm(config));
         }
     },
 

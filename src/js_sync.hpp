@@ -62,11 +62,18 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
         bson::Bson partition_bson;
         if (Value<T>::is_string(ctx, partition_value_value)) {
             std::string pv = Value<T>::validated_to_string(ctx, partition_value_value);
+            if (pv.length() == 0) {
+                throw std::runtime_error("partitionValue of type 'string' cannot be an empty string.");
+            }
             partition_bson = bson::Bson(pv);
         }
         else if (Value<T>::is_number(ctx, partition_value_value)) {
             auto pv = Value<T>::validated_to_number(ctx, partition_value_value);
-            partition_bson = bson::Bson(static_cast<int64_t>(pv));
+            auto pvi = static_cast<int64_t>(pv);
+            if (pv != pvi || pvi < 0) {
+                throw std::runtime_error("partitionValue of type 'number' must be a whole positive number.");
+            }
+            partition_bson = bson::Bson(pvi);
         }
         else if (Value<T>::is_object_id(ctx, partition_value_value)) {
             auto pv = Value<T>::validated_to_object_id(ctx, partition_value_value);
@@ -88,6 +95,7 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
 
 
 using WeakSession = std::weak_ptr<realm::SyncSession>;
+using bson::Bson;
 
 template<typename T>
 class SessionClass : public ClassDefinition<T, WeakSession> {
