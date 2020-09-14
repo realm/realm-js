@@ -2,7 +2,7 @@
 =============================================================
 
 ### Enhancements
-* None
+* Added support for linking credentials to an existing user. [#3088](https://github.com/realm/realm-js/pull/3088).
 
 ### Fixed
 * If the payload for `callFunction` included certain types the request would fail with `"invalid function call request (status 400)"`. All `EJSON` serialization is now done in canonical mode [#3157](https://github.com/realm/realm-js/pull/3157)

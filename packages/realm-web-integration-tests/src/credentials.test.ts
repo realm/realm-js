@@ -42,28 +42,17 @@ describe("Credentials", () => {
         () => {
             it("can register and authenticate", async () => {
                 const app = createApp();
+
+                const now = new Date();
+                const nonce = now.getTime();
+                const email = `gilfoil-${nonce}@testing.mongodb.com`;
+                const password = "v3ry-s3cret";
                 // Register the user
-                try {
-                    await app.emailPasswordAuth.registerUser(
-                        "gilfoil@testing.mongodb.com",
-                        "v3ry-s3cret",
-                    );
-                } catch (err) {
-                    // Allow the user to already be registered in the app
-                    expect(err.message).contains(
-                        "name already in use",
-                        err.message,
-                    );
-                }
+                await app.emailPasswordAuth.registerUser(email, password);
                 // Log in
-                const credentials = Credentials.emailPassword(
-                    "gilfoil@testing.mongodb.com",
-                    "v3ry-s3cret",
-                );
-                expect(credentials.payload.username).equals(
-                    "gilfoil@testing.mongodb.com",
-                );
-                expect(credentials.payload.password).equals("v3ry-s3cret");
+                const credentials = Credentials.emailPassword(email, password);
+                expect(credentials.payload.username).equals(email);
+                expect(credentials.payload.password).equals(password);
                 const user = await app.logIn(credentials);
                 expect(user).to.be.instanceOf(User);
             });

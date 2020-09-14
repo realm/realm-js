@@ -27,7 +27,6 @@ import { MongoDBRealmError } from "./MongoDBRealmError";
 
 import { User } from "./User";
 import routes from "./routes";
-import { AppLocation } from "./AppLocation";
 import { deserialize, serialize } from "./utils/ejson";
 
 /**
@@ -38,6 +37,14 @@ export type UserContext = {
      * The currently active user.
      */
     currentUser: User<object, object> | null;
+};
+
+/**
+ * Used when getting the location url of the app.
+ */
+export type LocationUrlContext = {
+    /** The location URL of the app, used instead of the base url. */
+    locationUrl: Promise<string>;
 };
 
 type TokenType = "access" | "refresh" | "none";
@@ -74,10 +81,6 @@ export type AuthenticatedRequest<RequestBody> = {
  */
 export type FetcherConfig = {
     /**
-     * The base URL of the server, before the app location has been resolved.
-     */
-    baseUrl: string;
-    /**
      * The id of the app.
      */
     appId: string;
@@ -92,7 +95,7 @@ export type FetcherConfig = {
     /**
      * An optional promise which resolves to the response of the app location request.
      */
-    location?: Promise<AppLocation> | null;
+    locationUrlContext: LocationUrlContext;
 };
 
 /**
@@ -103,40 +106,36 @@ export type FetcherConfig = {
  * Optionally parses response as JSON before returning it.
  * Fetches and exposes an app's location url.
  */
-export class Fetcher {
+export class Fetcher implements LocationUrlContext {
     /**
      * The id of the app, which this Fetcher was created for.
      */
-    public readonly baseUrl: string;
     private readonly appId: string;
     private readonly transport: NetworkTransport;
     private readonly userContext: UserContext;
-    private location: Promise<AppLocation> | null = null;
+    private readonly locationUrlContext: LocationUrlContext;
 
     /**
      * @param config A configuration of the fetcher.
      */
     constructor({
-        baseUrl,
         appId,
         transport,
         userContext,
-        location = null,
+        locationUrlContext,
     }: FetcherConfig) {
-        this.baseUrl = baseUrl;
         this.appId = appId;
         this.transport = transport;
         this.userContext = userContext;
-        this.location = location;
+        this.locationUrlContext = locationUrlContext;
     }
 
     clone(config: Partial<FetcherConfig>) {
         return new Fetcher({
-            baseUrl: this.baseUrl,
             appId: this.appId,
             transport: this.transport,
             userContext: this.userContext,
-            location: this.location,
+            locationUrlContext: this.locationUrlContext,
             ...config,
         });
     }
@@ -164,7 +163,7 @@ export class Fetcher {
             throw new Error("Use of 'url' and 'path' mutually exclusive");
         } else if (typeof path === "string") {
             // Derive the URL
-            const url = (await this.getLocationUrl()) + path;
+            const url = (await this.locationUrlContext.locationUrl) + path;
             return this.fetch({ ...request, path: undefined, url });
         } else if (typeof url === "string") {
             const response = await this.transport.fetch({
@@ -235,34 +234,24 @@ export class Fetcher {
     }
 
     /**
-     * @returns A promise of the app URL, with the app location resolved.
+     * @returns The path of the app route.
      */
-    public async getLocationUrl() {
-        if (!this.location) {
-            const path = routes.api().app(this.appId).location().path;
-            this.location = this.fetchJSON({
-                method: "GET",
-                url: this.baseUrl + path,
-                tokenType: "none",
-            }).catch(err => {
-                // Reset the location to allow another request to fetch again.
-                this.location = null;
-                throw err;
-            });
-        }
-        // Return the hostname as the location URL.
-        const { hostname } = await this.location;
-        if (typeof hostname !== "string") {
-            throw new Error("Expected response to contain a 'hostname'");
-        }
-        return hostname;
+    public get appRoute() {
+        return routes.api().app(this.appId);
     }
 
     /**
-     * @returns The path of the app route.
+     * @returns A promise of the location URL of the app.
      */
-    public getAppPath() {
-        return routes.api().app(this.appId);
+    public get locationUrl() {
+        return this.locationUrlContext.locationUrl;
+    }
+
+    /**
+     * @returns The location URL of the app.
+     */
+    public get appUrl() {
+        return this.locationUrl.then(url => url + this.appRoute.path);
     }
 
     /**

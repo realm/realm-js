@@ -31,9 +31,11 @@ describe("Fetcher", () => {
     it("constructs", () => {
         const fetcher = new Fetcher({
             appId: "test-app-id",
-            baseUrl: "http://localhost:1337",
             transport: new MockNetworkTransport(),
             userContext: { currentUser: null },
+            locationUrlContext: {
+                locationUrl: Promise.resolve("http://localhost:1337"),
+            },
         });
         expect(typeof fetcher.fetch).equals("function");
     });
@@ -42,10 +44,12 @@ describe("Fetcher", () => {
         const transport = new MockNetworkTransport([{ foo: "bar" }]);
         const fetcher = new Fetcher({
             appId: "test-app-id",
-            baseUrl: "http://localhost:1337",
             transport,
             userContext: {
                 currentUser: { accessToken: "my-access-token" } as User,
+            },
+            locationUrlContext: {
+                locationUrl: Promise.resolve("http://localhost:1337"),
             },
         });
         // Send a request
@@ -75,10 +79,12 @@ describe("Fetcher", () => {
         const transport = new MockNetworkTransport([{}]);
         const fetcher = new Fetcher({
             appId: "test-app-id",
-            baseUrl: "http://localhost:1337",
             transport,
             userContext: {
                 currentUser: { accessToken: "my-access-token" } as User,
+            },
+            locationUrlContext: {
+                locationUrl: Promise.resolve("http://localhost:1337"),
             },
         });
         // Send a request
@@ -106,10 +112,12 @@ describe("Fetcher", () => {
         const transport = new MockNetworkTransport([{}]);
         const fetcher = new Fetcher({
             appId: "test-app-id",
-            baseUrl: "http://localhost:1337",
             transport,
             userContext: {
                 currentUser: { accessToken: "my-access-token" } as User,
+            },
+            locationUrlContext: {
+                locationUrl: Promise.resolve("http://localhost:1337"),
             },
         });
         // Send a request
