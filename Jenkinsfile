@@ -305,7 +305,8 @@ def buildCommon(nodeVersion, platform) {
       sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
       sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package"
     }
-    dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+    
+    dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}")
       stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
     }
   }
@@ -320,7 +321,8 @@ def buildElectronCommon(electronVersion, platform) {
       "npm_config_devdir=${env.HOME}/.electron-gyp"
     ]) {
       sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm run package"
-      dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+      
+      dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}")
         stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
       }
     }
