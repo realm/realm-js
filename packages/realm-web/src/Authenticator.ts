@@ -21,6 +21,7 @@ import { Storage } from "./storage";
 import { OAuth2Helper } from "./OAuth2Helper";
 import { encodeQueryString } from "./utils/string";
 import { DeviceInformation } from "./DeviceInformation";
+import { removeKeysWithUndefinedValues } from "./utils/objects";
 
 // TODO: Add the deviceId to the auth response.
 
@@ -40,6 +41,10 @@ export type AuthResponse = {
      * The refresh token for the session.
      */
     refreshToken: string | null;
+    /**
+     * The id of the device recognized by the server.
+     */
+    deviceId: string;
 };
 
 type DeviceInformationGetter = () => DeviceInformation;
@@ -88,7 +93,6 @@ export class Authenticator {
             const loginRoute = appRoute
                 .authProvider(credentials.providerName)
                 .login();
-
             const deviceInformation = this.getDeviceInformation();
             const qs = encodeQueryString({
                 link: link ? "true" : undefined,
@@ -106,6 +110,7 @@ export class Authenticator {
                 user_id: userId,
                 access_token: accessToken,
                 refresh_token: refreshToken = null,
+                device_id: deviceId,
             } = response;
             if (typeof userId !== "string") {
                 throw new Error("Expected a user id in the response");
@@ -113,7 +118,7 @@ export class Authenticator {
             if (typeof accessToken !== "string") {
                 throw new Error("Expected an access token in the response");
             }
-            return { userId, accessToken, refreshToken };
+            return { userId, accessToken, refreshToken, deviceId };
         }
     }
 }

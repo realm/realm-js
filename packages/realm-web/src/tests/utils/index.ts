@@ -52,7 +52,7 @@ export const LOCATION_RESPONSE = Object.freeze({
 /**
  * Default information about the device.
  */
-export const DEFAULT_DEVICE_INFORMATION =
+export const DEFAULT_DEVICE =
     "eyJzZGtWZXJzaW9uIjoiMC4wLjAtdGVzdCIsInBsYXRmb3JtIjoibm9kZSIsInBsYXRmb3JtVmVyc2lvbiI6IjEyLjE0LjEifQ%3D%3D";
 
 export * from "./MockApp";

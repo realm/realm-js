@@ -17,14 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { ObjectId } from "bson";
 
 import { DeviceInformation } from "../DeviceInformation";
-import { MemoryStorage } from "../storage";
 
 describe("DeviceInformation", () => {
     it("it can be constructed from almost nothing", () => {
-        const storage = new MemoryStorage();
-        const info = new DeviceInformation({ storage });
+        const info = new DeviceInformation({});
         expect(info).deep.equals({
             platform: "node",
             platformVersion: process.versions.node,
@@ -35,12 +34,12 @@ describe("DeviceInformation", () => {
         });
     });
 
-    it("it can be constructed with app id and version", () => {
-        const storage = new MemoryStorage();
+    it("it can be constructed with app id, version and device id", () => {
+        const deviceId = new ObjectId("000000000000000000001337");
         const info = new DeviceInformation({
             appId: "my-app",
             appVersion: "0.0.0-app-test",
-            storage,
+            deviceId,
         });
         expect(info).deep.equals({
             appId: "my-app",
@@ -49,17 +48,7 @@ describe("DeviceInformation", () => {
             platform: "node",
             platformVersion: process.versions.node,
             sdkVersion: "0.0.0-test", // Mocked version injected by env.js
-            deviceId: undefined,
+            deviceId,
         });
-    });
-
-    it("it can read device id from storage", () => {
-        const devideIdInput = "000000000000000000001337";
-        const storage = new MemoryStorage();
-        storage.set("deviceId", devideIdInput);
-
-        const { deviceId } = new DeviceInformation({ storage });
-        const actualDeviceId = deviceId?.toHexString();
-        expect(actualDeviceId).equals(devideIdInput);
     });
 });

@@ -20,7 +20,6 @@ import { ObjectId } from "bson";
 import { Base64 } from "js-base64";
 
 import { getEnvironment } from "./environment";
-import { Storage } from "./storage";
 import { removeKeysWithUndefinedValues } from "./utils/objects";
 
 /**
@@ -52,7 +51,7 @@ type DeviceInformationValues = {
 type DeviceInformationParams = {
     appId?: string;
     appVersion?: string;
-    storage: Storage;
+    deviceId?: ObjectId;
 };
 
 /**
@@ -95,18 +94,14 @@ export class DeviceInformation implements DeviceInformationValues {
     public constructor({
         appId,
         appVersion,
-        storage,
+        deviceId,
     }: DeviceInformationParams) {
         const environment = getEnvironment();
         this.platform = environment.platform;
         this.platformVersion = environment.platformVersion;
         this.appId = appId;
         this.appVersion = appVersion;
-        const storedDeviceId = storage.get(DEVICE_ID_STORAGE_KEY);
-        this.deviceId =
-            typeof storedDeviceId === "string"
-                ? new ObjectId(storedDeviceId)
-                : undefined;
+        this.deviceId = deviceId;
     }
 
     /**

@@ -20,6 +20,7 @@ import {
     NetworkTransport,
     DefaultNetworkTransport,
 } from "realm-network-transport";
+import { ObjectId } from "bson";
 
 import { FunctionsFactory } from "./FunctionsFactory";
 import { User, UserState } from "./User";
@@ -102,7 +103,13 @@ export class App<
     /**
      * The base URL of the app.
      */
-    private baseUrl: string;
+    private readonly baseUrl: string;
+
+    /**
+     * Local app configuration.
+     * Useful to determine what name and version an authenticated user is running.
+     */
+    private readonly localApp: Realm.LocalAppConfiguration | undefined;
 
     /**
      * A promise resolving to the App's location url.
@@ -130,6 +137,7 @@ export class App<
             throw new Error("Missing a MongoDB Realm app-id");
         }
         this.baseUrl = configuration.baseUrl || DEFAULT_BASE_URL;
+        this.localApp = configuration.app;
         const {
             storage,
             transport = new DefaultNetworkTransport(),
@@ -202,8 +210,8 @@ export class App<
             true,
         );
         // Read out and store the device id from the server
-        const deviceId = user.deviceId;
-        if (deviceId) {
+        const deviceId = response.deviceId;
+        if (deviceId && deviceId !== "000000000000000000000000") {
             this.storage.set(DEVICE_ID_STORAGE_KEY, deviceId);
         }
         // Return the user
@@ -303,7 +311,17 @@ export class App<
      * @returns Information about the current device, sent to the server when authenticating.
      */
     public get deviceInformation() {
-        return new DeviceInformation({ storage: this.storage });
+        const deviceIdStr = this.storage.getDeviceId();
+        const deviceId =
+            typeof deviceIdStr === "string" &&
+            deviceIdStr !== "000000000000000000000000"
+                ? new ObjectId(deviceIdStr)
+                : undefined;
+        return new DeviceInformation({
+            appId: this.localApp ? this.localApp.name : undefined,
+            appVersion: this.localApp ? this.localApp.version : undefined,
+            deviceId,
+        });
     }
 
     /**
