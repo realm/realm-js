@@ -38,6 +38,16 @@ describe("User", () => {
         expect(user.customData).deep.equals({});
     });
 
+    it("can be stringified", async () => {
+        const app = createApp();
+        const credentials = Credentials.anonymous();
+        const user = await app.logIn(credentials);
+
+        console.log(user);
+        const json = JSON.stringify(user);
+        console.log(json);
+    });
+
     it("refresh invalid access tokens", async () => {
         const app = createApp();
         const credentials = Credentials.anonymous();
