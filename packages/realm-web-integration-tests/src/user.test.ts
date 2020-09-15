@@ -42,10 +42,8 @@ describe("User", () => {
         const app = createApp();
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials);
-
-        console.log(user);
-        const json = JSON.stringify(user);
-        console.log(json);
+        const output = JSON.stringify(user);
+        expect(typeof output).equals("string");
     });
 
     it("refresh invalid access tokens", async () => {
