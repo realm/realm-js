@@ -16,7 +16,7 @@
 	"exclude": [
 		"../**/*.test.ts",
 		"../node/",
-		"../test/",
+		"../tests/",
 		"../../types/environment.d.ts"
 	]
 }
