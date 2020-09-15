@@ -5,8 +5,17 @@
 		"moduleResolution": "node",
 		"noEmit": true,
 		"forceConsistentCasingInFileNames": true,
-		"types": ["node", "fs-extra", "yargs"],
-		"lib": ["ES2015"]
+		"types": [
+			"node",
+			"fs-extra",
+			"yargs"
+		],
+		"lib": [
+			"ES2015"
+		]
 	},
-	"include": ["src/**/*.ts"]
+	"include": [
+		"src/**/*.ts"
+	],
+	"exclude": []
 }
