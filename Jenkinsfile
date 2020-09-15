@@ -306,7 +306,7 @@ def buildCommon(nodeVersion, platform) {
       sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package"
     }
     
-    dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}")
+    dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
       stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
     }
   }
@@ -322,7 +322,7 @@ def buildElectronCommon(electronVersion, platform) {
     ]) {
       sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm run package"
       
-      dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}")
+      dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
         stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
       }
     }
