@@ -400,7 +400,7 @@ def buildWindowsElectron(electronVersion, arch) {
           bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package'
         }
       }
-      dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+      dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
         stash includes: 'realm-*', name: "electron-pre-gyp-windows-${arch}-${electronVersion}"
       }
     }
