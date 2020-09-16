@@ -410,7 +410,6 @@ declare namespace Realm {
 
         /**
         * AuthError
-        * @see { @link https://realm.io/docs/javascript/latest/api/Realm.App.Sync.AuthError.html }
         */
         class AuthError {
             readonly code: number;
@@ -438,8 +437,8 @@ declare namespace Realm {
         function initiateClientReset(path: string): void;
         function _hasExistingSessions(): boolean;
         function reconnect(): void;
-        function allSyncSessions(user: Realm.User): [Realm.App.Sync.Session];
-        function syncSession(user: Realm.User, partitionValue: string|number|ObjectID|null) : Realm.App.Sync.Session;
+        function getAllSyncSessions(user: Realm.User): [Realm.App.Sync.Session];
+        function getSyncSession(user: Realm.User, partitionValue: string|number|ObjectID|null) : Realm.App.Sync.Session;
     }
 }
 

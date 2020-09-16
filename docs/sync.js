@@ -257,7 +257,7 @@ class Sync {
      * @returns{Array<Realm.App.Sync.Session>} an array of sessions
      * @since 10.0.0
      */
-    static allSyncSessions(user) { }
+    static getAllSyncSessions(user) { }
 
     /**
      * Returns the session associated with a user and partition value.
@@ -267,7 +267,7 @@ class Sync {
      * @returns {Realm.App.Sync.Session} the session
      * @since 10.0.0
      */
-    static syncSession(user, partitionValue) { }
+    static getSyncSession(user, partitionValue) { }
 }
 
 /**

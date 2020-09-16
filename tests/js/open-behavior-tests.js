@@ -156,7 +156,7 @@ module.exports = {
                 otherUserRealm.write(() => {
                     otherUserRealm.create(schemas.TestObject.name, { doubleCol: 42.133 });
                 });
-                return otherUserRealm.App.SyncSession.uploadAllLocalChanges().then(() => {
+                return otherUserRealm.syncSession.uploadAllLocalChanges().then(() => {
                     otherUserRealm.close();
                 });
             })
@@ -262,7 +262,7 @@ module.exports = {
                 realm.write(() => {
                     realm.create(schemas.TestObject.name, { doubleCol: 42.123 });
                 });
-                return Realm.App.SyncSession.uploadAllLocalChanges().then(() => {
+                return realm.syncSession.uploadAllLocalChanges().then(() => {
                     realm.close();
                 });
             })
@@ -327,7 +327,7 @@ module.exports = {
                 otherUserRealm.write(() => {
                     otherUserRealm.create(schemas.TestObject.name, { doubleCol: 42.133 });
                 });
-                return otherUserRealm.App.SyncSession.uploadAllLocalChanges().then(() => {
+                return otherUserRealm.syncSession.uploadAllLocalChanges().then(() => {
                     otherUserRealm.close();
                 });
             })

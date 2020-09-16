@@ -53,6 +53,41 @@ extern jclass ssl_helper_class;
 namespace realm {
 namespace js {
 
+// simple utility method
+template<typename T>
+static std::string partition_value_bson_to_string(typename T::Context ctx, typename T::Value partition_value_value) {
+    if (js::Value<T>::is_undefined(ctx, partition_value_value)) {
+        return std::string("");
+    }
+    else {
+        bson::Bson partition_bson;
+        if (Value<T>::is_string(ctx, partition_value_value)) {
+            std::string pv = Value<T>::validated_to_string(ctx, partition_value_value);
+            partition_bson = bson::Bson(pv);
+        }
+        else if (Value<T>::is_number(ctx, partition_value_value)) {
+            auto pv = Value<T>::validated_to_number(ctx, partition_value_value);
+            partition_bson = bson::Bson(static_cast<int64_t>(pv));
+        }
+        else if (Value<T>::is_object_id(ctx, partition_value_value)) {
+            auto pv = Value<T>::validated_to_object_id(ctx, partition_value_value);
+            partition_bson = bson::Bson(pv);
+        }
+        else if (Value<T>::is_null(ctx, partition_value_value)) {
+            partition_bson = bson::Bson();
+        }
+        else {
+            throw std::runtime_error("partitionValue must be of type 'string', 'number', 'objectId', or 'null'.");
+        }
+
+        std::ostringstream s;
+        s << partition_bson;
+        std::string partition_value = s.str();
+        return partition_value;
+    }
+}
+
+
 using WeakSession = std::weak_ptr<realm::SyncSession>;
 
 template<typename T>
@@ -601,8 +636,8 @@ public:
     static void has_existing_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void enable_multiplexing(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void deserialize_change_set(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void all_sync_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void sync_session(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void get_all_sync_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void get_sync_session(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
@@ -615,8 +650,8 @@ public:
         {"enableSessionMultiplexing", wrap<enable_multiplexing>},
         {"setUserAgent", wrap<set_sync_user_agent>},
         {"_initializeSyncManager", wrap<initialize_sync_manager>},
-        {"allSyncSessions", wrap<all_sync_sessions>},
-        {"syncSession", wrap<sync_session>},
+        {"getAllSyncSessions", wrap<get_all_sync_sessions>},
+        {"getSyncSession", wrap<get_sync_session>},
 
 #if REALM_PLATFORM_NODE
         {"setLogger", wrap<set_sync_logger>},
@@ -650,7 +685,7 @@ void SyncClass<T>::initialize_sync_manager(ContextType ctx, ObjectType this_obje
 }
 
 template<typename T>
-void SyncClass<T>::sync_session(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void SyncClass<T>::get_sync_session(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(2);
 
     auto user_object = Value::validated_to_object(ctx, args[0], "user");
@@ -661,26 +696,7 @@ void SyncClass<T>::sync_session(ContextType ctx, ObjectType this_object, Argumen
         return_value.set(Value::from_null(ctx));
     }
     else {
-        bson::Bson partition_bson;
-        if (Value::is_string(ctx, partition_value_value)) {
-            std::string pv = Value::validated_to_string(ctx, partition_value_value);
-            partition_bson = bson::Bson(pv);
-        }
-        else if (Value::is_number(ctx, partition_value_value)) {
-            auto pv = Value::validated_to_number(ctx, partition_value_value);
-            partition_bson = bson::Bson(static_cast<int64_t>(pv));
-        }
-        else if (Value::is_object_id(ctx, partition_value_value)) {
-            auto pv = Value::validated_to_object_id(ctx, partition_value_value);
-            partition_bson = bson::Bson(pv);
-        }
-        else {
-            throw std::runtime_error("partitionValue must be of type 'string', 'number', or 'objectId'.");
-        }
-
-        std::ostringstream s;
-        s << partition_bson;
-        std::string partition_value = s.str();
+        std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
 
         auto sync_config = SyncConfig(user, partition_value);
         auto path = SyncManager::shared().path_for_realm(sync_config);
@@ -694,7 +710,7 @@ void SyncClass<T>::sync_session(ContextType ctx, ObjectType this_object, Argumen
 }
 
 template<typename T>
-void SyncClass<T>::all_sync_sessions(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void SyncClass<T>::get_all_sync_sessions(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
 
     auto user_object = Value::validated_to_object(ctx, args[0], "user");
@@ -788,32 +804,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
-        std::string partition_value;
-        if (!Value::is_undefined(ctx, partition_value_value)) {
-            bson::Bson partition_bson;
-            if (Value::is_string(ctx, partition_value_value)) {
-                std::string pv = Value::validated_to_string(ctx, partition_value_value);
-                partition_bson = bson::Bson(pv);
-            }
-            else if (Value::is_number(ctx, partition_value_value)) {
-                auto pv = Value::validated_to_number(ctx, partition_value_value);
-                partition_bson = bson::Bson(static_cast<int64_t>(pv));
-            }
-            else if (Value::is_object_id(ctx, partition_value_value)) {
-                auto pv = Value::validated_to_object_id(ctx, partition_value_value);
-                partition_bson = bson::Bson(pv);
-            }
-            else if (Value::is_null(ctx, partition_value_value)) {
-                partition_bson = bson::Bson();
-            }
-            else {
-                throw std::runtime_error("partitionValue must be of type 'string', 'number', 'objectId', or 'null'.");
-            }
-
-            std::ostringstream s;
-            s << partition_bson;
-            partition_value = s.str();
-        }
+        std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
 
         config.sync_config = std::make_shared<SyncConfig>(std::move(user), std::move(partition_value));
         config.sync_config->error_handler = std::move(error_handler);
