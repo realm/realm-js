@@ -72,11 +72,13 @@ public:
     static void login(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void clear_app_cache(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
         {"switchUser", wrap<switch_user>},
         {"_removeUser", wrap<remove_user>},
+        {"_clearAppCache", wrap<clear_app_cache>},
     };
 };
 
@@ -255,6 +257,14 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     app->remove_user(*user, Function::wrap_void_callback(ctx, this_object, callback));
+}
+
+template<typename T>
+void AppClass<T>::clear_app_cache(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+    args.validate_count(0);
+
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    app->clear_cached_apps();
 }
 
 template<typename T>

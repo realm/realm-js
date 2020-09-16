@@ -86,6 +86,7 @@ module.exports = {
             }
         };
 
+//        Realm.App._clearAppCache();
         let app = new Realm.App(conf);
         let credentials = Realm.Credentials.anonymous();
         let failed = false;

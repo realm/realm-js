@@ -309,6 +309,10 @@ template<typename ClassType>
 WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::ObjectWrap<WrappedObject<ClassType>>(info) {
 	Napi::Env env = info.Env();
 
+	// auto hej = get_arguments(info);
+	// auto hej2 = Value::to_string(hej[0]);
+	// std::cout << hej2 << std::endl;
+
 	//skip the constructor_callback if create_instance is creating a JS instance only
 	if (info.Length() == 1 && info[0].IsExternal())	{
 		Napi::External<Internal> external = info[0].As<Napi::External<Internal>>();
@@ -328,7 +332,6 @@ WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::
 	catch (const node::Exception& e) {
 		Napi::Error error = Napi::Error::New(info.Env(), e.what());
 		copy_object(env, e.m_value, error);
-		throw error;
 	}
 	catch (const std::exception& e) {
 		throw Napi::Error::New(env, e.what());

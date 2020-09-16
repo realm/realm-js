@@ -105,12 +105,14 @@ exports.runTest = function(suiteName, testName) {
       Realm.clearTestState();
       if (Realm.Sync) {
         try {
-          const name = initial; AppConfig = require('./support/testConfig');
+          let AppConfig = require('./support/testConfig');
           let app = new Realm.App(AppConfig.integrationAppConfig.id);
           app.allUsers.forEach(u => {
             u.logOut();
           });
-        } catch (e) { }
+        } catch (e) { 
+            console.log("Exception: " + e + "\n");
+        }
       }
         
         console.warn("Starting test " + testName);
