@@ -18,7 +18,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Stopped building binary releases for Node.js 11
 
 ### Internal
-* None.
+* Realm JS now uses a single pre-build native binary for every Node.js and Electron version per platform (Windows, Linux, MacOS) and architecture (ia32, x64). Switching Node.js and Electron versions after Realm JS is installed will not require re-building or re-downloading of the Realm JS native binary.
 
 10.0.0-beta.12 Release notes (2020-9-2)
 =============================================================
