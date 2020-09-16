@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+6.1.2 Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * None.
@@ -13,7 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
 ### Internal
-* None.
+* Realm JS now uses a single pre-build native binary for every Node.js and Electron version per platform (Windows, Linux, MacOS) and architecture (ia32, x64). Switching Node.js and Electron versions after Realm JS is installed will not require re-building or re-downloading of the Realm JS native binary.
 
 6.1.1 Release notes (2020-9-10)
 =============================================================
