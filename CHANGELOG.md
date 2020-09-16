@@ -7,6 +7,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 ### Enhancements
 * Allow synchronization on the nil partition by specifying `null` as `partitionValue` in sync configuration (RJS-726).
 * Added support for creating multiple Realm apps. ([#3072](https://github.com/realm/realm-js/issues/3072))
+* Added method `Realm.App.getCachedApp()`.
 
 ### Fixed
 * Reapplied fix for the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth. ([#3109])(https://github.com/realm/realm-js/issues/3109)

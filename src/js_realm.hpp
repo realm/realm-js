@@ -713,6 +713,9 @@ template<typename T>
 void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
     js::clear_test_state();
+#if REALM_ENABLE_SYNC
+    realm::app::App::clear_cached_apps();
+#endif
 }
 
 template<typename T>

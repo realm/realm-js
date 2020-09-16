@@ -145,6 +145,16 @@
      * @type {Realm.Auth.EmailPasswordAuth}
      */
     get emailPasswordAuth() { }
+
+    /**
+     * Returns an instance of an app from the cache. If an app with the specified id
+     * hasn't been created, null is returned.
+     *
+     * @param {string} appId
+     * @returns {Realm.App|null}
+     * @since v10.0.0
+     */
+    getCachedApp(appId) { }
  }
 
 

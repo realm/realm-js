@@ -56,6 +56,7 @@ public:
 
     static void constructor(ContextType, ObjectType, Arguments &);
     static FunctionType create_constructor(ContextType);
+    static ObjectType create_instance(ContextType, SharedApp);
 
     static void get_app_id(ContextType, ObjectType, ReturnValue &);
     static void get_email_password_auth(ContextType, ObjectType, ReturnValue &);
@@ -72,13 +73,20 @@ public:
     static void login(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+
+    // static methods
     static void clear_app_cache(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void get_cached_app(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
         {"switchUser", wrap<switch_user>},
         {"_removeUser", wrap<remove_user>},
+    };
+
+    MethodMap<T> const static_methods = {
         {"_clearAppCache", wrap<clear_app_cache>},
+        {"getCachedApp", wrap<get_cached_app>}
     };
 };
 
@@ -87,6 +95,11 @@ inline typename T::Function AppClass<T>::create_constructor(ContextType ctx) {
     FunctionType app_constructor = ObjectWrap<T, AppClass<T>>::create_constructor(ctx);
     NetworkTransport::init(ctx);
     return app_constructor;
+}
+
+template<typename T>
+inline typename T::Object AppClass<T>::create_instance(ContextType ctx, SharedApp app) {
+    return create_object<T, AppClass<T>>(ctx, new SharedApp(app));
 }
 
 template<typename T>
@@ -140,14 +153,11 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
                 config.local_app_version = util::Optional<std::string>(Value::validated_to_string(ctx, config_app_version_value, "version"));
             }
         }
-    } else if (Value::is_string(ctx, args[0])) {
-        auto app_id = Value::validated_to_string(ctx, args[0]);
-        if (auto app = app::App::get_cached_app(app_id)) {
-            set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(app));
-            return;
-        }
-        throw std::runtime_error(util::format("No app with id '%1' has been created.", app_id));
-    } else {
+    }
+    else if (Value::is_string(ctx, args[0])) {
+        config.app_id = Value::validated_to_string(ctx, args[0]);
+    }
+    else {
         throw std::runtime_error("Expected either a configuration object or an app id string.");
     }
 
@@ -185,6 +195,18 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     SharedApp app = app::App::get_shared_app(config, client_config);
 
     set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(app));
+}
+
+template<typename T>
+void AppClass<T>::get_cached_app(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
+    auto app_id = Value::validated_to_string(ctx, args[0]);
+    if (auto app = app::App::get_cached_app(app_id)) {
+        return_value.set(AppClass<T>::create_instance(ctx, app));
+    }
+    else {
+        return_value.set(Value::from_null(ctx));
+    }
 }
 
 template<typename T>
@@ -262,9 +284,7 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
 template<typename T>
 void AppClass<T>::clear_app_cache(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(0);
-
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
-    app->clear_cached_apps();
+    realm::app::App::clear_cached_apps();
 }
 
 template<typename T>

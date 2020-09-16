@@ -207,7 +207,7 @@ module.exports = {
     // const apikey = await user.apiKeys.create("mykey");
     // const keys = await user.apiKeys.fetchAll();
     // TestCase.assertTrue(Array.isArray(keys));
-    
+
     // TestCase.assertEqual(keys.length, 1);
     // TestCase.assertDefined(keys[0].id);
     // TestCase.assertEqual(keys[0].name, mykey);
@@ -261,7 +261,7 @@ module.exports = {
     await Promise.all([
       (async () => {
         // There is a race with creating the watch() streams, since they won't
-        // see inserts from before they are created. 
+        // see inserts from before they are created.
         // Wait 500ms (490+10) before first insert to try to avoid it.
         await sleep(490);
         for (let i = 0; i < 10; i++) {
@@ -318,6 +318,7 @@ module.exports = {
 
   async testPush() {
     let app = new Realm.App(appConfig);
+    await logOutExistingUsers(app);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
@@ -395,7 +396,7 @@ module.exports = {
     let app = new Realm.App(appConfig);
     await logOutExistingUsers(app);
 
-    const all = app.allUsers;
+    let all = app.allUsers;
     const userIDs = Object.keys(all);
 
     let loggedInUsers = 0;
@@ -406,9 +407,6 @@ module.exports = {
       }
     }
     TestCase.assertEqual(loggedInUsers, 0, "Noone to begin with");
-//    TestCase.assertUndefined(all, "Noone to begin with");
-
-//    TestCase.assertArrayLength(Object.keys(all), 0, "Noone to begin with");
 
     let credentials = Realm.Credentials.anonymous();
     let user1 = await registerAndLogInEmailUser(app);

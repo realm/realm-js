@@ -102,19 +102,7 @@ exports.runTest = function(suiteName, testName) {
     const testMethod = testSuite && testSuite[testName];
 
     if (testMethod) {
-      Realm.clearTestState();
-      if (Realm.Sync) {
-        try {
-          let AppConfig = require('./support/testConfig');
-          let app = new Realm.App(AppConfig.integrationAppConfig.id);
-          app.allUsers.forEach(u => {
-            u.logOut();
-          });
-        } catch (e) { 
-            console.log("Exception: " + e + "\n");
-        }
-      }
-        
+        Realm.clearTestState();
         console.warn("Starting test " + testName);
         var result = testMethod.call(testSuite);
 
