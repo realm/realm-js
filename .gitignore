@@ -72,3 +72,4 @@ integration-tests/tests/dist/
 #Ignore symlinked directories (otherwise on Windows they are shown as untracked files)
 /react-native/android/src/main/jni/vendor/
 /react-native/android/src/main/jni/src/
+/build-tmp*/
