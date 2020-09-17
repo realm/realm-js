@@ -4,8 +4,8 @@
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* If you use encryption your application cound crash with a message like `Opening Realm files of format version 0 is not supported by this version of Realm`. ([realm/realm-core#6889](https://github.com/realm/realm-core#6889), since v6.0.0)
+* Fixed deadlocks when opening a Realm file in both the iOS simulator and Realm Studio. ([realm/realm-cocoa#6743](https://github.com/realm/realm-cocoa#6743), since v6.1.0).
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -14,6 +14,8 @@
 
 ### Internal
 * Realm JS now uses a single pre-build native binary for every Node.js and Electron version per platform (Windows, Linux, MacOS) and architecture (ia32, x64). Switching Node.js and Electron versions after Realm JS is installed will not require re-building or re-downloading of the Realm JS native binary.
+* Upgraded Realm Core from v6.0.25 to v6.0.26.
+* Upgraded Realm Sync from v5.0.22 to v5.0.23.
 
 6.1.1 Release notes (2020-9-10)
 =============================================================
