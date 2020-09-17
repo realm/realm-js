@@ -146,6 +146,8 @@
     "host": "https://static.realm.io",
     "package_name": "realm-v{version}-{platform}-{arch}.tar.gz",
     "remote_path": "./node-pre-gyp/napi-v{napi_build_version}/realm-v{version}/",
-    "napi_versions": [5]
+    "napi_versions": [
+      4
+    ]
   }
 }
