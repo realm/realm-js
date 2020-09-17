@@ -1,4 +1,4 @@
-6.1.2 Release notes (yyyy-MM-dd)
+6.1.2 Release notes (2020-9-17)
 =============================================================
 ### Enhancements
 * None.
