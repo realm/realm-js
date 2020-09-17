@@ -4,7 +4,7 @@
 * None.
 
 ### Fixed
-* If you use encryption your application cound crash with a message like `Opening Realm files of format version 0 is not supported by this version of Realm`. ([realm/realm-core#6889](https://github.com/realm/realm-core#6889), since v6.0.0)
+* If you use encryption your application could crash with a message like `Opening Realm files of format version 0 is not supported by this version of Realm`. ([realm/realm-core#6889](https://github.com/realm/realm-core#6889), since v6.0.0)
 * Fixed deadlocks when opening a Realm file in both the iOS simulator and Realm Studio. ([realm/realm-cocoa#6743](https://github.com/realm/realm-cocoa#6743), since v6.1.0).
 
 ### Compatibility
