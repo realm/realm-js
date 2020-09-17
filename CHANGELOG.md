@@ -2,7 +2,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
 
-NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
+NOTE: This version bumps the Realm file format to version 20. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format. Synced Realms produced by pre-v10 file format (older than Realm JavaScript v6.0.0) cannot be upgraded.
 
 ### Enhancements
 * Allow synchronization on the nil partition by specifying `null` as `partitionValue` in sync configuration (RJS-726).
@@ -14,11 +14,13 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 ### Compatibility
 * MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
-* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later).
 * Stopped building binary releases for Node.js 11
 
 ### Internal
 * Realm JS now uses a single pre-build native binary for every Node.js and Electron version per platform (Windows, Linux, MacOS) and architecture (ia32, x64). Switching Node.js and Electron versions after Realm JS is installed will not require re-building or re-downloading of the Realm JS native binary.
+* Upgraded Realm Core from v10.0.0-beta.6 to v10.0.0-beta.7.
+* Upgraded Realm Sync from v10.0.0-beta.10 to v10.0.0-beta.11.
 
 10.0.0-beta.12 Release notes (2020-9-2)
 =============================================================
