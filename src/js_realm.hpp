@@ -486,6 +486,8 @@ template<typename T>
 bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueType arguments[], realm::Realm::Config& config, ObjectDefaultsMap& defaults, ConstructorMap& constructors) {
     bool schema_updated = false;
 
+    std::cout << "Blah" << std::endl;
+
     if (argc > 1) {
         throw std::runtime_error("Invalid arguments when constructing 'Realm'");
     }
