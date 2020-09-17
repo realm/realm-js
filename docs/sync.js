@@ -180,9 +180,17 @@ class Sync {
     static reconnect(app) { }
 
     /**
-     * Set the sync log level for a Realm app.
+     * Set the sync log level. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     * @example
+     * {
+     * const app = new Realm.App(getAppConfig());
+     * Realm.Sync.setLogLevel("all");
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
+     * }
      * @param {Realm.App} app - The Realm app.
-     * @param {Realm.Sync~LogLevel} level - The new log level.
+     * @param {Realm.Sync~LogLevel} level - The log level.
      */
     static setLogLevel(app, level) { }
 
@@ -206,9 +214,18 @@ class Sync {
      */
 
     /**
-     * Capture the sync client's log for a Realm app.
+     * Capture the sync client's log. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     * @example
+     * {
+     * const app = new Realm.App(getAppConfig());
+     * Realm.Sync.setLogger((level, message) => console.log(`[${level}] ${message}`);
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
+     * }
      * @param {Realm.App} app - the Realm app.
      * @param {Realm.Sync~logCallback} logger - The log callback.
+     * @see {Realm.Sync~setLogLevel}
      */
     static setLogger(app, logger) { }
 
@@ -245,8 +262,9 @@ class Sync {
     /**
      * Returns `true` if Realm still has a reference to any sync sessions regardless of their state.
      * If `false` is returned it means that no sessions currently exist.
+     * @param {Realm.App} [app] - The app where the Realm was opened.
      */
-    static _hasExistingSessions() { }
+    static _hasExistingSessions(app) { }
 }
 
 /**

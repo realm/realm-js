@@ -103,7 +103,6 @@ async function logOutExistingUsers(app) {
   const users = app.allUsers;
   Object.keys(app.allUsers).forEach(async id => {
     await users[id].logOut();
-//    await app.removeUser(users[id]);
   });
 }
 
