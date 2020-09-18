@@ -237,10 +237,9 @@ void UserClass<T>::get_device_id(ContextType ctx, ObjectType object, ReturnValue
     auto user = get_internal<T, UserClass<T>>(ctx, object)->get();
     if (user->has_device_id()) {
         return_value.set(user->device_id());
+        return;
     }
-    else {
-        return_value.set_null();
-    }
+    return_value.set_null();
 }
 
 template<typename T>

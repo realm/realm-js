@@ -692,21 +692,17 @@ void SyncClass<T>::get_sync_session(ContextType ctx, ObjectType this_object, Arg
     SharedUser user = *get_internal<T, UserClass<T>>(ctx, user_object);
 
     auto partition_value_value = args[1];
-    if (Value::is_undefined(ctx, partition_value_value)) {
-        return_value.set(Value::from_null(ctx));
-    }
-    else {
+    if (!Value::is_undefined(ctx, partition_value_value)) {
         std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
 
         auto sync_config = SyncConfig(user, partition_value);
         auto path = SyncManager::shared().path_for_realm(sync_config);
         if (auto session = user->session_for_on_disk_path(path)) {
             return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
-        }
-        else {
-            return_value.set(Value::from_null(ctx));
+            return;
         }
     }
+    return_value.set_null();
 }
 
 template<typename T>
