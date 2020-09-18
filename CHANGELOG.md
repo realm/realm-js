@@ -10,6 +10,7 @@ NOTE: This version bumps the Realm file format to version 20. It is not possible
 ### Fixed
 * Reapplied fix for the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth. ([#3109])(https://github.com/realm/realm-js/issues/3109)
 * Fixed linking issue (error message: `ld: symbol(s) not found for architecture x86_64`) on iOS. ([#3189](https://github.com/realm/realm-js/issues/3189), since v10.0.0-beta.12)
+* It is not allowed to query embedded objects directly. An expection will be thrown. ([RJS-763](https://jira.mongodb.org/browse/RJS-763), since v10.0.0-beta.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
