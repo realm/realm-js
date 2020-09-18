@@ -733,14 +733,14 @@ module.exports = {
 
             // No real way to check if this works automatically.
             // This is just a smoke test, making sure the method doesn't crash outright.
-            Realm.Sync.reconnect(app);
+            Realm.App.Sync.reconnect(app);
         });
     },
 
     test_hasExistingSessions() {
         let app = new Realm.App(appConfig);
 
-        TestCase.assertFalse(Realm.Sync._hasExistingSessions(app));
+        TestCase.assertFalse(Realm.App.Sync._hasExistingSessions(app));
 
         let credentials = Realm.Credentials.anonymous();
         const realmPartition = Utils.genPartition();
@@ -754,7 +754,7 @@ module.exports = {
                 let intervalId;
                 let it = 50;
                 intervalId = setInterval(function () {
-                    if (!Realm.Sync._hasExistingSessions(app)) {
+                    if (!Realm.App.Sync._hasExistingSessions(app)) {
                         clearInterval(intervalId);
                         resolve();
                     } else if (it < 0) {
