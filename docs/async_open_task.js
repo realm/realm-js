@@ -18,7 +18,7 @@
 
 
 /**
- * @memberof Realm.Sync
+ * @memberof Realm.App.Sync
  */
 class AsyncOpenTask {
 

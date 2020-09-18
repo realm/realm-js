@@ -50,7 +50,7 @@ public:
     static void user_api_key(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void server_api_key(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void google(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void custom(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void jwt(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     MethodMap<T> const static_methods = {
         {"facebook",         wrap<facebook>},
@@ -61,7 +61,7 @@ public:
         {"_function",        wrap<function>},
         {"userApiKey",       wrap<user_api_key>},
         {"serverApiKey",     wrap<server_api_key>},
-        {"custom",           wrap<custom>},
+        {"jwt",              wrap<jwt>},
     };
 
     static void provider(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -116,7 +116,7 @@ void CredentialsClass<T>::google(ContextType ctx, ObjectType this_object, Argume
 }
 
 template<typename T>
-void CredentialsClass<T>::custom(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
+void CredentialsClass<T>::jwt(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
     arguments.validate_maximum(1);
 
     realm::app::AppCredentialsToken token = Value::validated_to_string(ctx, arguments[0]);
@@ -141,7 +141,7 @@ void CredentialsClass<T>::function(ContextType ctx, ObjectType this_object, Argu
     arguments.validate_count(1);
     const std::string payload_json = Value::validated_to_string(ctx, arguments[0], "payload");
     const auto payload_bson = bson::parse(payload_json);
-    if (payload_bson.type() != bson::Bson::Type::Document) 
+    if (payload_bson.type() != bson::Bson::Type::Document)
         throw std::invalid_argument("payload must be a json object");
 
     auto credentials = realm::app::AppCredentials::function(payload_bson.operator const bson::BsonDocument&());

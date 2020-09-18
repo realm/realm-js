@@ -126,6 +126,8 @@ module.exports = {
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
         TestCase.assertInstanceOf(user, Realm.User);
+        TestCase.assertNotNull(user.deviceId);
+        TestCase.assertEqual(user.providerType, "anon-user");
         await user.logOut();
     },
 

@@ -45,6 +45,7 @@ function assertIsUser(user) {
   TestCase.assertType(user.accessToken, 'string');
   TestCase.assertType(user.refreshToken, 'string');
   TestCase.assertType(user.id, 'string');
+  TestCase.assertType(user.identities, 'object');
   TestCase.assertType(user.customData, 'object');
   TestCase.assertInstanceOf(user, Realm.User);
 }
@@ -63,7 +64,7 @@ function assertIsError(error, message) {
 }
 
 function assertIsAuthError(error, code, title) {
-  TestCase.assertInstanceOf(error, Realm.Sync.AuthError, 'The API should return an AuthError');
+  TestCase.assertInstanceOf(error, Realm.App.Sync.AuthError, 'The API should return an AuthError');
   if (code) {
     TestCase.assertEqual(error.code, code);
   }
@@ -234,13 +235,18 @@ module.exports = {
     TestCase.assertEqual(err.message, "function not found: 'error'");
   },
 
-  async testRemoteMongoClient() {
+  async testMongoClient() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
-    let mongo = user.remoteMongoClient('BackingDB');
-    let collection = mongo.db('test_data').collection('testRemoteMongoClient');
+    let mongo = user.mongoClient('BackingDB');
+    TestCase.assertEqual(mongo.serviceName, 'BackingDB');
+    let database = mongo.db('test_data');
+    TestCase.assertEqual(database.name, 'test_data');
+
+    let collection = database.collection('testRemoteMongoClient');
+    TestCase.assertEqual(collection.name, 'testRemoteMongoClient');
 
     await collection.deleteMany({});
     await collection.insertOne({hello: "world"});
@@ -249,11 +255,11 @@ module.exports = {
     TestCase.assertEqual(await collection.count({hello: "pineapple"}), 0);
   },
 
-  async testRemoteMongoClientWatch() {
+  async testMongoClientWatch() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
-    let collection = user.remoteMongoClient('BackingDB').db('test_data').collection('testRemoteMongoClient');
+    let collection = user.mongoClient('BackingDB').db('test_data').collection('testRemoteMongoClient');
 
     const sleep = async time => new Promise(resolve => setInterval(resolve, time));
     const str = 'use some odd chars to force weird encoding %\n\r\n\\????>>>>';
