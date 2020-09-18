@@ -264,8 +264,9 @@ class Sync {
     /**
      * Returns `true` if Realm still has a reference to any sync sessions regardless of their state.
      * If `false` is returned it means that no sessions currently exist.
+     * @param {Realm.App} [app] - The app where the Realm was opened.
      */
-    static _hasExistingSessions() { }
+    static _hasExistingSessions(app) { }
 }
 
 /**
