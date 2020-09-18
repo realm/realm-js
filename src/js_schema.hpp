@@ -145,7 +145,7 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
             prop.object_type = "";
         }
         else if (prop.object_type == "objectId") {
-            prop.type |= PropertyType::Decimal | PropertyType::Array;
+            prop.type |= PropertyType::ObjectId | PropertyType::Array;
             prop.object_type = "";
         }
         else {
@@ -418,15 +418,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
         }
     }
     else {
-        std::string propertyType = string_for_property_type(property.type);
-        if (property.type == realm::PropertyType::Decimal) {
-            propertyType = "decimal128";
-        }
-        else if (property.type == realm::PropertyType::ObjectId) {
-            propertyType = "objectId";
-        }
-
-        Object::set_property(ctx, object, type_string, Value::from_string(ctx, propertyType));
+        Object::set_property(ctx, object, type_string, Value::from_string(ctx, local_string_for_property_type(property.type)));
     }
 
     static const String object_type_string = "objectType";
@@ -434,7 +426,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
         Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, property.object_type));
     }
     else if (is_array(property.type)) {
-        Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, string_for_property_type(property.type & ~realm::PropertyType::Flags)));
+        Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, local_string_for_property_type(property.type & ~realm::PropertyType::Flags)));
     }
 
     static const String property_string = "property";

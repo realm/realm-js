@@ -54,6 +54,7 @@ module.exports = {
             prim = realm.create('PrimitiveArrays', {});
         });
 
+        // Check instance type
         TestCase.assertEqual(obj.arrayCol.type, 'object');
         TestCase.assertEqual(obj.arrayCol1.type, 'object');
 
@@ -63,8 +64,8 @@ module.exports = {
         TestCase.assertEqual(prim.double.type, 'double');
         TestCase.assertEqual(prim.string.type, 'string');
         TestCase.assertEqual(prim.date.type, 'date');
-        TestCase.assertEqual(prim.decimal128.type, 'decimal');
-        TestCase.assertEqual(prim.objectId.type, 'object id');
+        TestCase.assertEqual(prim.decimal128.type, 'decimal128');
+        TestCase.assertEqual(prim.objectId.type, 'objectId');
 
         TestCase.assertEqual(prim.optBool.type, 'bool');
         TestCase.assertEqual(prim.optInt.type, 'int');
@@ -72,9 +73,31 @@ module.exports = {
         TestCase.assertEqual(prim.optDouble.type, 'double');
         TestCase.assertEqual(prim.optString.type, 'string');
         TestCase.assertEqual(prim.optDate.type, 'date');
-        TestCase.assertEqual(prim.optDecimal128.type, 'decimal');
-        TestCase.assertEqual(prim.optObjectId.type, 'object id');
+        TestCase.assertEqual(prim.optDecimal128.type, 'decimal128');
+        TestCase.assertEqual(prim.optObjectId.type, 'objectId');
 
+        // Check schema objectType
+        const pa = realm.schema.find((s) => s.name === schemas.PrimitiveArrays.name);
+
+        TestCase.assertEqual(pa.properties.bool.objectType, "bool");
+        TestCase.assertEqual(pa.properties.int.objectType, "int");
+        TestCase.assertEqual(pa.properties.float.objectType, "float");
+        TestCase.assertEqual(pa.properties.double.objectType, "double");
+        TestCase.assertEqual(pa.properties.string.objectType, "string");
+        TestCase.assertEqual(pa.properties.date.objectType, "date");
+        TestCase.assertEqual(pa.properties.decimal128.objectType, "decimal128");
+        TestCase.assertEqual(pa.properties.objectId.objectType, "objectId");
+
+        TestCase.assertEqual(pa.properties.optBool.objectType, "bool");
+        TestCase.assertEqual(pa.properties.optInt.objectType, "int");
+        TestCase.assertEqual(pa.properties.optFloat.objectType, "float");
+        TestCase.assertEqual(pa.properties.optDouble.objectType, "double");
+        TestCase.assertEqual(pa.properties.optString.objectType, "string");
+        TestCase.assertEqual(pa.properties.optDate.objectType, "date");
+        TestCase.assertEqual(pa.properties.optDecimal128.objectType, "decimal128");
+        TestCase.assertEqual(pa.properties.optObjectId.objectType, "objectId");
+
+        // Check optional
         TestCase.assertFalse(prim.bool.optional);
         TestCase.assertFalse(prim.int.optional);
         TestCase.assertFalse(prim.float.optional);
