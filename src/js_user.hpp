@@ -20,7 +20,6 @@
 
 #include "js_class.hpp"
 #include "js_collection.hpp"
-#include "js_sync_util.hpp"
 #include "js_app_credentials.hpp"
 #include "js_api_key_auth.hpp"
 #include "js_network_transport.hpp"

@@ -21,7 +21,6 @@
 #include "sync/app.hpp"
 
 #include "js_class.hpp"
-#include "js_sync_util.hpp"
 
 namespace realm {
 namespace js {

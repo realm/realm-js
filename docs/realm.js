@@ -184,7 +184,7 @@ class Realm {
     /**
      * Returns all objects of the given `type` in the Realm.
      * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
-     * @throws {Error} If type passed into this method is invalid.
+     * @throws {Error} If type passed into this method is invalid or if the type is marked embedded.
      * @returns {Realm.Results} that will live-update as objects are created and destroyed.
      */
     objects(type) { }
