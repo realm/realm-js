@@ -923,6 +923,11 @@ void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments &
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
+
+    if (object_schema.is_embedded) {
+        throw std::runtime_error("You cannot query an embedded object.");
+    }
+
     return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_schema.name));
 }
 

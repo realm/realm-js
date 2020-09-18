@@ -180,9 +180,18 @@ class Sync {
     static reconnect(app) { }
 
     /**
-     * Set the sync log level for a Realm app.
+     * Set the sync log level. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     *
      * @param {Realm.App} app - The Realm app.
-     * @param {Realm.Sync~LogLevel} level - The new log level.
+     * @param {Realm.Sync~LogLevel} level - The new log level
+     * @example
+     * {
+     * const app = new Realm.App(getAppConfig());
+     * Realm.Sync.setLogLevel("all");
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
+     * }
      */
     static setLogLevel(app, level) { }
 
@@ -206,9 +215,19 @@ class Sync {
      */
 
     /**
-     * Capture the sync client's log for a Realm app.
+     * Capture the sync client's log. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     *
      * @param {Realm.App} app - the Realm app.
      * @param {Realm.Sync~logCallback} logger - The log callback.
+     * @example
+     * {
+     * const app = new Realm.App(getAppConfig());
+     * Realm.Sync.setLogger((level, message) => console.log(`[${level}] ${message}`);
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
+     * }
+     * @see {Realm.Sync~setLogLevel}
      */
     static setLogger(app, logger) { }
 
