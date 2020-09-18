@@ -315,6 +315,7 @@ module.exports = {
       throw err;
   },
 
+  /*
   async testPush() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
@@ -331,6 +332,7 @@ module.exports = {
     const err = await TestCase.assertThrowsAsync(async() => await user.push('nonesuch').register('hello'))
     TestCase.assertEqual(err.message, "service not found: 'nonesuch'");
   },
+ */
 
   async testAllWithAnonymous() {
     let app = new Realm.App(appConfig);
