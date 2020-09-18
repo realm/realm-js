@@ -317,7 +317,6 @@ module.exports = {
 
   async testPush() {
     let app = new Realm.App(appConfig);
-    await logOutExistingUsers(app);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
