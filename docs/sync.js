@@ -145,6 +145,16 @@
      * @type {Realm.Auth.EmailPasswordAuth}
      */
     get emailPasswordAuth() { }
+
+    /**
+     * Returns an instance of an app from the cache. If an app with the specified id
+     * hasn't been created, null is returned.
+     *
+     * @param {string} appId
+     * @returns {Realm.App|null}
+     * @since v10.0.0
+     */
+    getCachedApp(appId) { }
  }
 
 
@@ -158,18 +168,23 @@
 class Sync {
 
     /**
-     * Calling this method will force Realm to attempt to reconnect to the server immediately.
+     * Calling this method will force Realm to attempt to reconnect the Realm App to the server immediately.
      *
      * Realm will reconnect automatically, but by using exponential backoff. This means that if the device is offline for
      * a long time, restoring the connection after it comes back online can take longer than expected. In situations
      * where it is possible to detect the network condition (e.g. Airplane mode). Manually calling this method can
      * provide a smoother user experience.
+     *
+     * @param {Realm.App} app - The Realm app.
      */
-    static reconnect() { }
+    static reconnect(app) { }
 
     /**
      * Set the sync log level. You can only set the log level once, and you must do it after creating an App instance
      * but before opening any Realms.
+     *
+     * @param {Realm.App} app - The Realm app.
+     * @param {Realm.Sync~LogLevel} level - The new log level
      * @example
      * {
      * const app = new Realm.App(getAppConfig());
@@ -177,19 +192,19 @@ class Sync {
      * const user = await app.logIn(credentials);
      * const realm = await Realm.open(getRealmConfig(user));
      * }
-     * @param {Realm.Sync~LogLevel} level - The log level.
      */
-    static setLogLevel(level) { }
+    static setLogLevel(app, level) { }
 
     /**
-     * Enable multiplexing multiple sync sessions over a single connection.
+     * Enable multiplexing multiple sync sessions over a single connection for a Realm app.
      * When having a lot of synchronized realms open the system might run out of file
      * descriptors because of all the open sockets to the server. Session multiplexing
      * is designed to alleviate that, but it might not work with a server configured with
      * fail-over. Only use if you're seeing errors about reaching the file descriptor limit
      * and you know you are using many sync sessions.
+     * @param {Realm.App} app - The Realm app.
      */
-    static enableSessionMultiplexing() { }
+    static enableSessionMultiplexing(app) { }
 
     /**
      * A callback passed to `Realm.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
@@ -202,6 +217,9 @@ class Sync {
     /**
      * Capture the sync client's log. You can only set the log level once, and you must do it after creating an App instance
      * but before opening any Realms.
+     *
+     * @param {Realm.App} app - the Realm app.
+     * @param {Realm.Sync~logCallback} logger - The log callback.
      * @example
      * {
      * const app = new Realm.App(getAppConfig());
@@ -209,10 +227,9 @@ class Sync {
      * const user = await app.logIn(credentials);
      * const realm = await Realm.open(getRealmConfig(user));
      * }
-     * @param {Realm.Sync~logCallback} logger - The log callback.
      * @see {Realm.Sync~setLogLevel}
      */
-    static setLogger(logger) { }
+    static setLogger(app, logger) { }
 
     /**
      * Set the application part of the User-Agent string that will be sent to the Realm Object Server when a session
@@ -220,13 +237,15 @@ class Sync {
      *
      * This method can only be called up to the point where the first Realm is opened. After that, the User-Agent
      * can no longer be changed.
+     * @param {Realm.App} the Realm app
      * @param {string} the user agent description
      */
-    static setUserAgent(userAgent) { }
+    static setUserAgent(app, userAgent) { }
 
     /**
      * Initiate a client reset. The Realm must be closed prior to the reset.
      *
+     * @param {Realm.App} [app] - The app where the Realm was opened.
      * @param {string} [path] - The path to the Realm to reset.
      * Throws error if reset is not possible.
      * @example
@@ -234,19 +253,20 @@ class Sync {
      *   const config = { sync: { user, partitionValue } };
      *   config.sync.error = (sender, error) => {
      *     if (error.name === 'ClientReset') {
-     *       Realm.Sync.initiateClientReset(original_path);
+     *       Realm.Sync.initiateClientReset(app, original_path);
      *       // copy required objects from Realm at error.config.path
      *     }
      *   }
      * }
      */
-    static initiateClientReset(path) { }
+    static initiateClientReset(app, path) { }
 
     /**
      * Returns `true` if Realm still has a reference to any sync sessions regardless of their state.
      * If `false` is returned it means that no sessions currently exist.
+     * @param {Realm.App} [app] - The app where the Realm was opened.
      */
-    static _hasExistingSessions() { }
+    static _hasExistingSessions(app) { }
 }
 
 /**

@@ -21,7 +21,6 @@
         }],
         ["realm_enable_sync", {
           "sources": [
-            "src/js_sync_util.hpp",
             "src/js_sync.hpp",
             "src/js_app.hpp",
             "src/js_app_credentials.hpp",

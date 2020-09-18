@@ -428,13 +428,13 @@ declare namespace Realm {
             Off,
         }
 
-        function setLogLevel(logLevel: LogLevel): void;
-        function setLogger(callback: (level: NumericLogLevel, message: string) => void): void;
-        function setUserAgent(userAgent: string): void;
-        function enableSessionMultiplexing(): void;
-        function initiateClientReset(path: string): void;
-        function _hasExistingSessions(): boolean;
-        function reconnect(): void;
+        function setLogLevel(app: App, logLevel: LogLevel): void;
+        function setLogger(app: App, callback: (level: NumericLogLevel, message: string) => void): void;
+        function setUserAgent(app: App, userAgent: string): void;
+        function enableSessionMultiplexing(app: App): void;
+        function initiateClientReset(app: App, path: string): void;
+        function _hasExistingSessions(app: App): boolean;
+        function reconnect(app: App): void;
     }
 }
 
