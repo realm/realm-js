@@ -254,7 +254,7 @@ class Sync {
      * Returns all sync sessions for a user.
      *
      * @param {Realm.User} user  - the user.
-     * @returns{Array<Realm.App.Sync.Session>} an array of sessions
+     * @returns {Array<Realm.App.Sync.Session>} an array of sessions
      * @since 10.0.0
      */
     static getAllSyncSessions(user) { }
