@@ -843,7 +843,7 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
             }
         }
     }
-    return_value.set(Value::from_null(ctx));
+    return_value.set_null();
 }
 #endif
 
