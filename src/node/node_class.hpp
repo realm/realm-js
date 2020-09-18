@@ -38,7 +38,7 @@ namespace realm {
 	namespace js {
 		template<typename T>
 		struct RealmObjectClass;
-
+		
 		template<typename T>
 		class RealmClass;
 	}
@@ -98,15 +98,15 @@ public:
 
 	static Napi::Value create_instance_with_proxy(const Napi::CallbackInfo& info);
 
-	static Napi::Function init(Napi::Env env,
-		const std::string& name,
-		node::Types::FunctionCallback constructor_callback,
+	static Napi::Function init(Napi::Env env, 
+		const std::string& name, 
+		node::Types::FunctionCallback constructor_callback, 
 		std::function<bool(const std::string&)> has_native_method_callback,
-		const std::vector<Napi::ClassPropertyDescriptor<WrappedObject<ClassType>>>& properties,
+		const std::vector<Napi::ClassPropertyDescriptor<WrappedObject<ClassType>>>& properties, 
 		const IndexPropertyType* indexPropertyHandlers = nullptr);
 
 	static Napi::Object create_instance(Napi::Env env, Internal* internal = nullptr);
-
+	
 	static bool is_instance(Napi::Env env, const Napi::Object& object);
 
 	static WrappedObject<ClassType>* try_unwrap(const Napi::Object& object);
@@ -134,11 +134,11 @@ private:
 	class ProxyHandler {
 		public:
 			static Napi::Value get_instance_proxy_handler(Napi::Env env);
-
+		
 		private:
 			static Napi::Value bind_native_function(Napi::Env env, const std::string& functionName, const Napi::Function& function, const Napi::Object& thisObject);
 			static Napi::ObjectReference m_proxyHandler;
-
+			
 
 			static Napi::Value get_proxy_trap(const Napi::CallbackInfo& info);
 			static Napi::Value set_proxy_trap(const Napi::CallbackInfo& info);
@@ -187,7 +187,7 @@ class ObjectWrap {
 
 	static void on_context_destroy(Napi::Env env, std::string realmPath);
 	static bool is_instance(Napi::Env env, const Napi::Object& object);
-
+	
 	static Internal* get_internal(Napi::Env env, const Napi::Object& object);
 	static void set_internal(Napi::Env env, const Napi::Object& object, Internal* data);
 
@@ -196,21 +196,21 @@ class ObjectWrap {
 
   private:
     static ClassType s_class;
-
+	
 	//Gives access to ObjectWrap<ClassType> init_class private static member. See https://stackoverflow.com/a/40937193
 	template<typename T>
 	friend struct ObjectWrapAccessor;
-
+	
 	static Napi::Function init_class(Napi::Env env);
 
 	static Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> setup_method(Napi::Env env, const std::string& name, node::Types::FunctionCallback callback);
 	static Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> setup_static_method(Napi::Env env, const std::string& name, node::Types::FunctionCallback callback);
     static Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> setup_property(Napi::Env env, const std::string& name, const PropertyType&);
 	static Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> setup_static_property(Napi::Env env, const std::string& name, const PropertyType&);
-
+	
 	static std::unordered_set<std::string> s_nativeMethods;
 	static std::unordered_map<std::string, std::unordered_map<std::string, SchemaObjectType*>*> s_schemaObjectTypes;
-
+	
 	static Napi::Value property_getter(const Napi::CallbackInfo& info);
 	static void property_setter(const Napi::CallbackInfo& info);
 	static std::vector<Napi::PropertyDescriptor> create_napi_property_descriptors(Napi::Env env, const Napi::Object& constructorPrototype, const realm::ObjectSchema& schema, bool redefine = true);
@@ -277,7 +277,7 @@ template<typename ClassType>
 std::unordered_map<std::string, std::unordered_map<std::string, SchemaObjectType*>*> ObjectWrap<ClassType>::s_schemaObjectTypes;
 
 //A cache for property names. The pair is property name and a node::String* to the same string representation.
-//The cache is persisted throughout the process life time to preseve property names between constructor cache invalidations (on_destory_context is called)
+//The cache is persisted throughout the process life time to preseve property names between constructor cache invalidations (on_destory_context is called) 
 //Since RealmObjectClass instances may be used after context is destroyed, their property names should be valid
 static std::unordered_map<std::string, node::String*> propertyNamesCache;
 
@@ -309,7 +309,7 @@ template<typename ClassType>
 WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::ObjectWrap<WrappedObject<ClassType>>(info) {
 	Napi::Env env = info.Env();
 
-	// skip the constructor_callback if create_instance is creating a JS instance only
+	//skip the constructor_callback if create_instance is creating a JS instance only
 	if (info.Length() == 1 && info[0].IsExternal())	{
 		Napi::External<Internal> external = info[0].As<Napi::External<Internal>>();
 		if (!external.Data()) {
@@ -336,11 +336,11 @@ WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::
 }
 
 template<typename ClassType>
-Napi::Function WrappedObject<ClassType>::init(Napi::Env env,
-	const std::string& name,
-	node::Types::FunctionCallback constructor_callback,
+Napi::Function WrappedObject<ClassType>::init(Napi::Env env, 
+	const std::string& name, 
+	node::Types::FunctionCallback constructor_callback, 
 	std::function<bool(const std::string&)> has_native_method_callback,
-	const std::vector<Napi::ClassPropertyDescriptor<WrappedObject<ClassType>>>& properties,
+	const std::vector<Napi::ClassPropertyDescriptor<WrappedObject<ClassType>>>& properties, 
 	const IndexPropertyType* indexPropertyHandlers) {
 
 	m_name = name;
@@ -349,7 +349,7 @@ Napi::Function WrappedObject<ClassType>::init(Napi::Env env,
 	WrappedObject<ClassType>::m_nullExternal.SuppressDestruct();
 
 	Napi::Function ctor = Napi::ObjectWrap<WrappedObject<ClassType>>::DefineClass(env, name.c_str(), properties, (void*)constructor_callback);
-
+	
 	constructor = Napi::Persistent(ctor);
 	constructor.SuppressDestruct();
 
@@ -382,12 +382,12 @@ Napi::Value WrappedObject<ClassType>::create_instance_with_proxy(const Napi::Cal
 
 		//using DefineProperty to make it non enumerable and non configurable and non writable
 		instance.DefineProperty(Napi::PropertyDescriptor::Value("_instance", instance, napi_default));
-
-		info.This().As<Napi::Object>().DefineProperty(Napi::PropertyDescriptor::Value("isRealmCtor", Napi::Boolean::New(env, true), napi_configurable));
-
+		
+		info.This().As<Napi::Object>().DefineProperty(Napi::PropertyDescriptor::Value("isRealmCtor", Napi::Boolean::New(env, true), napi_configurable)); 
+		
 		ObjectSetPrototypeOf.Call({ info.This(), instance });
 		Napi::Object instanceProxy = GlobalProxy.New({ info.This(), ProxyHandler::get_instance_proxy_handler(env) });
-
+		
 		instance.DefineProperty(Napi::PropertyDescriptor::Value("_instanceProxy", instanceProxy, napi_default));
 		return scope.Escape(instanceProxy);
 	}
@@ -476,7 +476,7 @@ inline bool WrappedObject<ClassType>::is_instance(Napi::Env env, const Napi::Obj
 
 	Napi::HandleScope scope(env);
 
-	//Check the object is instance of the constructor. This will be true when the object have it's prototype set with setPrototypeOf.
+	//Check the object is instance of the constructor. This will be true when the object have it's prototype set with setPrototypeOf. 
 	//This is true for objects configured in the schema with a function type.
 	Napi::Function ctor  = constructor.Value();
 	bool isInstanceOf = object.InstanceOf(ctor);
@@ -560,9 +560,9 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(N
 	Napi::PropertyDescriptor getOwnPropertyDescriptorTrapFunc = Napi::PropertyDescriptor::Function("getOwnPropertyDescriptor", &WrappedObject<ClassType>::ProxyHandler::get_own_property_descriptor_trap);
 	Napi::PropertyDescriptor getPrototypeOfFunc = Napi::PropertyDescriptor::Function("getPrototypeOf", &WrappedObject<ClassType>::ProxyHandler::get_prototype_of_proxy_trap);
 	Napi::PropertyDescriptor setPrototypeOfFunc = Napi::PropertyDescriptor::Function("setPrototypeOf", &WrappedObject<ClassType>::ProxyHandler::set_prototype_of_proxy_trap);
-
+	
 	proxyObject.DefineProperties({ instanceGetTrapFunc, instanceSetTrapFunc, ownKeysTrapFunc, hasTrapFunc, getOwnPropertyDescriptorTrapFunc, getPrototypeOfFunc, setPrototypeOfFunc });
-
+	
 	m_proxyHandler = Napi::Persistent(proxyObject);
 	m_proxyHandler.SuppressDestruct();
 	return proxyObject;
@@ -629,7 +629,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_proxy_trap(const Napi::C
 	if (propertyText == "_instance") {
 		return scope.Escape(instance);
 	}
-
+	
 	//Order of execution
 	//1.check for number and call get index handlers
 	//2.check if its a native function
@@ -763,7 +763,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::own_keys_proxy_trap(const Na
 	Napi::EscapableHandleScope scope(env);
 
 	Napi::Object target = info[0].As<Napi::Object>();
-
+	
 	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
 	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
 
@@ -828,7 +828,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::has_proxy_trap(const Napi::C
 		//not a number. return false;
 		return scope.Escape(Napi::Boolean::From(env, false));
 	}
-
+	
 	int32_t length = instance.Get("length").As<Napi::Number>();
 	bool hasIndex = index >= 0 && index < length;
 	return scope.Escape(Napi::Boolean::From(env, hasIndex));
@@ -836,9 +836,9 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::has_proxy_trap(const Napi::C
 
 template<typename ClassType>
 Napi::Value WrappedObject<ClassType>::ProxyHandler::get_own_property_descriptor_trap(const Napi::CallbackInfo& info) {
-	//This exists only for ownKeysTrap to work properly with Object.keys(). It does not check if the property is from the named handler or it is an existing property on the instance.
+	//This exists only for ownKeysTrap to work properly with Object.keys(). It does not check if the property is from the named handler or it is an existing property on the instance. 
 	//This implementation can be extended to return the true property descriptor if the property is an existing one
-
+	
 	Napi::Env env = info.Env();
 	Napi::EscapableHandleScope scope(env);
 
@@ -849,7 +849,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_own_property_descriptor_
 	Napi::Object descriptor = Napi::Object::New(env);
 	descriptor.Set("enumerable", Napi::Boolean::New(env, true));
 	descriptor.Set("configurable", Napi::Boolean::New(env, true));
-
+	
 	return scope.Escape(descriptor);
 }
 
@@ -911,7 +911,7 @@ void ObjectWrap<ClassType>::property_setter(const Napi::CallbackInfo& info) {
 template<typename ClassType>
 Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
 	Napi::Function ctor = init_class(env);
-
+	
 	//If the class has no index accessor we can create an instance of the class itself and can skip proxy objects
 	bool has_index_accessor = (s_class.index_accessor.getter || s_class.index_accessor.setter);
 	bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
@@ -921,7 +921,7 @@ Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
 		return ctor;
 	}
 
-	//since NAPI ctors can't change the returned type we need to return a factory func which will be called when 'new ctor()' is called from JS.
+	//since NAPI ctors can't change the returned type we need to return a factory func which will be called when 'new ctor()' is called from JS. 
 	//This will create a JS Proxy and return it to the caller. The proxy is needed to support named and index handlers
 	Napi::Function factory = Napi::Function::New(env, WrappedObject<ClassType>::create_instance_with_proxy, s_class.name);
 	auto ctorPrototypeProperty = ctor.Get("prototype");
@@ -1006,7 +1006,7 @@ Napi::Function ObjectWrap<ClassType>::init_class(Napi::Env env) {
 			auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter_callback>(Napi::String::New(env, pair.first) /*name*/, napi_attributes, (void*)&pair.second /*callback*/);
 			properties.push_back(descriptor);
 		}
-
+		
 		ctorPrototype.DefineProperties(properties);
 	}
 
@@ -1100,7 +1100,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 	auto config = internal->realm()->config();
 	std::string path = config.path;
 	auto version = internal->realm()->schema_version();
-	std::string schemaName = schema.name + ":" + std::to_string(version);
+	std::string schemaName = schema.name + ":" + std::to_string(version); 
 
 	std::unordered_map<std::string, SchemaObjectType*>* schemaObjects = nullptr;
 	if (!s_schemaObjectTypes.count(path)) {
@@ -1116,7 +1116,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 	Napi::Symbol externalSymbol = ExternalSymbol;
 	//if we are creating a RealmObject from schema with no user defined constructor
 	if (constructor.IsEmpty()) {
-		//1.Check by name if the constructor is already created for this RealmObject
+		//1.Check by name if the constructor is already created for this RealmObject 
 		if (!schemaObjects->count(schemaName)) {
 
 			//2.Create the constructor
@@ -1132,12 +1132,12 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 			ObjectSetPrototypeOf.Call({ childPrototypeProperty, parentCtorPrototypeProperty });
 			ObjectSetPrototypeOf.Call({ schemaObjectConstructor, realmObjectClassConstructor });
 
-			//get all properties from the schema
+			//get all properties from the schema 
 			std::vector<Napi::PropertyDescriptor> properties = create_napi_property_descriptors(env, childPrototypeProperty, schema, true /*redefine*/);
 
 			//define the properties on the prototype of the schema object constructor
 			childPrototypeProperty.DefineProperties(properties);
-
+			
 			SchemaObjectType* schemaObjectType = new SchemaObjectType();
 			schemaObjects->emplace(schemaName, schemaObjectType);
 			schemaObjectType->constructor = Napi::Persistent(schemaObjectConstructor);
@@ -1161,7 +1161,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 		if (schemaExists) {
 			schemaObjectType = schemaObjects->at(schemaName);
 			schemaObjectConstructor = schemaObjectType->constructor.Value();
-
+			
 			//check if constructors have changed for the same schema object and name
 			if (!schemaObjectConstructor.StrictEquals(constructor)) {
 				schemaExists = false;
@@ -1185,7 +1185,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 		schemaObjectConstructor = constructor;
 		Napi::Object constructorPrototype = constructor.Get("prototype").As<Napi::Object>();
 
-		//get all properties from the schema
+		//get all properties from the schema 
 		std::vector<Napi::PropertyDescriptor> properties = create_napi_property_descriptors(env, constructorPrototype, schema, false /*redefine*/);
 
 		Napi::Function realmObjectClassConstructor = ObjectWrap<ClassType>::create_constructor(env);
@@ -1230,7 +1230,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
 		schemaObjectType->constructor = Napi::Persistent(schemaObjectConstructor);
 		schemaObjectType->constructor.SuppressDestruct();
 	}
-
+	
 	return scope.Escape(instance).As<Napi::Object>();
 }
 
@@ -1240,7 +1240,7 @@ inline void ObjectWrap<ClassType>::on_context_destroy(Napi::Env env, std::string
 	if (!s_schemaObjectTypes.count(realmPath)) {
 		return;
 	}
-
+	
 	schemaObjects = s_schemaObjectTypes.at(realmPath);
 	for (auto it = schemaObjects->begin(); it != schemaObjects->end(); ++it) {
 		it->second->constructor.Reset();
@@ -1331,7 +1331,7 @@ Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> ObjectWrap<ClassType>::s
 template<typename ClassType>
 Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> ObjectWrap<ClassType>::setup_property(Napi::Env env, const std::string& name, const PropertyType& property) {
 	napi_property_attributes napi_attributes = napi_default | (realm::js::PropertyAttributes::DontEnum | realm::js::PropertyAttributes::DontDelete);
-
+	
 	auto getterCallback = (typename WrappedObject<ClassType>::InstanceGetterCallback)(&WrappedObject<ClassType>::getter_callback);
 	auto setterCallback = (typename WrappedObject<ClassType>::InstanceSetterCallback)(&WrappedObject<ClassType>::readonly_setter_callback);
 	if (property.setter) {
