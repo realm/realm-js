@@ -22,7 +22,12 @@ import { serialize } from "./utils/ejson";
 /**
  * A list of names that functions cannot have to be callable through the functions proxy.
  */
-const RESERVED_NAMES = ["inspect", "callFunction"];
+const RESERVED_NAMES = [
+    "inspect",
+    "callFunction",
+    // Methods defined on the Object.prototype might be "typeof probed" and called by libraries and runtime environments.
+    ...Object.getOwnPropertyNames(Object.prototype),
+];
 
 /**
  * The body of the request sent to call a remote function.

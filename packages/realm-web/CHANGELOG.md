@@ -8,6 +8,7 @@
 ### Fixed
 * If the payload for `callFunction` included certain types the request would fail with `"invalid function call request (status 400)"`. All `EJSON` serialization is now done in canonical mode [#3157](https://github.com/realm/realm-js/pull/3157)
 * Fixed sending device information when authenticating a user. [#3220](https://github.com/realm/realm-js/pull/3220)
+* Fixed an issue where logging an `app` instance could result in a MongoDB Realm function being called. [#3223](https://github.com/realm/realm-js/pull/3223)
 
 ### Internal
 * None
