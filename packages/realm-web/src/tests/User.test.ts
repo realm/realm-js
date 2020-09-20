@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { inspect } from "util";
 
 import { UserType, User, Credentials } from "..";
 
@@ -43,6 +44,26 @@ describe("User", () => {
         });
         // Assume that the user has an access token
         expect(user.accessToken).equals("deadbeef");
+    });
+
+    it("can be inspected and stringified", () => {
+        const app = new MockApp("my-mocked-app");
+        const user = new User({
+            app,
+            id: "some-user-id",
+            accessToken: "deadbeef.eyJleHAiOjAsImlhdCI6MH0=.e30=",
+            refreshToken: "very-refreshing",
+        });
+        {
+            const output = inspect(user);
+            expect(typeof output).equals("string");
+            expect(output.length).not.equals(0);
+        }
+        {
+            const output = JSON.stringify(user);
+            expect(typeof output).equals("string");
+            expect(output.length).not.equals(0);
+        }
     });
 
     it("deletes session when logging out", async () => {

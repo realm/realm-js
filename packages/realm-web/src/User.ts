@@ -317,6 +317,20 @@ export class User<
         }
     }
 
+    /**
+     * @returns A plain ol' JavaScript object representation of the user.
+     */
+    public toJSON() {
+        return {
+            id: this.id,
+            accessToken: this.accessToken,
+            refreshToken: this.refreshToken,
+            profile: this._profile,
+            state: this.state,
+            customData: this.customData,
+        };
+    }
+
     /** @inheritdoc */
     push(serviceName = ""): Realm.Services.Push {
         throw new Error("Not yet implemented");
@@ -327,7 +341,7 @@ export class User<
             // Decode and spread the token
             const parts = this.accessToken.split(".");
             if (parts.length !== 3) {
-                throw new Error("Expected three parts");
+                throw new Error("Expected an access token with three parts");
             }
             // Decode the payload
             const encodedPayload = parts[1];
