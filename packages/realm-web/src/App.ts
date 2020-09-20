@@ -16,6 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import {
+    NetworkTransport,
+    DefaultNetworkTransport,
+} from "realm-network-transport";
+import { ObjectId } from "bson";
+
 import { FunctionsFactory } from "./FunctionsFactory";
 import { User, UserState } from "./User";
 import { Credentials } from "./Credentials";
@@ -26,11 +32,8 @@ import { AppStorage } from "./AppStorage";
 import { getEnvironment } from "./environment";
 import { AuthResponse, Authenticator } from "./Authenticator";
 import { Fetcher } from "./Fetcher";
-import {
-    NetworkTransport,
-    DefaultNetworkTransport,
-} from "realm-network-transport";
 import routes from "./routes";
+import { DeviceInformation, DEVICE_ID_STORAGE_KEY } from "./DeviceInformation";
 
 /**
  * Default base url to prefix all requests if no baseUrl is specified in the configuration.
@@ -100,7 +103,13 @@ export class App<
     /**
      * The base URL of the app.
      */
-    private baseUrl: string;
+    private readonly baseUrl: string;
+
+    /**
+     * Local app configuration.
+     * Useful to determine what name and version an authenticated user is running.
+     */
+    private readonly localApp: Realm.LocalAppConfiguration | undefined;
 
     /**
      * A promise resolving to the App's location url.
@@ -128,6 +137,7 @@ export class App<
             throw new Error("Missing a MongoDB Realm app-id");
         }
         this.baseUrl = configuration.baseUrl || DEFAULT_BASE_URL;
+        this.localApp = configuration.app;
         const {
             storage,
             transport = new DefaultNetworkTransport(),
@@ -150,7 +160,11 @@ export class App<
         // Construct the storage
         const baseStorage = storage || getEnvironment().defaultStorage;
         this.storage = new AppStorage(baseStorage, this.id);
-        this.authenticator = new Authenticator(this.fetcher, baseStorage);
+        this.authenticator = new Authenticator(
+            this.fetcher,
+            baseStorage,
+            () => this.deviceInformation,
+        );
         // Hydrate the app state from storage
         this.hydrate();
     }
@@ -195,6 +209,11 @@ export class App<
             this.users.map(u => u.id),
             true,
         );
+        // Read out and store the device id from the server
+        const deviceId = response.deviceId;
+        if (deviceId && deviceId !== "000000000000000000000000") {
+            this.storage.set(DEVICE_ID_STORAGE_KEY, deviceId);
+        }
         // Return the user
         return user;
     }
@@ -286,6 +305,23 @@ export class App<
                 });
         }
         return this._locationUrl;
+    }
+
+    /**
+     * @returns Information about the current device, sent to the server when authenticating.
+     */
+    public get deviceInformation() {
+        const deviceIdStr = this.storage.getDeviceId();
+        const deviceId =
+            typeof deviceIdStr === "string" &&
+            deviceIdStr !== "000000000000000000000000"
+                ? new ObjectId(deviceIdStr)
+                : undefined;
+        return new DeviceInformation({
+            appId: this.localApp ? this.localApp.name : undefined,
+            appVersion: this.localApp ? this.localApp.version : undefined,
+            deviceId,
+        });
     }
 
     /**

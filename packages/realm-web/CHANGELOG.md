@@ -6,6 +6,7 @@
 
 ### Fixed
 * If the payload for `callFunction` included certain types the request would fail with `"invalid function call request (status 400)"`. All `EJSON` serialization is now done in canonical mode [#3157](https://github.com/realm/realm-js/pull/3157)
+* Fixed sending device information when authenticating a user. [#3220](https://github.com/realm/realm-js/pull/3220)
 
 ### Internal
 * None

@@ -314,6 +314,28 @@ declare namespace Realm {
          * An optional URL to use as a prefix when requesting the MongoDB Realm services.
          */
         baseUrl?: string;
+
+        /**
+         * This describes the local app, sent to the server when a user authenticates.
+         * Specifying this will enable the server to respond differently to specific versions of specific apps.
+         */
+        app?: LocalAppConfiguration;
+    }
+
+    /**
+     * This describes the local app, sent to the server when a user authenticates.
+     */
+    interface LocalAppConfiguration {
+        /**
+         * The name / id of the local app.
+         * Note: This should be the name or a bundle id of your app, not the MongoDB Realm app.
+         */
+        name?: string;
+
+        /**
+         * The version of the local app.
+         */
+        version?: string;
     }
 
     /**

@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { removeKeysWithUndefinedValues } from "./objects";
+
 /**
  * Generate a random sequence of characters.
  *
@@ -31,6 +33,10 @@ export function generateRandomString(length: number, alphabet: string) {
     return result;
 }
 
+type QueryParams = {
+    [key: string]: string | number | boolean;
+};
+
 /**
  * Encode an object mapping from string to string, into a query string to be appended a URL.
  *
@@ -38,22 +44,18 @@ export function generateRandomString(length: number, alphabet: string) {
  * @param prefixed Should the "?" prefix be added if values exists?
  * @returns A URL encoded representation of the parameters (omitting a "?" prefix).
  */
-export function encodeQueryString(
-    params: {
-        [key: string]: string | number | boolean | undefined;
-    },
+export function encodeQueryString<P extends Partial<QueryParams>>(
+    params: P,
     prefixed = true,
 ) {
     // Filter out undefined values
-    const entriesWithValue = Object.entries(params).filter(
-        ([k, v]) => typeof v !== "undefined",
-    ) as Array<[string, string | number | boolean]>;
+    const cleanedParams = removeKeysWithUndefinedValues(params) as QueryParams;
     // Determine if a prefixed "?" is appropreate
-    const prefix = prefixed && entriesWithValue.length > 0 ? "?" : "";
+    const prefix = prefixed && Object.keys(cleanedParams).length > 0 ? "?" : "";
     // Transform keys and values to a query string
     return (
         prefix +
-        entriesWithValue
+        Object.entries(cleanedParams)
             .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
             .join("&")
     );
@@ -66,9 +68,11 @@ export function encodeQueryString(
  * @returns The decoded query string.
  */
 export function decodeQueryString(str: string) {
+    const cleanStr = str[0] === "?" ? str.substr(1) : str;
     return Object.fromEntries(
-        str
+        cleanStr
             .split("&")
+            .filter(s => s.length > 0)
             .map(kvp => kvp.split("="))
             .map(([k, v]) => [k, decodeURIComponent(v)]),
     );

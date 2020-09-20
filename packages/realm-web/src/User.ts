@@ -28,6 +28,8 @@ import { Credentials } from "./Credentials";
 import { ApiKeyAuth } from "./auth-providers";
 import routes from "./routes";
 
+const DEFAULT_DEVICE_ID = "000000000000000000000000";
+
 interface UserParameters {
     app: App<any>;
     id: string;
@@ -205,6 +207,23 @@ export class User<
         } else {
             throw new Error("A profile was never fetched for this user");
         }
+    }
+
+    get deviceId(): string | null {
+        if (this.refreshToken) {
+            const payload = this.refreshToken.split(".")[1];
+            if (payload) {
+                const parsedPayload = JSON.parse(Base64.decode(payload));
+                const deviceId = parsedPayload["baas_device_id"];
+                if (
+                    typeof deviceId === "string" &&
+                    deviceId !== DEFAULT_DEVICE_ID
+                ) {
+                    return deviceId;
+                }
+            }
+        }
+        return null;
     }
 
     /**
