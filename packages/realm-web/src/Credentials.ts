@@ -26,6 +26,19 @@ type FunctionPayload = Realm.Credentials.FunctionPayload;
 type JWTPayload = Realm.Credentials.JWTPayload;
 type ApplePayload = Realm.Credentials.ApplePayload;
 
+/**
+ * Types of an authentication provider.
+ */
+export type ProviderType =
+    | "anon-user"
+    | "api-key"
+    | "local-userpass"
+    | "custom-function"
+    | "custom-token"
+    | "oauth2-google"
+    | "oauth2-facebook"
+    | "oauth2-apple";
+
 // TODO: Ensure the static interface of the Credentials class implements the static interface of Realm.Credentials
 // See https://stackoverflow.com/a/43484801
 
@@ -235,7 +248,7 @@ export class Credentials<PayloadType extends object = any>
      */
     constructor(
         providerName: string,
-        providerType: string,
+        providerType: ProviderType,
         payload: PayloadType,
     ) {
         this.providerName = providerName;

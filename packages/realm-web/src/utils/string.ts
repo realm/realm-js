@@ -33,7 +33,8 @@ export function generateRandomString(length: number, alphabet: string) {
     return result;
 }
 
-type QueryParams = {
+/** Parameters passed in a query string */
+export type QueryParams = {
     [key: string]: string | number | boolean;
 };
 

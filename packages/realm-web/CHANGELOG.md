@@ -2,7 +2,7 @@
 =============================================================
 
 ### Enhancements
-* Added support for linking credentials to an existing user. [#3088](https://github.com/realm/realm-js/pull/3088)
+* Added support for linking credentials to an existing user. [#3088](https://github.com/realm/realm-js/pull/3088) and [#3239](https://github.com/realm/realm-js/pull/3239)
 * Added a better toJSON() implementation on User objects. [#3221](https://github.com/realm/realm-js/pull/3221)
 
 ### Fixed

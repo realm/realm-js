@@ -19,9 +19,21 @@
 import { expect } from "chai";
 import { Base64 } from "js-base64";
 
-import { Credentials, UserState } from "realm-web";
+import { Credentials, User, UserState, handleAuthRedirect } from "realm-web";
 
-import { createApp, INVALID_TOKEN } from "./utils";
+import { createApp, INVALID_TOKEN, describeIf } from "./utils";
+
+// This global is injected by WebPack
+declare const TEST_CREDENTIALS: string[];
+
+function idFromAccessToken(user: User) {
+    if (typeof (user as any).decodeAccessToken === "function") {
+        const { subject } = (user as any).decodeAccessToken();
+        return subject;
+    } else {
+        throw new Error("Failed to call private 'decodeAccessToken' method");
+    }
+}
 
 function deviceIdFromToken(token: string) {
     const payload = token.split(".")[1];
@@ -65,23 +77,6 @@ describe("User", () => {
         expect(response).to.equal("bonjour");
         // Expect the user to have a diffent token now
         expect(user.accessToken).not.equals(INVALID_TOKEN);
-    });
-
-    it("can link credentials", async () => {
-        const app = createApp();
-        const credentials = Credentials.anonymous();
-        const user = await app.logIn(credentials);
-
-        const now = new Date();
-        const nonce = now.getTime();
-        const email = `dinesh-${nonce}@testing.mongodb.com`;
-        const password = "v3ry-s3cret";
-        await app.emailPasswordAuth.registerUser(email, password);
-        const emailCredentials = Credentials.emailPassword(email, password);
-        await user.linkCredentials(emailCredentials);
-        expect(user.identities.length).equals(2);
-        const identityTypes = user.identities.map(i => i.providerType);
-        expect(identityTypes).deep.equals(["anon-user", "local-userpass"]);
     });
 
     it("retrieves and resends device ids when authenticating", async () => {
@@ -131,4 +126,73 @@ describe("User", () => {
             expect(deviceId).equals(storedDeviceId);
         }
     });
+
+    describe("linking with Email/Password credentials", () => {
+        it("reuse id in access token and adds identity", async () => {
+            const app = createApp();
+            const credentials = Credentials.anonymous();
+            const user = await app.logIn(credentials);
+
+            {
+                // Switch active user by authenticate another user
+                // This is to test that the right access token is used when requesting
+                const credentials = Credentials.anonymous();
+                await app.logIn(credentials);
+            }
+
+            const now = new Date();
+            const nonce = now.getTime();
+            const email = `dinesh-${nonce}@testing.mongodb.com`;
+            const password = "v3ry-s3cret";
+            await app.emailPasswordAuth.registerUser(email, password);
+            const emailCredentials = Credentials.emailPassword(email, password);
+            await user.linkCredentials(emailCredentials);
+            expect(user.identities.length).equals(2);
+            const identityTypes = user.identities.map(i => i.providerType);
+            expect(identityTypes).deep.equals(["anon-user", "local-userpass"]);
+        });
+    });
+
+    describeIf(
+        TEST_CREDENTIALS.includes("google") && typeof location !== "undefined",
+        "linking with Google credentials",
+        () => {
+            it.only("reuse id in access token and adds identity", async function () {
+                // Allowing time to manually complete the OAuth flow
+                this.timeout(60 * 1000); // 1 min
+
+                const app = createApp();
+                const credentials = Credentials.anonymous();
+                const user = await app.logIn(credentials);
+                const userIdBefore = idFromAccessToken(user);
+                expect(user.id).equals(userIdBefore);
+
+                {
+                    // Switch active user by authenticate another user
+                    // This is to test that the right access token is used when requesting
+                    const credentials = Credentials.anonymous();
+                    await app.logIn(credentials);
+                }
+
+                // Link user
+                const googleCredentials = Credentials.google(
+                    "http://localhost:8080/google-callback",
+                );
+                await user.linkCredentials(googleCredentials);
+
+                // Expect the ids from the user object and tokens to match
+                const userIdAfter = idFromAccessToken(user);
+                expect(user.id).equals(userIdAfter);
+                expect(userIdAfter).equals(userIdBefore);
+
+                // Expect the new authentication provider in the list of identities
+                expect(user.identities.length).equals(2);
+                const identityTypes = user.identities.map(i => i.providerType);
+                expect(identityTypes).deep.equals([
+                    "anon-user",
+                    "oauth2-google",
+                ]);
+            });
+        },
+    );
 });
