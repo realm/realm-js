@@ -167,7 +167,7 @@ module.exports = {
                 TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
 
                 const session = realm.syncSession;
-                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                TestCase.assertInstanceOf(session, Realm.App.Sync.Session);
                 TestCase.assertEqual(session.user.id, user.id);
                 TestCase.assertEqual(session.config.url, config.sync.url);
                 TestCase.assertEqual(session.config.user.id, config.sync.user.id);
@@ -207,7 +207,7 @@ module.exports = {
                 TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
 
                 const session = realm.syncSession;
-                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                TestCase.assertInstanceOf(session, Realm.App.Sync.Session);
                 TestCase.assertEqual(session.user.id, user.id);
                 TestCase.assertEqual(session.config.url, config.sync.url);
                 TestCase.assertEqual(session.config.user.id, config.sync.user.id);
@@ -395,7 +395,7 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Realm.App.Sync.User.login('http://127.0.0.1:9080', Realm.App.Sync.Credentials.anonymous()).then(user => {
             return new Promise((resolve, _reject) => {
                 var realm;
                 const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
@@ -407,7 +407,7 @@ module.exports = {
                         TestCase.assertNotEqual(error.config.path, '');
                         const path = realm.path;
                         realm.close();
-                        Realm.Sync.initiateClientReset(path);
+                        Realm.App.Sync.initiateClientReset(path);
                         // open Realm with error.config, and copy required objects a Realm at `path`
                         resolve();
                     }
@@ -416,7 +416,7 @@ module.exports = {
                     }
                 };
                 realm = new Realm(config);
-                const session = realm.syncSession;
+                const session = Realm.App.SyncSession;
 
                 TestCase.assertEqual(session.config.error, config.sync.error);
                 session._simulateError(211, 'ClientReset'); // 211 -> divering histories
@@ -427,9 +427,9 @@ module.exports = {
 
     /*
     testClientResyncMode() {
-        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Discard, 'discard');
-        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Manual, 'manual');
-        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Recover, 'recover');
+        TestCase.assertEqual(Realm.App.Sync.ClientResyncMode.Discard, 'discard');
+        TestCase.assertEqual(Realm.App.Sync.ClientResyncMode.Manual, 'manual');
+        TestCase.assertEqual(Realm.App.Sync.ClientResyncMode.Recover, 'recover');
     },
     */
 
@@ -440,7 +440,7 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Realm.App.Sync.User.login('http://127.0.0.1:9080', Realm.App.Sync.Credentials.anonymous()).then(user => {
             return new Promise((resolve, reject) => {
                 var realm;
                 const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
@@ -466,7 +466,7 @@ module.exports = {
         const fetch = require('node-fetch');
 
         const realmUrl = 'realm://127.0.0.1:9080/~/myrealm';
-        let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));
+        let user = await Realm.App.Sync.User.login('http://127.0.0.1:9080', Realm.App.Sync.Credentials.nickname('admin', true));
         const config1 = user.createConfiguration({ sync: { url: realmUrl } });
         config1.schema = [schemas.IntOnly];
         config1.sync.clientResyncMode = 'discard';
@@ -514,7 +514,7 @@ module.exports = {
         }).then(realm => {
             return new Promise((resolve, reject) => {
                 realm.syncSession.addConnectionNotification((newState, oldState) => {
-                    if (oldState === Realm.Sync.ConnectionState.Connected && newState === Realm.Sync.ConnectionState.Disconnected) {
+                    if (oldState === Realm.App.Sync.ConnectionState.Connected && newState === Realm.App.Sync.ConnectionState.Disconnected) {
                         resolve();
                     }
                 });
@@ -536,7 +536,7 @@ module.exports = {
                     reject("Should not be called");
                 };
                 let callback2 = (newState, oldState) => {
-                    if (oldState === Realm.Sync.ConnectionState.Connected && newState === Realm.Sync.ConnectionState.Disconnected) {
+                    if (oldState === Realm.App.Sync.ConnectionState.Connected && newState === Realm.App.Sync.ConnectionState.Disconnected) {
                         resolve();
                     }
                 };
@@ -562,7 +562,7 @@ module.exports = {
         }).then(realm => {
             let session = realm.syncSession;
             session.pause();
-            TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
+            TestCase.assertEqual(session.connectionState, Realm.App.Sync.ConnectionState.Disconnected);
             TestCase.assertFalse(session.isConnected());
 
             return new Promise((resolve, reject) => {
@@ -570,23 +570,23 @@ module.exports = {
                     let state = session.connectionState;
                     let isConnected = session.isConnected();
                     switch (newState) {
-                        case Realm.Sync.ConnectionState.Disconnected:
-                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Disconnected);
+                        case Realm.App.Sync.ConnectionState.Disconnected:
+                            TestCase.assertEqual(state, Realm.App.Sync.ConnectionState.Disconnected);
                             TestCase.assertFalse(isConnected);
                             break;
-                        case Realm.Sync.ConnectionState.Connecting:
-                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Connecting);
+                        case Realm.App.Sync.ConnectionState.Connecting:
+                            TestCase.assertEqual(state, Realm.App.Sync.ConnectionState.Connecting);
                             TestCase.assertFalse(isConnected);
                             break;
-                        case Realm.Sync.ConnectionState.Connected:
-                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Connected);
+                        case Realm.App.Sync.ConnectionState.Connected:
+                            TestCase.assertEqual(state, Realm.App.Sync.ConnectionState.Connected);
                             TestCase.assertTrue(isConnected);
                             break;
                         default:
                             reject(`unknown connection value: ${newState}`);
                     }
 
-                    if (newState === Realm.Sync.ConnectionState.Connected) {
+                    if (newState === Realm.App.Sync.ConnectionState.Connected) {
                         resolve();
                     }
                 });
@@ -605,13 +605,13 @@ module.exports = {
 
         const realm = await Realm.open(config);
         const session = realm.syncSession;
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Connected);
 
         session.pause();
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Disconnected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Disconnected);
 
         session.resume();
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Connected);
     },
 
     async testMultipleResumes() {
@@ -623,13 +623,13 @@ module.exports = {
 
         const realm = await Realm.open(config);
         const session = realm.syncSession;
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Connected);
 
         session.resume();
         session.resume();
         session.resume();
 
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Connected);
         TestCase.assertTrue(session.isConnected());
     },
 
@@ -642,13 +642,13 @@ module.exports = {
 
         const realm = await Realm.open(config);
         const session = realm.syncSession;
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Connected);
 
         session.pause();
         session.pause();
         session.pause();
 
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Disconnected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Disconnected);
         TestCase.assertFalse(session.isConnected());
     },
 
@@ -733,14 +733,15 @@ module.exports = {
 
             // No real way to check if this works automatically.
             // This is just a smoke test, making sure the method doesn't crash outright.
-            Realm.Sync.reconnect();
+            Realm.App.Sync.reconnect(app);
         });
     },
 
     test_hasExistingSessions() {
-        TestCase.assertFalse(Realm.Sync._hasExistingSessions());
-
         let app = new Realm.App(appConfig);
+
+        TestCase.assertFalse(Realm.App.Sync._hasExistingSessions(app));
+
         let credentials = Realm.Credentials.anonymous();
         const realmPartition = Utils.genPartition();
         return app.logIn(credentials).then(user => {
@@ -753,7 +754,7 @@ module.exports = {
                 let intervalId;
                 let it = 50;
                 intervalId = setInterval(function () {
-                    if (!Realm.Sync._hasExistingSessions()) {
+                    if (!Realm.App.Sync._hasExistingSessions(app)) {
                         clearInterval(intervalId);
                         resolve();
                     } else if (it < 0) {
@@ -766,6 +767,39 @@ module.exports = {
             });
         });
     },
+
+    async testGetSyncSession() {
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+        const realmPartition = Utils.genPartition();
+        let user = await app.logIn(credentials);
+        let session1 = Realm.App.Sync.getSyncSession(user, realmPartition);
+        TestCase.assertNull(session1);
+
+        const config = getSyncConfiguration(user, realmPartition);
+        let realm = new Realm(config);
+        let session2 = Realm.App.Sync.getSyncSession(user, realmPartition);
+        TestCase.assertNotNull(session2);
+        realm.close();
+    },
+
+    async testGetAllSyncSessions() {
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+        const realmPartition = Utils.genPartition();
+        let user = await app.logIn(credentials);
+        let sessions1 = Realm.App.Sync.getAllSyncSessions(user);
+        TestCase.assertArrayLength(sessions1, 0);
+
+        const config = getSyncConfiguration(user, realmPartition);
+        let realm = new Realm(config);
+
+        let sessions2 = Realm.App.Sync.getAllSyncSessions(user);
+        TestCase.assertArrayLength(sessions2, 1);
+        TestCase.assertNotNull(sessions2[0]);
+        realm.close();
+    },
+
 
     testSessionStopPolicy() {
         let app = new Realm.App(appConfig);
@@ -823,13 +857,13 @@ module.exports = {
                 config.sync._sessionStopPolicy = "immediately"
 
                 {
-                    TestCase.assertFalse(Realm.Sync._hasExistingSessions());
+                    TestCase.assertFalse(Realm.App.Sync._hasExistingSessions(app));
                     const realm = new Realm(config);
                     const session = realm.syncSession;
-                    TestCase.assertTrue(Realm.Sync._hasExistingSessions());
+                    TestCase.assertTrue(Realm.App.Sync._hasExistingSessions(app));
                     realm.close();
                 }
-                TestCase.assertFalse(Realm.Sync._hasExistingSessions());
+                TestCase.assertFalse(Realm.App.Sync._hasExistingSessions(app));
             });
     },
 

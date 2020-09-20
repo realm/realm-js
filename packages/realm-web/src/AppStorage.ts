@@ -19,6 +19,7 @@
 import { PrefixedStorage, Storage } from "./storage";
 
 const USER_IDS_STORAGE_KEY = "userIds";
+const DEVICE_ID_STORAGE_KEY = "deviceId";
 
 /**
  * Storage specific to the app.
@@ -86,5 +87,19 @@ export class AppStorage extends PrefixedStorage {
         const userIds = existingIds.filter(id => id !== userId);
         // Store the list of ids
         this.setUserIds(userIds, false);
+    }
+
+    /**
+     * @returns id of this device (if any exists)
+     */
+    public getDeviceId() {
+        return this.get(DEVICE_ID_STORAGE_KEY);
+    }
+
+    /**
+     * @param deviceId The id of this device, to send on subsequent authentication requests.
+     */
+    public setDeviceId(deviceId: string) {
+        this.set(DEVICE_ID_STORAGE_KEY, deviceId);
     }
 }

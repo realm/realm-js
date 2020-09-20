@@ -49,6 +49,12 @@ export const LOCATION_RESPONSE = Object.freeze({
     deployment_model: "GLOBAL", // eslint-disable-line @typescript-eslint/camelcase
 });
 
+/**
+ * Default information about the device.
+ */
+export const DEFAULT_DEVICE =
+    "eyJzZGtWZXJzaW9uIjoiMC4wLjAtdGVzdCIsInBsYXRmb3JtIjoibm9kZSIsInBsYXRmb3JtVmVyc2lvbiI6IjEyLjE0LjEifQ%3D%3D";
+
 export * from "./MockApp";
 export * from "./MockFetcher";
 export * from "./MockNetworkTransport";

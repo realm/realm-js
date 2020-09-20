@@ -30,6 +30,16 @@ export type Environment = {
      * Open a browser window.
      */
     openWindow: (url: string) => Window | null;
+
+    /**
+     * The name of the executing platform.
+     */
+    platform: string;
+
+    /**
+     * The version of the executing platform.
+     */
+    platformVersion: string;
 };
 
 let environment: Environment | null = null;

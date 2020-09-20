@@ -1,24 +1,40 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.0.0 Release notes (2020-9-18)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
 
-NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. Only [Realm Studio 10.0.0](https://github.com/realm/realm-studio/releases/tag/v10.0.0-beta.1) or later will be able to open the new file format.
+NOTE: This version bumps the Realm file format to version 20. It is not possible to downgrade to earlier versions. Non-sync Realms will be upgraded automatically. Synced Realms can only be automatically upgraded if created with Realm JavaScript v10.0.0-beta.1 and above.
+
+### Breaking changes
+* Renamed `Realm.Credentials.custom()` to `Realm.Credentials.jwt()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Renamed `Realm.User.remoteMongoClient()` to `Realm.User.mongoClient()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Removed `Remote` prefix from all `MongoDB` related classes.
+* Renamed `Realm.Sync` to `Realm.App.Sync` including all methods and properties. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 
 ### Enhancements
+* Added property `Realm.User.deviceId`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Added property `Realm.User.providerType`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Added property `Realm.User.identities`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Added property `name` to `Realm.MongoDB`, `Realm.MongoDB.Database` and `Realm.MongoDB.Collection`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Added methods `Realm.App.Sync.getSyncSession()` and `Realm.App.Sync.getAllSyncSessions()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
 * Allow synchronization on the nil partition by specifying `null` as `partitionValue` in sync configuration (RJS-726).
+* Added support for creating multiple Realm apps. ([#3072](https://github.com/realm/realm-js/issues/3072))
+* Added method `Realm.App.getCachedApp()`.
 
 ### Fixed
 * Reapplied fix for the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth. ([#3109])(https://github.com/realm/realm-js/issues/3109)
 * Fixed linking issue (error message: `ld: symbol(s) not found for architecture x86_64`) on iOS. ([#3189](https://github.com/realm/realm-js/issues/3189), since v10.0.0-beta.12)
+* It is not allowed to query embedded objects directly. An expection will be thrown. ([RJS-763](https://jira.mongodb.org/browse/RJS-763), since v10.0.0-beta.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
-* File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 * Stopped building binary releases for Node.js 11
 
 ### Internal
-* None.
+* Realm JS now uses a single pre-build native binary for every Node.js and Electron version per platform (Windows, Linux, MacOS) and architecture (ia32, x64). Switching Node.js and Electron versions after Realm JS is installed will not require re-building or re-downloading of the Realm JS native binary.
+* Upgraded Realm Core from v10.0.0-beta.6 to v10.0.0-beta.8.
+* Upgraded Realm Sync from v10.0.0-beta.10 to v10.0.0-beta.12.
 
 10.0.0-beta.12 Release notes (2020-9-2)
 =============================================================

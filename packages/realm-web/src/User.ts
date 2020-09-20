@@ -28,6 +28,8 @@ import { Credentials } from "./Credentials";
 import { ApiKeyAuth } from "./auth-providers";
 import routes from "./routes";
 
+const DEFAULT_DEVICE_ID = "000000000000000000000000";
+
 interface UserParameters {
     app: App<any>;
     id: string;
@@ -207,6 +209,23 @@ export class User<
         }
     }
 
+    get deviceId(): string | null {
+        if (this.refreshToken) {
+            const payload = this.refreshToken.split(".")[1];
+            if (payload) {
+                const parsedPayload = JSON.parse(Base64.decode(payload));
+                const deviceId = parsedPayload["baas_device_id"];
+                if (
+                    typeof deviceId === "string" &&
+                    deviceId !== DEFAULT_DEVICE_ID
+                ) {
+                    return deviceId;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Refresh the users profile data.
      */
@@ -298,6 +317,20 @@ export class User<
         }
     }
 
+    /**
+     * @returns A plain ol' JavaScript object representation of the user.
+     */
+    public toJSON() {
+        return {
+            id: this.id,
+            accessToken: this.accessToken,
+            refreshToken: this.refreshToken,
+            profile: this._profile,
+            state: this.state,
+            customData: this.customData,
+        };
+    }
+
     /** @inheritdoc */
     push(serviceName = ""): Realm.Services.Push {
         throw new Error("Not yet implemented");
@@ -308,7 +341,7 @@ export class User<
             // Decode and spread the token
             const parts = this.accessToken.split(".");
             if (parts.length !== 3) {
-                throw new Error("Expected three parts");
+                throw new Error("Expected an access token with three parts");
             }
             // Decode the payload
             const encodedPayload = parts[1];

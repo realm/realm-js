@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { inspect } from "util";
 
 import { UserType, User, Credentials } from "..";
 
@@ -26,6 +27,7 @@ import {
     LOCATION_REQUEST,
     ACCEPT_JSON_HEADERS,
     SENDING_JSON_HEADERS,
+    DEFAULT_DEVICE,
 } from "./utils";
 
 // Since responses from the server uses underscores in field names:
@@ -42,6 +44,26 @@ describe("User", () => {
         });
         // Assume that the user has an access token
         expect(user.accessToken).equals("deadbeef");
+    });
+
+    it("can be inspected and stringified", () => {
+        const app = new MockApp("my-mocked-app");
+        const user = new User({
+            app,
+            id: "some-user-id",
+            accessToken: "deadbeef.eyJleHAiOjAsImlhdCI6MH0=.e30=",
+            refreshToken: "very-refreshing",
+        });
+        {
+            const output = inspect(user);
+            expect(typeof output).equals("string");
+            expect(output.length).not.equals(0);
+        }
+        {
+            const output = JSON.stringify(user);
+            expect(typeof output).equals("string");
+            expect(output.length).not.equals(0);
+        }
     });
 
     it("deletes session when logging out", async () => {
@@ -231,8 +253,7 @@ describe("User", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?link=true",
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?link=true&device=${DEFAULT_DEVICE}`,
                 headers: SENDING_JSON_HEADERS,
                 body: {
                     username: "gilfoyle@testing.mongodb.com",
