@@ -248,13 +248,6 @@ export class Fetcher implements LocationUrlContext {
     }
 
     /**
-     * @returns The location URL of the app.
-     */
-    public get appUrl() {
-        return this.locationUrl.then(url => url + this.appRoute.path);
-    }
-
-    /**
      * @param user An optional user to generate the header for.
      * @param tokenType The type of token (access or refresh).
      * @returns An object containing the user's token as "Authorization" header or undefined if no user is given.

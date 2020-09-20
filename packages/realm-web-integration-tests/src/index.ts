@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { MochaRemoteClient } from "mocha-remote-client";
-import Realm from "realm-web";
+import * as Realm from "realm-web";
 
 if (location.pathname.endsWith("-callback")) {
     console.log("This is the callback from Google OAuth 2.0 flow");

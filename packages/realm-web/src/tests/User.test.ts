@@ -254,7 +254,10 @@ describe("User", () => {
             {
                 method: "POST",
                 url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?link=true&device=${DEFAULT_DEVICE}`,
-                headers: SENDING_JSON_HEADERS,
+                headers: {
+                    ...SENDING_JSON_HEADERS,
+                    Authorization: "Bearer deadbeef",
+                },
                 body: {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "s3cr3t",
