@@ -352,9 +352,15 @@ describe("Remote MongoDB", () => {
             // Watch any event
             (async () => {
                 let expected = 0;
-                for await (const event of collection.watch() as any) {
-                    if (event.fullDocument.done) break;
-                    expect(event.fullDocument._id).equals(expected++);
+                for await (const event of collection.watch()) {
+                    if (event.operationType === "insert") {
+                        if (event.fullDocument.done) break;
+                        expect(event.fullDocument._id).equals(expected++);
+                    } else {
+                        throw new Error(
+                            `Unexpected ${event.operationType} event`,
+                        );
+                    }
                 }
                 expect(expected).equals(10);
             })(),
@@ -372,6 +378,10 @@ describe("Remote MongoDB", () => {
                         if (event.fullDocument.done) break;
                         expect(event.fullDocument._id).equals(3);
                         seenIt = true;
+                    } else {
+                        throw new Error(
+                            `Unexpected ${event.operationType} event`,
+                        );
                     }
                 }
                 expect(seenIt, "seenIt for filter");
@@ -386,6 +396,10 @@ describe("Remote MongoDB", () => {
                         if (event.fullDocument.done) break;
                         expect(event.fullDocument._id).equal(5);
                         seenIt = true;
+                    } else {
+                        throw new Error(
+                            `Unexpected ${event.operationType} event`,
+                        );
                     }
                 }
                 expect(seenIt, "seenIt for ids");
