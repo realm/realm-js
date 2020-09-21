@@ -16,19 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Our version of Node.js types are very restricted
-// This file will get resolved when realm's dependency on bson resolves a dependency on @types/node.
-// We need this file to prevent the NodeJS globals to be accessable from within the test source files.
-
 /**
- * The simplest buffer we can come up with.
- * NOTE: This is needed because the "bson" package's types depends on it.
+ * @param obj The object to remove keys (and undefined values from)
+ * @returns A new object without the keys where the value is undefined.
  */
-type Buffer = Uint8Array;
-
-/**
- * Used by the "detect-browser" package.
- */
-declare namespace NodeJS {
-    type Platform = string;
+export function removeKeysWithUndefinedValues<T extends object>(obj: T): T {
+    return Object.fromEntries(
+        Object.entries(obj).filter(entry => typeof entry[1] !== "undefined"),
+    ) as T;
 }

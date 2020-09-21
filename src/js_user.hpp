@@ -20,7 +20,6 @@
 
 #include "js_class.hpp"
 #include "js_collection.hpp"
-#include "js_sync_util.hpp"
 #include "js_app_credentials.hpp"
 #include "js_api_key_auth.hpp"
 #include "js_network_transport.hpp"
@@ -146,6 +145,7 @@ public:
     static ObjectType create_instance(ContextType, SharedUser, SharedApp);
 
     static void get_id(ContextType, ObjectType, ReturnValue &);
+    static void get_identities(ContextType, ObjectType, ReturnValue &);
     static void get_access_token(ContextType, ObjectType, ReturnValue &);
     static void get_refresh_token(ContextType, ObjectType, ReturnValue &);
     static void get_profile(ContextType, ObjectType, ReturnValue &);
@@ -153,9 +153,12 @@ public:
     static void get_state(ContextType, ObjectType, ReturnValue &);
     static void get_custom_data(ContextType, ObjectType, ReturnValue &);
     static void get_api_keys(ContextType, ObjectType, ReturnValue &);
+    static void get_device_id(ContextType, ObjectType, ReturnValue &);
+    static void get_provider_type(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"id", {wrap<get_id>, nullptr}},
+        {"identities", {wrap<get_identities>, nullptr}},
         {"accessToken", {wrap<get_access_token>, nullptr}},
         {"refreshToken", {wrap<get_refresh_token>, nullptr}},
         {"profile", {wrap<get_profile>, nullptr}},
@@ -163,6 +166,8 @@ public:
         {"state", {wrap<get_state>, nullptr}},
         {"customData", {wrap<get_custom_data>, nullptr}},
         {"apiKeys", {wrap<get_api_keys>, nullptr}},
+        {"deviceId", {wrap<get_device_id>, nullptr}},
+        {"providerType", {wrap<get_provider_type>, nullptr}},
     };
 
     MethodMap<T> const static_methods = {
@@ -210,6 +215,36 @@ template<typename T>
 void UserClass<T>::get_id(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string id = get_internal<T, UserClass<T>>(ctx, object)->get()->identity();
     return_value.set(id);
+}
+
+template<typename T>
+void UserClass<T>::get_identities(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    std::vector<SyncUserIdentity> identities = get_internal<T, UserClass<T>>(ctx, object)->get()->identities();
+
+    std::vector<ValueType> identity_objects;
+    for (auto identity : identities) {
+        auto identity_object = Object::create_empty(ctx);
+        Object::set_property(ctx, identity_object, "userId", Value::from_string(ctx, identity.id));
+        Object::set_property(ctx, identity_object, "providerType", Value::from_string(ctx, identity.provider_type));
+        identity_objects.push_back(identity_object);
+    }
+    return_value.set(Object::create_array(ctx, identity_objects));
+}
+
+template<typename T>
+void UserClass<T>::get_device_id(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto user = get_internal<T, UserClass<T>>(ctx, object)->get();
+    if (user->has_device_id()) {
+        return_value.set(user->device_id());
+        return;
+    }
+    return_value.set_null();
+}
+
+template<typename T>
+void UserClass<T>::get_provider_type(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    std::string provider_type = get_internal<T, UserClass<T>>(ctx, object)->get()->provider_type();
+    return_value.set(provider_type);
 }
 
 template<typename T>

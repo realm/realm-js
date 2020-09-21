@@ -24,9 +24,11 @@ import { Fetcher } from "./Fetcher";
 import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
-import { Credentials } from "./Credentials";
+import { Credentials, ProviderType } from "./Credentials";
 import { ApiKeyAuth } from "./auth-providers";
 import routes from "./routes";
+
+const DEFAULT_DEVICE_ID = "000000000000000000000000";
 
 interface UserParameters {
     app: App<any>;
@@ -38,6 +40,7 @@ interface UserParameters {
 type JWT<CustomDataType extends object = any> = {
     expires: number;
     issuedAt: number;
+    subject: string;
     userData: CustomDataType;
 };
 
@@ -207,6 +210,27 @@ export class User<
         }
     }
 
+    get providerType(): ProviderType {
+        throw new Error("Not yet implemented");
+    }
+
+    get deviceId(): string | null {
+        if (this.accessToken) {
+            const payload = this.accessToken.split(".")[1];
+            if (payload) {
+                const parsedPayload = JSON.parse(Base64.decode(payload));
+                const deviceId = parsedPayload["baas_device_id"];
+                if (
+                    typeof deviceId === "string" &&
+                    deviceId !== DEFAULT_DEVICE_ID
+                ) {
+                    return deviceId;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Refresh the users profile data.
      */
@@ -243,8 +267,13 @@ export class User<
     public async linkCredentials(credentials: Credentials) {
         const response = await this.app.authenticator.authenticate(
             credentials,
-            true,
+            this,
         );
+        // Sanity check the response
+        if (this.id !== response.userId) {
+            const details = `got user id ${response.userId} expected ${this.id}`;
+            throw new Error(`Link response ment for another user (${details})`);
+        }
         // Update the access token
         this.accessToken = response.accessToken;
         // Refresh the profile to include the new identity
@@ -298,6 +327,20 @@ export class User<
         }
     }
 
+    /**
+     * @returns A plain ol' JavaScript object representation of the user.
+     */
+    public toJSON() {
+        return {
+            id: this.id,
+            accessToken: this.accessToken,
+            refreshToken: this.refreshToken,
+            profile: this._profile,
+            state: this.state,
+            customData: this.customData,
+        };
+    }
+
     /** @inheritdoc */
     push(serviceName = ""): Realm.Services.Push {
         throw new Error("Not yet implemented");
@@ -308,7 +351,7 @@ export class User<
             // Decode and spread the token
             const parts = this.accessToken.split(".");
             if (parts.length !== 3) {
-                throw new Error("Expected three parts");
+                throw new Error("Expected an access token with three parts");
             }
             // Decode the payload
             const encodedPayload = parts[1];
@@ -317,6 +360,7 @@ export class User<
             const {
                 exp: expires,
                 iat: issuedAt,
+                sub: subject,
                 user_data: userData = {},
             } = parsedPayload;
             // Validate the types
@@ -325,7 +369,7 @@ export class User<
             } else if (typeof issuedAt !== "number") {
                 throw new Error("Failed to decode access token 'iat'");
             }
-            return { expires, issuedAt, userData };
+            return { expires, issuedAt, subject, userData };
         } else {
             throw new Error("Missing an access token");
         }

@@ -273,6 +273,11 @@ declare namespace Realm {
         >;
 
         /**
+         * Get an app instance from the cache.
+         */
+        static getCachedApp(appId: string): App;
+
+        /**
          * Log in a user using a specific credential
          *
          * @param credentials the credentials to use when logging in
@@ -309,6 +314,28 @@ declare namespace Realm {
          * An optional URL to use as a prefix when requesting the MongoDB Realm services.
          */
         baseUrl?: string;
+
+        /**
+         * This describes the local app, sent to the server when a user authenticates.
+         * Specifying this will enable the server to respond differently to specific versions of specific apps.
+         */
+        app?: LocalAppConfiguration;
+    }
+
+    /**
+     * This describes the local app, sent to the server when a user authenticates.
+     */
+    interface LocalAppConfiguration {
+        /**
+         * The name / id of the local app.
+         * Note: This should be the name or a bundle id of your app, not the MongoDB Realm app.
+         */
+        name?: string;
+
+        /**
+         * The version of the local app.
+         */
+        version?: string;
     }
 
     /**
@@ -322,6 +349,16 @@ declare namespace Realm {
          * The automatically-generated internal ID of the user.
          */
         readonly id: string;
+
+        /**
+         * The provider type for the user.
+         */
+        readonly providerType: string;
+
+        /**
+         * The id of the device.
+         */
+        readonly deviceId: string | null;
 
         /**
          * The state of the user.

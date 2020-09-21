@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { detect } from "detect-browser";
+
 declare global {
     type TimerHandle = ReturnType<typeof setTimeout>;
 }
@@ -28,9 +30,14 @@ import { OAuth2Helper } from "../OAuth2Helper";
 import { LocalStorage } from "./LocalStorage";
 export { LocalStorage };
 
+const browser = detect();
+
 const environment: Environment = {
     defaultStorage: new LocalStorage().prefix("realm-web"),
     openWindow: url => window.open(url),
+
+    platform: browser?.name || "web",
+    platformVersion: browser?.version || "0.0.0",
 };
 
 setEnvironment(environment);

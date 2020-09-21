@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "chai": "^4.2.0",
+    "js-base64": "^3.4.5",
     "jwt-encode": "^1.0.1",
     "mocha": "^5",
     "mocha-remote": "^0.16.0",

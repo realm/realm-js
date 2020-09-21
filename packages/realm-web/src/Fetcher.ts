@@ -108,6 +108,55 @@ export type FetcherConfig = {
  */
 export class Fetcher implements LocationUrlContext {
     /**
+     * @param user An optional user to generate the header for.
+     * @param tokenType The type of token (access or refresh).
+     * @returns An object containing the user's token as "Authorization" header or undefined if no user is given.
+     */
+    private static buildAuthorizationHeader(
+        user: User<object, object> | null,
+        tokenType: TokenType,
+    ): Headers {
+        if (!user || tokenType === "none") {
+            return {};
+        } else if (tokenType === "access") {
+            return { Authorization: `Bearer ${user.accessToken}` };
+        } else if (tokenType === "refresh") {
+            return { Authorization: `Bearer ${user.refreshToken}` };
+        } else {
+            throw new Error(`Unexpected token type (${tokenType})`);
+        }
+    }
+
+    /**
+     * @param body The body string or object passed from a request.
+     * @returns An object optionally specifying the "Content-Type" header.
+     */
+    private static buildBody(body: unknown): string | undefined {
+        if (!body) {
+            return;
+        } else if (typeof body === "object" && body !== null) {
+            return JSON.stringify(serialize(body));
+        } else if (typeof body === "string") {
+            return body;
+        } else {
+            console.log("body is", body);
+            throw new Error("Unexpected type of body");
+        }
+    }
+
+    /**
+     * @param body The body string or object passed from a request.
+     * @returns An object optionally specifying the "Content-Type" header.
+     */
+    private static buildJsonHeader(body: string | undefined): Headers {
+        if (body && body.length > 0) {
+            return { "Content-Type": "application/json" };
+        } else {
+            return {};
+        }
+    }
+
+    /**
      * The id of the app, which this Fetcher was created for.
      */
     private readonly appId: string;
@@ -170,7 +219,7 @@ export class Fetcher implements LocationUrlContext {
                 ...restOfRequest,
                 url,
                 headers: {
-                    ...this.buildAuthorizationHeader(user, tokenType),
+                    ...Fetcher.buildAuthorizationHeader(user, tokenType),
                     ...request.headers,
                 },
             });
@@ -210,9 +259,8 @@ export class Fetcher implements LocationUrlContext {
         ResponseBody extends object = any
     >(request: AuthenticatedRequest<RequestBody>): Promise<ResponseBody> {
         const { body } = request;
-        const serializedBody =
-            typeof body === "object" ? JSON.stringify(serialize(body)) : body;
-        const contentTypeHeaders = this.buildJsonHeader(body);
+        const serializedBody = Fetcher.buildBody(body);
+        const contentTypeHeaders = Fetcher.buildJsonHeader(serializedBody);
         const response = await this.fetch<RequestBody>({
             ...request,
             body: serializedBody,
@@ -245,44 +293,5 @@ export class Fetcher implements LocationUrlContext {
      */
     public get locationUrl() {
         return this.locationUrlContext.locationUrl;
-    }
-
-    /**
-     * @returns The location URL of the app.
-     */
-    public get appUrl() {
-        return this.locationUrl.then(url => url + this.appRoute.path);
-    }
-
-    /**
-     * @param user An optional user to generate the header for.
-     * @param tokenType The type of token (access or refresh).
-     * @returns An object containing the user's token as "Authorization" header or undefined if no user is given.
-     */
-    private buildAuthorizationHeader(
-        user: User<object, object> | null,
-        tokenType: TokenType,
-    ): Headers {
-        if (!user || tokenType === "none") {
-            return {};
-        } else if (tokenType === "access") {
-            return { Authorization: `Bearer ${user.accessToken}` };
-        } else if (tokenType === "refresh") {
-            return { Authorization: `Bearer ${user.refreshToken}` };
-        } else {
-            throw new Error(`Unexpected token type (${tokenType})`);
-        }
-    }
-
-    /**
-     * @param body The body string or object passed from a request.
-     * @returns An object optionally specifying the "Content-Type" header.
-     */
-    private buildJsonHeader(body: string | object | undefined): Headers {
-        if (body) {
-            return { "Content-Type": "application/json" };
-        } else {
-            return {};
-        }
     }
 }

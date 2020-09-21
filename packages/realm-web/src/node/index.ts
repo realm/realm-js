@@ -29,6 +29,8 @@ const environment: Environment = {
         console.log(`Please open this URL: ${url}`);
         return null;
     },
+    platform: process.release.name || "node",
+    platformVersion: process.versions.node,
 };
 
 setEnvironment(environment);

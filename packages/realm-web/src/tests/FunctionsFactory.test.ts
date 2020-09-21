@@ -90,4 +90,14 @@ describe("FunctionsFactory", () => {
             },
         ]);
     });
+
+    it("does not trap methods defined on the Object.prototype", () => {
+        const fetcher = new MockFetcher([{ message: `hello friendly world!` }]);
+        const factory = FunctionsFactory.create(fetcher, {
+            serviceName: "custom-service",
+        });
+        // eslint-disable-next-line no-prototype-builtins
+        const result = factory.hasOwnProperty("testing");
+        expect(result).not.instanceOf(Promise);
+    });
 });
