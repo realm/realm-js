@@ -451,6 +451,17 @@ declare namespace Realm {
          * @returns An service client with methods to register and deregister the device on the user.
          */
         push(serviceName: string): Realm.Services.Push;
+
+        /**
+         * Returns a connection to the MongoDB service.
+         *
+         * @example
+         * let blueWidgets = user.remoteMongoClient('myClusterName')
+         *                       .db('myDb')
+         *                       .collection('widgets')
+         *                       .find({color: 'blue'});
+         */
+        remoteMongoClient(serviceName: string): Realm.Services.MongoDB;
     }
 
     /**
@@ -556,7 +567,7 @@ declare namespace Realm {
     /**
      * A collection of functions as defined on the MongoDB Server.
      */
-    interface BaseFunctionsFactory {
+    type BaseFunctionsFactory = {
         /**
          * Call a remote MongoDB Realm function by its name.
          * Consider using `functions[name]()` instead of calling this method.
@@ -565,15 +576,27 @@ declare namespace Realm {
          * @param args Arguments passed to the function.
          */
         callFunction(name: string, ...args: any[]): Promise<any>;
-    }
+
+        /**
+         * Call a remote MongoDB Realm function by its name, in a streaming mode.
+         * Consider using `functions[name]()` instead of calling this method.
+         *
+         * @param name Name of the function.
+         * @param args Arguments passed to the function.
+         */
+        callFunctionStreaming(
+            name: string,
+            ...args: any[]
+        ): Promise<AsyncIterable<Uint8Array>>;
+    };
 
     /**
      * A collection of functions as defined on the MongoDB Server.
      */
-    interface DefaultFunctionsFactory extends BaseFunctionsFactory {
+    type DefaultFunctionsFactory = BaseFunctionsFactory & {
         /**
          * All the functions are accessable as members on this instance.
          */
         [name: string]: RealmFunction<any, any[]>;
-    }
+    };
 }

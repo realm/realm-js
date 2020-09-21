@@ -196,7 +196,7 @@ export class Fetcher implements LocationUrlContext {
      * @param attempts Number of times this request has been attempted. Used when retrying, callers don't need to pass a value.
      * @returns The response from the server.
      */
-    public async fetch<RequestBody = any>(
+    public async fetch<RequestBody = unknown>(
         request: AuthenticatedRequest<RequestBody>,
         attempts = 0,
     ): Promise<FetchResponse> {
@@ -261,7 +261,7 @@ export class Fetcher implements LocationUrlContext {
         const { body } = request;
         const serializedBody = Fetcher.buildBody(body);
         const contentTypeHeaders = Fetcher.buildJsonHeader(serializedBody);
-        const response = await this.fetch<RequestBody>({
+        const response = await this.fetch({
             ...request,
             body: serializedBody,
             headers: {
@@ -278,6 +278,32 @@ export class Fetcher implements LocationUrlContext {
             return (null as unknown) as ResponseBody;
         } else {
             throw new Error(`Expected JSON response, got "${contentType}"`);
+        }
+    }
+
+    /**
+     * Fetch an "event-stream" resource as an authenticated user.
+     *
+     * @param request The request which should be sent to the server.
+     */
+    public async fetchStream<RequestBody = unknown>(
+        request: AuthenticatedRequest<RequestBody>,
+    ): Promise<AsyncIterable<Uint8Array>> {
+        const { body } = await this.fetch({
+            ...request,
+            headers: {
+                Accept: "text/event-stream",
+                ...request.headers,
+            },
+        });
+        if (
+            typeof body === "object" &&
+            body !== null &&
+            Symbol.asyncIterator in body
+        ) {
+            return body as AsyncIterable<Uint8Array>;
+        } else {
+            throw new Error("Server didn't respond with an async iterable");
         }
     }
 

@@ -18,6 +18,7 @@
 
 import { Fetcher } from "./Fetcher";
 import { serialize } from "./utils/ejson";
+import { encodeQueryString } from "./utils/string";
 
 /**
  * A list of names that functions cannot have to be callable through the functions proxy.
@@ -67,7 +68,7 @@ export interface FunctionsFactoryConfiguration {
  * @param args The arguments to clean.
  * @returns The cleaned arguments.
  */
-function cleanArgs(args: any[]) {
+export function cleanArgs(args: any[]) {
     for (const arg of args) {
         if (typeof arg === "object") {
             for (const [key, value] of Object.entries(arg)) {
@@ -177,6 +178,37 @@ export class FunctionsFactory {
         return this.fetcher.fetchJSON({
             method: "POST",
             path: appRoute.functionsCall().path,
+            body,
+        });
+    }
+
+    /**
+     * Call a remote function by it's name.
+     *
+     * @param name Name of the remote function.
+     * @param args Arguments to pass to the remote function.
+     * @returns A promise of the value returned when executing the remote function.
+     */
+    public callFunctionStreaming(
+        name: string,
+        ...args: any[]
+    ): Promise<AsyncIterable<Uint8Array>> {
+        const body: CallFunctionBody = {
+            name,
+            arguments: this.argsTransformation
+                ? this.argsTransformation(args)
+                : args,
+        };
+        if (this.serviceName) {
+            body.service = this.serviceName;
+        }
+        const appRoute = this.fetcher.appRoute;
+        const qs = encodeQueryString({
+            ["baas_request"]: Base64.encode(JSON.stringify(body)),
+        });
+        return this.fetcher.fetchStream({
+            method: "POST",
+            path: appRoute.functionsCall().path + qs,
             body,
         });
     }
