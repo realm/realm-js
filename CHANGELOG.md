@@ -5,25 +5,25 @@ NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has bee
 NOTE: This version bumps the Realm file format to version 20. It is not possible to downgrade to earlier versions. Non-sync Realms will be upgraded automatically. Synced Realms can only be automatically upgraded if created with Realm JavaScript v10.0.0-beta.1 and above.
 
 ### Breaking changes
-* Renamed `Realm.Credentials.custom()` to `Realm.Credentials.jwt()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
-* Renamed `Realm.User.remoteMongoClient()` to `Realm.User.mongoClient()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Renamed `Realm.Credentials.custom()` to `Realm.Credentials.jwt()`.
+* Renamed `Realm.User.remoteMongoClient()` to `Realm.User.mongoClient()`.
 * Removed `Remote` prefix from all `MongoDB` related classes.
-* Renamed `Realm.Sync` to `Realm.App.Sync` including all methods and properties. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
+* Renamed `Realm.Sync` to `Realm.App.Sync` including all methods and properties.
 
 ### Enhancements
-* Added property `Realm.User.deviceId`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
-* Added property `Realm.User.providerType`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
-* Added property `Realm.User.identities`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
-* Added property `name` to `Realm.MongoDB`, `Realm.MongoDB.Database` and `Realm.MongoDB.Collection`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
-* Added methods `Realm.App.Sync.getSyncSession()` and `Realm.App.Sync.getAllSyncSessions()`. ([RJS-689](https://jira.mongodb.org/browse/RJS-689))
-* Allow synchronization on the nil partition by specifying `null` as `partitionValue` in sync configuration (RJS-726).
+* Added property `Realm.User.deviceId`.
+* Added property `Realm.User.providerType`.
+* Added property `Realm.User.identities`.
+* Added property `name` to `Realm.MongoDB`, `Realm.MongoDB.Database` and `Realm.MongoDB.Collection`.
+* Added methods `Realm.App.Sync.getSyncSession()` and `Realm.App.Sync.getAllSyncSessions()`.
+* Allow synchronization on the nil partition by specifying `null` as `partitionValue` in sync configuration.
 * Added support for creating multiple Realm apps. ([#3072](https://github.com/realm/realm-js/issues/3072))
 * Added method `Realm.App.getCachedApp()`.
 
 ### Fixed
 * Reapplied fix for the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth. ([#3109])(https://github.com/realm/realm-js/issues/3109)
 * Fixed linking issue (error message: `ld: symbol(s) not found for architecture x86_64`) on iOS. ([#3189](https://github.com/realm/realm-js/issues/3189), since v10.0.0-beta.12)
-* It is not allowed to query embedded objects directly. An expection will be thrown. ([RJS-763](https://jira.mongodb.org/browse/RJS-763), since v10.0.0-beta.1)
+* It is not allowed to query embedded objects directly. An expection will be thrown. (since v10.0.0-beta.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -107,7 +107,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Rare crash when a schema was updated ([#6680](https://github.com/realm/realm-cocoa/issues/6680))
 * Bug in memory mapping management. This bug could result in multiple different asserts as well as segfaults. In many cases stack backtraces would include members of the EncyptedFileMapping near the top - even if encryption was not used at all. In other cases asserts or crashes would be in methods reading an array header or array element. In all cases the application would terminate immediately. (Realm Core PR #3838, since 7.0.0)
 * Fixed the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth ([#3109])(https://github.com/realm/realm-js/issues/3109)
-* Fixed segfault when `push()`ing onto a list of embedded objects ([RJS-732](https://jira.mongodb.org/browse/RJS-732))
+* Fixed segfault when `push()`ing onto a list of embedded objects.
 
 ### Compatibility
 * MongoDB Realm Cloud.
