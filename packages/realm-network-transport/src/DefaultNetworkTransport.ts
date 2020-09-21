@@ -70,15 +70,13 @@ export class DefaultNetworkTransport implements NetworkTransport {
     }
 
     public async fetch<RequestBody extends any>(request: Request<RequestBody>) {
-        const { method, url, body, timeoutMs, headers } = request;
+        const { timeoutMs, url, ...rest } = request;
         const { signal, cancelTimeout } = this.createTimeoutSignal(timeoutMs);
         try {
             // We'll await the response to catch throw our own error
             return await DefaultNetworkTransport.fetch(url, {
-                method,
-                headers,
-                body,
                 signal, // Used to signal timeouts
+                ...rest
             });
         } finally {
             // Whatever happens, cancel any timeout

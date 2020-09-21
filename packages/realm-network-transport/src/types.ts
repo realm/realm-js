@@ -20,12 +20,10 @@ export type Method = "GET" | "POST" | "DELETE" | "PUT";
 
 export type Headers = { [name: string]: string };
 
-export interface Request<RequestBody> {
+export interface Request<RequestBody> extends FetchRequestInit {
     method: Method;
     url: string;
     timeoutMs?: number;
-    headers?: Headers;
-    body?: RequestBody | string;
 }
 
 export interface CallbackResponse {
@@ -85,6 +83,8 @@ export type AbortController = {
 type FetchRequestInfo = FetchRequest | string;
 type FetchBodyInit = unknown;
 type FetchHeadersInit = FetchHeaders | string[][] | Record<string, string>;
+type FetchRequestCredentials = "include" | "omit" | "same-origin";
+type FetchRequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
 
 interface FetchBody {
     readonly body: unknown | null;
@@ -146,6 +146,10 @@ interface FetchRequestInit {
      */
     body?: FetchBodyInit | null;
     /**
+     * A string indicating whether credentials will be sent with the request always, never, or only when sent to a same-origin URL. Sets request's credentials.
+     */
+    credentials?: FetchRequestCredentials;
+    /**
      * A Headers object, an object literal, or an array of two-item arrays to set request's headers.
      */
     headers?: FetchHeadersInit;
@@ -161,6 +165,10 @@ interface FetchRequestInit {
      * A string to set request's method.
      */
     method?: string;
+    /**
+     * A string to indicate whether the request will use CORS, or will be restricted to same-origin URLs. Sets request's mode.
+     */
+    mode?: FetchRequestMode;
     /**
      * An AbortSignal to set request's signal.
      */
