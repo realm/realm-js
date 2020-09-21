@@ -55,36 +55,6 @@ declare function setInterval(
 declare function clearInterval(handle?: TimerHandle): void;
 declare function clearTimeout(handle?: TimerHandle): void;
 
-// The following is copied from https://github.com/microsoft/TypeScript/blob/aa2756a5d7f5ed02e6c676e0fd8e4d1a5e0acd13/src/lib/dom.generated.d.ts
-
-// interface ReadableStreamDefaultReader<R = any> {
-//     readonly closed: Promise<void>;
-//     cancel(reason?: any): Promise<void>;
-//     read(): Promise<ReadableStreamReadResult<R>>;
-//     releaseLock(): void;
-// }
-
-// /**
-//  * Greatly simplified variant of the ReadableStream API
-//  */
-// interface ReadableStream<R = any> {
-//     getReader(): ReadableStreamDefaultReader<R>;
-// }
-
-// interface ReadableStreamReadValueResult<T> {
-//     done: false;
-//     value: T;
-// }
-
-// interface ReadableStreamReadDoneResult<T> {
-//     done: true;
-//     value: T;
-// }
-
-// type ReadableStreamReadResult<T> =
-//     | ReadableStreamReadValueResult<T>
-//     | ReadableStreamReadDoneResult<T>;
-
 /**
  * This will be replaced in by Rollup.
  */
