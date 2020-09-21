@@ -486,8 +486,6 @@ template<typename T>
 bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueType arguments[], realm::Realm::Config& config, ObjectDefaultsMap& defaults, ConstructorMap& constructors) {
     bool schema_updated = false;
 
-    std::cout << "Blah" << std::endl;
-
     if (argc > 1) {
         throw std::runtime_error("Invalid arguments when constructing 'Realm'");
     }
@@ -545,6 +543,9 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             if (!Value::is_undefined(ctx, delete_realm_if_migration_needed_value) && Value::validated_to_boolean(ctx, delete_realm_if_migration_needed_value, "deleteRealmIfMigrationNeeded")) {
                 if (config.schema_mode == SchemaMode::Immutable) {
                     throw std::invalid_argument("Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.");
+                }
+                if (config.sync_config->partition_value != "") {
+                   throw std::invalid_argument("Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
                 }
 
                 config.schema_mode = SchemaMode::ResetFile;

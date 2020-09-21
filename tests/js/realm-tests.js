@@ -1609,56 +1609,25 @@ module.exports = {
             });
     },
 
-    testR2: function() {
+    testNoMigrationOnSync: function() {
         if (!global.enableSyncTests) {
             return;
         }
 
-        const schema = [{
-            name: 'TestObject',
-            properties: {
-                prop0: 'string',
-                prop1: 'int',
-            }
-        }];
+        const appConfig = require('./support/testConfig').integrationAppConfig;
+        let app = new Realm.App(appConfig);
+        return app.logIn(Realm.Credentials.anonymous())
+        .then(user => {
+            const config = {
+                schema: [schemas.TestObject],
+                sync: {user, partitionValue: '"Lolo"' },
+                deleteRealmIfMigrationNeeded: true,
+            };
 
-        var realm = new Realm({schema: schema});
-
-        realm.write(function() {
-            realm.create('TestObject', ['stringValue', 1]);
+            TestCase.assertThrows(function() {
+                new Realm(config);
+            }, "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
         });
-
-        realm.close();
-
-
-        realm = new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, schemaVersion: 1, migration: undefined });
-
-
-        // const appConfig = require('./support/testConfig').integrationAppConfig;
-
-        // let app = new Realm.App(appConfig);
-        // return app.logIn(Realm.Credentials.anonymous())
-        //     .then(user => {
-        //         const config = {
-        //             schema: [schemas.TestObject],
-        //             sync: {user, partitionValue: '"Lolo"' },
-        //         };
-
-        //         const realm = new Realm(config);
-        //         const path = realm.path;
-        //         realm.close();
-
-        //         return fs.exists(path)
-        //             .then(pathExistBeforeDelete => {
-        //                 TestCase.assertTrue(pathExistBeforeDelete);
-        //                 Realm.deleteFile(config);
-
-        //                 return fs.exists(path)
-        //             })
-        //             .then(pathExistAfterDelete => {
-        //                 TestCase.assertFalse(pathExistAfterDelete);
-        //             });
-        //     });
     },
 
     testRealmDeleteRealmIfMigrationNeededVersionChanged: function() {
