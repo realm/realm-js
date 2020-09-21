@@ -544,11 +544,9 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 if (config.schema_mode == SchemaMode::Immutable) {
                     throw std::invalid_argument("Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.");
                 }
-                std::cout << "Bleep" << std::endl;
                 if (config.sync_config && config.sync_config->partition_value != "") {
-                   throw std::invalid_argument("Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
+                    throw std::invalid_argument("Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
                 }
-                std::cout << "Bloop" << std::endl;
 
                 config.schema_mode = SchemaMode::ResetFile;
             }
