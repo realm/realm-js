@@ -21,7 +21,6 @@ import { Storage } from "./storage";
 import { OAuth2Helper } from "./OAuth2Helper";
 import { encodeQueryString, QueryParams } from "./utils/string";
 import { DeviceInformation } from "./DeviceInformation";
-import { removeKeysWithUndefinedValues } from "./utils/objects";
 import { User } from "./User";
 
 const REDIRECT_LOCATION_HEADER = "x-baas-location";
@@ -94,25 +93,39 @@ export class Authenticator {
                 state,
                 redirect: credentials.payload.redirectUrl,
                 // Ensure redirects are communicated in a header different from "Location" and status remains 200 OK
-                providerRedirectHeader: true,
+                providerRedirectHeader: isLinking ? true : undefined,
             });
-            const response = await this.fetcher.fetch({
-                method: "GET",
-                url,
-                tokenType: isLinking ? "access" : "none",
-                user: linkingUser,
-            });
-            const redirectUrl = response.headers.get(REDIRECT_LOCATION_HEADER);
-            // If a response header contains a redirect URL: Open a window and wait for the redirect to be handled
-            if (redirectUrl) {
-                const redirectResult = await this.oauth2.openWindowAndWaitForRedirect(
-                    redirectUrl,
-                    state,
+
+            // If we're linking, we need to send the users access token in the request
+            if (isLinking) {
+                const response = await this.fetcher.fetch({
+                    method: "GET",
+                    url,
+                    tokenType: isLinking ? "access" : "none",
+                    user: linkingUser,
+                    // The response will set a cookie that we need to tell the browser to store
+                    mode: "cors",
+                    credentials: "include",
+                });
+                // If a response header contains a redirect URL: Open a window and wait for the redirect to be handled
+                const redirectUrl = response.headers.get(
+                    REDIRECT_LOCATION_HEADER,
                 );
-                // Decode the auth info (id, tokens, etc.) from the result of the redirect
-                return OAuth2Helper.decodeAuthInfo(redirectResult.userAuth);
+                if (redirectUrl) {
+                    return this.openWindowAndWaitForAuthResponse(
+                        redirectUrl,
+                        state,
+                    );
+                } else {
+                    throw new Error(
+                        `Missing ${REDIRECT_LOCATION_HEADER} header`,
+                    );
+                }
             } else {
-                throw new Error(`Missing ${REDIRECT_LOCATION_HEADER} header`);
+                // Otherwise we can open a window and let the server redirect the user right away
+                // This gives lower latency (as we don't need the client to receive and execute the redirect in code)
+                // This also has less dependency on cookies and doesn't sent any tokens.
+                return this.openWindowAndWaitForAuthResponse(url, state);
             }
         } else {
             const logInUrl = await this.getLogInUrl(credentials, isLinking);
@@ -145,10 +158,10 @@ export class Authenticator {
      * @param link Should the request link with the current user?
      * @param extraQueryParams Any extra parameters to include in the query string
      */
-    public async getLogInUrl(
+    private async getLogInUrl(
         credentials: Realm.Credentials<any>,
         link = false,
-        extraQueryParams: QueryParams = {},
+        extraQueryParams: Partial<QueryParams> = {},
     ) {
         // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
         const appRoute = this.fetcher.appRoute;
@@ -163,5 +176,17 @@ export class Authenticator {
         });
         const locationUrl = await this.fetcher.locationUrl;
         return locationUrl + loginRoute.path + qs;
+    }
+
+    private async openWindowAndWaitForAuthResponse(
+        redirectUrl: string,
+        state: string,
+    ): Promise<AuthResponse> {
+        const redirectResult = await this.oauth2.openWindowAndWaitForRedirect(
+            redirectUrl,
+            state,
+        );
+        // Decode the auth info (id, tokens, etc.) from the result of the redirect
+        return OAuth2Helper.decodeAuthInfo(redirectResult.userAuth);
     }
 }
