@@ -72,7 +72,10 @@ describe("Remote MongoDB", () => {
 
     it("can find documents", async () => {
         const collection = getCollection();
-        const result = await collection.find({}, { limit: 10 });
+        const result = await collection.find(
+            { name: { $exists: true } },
+            { limit: 10 },
+        );
         if (result.length > 0) {
             const [firstDocument] = result;
             expect(typeof firstDocument._id).equal("object");
@@ -320,7 +323,7 @@ describe("Remote MongoDB", () => {
         expect(typeof result.upsertedId).equals("object");
     });
 
-    it("can watch changes correctly",async function() {
+    it("can watch changes correctly", async function () {
         this.timeout(10_000);
         this.slow(2_000);
 
@@ -330,50 +333,60 @@ describe("Remote MongoDB", () => {
 
         await collection.deleteMany({});
 
-        const sleep = async (time: number) => new Promise(resolve => setInterval(resolve, time));
-        const str = 'use some odd chars to force weird encoding %\n\r\n\\????>>>>';
+        const sleep = async (time: number) =>
+            new Promise(resolve => setInterval(resolve, time));
+        const str =
+            "use some odd chars to force weird encoding %\n\r\n\\????>>>>";
         await Promise.all([
             (async () => {
                 // There is a race with creating the watch() streams, since they won't
-                // see inserts from before they are created. 
+                // see inserts from before they are created.
                 // Wait 500ms (490+10) before first insert to try to avoid it.
                 await sleep(490);
                 for (let i = 0; i < 10; i++) {
                     await sleep(10);
-                    await collection.insertOne({_id: i, hello: "world", str});
+                    await collection.insertOne({ _id: i, hello: "world", str });
                 }
-                await collection.insertOne({_id: 'done', done: true}); // break other sides out of loop
+                await collection.insertOne({ _id: "done", done: true }); // break other sides out of loop
             })(),
+            // Watch any event
             (async () => {
                 let expected = 0;
-                for await (let event of collection.watch() as any) {
-                    if (event.fullDocument.done)
-                        break;
+                for await (const event of collection.watch() as any) {
+                    if (event.fullDocument.done) break;
                     expect(event.fullDocument._id).equals(expected++);
                 }
                 expect(expected).equals(10);
             })(),
+            // Watch using the filter option
             (async () => {
-                const filter = {$or:[
-                    {'fullDocument._id': 3, 'fullDocument.str': str},
-                    {'fullDocument.done': true},
-                ]}
+                const filter = {
+                    $or: [
+                        { "fullDocument._id": 3, "fullDocument.str": str },
+                        { "fullDocument.done": true },
+                    ],
+                };
                 let seenIt = false;
-                for await (let event of collection.watch({filter}) as any) {
-                    if (event.fullDocument.done)
-                        break;
-                    expect(event.fullDocument._id).equals(3);
-                    seenIt = true;
+                for await (const event of collection.watch({ filter })) {
+                    if (event.operationType === "insert") {
+                        if (event.fullDocument.done) break;
+                        expect(event.fullDocument._id).equals(3);
+                        seenIt = true;
+                    }
                 }
                 expect(seenIt, "seenIt for filter");
             })(),
+            // Watch using the ids option
             (async () => {
                 let seenIt = false;
-                for await (let event of collection.watch({ids: [5, 'done']}) as any) {
-                    if (event.fullDocument.done)
-                        break;
-                    expect(event.fullDocument._id).equal(5);
-                    seenIt = true;
+                for await (const event of collection.watch({
+                    ids: [5, "done"],
+                })) {
+                    if (event.operationType === "insert") {
+                        if (event.fullDocument.done) break;
+                        expect(event.fullDocument._id).equal(5);
+                        seenIt = true;
+                    }
                 }
                 expect(seenIt, "seenIt for ids");
             })(),
@@ -391,5 +404,5 @@ describe("Remote MongoDB", () => {
         if (err.code != 401)
             throw err;
             */
-  });
+    });
 });

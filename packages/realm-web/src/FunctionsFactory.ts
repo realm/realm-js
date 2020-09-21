@@ -26,6 +26,7 @@ import { encodeQueryString } from "./utils/string";
 const RESERVED_NAMES = [
     "inspect",
     "callFunction",
+    "callFunctionStreaming",
     // Methods defined on the Object.prototype might be "typeof probed" and called by libraries and runtime environments.
     ...Object.getOwnPropertyNames(Object.prototype),
 ];
@@ -207,9 +208,8 @@ export class FunctionsFactory {
             ["baas_request"]: Base64.encode(JSON.stringify(body)),
         });
         return this.fetcher.fetchStream({
-            method: "POST",
+            method: "GET",
             path: appRoute.functionsCall().path + qs,
-            body,
         });
     }
 }

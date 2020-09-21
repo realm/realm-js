@@ -567,7 +567,7 @@ declare namespace Realm {
     /**
      * A collection of functions as defined on the MongoDB Server.
      */
-    type BaseFunctionsFactory = {
+    interface BaseFunctionsFactory {
         /**
          * Call a remote MongoDB Realm function by its name.
          * Consider using `functions[name]()` instead of calling this method.
@@ -588,15 +588,15 @@ declare namespace Realm {
             name: string,
             ...args: any[]
         ): Promise<AsyncIterable<Uint8Array>>;
-    };
+    }
 
     /**
      * A collection of functions as defined on the MongoDB Server.
      */
-    type DefaultFunctionsFactory = BaseFunctionsFactory & {
+    interface DefaultFunctionsFactory extends BaseFunctionsFactory {
         /**
          * All the functions are accessable as members on this instance.
          */
         [name: string]: RealmFunction<any, any[]>;
-    };
+    }
 }
