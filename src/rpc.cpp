@@ -72,7 +72,7 @@ json get_type(Container const& c) {
         return serialize_object_schema(c.get_object_schema());
     }
     return {
-        {"type", string_for_property_type(type)},
+        {"type", js::local_string_for_property_type(type)},
         {"optional", is_nullable(type)}
     };
 }
@@ -721,7 +721,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesList},
             {"id", store_object(js_object)},
-            {"dataType", string_for_property_type(list->get_type() & ~realm::PropertyType::Flags)},
+            {"dataType", js::local_string_for_property_type(list->get_type() & ~realm::PropertyType::Flags)},
             {"optional", is_nullable(list->get_type())},
          };
     }
@@ -730,7 +730,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesResults},
             {"id", store_object(js_object)},
-            {"dataType", string_for_property_type(results->get_type() & ~realm::PropertyType::Flags)},
+            {"dataType", js::local_string_for_property_type(results->get_type() & ~realm::PropertyType::Flags)},
             {"optional", is_nullable(results->get_type())},
         };
     }
