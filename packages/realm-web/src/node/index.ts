@@ -34,7 +34,7 @@ const environment: Environment = {
     platform: process.release.name || "node",
     platformVersion: process.versions.node,
 
-    makeTextDecoder: () => new TextDecoder(),
+    TextDecoder,
 };
 
 setEnvironment(environment);

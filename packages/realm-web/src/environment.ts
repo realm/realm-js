@@ -19,7 +19,10 @@
 import { Storage } from "./storage";
 import { Window } from "./OAuth2Helper";
 
-interface TextDecoder {
+/**
+ * Helps decode buffers into strings of various encodings.
+ */
+declare class TextDecoder {
     decode(buffer: Uint8Array, options?: { stream: boolean }): string;
 }
 
@@ -45,7 +48,10 @@ export type Environment = {
      */
     platformVersion: string;
 
-    makeTextDecoder(): TextDecoder;
+    /**
+     * Helps decode buffers into strings of various encodings.
+     */
+    TextDecoder: typeof TextDecoder;
 };
 
 let environment: Environment | null = null;

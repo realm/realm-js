@@ -71,23 +71,23 @@ export class WatchStream<T> {
 
         if (line.length == 0) {
             // This is the "dispatch the event" portion of the algorithm.
-            if (this._data_buffer.length == 0) {
-                this._event_type = "";
+            if (this._dataBuffer.length == 0) {
+                this._eventType = "";
                 return;
             }
 
-            if (this._data_buffer.endsWith("\n"))
-                this._data_buffer = this._data_buffer.substr(
+            if (this._dataBuffer.endsWith("\n"))
+                this._dataBuffer = this._dataBuffer.substr(
                     0,
-                    this._data_buffer.length - 1,
+                    this._dataBuffer.length - 1,
                 );
 
             this.feedSse({
-                data: this._data_buffer,
-                eventType: this._event_type,
+                data: this._dataBuffer,
+                eventType: this._eventType,
             });
-            this._data_buffer = "";
-            this._event_type = "";
+            this._dataBuffer = "";
+            this._eventType = "";
         }
 
         if (line[0] == ":") return;
@@ -98,10 +98,10 @@ export class WatchStream<T> {
         if (value.startsWith(" ")) value = value.substr(1);
 
         if (field == "event") {
-            this._event_type = value;
+            this._eventType = value;
         } else if (field == "data") {
-            this._data_buffer += value;
-            this._data_buffer += "\n";
+            this._dataBuffer += value;
+            this._dataBuffer += "\n";
         } else {
             // line is ignored (even if field is id or retry).
         }
@@ -109,8 +109,8 @@ export class WatchStream<T> {
 
     feedSse(sse: ServerSentEvent) {
         this.assertState(WatchStreamState.NEED_DATA);
-        const first_percent = sse.data.indexOf("%");
-        if (first_percent != -1) {
+        const firstPercentIndex = sse.data.indexOf("%");
+        if (firstPercentIndex != -1) {
             // For some reason, the stich server decided to add percent-encoding for '%', '\n', and '\r' to its
             // event-stream replies. But it isn't real urlencoding, since most characters pass through, so we can't use
             // uri_percent_decode() here.
@@ -118,7 +118,9 @@ export class WatchStream<T> {
             let start = 0;
             while (true) {
                 const percent =
-                    start == 0 ? first_percent : sse.data.indexOf("%", start);
+                    start == 0
+                        ? firstPercentIndex
+                        : sse.data.indexOf("%", start);
                 if (percent == -1) {
                     buffer += sse.data.substr(start);
                     break;
@@ -169,12 +171,14 @@ export class WatchStream<T> {
             // default error message if we have issues parsing the reply.
             this._error = { err: "unknown", message: sse.data };
             try {
-                const { error_code, error } = EJSON.parse(sse.data) as any;
-                if (typeof error_code != "string") return;
+                const { error_code: errorCode, error } = EJSON.parse(
+                    sse.data,
+                ) as any;
+                if (typeof errorCode != "string") return;
                 if (typeof error != "string") return;
                 // XXX in realm-js, object-store will error if the error_code is not one of the known
                 // error code enum values.
-                this._error = { err: error_code, message: error };
+                this._error = { err: errorCode, message: error };
             } catch {
                 return; // Use the default state.
             }
@@ -214,8 +218,11 @@ export class WatchStream<T> {
             }
 
             // NOTE not supporting CR-only newlines, just LF and CRLF.
-            const next_newline = this._buffer.indexOf("\n", this._bufferOffset);
-            if (next_newline == -1) {
+            const nextNewlineIndex = this._buffer.indexOf(
+                "\n",
+                this._bufferOffset,
+            );
+            if (nextNewlineIndex == -1) {
                 // We have a partial line.
                 if (this._bufferOffset != 0) {
                     // Slide the partial line down to the front of the buffer.
@@ -231,10 +238,10 @@ export class WatchStream<T> {
             this.feedLine(
                 this._buffer.substr(
                     this._bufferOffset,
-                    next_newline - this._bufferOffset,
+                    nextNewlineIndex - this._bufferOffset,
                 ),
             );
-            this._bufferOffset = next_newline + 1; // Advance past this line, including its newline.
+            this._bufferOffset = nextNewlineIndex + 1; // Advance past this line, including its newline.
         }
     }
 
@@ -253,11 +260,11 @@ export class WatchStream<T> {
     private _error: any = null;
 
     // Used by feedBuffer to construct lines
-    private _textDecoder = getEnvironment().makeTextDecoder();
+    private _textDecoder = new (getEnvironment().TextDecoder)();
     private _buffer = "";
     private _bufferOffset = 0;
 
     // Used by feedLine for building the next SSE
-    private _event_type = "";
-    private _data_buffer = "";
+    private _eventType = "";
+    private _dataBuffer = "";
 }

@@ -39,7 +39,7 @@ const environment: Environment = {
     platform: browser?.name || "web",
     platformVersion: browser?.version || "0.0.0",
 
-    makeTextDecoder: () => new TextDecoder(),
+    TextDecoder,
 };
 
 setEnvironment(environment);
