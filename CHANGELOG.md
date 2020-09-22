@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed `create<T>(...)` deprecation warning. ([#3243](https://github.com/realm/realm-js/pull/3243))
-* Throw error when `deleteRealmIfMigrationNeeded` is requested on a synced realm (incompatible options) (RJS-755)
+* Throw error when `deleteRealmIfMigrationNeeded` is requested on a synced realm (incompatible options)
 
 ### Compatibility
 * MongoDB Realm Cloud.
