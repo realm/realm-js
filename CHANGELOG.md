@@ -1,3 +1,19 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed `create<T>(...)` deprecation warning. ([#3243](https://github.com/realm/realm-js/pull/3243))
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* None.
+
 10.0.0-beta.13 Release notes (2020-9-18)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
@@ -24,6 +40,7 @@ NOTE: This version bumps the Realm file format to version 20. It is not possible
 * Reapplied fix for the error `expected either accessToken, id_token or authCode in payload` when using Facebook Auth. ([#3109])(https://github.com/realm/realm-js/issues/3109)
 * Fixed linking issue (error message: `ld: symbol(s) not found for architecture x86_64`) on iOS. ([#3189](https://github.com/realm/realm-js/issues/3189), since v10.0.0-beta.12)
 * It is not allowed to query embedded objects directly. An expection will be thrown. (since v10.0.0-beta.1)
+* Fixed a bug where .type is incorrect for some property types. ([#3235](https://github.com/realm/realm-js/pull/3235))
 
 ### Compatibility
 * MongoDB Realm Cloud.

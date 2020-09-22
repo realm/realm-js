@@ -225,7 +225,7 @@ void ResultsClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue
 template<typename T>
 void ResultsClass<T>::get_type(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(ctx, object);
-    return_value.set(string_for_property_type(results->get_type() & ~realm::PropertyType::Flags));
+    return_value.set(local_string_for_property_type(results->get_type() & ~realm::PropertyType::Flags));
 }
 
 template<typename T>
