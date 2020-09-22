@@ -305,7 +305,7 @@ def buildCommon(nodeVersion, platform, extraFlags='') {
     sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
     sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
   }
-  
+
   dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
     // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
     // archiveArtifacts("realm-*")
@@ -321,7 +321,7 @@ def buildElectronCommon(electronVersion, platform) {
     "npm_config_devdir=${env.HOME}/.electron-gyp"
   ]) {
     sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm run package"
-    
+
     dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
       stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
     }
@@ -385,7 +385,7 @@ def buildWindows(nodeVersion, arch) {
         }
       }
       bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
-      
+
       dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
         stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
       }
@@ -427,7 +427,7 @@ def inAndroidContainer(workerFunction) {
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
         image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       }
-      
+
       // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
       // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
       lock("${env.NODE_NAME}-android") {
@@ -465,7 +465,7 @@ def publish(nodeVersions, electronVersions, dependencies, tag) {
     }
 
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
-      sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/${dependencies.VERSION}/'"
+      sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}/'"
     }
   }
 }
