@@ -9,6 +9,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
+* Realm Studio: 5.0.0 or later.
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
@@ -26,6 +27,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
+* Realm Studio: 5.0.0 or later.
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
@@ -37,7 +39,6 @@ x.x.x Release notes (yyyy-MM-dd)
 6.1.1 Release notes (2020-9-10)
 =============================================================
 NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade version 10 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. 
-NOTE: Realm Studio is not able to open Realm file format version 11.
 
 ### Enhancements
 * None.
@@ -49,6 +50,7 @@ NOTE: Realm Studio is not able to open Realm file format version 11.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
+* Realm Studio: 5.0.0 or later.
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
@@ -71,7 +73,7 @@ NOTE: Realm Studio is not able to open Realm file format version 11.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* Realm Studio: 3.11 or later.
+* Realm Studio: 4.0.0 or later.
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
@@ -91,7 +93,7 @@ NOTE: Realm Studio is not able to open Realm file format version 11.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* Realm Studio: 3.11 or later.
+* Realm Studio: 4.0.0 or later.
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
@@ -111,7 +113,7 @@ NOTE: Realm Studio is not able to open Realm file format version 11.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* Realm Studio: 3.11 or later.
+* Realm Studio: 4.0.0 or later.
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
@@ -132,7 +134,7 @@ NOTE: Realm Studio is not able to open Realm file format version 11.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* Realm Studio: 3.11 or later.
+* Realm Studio: 4.0.0 or later.
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
@@ -151,7 +153,7 @@ NOTE: Realm Studio is not able to open Realm file format version 11.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* Realm Studio: 3.11 or later.
+* Realm Studio: 4.0.0 or later.
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
@@ -168,7 +170,7 @@ NOTE: Realm Studio is not able to open Realm file format version 11.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* Realm Studio: 3.11 or later.
+* Realm Studio: 4.0.0 or later.
 * APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
 * File format: Generates Realms with format v10 (reads and upgrades previous formats).
 
@@ -193,7 +195,7 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* Realm Studio: 3.11 or later.
+* Realm Studio: 4.0.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 6.x.y series.
 * File format: Generates Realms with format v10 (reads and upgrades previous formats).
 
