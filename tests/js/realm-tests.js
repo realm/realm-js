@@ -1611,7 +1611,7 @@ module.exports = {
 
     testNoMigrationOnSync: function() {
         if (!global.enableSyncTests) {
-            return;
+            return Promise.resolve();
         }
 
         const appConfig = require('./support/testConfig').integrationAppConfig;
