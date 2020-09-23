@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed an issue with `toJSON` where data from a different object could be serialized. ([#3254](https://github.com/realm/realm-js/issues/3254), since v6.1.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
