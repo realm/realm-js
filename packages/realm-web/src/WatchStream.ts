@@ -142,11 +142,7 @@ export class WatchStream<T> {
             sse.data = buffer;
         }
 
-        if (
-            sse.eventType === undefined ||
-            sse.eventType.length === 0 ||
-            sse.eventType === "message"
-        ) {
+        if (!sse.eventType || sse.eventType === "message") {
             try {
                 const parsed = EJSON.parse(sse.data);
                 if (typeof parsed === "object") {
