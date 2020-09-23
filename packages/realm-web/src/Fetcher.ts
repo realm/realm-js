@@ -29,6 +29,46 @@ import { User } from "./User";
 import routes from "./routes";
 import { deserialize, serialize } from "./utils/ejson";
 
+type StreamReader = {
+    closed: boolean;
+    cancel(reason?: string): Promise<string | undefined>;
+    read<T>(): Promise<{ value: T | undefined; done: boolean }>;
+    releaseLock(): void;
+};
+type ReadableStream = { getReader(): StreamReader };
+
+/**
+ * @param body A possible resonse body.
+ * @returns An async iterator.
+ */
+function asyncIteratorFromResponseBody(
+    body: unknown,
+): AsyncIterable<Uint8Array> {
+    if (typeof body !== "object" || body === null) {
+        throw new Error("Expected a non-null object");
+    } else if (Symbol.asyncIterator in body) {
+        return body as AsyncIterable<Uint8Array>;
+    } else if ("getReader" in body) {
+        const stream = body as ReadableStream;
+        return {
+            [Symbol.asyncIterator]() {
+                const reader = stream.getReader();
+                return {
+                    next() {
+                        return reader.read();
+                    },
+                    async return() {
+                        await reader.cancel();
+                        return { done: true, value: null };
+                    },
+                };
+            },
+        };
+    } else {
+        throw new Error("Expected an AsyncIterable or a ReadableStream");
+    }
+}
+
 /**
  * Used to control which user is currently active - this would most likely be the {App} instance.
  */
@@ -296,15 +336,7 @@ export class Fetcher implements LocationUrlContext {
                 ...request.headers,
             },
         });
-        if (
-            typeof body === "object" &&
-            body !== null &&
-            Symbol.asyncIterator in body
-        ) {
-            return body as AsyncIterable<Uint8Array>;
-        } else {
-            throw new Error("Server didn't respond with an async iterable");
-        }
+        return asyncIteratorFromResponseBody(body);
     }
 
     /**
