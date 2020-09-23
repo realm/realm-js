@@ -347,7 +347,8 @@ export class User<
         throw new Error("Not yet implemented");
     }
 
-    public remoteMongoClient(serviceName: string): Realm.Services.MongoDB {
+    /** @inheritdoc */
+    public mongoClient(serviceName: string): Realm.Services.MongoDB {
         return createMongoDBRemoteService(this.fetcher, serviceName);
     }
 

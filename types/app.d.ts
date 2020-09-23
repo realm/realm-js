@@ -456,12 +456,12 @@ declare namespace Realm {
          * Returns a connection to the MongoDB service.
          *
          * @example
-         * let blueWidgets = user.remoteMongoClient('myClusterName')
+         * let blueWidgets = user.mongoClient('myClusterName')
          *                       .db('myDb')
          *                       .collection('widgets')
          *                       .find({color: 'blue'});
          */
-        remoteMongoClient(serviceName: string): Realm.Services.MongoDB;
+        mongoClient(serviceName: string): Realm.Services.MongoDB;
     }
 
     /**
