@@ -398,6 +398,28 @@ module.exports = {
     TestCase.assertNull(app.currentUser);
   },
 
+  async testLinkCredentials() {
+    let app = new Realm.App(appConfig);
+    await logOutExistingUsers(app);
+
+    let user = await app.logIn(Realm.Credentials.anonymous());
+    let all = app.allUsers;
+    assertIsSameUser(all[user.id], user);
+    TestCase.assertArrayLength(user.identities, 1);
+    TestCase.assertEqual(user.identities[0].providerType, "anon-user");
+
+    const validEmail = randomVerifiableEmail();
+    const validPassword = "test1234567890";
+    await app.emailPasswordAuth.registerUser(validEmail, validPassword);
+
+    let credentials = Realm.Credentials.emailPassword(validEmail, validPassword);
+    await user.linkCredentials(credentials);
+    all = app.allUsers;
+    assertIsSameUser(all[user.id], user);
+    TestCase.assertArrayLength(user.identities, 2);
+    TestCase.assertArraysEqual(user.identities.map(identity => identity.providerType).sort(), ["anon-user", "local-userpass"]);
+  },
+
   async testAllWithEmail() {
     let app = new Realm.App(appConfig);
     await logOutExistingUsers(app);
