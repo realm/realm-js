@@ -69,9 +69,9 @@ export class WatchStream<T> {
         // ignore trailing CR from CRLF
         if (line.endsWith("\r")) line = line.substr(0, line.length - 1);
 
-        if (line.length == 0) {
+        if (line.length === 0) {
             // This is the "dispatch the event" portion of the algorithm.
-            if (this._dataBuffer.length == 0) {
+            if (this._dataBuffer.length === 0) {
                 this._eventType = "";
                 return;
             }
@@ -90,16 +90,16 @@ export class WatchStream<T> {
             this._eventType = "";
         }
 
-        if (line[0] == ":") return;
+        if (line[0] === ":") return;
 
         const colon = line.indexOf(":");
         const field = line.substr(0, colon);
-        let value = colon == -1 ? "" : line.substr(colon + 1);
+        let value = colon === -1 ? "" : line.substr(colon + 1);
         if (value.startsWith(" ")) value = value.substr(1);
 
-        if (field == "event") {
+        if (field === "event") {
             this._eventType = value;
-        } else if (field == "data") {
+        } else if (field === "data") {
             this._dataBuffer += value;
             this._dataBuffer += "\n";
         } else {
@@ -110,48 +110,46 @@ export class WatchStream<T> {
     feedSse(sse: ServerSentEvent) {
         this.assertState(WatchStreamState.NEED_DATA);
         const firstPercentIndex = sse.data.indexOf("%");
-        if (firstPercentIndex != -1) {
+        if (firstPercentIndex !== -1) {
             // For some reason, the stich server decided to add percent-encoding for '%', '\n', and '\r' to its
             // event-stream replies. But it isn't real urlencoding, since most characters pass through, so we can't use
             // uri_percent_decode() here.
             let buffer = "";
             let start = 0;
-            while (true) {
-                const percent =
-                    start == 0
-                        ? firstPercentIndex
-                        : sse.data.indexOf("%", start);
-                if (percent == -1) {
-                    buffer += sse.data.substr(start);
-                    break;
-                }
+            for (
+                let percentIndex = firstPercentIndex;
+                percentIndex !== -1;
+                percentIndex = sse.data.indexOf("%", start)
+            ) {
+                buffer += sse.data.substr(start, percentIndex - start);
 
-                buffer += sse.data.substr(start, percent - start);
-
-                const encoded = sse.data.substr(percent, 3); // may be smaller than 3 if string ends with %
-                if (encoded == "%25") {
+                const encoded = sse.data.substr(percentIndex, 3); // may be smaller than 3 if string ends with %
+                if (encoded === "%25") {
                     buffer += "%";
-                } else if (encoded == "%0A") {
+                } else if (encoded === "%0A") {
                     buffer += "\x0A"; // '\n'
-                } else if (encoded == "%0D") {
+                } else if (encoded === "%0D") {
                     buffer += "\x0D"; // '\r'
                 } else {
                     buffer += encoded; // propagate as-is
                 }
-                start = percent + encoded.length;
+                start = percentIndex + encoded.length;
             }
+
+            // Advance the buffer with the last part
+            buffer += sse.data.substr(start);
 
             sse.data = buffer;
         }
 
         if (
             sse.eventType === undefined ||
-            sse.eventType.length == 0 ||
-            sse.eventType == "message"
+            sse.eventType.length === 0 ||
+            sse.eventType === "message"
         ) {
             try {
                 const parsed = EJSON.parse(sse.data);
-                if (typeof parsed == "object") {
+                if (typeof parsed === "object") {
                     // ???
                     this._nextEvent = parsed;
                     this._state = WatchStreamState.HAVE_EVENT;
@@ -165,7 +163,7 @@ export class WatchStream<T> {
                 err: "bad bson parse",
                 message: "server returned malformed event: " + sse.data,
             };
-        } else if (sse.eventType == "error") {
+        } else if (sse.eventType === "error") {
             this._state = WatchStreamState.HAVE_ERROR;
 
             // default error message if we have issues parsing the reply.
@@ -174,8 +172,8 @@ export class WatchStream<T> {
                 const { error_code: errorCode, error } = EJSON.parse(
                     sse.data,
                 ) as any;
-                if (typeof errorCode != "string") return;
-                if (typeof error != "string") return;
+                if (typeof errorCode !== "string") return;
+                if (typeof error !== "string") return;
                 // XXX in realm-js, object-store will error if the error_code is not one of the known
                 // error code enum values.
                 this._error = { err: errorCode, message: error };
@@ -210,8 +208,8 @@ export class WatchStream<T> {
 
     private advanceBufferState() {
         this.assertState(WatchStreamState.NEED_DATA);
-        while (this.state == WatchStreamState.NEED_DATA) {
-            if (this._bufferOffset == this._buffer.length) {
+        while (this.state === WatchStreamState.NEED_DATA) {
+            if (this._bufferOffset === this._buffer.length) {
                 this._buffer = "";
                 this._bufferOffset = 0;
                 return;
@@ -222,9 +220,9 @@ export class WatchStream<T> {
                 "\n",
                 this._bufferOffset,
             );
-            if (nextNewlineIndex == -1) {
+            if (nextNewlineIndex === -1) {
                 // We have a partial line.
-                if (this._bufferOffset != 0) {
+                if (this._bufferOffset !== 0) {
                     // Slide the partial line down to the front of the buffer.
                     this._buffer = this._buffer.substr(
                         this._bufferOffset,
@@ -246,7 +244,7 @@ export class WatchStream<T> {
     }
 
     private assertState(state: WatchStreamState) {
-        if (this._state != state) {
+        if (this._state !== state) {
             throw Error(
                 `Expected WatchStream to be in state ${state}, but in state ${this._state}`,
             );
