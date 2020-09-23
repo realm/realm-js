@@ -237,10 +237,19 @@ class MongoDBCollection<T extends Document>
         });
     }
 
-    /** @inheritdoc */
+    watch(options: {
+        /** List of ids to watch */
+        ids: T["_id"][];
+        filter: never;
+    }): AsyncGenerator<ChangeEvent<T>>;
+    watch(options: {
+        ids: never;
+        /** A filter document */
+        filter: Realm.Services.MongoDB.Filter;
+    }): AsyncGenerator<ChangeEvent<T>>;
     async *watch({
-        ids = undefined,
-        filter = undefined,
+        ids,
+        filter,
     }: {
         ids?: T["_id"][];
         filter?: Realm.Services.MongoDB.Filter;
