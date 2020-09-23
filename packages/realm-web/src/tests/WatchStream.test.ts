@@ -18,7 +18,11 @@
 
 import { assert } from "chai";
 
-import { WatchStream, WatchStreamState } from "../WatchStream";
+import {
+    WatchStream,
+    WatchStreamState,
+} from "../services/MongoDBService/WatchStream";
+import { WatchError } from "../services/MongoDBService/WatchError";
 
 describe("WatchStream", () => {
     describe("SSE processing", () => {
@@ -27,7 +31,7 @@ describe("WatchStream", () => {
                 const ws = new WatchStream();
                 ws.feedSse({ data: `{"a": 1}`, eventType: "" });
                 assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-                assert.deepEqual(ws.nextEvent(), { a: 1 });
+                assert.deepEqual(ws.nextEvent() as any, { a: 1 });
                 assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             });
 
@@ -35,7 +39,7 @@ describe("WatchStream", () => {
                 const ws = new WatchStream();
                 ws.feedSse({ data: `{"a": 1}`, eventType: "message" });
                 assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-                assert.deepEqual(ws.nextEvent(), { a: 1 });
+                assert.deepEqual(ws.nextEvent() as any, { a: 1 });
                 assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             });
 
@@ -43,7 +47,7 @@ describe("WatchStream", () => {
                 const ws = new WatchStream();
                 ws.feedSse({ data: `{"a": 1}` });
                 assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-                assert.deepEqual(ws.nextEvent(), { a: 1 });
+                assert.deepEqual(ws.nextEvent() as any, { a: 1 });
                 assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             });
 
@@ -51,11 +55,11 @@ describe("WatchStream", () => {
                 const ws = new WatchStream();
                 ws.feedSse({ data: `{"a": 1}` });
                 assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-                assert.deepEqual(ws.nextEvent(), { a: 1 });
+                assert.deepEqual(ws.nextEvent() as any, { a: 1 });
                 assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
                 ws.feedSse({ data: `{"a": 2}` });
                 assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-                assert.deepEqual(ws.nextEvent(), { a: 2 });
+                assert.deepEqual(ws.nextEvent() as any, { a: 2 });
                 assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             });
 
@@ -65,7 +69,7 @@ describe("WatchStream", () => {
                 assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
                 ws.feedSse({ data: `{"a": 2}` });
                 assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-                assert.deepEqual(ws.nextEvent(), { a: 2 });
+                assert.deepEqual(ws.nextEvent() as any, { a: 2 });
                 assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             });
 
@@ -77,7 +81,7 @@ describe("WatchStream", () => {
                 // provides more coverage for them.
                 ws.feedSse({ data: `{"a": "%25" %0A %0D }` });
                 assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-                assert.deepEqual(ws.nextEvent(), { a: "%" });
+                assert.deepEqual(ws.nextEvent() as any, { a: "%" });
                 assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             });
 
@@ -86,7 +90,7 @@ describe("WatchStream", () => {
                 // Unknown % sequences are ignored.
                 ws.feedSse({ data: `{"a": "%25 %26%" %0A %0D }` });
                 assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-                assert.deepEqual(ws.nextEvent(), { a: "% %26%" });
+                assert.deepEqual(ws.nextEvent() as any, { a: "% %26%" });
                 assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             });
         });
@@ -99,9 +103,10 @@ describe("WatchStream", () => {
                         data: `{"error_code": "BadRequest", "error": ":("}`,
                         eventType: "error",
                     });
-                    assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "BadRequest");
-                    assert.deepEqual(ws.error.message, ":(");
+                    assert.strictEqual(ws.state, WatchStreamState.HAVE_ERROR);
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "BadRequest");
+                    assert.deepEqual(ws.error?.message, ":(");
                 });
 
                 it("reading error doesn't consume it", () => {
@@ -111,12 +116,14 @@ describe("WatchStream", () => {
                         eventType: "error",
                     });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "BadRequest");
-                    assert.deepEqual(ws.error.message, ":(");
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "BadRequest");
+                    assert.deepEqual(ws.error?.message, ":(");
                     // Above is same as "simple" SECTION.
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "BadRequest");
-                    assert.deepEqual(ws.error.message, ":(");
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "BadRequest");
+                    assert.deepEqual(ws.error?.message, ":(");
                 });
 
                 it("with unknown code", () => {
@@ -126,14 +133,15 @@ describe("WatchStream", () => {
                         eventType: "error",
                     });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
+                    assert.instanceOf(ws.error, WatchError);
                     if (true) {
                         // XXX behavior in realm-web (no list of errors)
-                        assert.deepEqual(ws.error.err, "WhoKnows");
+                        assert.deepEqual(ws.error?.code, "WhoKnows");
                     } else {
                         // behavior in realm-js (objstore has a list of known errors and this isn't one of them).
-                        assert.deepEqual(ws.error.err, "unknown");
+                        assert.deepEqual(ws.error?.code, "unknown");
                     }
-                    assert.deepEqual(ws.error.message, ":(");
+                    assert.deepEqual(ws.error?.message, ":(");
                 });
 
                 it("percent encoding", () => {
@@ -143,8 +151,9 @@ describe("WatchStream", () => {
                         eventType: "error",
                     });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "BadRequest");
-                    assert.deepEqual(ws.error.message, "100% failure");
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "BadRequest");
+                    assert.deepEqual(ws.error?.message, "100% failure");
                 });
 
                 it("extra field", () => {
@@ -154,8 +163,9 @@ describe("WatchStream", () => {
                         eventType: "error",
                     });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "BadRequest");
-                    assert.deepEqual(ws.error.message, ":(");
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "BadRequest");
+                    assert.deepEqual(ws.error?.message, ":(");
                 });
             });
             describe("malformed server error", () => {
@@ -166,8 +176,9 @@ describe("WatchStream", () => {
                         eventType: "error",
                     });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "unknown");
-                    assert.deepEqual(ws.error.message, `{"no closing: "}"`);
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "unknown");
+                    assert.deepEqual(ws.error?.message, `{"no closing: "}"`);
                 });
 
                 it("missing error", () => {
@@ -177,9 +188,10 @@ describe("WatchStream", () => {
                         eventType: "error",
                     });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "unknown");
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "unknown");
                     assert.deepEqual(
-                        ws.error.message,
+                        ws.error?.message,
                         `{"error_code": "BadRequest"}`,
                     );
                 });
@@ -188,8 +200,9 @@ describe("WatchStream", () => {
                     const ws = new WatchStream();
                     ws.feedSse({ data: `{"error": ":("}`, eventType: "error" });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "unknown");
-                    assert.deepEqual(ws.error.message, `{"error": ":("}`);
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "unknown");
+                    assert.deepEqual(ws.error?.message, `{"error": ":("}`);
                 });
 
                 it("error wrong type", () => {
@@ -199,9 +212,10 @@ describe("WatchStream", () => {
                         eventType: "error",
                     });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "unknown");
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "unknown");
                     assert.deepEqual(
-                        ws.error.message,
+                        ws.error?.message,
                         `{"error_code": "BadRequest", "error": 1}`,
                     );
                 });
@@ -213,9 +227,10 @@ describe("WatchStream", () => {
                         eventType: "error",
                     });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "unknown");
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "unknown");
                     assert.deepEqual(
-                        ws.error.message,
+                        ws.error?.message,
                         `{"error_code": 1, "error": ":("}`,
                     );
                 });
@@ -227,9 +242,10 @@ describe("WatchStream", () => {
                         eventType: "error",
                     });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "unknown");
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "unknown");
                     assert.deepEqual(
-                        ws.error.message,
+                        ws.error?.message,
                         `"I'm just a string in the world"`,
                     );
                 });
@@ -239,8 +255,9 @@ describe("WatchStream", () => {
                     // Note, trailing % is a special case that should be preserved if more is added.
                     ws.feedSse({ data: `%25%26%0A%0D%`, eventType: "error" });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "unknown");
-                    assert.deepEqual(ws.error.message, "%%26\n\r%"); // NOTE: not a raw string so has real CR and LF bytes.
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "unknown");
+                    assert.deepEqual(ws.error?.message, "%%26\n\r%"); // NOTE: not a raw string so has real CR and LF bytes.
                 });
             });
             describe("malformed ordinary event", () => {
@@ -248,9 +265,10 @@ describe("WatchStream", () => {
                     const ws = new WatchStream();
                     ws.feedSse({ data: `{"no closing: "}"` });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "bad bson parse");
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "bad bson parse");
                     assert.deepEqual(
-                        ws.error.message,
+                        ws.error?.message,
                         `server returned malformed event: {"no closing: "}"`,
                     );
                 });
@@ -259,9 +277,10 @@ describe("WatchStream", () => {
                     const ws = new WatchStream();
                     ws.feedSse({ data: `"I'm just a string in the world"` });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
-                    assert.deepEqual(ws.error.err, "bad bson parse");
+                    assert.instanceOf(ws.error, WatchError);
+                    assert.deepEqual(ws.error?.code, "bad bson parse");
                     assert.deepEqual(
-                        ws.error.message,
+                        ws.error?.message,
                         `server returned malformed event: "I'm just a string in the world"`,
                     );
                 });
@@ -286,7 +305,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -298,7 +317,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine("\n");
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -310,7 +329,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine("\r");
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -322,7 +341,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine("\r\n");
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -334,7 +353,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -350,7 +369,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -362,7 +381,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             ws.feedLine(`event:message`);
             assertND(ws);
@@ -370,7 +389,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 2 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 2 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -380,13 +399,13 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             ws.feedLine(`data:{"a": 2}`);
             assertND(ws);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 2 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 2 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -399,7 +418,7 @@ describe("WatchStream", () => {
             ws.feedLine(`data: 1}`);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -421,7 +440,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -445,7 +464,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -465,7 +484,7 @@ describe("WatchStream", () => {
             assertND(ws);
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -483,7 +502,7 @@ describe("WatchStream", () => {
             ws.feedLine(``);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
             assert.deepEqual(
-                ws.error.message,
+                ws.error?.message,
                 "this error\n has three lines\n but only two LFs",
             );
         });
@@ -502,7 +521,7 @@ describe("WatchStream", () => {
             ws.feedLine("\n");
             assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
             assert.deepEqual(
-                ws.error.message,
+                ws.error?.message,
                 "this error\n has three lines\n but only two LFs",
             );
         });
@@ -521,7 +540,7 @@ describe("WatchStream", () => {
             ws.feedLine("\r");
             assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
             assert.deepEqual(
-                ws.error.message,
+                ws.error?.message,
                 "this error\n has three lines\n but only two LFs",
             );
         });
@@ -540,7 +559,7 @@ describe("WatchStream", () => {
             ws.feedLine("\r\n");
             assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
             assert.deepEqual(
-                ws.error.message,
+                ws.error?.message,
                 "this error\n has three lines\n but only two LFs",
             );
         });
@@ -581,7 +600,7 @@ describe("WatchStream", () => {
 
             `);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -593,7 +612,7 @@ describe("WatchStream", () => {
 
             `);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             ws.feedBuffer(nows`
                 event: message
@@ -601,7 +620,7 @@ describe("WatchStream", () => {
 
             `);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 2 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 2 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -616,9 +635,9 @@ describe("WatchStream", () => {
 
             `);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 2 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 2 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -636,7 +655,7 @@ describe("WatchStream", () => {
 
             `);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -649,7 +668,7 @@ describe("WatchStream", () => {
                 event: message
                 data: {"a":`);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 1 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
             ws.feedBuffer(nows`
                     2`);
@@ -662,9 +681,9 @@ describe("WatchStream", () => {
 
             `);
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 2 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 2 });
             assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-            assert.deepEqual(ws.nextEvent(), { a: 3 });
+            assert.deepEqual(ws.nextEvent() as any, { a: 3 });
             assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
 
@@ -679,7 +698,7 @@ describe("WatchStream", () => {
             } else {
                 // This is what we would do if following the spec.
                 assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-                assert.deepEqual(ws.nextEvent(), { a: 1 });
+                assert.deepEqual(ws.nextEvent() as any, { a: 1 });
             }
         });
     });

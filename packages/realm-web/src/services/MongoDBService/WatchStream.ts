@@ -18,7 +18,11 @@
 
 import { EJSON } from "bson";
 
-import { getEnvironment } from "./environment";
+import { getEnvironment } from "../../environment";
+import { WatchError } from "./WatchError";
+
+type Document = Realm.Services.MongoDB.Document;
+type ChangeEvent<T extends Document> = Realm.Services.MongoDB.ChangeEvent<T>;
 
 type ServerSentEvent = {
     data: string;
@@ -47,7 +51,7 @@ export enum WatchStreamState {
 /**
  * Represents a stream of events
  */
-export class WatchStream<T> {
+export class WatchStream<T extends Document = any> {
     // Call these when you have data, in whatever shape is easiest for your SDK to get.
     // Pick one, mixing and matching on a single instance isn't supported.
     // These can only be called in NEED_DATA state, which is the initial state.
@@ -147,7 +151,7 @@ export class WatchStream<T> {
                 const parsed = EJSON.parse(sse.data);
                 if (typeof parsed === "object") {
                     // ???
-                    this._nextEvent = parsed;
+                    this._nextEvent = parsed as ChangeEvent<T>;
                     this._state = WatchStreamState.HAVE_EVENT;
                     return;
                 }
@@ -155,15 +159,18 @@ export class WatchStream<T> {
                 // fallthrough to same handling as for non-document value.
             }
             this._state = WatchStreamState.HAVE_ERROR;
-            this._error = {
-                err: "bad bson parse",
+            this._error = new WatchError({
                 message: "server returned malformed event: " + sse.data,
-            };
+                code: "bad bson parse",
+            });
         } else if (sse.eventType === "error") {
             this._state = WatchStreamState.HAVE_ERROR;
 
             // default error message if we have issues parsing the reply.
-            this._error = { err: "unknown", message: sse.data };
+            this._error = new WatchError({
+                message: sse.data,
+                code: "unknown",
+            });
             try {
                 const { error_code: errorCode, error } = EJSON.parse(
                     sse.data,
@@ -172,7 +179,10 @@ export class WatchStream<T> {
                 if (typeof error !== "string") return;
                 // XXX in realm-js, object-store will error if the error_code is not one of the known
                 // error code enum values.
-                this._error = { err: errorCode, message: error };
+                this._error = new WatchError({
+                    message: error,
+                    code: errorCode,
+                });
             } catch {
                 return; // Use the default state.
             }
@@ -187,16 +197,17 @@ export class WatchStream<T> {
 
     // Consumes the returned event. If you used feedBuffer(), there may be another event or error after this one,
     // so you need to call state() again to see what to do next.
-    nextEvent() {
+    nextEvent(): ChangeEvent<T> {
         this.assertState(WatchStreamState.HAVE_EVENT);
-        const out = this._nextEvent;
+        // We can use "as ChangeEvent<T>" since we just asserted the state.
+        const out = this._nextEvent as ChangeEvent<T>;
         this._state = WatchStreamState.NEED_DATA;
         this.advanceBufferState();
         return out;
     }
 
     // Once this enters the error state, it stays that way. You should not feed any more data.
-    get error() {
+    get error(): WatchError | null {
         return this._error;
     }
 
@@ -247,11 +258,11 @@ export class WatchStream<T> {
         }
     }
 
-    private _nextEvent?: object;
+    private _nextEvent: ChangeEvent<T> | undefined;
 
     private _state: WatchStreamState = WatchStreamState.NEED_DATA;
 
-    private _error: any = null;
+    private _error: WatchError | null = null;
 
     // Used by feedBuffer to construct lines
     private _textDecoder = new (getEnvironment().TextDecoder)();
