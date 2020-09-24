@@ -76,6 +76,8 @@ Pod::Spec.new do |s|
                                # Setting the current project version and versioning system to get a symbol for analytics
                                'CURRENT_PROJECT_VERSION' => s.version,
                                'VERSIONING_SYSTEM' => 'apple-generic',
+                               # Disable C++17 features for unsupported platforms
+                               'OTHER_CPLUSPLUSFLAGS[arch=armv7]' => '-fno-aligned-new',
                                # Header search paths are prefixes to the path specified in #include macros
                                'HEADER_SEARCH_PATHS' => [
                                  '"$(PODS_TARGET_SRCROOT)/src/"',
