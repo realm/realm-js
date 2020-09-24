@@ -26,6 +26,7 @@ import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
 import { Credentials, ProviderType } from "./Credentials";
 import { ApiKeyAuth } from "./auth-providers";
+import { createService as createMongoDBRemoteService } from "./services/MongoDBService";
 import routes from "./routes";
 
 const DEFAULT_DEVICE_ID = "000000000000000000000000";
@@ -344,6 +345,11 @@ export class User<
     /** @inheritdoc */
     push(serviceName = ""): Realm.Services.Push {
         throw new Error("Not yet implemented");
+    }
+
+    /** @inheritdoc */
+    public mongoClient(serviceName: string): Realm.Services.MongoDB {
+        return createMongoDBRemoteService(this.fetcher, serviceName);
     }
 
     private decodeAccessToken(): JWT<CustomDataType> {

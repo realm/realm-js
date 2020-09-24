@@ -22,6 +22,7 @@ declare global {
 
 import { setEnvironment, Environment } from "../environment";
 import { MemoryStorage } from "../storage";
+import { TextDecoder } from "util";
 
 const environment: Environment = {
     defaultStorage: new MemoryStorage(),
@@ -29,8 +30,11 @@ const environment: Environment = {
         console.log(`Please open this URL: ${url}`);
         return null;
     },
+
     platform: process.release.name || "node",
     platformVersion: process.versions.node,
+
+    TextDecoder,
 };
 
 setEnvironment(environment);
