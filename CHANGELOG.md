@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Fixed `create<T>(...)` deprecation warning. ([#3243](https://github.com/realm/realm-js/pull/3243))
 * Throw error when `deleteRealmIfMigrationNeeded` is requested on a synced realm (incompatible options) ([#3245](https://github.com/realm/realm-js/pull/3245))
+* `-fno-aligned-new` added to podspec as C++ flag for for armv7. This could lead to error messages like Aligned deallocation function of type 'void (void *, std::align_val_t) noexcept' is only available on iOS 11 or newer when archiving an app. ([#3076](https://github.com/realm/realm-js/issues/3076), since v10.0.0-beta.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
