@@ -79,7 +79,7 @@ describe("User", () => {
         expect(user.accessToken).not.equals(INVALID_TOKEN);
     });
 
-    it("retrieves and resends device ids when authenticating", async () => {
+    it.skip("retrieves and resends device ids when authenticating", async () => {
         const app = createApp();
         // Clear any device id already in the storage.
         app.storage.remove("deviceId");
