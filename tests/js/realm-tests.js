@@ -1609,6 +1609,27 @@ module.exports = {
             });
     },
 
+    testNoMigrationOnSync: function() {
+        if (!global.enableSyncTests) {
+            return Promise.resolve();
+        }
+
+        const appConfig = require('./support/testConfig').integrationAppConfig;
+        let app = new Realm.App(appConfig);
+        return app.logIn(Realm.Credentials.anonymous())
+        .then(user => {
+            const config = {
+                schema: [schemas.TestObject],
+                sync: {user, partitionValue: '"Lolo"' },
+                deleteRealmIfMigrationNeeded: true,
+            };
+
+            TestCase.assertThrows(function() {
+                new Realm(config);
+            }, "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
+        });
+    },
+
     testRealmDeleteRealmIfMigrationNeededVersionChanged: function() {
         const schema = [{
             name: 'TestObject',
