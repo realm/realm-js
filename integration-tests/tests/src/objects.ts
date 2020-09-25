@@ -70,10 +70,15 @@ describe("Realm objects", () => {
             expect(john.name).equals("John Doe");
             expect(john.age).equals(43);
 
+            const update: Partial<IPersonWithId> = {
+                _id,
+                name: "Mr. John Doe",
+            };
+
             realm.write(() => {
                 realm.create<IPersonWithId>(
                     PersonSchemaWithId.name,
-                    { _id, name: "Mr. John Doe" },
+                    update,
                     Realm.UpdateMode.Modified
                 );
             });
@@ -153,12 +158,13 @@ describe("Realm objects", () => {
             expect(john.name).equals("John Doe");
             expect(john.age).equals(43);
 
+            const update: Partial<PersonWithId> = {
+                _id,
+                name: "Mr. John Doe",
+            };
+
             realm.write(() => {
-                realm.create(
-                    PersonWithId,
-                    { _id, name: "Mr. John Doe" },
-                    Realm.UpdateMode.Modified
-                );
+                realm.create(PersonWithId, update, Realm.UpdateMode.Modified);
             });
 
             expect(john.name).equals("Mr. John Doe");
