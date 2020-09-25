@@ -344,17 +344,17 @@ class Credentials {
 
     /**
      * Creates credentials based on a Facebook login.
-     * @param {string} token A Facebook authentication token, obtained by logging into Facebook..
+     * @param {string} token A Facebook authentication token, obtained by logging into Facebook.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
     static facebook(token) { }
 
     /**
      * Creates credentials based on a Google login.
-     * @param {string} token A Google authentication token, obtained by logging into Google.
+     * @param {string} authCode A Google authentication code, obtained by logging into Google.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static google(token) { }
+    static google(authCode) { }
 
     /**
      * Creates credentials for an anonymous user. These can only be used once - using them a second
@@ -373,10 +373,10 @@ class Credentials {
 
     /**
      * Creates credentials with a MongoDB Realm function and user identifier.
-     * @param {string} token A string identifying the user. Usually an identity token or a username.
+     * @param {string} payload A string identifying the user. Usually an identity token or a username.
      * @return {Promise<Credentials>} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static function(token) { }
+    static function(payload) { }
 
     /**
      * Creates credentials from a user API key.
