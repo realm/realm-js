@@ -4,8 +4,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
+* Fixed an issue with `toJSON` where data from a different object could be serialized. ([#3254](https://github.com/realm/realm-js/issues/3254), since v10.0.0-beta.10)
 * Fixed `create<T>(...)` deprecation warning. ([#3243](https://github.com/realm/realm-js/pull/3243))
 * Throw error when `deleteRealmIfMigrationNeeded` is requested on a synced realm (incompatible options) ([#3245](https://github.com/realm/realm-js/pull/3245))
+* Fixed inheritance when transpiling with Babel which results in TypeError: Reflect.construct requires the first argument to be a constructor ([#3110](https://github.com/realm/realm-js/issues/3110))
 * `-fno-aligned-new` added to podspec as C++ flag for for armv7. This could lead to error messages like Aligned deallocation function of type 'void (void *, std::align_val_t) noexcept' is only available on iOS 11 or newer when archiving an app. ([#3076](https://github.com/realm/realm-js/issues/3076), since v10.0.0-beta.1)
 
 ### Compatibility

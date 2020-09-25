@@ -20,7 +20,7 @@ export type Method = "GET" | "POST" | "DELETE" | "PUT";
 
 export type Headers = { [name: string]: string };
 
-export interface Request<RequestBody> extends FetchRequestInit {
+export interface Request<RequestBody> extends FetchRequestInit<RequestBody> {
     method: Method;
     url: string;
     timeoutMs?: number;
@@ -81,13 +81,13 @@ export type AbortController = {
 // Environment independent Fetch API
 
 type FetchRequestInfo = FetchRequest | string;
-type FetchBodyInit = unknown;
 type FetchHeadersInit = FetchHeaders | string[][] | Record<string, string>;
 type FetchRequestCredentials = "include" | "omit" | "same-origin";
 type FetchRequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
+type FetchReadableStream = unknown;
 
 interface FetchBody {
-    readonly body: unknown | null;
+    readonly body: FetchReadableStream | null;
     readonly bodyUsed: boolean;
     arrayBuffer(): Promise<ArrayBuffer>;
     blob(): Promise<unknown>;
@@ -140,11 +140,11 @@ export interface FetchResponse extends FetchBody {
     clone(): FetchResponse;
 }
 
-interface FetchRequestInit {
+interface FetchRequestInit<RequestBody = unknown> {
     /**
      * A BodyInit object or null to set request's body.
      */
-    body?: FetchBodyInit | null;
+    body?: RequestBody;
     /**
      * A string indicating whether credentials will be sent with the request always, never, or only when sent to a same-origin URL. Sets request's credentials.
      */

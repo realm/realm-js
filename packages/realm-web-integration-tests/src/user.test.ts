@@ -79,7 +79,7 @@ describe("User", () => {
         expect(user.accessToken).not.equals(INVALID_TOKEN);
     });
 
-    it("retrieves and resends device ids when authenticating", async () => {
+    it.skip("retrieves and resends device ids when authenticating", async () => {
         const app = createApp();
         // Clear any device id already in the storage.
         app.storage.remove("deviceId");
@@ -157,7 +157,7 @@ describe("User", () => {
         TEST_CREDENTIALS.includes("google") && typeof location !== "undefined",
         "linking with Google credentials",
         () => {
-            it.only("reuse id in access token and adds identity", async function () {
+            it("reuse id in access token and adds identity", async function () {
                 // Allowing time to manually complete the OAuth flow
                 this.timeout(60 * 1000); // 1 min
 

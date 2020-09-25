@@ -451,6 +451,17 @@ declare namespace Realm {
          * @returns An service client with methods to register and deregister the device on the user.
          */
         push(serviceName: string): Realm.Services.Push;
+
+        /**
+         * Returns a connection to the MongoDB service.
+         *
+         * @example
+         * let blueWidgets = user.mongoClient('myClusterName')
+         *                       .db('myDb')
+         *                       .collection('widgets')
+         *                       .find({color: 'blue'});
+         */
+        mongoClient(serviceName: string): Realm.Services.MongoDB;
     }
 
     /**
@@ -565,6 +576,18 @@ declare namespace Realm {
          * @param args Arguments passed to the function.
          */
         callFunction(name: string, ...args: any[]): Promise<any>;
+
+        /**
+         * Call a remote MongoDB Realm function by its name, in a streaming mode.
+         * Consider using `functions[name]()` instead of calling this method.
+         *
+         * @param name Name of the function.
+         * @param args Arguments passed to the function.
+         */
+        callFunctionStreaming(
+            name: string,
+            ...args: any[]
+        ): Promise<AsyncIterable<Uint8Array>>;
     }
 
     /**

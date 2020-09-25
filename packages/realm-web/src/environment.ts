@@ -19,6 +19,13 @@
 import { Storage } from "./storage";
 import { Window } from "./OAuth2Helper";
 
+/**
+ * Helps decode buffers into strings of various encodings.
+ */
+declare class TextDecoder {
+    decode(buffer: Uint8Array, options?: { stream: boolean }): string;
+}
+
 /** An object with values specific to the runtime environment. */
 export type Environment = {
     /**
@@ -40,6 +47,11 @@ export type Environment = {
      * The version of the executing platform.
      */
     platformVersion: string;
+
+    /**
+     * Helps decode buffers into strings of various encodings.
+     */
+    TextDecoder: typeof TextDecoder;
 };
 
 let environment: Environment | null = null;

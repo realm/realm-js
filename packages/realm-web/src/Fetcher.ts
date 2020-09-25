@@ -29,6 +29,46 @@ import { User } from "./User";
 import routes from "./routes";
 import { deserialize, serialize } from "./utils/ejson";
 
+type StreamReader = {
+    closed: boolean;
+    cancel(reason?: string): Promise<string | undefined>;
+    read<T>(): Promise<{ value: T | undefined; done: boolean }>;
+    releaseLock(): void;
+};
+type ReadableStream = { getReader(): StreamReader };
+
+/**
+ * @param body A possible resonse body.
+ * @returns An async iterator.
+ */
+function asyncIteratorFromResponseBody(
+    body: unknown,
+): AsyncIterable<Uint8Array> {
+    if (typeof body !== "object" || body === null) {
+        throw new Error("Expected a non-null object");
+    } else if (Symbol.asyncIterator in body) {
+        return body as AsyncIterable<Uint8Array>;
+    } else if ("getReader" in body) {
+        const stream = body as ReadableStream;
+        return {
+            [Symbol.asyncIterator]() {
+                const reader = stream.getReader();
+                return {
+                    next() {
+                        return reader.read();
+                    },
+                    async return() {
+                        await reader.cancel();
+                        return { done: true, value: null };
+                    },
+                };
+            },
+        };
+    } else {
+        throw new Error("Expected an AsyncIterable or a ReadableStream");
+    }
+}
+
 /**
  * Used to control which user is currently active - this would most likely be the {App} instance.
  */
@@ -196,7 +236,7 @@ export class Fetcher implements LocationUrlContext {
      * @param attempts Number of times this request has been attempted. Used when retrying, callers don't need to pass a value.
      * @returns The response from the server.
      */
-    public async fetch<RequestBody = any>(
+    public async fetch<RequestBody = unknown>(
         request: AuthenticatedRequest<RequestBody>,
         attempts = 0,
     ): Promise<FetchResponse> {
@@ -261,7 +301,7 @@ export class Fetcher implements LocationUrlContext {
         const { body } = request;
         const serializedBody = Fetcher.buildBody(body);
         const contentTypeHeaders = Fetcher.buildJsonHeader(serializedBody);
-        const response = await this.fetch<RequestBody>({
+        const response = await this.fetch({
             ...request,
             body: serializedBody,
             headers: {
@@ -279,6 +319,24 @@ export class Fetcher implements LocationUrlContext {
         } else {
             throw new Error(`Expected JSON response, got "${contentType}"`);
         }
+    }
+
+    /**
+     * Fetch an "event-stream" resource as an authenticated user.
+     *
+     * @param request The request which should be sent to the server.
+     */
+    public async fetchStream<RequestBody = unknown>(
+        request: AuthenticatedRequest<RequestBody>,
+    ): Promise<AsyncIterable<Uint8Array>> {
+        const { body } = await this.fetch({
+            ...request,
+            headers: {
+                Accept: "text/event-stream",
+                ...request.headers,
+            },
+        });
+        return asyncIteratorFromResponseBody(body);
     }
 
     /**
