@@ -111,6 +111,7 @@ describe("Realm objects", () => {
             expect(persons.length).equals(1);
             const [firstPerson] = persons;
             expect(firstPerson).deep.equals(john);
+            expect(firstPerson).instanceOf(Person);
         });
 
         it("can have it's properties read", () => {
