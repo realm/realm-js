@@ -486,6 +486,22 @@ RPCServer::RPCServer() {
         JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, email_password_method, arg_count, arg_values);
         return (json){{"result", serialize_json_value(credentials_object)}};
     };
+    m_requests["/_function"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef function_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "function");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be one
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, function_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
     m_requests["/_userApiKey"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
         JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
