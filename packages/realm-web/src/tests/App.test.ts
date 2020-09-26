@@ -446,7 +446,7 @@ describe("App", () => {
         ]);
         // Login with an anonymous user
         const credentials = Credentials.anonymous();
-        await app.logIn(credentials, false);
+        const user = await app.logIn(credentials, false);
         // Send a request (which will fail)
         try {
             await app.functions.foo({ bar: "baz" });
@@ -455,10 +455,14 @@ describe("App", () => {
             expect(err).instanceOf(MongoDBRealmError);
             if (err instanceof MongoDBRealmError) {
                 expect(err.message).equals(
-                    "Request failed (POST http://localhost:1337/api/client/v2.0/auth/session): invalid session (status 401)",
+                    // Trying this if the request from
+                    "Request failed (DELETE http://localhost:1337/api/client/v2.0/auth/session): invalid session (status 401)",
                 );
             }
         }
+        // Expect the tokens to be forgotten
+        expect(user.accessToken).equals(null);
+        expect(user.refreshToken).equals(null);
         // Manually try again - this time refreshing the access token correctly
         const response = await app.functions.foo({ bar: "baz" });
         expect(response).deep.equals({ bar: "baz" });

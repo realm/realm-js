@@ -90,9 +90,12 @@ describe("User", () => {
                 },
             },
         ]);
+        // Expect the user to forget tokens anyway
+        expect(user.accessToken).equals(null);
+        expect(user.refreshToken).equals(null);
     });
 
-    it("won't throw if session delete fails", async () => {
+    it("will forget tokens if session delete fails", async () => {
         const app = new MockApp("my-mocked-app", [
             LOCATION_RESPONSE,
             new MongoDBRealmError(

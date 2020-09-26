@@ -273,7 +273,13 @@ export class Fetcher implements LocationUrlContext {
                 attempts === 0
             ) {
                 // Refresh the access token
-                await user.refreshAccessToken();
+                try {
+                    await user.refreshAccessToken();
+                } catch (err) {
+                    await user.logOut();
+                    // Rethrow
+                    throw err;
+                }
                 // Retry with the specific user, since the currentUser might have changed.
                 return this.fetch({ ...request, user }, attempts + 1);
             } else {
