@@ -419,7 +419,7 @@ describe("App", () => {
         ]);
     });
 
-    it("refreshes access token and retries request exacly once, upon an 'invalid session' (401) response", async () => {
+    it("refresh access token upon an 'invalid session' (401) response", async () => {
         const invalidSessionError = new MongoDBRealmError(
             "POST",
             "http://localhost:1337/some-path",
@@ -435,8 +435,6 @@ describe("App", () => {
                 refresh_token: "very-refreshing",
             },
             invalidSessionError,
-            invalidSessionError,
-            invalidSessionError,
             {
                 user_id: "bobs-id",
                 access_token: "second-access-token",
@@ -447,22 +445,9 @@ describe("App", () => {
         // Login with an anonymous user
         const credentials = Credentials.anonymous();
         const user = await app.logIn(credentials, false);
-        // Send a request (which will fail)
-        try {
-            await app.functions.foo({ bar: "baz" });
-            throw new Error("Expected the request to fail");
-        } catch (err) {
-            expect(err).instanceOf(MongoDBRealmError);
-            if (err instanceof MongoDBRealmError) {
-                expect(err.message).equals(
-                    // Trying this if the request from
-                    "Request failed (DELETE http://localhost:1337/api/client/v2.0/auth/session): invalid session (status 401)",
-                );
-            }
-        }
-        // Expect the tokens to be forgotten
-        expect(user.accessToken).equals(null);
-        expect(user.refreshToken).equals(null);
+        // Expect the tokens to be remembered
+        expect(user.accessToken).not.equals(null);
+        expect(user.refreshToken).not.equals(null);
         // Manually try again - this time refreshing the access token correctly
         const response = await app.functions.foo({ bar: "baz" });
         expect(response).deep.equals({ bar: "baz" });
@@ -500,6 +485,66 @@ describe("App", () => {
                 body: { name: "foo", arguments: [{ bar: "baz" }] },
                 headers: {
                     ...SENDING_JSON_HEADERS,
+                    Authorization: "Bearer second-access-token",
+                },
+            },
+        ]);
+    });
+
+    it("attempts to refresh access token, retries request exacly once, upon an 'invalid session' (401) response", async () => {
+        const invalidSessionError = new MongoDBRealmError(
+            "POST",
+            "http://localhost:1337/some-path",
+            401,
+            "",
+            "invalid session",
+        );
+        const app = new MockApp("my-mocked-app", [
+            LOCATION_RESPONSE,
+            {
+                user_id: "bobs-id",
+                access_token: "first-access-token",
+                refresh_token: "very-refreshing",
+            },
+            invalidSessionError,
+            invalidSessionError,
+            invalidSessionError,
+        ]);
+        // Login with an anonymous user
+        const credentials = Credentials.anonymous();
+        const user = await app.logIn(credentials, false);
+        // Send a request (which will fail)
+        try {
+            await app.functions.foo({ bar: "baz" });
+            throw new Error("Expected the request to fail");
+        } catch (err) {
+            expect(err).instanceOf(MongoDBRealmError);
+            if (err instanceof MongoDBRealmError) {
+                expect(err.message).equals(
+                    // The last failure is from failing to delete the session at logout
+                    "Request failed (DELETE http://localhost:1337/api/client/v2.0/auth/session): invalid session (status 401)",
+                );
+            }
+        }
+        // Expect the tokens to be forgotten
+        expect(user.accessToken).equals(null);
+        expect(user.refreshToken).equals(null);
+        // Expect something of the request and response
+        expect(app.requests).deep.equals([
+            LOCATION_REQUEST,
+            {
+                method: "POST",
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
+                body: {},
+                headers: SENDING_JSON_HEADERS,
+            },
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
+                body: { name: "foo", arguments: [{ bar: "baz" }] },
+                headers: {
+                    ...SENDING_JSON_HEADERS,
                     Authorization: "Bearer first-access-token",
                 },
             },
@@ -512,13 +557,11 @@ describe("App", () => {
                 },
             },
             {
-                method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
-                body: { name: "foo", arguments: [{ bar: "baz" }] },
+                method: "DELETE",
+                url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
-                    ...SENDING_JSON_HEADERS,
-                    Authorization: "Bearer second-access-token",
+                    ...ACCEPT_JSON_HEADERS,
+                    Authorization: "Bearer very-refreshing",
                 },
             },
         ]);
