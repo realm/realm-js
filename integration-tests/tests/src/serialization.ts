@@ -261,8 +261,9 @@ describe("JSON serialization", () => {
                 });
 
                 it("throws correct error on serialization", () => {
-                    expect(() => JSON.stringify(persons[0])).throws(
-                        "Converting circular structure to JSON"
+                    expect(() => JSON.stringify(persons)).throws(
+                        TypeError,
+                        /circular|cyclic/i
                     );
                 });
 
@@ -291,7 +292,8 @@ describe("JSON serialization", () => {
 
                 it("throws correct error on serialization", () => {
                     expect(() => JSON.stringify(persons)).throws(
-                        "Converting circular structure to JSON"
+                        TypeError,
+                        /circular|cyclic/i
                     );
                 });
 
