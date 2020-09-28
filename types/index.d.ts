@@ -571,11 +571,18 @@ declare class Realm {
     deleteAll(): void;
 
     /**
-     * @param  {string|Realm.ObjectType|Function} type
+     * @param  {string} type
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string | Realm.ObjectId): T & Realm.Object | undefined;
+    objectForPrimaryKey<T>(type: string, key: number | string | Realm.ObjectId): (T & Realm.Object) | undefined;
+
+    /**
+     * @param  {Class} type
+     * @param  {number|string|ObjectId} key
+     * @returns {T | undefined}
+     */
+    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | Realm.ObjectId): T | undefined;
 
     /**
      * @param  {string} type
