@@ -126,6 +126,10 @@ describe("Realm objects", () => {
                     PersonSchemaWithId.name
                 }' with an existing primary key value ''${_id}''.`
             );
+
+            // Excpect only one instance of 'PersonSchemaWithId' in db after all updates
+            const persons = realm.objects(PersonSchemaWithId.name);
+            expect(persons.length).equals(1);
         });
     });
 
@@ -235,6 +239,10 @@ describe("Realm objects", () => {
                     PersonWithId.schema.name
                 }' with an existing primary key value ''${_id}''.`
             );
+
+            // Excpect only one instance of 'PersonWithId' in db after all updates
+            const persons = realm.objects(PersonWithId);
+            expect(persons.length).equals(1);
         });
     });
 });
