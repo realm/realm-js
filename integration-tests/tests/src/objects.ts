@@ -46,11 +46,14 @@ describe("Realm objects", () => {
             const _id = "0e19bcb8-c77a-44e5-9713-d6a59702869f";
 
             realm.write(() => {
-                const johnIn = realm.create(PersonWithId, {
-                    _id,
-                    name: "John Doe",
-                    age: 42
-                });
+                const johnIn = realm.create<PersonWithId>(
+                    PersonSchemaWithId.name,
+                    {
+                        _id,
+                        name: "John Doe",
+                        age: 42
+                    }
+                );
                 expect(johnIn._id).equals(_id);
                 expect(johnIn.name).equals("John Doe");
                 expect(johnIn.age).equals(42);
