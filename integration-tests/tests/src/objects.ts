@@ -95,7 +95,7 @@ describe("Realm objects", () => {
             ).throws(
                 `Attempting to create an object of type '${
                     PersonSchemaWithId.name
-                }' with an existing primary key value '${_id}'.`
+                }' with an existing primary key value ''${_id}''.`
             );
         });
     });
@@ -181,7 +181,7 @@ describe("Realm objects", () => {
             ).throws(
                 `Attempting to create an object of type '${
                     PersonWithId.schema.name
-                }' with an existing primary key value '${_id}'.`
+                }' with an existing primary key value ''${_id}''.`
             );
         });
     });
