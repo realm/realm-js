@@ -41,6 +41,32 @@ describe("Realm objects", () => {
             expect(john.age).equals(42);
         });
 
+        it("can be fetched with objectForPrimaryKey", () => {
+            const realm = new Realm({ schema: [PersonSchemaWithId] });
+            const _id = "0e19bcb8-c77a-44e5-9713-d6a59702869f";
+
+            realm.write(() => {
+                const johnIn = realm.create(PersonWithId, {
+                    _id,
+                    name: "John Doe",
+                    age: 42
+                });
+                expect(johnIn._id).equals(_id);
+                expect(johnIn.name).equals("John Doe");
+                expect(johnIn.age).equals(42);
+            });
+
+            const johnOut = realm.objectForPrimaryKey<IPersonWithId>(
+                PersonSchemaWithId.name,
+                _id
+            );
+
+            expect(johnOut).instanceOf(Realm.Object);
+            expect(johnOut._id).equals(_id);
+            expect(johnOut.name).equals("John Doe");
+            expect(johnOut.age).equals(42);
+        });
+
         it("can be updated", () => {
             const realm = new Realm({ schema: [PersonSchemaWithId] });
             let john: IPersonWithId;
@@ -129,6 +155,29 @@ describe("Realm objects", () => {
                 expect(john.name).equals("John Doe");
                 expect(john.age).equals(42);
             });
+        });
+
+        it("can be fetched with objectForPrimaryKey", () => {
+            const realm = new Realm({ schema: [PersonWithId] });
+            const _id = "1d84d60b-8c64-4531-bfdc-87cdd9e029c3";
+
+            realm.write(() => {
+                const johnIn = realm.create(PersonWithId, {
+                    _id,
+                    name: "John Doe",
+                    age: 42
+                });
+                expect(johnIn._id).equals(_id);
+                expect(johnIn.name).equals("John Doe");
+                expect(johnIn.age).equals(42);
+            });
+
+            const johnOut = realm.objectForPrimaryKey(PersonWithId, _id);
+
+            expect(johnOut).instanceOf(PersonWithId);
+            expect(johnOut._id).equals(_id);
+            expect(johnOut.name).equals("John Doe");
+            expect(johnOut.age).equals(42);
         });
 
         it("can be updated", () => {
