@@ -938,30 +938,21 @@ declare class Realm {
     /**
      * @param  {string} type
      * @param  {T} properties
-     * @param  {boolean} update?
+     * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T & Realm.Object
-     *
-     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
      */
-    create<T>(type: string, properties: RealmInsertionModel<T>, update?: boolean): T & Realm.Object
-
-    /**
-     * @param  {Class} type
-     * @param  {T} properties
-     * @param  {boolean} update?
-     * @returns T
-     *
-     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
-     */
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, update?: boolean): T
+    create<T>(type: string, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode.Never): T & Realm.Object;
+    create<T>(type: string, properties: Partial<T> | Partial<RealmInsertionModel<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T & Realm.Object;
 
     /**
      * @param  {string} type
      * @param  {T} properties
-     * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
+     * @param  {boolean} update?
      * @returns T & Realm.Object
+     *
+     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
      */
-    create<T>(type: string, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode): T & Realm.Object
+    create<T>(type: string, properties: RealmInsertionModel<T>, update: boolean): T & Realm.Object;
 
     /**
      * @param  {Class} type
@@ -969,7 +960,18 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T
      */
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode): T
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode.Never): T;
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: Partial<T> | Partial<RealmInsertionModel<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T;
+
+        /**
+     * @param  {Class} type
+     * @param  {T} properties
+     * @param  {boolean} update?
+     * @returns T
+     *
+     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
+     */
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, update: boolean): T
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
