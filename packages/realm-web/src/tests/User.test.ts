@@ -113,11 +113,12 @@ describe("User", () => {
             refreshToken: "very-refreshing",
         });
         // Log out the user
-        let errorThrown;
-        await user.logOut().then(null, err => {
-            errorThrown = err;
-        });
-        expect(errorThrown).instanceOf(MongoDBRealmError);
+        try {
+            await user.logOut();
+            assert.fail("Logout should fail");
+        } catch (err) {
+            expect(err).instanceOf(MongoDBRealmError);
+        }
         // Expect the user to forget tokens anyway
         expect(user.accessToken).equals(null);
         expect(user.refreshToken).equals(null);
