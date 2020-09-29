@@ -37,7 +37,6 @@
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
 		3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A911F58BDFF00D4855B /* uuid.cpp */; };
 		3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */; };
-		42387E6824C49409007FC5A4 /* push_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42387E6624C49409007FC5A4 /* push_client.cpp */; };
 		42D9B5F52465185C00AB3349 /* app_credentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57B224640AE4008679D5 /* app_credentials.cpp */; };
 		42D9B5F72465185C00AB3349 /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BB24640AE4008679D5 /* app.cpp */; };
 		42D9B5F82465185D00AB3349 /* generic_network_transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57C024640AE5008679D5 /* generic_network_transport.cpp */; };
@@ -885,8 +884,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [[ -d \"$HOME/.asdf/shims\" ]]; then\n  export PATH=$HOME/.asdf/shims:$PATH\nfi\n\n[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n\necho \"Using Node.js $(node --version)\"\n\ncd ..\nnode scripts/download-realm.js ios --sync\n";
+			shellPath = /bin/bash;
+			shellScript = "if [[ -d \"$HOME/.asdf/shims\" ]]; then\n  export PATH=$HOME/.asdf/shims:$PATH\nfi\n\n[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n\necho \"Using Node.js $(node --version)\"\n\ncd ..\nnode scripts/download-realm.js ios --sync\n\necho \"DONE\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -960,7 +959,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				42387E6824C49409007FC5A4 /* push_client.cpp in Sources */,
 				F63FF31B1C1642BB00B3B8E0 /* GCDWebServer.m in Sources */,
 				F63FF31C1C1642BB00B3B8E0 /* GCDWebServerConnection.m in Sources */,
 				F63FF3201C1642BB00B3B8E0 /* GCDWebServerDataRequest.m in Sources */,

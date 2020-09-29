@@ -300,7 +300,7 @@ case "$TARGET" in
   npm run check-environment
   set_nvm_default
   npm ci
-  start_server
+  # start_server
 
   pushd tests/react-test-app
   npm ci
@@ -311,7 +311,7 @@ case "$TARGET" in
   pushd ios
   pod install
   xctest ReactTests
-  stop_server
+  # stop_server
   ;;
 "react-example")
   npm run check-environment
