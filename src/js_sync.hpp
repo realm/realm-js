@@ -71,7 +71,7 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
             auto pv = Value<T>::validated_to_number(ctx, partition_value_value);
             auto pvi = static_cast<int64_t>(pv);
             if (pv != pvi || pvi < 0 || pvi > JS_MAX_SAFE_INTEGER) {
-                throw std::runtime_error("partitionValue of type 'number' must be > 0 and <= Number.MAX_SAFE_INTEGER.");
+                throw std::runtime_error("partitionValue of type 'number' must be a whole number > 0 and <= Number.MAX_SAFE_INTEGER.");
             }
             partition_bson = bson::Bson(pvi);
         }
