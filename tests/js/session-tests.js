@@ -833,6 +833,7 @@ module.exports = {
     async testAcceptedPartitionValueTypes() {
         const testPartitionValues = [
             Utils.genPartition(), // string
+            0,
             Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
             Number.MAX_SAFE_INTEGER,
             new ObjectId(),
@@ -852,7 +853,7 @@ module.exports = {
 
             const spv = realm.syncSession.config.partitionValue;
 
-            // BSON types have their own 'equals' comparrer
+            // BSON types have their own 'equals' comparer
             if (spv instanceof ObjectId) {
                 TestCase.assertTrue(spv.equals(partitionValue));
             } else {
@@ -867,6 +868,7 @@ module.exports = {
         const testPartitionValues = [
             "",
             1.2,
+            0.0000000000000001,
             Math.floor(Math.random() * Number.MIN_SAFE_INTEGER),
             Number.MAX_SAFE_INTEGER + 1
         ];

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <math.h>
+
 #include "js_class.hpp"
 #include "js_collection.hpp"
 #include "js_app.hpp"
@@ -69,10 +71,10 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
         }
         else if (Value<T>::is_number(ctx, partition_value_value)) {
             auto pv = Value<T>::validated_to_number(ctx, partition_value_value);
-            auto pvi = static_cast<int64_t>(pv);
-            if (pv != pvi || pvi < 0 || pvi > JS_MAX_SAFE_INTEGER) {
-                throw std::runtime_error("partitionValue of type 'number' must be a whole number > 0 and <= Number.MAX_SAFE_INTEGER.");
+            if (pv < 0 || pv > JS_MAX_SAFE_INTEGER || fmod(pv, 1) != 0) {
+                throw std::runtime_error("partitionValue of type 'number' must be a whole number >= 0 and <= Number.MAX_SAFE_INTEGER.");
             }
+            auto pvi = static_cast<int64_t>(pv);
             partition_bson = bson::Bson(pvi);
         }
         else if (Value<T>::is_object_id(ctx, partition_value_value)) {
