@@ -26,7 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
-const { ObjectId, Long } = require("bson");
+const { ObjectId } = require("bson");
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
@@ -831,13 +831,12 @@ module.exports = {
     },
 
     async testAcceptedPartitionValueTypes() {
-        const lowRndNumber =Math.floor(Math.random() * Math.floor(100000));
         const testPartitionValues = [
             Utils.genPartition(), // string
-            lowRndNumber, // low random number
-            Number.MAX_SAFE_INTEGER - lowRndNumber, // high random number
-            new ObjectId(), // ObjectId
-            null // null...
+            Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
+            Number.MAX_SAFE_INTEGER,
+            new ObjectId(),
+            null
         ];
 
         for (const partitionValue of testPartitionValues) {
@@ -853,8 +852,8 @@ module.exports = {
 
             const spv = realm.syncSession.config.partitionValue;
 
-            // ObjectId & Long have their own 'equals' comparrer
-            if (spv instanceof ObjectId || spv instanceof Long) {
+            // BSON types have their own 'equals' comparrer
+            if (spv instanceof ObjectId) {
                 TestCase.assertTrue(spv.equals(partitionValue));
             } else {
                 TestCase.assertEqual(spv, partitionValue);
@@ -865,7 +864,12 @@ module.exports = {
     },
 
     async testNonAcceptedPartitionValueTypes() {
-        const testPartitionValues = ["", 1.2];
+        const testPartitionValues = [
+            "",
+            1.2,
+            Math.floor(Math.random() * Number.MIN_SAFE_INTEGER),
+            Number.MAX_SAFE_INTEGER + 1
+        ];
 
         for (const partitionValue of testPartitionValues) {
             const app = new Realm.App(appConfig);
