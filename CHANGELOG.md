@@ -1,11 +1,15 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Greatly improve performance of NOT IN queries on indexed string or int columns.
+* Slightly improve performance of most operations which read data from the Realm file.
 
 ### Fixed
 * Fixed an issue with `toJSON` where data from a different object could be serialized. ([#3254](https://github.com/realm/realm-js/issues/3254), since v6.1.0)
 * Fixed inheritance when transpiling with Babel which results in TypeError: Reflect.construct requires the first argument to be a constructor ([#3110](https://github.com/realm/realm-js/issues/3110))
+* When querying a table where links are part of the condition, the application may crash if objects has recently been added to the target table. ([realm/realm-java#7118](https://github.com/realm/realm-java/issues/7118))
+* Rerunning an equals query on an indexed string column, which previously had more than one match and now has one match, would sometimes throw a "key not found" exception ([realm/realm-cocoa#6536](https://github.com/realm/realm-cocoa/issues/6536))
+
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -14,7 +18,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
 ### Internal
-* None.
+* Upgraded Realm Core from v6.0.26 to v6.1.2.
+* Upgraded Realm Sync from v5.0.23 to v5.0.27.
 
 6.1.2 Release notes (2020-9-17)
 =============================================================
