@@ -1,5 +1,9 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version uses the Realm file format to version 20. It is not possible to downgrade to earlier versions than v10.0.0-beta.13. Non-sync Realms will be upgraded automatically. Synced Realms can only be automatically upgraded if created with Realm JavaScript v10.0.0-beta.1 and above.
+
 ### Breaking changes
 * Renamed `Realm.App.getCachedApp()` to `Realm.App.getApp()`.
 
@@ -24,6 +28,11 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Upgraded Realm Core from v10.0.0-beta.8 to v10.0.0-beta.9.
 * Upgraded Realm Sync from v10.0.0-beta.12 to v10.0.0-beta.14.
+
+### Notable known issues
+* `Realm.App.logIn()` will not run again after refreshing React Native app. ([#3236](https://github.com/realm/realm-js/issues/3236))
+* `OpenRealmBehaviorConfiguration` was removed in v10.0.0-beta.1 and hasn't been added back yet. The consequence is that it is not possible to open a synced Realm when offline.
+
 
 10.0.0-beta.13 Release notes (2020-9-18)
 =============================================================
