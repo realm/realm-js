@@ -86,7 +86,7 @@ public:
 
     MethodMap<T> const static_methods = {
         {"_clearAppCache", wrap<clear_app_cache>},
-        {"getCachedApp", wrap<get_cached_app>}
+        {"getApp", wrap<get_cached_app>}
     };
 };
 

@@ -1,5 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Breaking changes
+* Renamed `Realm.App.getCachedApp()` to `Realm.App.getApp()`.
+
 ### Enhancements
 * None.
 
