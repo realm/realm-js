@@ -97,7 +97,6 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
 
 
 using WeakSession = std::weak_ptr<realm::SyncSession>;
-using bson::Bson;
 
 template<typename T>
 class SessionClass : public ClassDefinition<T, WeakSession> {
