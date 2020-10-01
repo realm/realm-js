@@ -834,7 +834,8 @@ module.exports = {
         const testPartitionValues = [
             Utils.genPartition(), // string
             0,
-            Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
+            26123582,
+            6837697641419457,
             Number.MAX_SAFE_INTEGER,
             new ObjectId(),
             null
@@ -869,7 +870,9 @@ module.exports = {
             "",
             1.2,
             0.0000000000000001,
-            Math.floor(Math.random() * Number.MIN_SAFE_INTEGER),
+            -0.0000000000000001,
+            -1,
+            -7134289827705675,
             Number.MAX_SAFE_INTEGER + 1
         ];
 

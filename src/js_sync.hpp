@@ -65,14 +65,14 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
         if (Value<T>::is_string(ctx, partition_value_value)) {
             std::string pv = Value<T>::validated_to_string(ctx, partition_value_value);
             if (pv.length() == 0) {
-                throw std::runtime_error("partitionValue of type 'string' cannot be an empty string.");
+                throw std::runtime_error("partitionValue of type 'string' may not be an empty string.");
             }
             partition_bson = bson::Bson(pv);
         }
         else if (Value<T>::is_number(ctx, partition_value_value)) {
             auto pv = Value<T>::validated_to_number(ctx, partition_value_value);
             if (pv < 0 || pv > JS_MAX_SAFE_INTEGER || fmod(pv, 1) != 0) {
-                throw std::runtime_error("partitionValue of type 'number' must be a whole number >= 0 and <= Number.MAX_SAFE_INTEGER.");
+                throw std::runtime_error("partitionValue of type 'number' must be a non-negative integer <= Number.MAX_SAFE_INTEGER.");
             }
             auto pvi = static_cast<int64_t>(pv);
             partition_bson = bson::Bson(pvi);
