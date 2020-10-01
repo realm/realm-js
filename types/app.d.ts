@@ -273,9 +273,9 @@ declare namespace Realm {
         >;
 
         /**
-         * Get an app instance from the cache.
+         * Get an app instance.
          */
-        static getCachedApp(appId: string): App;
+        static getApp(appId: string): App;
 
         /**
          * Log in a user using a specific credential

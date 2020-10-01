@@ -1,5 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Breaking changes
+* Renamed `Realm.App.getCachedApp()` to `Realm.App.getApp()`.
+
 ### Enhancements
 * TS declaration for `objectForPrimaryKey<T>(...)` now mimics behavior of `objects<T>(...)`. ([#3266](https://github.com/realm/realm-js/pull/3266))
 

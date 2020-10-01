@@ -86,7 +86,7 @@ public:
 
     MethodMap<T> const static_methods = {
         {"_clearAppCache", wrap<clear_app_cache>},
-        {"getCachedApp", wrap<get_cached_app>}
+        {"_getApp", wrap<get_app>}
     };
 };
 
@@ -198,7 +198,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 }
 
 template<typename T>
-void AppClass<T>::get_cached_app(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void AppClass<T>::get_app(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
     auto app_id = Value::validated_to_string(ctx, args[0]);
     if (auto app = app::App::get_cached_app(app_id)) {
@@ -257,7 +257,6 @@ void AppClass<T>::get_current_user(ContextType ctx, ObjectType this_object, Retu
         return_value.set_null();
     }
 }
-
 
 template<typename T>
 void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
