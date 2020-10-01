@@ -255,23 +255,29 @@ export class MongoDBCollection<T extends Document>
         ids?: T["_id"][];
         filter?: Realm.Services.MongoDB.Filter;
     } = {}): AsyncGenerator<ChangeEvent<T>> {
-        const iterator = await this.functions.callFunctionStreaming("watch", {
-            database: this.databaseName,
-            collection: this.collectionName,
-            ids,
-            filter,
-        });
-        const watchStream = new WatchStream<T>();
-        for await (const chunk of iterator) {
-            if (!chunk) continue;
-            watchStream.feedBuffer(chunk);
-            while (watchStream.state == WatchStreamState.HAVE_EVENT) {
-                yield watchStream.nextEvent() as ChangeEvent<T>;
+        // Ideally we would read the _id from the events and replay that in the watch request, but unfortunately the server doesn't support this yet.
+        while (true) {
+            const iterator = await this.functions.callFunctionStreaming(
+                "watch",
+                {
+                    database: this.databaseName,
+                    collection: this.collectionName,
+                    ids,
+                    filter,
+                },
+            );
+            const watchStream = new WatchStream<T>();
+            for await (const chunk of iterator) {
+                if (!chunk) continue;
+                watchStream.feedBuffer(chunk);
+                while (watchStream.state == WatchStreamState.HAVE_EVENT) {
+                    yield watchStream.nextEvent();
+                }
+                if (watchStream.state == WatchStreamState.HAVE_ERROR)
+                    // XXX this is just throwing an error like {error_code: "BadRequest, error: "message"},
+                    // which matches realm-js, but is different from how errors are handled in realm-web
+                    throw watchStream.error;
             }
-            if (watchStream.state == WatchStreamState.HAVE_ERROR)
-                // XXX this is just throwing an error like {error_code: "BadRequest, error: "message"},
-                // which matches realm-js, but is different from how errors are handled in realm-web
-                throw watchStream.error;
         }
     }
 }
