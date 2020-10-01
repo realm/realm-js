@@ -109,9 +109,9 @@ template<typename T>
 void CredentialsClass<T>::google(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
     arguments.validate_maximum(1);
 
-    realm::app::AppCredentialsToken token = Value::validated_to_string(ctx, arguments[0]);
+    realm::app::AppCredentialsToken auth_code = Value::validated_to_string(ctx, arguments[0]);
 
-    auto credentials = realm::app::AppCredentials::google(token);
+    auto credentials = realm::app::AppCredentials::google(auth_code);
     return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 
