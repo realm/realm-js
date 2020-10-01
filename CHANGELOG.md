@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.0.0-rc.1 Release notes (2020-10-1)
 =============================================================
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
 
@@ -17,7 +17,7 @@ NOTE: This version uses the Realm file format to version 20. It is not possible 
 * Added missing `Realm.Credentials.function()` to React Native debugger support. ([#3236](https://github.com/realm/realm-js/issues/3236), since v10.0.0-beta.1)
 * Added missing `Realm.Credentials.google()` to React Native debugger support. ([#3279](https://github.com/realm/realm-js/issues/3279), since v10.0.0-beta.1)
 * Fixed inheritance when transpiling with Babel which results in `TypeError: Reflect.construct requires the first argument to be a constructor`. ([#3110](https://github.com/realm/realm-js/issues/3110))
-* `-fno-aligned-new` added to podspec as C++ flag for for armv7. This could lead to error messages like Aligned deallocation function of type 'void (void *, std::align_val_t) noexcept' is only available on iOS 11 or newer when archiving an app. ([#3076](https://github.com/realm/realm-js/issues/3076), since v10.0.0-beta.1)
+* `-fno-aligned-new` added to podspec as C++ flag for for armv7. This could lead to error messages like `Aligned deallocation function of type 'void (void *, std::align_val_t) noexcept' is only available on iOS 11 or newer when archiving an app`. ([#3076](https://github.com/realm/realm-js/issues/3076), since v10.0.0-beta.1)
 * TS declaration for `create<T>(...)` has been relaxed when `Realm.UpdateMode` `All` or `Modified` is given. ([#3266](https://github.com/realm/realm-js/pull/3266))
 
 ### Compatibility
