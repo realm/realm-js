@@ -19,7 +19,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Upgraded Realm Core from v10.0.0-beta.8 to v10.0.0-beta.9.
+* Upgraded Realm Sync from v10.0.0-beta.12 to v10.0.0-beta.14.
 
 10.0.0-beta.13 Release notes (2020-9-18)
 =============================================================
