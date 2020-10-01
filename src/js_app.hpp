@@ -76,7 +76,7 @@ public:
 
     // static methods
     static void clear_app_cache(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void get_cached_app(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void get_app(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"_login", wrap<login>},
