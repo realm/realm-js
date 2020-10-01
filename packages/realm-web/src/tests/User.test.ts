@@ -115,7 +115,7 @@ describe("User", () => {
         // Log out the user
         try {
             await user.logOut();
-            assert.fail("Logout should fail");
+            expect.fail("Log out should fail");
         } catch (err) {
             expect(err).instanceOf(MongoDBRealmError);
         }
