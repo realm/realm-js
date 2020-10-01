@@ -76,7 +76,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
             // We'll await the response to catch throw our own error
             return await DefaultNetworkTransport.fetch(url, {
                 signal, // Used to signal timeouts
-                ...rest
+                ...rest,
             });
         } finally {
             // Whatever happens, cancel any timeout
