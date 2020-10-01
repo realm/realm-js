@@ -22,6 +22,7 @@ import { ObjectID } from "bson";
 import { createService } from "../services/MongoDBService";
 
 import { MockFetcher } from "./utils";
+import { TextEncoder } from "util";
 
 /** A test interface that documents in my-collection implements */
 interface MyDocument extends Realm.Services.MongoDB.Document {
@@ -302,5 +303,110 @@ describe("MongoDB Remote service", () => {
                 headers: DEFAULT_HEADERS,
             },
         ]);
+    });
+
+    describe("watch", () => {
+        it("reconnects with a resume token", async () => {
+            const textEncoder = new TextEncoder();
+            const ns = { db: "my-db", coll: "my-collection" };
+
+            /**
+             * @param eventName The name of the event.
+             * @param data The data object.
+             * @returns An encoded event.
+             */
+            function encodeEvent(eventName: string, data: any) {
+                const encodedData = JSON.stringify(data);
+                return textEncoder.encode(
+                    `event: ${eventName}\ndata: ${encodedData}\n\n`,
+                );
+            }
+
+            /**
+             * @returns A fake stream of a two events
+             */
+            async function* fakeStreamer1() {
+                yield encodeEvent("message", {
+                    _id: "some-resume-token-1",
+                    operationType: "update",
+                    clusterTime: { $long: 1 },
+                    ns,
+                    documentKey: null,
+                    updateDescription: { a: 1 },
+                    fullDocument: { a: 1 },
+                });
+                yield encodeEvent("message", {
+                    _id: "some-resume-token-2",
+                    operationType: "update",
+                    clusterTime: { $long: 2 },
+                    ns,
+                    documentKey: null,
+                    updateDescription: { a: 2 },
+                    fullDocument: { a: 2 },
+                });
+            }
+
+            const finalError = new Error("Let's get out of the loop");
+
+            /**
+             * @returns A fake stream of a single event
+             */
+            async function* fakeStreamer2() {
+                yield encodeEvent("message", {
+                    _id: "some-resume-token-3",
+                    operationType: "update",
+                    clusterTime: { $long: 3 },
+                    ns,
+                    documentKey: null,
+                    updateDescription: { a: 3 },
+                    fullDocument: { a: 3 },
+                });
+                // Throw an error to get out of the loop ...
+                throw finalError;
+            }
+
+            const fetcher = new MockFetcher([fakeStreamer1(), fakeStreamer2()]);
+            const service = createService(fetcher, "my-mongodb-service");
+            const watchStream = service.db(ns.db).collection(ns.coll).watch();
+            const observedEvents = [];
+            try {
+                for await (const e of watchStream) {
+                    observedEvents.push(e);
+                }
+            } catch (err) {
+                // We throw an error to get out of the endless loop
+                expect(err).equals(finalError);
+            }
+            // Ensure all events were captured
+            expect(observedEvents).deep.equals([
+                {
+                    _id: "some-resume-token-1",
+                    operationType: "update",
+                    clusterTime: { $long: 1 },
+                    ns,
+                    documentKey: null,
+                    updateDescription: { a: 1 },
+                    fullDocument: { a: 1 },
+                },
+                {
+                    _id: "some-resume-token-2",
+                    operationType: "update",
+                    clusterTime: { $long: 2 },
+                    ns,
+                    documentKey: null,
+                    updateDescription: { a: 2 },
+                    fullDocument: { a: 2 },
+                },
+                {
+                    _id: "some-resume-token-3",
+                    operationType: "update",
+                    clusterTime: { $long: 3 },
+                    ns,
+                    documentKey: null,
+                    updateDescription: { a: 3 },
+                    fullDocument: { a: 3 },
+                },
+            ]);
+        });
     });
 });

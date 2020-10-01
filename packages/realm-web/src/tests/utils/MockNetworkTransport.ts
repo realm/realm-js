@@ -85,6 +85,18 @@ export class MockNetworkTransport implements NetworkTransport {
                         },
                     } as FetchHeaders,
                 } as FetchResponse);
+            } else if (Symbol.asyncIterator in response) {
+                return Promise.resolve({
+                    ok: true,
+                    body: response,
+                    headers: {
+                        get(name: string) {
+                            if (name.toLowerCase() === "content-type") {
+                                return "text/event-stream";
+                            }
+                        },
+                    } as FetchHeaders,
+                } as FetchResponse);
             } else {
                 return Promise.resolve({
                     ok: true,

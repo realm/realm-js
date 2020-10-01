@@ -51,9 +51,10 @@ export const LOCATION_RESPONSE = Object.freeze({
 
 /**
  * Default information about the device.
+ * TODO: Generate this from the process.node.version ..
  */
 export const DEFAULT_DEVICE =
-    "eyJzZGtWZXJzaW9uIjoiMC4wLjAtdGVzdCIsInBsYXRmb3JtIjoibm9kZSIsInBsYXRmb3JtVmVyc2lvbiI6IjEyLjE0LjEifQ%3D%3D";
+    "eyJzZGtWZXJzaW9uIjoiMC4wLjAtdGVzdCIsInBsYXRmb3JtIjoibm9kZSIsInBsYXRmb3JtVmVyc2lvbiI6IjEyLjE4LjQifQ%3D%3D";
 
 export * from "./MockApp";
 export * from "./MockFetcher";
