@@ -871,6 +871,7 @@ module.exports = {
 
     async testNonAcceptedPartitionValueTypes() {
         const testPartitionValues = [
+            undefined,
             "",
             Number.MAX_SAFE_INTEGER + 1,
             1.2,
