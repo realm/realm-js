@@ -17,6 +17,12 @@ const doneMatcher = /Testing completed with status ([-\d]+)/;
 
 const app = new Application({
   path: ELECTRON_PATH,
+  chromeDriverArgs: [
+    '--no-sandbox',
+    '--whitelisted-ips=',
+    '--disable-dev-shm-usage',
+    '--remote-debugging-port=9515'
+  ],
   args: [ MAIN_PATH ].concat(process.argv.slice(2))
 });
 
