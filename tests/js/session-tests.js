@@ -833,15 +833,19 @@ module.exports = {
     async testAcceptedPartitionValueTypes() {
         const testPartitionValues = [
             Utils.genPartition(), // string
-            0,
-            26123582,
-            6837697641419457,
             Number.MAX_SAFE_INTEGER,
+            6837697641419457,
+            26123582,
+            0,
+            -12342908,
+            -7482937500235834,
+            -Number.MAX_SAFE_INTEGER,
             new ObjectId(),
             null
         ];
 
         for (const partitionValue of testPartitionValues) {
+            console.log('>partitionValue', partitionValue)
             const app = new Realm.App(appConfig);
 
             const user = await app.logIn(Realm.Credentials.anonymous())
@@ -868,12 +872,12 @@ module.exports = {
     async testNonAcceptedPartitionValueTypes() {
         const testPartitionValues = [
             "",
+            Number.MAX_SAFE_INTEGER + 1,
             1.2,
             0.0000000000000001,
             -0.0000000000000001,
-            -1,
-            -7134289827705675,
-            Number.MAX_SAFE_INTEGER + 1
+            -1.3,
+            -Number.MAX_SAFE_INTEGER - 1
         ];
 
         for (const partitionValue of testPartitionValues) {

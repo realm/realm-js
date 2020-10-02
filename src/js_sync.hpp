@@ -73,8 +73,8 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
             double pv = Value<T>::validated_to_number(ctx, partition_value_value);
             double integerPart;
             double fractionalPart = modf(pv, &integerPart);
-            if (fractionalPart > 0.0 || pv < 0.0 || pv > JS_MAX_SAFE_INTEGER) {
-                throw std::runtime_error("partitionValue of type 'number' must be a non-negative integer <= Number.MAX_SAFE_INTEGER.");
+            if (pv > JS_MAX_SAFE_INTEGER  || pv < -JS_MAX_SAFE_INTEGER || fabs(fractionalPart) > 0.0) {
+                throw std::runtime_error("partitionValue of type 'number' must be an integer in the range: Number.MIN_SAFE_INTEGER to Number.MAX_SAFE_INTEGER.");
             }
             partition_bson = bson::Bson(static_cast<int64_t>(integerPart));
         }
