@@ -29,7 +29,21 @@ import builder from 'xmlbuilder';
 import React from 'react';
 import RNExitApp from 'react-native-exit-app-no-history';
 import RNFS from 'react-native-fs';
-import { getTestNames, runTest } from './tests';
+
+//FIX: Remove this when test app is upgraded to RN >= 0.60:
+//RN version < 0.60 does not have an AbortController implementation. Define an empty one so require('realm') does not throw 
+//////////////
+if (global && global.window) {
+    global.window.AbortController = { 
+        signal: {},
+        abort : () => {}
+    }
+}
+const tests = require('./tests');
+const getTestNames = tests.getTestNames;
+const runTest = tests.runTest;
+//import { getTestNames, runTest } from './tests';
+////////////
 
 async function runTests() {
     let testNames = getTestNames();
