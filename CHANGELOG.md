@@ -7,10 +7,10 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Fixed an issue with `toJSON` where data from a different object could be serialized. ([#3254](https://github.com/realm/realm-js/issues/3254), since v6.1.0)
 * Fixed inheritance when transpiling with Babel which results in TypeError: Reflect.construct requires the first argument to be a constructor ([#3110](https://github.com/realm/realm-js/issues/3110))
-* When querying a table where links are part of the condition, the application may crash if objects has recently been added to the target table. ([realm/realm-java#7118](https://github.com/realm/realm-java/issues/7118))
-* Rerunning an equals query on an indexed string column, which previously had more than one match and now has one match, would sometimes throw a "key not found" exception ([realm/realm-cocoa#6536](https://github.com/realm/realm-cocoa/issues/6536))
-* Queries on indexed properties could yield a "Key not found" exception. ([realm/realm-dotnet#2025](https://github.com/realm/realm-dotnet/issues/2025))
-* Fixed queries for null on non-nullable indexed integer columns returning results for zero entries.
+* When querying a table where links are part of the condition, the application may crash if objects has recently been added to the target table. ([realm/realm-java#7118](https://github.com/realm/realm-java/issues/7118), since v6.0.0)
+* Rerunning an equals query on an indexed string column, which previously had more than one match and now has one match, would sometimes throw a "key not found" exception ([realm/realm-cocoa#6536](https://github.com/realm/realm-cocoa/issues/6536), since v6.0.0)
+* Queries on indexed properties could yield a "Key not found" exception. ([realm/realm-dotnet#2025](https://github.com/realm/realm-dotnet/issues/2025), since v6.0.0)
+* Fixed queries for null on non-nullable indexed integer columns returning results for zero entries. (since v6.0.0)
 
 
 ### Compatibility
