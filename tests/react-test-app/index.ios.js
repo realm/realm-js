@@ -31,7 +31,7 @@ import React from 'react';
 //FIX: Remove this when test app is upgraded to RN >= 0.60:
 //RN version < 0.60 does not have an AbortController implementation. Define an empty one so require('realm') does not throw 
 //////////////
-if (global && global.window) {
+if (global && global.window && !global.window.AbortController) {
     global.window.AbortController = { 
         signal: {},
         abort : () => {}
