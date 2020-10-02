@@ -1,8 +1,7 @@
-x.x.x Release notes (yyyy-MM-dd)
+6.1.3 Release notes (2020-10-2)
 =============================================================
 ### Enhancements
-* Greatly improve performance of NOT IN queries on indexed string or int columns.
-* Slightly improve performance of most operations which read data from the Realm file.
+* None.
 
 ### Fixed
 * Fixed an issue with `toJSON` where data from a different object could be serialized. ([#3254](https://github.com/realm/realm-js/issues/3254), since v6.1.0)
@@ -11,7 +10,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * Rerunning an equals query on an indexed string column, which previously had more than one match and now has one match, would sometimes throw a "key not found" exception ([realm/realm-cocoa#6536](https://github.com/realm/realm-cocoa/issues/6536), since v6.0.0)
 * Queries on indexed properties could yield a "Key not found" exception. ([realm/realm-dotnet#2025](https://github.com/realm/realm-dotnet/issues/2025), since v6.0.0)
 * Fixed queries for null on non-nullable indexed integer columns returning results for zero entries. (since v6.0.0)
-
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -22,6 +20,8 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Upgraded Realm Core from v6.0.26 to v6.1.3.
 * Upgraded Realm Sync from v5.0.23 to v5.0.28.
+* Improved performance of queries of the form `NOT (prop == 1 || prop == 2 || ...)`. ([realm/realm-cocoa#4564](https://github.com/realm/realm-cocoa/issues/4564))
+* Improved performance of most operations which read data from the Realm file.
 
 6.1.2 Release notes (2020-9-17)
 =============================================================
@@ -45,7 +45,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 6.1.1 Release notes (2020-9-10)
 =============================================================
-NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade version 10 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable. 
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade version 10 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might not be upgradeable.
 
 ### Enhancements
 * None.
