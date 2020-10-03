@@ -19,9 +19,14 @@
 import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import nodeResolve from "@rollup/plugin-node-resolve";
+import replace from "@rollup/plugin-replace";
 import dts from "rollup-plugin-dts";
 
 import pkg from "./package.json";
+
+const replacer = replace({
+    __SDK_VERSION__: JSON.stringify(pkg.version),
+});
 
 export default [
     {
@@ -42,6 +47,7 @@ export default [
                 tsconfig: "src/node/tsconfig.json",
             }),
             nodeResolve(),
+            replacer,
         ],
         external: ["bson", "node-fetch", "abort-controller"],
     },
@@ -65,6 +71,7 @@ export default [
             nodeResolve({
                 browser: true,
             }),
+            replacer,
         ],
         external: ["bson"],
     },
@@ -86,6 +93,7 @@ export default [
                 browser: true,
                 preferBuiltins: false,
             }),
+            replacer,
         ],
     },
     {

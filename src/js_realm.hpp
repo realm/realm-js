@@ -447,11 +447,6 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 
 #if REALM_ENABLE_SYNC
-    FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
-    Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
-
-    AsyncOpenTaskClass<T>::create_constructor(ctx);
-
     FunctionType app_constructor = AppClass<T>::create_constructor(ctx);
     Object::set_property(ctx, realm_constructor, "App", app_constructor, attributes);
 
@@ -472,6 +467,11 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
 
     FunctionType user_apikey_provider_client_constructor = ApiKeyAuthClass<T>::create_constructor(ctx);
     Object::set_property(ctx, auth_constructor, "ApiKeyAuth", user_apikey_provider_client_constructor, attributes);
+
+    FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
+    Object::set_property(ctx, app_constructor, "Sync", sync_constructor, attributes);
+
+    AsyncOpenTaskClass<T>::create_constructor(ctx);
 #endif
 
     if (getenv("REALM_DISABLE_SYNC_TO_DISK")) {
@@ -543,6 +543,9 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             if (!Value::is_undefined(ctx, delete_realm_if_migration_needed_value) && Value::validated_to_boolean(ctx, delete_realm_if_migration_needed_value, "deleteRealmIfMigrationNeeded")) {
                 if (config.schema_mode == SchemaMode::Immutable) {
                     throw std::invalid_argument("Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.");
+                }
+                if (config.sync_config && config.sync_config->partition_value != "") {
+                    throw std::invalid_argument("Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
                 }
 
                 config.schema_mode = SchemaMode::ResetFile;
@@ -713,6 +716,9 @@ template<typename T>
 void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
     js::clear_test_state();
+#if REALM_ENABLE_SYNC
+    realm::app::App::clear_cached_apps();
+#endif
 }
 
 template<typename T>
@@ -831,12 +837,16 @@ void RealmClass<T>::get_is_closed(ContextType ctx, ObjectType object, ReturnValu
 template<typename T>
 void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto realm = *get_internal<T, RealmClass<T>>(ctx, object);
-    if (std::shared_ptr<SyncSession> session = SyncManager::shared().get_existing_active_session(realm->config().path)) {
-        return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
-    } else {
-        return_value.set_null();
+    auto config = realm->config();
+    if (config.sync_config) {
+        auto user = config.sync_config->user;
+        if (user) {
+            if (std::shared_ptr<SyncSession>session = user->sync_manager()->get_existing_active_session(config.path)) {
+                return return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+            }
+        }
     }
-
+    return_value.set_null();
 }
 #endif
 
@@ -916,6 +926,11 @@ void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments &
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
+
+    if (object_schema.is_embedded) {
+        throw std::runtime_error("You cannot query an embedded object.");
+    }
+
     return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_schema.name));
 }
 

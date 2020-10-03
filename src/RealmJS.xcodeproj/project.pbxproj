@@ -187,7 +187,6 @@
 		42BD57AA24640A94008679D5 /* js_email_password_auth.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_email_password_auth.hpp; sourceTree = "<group>"; };
 		42BD57AB24640A94008679D5 /* js_user.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_user.hpp; sourceTree = "<group>"; };
 		42BD57AC24640A94008679D5 /* js_network_transport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_network_transport.hpp; sourceTree = "<group>"; };
-		42BD57AD24640A95008679D5 /* js_sync_util.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_sync_util.hpp; sourceTree = "<group>"; };
 		42BD57AE24640A95008679D5 /* js_api_key_auth.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_api_key_auth.hpp; sourceTree = "<group>"; };
 		42BD57AF24640AA8008679D5 /* keypath_helpers.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = keypath_helpers.hpp; path = src/keypath_helpers.hpp; sourceTree = "<group>"; };
 		42BD57B024640AE4008679D5 /* generic_network_transport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = generic_network_transport.hpp; path = src/sync/generic_network_transport.hpp; sourceTree = "<group>"; };
@@ -354,7 +353,6 @@
 				42BD57A924640A94008679D5 /* js_app_credentials.hpp */,
 				42BD57A824640A94008679D5 /* js_app.hpp */,
 				42BD57AC24640A94008679D5 /* js_network_transport.hpp */,
-				42BD57AD24640A95008679D5 /* js_sync_util.hpp */,
 				42BD57AE24640A95008679D5 /* js_api_key_auth.hpp */,
 				42BD57AB24640A94008679D5 /* js_user.hpp */,
 				42BD57AA24640A94008679D5 /* js_email_password_auth.hpp */,
@@ -1195,7 +1193,7 @@
 					"-isystem",
 					"$(SRCROOT)/../vendor/sync/include",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios-dbg.a $(SRCROOT)/../vendor/realm-ios/librealm-ios-dbg.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios-dbg.a $(SRCROOT)/../vendor/realm-ios/librealm-sync-ios-dbg.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
@@ -1224,7 +1222,7 @@
 					"-isystem",
 					"$(SRCROOT)/../vendor/sync/include",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios.a $(SRCROOT)/../vendor/realm-ios/librealm-ios.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios.a $(SRCROOT)/../vendor/realm-ios/librealm-sync-ios.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};

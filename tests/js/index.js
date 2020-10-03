@@ -69,12 +69,6 @@ if (isNodeProcess && process.platform !== 'win32') {
     TESTS.AsyncTests = node_require('./async-tests');
 }
 
-if (global.enableSyncTests) {
-    // Ensure that the sync manager is initialized as initializing it
-    // after calling clearTestState() doesn't work
-    // Realm.Sync.User.all;
-}
-
 var SPECIAL_METHODS = {
     beforeEach: true,
     afterEach: true,

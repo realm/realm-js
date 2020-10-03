@@ -54,3 +54,8 @@ declare function setInterval(
 ): TimerHandle;
 declare function clearInterval(handle?: TimerHandle): void;
 declare function clearTimeout(handle?: TimerHandle): void;
+
+/**
+ * This will be replaced in by Rollup.
+ */
+// declare const __SDK_VERSION__: string;

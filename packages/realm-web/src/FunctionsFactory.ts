@@ -16,13 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Transport } from "./transports/Transport";
-import { deserialize, serialize } from "./utils/ejson";
+import { Fetcher } from "./Fetcher";
+import { serialize } from "./utils/ejson";
+import { encodeQueryString } from "./utils/string";
 
 /**
  * A list of names that functions cannot have to be callable through the functions proxy.
  */
-const RESERVED_NAMES = ["inspect", "callFunction"];
+const RESERVED_NAMES = [
+    "inspect",
+    "callFunction",
+    "callFunctionStreaming",
+    // Methods defined on the Object.prototype might be "typeof probed" and called by libraries and runtime environments.
+    ...Object.getOwnPropertyNames(Object.prototype),
+];
 
 /**
  * The body of the request sent to call a remote function.
@@ -54,10 +61,6 @@ export interface FunctionsFactoryConfiguration {
      * Call this function to transform the arguments before they're sent to the service.
      */
     argsTransformation?: (args: any[]) => any[];
-    /**
-     * Call this function to transform a response before it's returned to the caller.
-     */
-    responseTransformation?: (response: any) => any;
 }
 
 /**
@@ -66,7 +69,7 @@ export interface FunctionsFactoryConfiguration {
  * @param args The arguments to clean.
  * @returns The cleaned arguments.
  */
-function cleanArgs(args: any[]) {
+export function cleanArgs(args: any[]) {
     for (const arg of args) {
         if (typeof arg === "object") {
             for (const [key, value] of Object.entries(arg)) {
@@ -97,20 +100,20 @@ export class FunctionsFactory {
     /**
      * Create a factory of functions, wrapped in a Proxy that returns bound copies of `callFunction` on any property.
      *
-     * @param transport The underlying transport to use when requesting.
+     * @param fetcher The underlying fetcher to use when requesting.
      * @param config Additional configuration parameters.
      * @returns The newly created factory of functions.
      */
     public static create<
         FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory
     >(
-        transport: Transport,
+        fetcher: Fetcher,
         config: FunctionsFactoryConfiguration = {},
     ): FunctionsFactoryType & Realm.BaseFunctionsFactory {
         // Create a proxy, wrapping a simple object returning methods that calls functions
         // TODO: Lazily fetch available functions and return these from the ownKeys() trap
         const factory: Realm.BaseFunctionsFactory = new FunctionsFactory(
-            transport,
+            fetcher,
             config,
         );
         // Wrap the factory in a proxy that calls the internal call method
@@ -129,9 +132,9 @@ export class FunctionsFactory {
     }
 
     /**
-     * The underlying transport to use when requesting.
+     * The underlying fetcher to use when requesting.
      */
-    private readonly transport: Transport;
+    private readonly fetcher: Fetcher;
 
     /**
      * An optional name of the service in which functions are defined.
@@ -144,26 +147,14 @@ export class FunctionsFactory {
     private readonly argsTransformation?: (args: any[]) => any[];
 
     /**
-     * Call this function to transform a response before it's returned to the caller.
-     */
-    private readonly responseTransformation?: (response: any) => any;
-
-    /**
-     * Construct a functions factory.
-     *
-     * @param transport The underlying transport to use when sending requests.
+     * @param fetcher The underlying fetcher to use when sending requests.
      * @param config Additional configuration parameters.
      */
-    constructor(
-        transport: Transport,
-        config: FunctionsFactoryConfiguration = {},
-    ) {
-        this.transport = transport;
+    constructor(fetcher: Fetcher, config: FunctionsFactoryConfiguration = {}) {
+        this.fetcher = fetcher;
         this.serviceName = config.serviceName;
         this.argsTransformation =
             config.argsTransformation || cleanArgsAndSerialize;
-        this.responseTransformation =
-            config.responseTransformation || deserialize;
     }
 
     /**
@@ -184,16 +175,41 @@ export class FunctionsFactory {
         if (this.serviceName) {
             body.service = this.serviceName;
         }
-        const response = await this.transport.fetch({
+        const appRoute = this.fetcher.appRoute;
+        return this.fetcher.fetchJSON({
             method: "POST",
-            path: "/functions/call",
+            path: appRoute.functionsCall().path,
             body,
         });
-        // Transform the response, if needed
-        if (this.responseTransformation) {
-            return this.responseTransformation(response);
-        } else {
-            return response;
+    }
+
+    /**
+     * Call a remote function by it's name.
+     *
+     * @param name Name of the remote function.
+     * @param args Arguments to pass to the remote function.
+     * @returns A promise of the value returned when executing the remote function.
+     */
+    public callFunctionStreaming(
+        name: string,
+        ...args: any[]
+    ): Promise<AsyncIterable<Uint8Array>> {
+        const body: CallFunctionBody = {
+            name,
+            arguments: this.argsTransformation
+                ? this.argsTransformation(args)
+                : args,
+        };
+        if (this.serviceName) {
+            body.service = this.serviceName;
         }
+        const appRoute = this.fetcher.appRoute;
+        const qs = encodeQueryString({
+            ["baas_request"]: Base64.encode(JSON.stringify(body)),
+        });
+        return this.fetcher.fetchStream({
+            method: "GET",
+            path: appRoute.functionsCall().path + qs,
+        });
     }
 }

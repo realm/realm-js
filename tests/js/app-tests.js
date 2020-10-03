@@ -41,7 +41,7 @@ module.exports = {
         );
     },
 
-    async testInvalidServer() {
+    testInvalidServer() {
         const conf = {
             id: 'smurf',
             url: 'http://localhost:9999',
@@ -52,14 +52,16 @@ module.exports = {
             }
         };
 
-        let app = new Realm.App(conf);
+        const app = new Realm.App(conf);
         let credentials = Realm.Credentials.anonymous();
-        let failed = false;
-        let user = await app.logIn(credentials).catch(err => {
-            failed = true;
-            TestCase.assertEqual(err.message, "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED 127.0.0.1:9999");
+        return new Promise((resolve, reject) => {
+            return app.logIn(credentials).then(user => {
+                return reject(`Able to log in with config ${JSON.stringify(conf)}`);
+            }).catch(err => {
+                TestCase.assertEqual(err.message, "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED 127.0.0.1:9999");
+                return resolve();
+            });
         });
-        TestCase.assertEqual(failed, true);
     },
 
     async testNonexistingApp() {
@@ -90,6 +92,8 @@ module.exports = {
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
         TestCase.assertInstanceOf(user, Realm.User);
+        TestCase.assertNotNull(user.deviceId);
+        TestCase.assertEqual(user.providerType, "anon-user");
         await user.logOut();
     },
 

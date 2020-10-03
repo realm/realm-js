@@ -120,7 +120,7 @@ class Realm {
     /**
      * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
      * the URL for the synced Realm. If no user is supplied, the current user will be used.
-     * @param {Realm.Sync.User} - an optional sync user
+     * @param {Realm.User} - an optional sync user
      * @throws {Error} if zero or multiple users are logged in
      * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
      * @since 2.3.0
@@ -184,7 +184,7 @@ class Realm {
     /**
      * Returns all objects of the given `type` in the Realm.
      * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
-     * @throws {Error} If type passed into this method is invalid.
+     * @throws {Error} If type passed into this method is invalid or if the type is marked embedded.
      * @returns {Realm.Results} that will live-update as objects are created and destroyed.
      */
     objects(type) { }
@@ -355,6 +355,7 @@ class Realm {
  *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
  * @property {boolean} [deleteRealmIfMigrationNeeded=false] - Specifies if this Realm should be deleted
  *   if a migration is needed.
+ *   This option is not available on synced realms.
  * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening
  *   a Realm for the first time during the life of a process to determine if it should be compacted
  *   before being returned to the user. The function takes two arguments:
@@ -384,7 +385,7 @@ class Realm {
  *   If omitted, the schema will be read from the existing Realm file.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
  *   changing the `schema`.
- * @property {Realm.Sync~SyncConfiguration} [sync] - Sync configuration parameters.
+ * @property {Realm.App.Sync~SyncConfiguration} [sync] - Sync configuration parameters.
  */
 
 /**

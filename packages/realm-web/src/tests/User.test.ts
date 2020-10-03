@@ -17,10 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { inspect } from "util";
 
-import { UserType, User } from "..";
+import { UserType, User, Credentials } from "..";
 
-import { MockApp } from "./utils";
+import {
+    MockApp,
+    LOCATION_RESPONSE,
+    LOCATION_REQUEST,
+    ACCEPT_JSON_HEADERS,
+    SENDING_JSON_HEADERS,
+    DEFAULT_DEVICE,
+} from "./utils";
 
 // Since responses from the server uses underscores in field names:
 /* eslint @typescript-eslint/camelcase: "warn" */
@@ -38,8 +46,28 @@ describe("User", () => {
         expect(user.accessToken).equals("deadbeef");
     });
 
+    it("can be inspected and stringified", () => {
+        const app = new MockApp("my-mocked-app");
+        const user = new User({
+            app,
+            id: "some-user-id",
+            accessToken: "deadbeef.eyJleHAiOjAsImlhdCI6MH0=.e30=",
+            refreshToken: "very-refreshing",
+        });
+        {
+            const output = inspect(user);
+            expect(typeof output).equals("string");
+            expect(output.length).not.equals(0);
+        }
+        {
+            const output = JSON.stringify(user);
+            expect(typeof output).equals("string");
+            expect(output.length).not.equals(0);
+        }
+    });
+
     it("deletes session when logging out", async () => {
-        const app = new MockApp("my-mocked-app", [{}]);
+        const app = new MockApp("my-mocked-app", [LOCATION_RESPONSE, {}]);
         const user = new User({
             app,
             id: "some-user-id",
@@ -49,15 +77,15 @@ describe("User", () => {
         // Log out the user
         await user.logOut();
         // Expect that a request was made
-        expect(app.mockTransport.requests).deep.equals([
+        expect(app.requests).deep.equals([
+            LOCATION_REQUEST,
             {
                 method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
+                    ...ACCEPT_JSON_HEADERS,
                     // It's important that the refresh and not the access token is sent here ..
                     Authorization: "Bearer very-refreshing",
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
                 },
             },
         ]);
@@ -66,6 +94,7 @@ describe("User", () => {
     it("can refresh the user profile", async () => {
         const user = new User({
             app: new MockApp("my-mocked-app", [
+                LOCATION_RESPONSE,
                 {
                     data: {
                         first_name: "John",
@@ -108,7 +137,10 @@ describe("User", () => {
 
     it("expose a functions factory", async () => {
         const user = new User({
-            app: new MockApp("my-mocked-app", [{ pong: "ball" }]),
+            app: new MockApp("my-mocked-app", [
+                LOCATION_RESPONSE,
+                { pong: "ball" },
+            ]),
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
@@ -123,6 +155,7 @@ describe("User", () => {
     it("expose an api key auth provider client", async () => {
         const user = new User({
             app: new MockApp("my-mocked-app", [
+                LOCATION_RESPONSE,
                 [
                     {
                         _id: "key-1-id",
@@ -151,6 +184,7 @@ describe("User", () => {
     it("sets tokens and profile on storage when constructed, removes them on log out", async () => {
         const user = new User({
             app: new MockApp("my-mocked-app", [
+                LOCATION_RESPONSE,
                 {
                     data: {
                         first_name: "John",
@@ -185,5 +219,58 @@ describe("User", () => {
         expect(user.profile).deep.equals(profileBefore);
         const profileAfter = JSON.parse(userStorage.get("profile") || "");
         expect(profileAfter).deep.equals(profileBefore);
+    });
+
+    it("can link credentials", async () => {
+        const app = new MockApp("my-mocked-app", [
+            LOCATION_RESPONSE,
+            {
+                user_id: "some-user-id",
+                access_token: "new-access-token",
+            },
+            {
+                data: {
+                    first_name: "John",
+                },
+                identities: [],
+                type: "normal",
+            },
+        ]);
+        const user = new User({
+            app,
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+        });
+
+        const credentials = Credentials.emailPassword(
+            "gilfoyle@testing.mongodb.com",
+            "s3cr3t",
+        );
+        await user.linkCredentials(credentials);
+
+        expect(app.requests).deep.equals([
+            LOCATION_REQUEST,
+            {
+                method: "POST",
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?link=true&device=${DEFAULT_DEVICE}`,
+                headers: {
+                    ...SENDING_JSON_HEADERS,
+                    Authorization: "Bearer deadbeef",
+                },
+                body: {
+                    username: "gilfoyle@testing.mongodb.com",
+                    password: "s3cr3t",
+                },
+            },
+            {
+                method: "GET",
+                headers: {
+                    ...ACCEPT_JSON_HEADERS,
+                    Authorization: "Bearer new-access-token",
+                },
+                url: "http://localhost:1337/api/client/v2.0/auth/profile",
+            },
+        ]);
     });
 });

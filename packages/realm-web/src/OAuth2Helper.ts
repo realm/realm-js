@@ -16,21 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+type OAuth2RedirectPayload = Realm.Credentials.OAuth2RedirectPayload;
+
 const LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
 import { Storage } from "./storage";
-import { Credentials, OAuth2RedirectPayload } from "./Credentials";
+import { Credentials } from "./Credentials";
 import {
     generateRandomString,
     encodeQueryString,
     decodeQueryString,
 } from "./utils/string";
 import { getEnvironment } from "./environment";
+import { Fetcher } from "./Fetcher";
 
 const CLOSE_CHECK_INTERVAL = 100; // 10 times per second
 
-type DetermineAppUrl = () => Promise<string>;
-
+/**
+ * Simplified handle to a browser window.
+ */
 export type Window = {
     /**
      * Attempt to close the window.
@@ -119,11 +123,20 @@ export class OAuth2Helper {
         queryString: string,
         storage = getEnvironment().defaultStorage,
     ) {
-        const helper = new OAuth2Helper(storage, async () => {
-            throw new Error("This instance cannot be used to initiate a flow");
-        });
         const result = OAuth2Helper.parseRedirectLocation(queryString);
-        helper.handleRedirect(result);
+        const { state, error } = result;
+        if (typeof state === "string") {
+            const oauth2Storage = storage.prefix("oauth2");
+            const stateStorage = OAuth2Helper.getStateStorage(
+                oauth2Storage,
+                state,
+            );
+            stateStorage.set("result", JSON.stringify(result));
+        } else if (error) {
+            throw new Error(`Failed to handle OAuth 2.0 redirect: ${error}`);
+        } else {
+            throw new Error("Failed to handle OAuth 2.0 redirect.");
+        }
     }
 
     /**
@@ -143,15 +156,20 @@ export class OAuth2Helper {
     }
 
     /**
+     * Get the storage key associated of an secret associated with a state.
+     *
+     * @param storage The root storage used to derive a "state namespaced" storage.
+     * @param state The random state.
+     * @returns The storage associated with a particular state.
+     */
+    private static getStateStorage(storage: Storage, state: string) {
+        return storage.prefix(`state(${state})`);
+    }
+
+    /**
      * The storage used when storing and retriving secrets.
      */
     private storage: Storage;
-
-    /**
-     * A function called to determine the URL of the app.
-     * NOTE: This is needed because the URL isn't known synchroniously, as it requires an initial request to the server.
-     */
-    private getAppUrl: DetermineAppUrl;
 
     /**
      * The function called to open a window.
@@ -159,35 +177,26 @@ export class OAuth2Helper {
     private openWindow: WindowOpener;
 
     /**
-     * Construct a helper implementing the OAuth2 flow.
-     *
      * @param storage The underlying storage to use when storing and retriving secrets.
-     * @param getAppUrl Call this to determine the app url.
      * @param openWindow An optional function called when a browser window needs to open.
      */
-    constructor(
-        storage: Storage,
-        getAppUrl: DetermineAppUrl,
-        openWindow = getEnvironment().openWindow,
-    ) {
+    constructor(storage: Storage, openWindow = getEnvironment().openWindow) {
         this.storage = storage.prefix("oauth2");
-        this.getAppUrl = getAppUrl;
         this.openWindow = openWindow;
     }
 
     /**
-     * Initiates the flow by opening a browser window.
+     * Open a window and wait for the redirect to be handled.
      *
-     * @param credentials A set of OAuth2 credentials with a redirectUrl in its payload.
-     * @returns The secret.
+     * @param url The URL to open.
+     * @param state The state which will be used to listen for storage updates.
+     * @returns The result passed through the redirect.
      */
-    public async initiate(
-        credentials: Credentials<OAuth2RedirectPayload>,
+    public openWindowAndWaitForRedirect(
+        url: string,
+        state: string,
     ): Promise<RedirectResult> {
-        // TODO: Implement a timeout and an option to cancel.
-        const state = this.generateState();
-        const stateStorage = this.getStateStorage(state);
-        const url = await this.generateOAuth2Url(credentials, state);
+        const stateStorage = OAuth2Helper.getStateStorage(this.storage, state);
         // Return a promise that resolves when the  gets known
         return new Promise((resolve, reject) => {
             let redirectWindow: Window | null = null;
@@ -222,9 +231,14 @@ export class OAuth2Helper {
             stateStorage.addListener(handleStorageUpdate);
             // Open up a window
             redirectWindow = this.openWindow(url);
-            // No using a const, because we need the two listeners to reference each other when removing the other.
+            // Not using a const, because we need the two listeners to reference each other when removing the other.
             windowClosedInterval = setInterval(() => {
-                if (redirectWindow && redirectWindow.closed) {
+                // Polling "closed" because registering listeners on the window violates cross-origin policies
+                if (!redirectWindow) {
+                    // No need to keep polling for a window that we can't check
+                    clearInterval(windowClosedInterval);
+                } else if (redirectWindow.closed) {
+                    // Stop polling the window state
                     clearInterval(windowClosedInterval);
                     // Stop listening for changes to the storage
                     stateStorage.removeListener(handleStorageUpdate);
@@ -237,59 +251,11 @@ export class OAuth2Helper {
     }
 
     /**
-     * Generate the URL to which the user should be redirected to initiate the OAuth2 flow.
-     *
-     * @param credentials A set of OAuth2 credentials with a redirectUrl in its payload.
-     * @param state A random state, used to track the request throughout the flow, avoiding CSRF attacks.
-     * @returns A URL to redirect the user to.
-     */
-    private async generateOAuth2Url(
-        credentials: Credentials<OAuth2RedirectPayload>,
-        state: string,
-    ) {
-        const { redirectUrl } = credentials.payload;
-        const appUrl = await this.getAppUrl();
-        const qs = encodeQueryString({
-            redirect: redirectUrl,
-            state,
-            // TODO: Add the device information.
-        });
-        return `${appUrl}/auth/providers/${credentials.providerName}/login?${qs}`;
-    }
-
-    /**
-     * Handle a redirect.
-     *
-     * @param result The result from parsing the OAuth 2.0 redirect URL.
-     */
-    public handleRedirect(result: RedirectResult) {
-        const { state, error } = result;
-        if (typeof state === "string") {
-            const storage = this.getStateStorage(state);
-            storage.set("result", JSON.stringify(result));
-        } else if (error) {
-            throw new Error(`Failed to handle OAuth 2.0 redirect: ${error}`);
-        } else {
-            throw new Error("Failed to handle OAuth 2.0 redirect.");
-        }
-    }
-
-    /**
      * Generate a random state string.
      *
      * @returns The random state string.
      */
-    private generateState() {
+    public generateState() {
         return generateRandomString(12, LOWERCASE_LETTERS);
-    }
-
-    /**
-     * Get the storage key associated of an secret associated with a state.
-     *
-     * @param state The random state.
-     * @returns The storage associated with a particular state.
-     */
-    private getStateStorage(state: string) {
-        return this.storage.prefix(`state(${state})`);
     }
 }

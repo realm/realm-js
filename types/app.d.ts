@@ -273,6 +273,11 @@ declare namespace Realm {
         >;
 
         /**
+         * Get an app instance.
+         */
+        static getApp(appId: string): App;
+
+        /**
          * Log in a user using a specific credential
          *
          * @param credentials the credentials to use when logging in
@@ -309,6 +314,28 @@ declare namespace Realm {
          * An optional URL to use as a prefix when requesting the MongoDB Realm services.
          */
         baseUrl?: string;
+
+        /**
+         * This describes the local app, sent to the server when a user authenticates.
+         * Specifying this will enable the server to respond differently to specific versions of specific apps.
+         */
+        app?: LocalAppConfiguration;
+    }
+
+    /**
+     * This describes the local app, sent to the server when a user authenticates.
+     */
+    interface LocalAppConfiguration {
+        /**
+         * The name / id of the local app.
+         * Note: This should be the name or a bundle id of your app, not the MongoDB Realm app.
+         */
+        name?: string;
+
+        /**
+         * The version of the local app.
+         */
+        version?: string;
     }
 
     /**
@@ -324,12 +351,24 @@ declare namespace Realm {
         readonly id: string;
 
         /**
+         * The provider type for the user.
+         */
+        readonly providerType: string;
+
+        /**
+         * The id of the device.
+         */
+        readonly deviceId: string | null;
+
+        /**
          * The state of the user.
          */
         readonly state: UserState;
 
-        // TODO: Populate the list of identities
-        // readonly identities: UserIdentity[];
+        /**
+         * The identities of the user at any of the app's authentication providers.
+         */
+        readonly identities: UserIdentity[];
 
         /**
          * The access token used when requesting a new access token.
@@ -412,6 +451,17 @@ declare namespace Realm {
          * @returns An service client with methods to register and deregister the device on the user.
          */
         push(serviceName: string): Realm.Services.Push;
+
+        /**
+         * Returns a connection to the MongoDB service.
+         *
+         * @example
+         * let blueWidgets = user.mongoClient('myClusterName')
+         *                       .db('myDb')
+         *                       .collection('widgets')
+         *                       .find({color: 'blue'});
+         */
+        mongoClient(serviceName: string): Realm.Services.MongoDB;
     }
 
     /**
@@ -526,6 +576,18 @@ declare namespace Realm {
          * @param args Arguments passed to the function.
          */
         callFunction(name: string, ...args: any[]): Promise<any>;
+
+        /**
+         * Call a remote MongoDB Realm function by its name, in a streaming mode.
+         * Consider using `functions[name]()` instead of calling this method.
+         *
+         * @param name Name of the function.
+         * @param args Arguments passed to the function.
+         */
+        callFunctionStreaming(
+            name: string,
+            ...args: any[]
+        ): Promise<AsyncIterable<Uint8Array>>;
     }
 
     /**

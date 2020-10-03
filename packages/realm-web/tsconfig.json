@@ -11,8 +11,10 @@
 			"../../node_modules/@types",
 		],
 		"types": [
+			"realm-network-transport",
 			"realm",
-			"js-base64"
+			"js-base64",
+			"bson"
 		],
 		"lib": [
 			"es2019"

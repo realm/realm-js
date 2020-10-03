@@ -18,7 +18,7 @@
 
 export * from "../index";
 
-import { DefaultNetworkTransport } from "../NetworkTransport";
+import { DefaultNetworkTransport } from "../DefaultNetworkTransport";
 import { AbortController, Fetch } from "../types";
 
 DefaultNetworkTransport.fetch = window.fetch.bind(window) as Fetch;

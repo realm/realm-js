@@ -20,21 +20,19 @@ export type Method = "GET" | "POST" | "DELETE" | "PUT";
 
 export type Headers = { [name: string]: string };
 
-export interface Request<RequestBody> {
+export interface Request<RequestBody> extends FetchRequestInit<RequestBody> {
     method: Method;
     url: string;
     timeoutMs?: number;
-    headers?: Headers;
-    body?: RequestBody | string;
 }
 
-export interface Response {
+export interface CallbackResponse {
     statusCode: number;
     headers: Headers;
     body: string;
 }
 
-export type SuccessCallback = (response: Response) => void;
+export type SuccessCallback = (response: CallbackResponse) => void;
 
 export type ErrorCallback = (err: Error) => void;
 
@@ -44,9 +42,9 @@ export interface ResponseHandler {
 }
 
 export interface NetworkTransport {
-    fetchAndParse<RequestBody extends any, ResponseBody extends any>(
+    fetch<RequestBody extends any>(
         request: Request<RequestBody>,
-    ): Promise<ResponseBody>;
+    ): Promise<FetchResponse>;
     fetchWithCallbacks<RequestBody extends any>(
         request: Request<RequestBody>,
         handler: ResponseHandler,
@@ -83,11 +81,13 @@ export type AbortController = {
 // Environment independent Fetch API
 
 type FetchRequestInfo = FetchRequest | string;
-type FetchBodyInit = unknown;
 type FetchHeadersInit = FetchHeaders | string[][] | Record<string, string>;
+type FetchRequestCredentials = "include" | "omit" | "same-origin";
+type FetchRequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
+type FetchReadableStream = unknown;
 
 interface FetchBody {
-    readonly body: unknown | null;
+    readonly body: FetchReadableStream | null;
     readonly bodyUsed: boolean;
     arrayBuffer(): Promise<ArrayBuffer>;
     blob(): Promise<unknown>;
@@ -95,7 +95,7 @@ interface FetchBody {
     text(): Promise<string>;
 }
 
-interface FetchHeaders {
+export interface FetchHeaders {
     append(name: string, value: string): void;
     delete(name: string): void;
     get(name: string): string | null;
@@ -105,7 +105,7 @@ interface FetchHeaders {
 }
 
 /** This Fetch API interface represents a resource request. */
-interface FetchRequest extends FetchBody {
+export interface FetchRequest extends FetchBody {
     /**
      * Returns a Headers object consisting of the headers associated with request. Note that headers added in the network layer by the user agent will not be accounted for in this object, e.g., the "Host" header.
      */
@@ -129,7 +129,7 @@ interface FetchRequest extends FetchBody {
     clone(): FetchRequest;
 }
 
-interface FetchResponse extends FetchBody {
+export interface FetchResponse extends FetchBody {
     readonly headers: FetchHeaders;
     readonly ok: boolean;
     readonly redirected: boolean;
@@ -140,11 +140,15 @@ interface FetchResponse extends FetchBody {
     clone(): FetchResponse;
 }
 
-interface FetchRequestInit {
+interface FetchRequestInit<RequestBody = unknown> {
     /**
      * A BodyInit object or null to set request's body.
      */
-    body?: FetchBodyInit | null;
+    body?: RequestBody;
+    /**
+     * A string indicating whether credentials will be sent with the request always, never, or only when sent to a same-origin URL. Sets request's credentials.
+     */
+    credentials?: FetchRequestCredentials;
     /**
      * A Headers object, an object literal, or an array of two-item arrays to set request's headers.
      */
@@ -161,6 +165,10 @@ interface FetchRequestInit {
      * A string to set request's method.
      */
     method?: string;
+    /**
+     * A string to indicate whether the request will use CORS, or will be restricted to same-origin URLs. Sets request's mode.
+     */
+    mode?: FetchRequestMode;
     /**
      * An AbortSignal to set request's signal.
      */

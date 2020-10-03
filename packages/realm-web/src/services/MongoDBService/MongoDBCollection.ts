@@ -16,8 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Transport } from "../transports";
-import { FunctionsFactory } from "../FunctionsFactory";
+import { Fetcher } from "../../Fetcher";
+import { FunctionsFactory } from "../../FunctionsFactory";
+
+import { WatchStream, WatchStreamState } from "./WatchStream";
 
 type Document = Realm.Services.MongoDB.Document;
 type NewDocument<T extends Document> = Realm.Services.MongoDB.NewDocument<T>;
@@ -26,7 +28,7 @@ type ChangeEvent<T extends Document> = Realm.Services.MongoDB.ChangeEvent<T>;
 /**
  * A remote collection of documents.
  */
-class MongoDBCollection<T extends Document>
+export class MongoDBCollection<T extends Document>
     implements Realm.Services.MongoDB.MongoDBCollection<T> {
     /**
      * The function factory to use when sending requests to the service.
@@ -43,25 +45,30 @@ class MongoDBCollection<T extends Document>
      */
     private readonly collectionName: string;
 
+    private readonly serviceName: string;
+    private readonly fetcher: Fetcher;
+
     /**
      * Construct a remote collection of documents.
      *
-     * @param transport The transport to use when requesting the service.
+     * @param fetcher The fetcher to use when requesting the service.
      * @param serviceName The name of the remote service.
      * @param databaseName The name of the database.
      * @param collectionName The name of the remote collection.
      */
     constructor(
-        transport: Transport,
+        fetcher: Fetcher,
         serviceName: string,
         databaseName: string,
         collectionName: string,
     ) {
-        this.functions = FunctionsFactory.create(transport, {
+        this.functions = FunctionsFactory.create(fetcher, {
             serviceName,
         });
         this.databaseName = databaseName;
         this.collectionName = collectionName;
+        this.serviceName = serviceName;
+        this.fetcher = fetcher;
     }
 
     /** @inheritdoc */
@@ -231,70 +238,40 @@ class MongoDBCollection<T extends Document>
         });
     }
 
-    /** @inheritdoc */
-    watch(): AsyncGenerator<ChangeEvent<T>> {
-        throw new Error("Not yet implemented");
+    watch(options: {
+        /** List of ids to watch */
+        ids: T["_id"][];
+        filter: never;
+    }): AsyncGenerator<ChangeEvent<T>>;
+    watch(options: {
+        ids: never;
+        /** A filter document */
+        filter: Realm.Services.MongoDB.Filter;
+    }): AsyncGenerator<ChangeEvent<T>>;
+    async *watch({
+        ids,
+        filter,
+    }: {
+        ids?: T["_id"][];
+        filter?: Realm.Services.MongoDB.Filter;
+    } = {}): AsyncGenerator<ChangeEvent<T>> {
+        const iterator = await this.functions.callFunctionStreaming("watch", {
+            database: this.databaseName,
+            collection: this.collectionName,
+            ids,
+            filter,
+        });
+        const watchStream = new WatchStream<T>();
+        for await (const chunk of iterator) {
+            if (!chunk) continue;
+            watchStream.feedBuffer(chunk);
+            while (watchStream.state == WatchStreamState.HAVE_EVENT) {
+                yield watchStream.nextEvent() as ChangeEvent<T>;
+            }
+            if (watchStream.state == WatchStreamState.HAVE_ERROR)
+                // XXX this is just throwing an error like {error_code: "BadRequest, error: "message"},
+                // which matches realm-js, but is different from how errors are handled in realm-web
+                throw watchStream.error;
+        }
     }
-}
-
-/**
- * Creates an Remote MongoDB Collection.
- * Note: This method exists to enable function binding.
- *
- * @param transport The underlying transport.
- * @param serviceName A service name.
- * @param databaseName A database name.
- * @param collectionName A collection name.
- * @returns The collection.
- */
-export function createCollection<
-    T extends Realm.Services.MongoDB.Document = any
->(
-    transport: Transport,
-    serviceName: string,
-    databaseName: string,
-    collectionName: string,
-): MongoDBCollection<T> {
-    return new MongoDBCollection<T>(
-        transport,
-        serviceName,
-        databaseName,
-        collectionName,
-    );
-}
-
-/**
- * Creates a Remote MongoDB Database.
- * Note: This method exists to enable function binding.
- *
- * @param transport The underlying transport
- * @param serviceName A service name
- * @param databaseName A database name
- * @returns The database.
- */
-export function createDatabase(
-    transport: Transport,
-    serviceName: string,
-    databaseName: string,
-): Realm.Services.MongoDBDatabase {
-    return {
-        collection: createCollection.bind(
-            null,
-            transport,
-            serviceName,
-            databaseName,
-        ) as Realm.Services.MongoDBDatabase["collection"],
-    };
-}
-
-/**
- * Creates a Remote MongoDB Service.
- * Note: This method exists to enable function binding.
- *
- * @param transport The underlying transport.
- * @param serviceName An optional service name.
- * @returns The service.
- */
-export function createService(transport: Transport, serviceName = "mongo-db") {
-    return { db: createDatabase.bind(null, transport, serviceName) };
 }

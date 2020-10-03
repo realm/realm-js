@@ -16,8 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { AppTransport } from "./AppTransport";
-export { Transport, Request, MongoDBRealmError } from "./Transport";
-export { BaseTransport } from "./BaseTransport";
-export { AuthenticatedTransport } from "./AuthenticatedTransport";
-export { PrefixedTransport } from "./PrefixedTransport";
+type WatchErrorParameters = {
+    message: string;
+    code: string;
+};
+
+/**
+ * An error occured during the parsing of a watch stream.
+ */
+export class WatchError extends Error {
+    /**
+     * The name of this type of error
+     */
+    public readonly name = "WatchError";
+
+    /**
+     * An code associated with the type of error.
+     */
+    public readonly code: string;
+
+    constructor({ message, code }: WatchErrorParameters) {
+        super(message);
+        this.code = code;
+    }
+}

@@ -27,18 +27,18 @@ const Utils = require('./test-utils');
 
 // Returns a user that looks valid but isn't able to establish a connection to the server
 function getLoggedOutUser() {
-    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
+    return Realm.App.Sync.User.login('http://127.0.0.1:9080', Realm.App.Sync.Credentials.nickname("admin", true))
         .then(user => {
             const serializedUser = user.serialize();
             return user.logout().then(() => {
-                return Realm.Sync.User.deserialize(serializedUser);
+                return Realm.App.Sync.User.deserialize(serializedUser);
             });
         });
 }
 
 function getLoggedInUser(userName) {
     const userId = userName || 'admin';
-    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(userId, true))
+    return Realm.App.Sync.User.login('http://127.0.0.1:9080', Realm.App.Sync.Credentials.nickname(userId, true))
 }
 
 module.exports = {
@@ -51,7 +51,7 @@ module.exports = {
                 let config = user.createConfiguration({
                     sync: {
                         url: 'http://127.0.0.1/new_file_local_' + Utils.uuid(),
-                        newRealmFileBehavior: Realm.Sync.openLocalRealmBehavior,
+                        newRealmFileBehavior: Realm.App.Sync.openLocalRealmBehavior,
                         error: () => {},
                     }
                 });
@@ -72,7 +72,7 @@ module.exports = {
                     schema: [schemas.TestObject],
                     sync: {
                         url,
-                        newRealmFileBehavior: Realm.Sync.openLocalRealmBehavior,
+                        newRealmFileBehavior: Realm.App.Sync.openLocalRealmBehavior,
                         error: () => {},
                     }
                 });
@@ -220,7 +220,7 @@ module.exports = {
             })
             .then(realm => {
                 realm.close();
-                const config = Realm.Sync.User.current.createConfiguration({
+                const config = Realm.App.Sync.User.current.createConfiguration({
                     sync: {
                         _sessionStopPolicy: 'immediately',
                         existingRealmFileBehavior: {
@@ -284,7 +284,7 @@ module.exports = {
                 return Realm.open(config);
             })
             .then(realm => {
-                const user = realm.syncSession.user;
+                const user = Realm.App.SyncSession.user;
                 TestCase.assertEqual(0, realm.objects(schemas.TestObject.name).length);
                 realm.close();
                 // Wait for the download to complete so that we don't call
@@ -349,7 +349,7 @@ module.exports = {
                 return Realm.open(config);
             })
             .then(userRealm => {
-                const user = userRealm.syncSession.user;
+                const user = userRealm.App.SyncSession.user;
                 TestCase.assertTrue(userRealm.objects(schemas.TestObject.name).length === 0);
                 // Wait for the download to complete so that we don't call
                 // clearTestState() while a download is in progress

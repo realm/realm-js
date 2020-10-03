@@ -25,3 +25,10 @@
  * NOTE: This is needed because the "bson" package's types depends on it.
  */
 type Buffer = Uint8Array;
+
+/**
+ * Used by the "detect-browser" package.
+ */
+declare namespace NodeJS {
+    type Platform = string;
+}

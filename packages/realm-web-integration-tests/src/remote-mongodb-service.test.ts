@@ -72,7 +72,10 @@ describe("Remote MongoDB", () => {
 
     it("can find documents", async () => {
         const collection = getCollection();
-        const result = await collection.find({}, { limit: 10 });
+        const result = await collection.find(
+            { name: { $exists: true } },
+            { limit: 10 },
+        );
         if (result.length > 0) {
             const [firstDocument] = result;
             expect(typeof firstDocument._id).equal("object");
@@ -318,5 +321,102 @@ describe("Remote MongoDB", () => {
         expect(result.matchedCount).equals(0);
         expect(result.modifiedCount).equals(0);
         expect(typeof result.upsertedId).equals("object");
+    });
+
+    it("can watch changes correctly", async function () {
+        this.timeout(10_000);
+        this.slow(2_000);
+
+        const mongodb = app.services.mongodb("local-mongodb");
+        const db = mongodb.db("test-database");
+        const collection = db.collection("test-collection");
+
+        await collection.deleteMany({});
+
+        const sleep = async (time: number) =>
+            new Promise(resolve => setInterval(resolve, time));
+        const str =
+            "use some odd chars to force weird encoding %\n\r\n\\????>>>>";
+        await Promise.all([
+            (async () => {
+                // There is a race with creating the watch() streams, since they won't
+                // see inserts from before they are created.
+                // Wait 500ms (490+10) before first insert to try to avoid it.
+                await sleep(490);
+                for (let i = 0; i < 10; i++) {
+                    await sleep(10);
+                    await collection.insertOne({ _id: i, hello: "world", str });
+                }
+                await collection.insertOne({ _id: "done", done: true }); // break other sides out of loop
+            })(),
+            // Watch any event
+            (async () => {
+                let expected = 0;
+                for await (const event of collection.watch()) {
+                    if (event.operationType === "insert") {
+                        if (event.fullDocument.done) break;
+                        expect(event.fullDocument._id).equals(expected++);
+                    } else {
+                        throw new Error(
+                            `Unexpected ${event.operationType} event`,
+                        );
+                    }
+                }
+                expect(expected).equals(10);
+            })(),
+            // Watch using the filter option
+            (async () => {
+                const filter = {
+                    $or: [
+                        { "fullDocument._id": 3, "fullDocument.str": str },
+                        { "fullDocument.done": true },
+                    ],
+                };
+                let seenIt = false;
+                for await (const event of collection.watch({ filter })) {
+                    if (event.operationType === "insert") {
+                        if (event.fullDocument.done) break;
+                        expect(event.fullDocument._id).equals(3);
+                        seenIt = true;
+                    } else {
+                        throw new Error(
+                            `Unexpected ${event.operationType} event`,
+                        );
+                    }
+                }
+                expect(seenIt, "seenIt for filter");
+            })(),
+            // Watch using the ids option
+            (async () => {
+                let seenIt = false;
+                for await (const event of collection.watch({
+                    ids: [5, "done"],
+                })) {
+                    if (event.operationType === "insert") {
+                        if (event.fullDocument.done) break;
+                        expect(event.fullDocument._id).equal(5);
+                        seenIt = true;
+                    } else {
+                        throw new Error(
+                            `Unexpected ${event.operationType} event`,
+                        );
+                    }
+                }
+                expect(seenIt, "seenIt for ids");
+            })(),
+        ]);
+
+        // TODO XXX I'm not sure how to replicate this test here.
+        /*
+        // Test failure of initial request by logging out.
+        await user.logOut();
+        let err = await TestCase.assertThrowsAsync(async () => {
+            for await (let _ of collection.watch()) {
+                TestCase.assertTrue(false, "This should be unreachable");
+            }
+        });
+        if (err.code != 401)
+            throw err;
+            */
     });
 });

@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { MongoDBRealmError } from "./MongoDBRealmError";
 import {
     NetworkTransport,
     Request,
@@ -31,7 +30,6 @@ export class DefaultNetworkTransport implements NetworkTransport {
     public static AbortController: AbortController;
 
     public static DEFAULT_HEADERS = {
-        Accept: "application/json",
         "Content-Type": "application/json",
     };
 
@@ -45,49 +43,6 @@ export class DefaultNetworkTransport implements NetworkTransport {
             throw new Error(
                 "DefaultNetworkTransport.AbortController must be set before it's used",
             );
-        }
-    }
-
-    public async fetchAndParse<
-        RequestBody extends any,
-        ResponseBody extends any
-    >(request: Request<RequestBody>): Promise<ResponseBody> {
-        try {
-            const response = await this.fetch(request);
-            const contentType = response.headers.get("content-type");
-            if (response.ok) {
-                if (contentType === null) {
-                    return null as any;
-                } else if (contentType.startsWith("application/json")) {
-                    // Awaiting the response to ensure we'll throw our own error
-                    return await response.json();
-                } else {
-                    throw new Error("Expected an empty or a JSON response");
-                }
-            } else if (
-                contentType &&
-                contentType.startsWith("application/json")
-            ) {
-                throw new MongoDBRealmError(
-                    request.method,
-                    request.url,
-                    response.status,
-                    response.statusText,
-                    await response.json(),
-                );
-            } else {
-                throw new Error(
-                    `Unexpected status code (${response.status} ${response.statusText})`,
-                );
-            }
-        } catch (err) {
-            if (err instanceof MongoDBRealmError) {
-                throw err;
-            } else {
-                throw new Error(
-                    `Request failed (${request.method} ${request.url}): ${err.message}`,
-                );
-            }
         }
     }
 
@@ -114,24 +69,14 @@ export class DefaultNetworkTransport implements NetworkTransport {
             .catch(e => handler.onError(e));
     }
 
-    private async fetch<RequestBody extends any>(
-        request: Request<RequestBody>,
-    ) {
-        const {
-            method,
-            url,
-            body,
-            timeoutMs,
-            headers = DefaultNetworkTransport.DEFAULT_HEADERS,
-        } = request;
+    public async fetch<RequestBody extends any>(request: Request<RequestBody>) {
+        const { timeoutMs, url, ...rest } = request;
         const { signal, cancelTimeout } = this.createTimeoutSignal(timeoutMs);
         try {
             // We'll await the response to catch throw our own error
             return await DefaultNetworkTransport.fetch(url, {
-                method,
-                headers,
-                body: typeof body === "string" ? body : JSON.stringify(body),
                 signal, // Used to signal timeouts
+                ...rest
             });
         } finally {
             // Whatever happens, cancel any timeout

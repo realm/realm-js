@@ -72,7 +72,7 @@ json get_type(Container const& c) {
         return serialize_object_schema(c.get_object_schema());
     }
     return {
-        {"type", string_for_property_type(type)},
+        {"type", js::local_string_for_property_type(type)},
         {"optional", is_nullable(type)}
     };
 }
@@ -486,6 +486,38 @@ RPCServer::RPCServer() {
         JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, email_password_method, arg_count, arg_values);
         return (json){{"result", serialize_json_value(credentials_object)}};
     };
+    m_requests["/_function"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef function_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "function");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be one
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, function_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
+    m_requests["/_google"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef google_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "google");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be one
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, google_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
     m_requests["/_userApiKey"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
         JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
@@ -721,7 +753,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesList},
             {"id", store_object(js_object)},
-            {"dataType", string_for_property_type(list->get_type() & ~realm::PropertyType::Flags)},
+            {"dataType", js::local_string_for_property_type(list->get_type() & ~realm::PropertyType::Flags)},
             {"optional", is_nullable(list->get_type())},
          };
     }
@@ -730,7 +762,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesResults},
             {"id", store_object(js_object)},
-            {"dataType", string_for_property_type(results->get_type() & ~realm::PropertyType::Flags)},
+            {"dataType", js::local_string_for_property_type(results->get_type() & ~realm::PropertyType::Flags)},
             {"optional", is_nullable(results->get_type())},
         };
     }

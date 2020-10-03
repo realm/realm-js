@@ -45,6 +45,7 @@ function assertIsUser(user) {
   TestCase.assertType(user.accessToken, 'string');
   TestCase.assertType(user.refreshToken, 'string');
   TestCase.assertType(user.id, 'string');
+  TestCase.assertType(user.identities, 'object');
   TestCase.assertType(user.customData, 'object');
   TestCase.assertInstanceOf(user, Realm.User);
 }
@@ -63,7 +64,7 @@ function assertIsError(error, message) {
 }
 
 function assertIsAuthError(error, code, title) {
-  TestCase.assertInstanceOf(error, Realm.Sync.AuthError, 'The API should return an AuthError');
+  TestCase.assertInstanceOf(error, Realm.App.Sync.AuthError, 'The API should return an AuthError');
   if (code) {
     TestCase.assertEqual(error.code, code);
   }
@@ -100,8 +101,10 @@ async function registerAndLogInEmailUser(app) {
 }
 
 async function logOutExistingUsers(app) {
-  let users = app.allUsers;
-  Object.keys(app.allUsers).forEach(async id => await users[id].logOut());
+  const users = app.allUsers;
+  Object.keys(app.allUsers).forEach(async id => {
+    await users[id].logOut();
+  });
 }
 
 module.exports = {
@@ -204,7 +207,7 @@ module.exports = {
     // const apikey = await user.apiKeys.create("mykey");
     // const keys = await user.apiKeys.fetchAll();
     // TestCase.assertTrue(Array.isArray(keys));
-    
+
     // TestCase.assertEqual(keys.length, 1);
     // TestCase.assertDefined(keys[0].id);
     // TestCase.assertEqual(keys[0].name, mykey);
@@ -232,13 +235,18 @@ module.exports = {
     TestCase.assertEqual(err.message, "function not found: 'error'");
   },
 
-  async testRemoteMongoClient() {
+  async testMongoClient() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
-    let mongo = user.remoteMongoClient('BackingDB');
-    let collection = mongo.db('test_data').collection('testRemoteMongoClient');
+    let mongo = user.mongoClient('BackingDB');
+    TestCase.assertEqual(mongo.serviceName, 'BackingDB');
+    let database = mongo.db('test_data');
+    TestCase.assertEqual(database.name, 'test_data');
+
+    let collection = database.collection('testRemoteMongoClient');
+    TestCase.assertEqual(collection.name, 'testRemoteMongoClient');
 
     await collection.deleteMany({});
     await collection.insertOne({hello: "world"});
@@ -247,18 +255,20 @@ module.exports = {
     TestCase.assertEqual(await collection.count({hello: "pineapple"}), 0);
   },
 
-  async testRemoteMongoClientWatch() {
+  async testMongoClientWatch() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
-    let collection = user.remoteMongoClient('BackingDB').db('test_data').collection('testRemoteMongoClient');
+    let collection = user.mongoClient('BackingDB').db('test_data').collection('testRemoteMongoClient');
+
+    await collection.deleteMany({});
 
     const sleep = async time => new Promise(resolve => setInterval(resolve, time));
     const str = 'use some odd chars to force weird encoding %\n\r\n\\????>>>>';
     await Promise.all([
       (async () => {
         // There is a race with creating the watch() streams, since they won't
-        // see inserts from before they are created. 
+        // see inserts from before they are created.
         // Wait 500ms (490+10) before first insert to try to avoid it.
         await sleep(490);
         for (let i = 0; i < 10; i++) {
@@ -313,6 +323,7 @@ module.exports = {
       throw err;
   },
 
+  /*
   async testPush() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
@@ -329,6 +340,7 @@ module.exports = {
     const err = await TestCase.assertThrowsAsync(async() => await user.push('nonesuch').register('hello'))
     TestCase.assertEqual(err.message, "service not found: 'nonesuch'");
   },
+ */
 
   async testAllWithAnonymous() {
     let app = new Realm.App(appConfig);
@@ -393,7 +405,16 @@ module.exports = {
     await logOutExistingUsers(app);
 
     let all = app.allUsers;
-    TestCase.assertArrayLength(Object.keys(all), 0, "Noone to begin with");
+    const userIDs = Object.keys(all);
+
+    let loggedInUsers = 0;
+    for (let i=0; i<userIDs.length; i++) {
+      console.log("Checking for login on user " + userIDs[i] + "\n");
+      if (all[userIDs[i]].isLoggedIn) {
+        loggedInUsers++;
+      }
+    }
+    TestCase.assertEqual(loggedInUsers, 0, "Noone to begin with");
 
     let credentials = Realm.Credentials.anonymous();
     let user1 = await registerAndLogInEmailUser(app);

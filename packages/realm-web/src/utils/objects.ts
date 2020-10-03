@@ -16,26 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type AppLocation = {
-    /**
-     * The hostname to be used when communicating with the app server.
-     */
-    hostname: string;
-
-    /**
-     * The physical location of the app server.
-     */
-    location: string;
-
-    /**
-     * The deployment model of an app.
-     */
-    deploymentModel: "GLOBAL" | "LOCAL";
-};
-
-export type AppLocationContext = {
-    /**
-     * An object with a property representing the location of an app.
-     */
-    location: Promise<AppLocation>;
-};
+/**
+ * @param obj The object to remove keys (and undefined values from)
+ * @returns A new object without the keys where the value is undefined.
+ */
+export function removeKeysWithUndefinedValues<T extends object>(obj: T): T {
+    return Object.fromEntries(
+        Object.entries(obj).filter(entry => typeof entry[1] !== "undefined"),
+    ) as T;
+}

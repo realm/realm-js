@@ -5,7 +5,23 @@
 * None
 
 ### Fixed
+* None
+
+### Internal
+* None
+
+0.9.0 Release notes (2020-09-24)
+=============================================================
+
+### Enhancements
+* Added support for linking credentials to an existing user. [#3088](https://github.com/realm/realm-js/pull/3088), [#3239](https://github.com/realm/realm-js/pull/3239) and [#3240](https://github.com/realm/realm-js/pull/3240)
+* Added a better toJSON() implementation on User objects. [#3221](https://github.com/realm/realm-js/pull/3221)
+* Added `watch` support to MongoDB Collections. [#3247](https://github.com/realm/realm-js/pull/3247)
+
+### Fixed
 * If the payload for `callFunction` included certain types the request would fail with `"invalid function call request (status 400)"`. All `EJSON` serialization is now done in canonical mode [#3157](https://github.com/realm/realm-js/pull/3157)
+* Fixed sending device information when authenticating a user. [#3220](https://github.com/realm/realm-js/pull/3220)
+* Fixed an issue where logging an `app` instance could result in a MongoDB Realm function being called. [#3223](https://github.com/realm/realm-js/pull/3223)
 
 ### Internal
 * None
@@ -37,7 +53,7 @@
 * None
 
 ### Internal
-* None
+* Refactored the concept of base, authenticated, prefixed transports into a single "fetcher" built on-top-of the "realm-network-package". ([#3086](https://github.com/realm/realm-js/pull/3086))
 
 0.7.0 Release notes (2020-07-13)
 =============================================================

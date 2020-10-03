@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Storage, StorageChangeListner } from "../storage/Storage";
+import { Storage, StorageChangeListener } from "../storage/Storage";
 import { PrefixedStorage } from "../storage/PrefixedStorage";
 
 /**
@@ -78,12 +78,12 @@ export class LocalStorage implements Storage {
     }
 
     /** @inheritdoc */
-    public addListener(listener: StorageChangeListner) {
+    public addListener(listener: StorageChangeListener) {
         return this.window.addEventListener("storage", listener);
     }
 
     /** @inheritdoc */
-    public removeListener(listener: StorageChangeListner) {
+    public removeListener(listener: StorageChangeListener) {
         return this.window.removeEventListener("storage", listener);
     }
 }
