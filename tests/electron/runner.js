@@ -20,11 +20,7 @@ const app = new Application({
   chromeDriverArgs: [
     '--no-sandbox',
     '--headless',
-    '--window-size=1024,768',
-    '--disable-gpu',
     '--disable-extensions',
-    '--dns-prefetch-disable',
-    '--whitelisted-ips=',
     '--disable-dev-shm-usage',
     '--remote-debugging-port=9515'
   ],
