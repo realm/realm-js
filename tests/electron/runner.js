@@ -18,6 +18,7 @@ const doneMatcher = /Testing completed with status ([-\d]+)/;
 const app = new Application({
   path: ELECTRON_PATH,
   chromeDriverArgs: [
+    '--headless',
     '--no-sandbox',
     '--whitelisted-ips=',
     '--disable-dev-shm-usage',

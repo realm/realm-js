@@ -18,6 +18,8 @@
 
 'use strict';
 
+import { AppRegistry } from 'react-native';
+
 //FIX: Remove this when test app is upgraded to RN >= 0.60:
 //RN version < 0.60 does not have an AbortController implementation. Define an empty one so require('realm') does not throw 
 //////////////
@@ -29,7 +31,6 @@ if (global && global.window && !global.window.AbortController) {
 }
 ////////////
 
-import { AppRegistry } from 'react-native';
-import TodoApp from './components/todo-app';
+const TodoApp = require('./components/todo-app');
 
 AppRegistry.registerComponent('ReactExample', () => TodoApp);
