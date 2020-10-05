@@ -30,7 +30,7 @@ type Response = Realm.Services.HTTP.Response;
  *
  * @see https://docs.mongodb.com/stitch/services/http/
  */
-class HTTPService implements HTTP {
+export class HTTPService implements HTTP {
     /**
      * The functions factory interface to use when sending requests.
      */
