@@ -1,7 +1,7 @@
 ![Realm](https://github.com/realm/realm-js/raw/master/logo.png)
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
-This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we only support React Native (both iOS & Android) and Node.js (on MacOS and Linux) but we are considering adding support for Cordova/PhoneGap/Ionic as well.
+This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (both iOS & Android), Node.js and Electron (on MacOS and Linux)
 
 ## Features
 
