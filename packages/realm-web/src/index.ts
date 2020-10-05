@@ -18,22 +18,15 @@
 
 import { App } from "./App";
 
-const appCache: { [id: string]: Realm.App } = {};
-
 /**
  * Get or create a singleton Realm App from an id.
+ * Calling this function multiple times with the same id will return the same instance.
  *
  * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
- * @returns The Realm App instance. Calling this function multiple times with the same id will return the same instance.
+ * @returns The Realm App instance.
  */
 export function getApp(id: string) {
-    if (id in appCache) {
-        return appCache[id];
-    } else {
-        const instance = new App(id);
-        appCache[id] = instance;
-        return instance;
-    }
+    return App.getApp(id);
 }
 
 export * from "./App";

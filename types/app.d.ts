@@ -273,7 +273,11 @@ declare namespace Realm {
         >;
 
         /**
-         * Get an app instance.
+         * Get or create a singleton Realm App from an id.
+         * Calling this function multiple times with the same id will return the same instance.
+         *
+         * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
+         * @returns The Realm App instance.
          */
         static getApp(appId: string): App;
 
