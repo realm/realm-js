@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "sync/generic_network_transport.hpp"
+#include <realm/object-store/sync/generic_network_transport.hpp>
 #include "js_types.hpp"
 #include <string>
 

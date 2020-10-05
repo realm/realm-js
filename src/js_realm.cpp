@@ -19,11 +19,11 @@
 #include "platform.hpp"
 #include "js_types.hpp"
 
-#include "impl/realm_coordinator.hpp"
+#include <realm/object-store/impl/realm_coordinator.hpp>
 
 #if REALM_ENABLE_SYNC
-#include "sync/sync_manager.hpp"
-#include "sync/sync_user.hpp"
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
 #endif
 
 namespace realm {

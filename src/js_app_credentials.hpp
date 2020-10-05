@@ -19,7 +19,7 @@
 #pragma once
 
 #include "js_class.hpp"
-#include "sync/app_credentials.hpp"
+#include <realm/object-store/sync/app_credentials.hpp>
 
 namespace realm {
 namespace js {

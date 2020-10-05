@@ -25,7 +25,7 @@
 
 #include "napi.h"
 
-#include "sync/sync_manager.hpp"
+#include <realm/object-store/sync/sync_manager.hpp>
 
 namespace realm {
 namespace node {

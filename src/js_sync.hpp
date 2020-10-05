@@ -24,17 +24,17 @@
 #include "js_user.hpp"
 
 #include "platform.hpp"
-#include "sync/sync_config.hpp"
-#include "sync/sync_manager.hpp"
-#include "sync/sync_session.hpp"
-#include "sync/sync_user.hpp"
-#include "util/event_loop_dispatcher.hpp"
+#include <realm/sync/config.hpp>
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/sync_session.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
+#include <realm/object-store/util/event_loop_dispatcher.hpp>
 
 #include <realm/util/logger.hpp>
 #include <realm/util/uri.hpp>
 
 #if REALM_PLATFORM_NODE
-#include "impl/realm_coordinator.hpp"
+#include <realm/object-store/impl/realm_coordinator.hpp>
 #include "node/sync_logger.hpp"
 #endif
 

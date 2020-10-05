@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "property.hpp"
+#include <realm/object-store/property.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -32,9 +32,9 @@
 #include <realm/util/base64.hpp>
 #include <realm/mixed.hpp>
 
-#include "object-store/src/util/bson/bson.hpp"
-#include "object-store/src/util/event_loop_dispatcher.hpp"
-#include "object-store/src/sync/generic_network_transport.hpp"
+#include <realm/object-store/util/bson/bson.hpp>
+#include <realm/object-store/util/event_loop_dispatcher.hpp>
+#include <realm/object-store/sync/generic_network_transport.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
@@ -587,7 +587,6 @@ inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const uti
     case type_LinkList:
     case type_OldDateTime:
     case type_OldTable:
-    case type_OldMixed:
         break;
     }
     throw std::invalid_argument("Value not convertible.");

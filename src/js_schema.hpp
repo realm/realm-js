@@ -21,7 +21,7 @@
 #include <map>
 
 #include "js_types.hpp"
-#include "schema.hpp"
+#include <realm/object-store/schema.hpp>
 
 namespace realm {
 namespace js {

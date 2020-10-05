@@ -24,8 +24,8 @@ namespace js {
 }
 }
 
-#include "object_accessor.hpp"
-#include "object_store.hpp"
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/object_store.hpp>
 
 #include "js_class.hpp"
 #include "js_types.hpp"

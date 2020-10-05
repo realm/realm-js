@@ -22,10 +22,10 @@
 #include "js_realm_object.hpp"
 #include "js_util.hpp"
 
-#include "keypath_helpers.hpp"
-#include "list.hpp"
-#include "object_store.hpp"
-#include "results.hpp"
+#include <realm/object-store/keypath_helpers.hpp>
+#include <realm/object-store/list.hpp>
+#include <realm/object-store/object_store.hpp>
+#include <realm/object-store/results.hpp>
 
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>

@@ -22,9 +22,9 @@
 #include "js_types.hpp"
 #include "js_observable.hpp"
 
-#include "collection_notifications.hpp"
-#include "object.hpp"
-#include "object_changeset.hpp"
+#include <realm/object-store/collection_notifications.hpp>
+#include <realm/object-store/object.hpp>
+#include <realm/object-store/object_changeset.hpp>
 
 namespace realm {
 namespace js {

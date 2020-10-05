@@ -24,10 +24,10 @@
 #include "rpc.hpp"
 #include "jsc_init.hpp"
 
-#include "base64.hpp"
-#include "object_accessor.hpp"
-#include "shared_realm.hpp"
-#include "results.hpp"
+#include <realm/util/base64.hpp>
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/results.hpp>
 
 using namespace realm;
 using namespace realm::rpc;
@@ -790,9 +790,14 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     }
     else if (jsc::Value::is_binary(m_context, js_object)) {
         auto data = jsc::Value::to_binary(m_context, js_object);
+        
+        std::string encoded;
+        encoded.reserve(realm::util::base64_encoded_size(data.size()));
+        encoded.resize(realm::util::base64_encode(data.data(), data.size(), encoded.data(), encoded.capacity()));
+
         return {
             {"type", RealmObjectTypesData},
-            {"value", base64_encode((unsigned char *)data.data(), data.size())},
+            {"value", encoded},
         };
     }
     else if (jsc::Value::is_date(m_context, js_object)) {
@@ -871,11 +876,11 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
             return js_object;
         }
         else if (type_string == RealmObjectTypesData) {
-            std::string bytes;
-            if (!base64_decode(value.get<std::string>(), &bytes)) {
+            auto bytes = realm::util::base64_decode_to_vector(value.get<std::string>());
+            if (!bytes) {
                 throw std::runtime_error("Failed to decode base64 encoded data");
             }
-            return jsc::Value::from_binary(m_context, realm::BinaryData(bytes.data(), bytes.size()));
+            return jsc::Value::from_binary(m_context, realm::BinaryData(bytes->data(), bytes->size()));
         }
         else if (type_string == RealmObjectTypesDate) {
             return jsc::Object::create_date(m_context, value.get<double>());

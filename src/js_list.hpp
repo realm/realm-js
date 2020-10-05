@@ -25,8 +25,8 @@
 #include "js_types.hpp"
 #include "js_util.hpp"
 
-#include "shared_realm.hpp"
-#include "list.hpp"
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/list.hpp>
 
 namespace realm {
 namespace js {

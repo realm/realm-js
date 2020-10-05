@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "sync_logger.hpp"
+#include "./sync_logger.hpp"
 
-#include "util/scheduler.hpp"
+#include <realm/object-store/util/scheduler.hpp>
 
 #include <realm/util/logger.hpp>
 
