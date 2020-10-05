@@ -20,8 +20,8 @@ const app = new Application({
   path: ELECTRON_PATH,
   chromeDriverArgs: [
     '--no-sandbox',
-    
     '--disable-dev-shm-usage',
+    '--shm-size=1gb'
   ],
   args: [ MAIN_PATH ].concat(process.argv.slice(2))
 });
