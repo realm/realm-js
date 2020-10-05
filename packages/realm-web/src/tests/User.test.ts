@@ -20,6 +20,7 @@ import { expect } from "chai";
 import { inspect } from "util";
 
 import { UserType, User, Credentials } from "..";
+import { MongoDBRealmError } from "../MongoDBRealmError";
 
 import {
     MockApp,
@@ -89,6 +90,38 @@ describe("User", () => {
                 },
             },
         ]);
+        // Expect the user to forget tokens anyway
+        expect(user.accessToken).equals(null);
+        expect(user.refreshToken).equals(null);
+    });
+
+    it("will forget tokens if session delete fails", async () => {
+        const app = new MockApp("my-mocked-app", [
+            LOCATION_RESPONSE,
+            new MongoDBRealmError(
+                "POST",
+                "http://localhost:1337/some-path",
+                401,
+                "",
+                "invalid session",
+            ),
+        ]);
+        const user = new User({
+            app,
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+        });
+        // Log out the user
+        try {
+            await user.logOut();
+            expect.fail("Log out should fail");
+        } catch (err) {
+            expect(err).instanceOf(MongoDBRealmError);
+        }
+        // Expect the user to forget tokens anyway
+        expect(user.accessToken).equals(null);
+        expect(user.refreshToken).equals(null);
     });
 
     it("can refresh the user profile", async () => {
