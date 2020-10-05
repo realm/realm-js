@@ -17,10 +17,10 @@ const doneMatcher = /Testing completed with status ([-\d]+)/;
 
 const app = new Application({
   path: ELECTRON_PATH,
+  // '--headless',
   chromeDriverArgs: [
-    '--headless',
     '--no-sandbox',
-    '--disable-extensions',
+    
     '--disable-dev-shm-usage',
   ],
   args: [ MAIN_PATH ].concat(process.argv.slice(2))
