@@ -8,7 +8,7 @@
 * None
 
 ### Internal
-* None
+* Sending device information in request body instead of a query parameter. ([#3295](https://github.com/realm/realm-js/pull/3295))
 
 0.9.0 Release notes (2020-09-24)
 =============================================================

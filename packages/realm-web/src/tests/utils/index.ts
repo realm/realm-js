@@ -50,10 +50,16 @@ export const LOCATION_RESPONSE = Object.freeze({
 });
 
 /**
- * Default information about the device.
+ * Default options sent when authenticating.
  */
-export const DEFAULT_DEVICE =
-    "eyJzZGtWZXJzaW9uIjoiMC4wLjAtdGVzdCIsInBsYXRmb3JtIjoibm9kZSIsInBsYXRmb3JtVmVyc2lvbiI6IjEyLjE0LjEifQ%3D%3D";
+export const DEFAULT_AUTH_OPTIONS = {
+    device: {
+        platform: "node",
+        platformVersion: process.versions.node,
+        // As defined in /test/env.js
+        sdkVersion: "0.0.0-test",
+    },
+};
 
 export * from "./MockApp";
 export * from "./MockFetcher";
