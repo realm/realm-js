@@ -15,9 +15,9 @@ const filterOption = process.argv[2] || null;
 
 const doneMatcher = /Testing completed with status ([-\d]+)/;
 
+// '--headless',
 const app = new Application({
   path: ELECTRON_PATH,
-  // '--headless',
   chromeDriverArgs: [
     '--no-sandbox',
     
