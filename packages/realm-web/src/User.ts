@@ -183,6 +183,13 @@ export class User<
         }
     }
 
+    /**
+     * @returns The logged in state of the user.
+     */
+    get isLoggedIn(): boolean {
+        return this.state === UserState.Active;
+    }
+
     get customData(): CustomDataType {
         if (this.accessToken) {
             const decodedToken = this.decodeAccessToken();

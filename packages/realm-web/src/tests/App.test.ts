@@ -158,6 +158,7 @@ describe("App", () => {
         // Expect the user is logged in (active)
         expect(user.state).equals("active");
         expect(user.state).equals(UserState.Active);
+        expect(user.isLoggedIn).equals(true);
         // Expect the request made it to the transport
         expect(transport.requests).deep.equals([
             LOCATION_REQUEST,
@@ -203,10 +204,14 @@ describe("App", () => {
         // Expect that we logged in
         expect(app.currentUser).equals(user);
         expect(app.allUsers).deep.equals([user]);
+        expect(user.isLoggedIn).equals(true);
+
         await user.logOut();
+        // Expect that we logged out
         expect(app.currentUser).equals(null);
         expect(user.state).equals(UserState.LoggedOut);
         expect(user.state).equals("logged-out");
+        expect(user.isLoggedIn).equals(false);
         expect(app.allUsers).deep.equals([user]);
         // Assume the correct requests made it to the transport
         expect(transport.requests).deep.equals([

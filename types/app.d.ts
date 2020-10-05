@@ -366,6 +366,11 @@ declare namespace Realm {
         readonly state: UserState;
 
         /**
+         * The logged in state of the user.
+         */
+        readonly isLoggedIn: boolean;
+
+        /**
          * The identities of the user at any of the app's authentication providers.
          */
         readonly identities: UserIdentity[];
