@@ -6,6 +6,7 @@
 
 ### Fixed
 * Fixed forgetting the user's access and refresh tokens, even if the request to delete the session fails. ([#3269](https://github.com/realm/realm-js/pull/3269))
+* `isLoggedIn` boolean property added to `User`. ([#3294](https://github.com/realm/realm-js/pull/3294))
 
 ### Internal
 * None
