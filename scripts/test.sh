@@ -406,14 +406,16 @@ case "$TARGET" in
   npm ci --realm_enable_sync
   ./node_modules/.bin/install-local
 
-  npm test -- --process=main
+  #npm test -- --process=main
+  npm run start-main
 
   popd
   stop_server
   start_server
   pushd "$SRCROOT/tests/electron"
 
-  npm test -- --process=render
+  # npm test -- --process=render
+  npm run start-renderer
 
   popd
 

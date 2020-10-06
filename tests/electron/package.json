@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "electron ./app/main.js",
+    "start-main": "electron --js-flags=\"--expose-gc\" ./app/main.js",
+    "start-renderer": "electron --js-flags=\"--expose-gc\" ./app/renderer.js",
     "test": "node ./runner.js --js-flags=\"--expose-gc\""
   },
   "devDependencies": {
