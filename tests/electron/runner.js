@@ -21,6 +21,7 @@ const app = new Application({
     '--no-sandbox',
     '--headless',
     '--disable-dev-shm-usage',
+    '--disable-setuid-sandbox',
     '--shm-size=1gb',
     '--remote-debugging-port=9515',
     '--verbose'
