@@ -15,13 +15,13 @@ const filterOption = process.argv[2] || null;
 
 const doneMatcher = /Testing completed with status ([-\d]+)/;
 
-// '--headless',
 const app = new Application({
   path: ELECTRON_PATH,
   chromeDriverArgs: [
     '--no-sandbox',
+    '--headless',
     '--disable-dev-shm-usage',
-    '--shm-size=1gb'
+    '--shm-size=1gb',
   ],
   args: [ MAIN_PATH ].concat(process.argv.slice(2))
 });
