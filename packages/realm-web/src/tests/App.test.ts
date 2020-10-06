@@ -75,16 +75,6 @@ describe("App", () => {
         expect(app.id).equals("default-app-id");
     });
 
-    it("expose a functions factory", () => {
-        const app = new App("default-app-id");
-        expect(typeof app.functions).equals("object");
-    });
-
-    it("expose a callable functions factory", () => {
-        const app = new App("default-app-id");
-        expect(typeof app.functions.hello).equals("function");
-    });
-
     it("expose a static Credentials factory", () => {
         expect(typeof App.Credentials).not.equals("undefined");
         expect(typeof App.Credentials.anonymous).equals("function");
@@ -476,7 +466,7 @@ describe("App", () => {
         expect(user.accessToken).not.equals(null);
         expect(user.refreshToken).not.equals(null);
         // Manually try again - this time refreshing the access token correctly
-        const response = await app.functions.foo({ bar: "baz" });
+        const response = await user.functions.foo({ bar: "baz" });
         expect(response).deep.equals({ bar: "baz" });
         // Expect something of the request and response
         expect(app.requests).deep.equals([
@@ -544,7 +534,7 @@ describe("App", () => {
         const user = await app.logIn(credentials, false);
         // Send a request (which will fail)
         try {
-            await app.functions.foo({ bar: "baz" });
+            await user.functions.foo({ bar: "baz" });
             throw new Error("Expected the request to fail");
         } catch (err) {
             expect(err).instanceOf(MongoDBRealmError);
@@ -614,9 +604,9 @@ describe("App", () => {
             baseUrl: "http://localhost:1234",
         });
         const credentials = Credentials.anonymous();
-        await app.logIn(credentials, false);
+        const user = await app.logIn(credentials, false);
         // Call the function
-        const response = await app.functions.hello();
+        const response = await user.functions.hello();
         expect(response).to.deep.equal({ msg: "hi there!" });
         expect(transport.requests).to.deep.equal([
             LOCATION_REQUEST,
@@ -639,17 +629,6 @@ describe("App", () => {
                 },
             },
         ]);
-    });
-
-    it("expose a collection of service factories", () => {
-        const transport = new MockNetworkTransport([]);
-        const app = new App({
-            id: "my-mocked-app",
-            transport,
-            baseUrl: "http://localhost:1337",
-        });
-        expect(app.services).keys(["mongodb", "http"]);
-        expect(typeof app.services.mongodb).equals("function");
     });
 
     it("hydrates users from storage", () => {

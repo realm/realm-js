@@ -22,10 +22,8 @@ import {
 } from "realm-network-transport";
 import { ObjectId } from "bson";
 
-import { FunctionsFactory } from "./FunctionsFactory";
 import { User, UserState } from "./User";
 import { Credentials } from "./Credentials";
-import { create as createServicesFactory } from "./services";
 import { EmailPasswordAuth } from "./auth-providers";
 import { Storage } from "./storage";
 import { AppStorage } from "./AppStorage";
@@ -82,13 +80,6 @@ export class App<
             return instance;
         }
     }
-
-    /** @inheritdoc */
-    public readonly functions: FunctionsFactoryType &
-        Realm.BaseFunctionsFactory;
-
-    /** @inheritdoc */
-    public readonly services: Realm.Services;
 
     /** @inheritdoc */
     public readonly id: string;
@@ -171,12 +162,6 @@ export class App<
             locationUrlContext: this,
             transport,
         });
-        // Construct the functions factory
-        this.functions = FunctionsFactory.create<FunctionsFactoryType>(
-            this.fetcher,
-        );
-        // Construct the services factory
-        this.services = createServicesFactory(this.fetcher);
         // Construct the auth providers
         this.emailPasswordAuth = new EmailPasswordAuth(this.fetcher);
         // Construct the storage

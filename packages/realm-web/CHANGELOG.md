@@ -1,6 +1,9 @@
 ?.?.? Release notes (2020-??-??)
 =============================================================
 
+### Breaking Changes
+* Removed the `functions` and `services` properties from `App`, use the `functions` property and `mongoClient` method on `User` instances instead. ([#3298](https://github.com/realm/realm-js/pull/3298))
+
 ### Enhancements
 * Changing the behaviour when refreshing an access token fails. With this change, if the refresh token cannot be used to refresh an access token, the user is logged out. ([#3269](https://github.com/realm/realm-js/pull/3269))
 * Moved the `getApp` function exported by the package onto the `App` class as a static method. This can be used to get or create an instance from an app-id. ([#3297](https://github.com/realm/realm-js/pull/3297))
