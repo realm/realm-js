@@ -47,6 +47,11 @@ app.on("ready", () => {
     runIn
   };
 
+  process.on("uncaughtException", (error) => {
+    console.log(error);
+    process.exit(-1);
+  });
+
   // Load the index.html of the app.
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, "index.html"),
