@@ -22,7 +22,8 @@ const app = new Application({
     '--headless',
     '--disable-dev-shm-usage',
     '--shm-size=1gb',
-    '--remote-debugging-port=9515'
+    '--remote-debugging-port=9515',
+    '--verbose'
   ],
   args: [ MAIN_PATH ].concat(process.argv.slice(2))
 });
