@@ -131,6 +131,7 @@ describe("User", () => {
                 {
                     data: {
                         first_name: "John",
+                        metadata: "JWT metadata",
                     },
                     identities: [],
                     type: "normal",
@@ -150,6 +151,9 @@ describe("User", () => {
             identities: [],
             type: UserType.Normal,
             firstName: "John",
+            data: {
+                metadata: "JWT metadata",
+            },
         });
     });
 

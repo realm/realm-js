@@ -94,6 +94,9 @@ export class UserProfile implements Realm.UserProfile {
     public readonly maxAge?: string;
 
     /** @inheritdoc */
+    public readonly data?: any;
+
+    /** @inheritdoc */
     public readonly type: Realm.UserType = UserType.Normal;
 
     /** @inheritdoc */
@@ -134,6 +137,17 @@ export class UserProfile implements Realm.UserProfile {
                     ) {
                         this[propertyName] = value;
                     }
+                }
+                // Add remaining data to `data` property
+                const metadata = Object.entries(data).reduce((acc, entry) => {
+                    if (DATA_MAPPING[entry[0] as DataKey]) {
+                        return acc;
+                    }
+                    acc[entry[0]] = entry[1];
+                    return acc;
+                }, {} as Record<string, unknown>);
+                if (Object.keys(metadata).length > 0) {
+                    this.data = metadata;
                 }
             } else {
                 throw new Error("Expected 'data' in the response body");
