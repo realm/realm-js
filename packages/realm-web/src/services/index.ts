@@ -16,20 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Fetcher } from "../Fetcher";
+export {
+    MongoDBCollection,
+    createService as createMongoDBService,
+} from "./MongoDBService";
 
-import { createService as createMongoDBRemoteService } from "./MongoDBService";
-import { createService as createHttpService } from "./HTTPService";
-
-/**
- * Create all services for a particular app.
- *
- * @param fetcher The fetcher to use when senting requests to the services.
- * @returns An object containing functions that create the individual services.
- */
-export function create(fetcher: Fetcher): Realm.Services {
-    return {
-        mongodb: createMongoDBRemoteService.bind(null, fetcher),
-        http: createHttpService.bind(null, fetcher),
-    };
-}
+export { HTTPService, createService as createHTTPService } from "./HTTPService";

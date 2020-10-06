@@ -82,6 +82,7 @@ export class Authenticator {
         credentials: Realm.Credentials<any>,
         linkingUser?: User<object, object>,
     ): Promise<AuthResponse> {
+        const deviceInformation = this.getDeviceInformation();
         const isLinking = typeof linkingUser === "object";
         if (
             credentials.providerType.startsWith("oauth2") &&
@@ -94,6 +95,8 @@ export class Authenticator {
                 redirect: credentials.payload.redirectUrl,
                 // Ensure redirects are communicated in a header different from "Location" and status remains 200 OK
                 providerRedirectHeader: isLinking ? true : undefined,
+                // Add the device information, only if we're not linking - since that request won't have a body of its own.
+                device: !isLinking ? deviceInformation.encode() : undefined,
             });
 
             // If we're linking, we need to send the users access token in the request
@@ -132,7 +135,12 @@ export class Authenticator {
             const response = await this.fetcher.fetchJSON({
                 method: "POST",
                 url: logInUrl,
-                body: credentials.payload,
+                body: {
+                    ...credentials.payload,
+                    options: {
+                        device: deviceInformation.toJSON(),
+                    },
+                },
                 tokenType: isLinking ? "access" : "none",
                 user: linkingUser,
             });
@@ -168,10 +176,8 @@ export class Authenticator {
         const loginRoute = appRoute
             .authProvider(credentials.providerName)
             .login();
-        const deviceInformation = this.getDeviceInformation();
         const qs = encodeQueryString({
             link: link ? "true" : undefined,
-            device: deviceInformation.encode(),
             ...extraQueryParams,
         });
         const locationUrl = await this.fetcher.locationUrl;

@@ -77,9 +77,9 @@ describeIf(typeof window === "object", "IIFE bundle", () => {
         const app = new Realm.App({ id: APP_ID, baseUrl: BASE_URL });
         // Authenticate
         const credentials = Realm.Credentials.anonymous();
-        await app.logIn(credentials);
+        const user = await app.logIn(credentials);
         // Call a function
-        const response = await app.functions.translate("hello", "en_fr");
+        const response = await user.functions.translate("hello", "en_fr");
         expect(response).to.equal("bonjour");
     });
 });

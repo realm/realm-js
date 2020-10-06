@@ -26,7 +26,7 @@ import {
     SENDING_JSON_HEADERS,
     LOCATION_RESPONSE,
     LOCATION_REQUEST,
-    DEFAULT_DEVICE,
+    DEFAULT_AUTH_OPTIONS,
     MockApp,
     MockNetworkTransport,
 } from "./utils";
@@ -37,6 +37,17 @@ describe("App", () => {
     it("can call the App as a constructor", () => {
         const app = new App("default-app-id");
         expect(app).to.be.instanceOf(App);
+    });
+
+    describe("static getApp function", () => {
+        it("return the same App instance only if ids match", () => {
+            const app1 = App.getApp("default-app-id");
+            expect(app1).to.be.instanceOf(App);
+            const app2 = App.getApp("default-app-id");
+            expect(app2).equals(app1);
+            const app3 = App.getApp("another-app-id");
+            expect(app2).to.not.equal(app3);
+        });
     });
 
     it("can call the App as a constructor with options", () => {
@@ -62,16 +73,6 @@ describe("App", () => {
     it("expose the id", () => {
         const app = new App("default-app-id");
         expect(app.id).equals("default-app-id");
-    });
-
-    it("expose a functions factory", () => {
-        const app = new App("default-app-id");
-        expect(typeof app.functions).equals("object");
-    });
-
-    it("expose a callable functions factory", () => {
-        const app = new App("default-app-id");
-        expect(typeof app.functions.hello).equals("function");
     });
 
     it("expose a static Credentials factory", () => {
@@ -105,8 +106,10 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
         ]);
@@ -158,15 +161,17 @@ describe("App", () => {
         // Expect the user is logged in (active)
         expect(user.state).equals("active");
         expect(user.state).equals(UserState.Active);
+        expect(user.isLoggedIn).equals(true);
         // Expect the request made it to the transport
         expect(transport.requests).deep.equals([
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?device=${DEFAULT_DEVICE}`,
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login`,
                 body: {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "v3ry-s3cret",
+                    options: DEFAULT_AUTH_OPTIONS,
                 },
                 headers: SENDING_JSON_HEADERS,
             },
@@ -203,18 +208,24 @@ describe("App", () => {
         // Expect that we logged in
         expect(app.currentUser).equals(user);
         expect(app.allUsers).deep.equals([user]);
+        expect(user.isLoggedIn).equals(true);
+
         await user.logOut();
+        // Expect that we logged out
         expect(app.currentUser).equals(null);
         expect(user.state).equals(UserState.LoggedOut);
         expect(user.state).equals("logged-out");
+        expect(user.isLoggedIn).equals(false);
         expect(app.allUsers).deep.equals([user]);
         // Assume the correct requests made it to the transport
         expect(transport.requests).deep.equals([
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
             {
@@ -281,10 +292,11 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?device=${DEFAULT_DEVICE}`,
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login`,
                 body: {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "v3ry-s3cret-1",
+                    options: DEFAULT_AUTH_OPTIONS,
                 },
                 headers: SENDING_JSON_HEADERS,
             },
@@ -298,10 +310,11 @@ describe("App", () => {
             },
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?device=${DEFAULT_DEVICE}`,
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login`,
                 body: {
                     username: "dinesh@testing.mongodb.com",
                     password: "v3ry-s3cret-2",
+                    options: DEFAULT_AUTH_OPTIONS,
                 },
                 headers: SENDING_JSON_HEADERS,
             },
@@ -348,8 +361,10 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
             {
@@ -412,14 +427,16 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
         ]);
     });
 
-    it("refreshes access token and retries request exacly once, upon an 'invalid session' (401) response", async () => {
+    it("refresh access token upon an 'invalid session' (401) response", async () => {
         const invalidSessionError = new MongoDBRealmError(
             "POST",
             "http://localhost:1337/some-path",
@@ -435,8 +452,6 @@ describe("App", () => {
                 refresh_token: "very-refreshing",
             },
             invalidSessionError,
-            invalidSessionError,
-            invalidSessionError,
             {
                 user_id: "bobs-id",
                 access_token: "second-access-token",
@@ -446,48 +461,23 @@ describe("App", () => {
         ]);
         // Login with an anonymous user
         const credentials = Credentials.anonymous();
-        await app.logIn(credentials, false);
-        // Send a request (which will fail)
-        try {
-            await app.functions.foo({ bar: "baz" });
-            throw new Error("Expected the request to fail");
-        } catch (err) {
-            expect(err).instanceOf(MongoDBRealmError);
-            if (err instanceof MongoDBRealmError) {
-                expect(err.message).equals(
-                    "Request failed (POST http://localhost:1337/api/client/v2.0/auth/session): invalid session (status 401)",
-                );
-            }
-        }
+        const user = await app.logIn(credentials, false);
+        // Expect the tokens to be remembered
+        expect(user.accessToken).not.equals(null);
+        expect(user.refreshToken).not.equals(null);
         // Manually try again - this time refreshing the access token correctly
-        const response = await app.functions.foo({ bar: "baz" });
+        const response = await user.functions.foo({ bar: "baz" });
         expect(response).deep.equals({ bar: "baz" });
         // Expect something of the request and response
         expect(app.requests).deep.equals([
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
-            },
-            {
-                method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
-                body: { name: "foo", arguments: [{ bar: "baz" }] },
-                headers: {
-                    ...SENDING_JSON_HEADERS,
-                    Authorization: "Bearer first-access-token",
-                },
-            },
-            {
-                method: "POST",
-                url: "http://localhost:1337/api/client/v2.0/auth/session",
-                headers: {
-                    ...ACCEPT_JSON_HEADERS,
-                    Authorization: "Bearer very-refreshing",
-                },
             },
             {
                 method: "POST",
@@ -520,6 +510,82 @@ describe("App", () => {
         ]);
     });
 
+    it("attempts to refresh access token, retries request exacly once, upon an 'invalid session' (401) response", async () => {
+        const invalidSessionError = new MongoDBRealmError(
+            "POST",
+            "http://localhost:1337/some-path",
+            401,
+            "",
+            "invalid session",
+        );
+        const app = new MockApp("my-mocked-app", [
+            LOCATION_RESPONSE,
+            {
+                user_id: "bobs-id",
+                access_token: "first-access-token",
+                refresh_token: "very-refreshing",
+            },
+            invalidSessionError,
+            invalidSessionError,
+            invalidSessionError,
+        ]);
+        // Login with an anonymous user
+        const credentials = Credentials.anonymous();
+        const user = await app.logIn(credentials, false);
+        // Send a request (which will fail)
+        try {
+            await user.functions.foo({ bar: "baz" });
+            throw new Error("Expected the request to fail");
+        } catch (err) {
+            expect(err).instanceOf(MongoDBRealmError);
+            if (err instanceof MongoDBRealmError) {
+                expect(err.message).equals(
+                    // The last failure is from failing to delete the session at logout
+                    "Request failed (DELETE http://localhost:1337/api/client/v2.0/auth/session): invalid session (status 401)",
+                );
+            }
+        }
+        // Expect the tokens to be forgotten
+        expect(user.accessToken).equals(null);
+        expect(user.refreshToken).equals(null);
+        // Expect something of the request and response
+        expect(app.requests).deep.equals([
+            LOCATION_REQUEST,
+            {
+                method: "POST",
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
+                body: {},
+                headers: SENDING_JSON_HEADERS,
+            },
+            {
+                method: "POST",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
+                body: { name: "foo", arguments: [{ bar: "baz" }] },
+                headers: {
+                    ...SENDING_JSON_HEADERS,
+                    Authorization: "Bearer first-access-token",
+                },
+            },
+            {
+                method: "POST",
+                url: "http://localhost:1337/api/client/v2.0/auth/session",
+                headers: {
+                    ...ACCEPT_JSON_HEADERS,
+                    Authorization: "Bearer very-refreshing",
+                },
+            },
+            {
+                method: "DELETE",
+                url: "http://localhost:1337/api/client/v2.0/auth/session",
+                headers: {
+                    ...ACCEPT_JSON_HEADERS,
+                    Authorization: "Bearer very-refreshing",
+                },
+            },
+        ]);
+    });
+
     it("expose a callable functions factory", async () => {
         const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
@@ -538,16 +604,18 @@ describe("App", () => {
             baseUrl: "http://localhost:1234",
         });
         const credentials = Credentials.anonymous();
-        await app.logIn(credentials, false);
+        const user = await app.logIn(credentials, false);
         // Call the function
-        const response = await app.functions.hello();
+        const response = await user.functions.hello();
         expect(response).to.deep.equal({ msg: "hi there!" });
         expect(transport.requests).to.deep.equal([
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
             {
@@ -561,17 +629,6 @@ describe("App", () => {
                 },
             },
         ]);
-    });
-
-    it("expose a collection of service factories", () => {
-        const transport = new MockNetworkTransport([]);
-        const app = new App({
-            id: "my-mocked-app",
-            transport,
-            baseUrl: "http://localhost:1337",
-        });
-        expect(app.services).keys(["mongodb", "http"]);
-        expect(typeof app.services.mongodb).equals("function");
     });
 
     it("hydrates users from storage", () => {

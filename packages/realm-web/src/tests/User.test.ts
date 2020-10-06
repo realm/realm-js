@@ -20,6 +20,7 @@ import { expect } from "chai";
 import { inspect } from "util";
 
 import { UserType, User, Credentials } from "..";
+import { MongoDBRealmError } from "../MongoDBRealmError";
 
 import {
     MockApp,
@@ -27,7 +28,7 @@ import {
     LOCATION_REQUEST,
     ACCEPT_JSON_HEADERS,
     SENDING_JSON_HEADERS,
-    DEFAULT_DEVICE,
+    DEFAULT_AUTH_OPTIONS,
 } from "./utils";
 
 // Since responses from the server uses underscores in field names:
@@ -89,6 +90,38 @@ describe("User", () => {
                 },
             },
         ]);
+        // Expect the user to forget tokens anyway
+        expect(user.accessToken).equals(null);
+        expect(user.refreshToken).equals(null);
+    });
+
+    it("will forget tokens if session delete fails", async () => {
+        const app = new MockApp("my-mocked-app", [
+            LOCATION_RESPONSE,
+            new MongoDBRealmError(
+                "POST",
+                "http://localhost:1337/some-path",
+                401,
+                "",
+                "invalid session",
+            ),
+        ]);
+        const user = new User({
+            app,
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+        });
+        // Log out the user
+        try {
+            await user.logOut();
+            expect.fail("Log out should fail");
+        } catch (err) {
+            expect(err).instanceOf(MongoDBRealmError);
+        }
+        // Expect the user to forget tokens anyway
+        expect(user.accessToken).equals(null);
+        expect(user.refreshToken).equals(null);
     });
 
     it("can refresh the user profile", async () => {
@@ -253,7 +286,7 @@ describe("User", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?link=true&device=${DEFAULT_DEVICE}`,
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?link=true`,
                 headers: {
                     ...SENDING_JSON_HEADERS,
                     Authorization: "Bearer deadbeef",
@@ -261,6 +294,7 @@ describe("User", () => {
                 body: {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "s3cr3t",
+                    options: DEFAULT_AUTH_OPTIONS,
                 },
             },
             {

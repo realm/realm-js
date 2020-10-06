@@ -31,9 +31,7 @@ export { MongoDBCollection };
  * @param collectionName A collection name.
  * @returns The collection.
  */
-export function createCollection<
-    T extends Realm.Services.MongoDB.Document = any
->(
+function createCollection<T extends Realm.Services.MongoDB.Document = any>(
     fetcher: Fetcher,
     serviceName: string,
     databaseName: string,
@@ -56,7 +54,7 @@ export function createCollection<
  * @param databaseName A database name
  * @returns The database.
  */
-export function createDatabase(
+function createDatabase(
     fetcher: Fetcher,
     serviceName: string,
     databaseName: string,
