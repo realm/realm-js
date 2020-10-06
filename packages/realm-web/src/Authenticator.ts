@@ -96,7 +96,7 @@ export class Authenticator {
                 // Ensure redirects are communicated in a header different from "Location" and status remains 200 OK
                 providerRedirectHeader: isLinking ? true : undefined,
                 // Add the device information, only if we're not linking - since that request won't have a body of its own.
-                device: deviceInformation.encode(),
+                device: !isLinking ? deviceInformation.encode() : undefined,
             });
 
             // If we're linking, we need to send the users access token in the request
