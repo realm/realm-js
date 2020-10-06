@@ -407,7 +407,7 @@ case "$TARGET" in
   ./node_modules/.bin/install-local
 
   #npm test -- --process=main
-  npm run start-main
+  npm run start-test -- --process=main
 
   popd
   stop_server
@@ -415,7 +415,7 @@ case "$TARGET" in
   pushd "$SRCROOT/tests/electron"
 
   # npm test -- --process=render
-  npm run start-renderer
+  npm run start-test -- --process=render
 
   popd
 
