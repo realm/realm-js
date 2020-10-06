@@ -39,6 +39,17 @@ describe("App", () => {
         expect(app).to.be.instanceOf(App);
     });
 
+    describe("static getApp function", () => {
+        it("return the same App instance only if ids match", () => {
+            const app1 = App.getApp("default-app-id");
+            expect(app1).to.be.instanceOf(App);
+            const app2 = App.getApp("default-app-id");
+            expect(app2).equals(app1);
+            const app3 = App.getApp("another-app-id");
+            expect(app2).to.not.equal(app3);
+        });
+    });
+
     it("can call the App as a constructor with options", () => {
         const app = new App({
             id: "default-app-id",

@@ -3,6 +3,7 @@
 
 ### Enhancements
 * Changing the behaviour when refreshing an access token fails. With this change, if the refresh token cannot be used to refresh an access token, the user is logged out. ([#3269](https://github.com/realm/realm-js/pull/3269))
+* Moved the `getApp` function exported by the package onto the `App` class as a static method. This can be used to get or create an instance from an app-id. ([#3297](https://github.com/realm/realm-js/pull/3297))
 
 ### Fixed
 * Fixed forgetting the user's access and refresh tokens, even if the request to delete the session fails. ([#3269](https://github.com/realm/realm-js/pull/3269))

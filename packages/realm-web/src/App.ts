@@ -61,6 +61,28 @@ export class App<
     FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
     CustomDataType extends object = any
 > implements Realm.App<FunctionsFactoryType, CustomDataType> {
+    /**
+     * A map of app instances returned from calling getApp.
+     */
+    private static appCache: { [id: string]: Realm.App } = {};
+
+    /**
+     * Get or create a singleton Realm App from an id.
+     * Calling this function multiple times with the same id will return the same instance.
+     *
+     * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
+     * @returns The Realm App instance.
+     */
+    static getApp(id: string) {
+        if (id in App.appCache) {
+            return App.appCache[id];
+        } else {
+            const instance = new App(id);
+            App.appCache[id] = instance;
+            return instance;
+        }
+    }
+
     /** @inheritdoc */
     public readonly functions: FunctionsFactoryType &
         Realm.BaseFunctionsFactory;
