@@ -19,6 +19,8 @@ def formattedVersion = null
 dependencies = null
 objectStoreDependencies = null
 
+def packagesExclusivelyChanged = null
+
 environment {
   GIT_COMMITTER_NAME="ci"
   GIT_COMMITTER_EMAIL="ci@realm.io"
@@ -41,6 +43,15 @@ stage('check') {
       ],
       userRemoteConfigs: scm.userRemoteConfigs
     ])
+
+    // Abort early if only files in "packages/**" changed, since these will migrate to another CI platform
+    packagesExclusivelyChanged = exclusivelyChanged("^packages/.*")
+    if (packagesExclusivelyChanged) {
+      currentBuild.result = 'SUCCESS'
+      echo 'Stopped since there were only changes to "/packages"'
+      return
+    }
+
     dependencies = readProperties file: 'dependencies.list'
     objectStoreDependencies = readProperties file: 'src/object-store/dependencies.list'
     gitTag = readGitTag()
@@ -67,6 +78,11 @@ stage('check') {
       env.DOCKER_PUSH = "1"
     }
   }
+}
+
+// Ensure no other stages are executed
+if (packagesExclusivelyChanged) {
+  return
 }
 
 stage('pretest') {
@@ -153,6 +169,14 @@ stage('integration tests') {
     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
     'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
   )
+}
+
+def exclusivelyChanged(regexp) {
+  // Checks if this is a change/pull request and if the files changed exclusively match the provided regular expression
+  return env.CHANGE_TARGET && sh(
+    returnStatus: true,
+    script: "git diff origin/$CHANGE_TARGET --name-only | grep --invert-match '${regexp}'"
+  ) == 0
 }
 
 // == Methods
