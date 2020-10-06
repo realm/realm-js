@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <math.h>
+
 #include "js_class.hpp"
 #include "js_collection.hpp"
 #include "js_app.hpp"
@@ -55,35 +57,38 @@ namespace js {
 // simple utility method
 template<typename T>
 static std::string partition_value_bson_to_string(typename T::Context ctx, typename T::Value partition_value_value) {
-    if (js::Value<T>::is_undefined(ctx, partition_value_value)) {
-        return std::string("");
+    bson::Bson partition_bson;
+    if (Value<T>::is_string(ctx, partition_value_value)) {
+        std::string pv = Value<T>::validated_to_string(ctx, partition_value_value);
+        if (pv.length() == 0) {
+            throw std::runtime_error("partitionValue of type 'string' may not be an empty string.");
+        }
+        partition_bson = bson::Bson(pv);
+    }
+    else if (Value<T>::is_number(ctx, partition_value_value)) {
+        double pv = Value<T>::validated_to_number(ctx, partition_value_value);
+        double integerPart;
+        double fractionalPart = modf(pv, &integerPart);
+        if (pv > JS_MAX_SAFE_INTEGER  || pv < -JS_MAX_SAFE_INTEGER || fabs(fractionalPart) > 0.0) {
+            throw std::runtime_error("partitionValue of type 'number' must be an integer in the range: Number.MIN_SAFE_INTEGER to Number.MAX_SAFE_INTEGER.");
+        }
+        partition_bson = bson::Bson(static_cast<int64_t>(integerPart));
+    }
+    else if (Value<T>::is_object_id(ctx, partition_value_value)) {
+        auto pv = Value<T>::validated_to_object_id(ctx, partition_value_value);
+        partition_bson = bson::Bson(pv);
+    }
+    else if (Value<T>::is_null(ctx, partition_value_value)) {
+        partition_bson = bson::Bson();
     }
     else {
-        bson::Bson partition_bson;
-        if (Value<T>::is_string(ctx, partition_value_value)) {
-            std::string pv = Value<T>::validated_to_string(ctx, partition_value_value);
-            partition_bson = bson::Bson(pv);
-        }
-        else if (Value<T>::is_number(ctx, partition_value_value)) {
-            auto pv = Value<T>::validated_to_number(ctx, partition_value_value);
-            partition_bson = bson::Bson(static_cast<int64_t>(pv));
-        }
-        else if (Value<T>::is_object_id(ctx, partition_value_value)) {
-            auto pv = Value<T>::validated_to_object_id(ctx, partition_value_value);
-            partition_bson = bson::Bson(pv);
-        }
-        else if (Value<T>::is_null(ctx, partition_value_value)) {
-            partition_bson = bson::Bson();
-        }
-        else {
-            throw std::runtime_error("partitionValue must be of type 'string', 'number', 'objectId', or 'null'.");
-        }
-
-        std::ostringstream s;
-        s << partition_bson;
-        std::string partition_value = s.str();
-        return partition_value;
+        throw std::runtime_error("partitionValue must be of type 'string', 'number', 'objectId', or 'null'.");
     }
+
+    std::ostringstream s;
+    s << partition_bson;
+    std::string partition_value = s.str();
+    return partition_value;
 }
 
 
@@ -321,6 +326,8 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
         // TODO: add app id
+        bson::Bson partition_value_bson = bson::parse(session->config().partition_value);
+        Object::set_property(ctx, config, "partitionValue", Value::from_bson(ctx, partition_value_bson));
         if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());
@@ -676,15 +683,13 @@ void SyncClass<T>::get_sync_session(ContextType ctx, ObjectType this_object, Arg
     auto user = get_internal<T, UserClass<T>>(ctx, user_object);
 
     auto partition_value_value = args[1];
-    if (!Value::is_undefined(ctx, partition_value_value)) {
-        std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
+    std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
 
-        auto sync_config = SyncConfig(*user, partition_value);
-        auto path = user->m_app->sync_manager()->path_for_realm(sync_config);
-        if (auto session = (*user)->session_for_on_disk_path(path)) {
-            return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
-            return;
-        }
+    auto sync_config = SyncConfig(*user, partition_value);
+    auto path = user->m_app->sync_manager()->path_for_realm(sync_config);
+    if (auto session = (*user)->session_for_on_disk_path(path)) {
+        return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+        return;
     }
     return_value.set_null();
 }

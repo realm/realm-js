@@ -63,6 +63,9 @@ enum PropertyAttributes : unsigned {
     DontDelete = 1 << 2
 };
 
+// JS: Number.MAX_SAFE_INTEGER === Math.pow(2, 53)-1;
+constexpr static int64_t JS_MAX_SAFE_INTEGER = (1ll << 53) - 1;
+
 inline PropertyAttributes operator|(PropertyAttributes a, PropertyAttributes b) {
     return PropertyAttributes(static_cast<unsigned>(a) | static_cast<unsigned>(b));
 }
@@ -616,8 +619,7 @@ inline typename T::Value Value<T>::from_bson(typename T::Context ctx, const bson
         // it to a plain js number if it is in the range where it can be done precisely, otherwise
         // we map to the bson.Long type which preserves the value, but is harder to use.
         const auto i64_val = value.operator int64_t();
-        constexpr static int64_t max_precise_double = 1ll << 52; // 52 bits mantissa + implicit leading 1 bit.
-        if (-max_precise_double <= i64_val && i64_val <= max_precise_double)
+        if (-JS_MAX_SAFE_INTEGER <= i64_val && i64_val <= JS_MAX_SAFE_INTEGER)
             return Value<T>::from_number(ctx, double(i64_val));
 
         return Object<T>::create_bson_type(ctx, "Long", {

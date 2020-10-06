@@ -170,6 +170,7 @@ module.exports = {
                 TestCase.assertInstanceOf(session, Realm.App.Sync.Session);
                 TestCase.assertEqual(session.user.id, user.id);
                 TestCase.assertEqual(session.config.url, config.sync.url);
+                TestCase.assertEqual(session.config.partitionValue, config.sync.partitionValue);
                 TestCase.assertEqual(session.config.user.id, config.sync.user.id);
                 TestCase.assertEqual(session.state, 'active');
                 return user.logOut();
@@ -829,20 +830,65 @@ module.exports = {
             });
     },
 
-    testNullPartitionValue() {
-        const app = new Realm.App(appConfig);
-        const credentials = Realm.Credentials.anonymous();
+    async testAcceptedPartitionValueTypes() {
+        const testPartitionValues = [
+            Utils.genPartition(), // string
+            Number.MAX_SAFE_INTEGER,
+            6837697641419457,
+            26123582,
+            0,
+            -12342908,
+            -7482937500235834,
+            -Number.MAX_SAFE_INTEGER,
+            new ObjectId(),
+            null
+        ];
 
-        return app.logIn(credentials)
-            .then((user) => {
-                // Set up a sync configuration on a null partition value
-                const config = getSyncConfiguration(user, null);
-                TestCase.assertNull(config.sync.partitionValue);
+        for (const partitionValue of testPartitionValues) {
+            console.log('>partitionValue', partitionValue)
+            const app = new Realm.App(appConfig);
 
-                const newRealm = new Realm(config);
-                TestCase.assertDefined(newRealm);
-                newRealm.close();
-            });
+            const user = await app.logIn(Realm.Credentials.anonymous())
+
+            const config = getSyncConfiguration(user, partitionValue);
+            TestCase.assertEqual(partitionValue, config.sync.partitionValue);
+
+            const realm = new Realm(config);
+            TestCase.assertDefined(realm);
+
+            const spv = realm.syncSession.config.partitionValue;
+
+            // BSON types have their own 'equals' comparer
+            if (spv instanceof ObjectId) {
+                TestCase.assertTrue(spv.equals(partitionValue));
+            } else {
+                TestCase.assertEqual(spv, partitionValue);
+            }
+
+            realm.close();
+        }
+    },
+
+    async testNonAcceptedPartitionValueTypes() {
+        const testPartitionValues = [
+            undefined,
+            "",
+            Number.MAX_SAFE_INTEGER + 1,
+            1.2,
+            0.0000000000000001,
+            -0.0000000000000001,
+            -1.3,
+            -Number.MAX_SAFE_INTEGER - 1
+        ];
+
+        for (const partitionValue of testPartitionValues) {
+            const app = new Realm.App(appConfig);
+
+            const user = await app.logIn(Realm.Credentials.anonymous())
+
+            const config = getSyncConfiguration(user, partitionValue);
+            TestCase.assertThrows(() => new Realm(config));
+        }
     },
 
     testSessionStopPolicyImmediately() {
