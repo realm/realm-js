@@ -28,7 +28,7 @@ import {
     LOCATION_REQUEST,
     ACCEPT_JSON_HEADERS,
     SENDING_JSON_HEADERS,
-    DEFAULT_DEVICE,
+    DEFAULT_AUTH_OPTIONS,
 } from "./utils";
 
 // Since responses from the server uses underscores in field names:
@@ -286,7 +286,7 @@ describe("User", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?link=true&device=${DEFAULT_DEVICE}`,
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?link=true`,
                 headers: {
                     ...SENDING_JSON_HEADERS,
                     Authorization: "Bearer deadbeef",
@@ -294,6 +294,7 @@ describe("User", () => {
                 body: {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "s3cr3t",
+                    options: DEFAULT_AUTH_OPTIONS,
                 },
             },
             {

@@ -111,4 +111,11 @@ export class DeviceInformation implements DeviceInformationValues {
         const obj = removeKeysWithUndefinedValues(this);
         return Base64.encode(JSON.stringify(obj));
     }
+
+    /**
+     * @returns The defaults
+     */
+    public toJSON() {
+        return removeKeysWithUndefinedValues(this);
+    }
 }

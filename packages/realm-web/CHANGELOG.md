@@ -8,7 +8,7 @@
 * Fixed forgetting the user's access and refresh tokens, even if the request to delete the session fails. ([#3269](https://github.com/realm/realm-js/pull/3269))
 
 ### Internal
-* None
+* Sending device information in request body instead of a query parameter. ([#3295](https://github.com/realm/realm-js/pull/3295))
 
 0.9.0 Release notes (2020-09-24)
 =============================================================

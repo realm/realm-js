@@ -26,7 +26,7 @@ import {
     SENDING_JSON_HEADERS,
     LOCATION_RESPONSE,
     LOCATION_REQUEST,
-    DEFAULT_DEVICE,
+    DEFAULT_AUTH_OPTIONS,
     MockApp,
     MockNetworkTransport,
 } from "./utils";
@@ -105,8 +105,10 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
         ]);
@@ -164,10 +166,11 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?device=${DEFAULT_DEVICE}`,
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login`,
                 body: {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "v3ry-s3cret",
+                    options: DEFAULT_AUTH_OPTIONS,
                 },
                 headers: SENDING_JSON_HEADERS,
             },
@@ -218,8 +221,10 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
             {
@@ -286,10 +291,11 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?device=${DEFAULT_DEVICE}`,
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login`,
                 body: {
                     username: "gilfoyle@testing.mongodb.com",
                     password: "v3ry-s3cret-1",
+                    options: DEFAULT_AUTH_OPTIONS,
                 },
                 headers: SENDING_JSON_HEADERS,
             },
@@ -303,10 +309,11 @@ describe("App", () => {
             },
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login?device=${DEFAULT_DEVICE}`,
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/local-userpass/login`,
                 body: {
                     username: "dinesh@testing.mongodb.com",
                     password: "v3ry-s3cret-2",
+                    options: DEFAULT_AUTH_OPTIONS,
                 },
                 headers: SENDING_JSON_HEADERS,
             },
@@ -353,8 +360,10 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
             {
@@ -417,8 +426,10 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
         ]);
@@ -461,8 +472,10 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
             {
@@ -598,8 +611,10 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
             {
