@@ -201,6 +201,22 @@ module.exports = {
             throw new TestFailureError(`Expected exception "${expectedMessage}" not thrown`, depth);
         }
     },
+    assertThrowsAsyncContaining: async function(func, expectedMessage, depth) {
+        let caught = false;
+        try {
+            await func();
+        }
+        catch (e) {
+            caught = true;
+            if (!e.message.includes(expectedMessage)) {
+                throw new TestFailureError(`Expected exception "${expectedMessage}" not thrown - instead caught: "${e}"`, depth);
+            }
+        }
+
+        if (!caught) {
+            throw new TestFailureError(`Expected exception "${expectedMessage}" not thrown`, depth);
+        }
+    },
 
     assertTrue: function(condition, errorMessage, depth) {
         if (!condition) {

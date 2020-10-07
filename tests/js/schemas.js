@@ -20,6 +20,17 @@
 
 const Realm = require('realm');
 
+exports.DogForSync = {
+    name: 'Dog',
+    primaryKey: '_id',
+    properties: {
+        _id: 'objectId?',
+        breed: 'string?',
+        name: 'string',
+        realm_id: 'string?',
+    }
+}
+
 exports.TestObject = {
     name: 'TestObject',
     properties: {
