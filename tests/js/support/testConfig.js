@@ -31,9 +31,9 @@ function nodeRequire(module) {
 const path = require("path");
 
 let pathToStitchJson = "../../../src/object-store/tests/mongodb/stitch.json";
-if (global.REALM_MODULE_PATH) {
-    console.log("REALM_MODULE_PATH " + REALM_MODULE_PATH);
-    pathToStitchJson = path.resolve(global.REALM_MODULE_PATH, '../../../../src/object-store/tests/mongodb/stitch.json')
+if (global.ELECTRON_TESTS_REALM_MODULE_PATH) {
+    console.log("REALM_MODULE_PATH " + ELECTRON_TESTS_REALM_MODULE_PATH);
+    pathToStitchJson = path.resolve(global.ELECTRON_TESTS_REALM_MODULE_PATH, '../../../../src/object-store/tests/mongodb/stitch.json')
 }
 console.log("pathToStitchJson " + pathToStitchJson);
 
