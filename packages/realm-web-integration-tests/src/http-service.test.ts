@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+// TODO: Re-enable if the HTTP service gets reintroduced to the API.
+
+/*
 import { expect } from "chai";
 import { Credentials } from "realm-web";
 
@@ -43,3 +46,4 @@ describe("HTTP", () => {
         expect(body.name).equals("realm-js");
     });
 });
+*/

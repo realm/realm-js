@@ -1,10 +1,14 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added descriptive errors for `partitionValue` of unsupported formats & ranges.
 
 ### Fixed
 * Added missing `Realm.Credentials.jwt()` to React Native debugger support. ([#3285](https://github.com/realm/realm-js/issues/3285), since v10.0.0-beta.13)
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Fixed missing `partitionValue` on `syncSession`. ([#3205](https://github.com/realm/realm-js/pull/3205), since v10.0.0-beta.1)
+* Fixed a bug where an integer could prematurely be converted & returned as a `Long` instead of a `number`. ([#3205](https://github.com/realm/realm-js/pull/3205), since v10.0.0-beta.1)
+* TS declaration for `isLoggedIn` added to `User`. ([#3294](https://github.com/realm/realm-js/pull/3294))
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -12,7 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Changed CI to abort if changes are exclusively made to the /packages directory. ([#3298](https://github.com/realm/realm-js/pull/3298))
 
 10.0.0-rc.1 Release notes (2020-10-1)
 =============================================================

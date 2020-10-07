@@ -31,9 +31,9 @@ describe("Realm.FunctionsFactory", () => {
         const app = createApp<TranslateFunctions>();
         // Login a user
         const credentials = Credentials.anonymous();
-        await app.logIn(credentials);
+        const user = await app.logIn(credentials);
         // Call a function
-        const response = await app.functions.translate("hello", "en_fr");
+        const response = await user.functions.translate("hello", "en_fr");
         expect(response).to.equal("bonjour");
     });
 });

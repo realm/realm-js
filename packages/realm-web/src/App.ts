@@ -22,10 +22,8 @@ import {
 } from "realm-network-transport";
 import { ObjectId } from "bson";
 
-import { FunctionsFactory } from "./FunctionsFactory";
 import { User, UserState } from "./User";
 import { Credentials } from "./Credentials";
-import { create as createServicesFactory } from "./services";
 import { EmailPasswordAuth } from "./auth-providers";
 import { Storage } from "./storage";
 import { AppStorage } from "./AppStorage";
@@ -61,12 +59,27 @@ export class App<
     FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
     CustomDataType extends object = any
 > implements Realm.App<FunctionsFactoryType, CustomDataType> {
-    /** @inheritdoc */
-    public readonly functions: FunctionsFactoryType &
-        Realm.BaseFunctionsFactory;
+    /**
+     * A map of app instances returned from calling getApp.
+     */
+    private static appCache: { [id: string]: Realm.App } = {};
 
-    /** @inheritdoc */
-    public readonly services: Realm.Services;
+    /**
+     * Get or create a singleton Realm App from an id.
+     * Calling this function multiple times with the same id will return the same instance.
+     *
+     * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
+     * @returns The Realm App instance.
+     */
+    static getApp(id: string) {
+        if (id in App.appCache) {
+            return App.appCache[id];
+        } else {
+            const instance = new App(id);
+            App.appCache[id] = instance;
+            return instance;
+        }
+    }
 
     /** @inheritdoc */
     public readonly id: string;
@@ -149,12 +162,6 @@ export class App<
             locationUrlContext: this,
             transport,
         });
-        // Construct the functions factory
-        this.functions = FunctionsFactory.create<FunctionsFactoryType>(
-            this.fetcher,
-        );
-        // Construct the services factory
-        this.services = createServicesFactory(this.fetcher);
         // Construct the auth providers
         this.emailPasswordAuth = new EmailPasswordAuth(this.fetcher);
         // Construct the storage

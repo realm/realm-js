@@ -273,7 +273,11 @@ declare namespace Realm {
         >;
 
         /**
-         * Get an app instance.
+         * Get or create a singleton Realm App from an id.
+         * Calling this function multiple times with the same id will return the same instance.
+         *
+         * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
+         * @returns The Realm App instance.
          */
         static getApp(appId: string): App;
 
@@ -364,6 +368,11 @@ declare namespace Realm {
          * The state of the user.
          */
         readonly state: UserState;
+
+        /**
+         * The logged in state of the user.
+         */
+        readonly isLoggedIn: boolean;
 
         /**
          * The identities of the user at any of the app's authentication providers.

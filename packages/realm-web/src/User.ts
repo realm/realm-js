@@ -183,6 +183,13 @@ export class User<
         }
     }
 
+    /**
+     * @returns The logged in state of the user.
+     */
+    get isLoggedIn(): boolean {
+        return this.state === UserState.Active;
+    }
+
     get customData(): CustomDataType {
         if (this.accessToken) {
             const decodedToken = this.decodeAccessToken();
@@ -252,16 +259,19 @@ export class User<
      */
     public async logOut() {
         // Invalidate the refresh token
-        if (this._refreshToken !== null) {
-            await this.fetcher.fetchJSON({
-                method: "DELETE",
-                path: routes.api().auth().session().path,
-                tokenType: "refresh",
-            });
+        try {
+            if (this._refreshToken !== null) {
+                await this.fetcher.fetchJSON({
+                    method: "DELETE",
+                    path: routes.api().auth().session().path,
+                    tokenType: "refresh",
+                });
+            }
+        } finally {
+            // Forget the access and refresh token
+            this.accessToken = null;
+            this.refreshToken = null;
         }
-        // Forget the access and refresh token
-        this.accessToken = null;
-        this.refreshToken = null;
     }
 
     /** @inheritdoc */

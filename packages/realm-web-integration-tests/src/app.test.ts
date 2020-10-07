@@ -18,13 +18,7 @@
 
 import { expect } from "chai";
 
-import {
-    App,
-    Credentials,
-    User,
-    LocalStorage,
-    getEnvironment,
-} from "realm-web";
+import { App, Credentials, User, getEnvironment } from "realm-web";
 
 import { createApp } from "./utils";
 
