@@ -176,7 +176,7 @@ def exclusivelyChanged(regexp) {
   return env.CHANGE_TARGET && sh(
     returnStatus: true,
     script: "git diff origin/$CHANGE_TARGET --name-only | grep --invert-match '${regexp}'"
-  ) == 0
+  ) != 0
 }
 
 // == Methods
