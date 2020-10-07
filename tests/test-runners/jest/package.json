@@ -1,9 +1,9 @@
 {
   "scripts": {
-    "test": "jest"
+    "test": "jest --forceExit"
   },
   "devDependencies": {
-    "jest-cli": "^13.2.3",
+    "jest-cli": "^26.5.2",
     "realm": "../../.."
   },
   "jest": {
