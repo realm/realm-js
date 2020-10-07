@@ -28,7 +28,16 @@ function nodeRequire(module) {
     return require_method(module);
 }
 
-const integrationTestsAppId = `${nodeRequire("../../../src/object-store/tests/mongodb/stitch.json").app_id}`;
+const path = require("path");
+
+let pathToStitchJson = "../../../src/object-store/tests/mongodb/stitch.json";
+if (global.REALM_MODULE_PATH) {
+    console.log("REALM_MODULE_PATH " + REALM_MODULE_PATH);
+    pathToStitchJson = path.resolve(global.REALM_MODULE_PATH, '../../../../src/object-store/tests/mongodb/stitch.json')
+}
+console.log("pathToStitchJson " + pathToStitchJson);
+
+const integrationTestsAppId = `${nodeRequire(pathToStitchJson).app_id}`;
 const appUrl = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/\"/g,'') : "http://localhost";
 const appPort = process.env.MONGODB_REALM_PORT || "9090";
 console.log(`tests are using integration tests app id: ${integrationTestsAppId} on ${appUrl}:${appPort}`);
