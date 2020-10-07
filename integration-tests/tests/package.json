@@ -15,6 +15,7 @@
     "realm": "*"
   },
   "devDependencies": {
+    "@types/bson": "^4.0.2",
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.6",
     "fs-extra": "^7.0.1",
