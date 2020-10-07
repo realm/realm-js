@@ -21,8 +21,8 @@
     "mocha": "^5.2.0",
     "realm": "../..",
     "ts-mocha": "^6.0.0",
-    "tslint": "../../node_modules/tslint",
-    "typescript": "../../node_modules/typescript"
+    "tslint": "^6.1.3",
+    "typescript": "^3.8.2"
   },
   "dependencies": {
     "chai": "^4.2.0"
