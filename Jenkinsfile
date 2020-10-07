@@ -601,7 +601,7 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
                 sh "curl http://mongodb-realm:9090"
             }
             timeout(time: 1, unit: 'HOURS') {
-              sh "xvfb-run scripts/test.sh ${target}"
+              sh "scripts/test.sh ${target}"
             }
             if (postStep) {
               postStep.call()

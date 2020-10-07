@@ -15,8 +15,6 @@ if (options.runIn === "render") {
   jasmine.onComplete((passed) => {
     let success = passed ? 0 : -1;
     console.log(`\nTesting completed in renderer process with status ${success}`)
-    if (success === -1) {
-      process.exit(-1);
-    }
+    process.exit(success);
   });
 }
