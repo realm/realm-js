@@ -4,8 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* If you make a case insensitive query on an indexed string property, it may fail in a way that results in a `No such key` exception if an object that matches the query is deleted. ([realm/realm-cocoa#6830](https://github.com/realm/realm-cocoa/issues/6830), since v6.0.0)
-* If a property both has a change in nullability and is set as the new primary key property, migration can throw a `No Such Column` exception. ([#3270](https://github.com/realm/realm-js/issues/3270), since v6.0.0)
+* A case-insensitive query, on an indexed string property, could throw a `"No such key"` when the query matched a deleted object. ([realm/realm-cocoa#6830](https://github.com/realm/realm-cocoa/issues/6830), since v6.0.0)
+* A schema migration could throw a `"No Such Column"` if a property changed from optional to primary key. ([#3270](https://github.com/realm/realm-js/issues/3270), since v6.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
