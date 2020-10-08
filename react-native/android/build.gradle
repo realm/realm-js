@@ -169,6 +169,13 @@ def findNdkBuildFullPath() {
         def ndkDir = property('ndk.path')
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }
+
+    // or just a path to the containing directory
+    if (hasProperty('ndk.dir')) {
+        def ndkDir = property('ndk.dir')
+        return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+    }
+
     if (System.getenv('ANDROID_NDK') != null) {
         def ndkDir = System.getenv('ANDROID_NDK')
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
@@ -178,7 +185,17 @@ def findNdkBuildFullPath() {
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }
 
-    def ndkDir
+    // Reading [ndk.dir] from local.properties
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+    def ndkDir = properties.getProperty('ndk.dir')
+
+    if(ndkDir != null)
+        return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+
+    // If not there we try the next approach...
+    
 
     try {
         ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder :
@@ -188,7 +205,8 @@ def findNdkBuildFullPath() {
             return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
         }
     }catch(MissingPropertyException e){
-        throw new GradleException("Unable to locate your NDK configuration. ¿Have you forgot to install Android NDK? \n more info: https://developer.android.com/studio/projects/install-ndk")
+        throw new GradleException("Unable to locate your NDK configuration. ¿Have you forgot to install Android NDK? \n" +
+                "more info: https://developer.android.com/studio/projects/install-ndk \n")
     }
 
     return null
@@ -306,6 +324,10 @@ android {
     lintOptions {
         abortOnError false
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+    }
+    buildToolsVersion '28.0.3'
 }
 
 task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type: Sync) {
