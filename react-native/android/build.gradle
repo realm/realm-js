@@ -318,10 +318,6 @@ android {
     lintOptions {
         abortOnError false
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-    }
-    buildToolsVersion '28.0.3'
 }
 
 task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type: Sync) {
