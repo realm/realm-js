@@ -177,11 +177,20 @@ def findNdkBuildFullPath() {
         def ndkDir = System.getenv('ANDROID_NDK_HOME')
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }
-    def ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder :
-            plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
-    if (ndkDir) {
-        return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+
+    def ndkDir
+
+    try {
+        ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder :
+                plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
+
+        if (ndkDir) {
+            return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+        }
+    }catch(MissingPropertyException e){
+        throw new GradleException("Unable to locate your NDK configuration. ¿Have you forgot to install Android NDK? \n more info: https://developer.android.com/studio/projects/install-ndk")
     }
+
     return null
 }
 
@@ -194,7 +203,7 @@ def checkNdkVersion(ndkBuildFullPath) {
         detectedNdkVersion = releaseFile.text.trim().split()[0].split('-')[0]
     } else if (propertyFile.isFile()) {
         detectedNdkVersion = getValueFromPropertiesFile(propertyFile, 'Pkg.Revision')
-        if (detectedNdkVersion == null) {
+            if (detectedNdkVersion == null) {
             throw new GradleException("Failed to obtain the NDK version information from ${ndkPath}/source.properties")
         }
     } else {
