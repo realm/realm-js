@@ -221,7 +221,7 @@ def checkNdkVersion(ndkBuildFullPath) {
         detectedNdkVersion = releaseFile.text.trim().split()[0].split('-')[0]
     } else if (propertyFile.isFile()) {
         detectedNdkVersion = getValueFromPropertiesFile(propertyFile, 'Pkg.Revision')
-            if (detectedNdkVersion == null) {
+        if (detectedNdkVersion == null) {
             throw new GradleException("Failed to obtain the NDK version information from ${ndkPath}/source.properties")
         }
     } else {
