@@ -1,3 +1,22 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* A case-insensitive query, on an indexed string property, could throw a `"No such key"` when the query matched a deleted object. ([realm/realm-cocoa#6830](https://github.com/realm/realm-cocoa/issues/6830), since v6.0.0)
+* A schema migration could throw a `"No Such Column"` if a property changed from optional to primary key. ([#3270](https://github.com/realm/realm-js/issues/3270), since v6.0.0)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
+* File format: Generates Realms with format v11 (reads and upgrades previous file format).
+
+### Internal
+* Upgraded Realm Core from v6.1.3 to v6.1.4.
+* Upgraded Realm Sync from v5.0.28 to v5.0.29.
+* Upgraded Realm Object Store to commit 301642fe90212c379f550656a7234f41db158ddf.
+
 6.1.3 Release notes (2020-10-2)
 =============================================================
 ### Enhancements
