@@ -85,6 +85,7 @@ if (packagesExclusivelyChanged) {
   return
 }
 
+/*
 stage('pretest') {
   parallelExecutors = [:]
     parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}", { // "Release" is not used
@@ -158,6 +159,12 @@ stage('test') {
   //  junit 'tests/react-test-app/tests.xml'
   //}),
   parallel parallelExecutors
+}
+*/
+
+stage('prepare integration tests') {
+  // parallelExecutors["Integration tests"] = buildIntegrationTests()
+  buildIntegrationTests()
 }
 
 stage('integration tests') {
@@ -478,6 +485,18 @@ def buildAndroid() {
     sh 'cd react-native/android && ./gradlew publishAndroid'
     sh 'npm pack'
     stash includes: 'realm-*.tgz', name: 'android'
+  }
+}
+
+def buildIntegrationTests() {
+  buildMacOS {
+    sh 'npm ci --ignore-scripts'
+    dir('integration-tests/tests') {
+      sh 'npm ci --ignore-scripts'
+      sh 'npm pack'
+      sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
+      stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
+    }
   }
 }
 
