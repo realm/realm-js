@@ -58,7 +58,7 @@ if (global.enableSyncTests) {
     //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
     if (isNodeProcess) {
         TESTS.AppTests = require("./app-tests");
-        TESTS.OpenBehaviorTests = require("./open-behavior-tests"); // FIXME: figure out how to enable them
+        TESTS.OpenBehaviorTests = require("./open-behavior-tests");
         TESTS.UserTests = require("./user-tests");
         TESTS.SessionTests = require("./session-tests");
     }
