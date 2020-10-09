@@ -26,7 +26,6 @@ const TestCase = require("./asserts");
 const schemas = require("./schemas");
 const Utils = require("./test-utils");
 const AppConfig = require("./support/testConfig");
-const user = require("../../lib/user");
 
 const APP_CONFIG = AppConfig.integrationAppConfig;
 
@@ -36,14 +35,7 @@ class TestError extends Error {
     }
 }
 
-const createSyncConfig = (sync, clearLocalFile = true) => {
-    const config = { schema: [schemas.DogForSync], sync };
-    if (clearLocalFile) {
-        // By default clean any previous test file.
-        Realm.deleteFile(config);
-    }
-    return config;
-}
+// NOTE: these tests can be simplified once we can create multiple anonymous users.
 
 module.exports = {
     testNewFile_openLocal: async function() {
@@ -54,15 +46,17 @@ module.exports = {
         const user = await app.logIn(Realm.Credentials.anonymous());
         const partitionValue = Utils.genPartition();
 
-        const config = createSyncConfig({
-            user,
-            partitionValue,
-            newRealmFileBehavior: Realm.App.Sync.openLocalRealmBehavior
-        });
-
-        console.log("testNewFile_openLocal", config);
+        const config = {
+            schema: [],
+            sync: {
+                user,
+                partitionValue,
+                newRealmFileBehavior: Realm.App.Sync.openLocalRealmBehavior
+            }
+        };
 
         TestCase.assertFalse(Realm.exists(config));
+
         const realm = await Realm.open(config);
 
         TestCase.assertDefined(realm.path);
@@ -80,11 +74,14 @@ module.exports = {
         const partitionValue = Utils.genPartition();
 
         {
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                newRealmFileBehavior: Realm.App.Sync.openLocalRealmBehavior
-            });
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    newRealmFileBehavior: Realm.App.Sync.openLocalRealmBehavior
+                }
+            };
 
             TestCase.assertFalse(Realm.exists(config));
 
@@ -96,11 +93,14 @@ module.exports = {
         }
 
         {
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                existingRealmFileBehavior: { type: "openImmediately" }
-            }, false);
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    existingRealmFileBehavior: { type: "openImmediately" }
+                }
+            };
 
             const realm = await Realm.open(config);
 
@@ -117,12 +117,15 @@ module.exports = {
         const user = await app.logIn(Realm.Credentials.anonymous());
         const partitionValue = Utils.genPartition();
 
-        const config = createSyncConfig({
-            user,
-            partitionValue,
-            _sessionStopPolicy: "immediately",
-            newRealmFileBehavior: { type: "downloadBeforeOpen" }
-        });
+        const config = {
+            schema: [schemas.DogForSync],
+            sync: {
+                user,
+                partitionValue,
+                _sessionStopPolicy: "immediately",
+                newRealmFileBehavior: { type: "downloadBeforeOpen" }
+            }
+        };
 
         const realm = await Realm.open(config);
 
@@ -141,14 +144,19 @@ module.exports = {
 
         const app = new Realm.App(APP_CONFIG);
         const partitionValue = Utils.genPartition();
+        const returningUserCredentials = await Utils.getRegisteredEmailPassCredentials(app);
 
         {
-            const user = await app.logIn(Realm.Credentials.anonymous());
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                _sessionStopPolicy: "immediately"
-            });
+            // Ensure empty realm file exists
+            const user = await app.logIn(returningUserCredentials);
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    _sessionStopPolicy: "immediately"
+                }
+            };
 
             const realm = await Realm.open(config);
 
@@ -157,12 +165,16 @@ module.exports = {
         }
 
         {
+            // Update realm with different user (different path)
             const user = await app.logIn(Realm.Credentials.anonymous());
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                _sessionStopPolicy: "immediately"
-            });
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    _sessionStopPolicy: "immediately"
+                }
+            };
 
             const realm = await Realm.open(config);
 
@@ -177,13 +189,19 @@ module.exports = {
         }
 
         {
-            const user = await app.logIn(Realm.Credentials.anonymous());
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                _sessionStopPolicy: "immediately",
-                existingRealmBehavior: { type: "downloadBeforeOpen" }
-            });
+            // Check that realm contains changes made (using the same user)
+            const user = await app.logIn(returningUserCredentials);
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    _sessionStopPolicy: "immediately",
+                    existingRealmFileBehavior: { type: "downloadBeforeOpen" }
+                }
+            };
+
+            TestCase.assertTrue(Realm.exists(config));
 
             const realm = await Realm.open(config);
 
@@ -199,16 +217,19 @@ module.exports = {
         const user = await app.logIn(Realm.Credentials.anonymous());
         const partitionValue = Utils.genPartition();
 
-        const config = createSyncConfig({
-            user,
-            partitionValue,
-            _sessionStopPolicy: "immediately",
-            newRealmFileBehavior: {
-                type: "downloadBeforeOpen",
-                timeOut: 0,
-                timeOutBehavior: "throwException"
+        const config = {
+            schema: [schemas.DogForSync],
+            sync: {
+                user,
+                partitionValue,
+                _sessionStopPolicy: "immediately",
+                newRealmFileBehavior: {
+                    type: "downloadBeforeOpen",
+                    timeOut: 0,
+                    timeOutBehavior: "throwException"
+                }
             }
-        });
+        };
 
         await TestCase.assertThrowsAsyncContaining(
             async () => {
@@ -219,14 +240,6 @@ module.exports = {
         );
 
         await user.logOut();
-        // try {
-        //     const realm = await Realm.open(config)
-        //     realm.close();
-        //     throw new TestError("Realm did not fail to open.");
-        // } catch (err) {
-        //     TestCase.assertTrue(err.message.includes("could not be downloaded in the allocated time"));
-        // } finally {
-        // }
     },
 
     testExistingFile_downloadBeforeOpen_throwOnTimeOut: async function() {
@@ -235,30 +248,38 @@ module.exports = {
         const partitionValue = Utils.genPartition();
 
         {
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                _sessionStopPolicy: "immediately"
-            });
+            // Ensure the file exists for "user"
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    _sessionStopPolicy: "immediately"
+                }
+            };
 
             const realm = await Realm.open(config);
             realm.close();
         }
 
         {
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                _sessionStopPolicy: "immediately",
-                existingRealmFileBehavior: {
-                    type: "downloadBeforeOpen",
-                    timeOut: 0,
-                    timeOutBehavior: "throwException"
+            // Reopen with impossible timeOut and test that "timeOutBehavior" holds true.
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    _sessionStopPolicy: "immediately",
+                    existingRealmFileBehavior: {
+                        type: "downloadBeforeOpen",
+                        timeOut: 0,
+                        timeOutBehavior: "throwException"
+                    }
                 }
-            });
+            };
 
-            // ERROR: This currently does NOT throw.
-            // NOTE: Are "timeOut"/"timeOutBehavior" ignored?
+            TestCase.assertTrue(Realm.exists(config));
+
             await TestCase.assertThrowsAsyncContaining(
                 async () => {
                     const realm = await Realm.open(config);
@@ -266,15 +287,6 @@ module.exports = {
                 },
                 "could not be downloaded in the allocated time"
             );
-
-            // try {
-            //     const realm = await Realm.open(config);
-            //     realm.close();
-            //     throw new TestError("Realm did not fail to open.");
-            // } catch (err) {
-            //     console.log("testExistingFile_downloadBeforeOpen_throwOnTimeOut err", err);
-            //     TestCase.assertTrue(err.message.includes("could not be downloaded in the allocated time"));
-            // }
         }
 
         await user.logOut();
@@ -290,11 +302,14 @@ module.exports = {
 
         {
             const user = await app.logIn(Realm.Credentials.anonymous());
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                _sessionStopPolicy: "immediately"
-            });
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    _sessionStopPolicy: "immediately"
+                }
+            };
 
             const realm = await Realm.open(config);
 
@@ -310,34 +325,27 @@ module.exports = {
 
         {
             const user = await app.logIn(Realm.Credentials.anonymous());
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                _sessionStopPolicy: "immediately",
-                newRealmFileBehavior: {
-                    type: "downloadBeforeOpen",
-                    timeOut: 0,
-                    timeOutBehavior: "openLocal"
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    _sessionStopPolicy: "immediately",
+                    newRealmFileBehavior: {
+                        type: "downloadBeforeOpen",
+                        timeOut: 0,
+                        timeOutBehavior: "openLocal"
+                    }
                 }
-            });
+            };
+
+            TestCase.assertFalse(Realm.exists(config));
 
             const realm = await Realm.open(config);
 
             TestCase.assertEqual(realm.objects(schemas.DogForSync.name).length, 0);
 
             realm.close();
-
-            // Wait for the download to complete so that we don't call
-            // clearTestState() while a download is in progress
-            const cleanUpRealm = await Realm.open({
-                schema: [schemas.DogForSync],
-                sync: {
-                    user,
-                    partitionValue,
-                    _sessionStopPolicy: "immediately"
-                }
-            });
-            cleanUpRealm.close();
 
             await user.logOut();
         }
@@ -350,15 +358,19 @@ module.exports = {
         // 4. Re-open empty Realm with timeOut and localOpen, Realm should still be empty.
 
         const app = new Realm.App(APP_CONFIG);
-        const partitionValue = Utils.genPartition();
+        const partitionValue = Utils.genPartition()
+        const returningUserCredentials = await Utils.getRegisteredEmailPassCredentials(app);
 
         {
-            const user = await app.logIn(Realm.Credentials.anonymous());
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                _sessionStopPolicy: "immediately"
-            });
+            const user = await app.logIn(returningUserCredentials);
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    _sessionStopPolicy: "immediately"
+                }
+            };
 
             const realm = await Realm.open(config);
 
@@ -368,11 +380,14 @@ module.exports = {
 
         {
             const user = await app.logIn(Realm.Credentials.anonymous());
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                _sessionStopPolicy: "immediately"
-            });
+            const config = {
+                schema: [schemas.DogForSync],
+                sync: {
+                    user,
+                    partitionValue,
+                    _sessionStopPolicy: "immediately"
+                }
+            };
 
             const realm = await Realm.open(config);
 
@@ -387,37 +402,28 @@ module.exports = {
         }
 
         {
-            const user = await app.logIn(Realm.Credentials.anonymous());
-            const config = createSyncConfig({
-                user,
-                partitionValue,
-                _sessionStopPolicy: "immediately",
-                existingRealmFileBehavior: {
-                    type: "downloadBeforeOpen",
-                    timeOut: 0,
-                    timeOutBehavior: "openLocal"
-                }
-            });
-            const realm = await Realm.open(config);
-
-            // ERROR: This currently fails... Error: '1' does not equal expected value '0'
-            // NOTE: Are "timeOut"/"timeOutBehavior" ignored?
-            TestCase.assertEqual(realm.objects(schemas.DogForSync.name).length, 0);
-
-            realm.close();
-
-            // Wait for the download to complete so that we don't call
-            // clearTestState() while a download is in progress
-            const cleanUpRealm = await Realm.open({
+            const user = await app.logIn(returningUserCredentials);
+            const config = {
                 schema: [schemas.DogForSync],
                 sync: {
                     user,
                     partitionValue,
-                    _sessionStopPolicy: "immediately"
+                    _sessionStopPolicy: "immediately",
+                    existingRealmFileBehavior: {
+                        type: "downloadBeforeOpen",
+                        timeOut: 0,
+                        timeOutBehavior: "openLocal"
+                    }
                 }
-            });
-            cleanUpRealm.close();
+            };
 
+            TestCase.assertTrue(Realm.exists(config));
+
+            const realm = await Realm.open(config);
+
+            TestCase.assertEqual(realm.objects(schemas.DogForSync.name).length, 0);
+
+            realm.close();
             await user.logOut();
         }
     },
@@ -427,12 +433,15 @@ module.exports = {
         const user = await app.logIn(Realm.Credentials.anonymous());
         const partitionValue = Utils.genPartition();
 
-        const config = createSyncConfig({
-            user,
-            partitionValue,
-            _sessionStopPolicy: "immediately",
-            newRealmFileBehavior: { type: "downloadBeforeOpen" }
-        });
+        const config = {
+            schema: [schemas.DogForSync],
+            sync: {
+                user,
+                partitionValue,
+                _sessionStopPolicy: "immediately",
+                newRealmFileBehavior: { type: "downloadBeforeOpen" }
+            }
+        };
 
         const openPromise = new Promise((resolve, reject) => {
             const promise = Realm.open(config);
@@ -457,12 +466,15 @@ module.exports = {
         const user = await app.logIn(Realm.Credentials.anonymous());
         const partitionValue = Utils.genPartition();
 
-        const config = createSyncConfig({
-            user,
-            partitionValue,
-            _sessionStopPolicy: "immediately",
-            newRealmFileBehavior: { type: "downloadBeforeOpen" }
-        });
+        const config = {
+            schema: [schemas.DogForSync],
+            sync: {
+                user,
+                partitionValue,
+                _sessionStopPolicy: "immediately",
+                newRealmFileBehavior: { type: "downloadBeforeOpen" }
+            }
+        };
 
         const openPromise1 = Realm.open(config);
         const openPromise2 = Realm.open(config);
@@ -482,12 +494,15 @@ module.exports = {
         const user = await app.logIn(Realm.Credentials.anonymous());
         const partitionValue = Utils.genPartition();
 
-        const config = createSyncConfig({
-            user,
-            partitionValue,
-            _sessionStopPolicy: "immediately",
-            newRealmFileBehavior: { type: "downloadBeforeOpen" }
-        });
+        const config = {
+            schema: [schemas.DogForSync],
+            sync: {
+                user,
+                partitionValue,
+                _sessionStopPolicy: "immediately",
+                newRealmFileBehavior: { type: "downloadBeforeOpen" }
+            }
+        };
 
         const openPromise = new Promise((resolve, reject) => {
             const promise = Realm.open(config);
@@ -516,26 +531,35 @@ module.exports = {
         const user = await app.logIn(Realm.Credentials.anonymous());
         const partitionValue = Utils.genPartition();
 
-        await TestCase.assertThrowsAsync(() => Realm.open(createSyncConfig({
-            user,
-            partitionValue,
-            _sessionStopPolicy: "immediately",
-            newRealmFileBehavior: { type: "foo" } // this should fail
-        })));
+        await TestCase.assertThrowsAsync(() => Realm.open({
+            schema: [schemas.DogForSync],
+            sync: {
+                user,
+                partitionValue,
+                _sessionStopPolicy: "immediately",
+                newRealmFileBehavior: { type: "foo" } // this should fail
+            }
+        }));
 
-        await TestCase.assertThrowsAsync(() => Realm.open(createSyncConfig({
-            user,
-            partitionValue,
-            _sessionStopPolicy: "immediately",
-            newRealmFileBehavior: { type: "openLocal", timeOutBehavior: "foo" } // this should fail
-        })));
+        await TestCase.assertThrowsAsync(() => Realm.open({
+            schema: [schemas.DogForSync],
+            sync: {
+                user,
+                partitionValue,
+                _sessionStopPolicy: "immediately",
+                newRealmFileBehavior: { type: "openLocal", timeOutBehavior: "foo" } // this should fail
+            }
+        }));
 
-        await TestCase.assertThrowsAsync(() => Realm.open(createSyncConfig({
-            user,
-            partitionValue,
-            _sessionStopPolicy: "immediately",
-            newRealmFileBehavior: { type: "openLocal", timeOut: "bar" } // this should fail
-        })));
+        await TestCase.assertThrowsAsync(() => Realm.open({
+            schema: [schemas.DogForSync],
+            sync: {
+                user,
+                partitionValue,
+                _sessionStopPolicy: "immediately",
+                newRealmFileBehavior: { type: "openLocal", timeOut: "bar" } // this should fail
+            }
+        }));
 
         await user.logOut();
     },
