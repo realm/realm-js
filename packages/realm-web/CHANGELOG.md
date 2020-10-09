@@ -2,7 +2,7 @@
 =============================================================
 
 ### Breaking Changes
-* Removed the `functions` and `services` properties from `App`, use the `functions` property and `mongoClient` method on `User` instances instead. ([#3298](https://github.com/realm/realm-js/pull/3298))
+* Removed the `functions` and `services` properties from `App`, use the `functions` property and `mongoClient` method on `User` instances instead. ([#3298](https://github.com/realm/realm-js/pull/3298) and [#3322](https://github.com/realm/realm-js/pull/3322))
 
 ### Enhancements
 * Changing the behaviour when refreshing an access token fails. With this change, if the refresh token cannot be used to refresh an access token, the user is logged out. ([#3269](https://github.com/realm/realm-js/pull/3269))

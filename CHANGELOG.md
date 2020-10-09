@@ -1,5 +1,9 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+
+### Breaking changes
+* Removed the types for `app.services` and `app.functions` (which never had an implementation). ([#3322](https://github.com/realm/realm-js/pull/3322)).
+
 ### Enhancements
 * Added descriptive errors for `partitionValue` of unsupported formats & ranges.
 
