@@ -246,16 +246,6 @@ declare namespace Realm {
         readonly id: string;
 
         /**
-         * Use this to call functions defined by the MongoDB Realm app.
-         */
-        readonly functions: FunctionsFactoryType & BaseFunctionsFactory;
-
-        /**
-         * Use this to call services within by the MongoDB Realm app.
-         */
-        services: Realm.Services;
-
-        /**
          * Perform operations related to the email/password auth provider.
          */
         emailPasswordAuth: Realm.Auth.EmailPasswordAuth;
