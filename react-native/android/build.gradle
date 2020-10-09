@@ -270,7 +270,7 @@ def checkForHeadersFile(folder){
 
     if (files == null || files.length == 0)
         throw new GradleException("Didn't found any headers in the /$folder folder \n" +
-        "Please you go to the root folder (realm-js) and do: \n git submodule update --init --recursive")
+        "Please make sure you go to the root folder (realm-js) and do: \n git submodule update --init --recursive")
 }
 
 task buildReactNdkLib(dependsOn: [prepareRealmCore, prepareOpenSSL_x86, prepareOpenSSL_x86_64, prepareOpenSSL_arm, prepareOpenSSL_arm_64], type: Exec) {
