@@ -38,7 +38,9 @@ Prerequisites:
 * nvm (on Mac)
 * cocoapods (on Mac)
 * Android SDK 23+
-* Android NDK 21.0 (available via the SDK Manager in Android Studio / Android SDK Tools)
+* Android NDK 21.0 
+    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.  
+    - From the command-line: ```$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
 
 Clone RealmJS repository:
 
@@ -50,7 +52,10 @@ git submodule update --init --recursive
 
 Note: On Windows the RealmJS repo should be cloned with symlinks enabled
 ```
-#run in elevated command prompt
+#run in elevated 
+
+
+prompt
 git clone -c core.symlinks=true https://github.com/realm/realm-js
 ```
 
