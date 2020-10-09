@@ -38,7 +38,7 @@ Prerequisites:
 * nvm (on Mac)
 * cocoapods (on Mac)
 * Android SDK 23+
-* [Android NDK 21](https://developer.android.com/ndk/downloads/index.html)
+* Android NDK 21.0 (Only available on the SDK Manager on Android Studio)
 
 Clone RealmJS repository:
 
