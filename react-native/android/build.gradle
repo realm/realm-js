@@ -182,18 +182,21 @@ def findNdkBuildFullPath() {
     def ndkDir = null
 
     try {
+        println("wtf?")
         // Reading [ndk.dir] from local.properties
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
-        properties.getProperty('ndk.dir')
+        ndkDir = properties.getProperty('ndk.dir')
         if(ndkDir != null)
             return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }catch(FileNotFoundException e){
         println("[Warning]: local.properties not found ")
+        println("Error: ", e)
     }
 
     try {
+
         ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder :
                 plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
 
