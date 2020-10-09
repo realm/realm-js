@@ -10,7 +10,7 @@
   "devDependencies": {
     "electron": "^9.3.2",
     "jasmine": "^3.4.0",
-    "jasmine-console-reporter": "^3.1.0",
+    "jasmine-console-reporter": "^3.1.0"
   },
   "dependencies": {
     "install-local": "^1.0.0"
