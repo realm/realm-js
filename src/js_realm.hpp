@@ -643,6 +643,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
         }
     }
 
+    config.cache = true;
     config.path = normalize_realm_path(config.path);
     ensure_directory_exists_for_file(config.path);
     return schema_updated;
