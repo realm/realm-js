@@ -1,0 +1,23 @@
+name: Publish Realm Web
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  test-build-and-publish:
+    name: Test, build & publish
+    runs-on: ubuntu-latest
+    # Run only if the release reference a commit with a tag prefixed "realm-web-v"
+    if: startsWith(github.ref, 'refs/tags/realm-web-v')
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm test
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
