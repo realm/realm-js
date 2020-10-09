@@ -172,7 +172,7 @@ module.exports = {
                     sync: {
                         fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
-                        existingRealmBehavior: {
+                        existingRealmFileBehavior: {
                             type: 'downloadBeforeOpen'
                         },
                         url: 'realm://127.0.0.1:9080/' + realmName
