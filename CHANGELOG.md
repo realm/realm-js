@@ -21,6 +21,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Changed CI to abort if changes are exclusively made to the /packages directory. ([#3298](https://github.com/realm/realm-js/pull/3298)) & ([#3307](https://github.com/realm/realm-js/pull/3307))
+* Publish binaries for Raspberry Pi. ([#3272](https://github.com/realm/realm-js/issues/3272), since v10.0.0-beta.13)
 
 10.0.0-rc.1 Release notes (2020-10-1)
 =============================================================
