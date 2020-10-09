@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed a bug preventing caching of Realm instances. In certain cases, the Realm file would grow without any new objects added. ([](), since v6.0.0).
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
