@@ -269,7 +269,7 @@ def checkForHeadersFile(folder){
     File[] files = new File("$projectDir/../../$folder").listFiles();
 
     if (files == null || files.length == 0)
-        throw new GradleException("Didn't found any headers in the \\$folder folder \n" +
+        throw new GradleException("Didn't found any headers in the /$folder folder \n" +
         "Please you go to the root folder (realm-js) and do: \n git submodule update --init --recursive")
 }
 
