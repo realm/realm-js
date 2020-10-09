@@ -24,6 +24,13 @@ var Schemas = require('./schemas');
 
 const { ObjectId } = require("bson");
 
+// Prevent React Native packager from seeing modules required with this
+const require_method = require;
+function nodeRequire(module) {
+    return require_method(module);
+}
+
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 
 module.exports = {
     testEncryptedInvalidKeys: function() {
@@ -74,10 +81,15 @@ module.exports = {
     },
 
     testEncryptionWithSync: function() {
+        //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+        if (!isNodeProcess) {
+            return Promise.resolve();;
+        }
+
         if (!global.enableSyncTests) {
             return Promise.resolve();
         }
-        const config = require('./support/testConfig').integrationAppConfig;
+        const config = nodeRequire('./support/testConfig').integrationAppConfig;
         let app = new Realm.App(config);
 
         const credentials = Realm.Credentials.anonymous();

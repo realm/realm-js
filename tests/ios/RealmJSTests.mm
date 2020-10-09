@@ -29,7 +29,7 @@
     for (NSString *suiteName in testCaseNames) {
         XCTestSuite *testSuite = [[XCTestSuite alloc] initWithName:suiteName];
         Class testClass = objc_allocateClassPair(self, suiteName.UTF8String, 0);
-
+        objc_registerClassPair(testClass);
         for (NSString *testName in testCaseNames[suiteName]) {
             if ([specialNames containsObject:testName]) {
                 continue;

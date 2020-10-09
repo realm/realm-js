@@ -43,18 +43,25 @@ var TESTS = {
     QueryTests: require('./query-tests'),
     MigrationTests: require('./migration-tests'),
     EncryptionTests: require('./encryption-tests'),
-    ObjectIDTests: require('./object-id-tests'),
     AliasTests: require('./alias-tests'),
     BsonTests: require('./bson-tests'),
     // Garbagecollectiontests: require('./garbage-collection'),
 };
 
+//TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+if (isNodeProcess) {
+    TESTS.ObjectIDTests = require('./object-id-tests');
+}
+
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
-    TESTS.AppTests = require('./app-tests');
+    //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+    if (isNodeProcess) {
+        TESTS.AppTests = require('./app-tests');
     // TESTS.OpenBehaviorTests = require('./open-behavior-tests'); // FIXME: figure out how to enable them
-    TESTS.UserTests = require('./user-tests');
-    TESTS.SessionTests = require('./session-tests');
+        TESTS.UserTests = require('./user-tests');
+        TESTS.SessionTests = require('./session-tests');
+    }
 }
 
 // If on node, run the async tests

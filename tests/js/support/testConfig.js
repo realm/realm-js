@@ -21,7 +21,24 @@
 
 // If the docker instance has imported this stitch config, it will have written the app id
 // back into the config file, so we can read it out again here.
-const integrationTestsAppId = `${require("../../../src/object-store/tests/mongodb/stitch.json").app_id}`;
+
+// Prevent React Native packager from seeing modules required with this
+const require_method = require;
+function nodeRequire(module) {
+    return require_method(module);
+}
+
+let pathToStitchJson = "../../../src/object-store/tests/mongodb/stitch.json";
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+
+if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
+    const path = nodeRequire("path");
+    console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
+    pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, '../../../../src/object-store/tests/mongodb/stitch.json')
+}
+console.log("pathToStitchJson " + pathToStitchJson);
+
+const integrationTestsAppId = `${nodeRequire(pathToStitchJson).app_id}`;
 const appUrl = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/\"/g,'') : "http://localhost";
 const appPort = process.env.MONGODB_REALM_PORT || "9090";
 console.log(`tests are using integration tests app id: ${integrationTestsAppId} on ${appUrl}:${appPort}`);
