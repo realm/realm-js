@@ -1,0 +1,30 @@
+name: Publish Realm Web
+
+on:
+  create:
+    tags:
+      - realm-web-v*
+
+jobs:
+  test-build-and-publish:
+    name: Test, build & publish
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      # Install the root package
+      - run: npm ci
+      # Bootstrap lerna sub-packages
+      - run: npx lerna bootstrap
+      # Test the package
+      - run: npm test
+        working-directory: packages/realm-web
+      # Publish the package
+      - run: npm publish
+        working-directory: packages/realm-web
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
