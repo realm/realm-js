@@ -182,7 +182,6 @@ def findNdkBuildFullPath() {
     def ndkDir = null
 
     try {
-        println("wtf?")
         // Reading [ndk.dir] from local.properties
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
