@@ -53,9 +53,6 @@ git submodule update --init --recursive
 Note: On Windows the RealmJS repo should be cloned with symlinks enabled
 ```
 #run in elevated command prompt
-
-
-prompt
 git clone -c core.symlinks=true https://github.com/realm/realm-js
 ```
 
