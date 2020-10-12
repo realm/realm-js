@@ -1,5 +1,47 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+NOTE: This is a unified release note covering all v10.0.0-alpha.X and v10.0.0-beta.X releases.
+
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version uses the Realm file format to version 20. It is not possible to downgrade to earlier versions than v10.0.0-beta.13. Non-sync Realms will be upgraded automatically. Synced Realms can only be automatically upgraded if created with Realm JavaScript v10.0.0-beta.1 and above.
+
+NOTE: Deprecated methods have been removed.
+
+### Breaking changes
+* `Realm.Sync.User` has been replaced by `Realm.User`.
+* `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([#2732](https://github.com/realm/realm-js/issues/2732))
+* Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partitionValue` has been added to the `sync` configuration as a replacement. Please read section ["Partition Atlas Data into Realms"](https://docs.mongodb.com/realm/sync/partitioning/) in documentation for further information.
+* Permissions has been removed. You need to configure permissions through MongoDB Realm.
+* Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`, `Realm.automaticSyncConfiguration()`.
+* Renamed configuration option `custom_http_headers` to `customHttpHeaders`.
+* Renamed `Realm.Sync` to `Realm.App.Sync` including all methods and properties.
+
+### Enhancements
+* Added support for compiling on a RaspberryPi. ([#2798](https://github.com/realm/realm-js/issues/2798)
+* Added support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
+* Added support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
+* Added support for embedded objects. ([#2676](https://github.com/realm/realm-js/issues/2676))
+* Added `Realm.App` with the following methods: `getApp()`, `logIn()`, `switchUser()`, and `removeUser()` and properties `id`, `emailPasswordAuth`, `currentUser`, `allUsers`. A `Realm.App` instance represents a [MongoDB Realm app](https://docs.mongodb.com/realm/procedures/create-realm-app/). ([#2750](https://github.com/realm/realm-js/issues/2750) and [#2809](https://github.com/realm/realm-js/issues/2809))
+* Added `Realm.Credentials` which represents credentials for MongoDB Realm users. It has the following methods: `emailPassword()`, `facebook`, `anonymous()`, `apple()`, `google()`, `jwt()`, and `function()`. You must enable the credentials validation ([authentication providers](https://docs.mongodb.com/realm/authentication/providers/)) at MongoDB Realm before deploying your app. ([#2750](https://github.com/realm/realm-js/issues/2750) and [#2809](https://github.com/realm/realm-js/issues/2809))
+* Added auth providers `Realm.Auth.EmailPassword` and `Realm.Auth.APIKeys`. ([#2750](https://github.com/realm/realm-js/issues/2750) and [#2809](https://github.com/realm/realm-js/issues/2809))
+* Added support for `customData` readonly property to `Realm.User` objects. ([#2809](https://github.com/realm/realm-js/issues/2809))
+* Added support for calling server functions from `Realm.User` objects. ([#2809](https://github.com/realm/realm-js/issues/2809))
+* Added MongoClient and Push functionality to `Realm.User`.
+* Added `watch()` to `MongoDBCollection` to enable streaming notifications of changes events from the database. Only supported in node.js for now.
+* TS declaration for `objectForPrimaryKey<T>(...)` now mimics behavior of `objects<T>(...)`. ([#3266](https://github.com/realm/realm-js/pull/3266))
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Upgraded to Realm Core v10.0.0-rc.1.
+* Upgraded to Realm Sync v10.0.0-rc.1.
+
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
 
 ### Breaking changes
 * Removed the types for `app.services` and `app.functions` (which never had an implementation). ([#3322](https://github.com/realm/realm-js/pull/3322)).
