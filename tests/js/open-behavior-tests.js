@@ -38,6 +38,17 @@ class TestError extends Error {
 // NOTE: these tests can be simplified once we can create multiple anonymous users.
 
 module.exports = {
+    static_references_defined: function() {
+        TestCase.assertDefined(
+            Realm.App.Sync.openLocalRealmBehavior,
+            "static Realm.App.Sync.openLocalRealmBehavior is missing"
+        );
+        TestCase.assertDefined(
+            Realm.App.Sync.downloadBeforeOpenBehavior,
+            "static Realm.App.Sync.downloadBeforeOpenBehavior is missing"
+        );
+    },
+
     testNewFile_openLocal: async function() {
         // NOTE: this test no longer runs with a logged out user.
         // Reason: Error: User is no longer valid.
