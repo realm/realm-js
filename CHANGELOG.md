@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.0.0-rc.2 Release notes (2020-10-12)
 =============================================================
 
 ### Breaking changes
