@@ -8,7 +8,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed a bug where an error (messaged "Only absolute URLs are supported") was thrown when calling the `resetPassword`, `sendResetPasswordEmail` or `callResetPasswordFunction` methods of the `EmailPasswordAuth` client. ([#3330](https://github.com/realm/realm-js/pull/3330), since v0.9.0)
 
 ### Internal
 * None
