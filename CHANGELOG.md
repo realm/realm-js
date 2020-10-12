@@ -13,6 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed a bug where an integer could prematurely be converted & returned as a `Long` instead of a `number`. ([#3205](https://github.com/realm/realm-js/pull/3205), since v10.0.0-beta.1)
 * TS declaration for `isLoggedIn` added to `User`. ([#3294](https://github.com/realm/realm-js/pull/3294))
 * Fixed error `Attempted import error: 'invalidateCache' is not exported from './util' (imported as 'util').` ([#3314](https://github.com/realm/realm-js/issues/3314))
+* Fixed a bug preventing caching of Realm instances. In certain cases, the Realm file would grow without any new objects added.
 
 ### Compatibility
 * MongoDB Realm Cloud.
