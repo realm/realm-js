@@ -1541,8 +1541,9 @@ module.exports = {
     testManualCompactMultipleInstances: function() {
         const realm1 = new Realm({schema: [schemas.StringOnly]});
         const realm2 = new Realm({schema: [schemas.StringOnly]});
+        // realm1 and realm2 are wrapping the same Realm instance
         realm2.objects('StringOnlyObject');
-        TestCase.assertFalse(realm1.compact());
+        TestCase.assertTrue(realm1.compact());
     },
 
     testRealmDeleteFileDefaultConfigPath: function() {
