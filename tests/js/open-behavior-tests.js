@@ -165,7 +165,7 @@ module.exports = {
         }
 
         {
-            // Update realm with different user (different path)
+            // Update realm with different (anonymous) user
             const user = await app.logIn(Realm.Credentials.anonymous());
             const config = {
                 schema: [schemas.DogForSync],
@@ -263,7 +263,7 @@ module.exports = {
         }
 
         {
-            // Reopen with impossible timeOut and test that "timeOutBehavior" holds true.
+            // Reopen with impossible "timeOut" and test that "timeOutBehavior" holds true.
             const config = {
                 schema: [schemas.DogForSync],
                 sync: {
@@ -301,6 +301,7 @@ module.exports = {
         const partitionValue = Utils.genPartition();
 
         {
+            // Add data to the realm with a different user
             const user = await app.logIn(Realm.Credentials.anonymous());
             const config = {
                 schema: [schemas.DogForSync],
@@ -324,6 +325,7 @@ module.exports = {
         }
 
         {
+            // Reopen with impossible "timeOut" and test that "timeOutBehavior" holds true.
             const user = await app.logIn(Realm.Credentials.anonymous());
             const config = {
                 schema: [schemas.DogForSync],
@@ -362,6 +364,7 @@ module.exports = {
         const returningUserCredentials = await Utils.getRegisteredEmailPassCredentials(app);
 
         {
+            // Ensure a realm file exists for the returning user
             const user = await app.logIn(returningUserCredentials);
             const config = {
                 schema: [schemas.DogForSync],
@@ -379,6 +382,7 @@ module.exports = {
         }
 
         {
+            // Add data to the realm with a different user
             const user = await app.logIn(Realm.Credentials.anonymous());
             const config = {
                 schema: [schemas.DogForSync],
@@ -402,6 +406,7 @@ module.exports = {
         }
 
         {
+            // Reopen with impossible "timeOut" and test that "timeOutBehavior" holds true.
             const user = await app.logIn(returningUserCredentials);
             const config = {
                 schema: [schemas.DogForSync],
