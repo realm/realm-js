@@ -140,7 +140,7 @@ module.exports = {
 
         const realm = await Realm.open(config);
 
-        // TODO: Not quite sure what we're testing here?
+        // NOTE: Not quite sure what we're testing here?
         TestCase.assertTrue(realm.empty);
 
         realm.close();
@@ -522,7 +522,7 @@ module.exports = {
 
         const openPromise = new Promise((resolve, reject) => {
             const promise = Realm.open(config);
-            // TODO: could this potentially trigger before canceling?
+            // NOTE: could this potentially trigger before canceling?
             promise.progress(() => {
                 reject("Progress listener called");
             });
