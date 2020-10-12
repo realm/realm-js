@@ -488,6 +488,7 @@ def publish(nodeVersions, electronVersions, dependencies, tag) {
     for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
       unstash "pre-gyp-${platform}-${nodePublishVersion}"
     }
+    unstash "pre-gyp-linux-armhf-${nodePublishVersion}"
 
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
       sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}/'"
