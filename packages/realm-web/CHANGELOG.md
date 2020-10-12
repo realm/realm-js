@@ -2,6 +2,21 @@
 =============================================================
 
 ### Breaking Changes
+* None
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Internal
+* None
+
+1.0.0-rc.1 Release notes (2020-10-09)
+=============================================================
+
+### Breaking Changes
 * Removed the `functions` and `services` properties from `App`, use the `functions` property and `mongoClient` method on `User` instances instead. ([#3298](https://github.com/realm/realm-js/pull/3298) and [#3322](https://github.com/realm/realm-js/pull/3322))
 
 ### Enhancements

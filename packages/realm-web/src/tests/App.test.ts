@@ -553,8 +553,10 @@ describe("App", () => {
             LOCATION_REQUEST,
             {
                 method: "POST",
-                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login?device=${DEFAULT_DEVICE}`,
-                body: {},
+                url: `http://localhost:1337/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
                 headers: SENDING_JSON_HEADERS,
             },
             {
