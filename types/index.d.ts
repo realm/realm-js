@@ -366,9 +366,6 @@ declare namespace Realm {
         ThrowException = 'throwException'
     }
 
-    let openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
-    let downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
-
     enum ConnectionState {
         Disconnected = "disconnected",
         Connecting = "connecting",
@@ -436,6 +433,16 @@ declare namespace Realm {
         function initiateClientReset(app: App, path: string): void;
         function _hasExistingSessions(app: App): boolean;
         function reconnect(app: App): void;
+
+        /**
+         * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
+         * If this is the first time you open the Realm, it will be empty while the server data is being downloaded in the background.
+         */
+        const openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
+        /**
+         * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
+         */
+        const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
     }
 }
 
