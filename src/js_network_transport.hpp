@@ -168,10 +168,10 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
 
     using SendRequestHandler = void(ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback);
 
-    JavaScriptNetworkTransport(ContextType ctx) : m_ctx(ctx),
-        m_dispatcher { JavaScriptNetworkTransport::send_request_to_server_impl }
-    {
-    };
+	JavaScriptNetworkTransport(ContextType ctx) : m_ctx(ctx),
+		m_dispatcher {JavaScriptNetworkTransport::send_request_to_server_impl}
+	{
+	};
 
     static ObjectType makeRequest(ContextType ctx, const app::Request& request) {
         ObjectType headers_object = Object::create_empty(ctx);
