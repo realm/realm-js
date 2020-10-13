@@ -32,7 +32,7 @@ describeIf(typeof window === "object", "IIFE bundle", () => {
 
     function getNewGlobals() {
         const globalsAfter = new Set(Object.keys(window));
-        return new Set([...globalsAfter].filter(x => !globalsBefore.has(x)));
+        return [...globalsAfter].filter(x => !globalsBefore.has(x));
     }
 
     before(async () => {
@@ -55,7 +55,7 @@ describeIf(typeof window === "object", "IIFE bundle", () => {
         // Expect exactly one global to be added when loading the script
         const newGlobals = getNewGlobals();
         console.log(Object.keys(window));
-        expect([...newGlobals.values()]).deep.equals(["Realm"]);
+        expect(newGlobals).deep.equals(["Realm"]);
         expect(typeof Realm).equals("object");
     });
 
