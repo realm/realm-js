@@ -202,7 +202,7 @@ def findNdkBuildFullPath() {
         if (ndkDir) {
             return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
         }
-    }catch(MissingPropertyException e){
+    } catch(MissingPropertyException e) {
         throw new GradleException("Unable to locate your NDK configuration. Did you forget to install the Android NDK?\n" +
                 "more info: https://developer.android.com/studio/projects/install-ndk \n")
     }
