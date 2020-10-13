@@ -189,7 +189,7 @@ def findNdkBuildFullPath() {
         ndkDir = properties.getProperty('ndk.dir')
         if(ndkDir != null)
             return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
-    }catch(FileNotFoundException e){
+    } catch(FileNotFoundException e) {
         println("[Warning]: local.properties not found ")
         println("Error: ", e)
     }
