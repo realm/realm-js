@@ -134,13 +134,8 @@ describe("WatchStream", () => {
                     });
                     assert.deepEqual(ws.state, WatchStreamState.HAVE_ERROR);
                     assert.instanceOf(ws.error, WatchError);
-                    if (true) {
-                        // XXX behavior in realm-web (no list of errors)
-                        assert.deepEqual(ws.error?.code, "WhoKnows");
-                    } else {
-                        // behavior in realm-js (objstore has a list of known errors and this isn't one of them).
-                        assert.deepEqual(ws.error?.code, "unknown");
-                    }
+                    // FIXME: Behavior in realm-web (no list of errors)
+                    assert.deepEqual(ws.error?.code, "WhoKnows");
                     assert.deepEqual(ws.error?.message, ":(");
                 });
 
@@ -692,14 +687,8 @@ describe("WatchStream", () => {
             // This is a deviation from the spec. We do not support the legacy macOS < 10 CR-only newlines.
             // The server does not generate them, and there would be some overhead to supporting them.
             ws.feedBuffer(toBuffer('event: message\rdata: {"a": 1}\r\r'));
-            if (true) {
-                // This is what we do.
-                assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
-            } else {
-                // This is what we would do if following the spec.
-                assert.deepEqual(ws.state, WatchStreamState.HAVE_EVENT);
-                assert.deepEqual(ws.nextEvent() as any, { a: 1 });
-            }
+            // This is what we do.
+            assert.deepEqual(ws.state, WatchStreamState.NEED_DATA);
         });
     });
 });
