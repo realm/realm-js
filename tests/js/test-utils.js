@@ -36,7 +36,7 @@ function genPartition() {
 
 function randomVerifiableEmail() {
     // according to the custom register function, emails will register if they contain "realm_tests_do_autoverify"
-    return `realm_tests_do_autoverify_${uuid()}_@test.com`;
+    return `realm_tests_do_autoverify_${uuid()}_@testing.mongodb.com`;
 }
 
 async function getRegisteredEmailPassCredentials(app) {
