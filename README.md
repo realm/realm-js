@@ -38,7 +38,9 @@ Prerequisites:
 * nvm (on Mac)
 * cocoapods (on Mac)
 * Android SDK 23+
-* [Android NDK 21](https://developer.android.com/ndk/downloads/index.html)
+* Android NDK 21.0 
+    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.  
+    - From the command-line: ```$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
 
 Clone RealmJS repository:
 
@@ -78,6 +80,7 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 
 ### Building for Android:
 * `cd react-native/android`
+* `export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.0.6113669  #Location for your NDK folder`
 * `./gradlew publishAndroid`
 * The compiled version of the Android module is here: `<project-root>/android`
 
