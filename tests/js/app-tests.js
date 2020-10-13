@@ -10,6 +10,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const AppConfig = require('./support/testConfig')
 const Utils = require('./test-utils');
+const schemas = require('./schemas');
 
 const config = AppConfig.integrationAppConfig;
 
@@ -148,16 +149,7 @@ module.exports = {
         let user = await app.logIn(credentials);
         const partition = Utils.genPartition();
         const realmConfig = {
-            schema: [{
-                name: 'Dog',
-                primaryKey: '_id',
-                properties: {
-                  _id: 'objectId?',
-                  breed: 'string?',
-                  name: 'string',
-                  realm_id: 'string?',
-                }
-              }],
+            schema: [schemas.DogForSync],
             sync: {
                 user: user,
                 partitionValue: partition,

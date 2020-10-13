@@ -17,6 +17,7 @@ NOTE: This version uses the Realm file format to version 20. It is not possible 
 * TS declaration for `isLoggedIn` added to `User`. ([#3294](https://github.com/realm/realm-js/pull/3294))
 * Fixed error `Attempted import error: 'invalidateCache' is not exported from './util' (imported as 'util').` ([#3314](https://github.com/realm/realm-js/issues/3314))
 * Fixed a bug preventing caching of Realm instances. In certain cases, the Realm file would grow without any new objects added.
+* TS declarations for `OpenRealmBehaviorConfiguration` presets `openLocalRealmBehavior` & `downloadBeforeOpenBehavior` moved to namespace `Realm.App.Sync`, to reflect the implementation. ([#3307](https://github.com/realm/realm-js/pull/3307), since v10.0.0-beta.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
