@@ -93,7 +93,6 @@ public:
 template<typename T>
 inline typename T::Function AppClass<T>::create_constructor(ContextType ctx) {
     FunctionType app_constructor = ObjectWrap<T, AppClass<T>>::create_constructor(ctx);
-    NetworkTransport::init(ctx);
     return app_constructor;
 }
 
