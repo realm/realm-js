@@ -140,7 +140,6 @@ module.exports = {
 
         const realm = await Realm.open(config);
 
-        // NOTE: Not quite sure what we're testing here?
         TestCase.assertTrue(realm.empty);
 
         realm.close();
