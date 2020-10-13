@@ -1,6 +1,6 @@
 {
   "name": "realm-web",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "Authenticate and communicate with the MongoDB Realm platform, from your web-browser",
   "main": "./dist/bundle.cjs.js",
   "module": "./dist/bundle.es.js",
@@ -16,7 +16,8 @@
     "generate-types": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
     "build": "npm run generate-types && rollup --config",
     "lint": "eslint --ext .js,.ts .",
-    "test": "mocha 'src/tests/**/*.test.ts'"
+    "test": "mocha 'src/tests/**/*.test.ts'",
+    "postversion": "ts-node --project scripts/tsconfig.json scripts/postversion.ts"
   },
   "files": [
     "dist",

@@ -13,7 +13,7 @@ npm install realm-web
 As a script-tag in the head of a browser:
 
 ```html
-<script src="https://unpkg.com/realm-web@0.9.0/dist/bundle.iife.js"></script>
+<script src="https://unpkg.com/realm-web@1.0.0-rc.2/dist/bundle.iife.js"></script>
 ```
 
 ## Caveats / limitations
