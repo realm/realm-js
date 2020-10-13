@@ -1,9 +1,9 @@
 name: Publish Realm Web
 
 on:
-  create:
+  push:
     tags:
-      - realm-web-v*
+      - 'realm-web-v*'
 
 jobs:
   test-build-and-publish:
