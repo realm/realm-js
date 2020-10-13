@@ -3,7 +3,7 @@ name: Publish Realm Web
 on:
   create:
     tags:
-      - realm-web-v*
+      - 'realm-web-v*'
 
 jobs:
   test-build-and-publish:
