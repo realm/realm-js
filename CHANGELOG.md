@@ -1,5 +1,5 @@
 10.0.0 Release notes (2020-10-14)
-=============================================================
+============================================================
 NOTE: This is a unified release note covering all v10.0.0-alpha.X and v10.0.0-beta.X releases.
 
 NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
