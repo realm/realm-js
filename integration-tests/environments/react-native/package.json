@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "preinstall": "npm install ../../realm-integration-tests.tgz && npm install ../../realm.tgz --no-save --ignore-scripts",
+    "preinstall": "npm install ../../realm-integration-tests.tgz --no-save && npm install ../../realm.tgz --no-save --ignore-scripts",
     "update-tests": "npm run tests/pack --prefix ../.. && npm install ../../realm-integration-tests.tgz --no-save",
     "test": "npm run test/android && npm run test/ios",
     "test/android": "node harness/runner.js android",
