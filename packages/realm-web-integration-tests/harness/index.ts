@@ -33,6 +33,20 @@ const testCredentials =
 
 const { BASE_URL = "http://localhost:8080" } = process.env;
 
+/**
+ * A list of expected errors and warnings logged to the console
+ */
+const EXPECTED_ISSUES = [
+    /was set with `SameSite=None` but without `Secure`/,
+    // User / "refresh invalid access tokens" is posting an invalid token
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    // EmailPasswordAuth is exercising confirming users that has already been confirmed
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+];
+
 /* eslint-disable no-console */
 
 async function run() {
@@ -119,11 +133,17 @@ async function run() {
     await page.goto("http://localhost:8080");
     // Wait for the tests to complete
     await mochaServer.stopped;
-    if (issues.length > 0) {
-        const summary = issues.join("\n");
-        throw new Error(
-            `An error or warning was logged in the browser:\n${summary}`,
-        );
+    // Loop through the issues and throw if any unexpected message occurs
+    for (let i = 0; i < issues.length; i++) {
+        const issue = issues[i];
+        const expected = EXPECTED_ISSUES[i];
+        if (
+            typeof expected === "string"
+                ? issue !== expected
+                : !expected.test(issue)
+        ) {
+            throw new Error(`Unexpected error or warning: ${issue}`);
+        }
     }
 }
 

@@ -1,0 +1,30 @@
+name: Testing Realm Web (Pull Request)
+
+on:
+  push:
+    paths:
+      # Only run when the PR makes changes to the packages
+      - 'packages/**'
+
+jobs:
+  test-build-and-publish:
+    name: Test, lint and build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      # Install the root package
+      - run: npm ci
+      # Bootstrap lerna sub-packages
+      - run: npx lerna bootstrap
+      # Lint, build and test the package
+      - run: npm run lint
+        working-directory: packages/realm-web
+      - run: npm run build
+        working-directory: packages/realm-web
+      - run: npm test
+        working-directory: packages/realm-web
