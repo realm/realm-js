@@ -141,6 +141,7 @@
             "src/object-store/src/sync/sync_session.cpp",
             "src/object-store/src/sync/sync_user.cpp",
             "src/object-store/src/sync/app.cpp",
+            "src/object-store/src/sync/app_utils.cpp",
             "src/object-store/src/sync/app_credentials.cpp",
             "src/object-store/src/sync/remote_mongo_client.cpp",
             "src/object-store/src/sync/remote_mongo_collection.cpp",
