@@ -29,7 +29,7 @@ NOTE: Deprecated methods have been removed.
 * Added support for calling server functions from `Realm.User` objects. ([#2809](https://github.com/realm/realm-js/issues/2809))
 * Added MongoClient and Push functionality to `Realm.User`.
 * Added `watch()` to `MongoDBCollection` to enable streaming notifications of changes events from the database. Only supported in node.js for now.
-* TS declaration for `objectForPrimaryKey<T>(...)` now mimics behavior of `objects<T>(...)`. ([#3266](https://github.com/realm/realm-js/pull/3266))
+* TS declarations with stricter TS validation of input-models and return-types for `create<T>(...)`, `objects<T>(...)` & `objectForPrimaryKey<T>(...)`. ([#3044](https://github.com/realm/realm-js/pull/3044) & [#3266](https://github.com/realm/realm-js/pull/3266))
 
 ### Fixed
 * Realm.login() will not run after hot reloading in RN. ([#3236](https://github.com/realm/realm-js/issues/3236), since v10.0.0-beta.12)
