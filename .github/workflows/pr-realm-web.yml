@@ -28,3 +28,14 @@ jobs:
         working-directory: packages/realm-web
       - run: npm test
         working-directory: packages/realm-web
+      # Login with the Docker CLI to enable the integration test harness to pull the mongodb-realm-test-server
+      - name: Docker Login
+        uses: azure/docker-login@v1
+        with:
+          login-server: docker.pkg.github.com
+          username: realm-ci
+          password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
+      - run: npm run test:github
+        working-directory: packages/realm-web-integration-tests
+        env:
+          MONGODB_REALM_TEST_SERVER: latest
