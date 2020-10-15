@@ -169,6 +169,7 @@ def findNdkBuildFullPath() {
         def ndkDir = property('ndk.path')
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }
+
     if (System.getenv('ANDROID_NDK') != null) {
         def ndkDir = System.getenv('ANDROID_NDK')
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
@@ -177,11 +178,36 @@ def findNdkBuildFullPath() {
         def ndkDir = System.getenv('ANDROID_NDK_HOME')
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }
-    def ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder :
-            plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
-    if (ndkDir) {
-        return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+
+    def ndkDir = null
+
+    try {
+        // Reading [ndk.dir] from local.properties
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+        ndkDir = properties.getProperty('ndk.dir')
+        if (ndkDir != null) {
+            return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+        }
+    } catch(FileNotFoundException e) {
+        println("[Warning]: local.properties not found ")
+        println("Error: ", e)
     }
+
+    try {
+
+        ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder :
+                plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
+
+        if (ndkDir) {
+            return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+        }
+    } catch(MissingPropertyException e) {
+        throw new GradleException("Unable to locate your NDK configuration. Did you forget to install the Android NDK?\n" +
+                "more info: https://developer.android.com/studio/projects/install-ndk \n")
+    }
+
     return null
 }
 
@@ -242,7 +268,20 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
+def checkForHeadersFile(folder){
+    File[] files = new File("$projectDir/../../$folder").listFiles();
+
+    if (files == null || files.length == 0)
+        throw new GradleException("Unable to locate any headers in the '/$folder' folder.\n" +
+        "Please make sure you go to the root folder (realm-js) and do:\n" +
+        "git submodule update --init --recursive")
+}
+
 task buildReactNdkLib(dependsOn: [prepareRealmCore, prepareOpenSSL_x86, prepareOpenSSL_x86_64, prepareOpenSSL_arm, prepareOpenSSL_arm_64], type: Exec) {
+    checkForHeadersFile('src/object-store')
+    checkForHeadersFile('docs/jsdoc-template')
+    checkForHeadersFile('vendor/GCDWebServer')
+
     inputs.files('src/main/jni')
     outputs.dir("$buildDir/realm-react-ndk/all")
     commandLine getNdkBuildFullPath(),
