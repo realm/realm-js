@@ -27,13 +27,13 @@
 namespace realm {
 namespace common {
 
-using logger_fn = std::function<void(std::string, std::string)>;
-using log_level = realm::util::Logger::Level;
-using log_entry = std::pair<std::string, std::string>;
+using LoggerFunction = std::function<void(std::string, std::string)>;
+using LoggerLevel = realm::util::Logger::Level;
+using LoggerEntry = std::pair<std::string, std::string>;
 
 class Logger: public realm::util::RootLogger {
 public:
-    void delegate(logger_fn&& delegate){
+    void delegate(LoggerFunction&& delegate){
 
         m_scheduler->set_notify_callback([this, delegate = std::move(delegate)] { 
 
@@ -48,26 +48,26 @@ public:
     }
    
 protected:
-    void do_log(log_level level, std::string message){
+    void do_log(LoggerLevel level, std::string message){
 
         std::lock_guard<std::mutex> lock(m_mutex); 
-        auto log_entry = std::make_pair(map_level[level], message);
-        m_log_queue.push(log_entry);
+        auto LoggerEntry = std::make_pair(map_level[level], message);
+        m_log_queue.push(LoggerEntry);
 
         #if REALM_ANDROID
         auto android_log_level = map_android_log_level[level]; 
         __android_log_print(android_log_level, 
                     "realm",
                     "%s",
-                    log_entry.second.c_str());
+                    LoggerEntry.second.c_str());
         #endif
 
         m_scheduler->notify();
     }
 
 private:
-    std::queue<log_entry> m_log_queue;
-    logger_fn loggerDelegate;
+    std::queue<LoggerEntry> m_log_queue;
+    LoggerFunction loggerDelegate;
     std::shared_ptr<realm::util::Scheduler> m_scheduler = realm::util::Scheduler::make_default();
     std::mutex m_mutex;
 
@@ -78,30 +78,30 @@ private:
        [ all, trace, debug, detail, info, warn, error, fatal, off ]
     */
 
-    std::map <log_level, std::string> map_level {
-        { log_level::all, "all"},
-        { log_level::info, "info"},
-        { log_level::trace, "trace"},
-        { log_level::debug, "debug"},
-        { log_level::detail, "detail"},
-        { log_level::warn, "warn"},
-        { log_level::error, "error"},
-        { log_level::fatal, "fatal"},
-        { log_level::off,   "off"},
+    std::map <LoggerLevel, std::string> map_level {
+        { LoggerLevel::all, "all"},
+        { LoggerLevel::info, "info"},
+        { LoggerLevel::trace, "trace"},
+        { LoggerLevel::debug, "debug"},
+        { LoggerLevel::detail, "detail"},
+        { LoggerLevel::warn, "warn"},
+        { LoggerLevel::error, "error"},
+        { LoggerLevel::fatal, "fatal"},
+        { LoggerLevel::off,   "off"},
     };
 
 
     #if REALM_ANDROID
-    std::map <log_level, android_LogPriority> map_android_log_level {
-        { log_level::all, ANDROID_LOG_VERBOSE},
-        { log_level::info, ANDROID_LOG_INFO},
-        { log_level::trace, ANDROID_LOG_DEFAULT},
-        { log_level::debug, ANDROID_LOG_DEBUG},
-        { log_level::detail, ANDROID_LOG_VERBOSE},
-        { log_level::warn, ANDROID_LOG_WARN},
-        { log_level::error, ANDROID_LOG_ERROR},
-        { log_level::fatal, ANDROID_LOG_FATAL},
-        { log_level::off,   ANDROID_LOG_SILENT},
+    std::map <LoggerLevel, android_LogPriority> map_android_log_level {
+        { LoggerLevel::all, ANDROID_LOG_VERBOSE},
+        { LoggerLevel::info, ANDROID_LOG_INFO},
+        { LoggerLevel::trace, ANDROID_LOG_DEFAULT},
+        { LoggerLevel::debug, ANDROID_LOG_DEBUG},
+        { LoggerLevel::detail, ANDROID_LOG_VERBOSE},
+        { LoggerLevel::warn, ANDROID_LOG_WARN},
+        { LoggerLevel::error, ANDROID_LOG_ERROR},
+        { LoggerLevel::fatal, ANDROID_LOG_FATAL},
+        { LoggerLevel::off,   ANDROID_LOG_SILENT},
     };
     #endif
 };
@@ -109,7 +109,7 @@ private:
 class JSLoggerFactory: public realm::SyncLoggerFactory {
     public:
 
-        void logs(logger_fn&& _logs_fn){
+        void logs(LoggerFunction&& _logs_fn){
             logs_fn = _logs_fn;
         }
 
@@ -123,9 +123,8 @@ class JSLoggerFactory: public realm::SyncLoggerFactory {
         }
 
     private:
-        logger_fn logs_fn;
+        LoggerFunction logs_fn;
 };
-
 
 } // namespace js
 } // namespace realm
