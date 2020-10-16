@@ -31,13 +31,13 @@
 #include "sync/sync_session.hpp"
 #include "sync/sync_user.hpp"
 #include "util/event_loop_dispatcher.hpp"
+#include "common/js_logger.hpp"
 
 #include <realm/util/logger.hpp>
 #include <realm/util/uri.hpp>
 
 #if REALM_PLATFORM_NODE
 #include "impl/realm_coordinator.hpp"
-#include "node/sync_logger.hpp"
 #endif
 
 #if REALM_ANDROID
@@ -656,11 +656,8 @@ public:
         {"setUserAgent", wrap<set_sync_user_agent>},
         {"getAllSyncSessions", wrap<get_all_sync_sessions>},
         {"getSyncSession", wrap<get_sync_session>},
-
-#if REALM_PLATFORM_NODE
         {"setLogger", wrap<set_sync_logger>},
         {"setSyncLogger", wrap<set_sync_logger>},
-#endif
     };
 };
 
@@ -734,16 +731,30 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
     app->sync_manager()->set_log_level(log_level_2);
 }
 
-#if REALM_PLATFORM_NODE
 template<typename T>
 void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(2);
 
+    auto logger_factory = new common::JSLoggerFactory();
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     auto callback_fn = Value::validated_to_function(ctx, args[1], "logger_callback");
-    app->sync_manager()->set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
+
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<FunctionType> protected_callback(ctx, callback_fn);
+
+    logger_factory->logs([=](auto level, auto message){
+        HANDLESCOPE(protected_ctx)
+
+        ValueType arguments[2] = {
+            Value::from_string(protected_ctx, level),
+            Value::from_string(protected_ctx, message)
+        };
+
+        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, arguments);
+    });
+
+    app->sync_manager()->set_logger_factory(* logger_factory);
 }
-#endif
 
 template<typename T>
 void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {

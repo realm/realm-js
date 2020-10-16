@@ -2,7 +2,6 @@
 
 const debug = require('debug');
 
-const REALM_LOG_LEVELS = ['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off'];
 const realmDebug = debug('realm');
 
 /**
@@ -10,8 +9,7 @@ const realmDebug = debug('realm');
  */
 function setupLogging(Realm) {
     Realm.App.Sync.setLogger((level, message) => {
-        const levelName = REALM_LOG_LEVELS[level];
-        realmDebug(`[${levelName}] ${message}`);
+        realmDebug(`[${level}] ${message}`);
     });
     // Set the log level if running on NodeJS
     if (process && process.env) {

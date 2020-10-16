@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#pragma once
 #include <iostream>
 #include "sync/sync_manager.hpp"
 
@@ -59,6 +60,7 @@ protected:
         auto android_log_level = map_android_log_level[level]; 
         __android_log_print(android_log_level, 
                     "realm",
+                    "%s",
                     log_entry.second.c_str());
         #endif
 
