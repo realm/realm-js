@@ -23,7 +23,7 @@ const devtools = "DEV_TOOLS" in process.env;
 run(devtools).then(
     () => {
         if (!devtools) {
-            process.exit(0);
+            process.exit();
         }
     },
     err => {

@@ -64,7 +64,7 @@ async function startServer() {
             // Resolve the promise when the server gets ready
             output += chunk.toString();
             // If it contains the magic string
-            if (output.match("Starting Stitch... Done")) {
+            if (output.includes("Starting Stitch... Done")) {
                 // Stop listening for output
                 serverProcess.stdout.off("data", handleOutput);
                 resolve();
