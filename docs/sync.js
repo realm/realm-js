@@ -210,8 +210,7 @@ class Sync {
     /**
      * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
      * @callback Realm.App.Sync~logCallback
-     * @param {number} level The level of the log entry between 0 and 8 inclusively.
-     * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
+     * @param {string} level The level of the log which can be ['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off'].
      * @param {string} message The message of the log entry.
      */
 
