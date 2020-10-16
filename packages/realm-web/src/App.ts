@@ -271,17 +271,10 @@ export class App<
      * @returns An array of users active or loggedout users (current user being the first).
      */
     public get allUsers(): Readonly<
-        Realm.User<FunctionsFactoryType, CustomDataType>[]
+        Record<string, Realm.User<FunctionsFactoryType, CustomDataType>>
     > {
-        // We need to peek into refresh tokens to avoid cyclic code
-        const activeUsers = this.users.filter(
-            user => user.refreshToken !== null,
-        );
-        const loggedOutUsers = this.users.filter(
-            user => user.refreshToken === null,
-        );
         // Returning a freezed copy of the list of users to prevent outside changes
-        return Object.freeze([...activeUsers, ...loggedOutUsers]);
+        return Object.fromEntries(this.users.map(user => [user.id, user]));
     }
 
     /**

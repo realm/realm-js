@@ -207,7 +207,7 @@ describe("App", () => {
         const user = await app.logIn(credentials, false);
         // Expect that we logged in
         expect(app.currentUser).equals(user);
-        expect(app.allUsers).deep.equals([user]);
+        expect(app.allUsers).deep.equals({ [user.id]: user });
         expect(user.isLoggedIn).equals(true);
 
         await user.logOut();
@@ -216,7 +216,7 @@ describe("App", () => {
         expect(user.state).equals(UserState.LoggedOut);
         expect(user.state).equals("logged-out");
         expect(user.isLoggedIn).equals(false);
-        expect(app.allUsers).deep.equals([user]);
+        expect(app.allUsers).deep.equals({ [user.id]: user });
         // Assume the correct requests made it to the transport
         expect(transport.requests).deep.equals([
             LOCATION_REQUEST,
@@ -350,12 +350,12 @@ describe("App", () => {
         const user = await app.logIn(credentials, false);
         // Expect that we logged in
         expect(app.currentUser).equals(user);
-        expect(app.allUsers).deep.equals([user]);
+        expect(app.allUsers).deep.equals({ [user.id]: user });
         await app.removeUser(user);
         expect(app.currentUser).equals(null);
         expect(user.state).equals(UserState.Removed);
         expect(user.state).equals("removed");
-        expect(app.allUsers).deep.equals([]);
+        expect(app.allUsers).deep.equals({});
         // Assume the correct requests made it to the transport
         expect(transport.requests).deep.equals([
             LOCATION_REQUEST,
@@ -398,7 +398,7 @@ describe("App", () => {
         const user = await app.logIn(credentials, false);
         // Expect that we logged in
         expect(app.currentUser).equals(user);
-        expect(app.allUsers).deep.equals([user]);
+        expect(app.allUsers).deep.equals({ [user.id]: user });
         const anotherUser = {} as User;
         // Switch
         try {
@@ -420,7 +420,7 @@ describe("App", () => {
         }
         // Expect the first user to remain logged in and known to the app
         expect(app.currentUser).equals(user);
-        expect(app.allUsers).deep.equals([user]);
+        expect(app.allUsers).deep.equals({ [user.id]: user });
         expect(user.state).equals("active");
         // Assume the correct requests made it to the transport
         expect(transport.requests).deep.equals([
@@ -664,15 +664,15 @@ describe("App", () => {
             baseUrl: "http://localhost:1337",
         });
 
-        expect(app.allUsers.length).equals(2);
+        expect(Object.keys(app.allUsers).length).equals(2);
 
-        const alice = app.allUsers[0];
+        const alice = app.allUsers["alices-id"];
         expect(alice.id).equals("alices-id");
         expect(alice.accessToken).equals("alices-access-token");
         expect(alice.refreshToken).equals("alices-refresh-token");
         expect(alice.profile.firstName).equals("Alice");
 
-        const bob = app.allUsers[1];
+        const bob = app.allUsers["bobs-id"];
         expect(bob.id).equals("bobs-id");
         expect(bob.accessToken).equals("bobs-access-token");
         expect(bob.refreshToken).equals("bobs-refresh-token");
@@ -842,12 +842,18 @@ describe("App", () => {
             "v3ry-s3cret-2",
         );
         const gilfoyle1 = await app.logIn(credentials1, false);
-        expect(app.allUsers).deep.equals([gilfoyle1]);
+        expect(app.allUsers).deep.equals({ [gilfoyle1.id]: gilfoyle1 });
         const dinesh = await app.logIn(credentials2, false);
         const gilfoyle2 = await app.logIn(credentials1, false);
         // Expect all users to equal the user being returned on either login
-        expect(app.allUsers).deep.equals([gilfoyle1, dinesh]);
-        expect(app.allUsers).deep.equals([gilfoyle2, dinesh]);
+        expect(app.allUsers).deep.equals({
+            [gilfoyle1.id]: gilfoyle1,
+            [dinesh.id]: dinesh,
+        });
+        expect(app.allUsers).deep.equals({
+            [gilfoyle2.id]: gilfoyle2,
+            [dinesh.id]: dinesh,
+        });
         // Expect that the current user has the tokens from the second login
         {
             const { currentUser } = app;
@@ -868,8 +874,14 @@ describe("App", () => {
             expect(currentUser).equals(dinesh);
         }
         const gilfoyle3 = await app.logIn(credentials1, false);
-        expect(app.allUsers).deep.equals([gilfoyle2, dinesh]);
-        expect(app.allUsers).deep.equals([gilfoyle3, dinesh]);
+        expect(app.allUsers).deep.equals({
+            [gilfoyle2.id]: gilfoyle2,
+            [dinesh.id]: dinesh,
+        });
+        expect(app.allUsers).deep.equals({
+            [gilfoyle3.id]: gilfoyle3,
+            [dinesh.id]: dinesh,
+        });
         // Expect that the current user has the tokens from the third login
         {
             const { currentUser } = app;
@@ -880,7 +892,10 @@ describe("App", () => {
         // Removing the user and logging in, will give two different user objects
         await app.removeUser(gilfoyle3);
         const gilfoyle4 = await app.logIn(credentials1, false);
-        expect(app.allUsers).deep.equals([gilfoyle4, dinesh]);
+        expect(app.allUsers).deep.equals({
+            [gilfoyle4.id]: gilfoyle4,
+            [dinesh.id]: dinesh,
+        });
         expect(gilfoyle4).not.equals(gilfoyle3);
         // Expect that the current user has the tokens from the forth login
         {

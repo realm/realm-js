@@ -259,7 +259,7 @@ declare namespace Realm {
          * All authenticated users.
          */
         readonly allUsers: Readonly<
-            User<FunctionsFactoryType, CustomDataType>[]
+            Record<string, User<FunctionsFactoryType, CustomDataType>>
         >;
 
         /**
