@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint-disable no-console */
+
 import puppeteer from "puppeteer";
 import WebpackDevServer from "webpack-dev-server";
 import webpack from "webpack";
@@ -26,7 +28,6 @@ import { importRealmApp } from "./import-realm-app";
 import WEBPACK_CONFIG = require("../webpack.config");
 import path = require("path");
 
-const devtools = "DEV_TOOLS" in process.env;
 // Default to testing only the credentials that does not require manual interactions.
 const testCredentials =
     process.env.TEST_CREDENTIALS || "anonymous,email-password,function,jwt";
@@ -40,6 +41,10 @@ const EXPECTED_ISSUES = [
     /was set with `SameSite=None` but without `Secure`/,
     // User / "refresh invalid access tokens" is posting an invalid token
     "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    // Closing the watch streams, might yield this error (we're doing that three times)
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
     // EmailPasswordAuth is exercising confirming users that has already been confirmed
     "Failed to load resource: the server responded with a status of 400 (Bad Request)",
     "Failed to load resource: the server responded with a status of 400 (Bad Request)",
@@ -47,9 +52,24 @@ const EXPECTED_ISSUES = [
     "Failed to load resource: the server responded with a status of 400 (Bad Request)",
 ];
 
-/* eslint-disable no-console */
+function checkIssues(issues: string[]) {
+    const expectedQueue = [...EXPECTED_ISSUES];
+    issueLoop: for (const issue of issues) {
+        while (expectedQueue.length > 0) {
+            const expected = expectedQueue.shift();
+            if (
+                expected === issue ||
+                (expected instanceof RegExp && expected.test(issue))
+            ) {
+                // This matches, let's go to the next issue
+                continue issueLoop;
+            }
+        }
+        throw new Error(`Unexpected error or warning: ${issue}`);
+    }
+}
 
-async function run() {
+export async function run(devtools = false) {
     // Prepare
     const { appId, baseUrl } = await importRealmApp();
     // Start up the Webpack Dev Server
@@ -133,30 +153,6 @@ async function run() {
     await page.goto("http://localhost:8080");
     // Wait for the tests to complete
     await mochaServer.stopped;
-    // Loop through the issues and throw if any unexpected message occurs
-    for (let i = 0; i < issues.length; i++) {
-        const issue = issues[i];
-        const expected = EXPECTED_ISSUES[i];
-        if (
-            typeof expected === "string"
-                ? issue !== expected
-                : !expected.test(issue)
-        ) {
-            throw new Error(`Unexpected error or warning: ${issue}`);
-        }
-    }
+    // Check the issues logged in the browser
+    checkIssues(issues);
 }
-
-run().then(
-    () => {
-        if (!devtools) {
-            process.exit(0);
-        }
-    },
-    err => {
-        console.error(err);
-        if (!devtools) {
-            process.exit(1);
-        }
-    },
-);
