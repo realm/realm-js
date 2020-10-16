@@ -24,8 +24,6 @@
     #include <android/log.h>
 #endif
 
-
-
 namespace realm {
 namespace common {
 
