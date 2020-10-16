@@ -1,3 +1,18 @@
+?.?.? Release notes (2020-??-??)
+=============================================================
+
+### Breaking Changes
+* Changed the `allUsers` property into an object keyed by user id. Use `Object.values(app.allUsers)` to retrieve a list of all users. ([#3346](https://github.com/realm/realm-js/pull/3346))
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Internal
+* None
+
 1.0.0-rc.2 Release notes (2020-10-13)
 =============================================================
 

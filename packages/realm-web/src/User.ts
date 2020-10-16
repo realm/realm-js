@@ -174,12 +174,12 @@ export class User<
      * @returns The current state of the user.
      */
     get state(): UserState {
-        if (this.app.allUsers.indexOf(this) === -1) {
-            return UserState.Removed;
-        } else {
+        if (this.id in this.app.allUsers) {
             return this.refreshToken === null
                 ? UserState.LoggedOut
                 : UserState.Active;
+        } else {
+            return UserState.Removed;
         }
     }
 
