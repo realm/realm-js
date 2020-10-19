@@ -18,14 +18,11 @@ As a script-tag in the head of a browser:
 
 ## Caveats / limitations
 
-As this is a beta release, it comes with a few caveats:
-
-- Most importantly, the Realm Web project *will not* include a Realm Sync client in any foreseeable future.
+- The Realm Web project *will not* include a Realm Sync client in any foreseeable future. Use the `realm` package to use Realm Sync from a Node.js, ReactNative or Electron environment.
 - A limited selection of [services](https://docs.mongodb.com/stitch/services/) are implemented at the moment:
   - MongoDB: Read, write and watch MongoDB documents.
-  - HTTP: Send requests using the MongoDB service as a proxy.
 
-## Using Realm Web from Node.js
+## Using Realm Web in a Node.js environment
 
 You must install two additional peer dependencies when importing this package from Node.js:
 
