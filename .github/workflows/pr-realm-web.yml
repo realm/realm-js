@@ -1,10 +1,14 @@
 name: Testing Realm Web (Pull Request)
 
 on:
-  push:
+  pull_request:
     paths:
       # Only run when the PR makes changes to the packages
       - 'packages/**'
+      # Changing types might also affect Realm Web
+      - 'types/**'
+      # No need to run when updating documentation
+      - '!**.md'
 
 jobs:
   test-build-and-publish:
@@ -17,8 +21,8 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-      # Install the root package
-      - run: npm ci
+      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
+      - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages
       - run: npx lerna bootstrap
       # Lint, build and test the package
