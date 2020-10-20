@@ -31,7 +31,7 @@
 #include "sync/sync_session.hpp"
 #include "sync/sync_user.hpp"
 #include "util/event_loop_dispatcher.hpp"
-#include "common/js_logger.hpp"
+#include "logger.hpp"
 
 #include <realm/util/logger.hpp>
 #include <realm/util/uri.hpp>

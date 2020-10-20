@@ -29,7 +29,7 @@
             "src/js_email_password_auth.hpp",
             "src/js_api_key_auth.hpp",
             "src/js_auth.hpp",
-            "common/js_logger.hpp"
+            "src/logger.hpp"
           ]
         }]
       ],
