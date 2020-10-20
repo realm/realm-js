@@ -1,47 +1,52 @@
 [
   {
+    "$refId": "Person#prim-id-1",
     "_id": "prim-id-1",
     "age": 42,
     "name": "John Doe",
     "friends": [
       {
-        "$ref": "prim-id-1"
+        "$ref": "Person#prim-id-1"
       },
       {
+        "$refId": "Person#prim-id-2",
         "_id": "prim-id-2",
         "age": 40,
         "name": "Jane Doe",
         "friends": [
           {
+            "$refId": "Person#prim-id-3",
             "_id": "prim-id-3",
             "age": 35,
             "name": "Tony Doe",
             "friends": [
               {
-                "$ref": "prim-id-2"
+                "$ref": "Person#prim-id-2"
               }
             ]
           },
           {
-            "$ref": "prim-id-1"
+            "$ref": "Person#prim-id-1"
           }
         ]
       },
       {
+        "$refId": "Person#prim-id-3",
         "_id": "prim-id-3",
         "age": 35,
         "name": "Tony Doe",
         "friends": [
           {
+            "$refId": "Person#prim-id-2",
             "_id": "prim-id-2",
             "age": 40,
             "name": "Jane Doe",
             "friends": [
               {
-                "$ref": "prim-id-3"
+                "$ref": "Person#prim-id-3"
               },
               {
-                "$ref": "prim-id-1"
+                "$ref": "Person#prim-id-1"
               }
             ]
           }
@@ -50,38 +55,42 @@
     ]
   },
   {
+    "$refId": "Person#prim-id-2",
     "_id": "prim-id-2",
     "age": 40,
     "name": "Jane Doe",
     "friends": [
       {
+        "$refId": "Person#prim-id-3",
         "_id": "prim-id-3",
         "age": 35,
         "name": "Tony Doe",
         "friends": [
           {
-            "$ref": "prim-id-2"
+            "$ref": "Person#prim-id-2"
           }
         ]
       },
       {
+        "$refId": "Person#prim-id-1",
         "_id": "prim-id-1",
         "age": 42,
         "name": "John Doe",
         "friends": [
           {
-            "$ref": "prim-id-1"
+            "$ref": "Person#prim-id-1"
           },
           {
-            "$ref": "prim-id-2"
+            "$ref": "Person#prim-id-2"
           },
           {
+            "$refId": "Person#prim-id-3",
             "_id": "prim-id-3",
             "age": 35,
             "name": "Tony Doe",
             "friends": [
               {
-                "$ref": "prim-id-2"
+                "$ref": "Person#prim-id-2"
               }
             ]
           }
@@ -90,31 +99,34 @@
     ]
   },
   {
+    "$refId": "Person#prim-id-3",
     "_id": "prim-id-3",
     "age": 35,
     "name": "Tony Doe",
     "friends": [
       {
+        "$refId": "Person#prim-id-2",
         "_id": "prim-id-2",
         "age": 40,
         "name": "Jane Doe",
         "friends": [
           {
-            "$ref": "prim-id-3"
+            "$ref": "Person#prim-id-3"
           },
           {
+            "$refId": "Person#prim-id-1",
             "_id": "prim-id-1",
             "age": 42,
             "name": "John Doe",
             "friends": [
               {
-                "$ref": "prim-id-1"
+                "$ref": "Person#prim-id-1"
               },
               {
-                "$ref": "prim-id-2"
+                "$ref": "Person#prim-id-2"
               },
               {
-                "$ref": "prim-id-3"
+                "$ref": "Person#prim-id-3"
               }
             ]
           }
