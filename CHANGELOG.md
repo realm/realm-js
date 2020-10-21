@@ -5,6 +5,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed a bug preventing caching of Realm instances. In certain cases, the Realm file would grow without any new objects added. ([](), since v6.0.0).
+* Fixed an issue in `toJSON()`, in combination with primaryKeys, where data from another table could be returned. ([#3331](https://github.com/realm/realm-js/issues/3331), since v6.1.0)
+* Fixed an issue in `toJSON()` where `data` would output as `{}`, it now returns the data base64 encoded. ([#3356](https://github.com/realm/realm-js/pull/3356), since v6.1.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
