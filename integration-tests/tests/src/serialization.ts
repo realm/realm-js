@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { ObjectId } from "bson";
 
 import {
     IPerson,
@@ -34,7 +35,6 @@ import {
 } from "./schemas/person-and-dog-with-object-ids";
 import * as circularCollectionResult from "./structures/circular-collection-result.json";
 import * as circularCollectionResultWithIds from "./structures/circular-collection-result-with-object-ids.json";
-import { ObjectId } from "bson";
 
 describe("JSON serialization (exposed properties)", () => {
     it("JsonSerializationReplacer is exposed on the Realm constructor", () => {
