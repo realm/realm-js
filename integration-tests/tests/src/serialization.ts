@@ -269,12 +269,13 @@ describe("JSON serialization", () => {
                 });
 
                 it("serializes to expected output using Realm.JsonSerializationReplacer", () => {
-                    expect(
-                        JSON.stringify(
-                            persons[0],
-                            Realm.JsonSerializationReplacer
-                        )
-                    ).equals(JSON.stringify(predefinedStructure[0]));
+                    const json = JSON.stringify(
+                        persons[0],
+                        Realm.JsonSerializationReplacer
+                    );
+                    const generated = JSON.parse(json);
+
+                    expect(generated).deep.equals(predefinedStructure[0]);
                 });
             });
 
@@ -299,9 +300,13 @@ describe("JSON serialization", () => {
                 });
 
                 it("serializes to expected output using Realm.JsonSerializationReplacer", () => {
-                    expect(
-                        JSON.stringify(persons, Realm.JsonSerializationReplacer)
-                    ).equals(JSON.stringify(predefinedStructure));
+                    const json = JSON.stringify(
+                        persons,
+                        Realm.JsonSerializationReplacer
+                    );
+                    const generated = JSON.parse(json);
+
+                    expect(generated).deep.equals(predefinedStructure);
                 });
             });
         });
