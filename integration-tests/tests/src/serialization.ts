@@ -19,19 +19,21 @@
 import { expect } from "chai";
 
 import {
-    Dog as DogWithId,
-    DogSchema as DogSchemaWithId,
-    IPerson as IPersonWithId,
-    Person as PersonWithId,
-    PersonSchema as PersonSchemaWithId
-} from "./schemas/person-and-dog-with-primary-ids";
+    IPlaylist as IPlaylistNoId,
+    ISong as ISongNoId,
+    Playlist as PlaylistNoId,
+    PlaylistSchema as PlaylistSchemaNoId,
+    Song as SongNoId,
+    SongSchema as SongSchemaNoId
+} from "./schemas/playlist-with-songs";
 import {
-    Dog,
-    DogSchema,
-    IPerson,
-    Person,
-    PersonSchema
-} from "./schemas/person-and-dogs";
+    IPlaylist as IPlaylistWithId,
+    ISong as ISongWithId,
+    Playlist as PlaylistWithId,
+    PlaylistSchema as PlaylistSchemaWithId,
+    Song as SongWithId,
+    SongSchema as SongSchemaWithId
+} from "./schemas/playlist-with-songs-with-ids";
 import * as circularCollectionResultWithIds from "./structures/circular-collection-result-with-primary-ids.json";
 import * as circularCollectionResult from "./structures/circular-collection-result.json";
 
@@ -50,38 +52,97 @@ interface ITestSetup {
     };
 }
 
+/**
+ * Create test data (TestSetups) in 4 ways, with the same data structure:
+ * 1. Literals without primaryKeys
+ * 2. Class Models without primaryKeys
+ * 3. Literals with primaryKeys
+ * 4. Class Models with primaryKeys
+ */
 const testSetups: ITestSetup[] = [
     {
-        name: "Object literal",
+        name: "Object literal (NO primaryKey)",
         testData: () => {
             const realm = new Realm({
-                schema: [PersonSchema, DogSchema],
-                inMemory: true
+                inMemory: true,
+                schema: [PlaylistSchemaNoId, SongSchemaNoId]
             });
 
             realm.write(() => {
-                const john = realm.create<IPerson>(PersonSchema.name, {
-                    name: "John Doe",
-                    age: 42
+                // Shared songs
+                const s1 = realm.create<ISongNoId>(SongSchemaNoId.name, {
+                    artist: "Shared artist name 1",
+                    title: "Shared title name 1"
                 });
-                const jane = realm.create<IPerson>(PersonSchema.name, {
-                    name: "Jane Doe",
-                    age: 40
+                const s2 = realm.create<ISongNoId>(SongSchemaNoId.name, {
+                    artist: "Shared artist name 2",
+                    title: "Shared title name 2"
                 });
-                const tony = realm.create<IPerson>(PersonSchema.name, {
-                    name: "Tony Doe",
-                    age: 35
+                const s3 = realm.create<ISongNoId>(SongSchemaNoId.name, {
+                    artist: "Shared artist name 3",
+                    title: "Shared title name 3"
                 });
 
-                // ensure circular references
-                john.friends.push(john);
-                john.friends.push(jane);
-                john.friends.push(tony);
+                // Playlists
+                const p1 = realm.create<IPlaylistNoId>(
+                    PlaylistSchemaNoId.name,
+                    {
+                        title: "Playlist 1",
+                        songs: [
+                            s1,
+                            s2,
+                            s3,
+                            {
+                                artist: "Unique artist 1",
+                                title: "Unique title 1"
+                            },
+                            {
+                                artist: "Unique artist 2",
+                                title: "Unique title 2"
+                            }
+                        ]
+                    }
+                );
+                const p2 = realm.create<IPlaylistNoId>(
+                    PlaylistSchemaNoId.name,
+                    {
+                        title: "Playlist 2",
+                        songs: [
+                            {
+                                artist: "Unique artist 3",
+                                title: "Unique title 3"
+                            },
+                            {
+                                artist: "Unique artist 4",
+                                title: "Unique title 4"
+                            },
+                            s3
+                        ],
+                        related: [p1]
+                    }
+                );
+                const p3 = realm.create<IPlaylistNoId>(
+                    PlaylistSchemaNoId.name,
+                    {
+                        title: "Playlist 3",
+                        songs: [
+                            s1,
+                            {
+                                artist: "Unique artist 5",
+                                title: "Unique title 5"
+                            },
+                            {
+                                artist: "Unique artist 6",
+                                title: "Unique title 6"
+                            },
+                            s2
+                        ],
+                        related: [p1, p2]
+                    }
+                );
 
-                jane.friends.push(tony);
-                jane.friends.push(john);
-
-                tony.friends.push(jane);
+                // ensure circular references for p1 (ensure p1 reference self fist)
+                p1.related.push(p1, p2, p3); // test self reference
             });
 
             return {
@@ -91,33 +152,61 @@ const testSetups: ITestSetup[] = [
         }
     },
     {
-        name: "Class models",
+        name: "Class models (NO primaryKey)",
         testData: () => {
-            const realm = new Realm({ schema: [Person, Dog], inMemory: true });
+            const realm = new Realm({
+                inMemory: true,
+                schema: [PlaylistNoId, SongNoId]
+            });
 
             realm.write(() => {
-                const john = realm.create(Person, {
-                    name: "John Doe",
-                    age: 42
+                // Shared songs
+                const s1 = realm.create(SongNoId, {
+                    artist: "Shared artist name 1",
+                    title: "Shared title name 1"
                 });
-                const jane = realm.create(Person, {
-                    name: "Jane Doe",
-                    age: 40
+                const s2 = realm.create(SongNoId, {
+                    artist: "Shared artist name 2",
+                    title: "Shared title name 2"
                 });
-                const tony = realm.create(Person, {
-                    name: "Tony Doe",
-                    age: 35
+                const s3 = realm.create(SongNoId, {
+                    artist: "Shared artist name 3",
+                    title: "Shared title name 3"
                 });
 
-                // ensure circular references
-                john.friends.push(john);
-                john.friends.push(jane);
-                john.friends.push(tony);
+                // Playlists
+                const p1 = realm.create(PlaylistNoId, {
+                    title: "Playlist 1",
+                    songs: [
+                        s1,
+                        s2,
+                        s3,
+                        { artist: "Unique artist 1", title: "Unique title 1" },
+                        { artist: "Unique artist 2", title: "Unique title 2" }
+                    ]
+                });
+                const p2 = realm.create(PlaylistNoId, {
+                    title: "Playlist 2",
+                    songs: [
+                        { artist: "Unique artist 3", title: "Unique title 3" },
+                        { artist: "Unique artist 4", title: "Unique title 4" },
+                        s3
+                    ],
+                    related: [p1]
+                });
+                const p3 = realm.create(PlaylistNoId, {
+                    title: "Playlist 3",
+                    songs: [
+                        s1,
+                        { artist: "Unique artist 5", title: "Unique title 5" },
+                        { artist: "Unique artist 6", title: "Unique title 6" },
+                        s2
+                    ],
+                    related: [p1, p2]
+                });
 
-                jane.friends.push(tony);
-                jane.friends.push(john);
-
-                tony.friends.push(jane);
+                // ensure circular references for p1 (ensure p1 reference self fist)
+                p1.related.push(p1, p2, p3); // test self reference
             });
 
             return {
@@ -127,48 +216,100 @@ const testSetups: ITestSetup[] = [
         }
     },
     {
-        name: "Object literal with primary _id",
+        name: "Object literal (Int primaryKey)",
         testData: () => {
             const realm = new Realm({
-                schema: [PersonSchemaWithId, DogSchemaWithId],
-                inMemory: true
+                inMemory: true,
+                schema: [PlaylistSchemaWithId, SongSchemaWithId]
             });
 
             realm.write(() => {
-                const john = realm.create<IPersonWithId>(
-                    PersonSchemaWithId.name,
+                // Shared songs
+                const s1 = realm.create<ISongWithId>(SongSchemaWithId.name, {
+                    _id: 1,
+                    artist: "Shared artist name 1",
+                    title: "Shared title name 1"
+                });
+                const s2 = realm.create<ISongWithId>(SongSchemaWithId.name, {
+                    _id: 2,
+                    artist: "Shared artist name 2",
+                    title: "Shared title name 2"
+                });
+                const s3 = realm.create<ISongWithId>(SongSchemaWithId.name, {
+                    _id: 3,
+                    artist: "Shared artist name 3",
+                    title: "Shared title name 3"
+                });
+
+                // Playlists
+                const p1 = realm.create<IPlaylistWithId>(
+                    PlaylistSchemaWithId.name,
                     {
-                        _id: "prim-id-1",
-                        name: "John Doe",
-                        age: 42
+                        _id: 1,
+                        title: "Playlist 1",
+                        songs: [
+                            s1,
+                            s2,
+                            s3,
+                            {
+                                _id: 4,
+                                artist: "Unique artist 1",
+                                title: "Unique title 1"
+                            },
+                            {
+                                _id: 5,
+                                artist: "Unique artist 2",
+                                title: "Unique title 2"
+                            }
+                        ]
                     }
                 );
-                const jane = realm.create<IPersonWithId>(
-                    PersonSchemaWithId.name,
+                const p2 = realm.create<IPlaylistWithId>(
+                    PlaylistSchemaWithId.name,
                     {
-                        _id: "prim-id-2",
-                        name: "Jane Doe",
-                        age: 40
+                        _id: 2,
+                        title: "Playlist 2",
+                        songs: [
+                            {
+                                _id: 6,
+                                artist: "Unique artist 3",
+                                title: "Unique title 3"
+                            },
+                            {
+                                _id: 7,
+                                artist: "Unique artist 4",
+                                title: "Unique title 4"
+                            },
+                            s3
+                        ],
+                        related: [p1]
                     }
                 );
-                const tony = realm.create<IPersonWithId>(
-                    PersonSchemaWithId.name,
+                const p3 = realm.create<IPlaylistWithId>(
+                    PlaylistSchemaWithId.name,
                     {
-                        _id: "prim-id-3",
-                        name: "Tony Doe",
-                        age: 35
+                        _id: 3,
+                        title: "Playlist 3",
+                        songs: [
+                            s1,
+                            {
+                                _id: 8,
+                                artist: "Unique artist 5",
+                                title: "Unique title 5"
+                            },
+                            {
+                                _id: 9,
+                                artist: "Unique artist 6",
+                                title: "Unique title 6"
+                            },
+                            s2
+                        ],
+                        related: [p1, p2]
                     }
                 );
 
-                // ensure circular references
-                john.friends.push(john);
-                john.friends.push(jane);
-                john.friends.push(tony);
-
-                jane.friends.push(tony);
-                jane.friends.push(john);
-
-                tony.friends.push(jane);
+                // ensure circular references for p1 (ensure p1 reference self fist)
+                p1.related.push(p1, p2, p3); // test self reference
             });
 
             return {
@@ -178,39 +319,91 @@ const testSetups: ITestSetup[] = [
         }
     },
     {
-        name: "Class models with primary _id",
+        name: "Class models (Int primaryKey)",
         testData: () => {
             const realm = new Realm({
-                schema: [PersonWithId, DogWithId],
-                inMemory: true
+                inMemory: true,
+                schema: [PlaylistWithId, SongWithId]
             });
 
             realm.write(() => {
-                const john = realm.create(PersonWithId, {
-                    _id: "prim-id-1",
-                    name: "John Doe",
-                    age: 42
+                // Shared songs
+                const s1 = realm.create(SongWithId, {
+                    _id: 1,
+                    artist: "Shared artist name 1",
+                    title: "Shared title name 1"
                 });
-                const jane = realm.create(PersonWithId, {
-                    _id: "prim-id-2",
-                    name: "Jane Doe",
-                    age: 40
+                const s2 = realm.create(SongWithId, {
+                    _id: 2,
+                    artist: "Shared artist name 2",
+                    title: "Shared title name 2"
                 });
-                const tony = realm.create(PersonWithId, {
-                    _id: "prim-id-3",
-                    name: "Tony Doe",
-                    age: 35
+                const s3 = realm.create(SongWithId, {
+                    _id: 3,
+                    artist: "Shared artist name 3",
+                    title: "Shared title name 3"
                 });
 
-                // ensure circular references
-                john.friends.push(john);
-                john.friends.push(jane);
-                john.friends.push(tony);
+                // Playlists
+                const p1 = realm.create(PlaylistWithId, {
+                    _id: 1,
+                    title: "Playlist 1",
+                    songs: [
+                        s1,
+                        s2,
+                        s3,
+                        {
+                            _id: 4,
+                            artist: "Unique artist 1",
+                            title: "Unique title 1"
+                        },
+                        {
+                            _id: 5,
+                            artist: "Unique artist 2",
+                            title: "Unique title 2"
+                        }
+                    ]
+                });
+                const p2 = realm.create(PlaylistWithId, {
+                    _id: 2,
+                    title: "Playlist 2",
+                    songs: [
+                        {
+                            _id: 6,
+                            artist: "Unique artist 3",
+                            title: "Unique title 3"
+                        },
+                        {
+                            _id: 7,
+                            artist: "Unique artist 4",
+                            title: "Unique title 4"
+                        },
+                        s3
+                    ],
+                    related: [p1]
+                });
+                const p3 = realm.create(PlaylistWithId, {
+                    _id: 3,
+                    title: "Playlist 3",
+                    songs: [
+                        s1,
+                        {
+                            _id: 8,
+                            artist: "Unique artist 5",
+                            title: "Unique title 5"
+                        },
+                        {
+                            _id: 9,
+                            artist: "Unique artist 6",
+                            title: "Unique title 6"
+                        },
+                        s2
+                    ],
+                    related: [p1, p2]
+                });
 
-                jane.friends.push(tony);
-                jane.friends.push(john);
-
-                tony.friends.push(jane);
+                // ensure circular references for p1 (ensure p1 reference self fist)
+                p1.related.push(p1, p2, p3); // test self reference
             });
 
             return {
@@ -222,46 +415,64 @@ const testSetups: ITestSetup[] = [
 ];
 
 describe("JSON serialization", () => {
-    let testSetup: ITestSetup;
-    let realm: Realm | null;
-    let predefinedStructure: any;
-    let persons: Realm.Results<any>;
-
-    beforeEach(() => {
-        ({ realm, predefinedStructure } = testSetup.testData());
-        persons = realm.objects(PersonSchema.name).sorted("age", true);
-    });
-
-    afterEach(() => {
-        if (realm) {
-            realm.write(() => {
-                realm.deleteAll();
-            });
-            realm.close();
-            realm = null;
-        }
-    });
-
-    testSetups.forEach(ts => {
-        // expose testSetup to predefined before/after hooks
-        testSetup = ts;
+    for (const ts of testSetups) {
+        const testSetup = ts;
 
         describe(`Repeated test for "${testSetup.name}":`, () => {
+            let realm: Realm | null;
+            let predefinedStructure: any;
+            let playlists: Realm.Results<any>;
+
+            beforeEach(() => {
+                ({ realm, predefinedStructure } = testSetup.testData());
+                playlists = realm
+                    .objects(PlaylistSchemaNoId.name)
+                    .sorted("title");
+            });
+
+            afterEach(() => {
+                if (realm) {
+                    realm.write(() => {
+                        realm.deleteAll();
+                    });
+                    realm.close();
+                    realm = null;
+                }
+            });
+
             describe("Realm.Object", () => {
+                it("extends Realm.Object", () => {
+                    // Check that entries in the result set extends Realm.Object.
+                    expect(playlists[0]).instanceOf(Realm.Object);
+                });
+
                 it("implements toJSON", () => {
-                    expect(typeof persons[0].toJSON).equals("function");
+                    // Check that fist Playlist has toJSON implemented.
+                    expect(typeof playlists[0].toJSON).equals("function");
                 });
 
                 it("toJSON returns a circular structure", () => {
-                    const serializable = persons[0].toJSON();
+                    const serializable = playlists[0].toJSON();
 
+                    // Check that known functions on Realm.Object no longer resides on the serializable object.
                     expect(serializable.objectSchema).equals(undefined);
-                    expect(serializable.friends).instanceOf(Array);
-                    expect(serializable).equals(serializable.friends[0]);
+
+                    // Check that linked list is not a Realm entity.
+                    expect(serializable.related).not.instanceOf(
+                        Realm.Collection
+                    );
+                    // But is a plain Array
+                    expect(Array.isArray(serializable.related)).equals(true);
+
+                    // Check that the serializable object is the same as the first related object.
+                    // (this check only makes sense because of our structure)
+                    expect(serializable).equals(serializable.related[0]);
                 });
 
                 it("throws correct error on serialization", () => {
-                    expect(() => JSON.stringify(persons)).throws(
+                    // Check that we get a circular structure error.
+                    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
+                    expect(() => JSON.stringify(playlists[0])).throws(
                         TypeError,
                         /circular|cyclic/i
                     );
@@ -269,30 +480,56 @@ describe("JSON serialization", () => {
 
                 it("serializes to expected output using Realm.JsonSerializationReplacer", () => {
                     const json = JSON.stringify(
-                        persons[0],
+                        playlists[0],
                         Realm.JsonSerializationReplacer
                     );
                     const generated = JSON.parse(json);
 
+                    // Check that we get the expected structure.
+                    // (parsing back to an object & using deep equals, as we can't rely on property order)
                     expect(generated).deep.equals(predefinedStructure[0]);
                 });
             });
 
             describe("Realm.Results", () => {
+                it("extends Realm.Collection", () => {
+                    // Check that the result set extends Realm.Collection.
+                    expect(playlists).instanceOf(Realm.Collection);
+                });
+
                 it("implements toJSON", () => {
-                    expect(typeof persons.toJSON).equals("function");
+                    expect(typeof playlists.toJSON).equals("function");
                 });
 
                 it("toJSON returns a circular structure", () => {
-                    const serializable = persons.toJSON();
+                    const serializable = playlists.toJSON();
 
-                    expect(serializable).instanceOf(Array);
-                    expect(serializable[0].friends).instanceOf(Array);
-                    expect(serializable[0]).equals(serializable[0].friends[0]);
+                    // Check that the serializable object is not a Realm entity.
+                    expect(serializable).not.instanceOf(Realm.Collection);
+                    // But is a plain Array
+                    expect(Array.isArray(serializable)).equals(true);
+
+                    // Check that the serializable object is not a Realm entity.
+                    expect(serializable).not.instanceOf(Realm.Collection);
+                    // But is a plain Array
+                    expect(Array.isArray(serializable)).equals(true);
+
+                    // Check that linked list is not a Realm entity.
+                    expect(serializable[0].related).not.instanceOf(
+                        Realm.Collection
+                    );
+                    // But is a plain Array
+                    expect(Array.isArray(serializable[0].related)).equals(true);
+
+                    // Check that the serializable object is the same as the first related object.
+                    // (this check only makes sense because of our structure)
+                    expect(serializable[0]).equals(serializable[0].related[0]);
                 });
 
                 it("throws correct error on serialization", () => {
-                    expect(() => JSON.stringify(persons)).throws(
+                    // Check that we get a circular structure error.
+                    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
+                    expect(() => JSON.stringify(playlists)).throws(
                         TypeError,
                         /circular|cyclic/i
                     );
@@ -300,14 +537,16 @@ describe("JSON serialization", () => {
 
                 it("serializes to expected output using Realm.JsonSerializationReplacer", () => {
                     const json = JSON.stringify(
-                        persons,
+                        playlists,
                         Realm.JsonSerializationReplacer
                     );
                     const generated = JSON.parse(json);
 
+                    // Check that we get the expected structure.
+                    // (parsing back to an object & using deep equals, as we can't rely on property order)
                     expect(generated).deep.equals(predefinedStructure);
                 });
             });
         });
-    });
+    }
 });

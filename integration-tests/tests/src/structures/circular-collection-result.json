@@ -1,47 +1,116 @@
 [
   {
-    "$refId": "Person{0000-0000}",
-    "age": 42,
-    "name": "John Doe",
-    "friends": [
+    "$refId": "Playlist#{0000-0000}",
+    "title": "Playlist 1",
+    "songs": [
       {
-        "$ref": "Person{0000-0000}"
+        "$refId": "Song#{0000-0000}",
+        "artist": "Shared artist name 1",
+        "title": "Shared title name 1"
       },
       {
-        "$refId": "Person{0000-0001}",
-        "age": 40,
-        "name": "Jane Doe",
-        "friends": [
+        "$refId": "Song#{0000-0001}",
+        "artist": "Shared artist name 2",
+        "title": "Shared title name 2"
+      },
+      {
+        "$refId": "Song#{0000-0002}",
+        "artist": "Shared artist name 3",
+        "title": "Shared title name 3"
+      },
+      {
+        "$refId": "Song#{0000-0003}",
+        "artist": "Unique artist 1",
+        "title": "Unique title 1"
+      },
+      {
+        "$refId": "Song#{0000-0004}",
+        "artist": "Unique artist 2",
+        "title": "Unique title 2"
+      }
+    ],
+    "related": [
+      {
+        "$ref": "Playlist#{0000-0000}"
+      },
+      {
+        "$refId": "Playlist#{0000-0001}",
+        "title": "Playlist 2",
+        "songs": [
           {
-            "$refId": "Person{0000-0002}",
-            "age": 35,
-            "name": "Tony Doe",
-            "friends": [
-              {
-                "$ref": "Person{0000-0001}"
-              }
-            ]
+            "$refId": "Song#{0000-0005}",
+            "artist": "Unique artist 3",
+            "title": "Unique title 3"
           },
           {
-            "$ref": "Person{0000-0000}"
+            "$refId": "Song#{0000-0006}",
+            "artist": "Unique artist 4",
+            "title": "Unique title 4"
+          },
+          {
+            "$refId": "Song#{0000-0002}",
+            "artist": "Shared artist name 3",
+            "title": "Shared title name 3"
+          }
+        ],
+        "related": [
+          {
+            "$ref": "Playlist#{0000-0000}"
           }
         ]
       },
       {
-        "$refId": "Person{0000-0002}",
-        "age": 35,
-        "name": "Tony Doe",
-        "friends": [
+        "$refId": "Playlist#{0000-0002}",
+        "title": "Playlist 3",
+        "songs": [
           {
-            "$refId": "Person{0000-0001}",
-            "age": 40,
-            "name": "Jane Doe",
-            "friends": [
+            "$refId": "Song#{0000-0000}",
+            "artist": "Shared artist name 1",
+            "title": "Shared title name 1"
+          },
+          {
+            "$refId": "Song#{0000-0007}",
+            "artist": "Unique artist 5",
+            "title": "Unique title 5"
+          },
+          {
+            "$refId": "Song#{0000-0008}",
+            "artist": "Unique artist 6",
+            "title": "Unique title 6"
+          },
+          {
+            "$refId": "Song#{0000-0001}",
+            "artist": "Shared artist name 2",
+            "title": "Shared title name 2"
+          }
+        ],
+        "related": [
+          {
+            "$ref": "Playlist#{0000-0000}"
+          },
+          {
+            "$refId": "Playlist#{0000-0001}",
+            "title": "Playlist 2",
+            "songs": [
               {
-                "$ref": "Person{0000-0002}"
+                "$refId": "Song#{0000-0005}",
+                "artist": "Unique artist 3",
+                "title": "Unique title 3"
               },
               {
-                "$ref": "Person{0000-0000}"
+                "$refId": "Song#{0000-0006}",
+                "artist": "Unique artist 4",
+                "title": "Unique title 4"
+              },
+              {
+                "$refId": "Song#{0000-0002}",
+                "artist": "Shared artist name 3",
+                "title": "Shared title name 3"
+              }
+            ],
+            "related": [
+              {
+                "$ref": "Playlist#{0000-0000}"
               }
             ]
           }
@@ -50,38 +119,94 @@
     ]
   },
   {
-    "$refId": "Person{0000-0001}",
-    "age": 40,
-    "name": "Jane Doe",
-    "friends": [
+    "$refId": "Playlist#{0000-0001}",
+    "title": "Playlist 2",
+    "songs": [
       {
-        "$refId": "Person{0000-0002}",
-        "age": 35,
-        "name": "Tony Doe",
-        "friends": [
-          {
-            "$ref": "Person{0000-0001}"
-          }
-        ]
+        "$refId": "Song#{0000-0005}",
+        "artist": "Unique artist 3",
+        "title": "Unique title 3"
       },
       {
-        "$refId": "Person{0000-0000}",
-        "age": 42,
-        "name": "John Doe",
-        "friends": [
+        "$refId": "Song#{0000-0006}",
+        "artist": "Unique artist 4",
+        "title": "Unique title 4"
+      },
+      {
+        "$refId": "Song#{0000-0002}",
+        "artist": "Shared artist name 3",
+        "title": "Shared title name 3"
+      }
+    ],
+    "related": [
+      {
+        "$refId": "Playlist#{0000-0000}",
+        "title": "Playlist 1",
+        "songs": [
           {
-            "$ref": "Person{0000-0000}"
+            "$refId": "Song#{0000-0000}",
+            "artist": "Shared artist name 1",
+            "title": "Shared title name 1"
           },
           {
-            "$ref": "Person{0000-0001}"
+            "$refId": "Song#{0000-0001}",
+            "artist": "Shared artist name 2",
+            "title": "Shared title name 2"
           },
           {
-            "$refId": "Person{0000-0002}",
-            "age": 35,
-            "name": "Tony Doe",
-            "friends": [
+            "$refId": "Song#{0000-0002}",
+            "artist": "Shared artist name 3",
+            "title": "Shared title name 3"
+          },
+          {
+            "$refId": "Song#{0000-0003}",
+            "artist": "Unique artist 1",
+            "title": "Unique title 1"
+          },
+          {
+            "$refId": "Song#{0000-0004}",
+            "artist": "Unique artist 2",
+            "title": "Unique title 2"
+          }
+        ],
+        "related": [
+          {
+            "$ref": "Playlist#{0000-0000}"
+          },
+          {
+            "$ref": "Playlist#{0000-0001}"
+          },
+          {
+            "$refId": "Playlist#{0000-0002}",
+            "title": "Playlist 3",
+            "songs": [
               {
-                "$ref": "Person{0000-0001}"
+                "$refId": "Song#{0000-0000}",
+                "artist": "Shared artist name 1",
+                "title": "Shared title name 1"
+              },
+              {
+                "$refId": "Song#{0000-0007}",
+                "artist": "Unique artist 5",
+                "title": "Unique title 5"
+              },
+              {
+                "$refId": "Song#{0000-0008}",
+                "artist": "Unique artist 6",
+                "title": "Unique title 6"
+              },
+              {
+                "$refId": "Song#{0000-0001}",
+                "artist": "Shared artist name 2",
+                "title": "Shared title name 2"
+              }
+            ],
+            "related": [
+              {
+                "$ref": "Playlist#{0000-0000}"
+              },
+              {
+                "$ref": "Playlist#{0000-0001}"
               }
             ]
           }
@@ -90,31 +215,156 @@
     ]
   },
   {
-    "$refId": "Person{0000-0002}",
-    "age": 35,
-    "name": "Tony Doe",
-    "friends": [
+    "$refId": "Playlist#{0000-0002}",
+    "title": "Playlist 3",
+    "songs": [
       {
-        "$refId": "Person{0000-0001}",
-        "age": 40,
-        "name": "Jane Doe",
-        "friends": [
+        "$refId": "Song#{0000-0000}",
+        "artist": "Shared artist name 1",
+        "title": "Shared title name 1"
+      },
+      {
+        "$refId": "Song#{0000-0007}",
+        "artist": "Unique artist 5",
+        "title": "Unique title 5"
+      },
+      {
+        "$refId": "Song#{0000-0008}",
+        "artist": "Unique artist 6",
+        "title": "Unique title 6"
+      },
+      {
+        "$refId": "Song#{0000-0001}",
+        "artist": "Shared artist name 2",
+        "title": "Shared title name 2"
+      }
+    ],
+    "related": [
+      {
+        "$refId": "Playlist#{0000-0000}",
+        "title": "Playlist 1",
+        "songs": [
           {
-            "$ref": "Person{0000-0002}"
+            "$refId": "Song#{0000-0000}",
+            "artist": "Shared artist name 1",
+            "title": "Shared title name 1"
           },
           {
-            "$refId": "Person{0000-0000}",
-            "age": 42,
-            "name": "John Doe",
-            "friends": [
+            "$refId": "Song#{0000-0001}",
+            "artist": "Shared artist name 2",
+            "title": "Shared title name 2"
+          },
+          {
+            "$refId": "Song#{0000-0002}",
+            "artist": "Shared artist name 3",
+            "title": "Shared title name 3"
+          },
+          {
+            "$refId": "Song#{0000-0003}",
+            "artist": "Unique artist 1",
+            "title": "Unique title 1"
+          },
+          {
+            "$refId": "Song#{0000-0004}",
+            "artist": "Unique artist 2",
+            "title": "Unique title 2"
+          }
+        ],
+        "related": [
+          {
+            "$ref": "Playlist#{0000-0000}"
+          },
+          {
+            "$refId": "Playlist#{0000-0001}",
+            "title": "Playlist 2",
+            "songs": [
               {
-                "$ref": "Person{0000-0000}"
+                "$refId": "Song#{0000-0005}",
+                "artist": "Unique artist 3",
+                "title": "Unique title 3"
               },
               {
-                "$ref": "Person{0000-0001}"
+                "$refId": "Song#{0000-0006}",
+                "artist": "Unique artist 4",
+                "title": "Unique title 4"
               },
               {
-                "$ref": "Person{0000-0002}"
+                "$refId": "Song#{0000-0002}",
+                "artist": "Shared artist name 3",
+                "title": "Shared title name 3"
+              }
+            ],
+            "related": [
+              {
+                "$ref": "Playlist#{0000-0000}"
+              }
+            ]
+          },
+          {
+            "$ref": "Playlist#{0000-0002}"
+          }
+        ]
+      },
+      {
+        "$refId": "Playlist#{0000-0001}",
+        "title": "Playlist 2",
+        "songs": [
+          {
+            "$refId": "Song#{0000-0005}",
+            "artist": "Unique artist 3",
+            "title": "Unique title 3"
+          },
+          {
+            "$refId": "Song#{0000-0006}",
+            "artist": "Unique artist 4",
+            "title": "Unique title 4"
+          },
+          {
+            "$refId": "Song#{0000-0002}",
+            "artist": "Shared artist name 3",
+            "title": "Shared title name 3"
+          }
+        ],
+        "related": [
+          {
+            "$refId": "Playlist#{0000-0000}",
+            "title": "Playlist 1",
+            "songs": [
+              {
+                "$refId": "Song#{0000-0000}",
+                "artist": "Shared artist name 1",
+                "title": "Shared title name 1"
+              },
+              {
+                "$refId": "Song#{0000-0001}",
+                "artist": "Shared artist name 2",
+                "title": "Shared title name 2"
+              },
+              {
+                "$refId": "Song#{0000-0002}",
+                "artist": "Shared artist name 3",
+                "title": "Shared title name 3"
+              },
+              {
+                "$refId": "Song#{0000-0003}",
+                "artist": "Unique artist 1",
+                "title": "Unique title 1"
+              },
+              {
+                "$refId": "Song#{0000-0004}",
+                "artist": "Unique artist 2",
+                "title": "Unique title 2"
+              }
+            ],
+            "related": [
+              {
+                "$ref": "Playlist#{0000-0000}"
+              },
+              {
+                "$ref": "Playlist#{0000-0001}"
+              },
+              {
+                "$ref": "Playlist#{0000-0002}"
               }
             ]
           }
