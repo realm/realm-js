@@ -64,7 +64,6 @@ const testSetups: TestSetup[] = [
         name: "Object literal (NO primaryKey)",
         testData: () => {
             const realm = new Realm({
-                path: "test-realms/obj-literal.realm",
                 inMemory: true,
                 schema: [PlaylistSchemaNoId, SongSchemaNoId],
             });
@@ -156,7 +155,6 @@ const testSetups: TestSetup[] = [
         name: "Class models (NO primaryKey)",
         testData: () => {
             const realm = new Realm({
-                path: "test-realms/class-models.realm",
                 inMemory: true,
                 schema: [PlaylistNoId, SongNoId],
             });
@@ -221,7 +219,6 @@ const testSetups: TestSetup[] = [
         name: "Object literal (Int primaryKey)",
         testData: () => {
             const realm = new Realm({
-                path: "test-realms/obj-literal-keys.realm",
                 inMemory: true,
                 schema: [PlaylistSchemaWithId, SongSchemaWithId],
             });
@@ -325,7 +322,6 @@ const testSetups: TestSetup[] = [
         name: "Class models (Int primaryKey)",
         testData: () => {
             const realm = new Realm({
-                path: "test-realms/class-models-keys.realm",
                 inMemory: true,
                 schema: [PlaylistWithId, SongWithId],
             });
