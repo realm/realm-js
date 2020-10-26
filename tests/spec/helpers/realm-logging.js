@@ -21,7 +21,7 @@ function setupLogging(Realm) {
 
 function patch(Realm) {
     // Run only if Realm was build with sync enabled.
-    if (Realm.App.Sync) {
+    if (Realm.App) {
         // Monkey-patching clearTestState, because the sync sessions logger gets reset.
         // @see https://github.com/realm/realm-object-store/blob/d7e0867626a6868749e7e8bf55c64c6fbb2e3189/src/sync/sync_manager.cpp#L239-L240
         const originalClearTestState = Realm.clearTestState;
