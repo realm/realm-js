@@ -1998,6 +1998,19 @@ module.exports = {
         realm.close();
     },
 
+    testOptionalObjectId: function() {
+        const realm = new Realm({schema: [schemas.OptionalObjectIdObject]});
+
+        realm.write(() => {
+            realm.create(schemas.ObjectIdObject.name, { id: new ObjectId(null) });
+        });
+
+        let objects = realm.objects(schemas.ObjectIdObject.name);
+        TestCase.assertEqual(objects.length, 1);
+
+        realm.close();
+    },
+
     testObjectIdFromTimestamp: function() {
         const realm = new Realm({schema: [schemas.ObjectIdObject]});
         let values = [1, 1000000000, 2000000000];

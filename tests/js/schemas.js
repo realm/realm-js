@@ -52,6 +52,13 @@ exports.ObjectIdObject = {
     }
 };
 
+exports.OptionalObjectIdObject = {
+    name: "ObjectIdObject",
+    properties: {
+        id: "objectId?"
+    }
+};
+
 function PersonObject() {}
 PersonObject.schema = {
     name: 'PersonObject',
