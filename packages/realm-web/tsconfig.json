@@ -22,7 +22,6 @@
 	},
 	"include": [
 		"types/realm/app.d.ts",
-		"types/realm/bson.d.ts",
 		"types/realm/services.d.ts",
 		"types/realm/auth-providers.d.ts",
 		"types/environment.d.ts",

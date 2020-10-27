@@ -19,8 +19,9 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
-/// <reference path="./bson.d.ts"/>
 /// <reference path="./app.d.ts"/>
+
+type ObjectId = import("bson").ObjectId;
 
 declare namespace Realm {
     interface CollectionChangeSet {
@@ -98,7 +99,7 @@ declare namespace Realm {
 
     interface SyncConfiguration {
         user: User;
-        partitionValue: string|number|ObjectId|null;
+        partitionValue: string|number|Realm.BSON.ObjectId|null;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
@@ -444,6 +445,8 @@ declare namespace Realm {
          */
         const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
     }
+
+    const BSON: typeof import("bson");
 }
 
 interface ProgressPromise extends Promise<Realm> {
@@ -581,14 +584,14 @@ declare class Realm {
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string, key: number | string | Realm.ObjectId): (T & Realm.Object) | undefined;
+    objectForPrimaryKey<T>(type: string, key: number | string | Realm.BSON.ObjectId): (T & Realm.Object) | undefined;
 
     /**
      * @param  {Class} type
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | Realm.ObjectId): T | undefined;
+    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | ObjectId): T | undefined;
 
     /**
      * @param  {string} type

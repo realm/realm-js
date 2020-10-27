@@ -16,10 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-declare namespace Realm {
-    // See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
-    type ObjectId = import("bson").ObjectId;
-    type Binary = import("bson").Binary;
-    type Long = import("bson").Long;
-    type Timestamp = import("bson").Timestamp;
-}
+import { expect } from "chai";
+import { BSON } from "realm-web";
+
+describe("BSON", () => {
+    it("gets exported", () => {
+        expect(typeof BSON).equals("object");
+    });
+
+    it("can construct an ObjectId", () => {
+        const objectId = new BSON.ObjectId();
+        expect(objectId).instanceOf(BSON.ObjectId);
+        expect(typeof objectId.toHexString()).equals("string");
+    });
+
+    it("can parse EJSON", () => {
+        const result = BSON.EJSON.parse('{ "int32": { "$numberInt": "10" } }', {
+            relaxed: false,
+        }) as { int32: BSON.Int32 };
+        expect(typeof result).equals("object");
+        expect(typeof result.int32).equals("object");
+        expect(result.int32).instanceOf(BSON.Int32);
+    });
+});
