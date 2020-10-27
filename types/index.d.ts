@@ -99,7 +99,7 @@ declare namespace Realm {
 
     interface SyncConfiguration {
         user: User;
-        partitionValue: string|number|Realm.BSON.ObjectId|null;
+        partitionValue: string|number|ObjectId|null;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
@@ -584,7 +584,7 @@ declare class Realm {
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string, key: number | string | Realm.BSON.ObjectId): (T & Realm.Object) | undefined;
+    objectForPrimaryKey<T>(type: string, key: number | string | ObjectId): (T & Realm.Object) | undefined;
 
     /**
      * @param  {Class} type
