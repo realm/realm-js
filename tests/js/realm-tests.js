@@ -2001,15 +2001,31 @@ module.exports = {
     testOptionalObjectId: function() {
         const realm = new Realm({schema: [schemas.OptionalObjectIdObject]});
 
+        // null is supported
         realm.write(() => {
-            realm.create(schemas.ObjectIdObject.name, { id: new ObjectId(null) });
+            realm.create(schemas.OptionalObjectIdObject.name, { id: new ObjectId(null) });
         });
 
-        let objects = realm.objects(schemas.ObjectIdObject.name);
+        let objects = realm.objects(schemas.OptionalObjectIdObject.name);
         TestCase.assertEqual(objects.length, 1);
+
+        // undefined is supported
+        realm.write(() => {
+            realm.create(schemas.OptionalObjectIdObject.name, { id: new ObjectId(undefined) });
+        });
+
+        TestCase.assertEqual(objects.length, 2);
+
+        // 0x00 only
+        realm.write(() => {
+            let oid = new ObjectId(Buffer.from([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]));
+            realm.create(schemas.OptionalObjectIdObject.name, { id: oid });
+        });
+        TestCase.assertEqual(objects.length, 3);
 
         realm.close();
     },
+
 
     testObjectIdFromTimestamp: function() {
         const realm = new Realm({schema: [schemas.ObjectIdObject]});
