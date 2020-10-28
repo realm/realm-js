@@ -522,8 +522,12 @@ describe("JSON serialization", () => {
                 it("toJSON returns a circular structure", () => {
                     const serializable = playlists[0].toJSON();
 
-                    // Check that known functions on Realm.Object no longer resides on the serializable object.
-                    expect(serializable.objectSchema).equals(undefined);
+                    // Check that no props are functions on the serializable object.
+                    expect(
+                        Object.keys(serializable).some(
+                            key => typeof serializable[key] === "function"
+                        )
+                    ).equals(false);
 
                     // Check that linked list is not a Realm entity.
                     expect(serializable.related).not.instanceOf(
