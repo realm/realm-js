@@ -6,6 +6,7 @@
 			"realm-network-transport",
 			"js-base64",
 			"bson",
+			"buffer",
 			"node"
 		],
 		"lib": [

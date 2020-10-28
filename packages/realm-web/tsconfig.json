@@ -14,7 +14,8 @@
 			"realm-network-transport",
 			"realm",
 			"js-base64",
-			"bson"
+			"bson",
+			"buffer"
 		],
 		"lib": [
 			"es2019"
@@ -25,7 +26,7 @@
 		"types/realm/services.d.ts",
 		"types/realm/auth-providers.d.ts",
 		"types/environment.d.ts",
-		"src/**/*.ts"
+		"src/**/*.ts",
 	],
 	"exclude": [
 		"src/dom/**/*.ts",
