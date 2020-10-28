@@ -249,17 +249,10 @@ RPCServer::RPCServer() {
     }
 
     m_requests["/create_session"] = [this](const json dict) {
+        RJSInitializeInContext(m_context);
         JSObjectRef realm_constructor = get_realm_constructor();
-
-        // json::array_t args = dict["arguments"];
-        // size_t arg_count = args.size();
-        // JSValueRef arg_values[arg_count];
-
-        // for (size_t i = 0; i < arg_count; i++) {
-        //     arg_values[i] = deserialize_json_value(args[i]);
-        // }
-
-        return (json){{"result", serialize_json_value(realm_constructor)}};
+        m_session_id = store_object(realm_constructor);
+        return (json){{"result", m_session_id}};
     };
     m_requests["/create_realm"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
