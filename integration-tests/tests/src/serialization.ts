@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-
+import { ObjectId } from "bson";
 import {
     IPlaylist as IPlaylistNoId,
     ISong as ISongNoId,
@@ -51,6 +51,13 @@ type TestSetup = {
         predefinedStructure: any;
     };
 };
+
+interface ICacheIdTestSetup {
+    type: string;
+    schemaName: string;
+    testId: any;
+    expectedResult: string;
+}
 
 /**
  * Create test data (TestSetups) in 4 ways, with the same data structure:
@@ -414,7 +421,75 @@ const testSetups: TestSetup[] = [
     },
 ];
 
+const cacheIdTestSetups: ICacheIdTestSetup[] = [
+    {
+        type: "int",
+        schemaName: "IntIdTest",
+        testId: 1337,
+        expectedResult: "IntIdTest#1337",
+    },
+    {
+        type: "string",
+        schemaName: "StringIdTest",
+        testId:
+            "~!@#$%^&*()_+=-,./<>? 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå",
+        expectedResult:
+            "StringIdTest#~!@#$%^&*()_+=-,./<>? 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå",
+    },
+    {
+        type: "objectId",
+        schemaName: "ObjectIdTest",
+        testId: new ObjectId("5f99418846da9c45005f50bf"),
+        expectedResult: "ObjectIdTest#5f99418846da9c45005f50bf",
+    },
+];
+
 describe("JSON serialization", () => {
+    describe(`Internal cache id check for types: ${cacheIdTestSetups
+        .map((t) => t.type)
+        .join(" / ")}`, () => {
+        for (const test of cacheIdTestSetups) {
+            const { type, schemaName, testId, expectedResult } = test;
+
+            it(`generates correct cache id for primaryKey type: ${type}`, () => {
+                const realm = new Realm({
+                    inMemory: true,
+                    schema: [
+                        {
+                            name: schemaName,
+                            primaryKey: "_id",
+                            properties: {
+                                _id: type,
+                                title: "string",
+                            },
+                        },
+                    ],
+                });
+
+                realm.write(() => {
+                    realm.create(schemaName, {
+                        _id: testId,
+                        title: `Cache id should be: ${expectedResult}`,
+                    });
+                });
+
+                const testSubject = realm.objectForPrimaryKey(
+                    schemaName,
+                    testId
+                );
+                const json = JSON.stringify(
+                    testSubject,
+                    Realm.JsonSerializationReplacer
+                );
+                const parsed = JSON.parse(json);
+
+                expect(parsed.$refId).equals(expectedResult);
+
+                realm.close();
+            });
+        }
+    });
+
     for (const ts of testSetups) {
         const testSetup = ts;
 
