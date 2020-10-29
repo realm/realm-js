@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { ObjectId } from "bson";
 import {
     IPlaylist as IPlaylistNoId,
     ISong as ISongNoId,
@@ -439,7 +438,7 @@ const cacheIdTestSetups: ICacheIdTestSetup[] = [
     {
         type: "objectId",
         schemaName: "ObjectIdTest",
-        testId: new ObjectId("5f99418846da9c45005f50bf"),
+        testId: new Realm.BSON.ObjectId("5f99418846da9c45005f50bf"),
         expectedResult: "ObjectIdTest#5f99418846da9c45005f50bf",
     },
 ];
