@@ -1,116 +1,135 @@
 [
   {
-    "$refId": "Playlist#{0000-0000}",
+    "$refId": "Playlist#1",
+    "_id": 1,
     "title": "Playlist 1",
     "songs": [
       {
-        "$refId": "Song#{0000-0000}",
+        "$refId": "Song#1",
+        "_id": 1,
         "artist": "Shared artist name 1",
         "title": "Shared title name 1"
       },
       {
-        "$refId": "Song#{0000-0001}",
+        "$refId": "Song#2",
+        "_id": 2,
         "artist": "Shared artist name 2",
         "title": "Shared title name 2"
       },
       {
-        "$refId": "Song#{0000-0002}",
+        "$refId": "Song#3",
+        "_id": 3,
         "artist": "Shared artist name 3",
         "title": "Shared title name 3"
       },
       {
-        "$refId": "Song#{0000-0003}",
+        "$refId": "Song#4",
+        "_id": 4,
         "artist": "Unique artist 1",
         "title": "Unique title 1"
       },
       {
-        "$refId": "Song#{0000-0004}",
+        "$refId": "Song#5",
+        "_id": 5,
         "artist": "Unique artist 2",
         "title": "Unique title 2"
       }
     ],
     "related": [
       {
-        "$ref": "Playlist#{0000-0000}"
+        "$ref": "Playlist#1"
       },
       {
-        "$refId": "Playlist#{0000-0001}",
+        "$refId": "Playlist#2",
+        "_id": 2,
         "title": "Playlist 2",
         "songs": [
           {
-            "$refId": "Song#{0000-0005}",
+            "$refId": "Song#6",
+            "_id": 6,
             "artist": "Unique artist 3",
             "title": "Unique title 3"
           },
           {
-            "$refId": "Song#{0000-0006}",
+            "$refId": "Song#7",
+            "_id": 7,
             "artist": "Unique artist 4",
             "title": "Unique title 4"
           },
           {
-            "$refId": "Song#{0000-0002}",
+            "$refId": "Song#3",
+            "_id": 3,
             "artist": "Shared artist name 3",
             "title": "Shared title name 3"
           }
         ],
         "related": [
           {
-            "$ref": "Playlist#{0000-0000}"
+            "$ref": "Playlist#1"
           }
         ]
       },
       {
-        "$refId": "Playlist#{0000-0002}",
+        "$refId": "Playlist#3",
+        "_id": 3,
         "title": "Playlist 3",
         "songs": [
           {
-            "$refId": "Song#{0000-0000}",
+            "$refId": "Song#1",
+            "_id": 1,
             "artist": "Shared artist name 1",
             "title": "Shared title name 1"
           },
           {
-            "$refId": "Song#{0000-0007}",
+            "$refId": "Song#8",
+            "_id": 8,
             "artist": "Unique artist 5",
             "title": "Unique title 5"
           },
           {
-            "$refId": "Song#{0000-0008}",
+            "$refId": "Song#9",
+            "_id": 9,
             "artist": "Unique artist 6",
             "title": "Unique title 6"
           },
           {
-            "$refId": "Song#{0000-0001}",
+            "$refId": "Song#2",
+            "_id": 2,
             "artist": "Shared artist name 2",
             "title": "Shared title name 2"
           }
         ],
         "related": [
           {
-            "$ref": "Playlist#{0000-0000}"
+            "$ref": "Playlist#1"
           },
           {
-            "$refId": "Playlist#{0000-0001}",
+            "$refId": "Playlist#2",
+            "_id": 2,
             "title": "Playlist 2",
             "songs": [
               {
-                "$refId": "Song#{0000-0005}",
+                "$refId": "Song#6",
+                "_id": 6,
                 "artist": "Unique artist 3",
                 "title": "Unique title 3"
               },
               {
-                "$refId": "Song#{0000-0006}",
+                "$refId": "Song#7",
+                "_id": 7,
                 "artist": "Unique artist 4",
                 "title": "Unique title 4"
               },
               {
-                "$refId": "Song#{0000-0002}",
+                "$refId": "Song#3",
+                "_id": 3,
                 "artist": "Shared artist name 3",
                 "title": "Shared title name 3"
               }
             ],
             "related": [
               {
-                "$ref": "Playlist#{0000-0000}"
+                "$ref": "Playlist#1"
               }
             ]
           }
@@ -119,94 +138,109 @@
     ]
   },
   {
-    "$refId": "Playlist#{0000-0001}",
+    "$refId": "Playlist#2",
+    "_id": 2,
     "title": "Playlist 2",
     "songs": [
       {
-        "$refId": "Song#{0000-0005}",
+        "$refId": "Song#6",
+        "_id": 6,
         "artist": "Unique artist 3",
         "title": "Unique title 3"
       },
       {
-        "$refId": "Song#{0000-0006}",
+        "$refId": "Song#7",
+        "_id": 7,
         "artist": "Unique artist 4",
         "title": "Unique title 4"
       },
       {
-        "$refId": "Song#{0000-0002}",
+        "$refId": "Song#3",
+        "_id": 3,
         "artist": "Shared artist name 3",
         "title": "Shared title name 3"
       }
     ],
     "related": [
       {
-        "$refId": "Playlist#{0000-0000}",
+        "$refId": "Playlist#1",
+        "_id": 1,
         "title": "Playlist 1",
         "songs": [
           {
-            "$refId": "Song#{0000-0000}",
+            "$refId": "Song#1",
+            "_id": 1,
             "artist": "Shared artist name 1",
             "title": "Shared title name 1"
           },
           {
-            "$refId": "Song#{0000-0001}",
+            "$refId": "Song#2",
+            "_id": 2,
             "artist": "Shared artist name 2",
             "title": "Shared title name 2"
           },
           {
-            "$refId": "Song#{0000-0002}",
+            "$refId": "Song#3",
+            "_id": 3,
             "artist": "Shared artist name 3",
             "title": "Shared title name 3"
           },
           {
-            "$refId": "Song#{0000-0003}",
+            "$refId": "Song#4",
+            "_id": 4,
             "artist": "Unique artist 1",
             "title": "Unique title 1"
           },
           {
-            "$refId": "Song#{0000-0004}",
+            "$refId": "Song#5",
+            "_id": 5,
             "artist": "Unique artist 2",
             "title": "Unique title 2"
           }
         ],
         "related": [
           {
-            "$ref": "Playlist#{0000-0000}"
+            "$ref": "Playlist#1"
           },
           {
-            "$ref": "Playlist#{0000-0001}"
+            "$ref": "Playlist#2"
           },
           {
-            "$refId": "Playlist#{0000-0002}",
+            "$refId": "Playlist#3",
+            "_id": 3,
             "title": "Playlist 3",
             "songs": [
               {
-                "$refId": "Song#{0000-0000}",
+                "$refId": "Song#1",
+                "_id": 1,
                 "artist": "Shared artist name 1",
                 "title": "Shared title name 1"
               },
               {
-                "$refId": "Song#{0000-0007}",
+                "$refId": "Song#8",
+                "_id": 8,
                 "artist": "Unique artist 5",
                 "title": "Unique title 5"
               },
               {
-                "$refId": "Song#{0000-0008}",
+                "$refId": "Song#9",
+                "_id": 9,
                 "artist": "Unique artist 6",
                 "title": "Unique title 6"
               },
               {
-                "$refId": "Song#{0000-0001}",
+                "$refId": "Song#2",
+                "_id": 2,
                 "artist": "Shared artist name 2",
                 "title": "Shared title name 2"
               }
             ],
             "related": [
               {
-                "$ref": "Playlist#{0000-0000}"
+                "$ref": "Playlist#1"
               },
               {
-                "$ref": "Playlist#{0000-0001}"
+                "$ref": "Playlist#2"
               }
             ]
           }
@@ -215,156 +249,181 @@
     ]
   },
   {
-    "$refId": "Playlist#{0000-0002}",
+    "$refId": "Playlist#3",
+    "_id": 3,
     "title": "Playlist 3",
     "songs": [
       {
-        "$refId": "Song#{0000-0000}",
+        "$refId": "Song#1",
+        "_id": 1,
         "artist": "Shared artist name 1",
         "title": "Shared title name 1"
       },
       {
-        "$refId": "Song#{0000-0007}",
+        "$refId": "Song#8",
+        "_id": 8,
         "artist": "Unique artist 5",
         "title": "Unique title 5"
       },
       {
-        "$refId": "Song#{0000-0008}",
+        "$refId": "Song#9",
+        "_id": 9,
         "artist": "Unique artist 6",
         "title": "Unique title 6"
       },
       {
-        "$refId": "Song#{0000-0001}",
+        "$refId": "Song#2",
+        "_id": 2,
         "artist": "Shared artist name 2",
         "title": "Shared title name 2"
       }
     ],
     "related": [
       {
-        "$refId": "Playlist#{0000-0000}",
+        "$refId": "Playlist#1",
+        "_id": 1,
         "title": "Playlist 1",
         "songs": [
           {
-            "$refId": "Song#{0000-0000}",
+            "$refId": "Song#1",
+            "_id": 1,
             "artist": "Shared artist name 1",
             "title": "Shared title name 1"
           },
           {
-            "$refId": "Song#{0000-0001}",
+            "$refId": "Song#2",
+            "_id": 2,
             "artist": "Shared artist name 2",
             "title": "Shared title name 2"
           },
           {
-            "$refId": "Song#{0000-0002}",
+            "$refId": "Song#3",
+            "_id": 3,
             "artist": "Shared artist name 3",
             "title": "Shared title name 3"
           },
           {
-            "$refId": "Song#{0000-0003}",
+            "$refId": "Song#4",
+            "_id": 4,
             "artist": "Unique artist 1",
             "title": "Unique title 1"
           },
           {
-            "$refId": "Song#{0000-0004}",
+            "$refId": "Song#5",
+            "_id": 5,
             "artist": "Unique artist 2",
             "title": "Unique title 2"
           }
         ],
         "related": [
           {
-            "$ref": "Playlist#{0000-0000}"
+            "$ref": "Playlist#1"
           },
           {
-            "$refId": "Playlist#{0000-0001}",
+            "$refId": "Playlist#2",
+            "_id": 2,
             "title": "Playlist 2",
             "songs": [
               {
-                "$refId": "Song#{0000-0005}",
+                "$refId": "Song#6",
+                "_id": 6,
                 "artist": "Unique artist 3",
                 "title": "Unique title 3"
               },
               {
-                "$refId": "Song#{0000-0006}",
+                "$refId": "Song#7",
+                "_id": 7,
                 "artist": "Unique artist 4",
                 "title": "Unique title 4"
               },
               {
-                "$refId": "Song#{0000-0002}",
+                "$refId": "Song#3",
+                "_id": 3,
                 "artist": "Shared artist name 3",
                 "title": "Shared title name 3"
               }
             ],
             "related": [
               {
-                "$ref": "Playlist#{0000-0000}"
+                "$ref": "Playlist#1"
               }
             ]
           },
           {
-            "$ref": "Playlist#{0000-0002}"
+            "$ref": "Playlist#3"
           }
         ]
       },
       {
-        "$refId": "Playlist#{0000-0001}",
+        "$refId": "Playlist#2",
+        "_id": 2,
         "title": "Playlist 2",
         "songs": [
           {
-            "$refId": "Song#{0000-0005}",
+            "$refId": "Song#6",
+            "_id": 6,
             "artist": "Unique artist 3",
             "title": "Unique title 3"
           },
           {
-            "$refId": "Song#{0000-0006}",
+            "$refId": "Song#7",
+            "_id": 7,
             "artist": "Unique artist 4",
             "title": "Unique title 4"
           },
           {
-            "$refId": "Song#{0000-0002}",
+            "$refId": "Song#3",
+            "_id": 3,
             "artist": "Shared artist name 3",
             "title": "Shared title name 3"
           }
         ],
         "related": [
           {
-            "$refId": "Playlist#{0000-0000}",
+            "$refId": "Playlist#1",
+            "_id": 1,
             "title": "Playlist 1",
             "songs": [
               {
-                "$refId": "Song#{0000-0000}",
+                "$refId": "Song#1",
+                "_id": 1,
                 "artist": "Shared artist name 1",
                 "title": "Shared title name 1"
               },
               {
-                "$refId": "Song#{0000-0001}",
+                "$refId": "Song#2",
+                "_id": 2,
                 "artist": "Shared artist name 2",
                 "title": "Shared title name 2"
               },
               {
-                "$refId": "Song#{0000-0002}",
+                "$refId": "Song#3",
+                "_id": 3,
                 "artist": "Shared artist name 3",
                 "title": "Shared title name 3"
               },
               {
-                "$refId": "Song#{0000-0003}",
+                "$refId": "Song#4",
+                "_id": 4,
                 "artist": "Unique artist 1",
                 "title": "Unique title 1"
               },
               {
-                "$refId": "Song#{0000-0004}",
+                "$refId": "Song#5",
+                "_id": 5,
                 "artist": "Unique artist 2",
                 "title": "Unique title 2"
               }
             ],
             "related": [
               {
-                "$ref": "Playlist#{0000-0000}"
+                "$ref": "Playlist#1"
               },
               {
-                "$ref": "Playlist#{0000-0001}"
+                "$ref": "Playlist#2"
               },
               {
-                "$ref": "Playlist#{0000-0002}"
+                "$ref": "Playlist#3"
               }
             ]
           }
