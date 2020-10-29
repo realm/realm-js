@@ -250,7 +250,10 @@ RPCServer::RPCServer() {
 
     m_requests["/create_session"] = [this](const json dict) {
         RJSInitializeInContext(m_context);
-        JSObjectRef realm_constructor = get_realm_constructor();
+
+        jsc::String realm_string = "Realm";
+        JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(m_context, JSContextGetGlobalObject(m_context), realm_string);
+
         m_session_id = store_object(realm_constructor);
         return (json){{"result", m_session_id}};
     };
@@ -275,6 +278,21 @@ RPCServer::RPCServer() {
         jsc::Function::call(m_context, add_listener_method, realm_object, 2, listener_args);
 
         return (json){{"result", serialize_json_value(realm_object)}};
+    };
+    m_requests["/create_app"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef app_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "App");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef app_object = jsc::Function::construct(m_context, app_constructor, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(app_object)}};
     };
     m_requests["/create_user"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
