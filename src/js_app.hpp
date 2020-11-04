@@ -172,6 +172,10 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         auto result = js::Function<T>::call(ctx, js::Value<T>::to_function(ctx, user_agent_function), realm_constructor, 0, nullptr);
         user_agent_binding_info = js::Value<T>::validated_to_string(ctx, result);
     }
+    else {
+        // FIXME: When debugging RN apps, _createUserAgentDescription cannot be found
+        user_agent_binding_info = "N/A";
+    }
     ensure_directory_exists_for_file(default_realm_file_directory());
 
     auto platform_description_function = js::Object<T>::get_property(ctx, realm_constructor, "_createPlatformDescription");
@@ -184,6 +188,12 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         config.platform = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, platform_name));
         config.platform_version = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, platform_version_name));
         config.sdk_version = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, sdk_version_name));
+    }
+    else {
+        // FIXME: When debugging RN apps, _createPlatformDescription() cannot be found
+        config.platform = "N/A";
+        config.platform_version = "N/A";
+        config.sdk_version = "N/A";
     }
 
     SyncClientConfig client_config;

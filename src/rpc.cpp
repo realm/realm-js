@@ -46,6 +46,7 @@ static const char * const RealmObjectTypesRealm = "realm";
 static const char * const RealmObjectTypesUser = "user";
 static const char * const RealmObjectTypesSession = "session";
 static const char * const RealmObjectTypesAsyncOpenTask = "asyncopentask";
+static const char * const RealmObjectTypesApp = "app";
 static const char * const RealmObjectTypesUndefined = "undefined";
 
 json serialize_object_schema(const realm::ObjectSchema &object_schema) {
@@ -343,6 +344,21 @@ RPCServer::RPCServer() {
         }
 
         auto result = jsc::Function::call(m_context, _asyncOpen_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(result)}};
+    };
+    m_requests["/_logIn"] = [this](const json dict) {
+        JSObjectRef app_object = get_object(dict["id"].get<RPCObjectID>());
+        JSObjectRef _logIn_method = (JSObjectRef)jsc::Object::get_property(m_context, app_object, "_logIn");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        auto result = jsc::Function::call(m_context, _logIn_method, arg_count, arg_values);
         return (json){{"result", serialize_json_value(result)}};
     };
     m_requests["/call_method"] = [this](const json dict) {
@@ -848,6 +864,12 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     else if (jsc::Object::is_instance<js::AsyncOpenTaskClass<jsc::Types>>(m_context, js_object)) {
         return {
             {"type", RealmObjectTypesAsyncOpenTask},
+            {"id", store_object(js_object)},
+        };
+    }
+    else if (jsc::Object::is_instance<js::AppClass<jsc::Types>>(m_context, js_object)) {
+        return {
+            {"type", RealmObjectTypesApp},
             {"id", store_object(js_object)},
         };
     }
