@@ -929,5 +929,19 @@ module.exports = {
             });
             realm.close();
         });
+    },
+
+
+    testAnalyticsSubmission() {
+        function waitForMe() {
+            analytics('Test', context);
+            setTimeout(() => {
+            }, 1000);
+        };
+    
+        var context = require('../../package.json');
+        var analytics = require('../../lib/submit-analytics.js'); //('Test', context);
+
+        waitForMe();
     }
 };

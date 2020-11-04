@@ -44,6 +44,7 @@ mockRealm(path.resolve(__dirname, '../..'));
 
 const Realm = require('realm');
 
+
 // Setup a Realm logger
 const RealmLogging = require('./helpers/realm-logging');
 RealmLogging.patch(Realm);
