@@ -15,6 +15,7 @@ set_target_properties(realm-js PROPERTIES
 
 target_compile_definitions(realm-js PRIVATE
     REALM_HAVE_UV=1
+    REALM_PLATFORM_NODE
 )
 
 if(REALM_JS_BUILD_CORE_FROM_SOURCE AND TARGET ObjectStore)

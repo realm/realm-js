@@ -27,6 +27,7 @@
 
 #include "platform.hpp"
 #include <realm/sync/config.hpp>
+#include <realm/sync/protocol.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
@@ -34,6 +35,7 @@
 
 #include <realm/util/logger.hpp>
 #include <realm/util/uri.hpp>
+#include <realm/util/network.hpp>
 
 #if REALM_PLATFORM_NODE
 #include <realm/object-store/impl/realm_coordinator.hpp>
@@ -227,7 +229,7 @@ public:
     }
 
     // This function is called on the sync client's event loop thread.
-    bool operator ()(const std::string& server_address, sync::Session::port_type server_port, const char* pem_data, size_t pem_size, int preverify_ok, int depth)
+    bool operator ()(const std::string& server_address, util::network::Endpoint::port_type server_port, const char* pem_data, size_t pem_size, int preverify_ok, int depth)
     {
         const std::string pem_certificate {pem_data, pem_size};
         {
@@ -255,7 +257,7 @@ public:
     // back to the sync client's event loop thread through a condition variable.
     static void main_loop_handler(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
                                   const std::string& server_address,
-                                  sync::Session::port_type server_port,
+                                  util::network::Endpoint::port_type server_port,
                                   const std::string& pem_certificate,
                                   int preverify_ok,
                                   int depth)
@@ -291,7 +293,7 @@ private:
     const Protected<typename T::Function> m_func;
     util::EventLoopDispatcher<void(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
                                    const std::string& server_address,
-                                   sync::Session::port_type server_port,
+                                   util::network::Endpoint::port_type server_port,
                                    const std::string& pem_certificate,
                                    int preverify_ok,
                                    int depth)> m_event_loop_dispatcher;
