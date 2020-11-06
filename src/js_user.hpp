@@ -25,7 +25,7 @@
 #include "js_network_transport.hpp"
 
 #include <realm/sync/config.hpp>
-#include <realm/object-store/sync/remote_mongo_collection.hpp>
+#include <realm/object-store/sync/mongo_collection.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
