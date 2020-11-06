@@ -137,6 +137,7 @@ public:
     ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
     ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
     ValueType box(Mixed)             { throw std::runtime_error("'Any' type is unsupported"); }
+    ValueType box(UUID)              { throw std::runtime_error("'UUID' type support is not implemented yet"); }
 
     ValueType box(Timestamp ts) {
         if (ts.is_null()) {
@@ -334,6 +335,20 @@ template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
     static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         throw std::runtime_error("'Any' type is unsupported");
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, UUID> {
+    static UUID call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        throw std::runtime_error("'UUID' type suport is not implemented yet");
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, util::Optional<UUID>> {
+    static util::Optional<UUID> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        throw std::runtime_error("'UUID' type suport is not implemented yet");
     }
 };
 
