@@ -366,9 +366,6 @@ declare namespace Realm {
         ThrowException = 'throwException'
     }
 
-    let openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
-    let downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
-
     enum ConnectionState {
         Disconnected = "disconnected",
         Connecting = "connecting",
@@ -436,6 +433,16 @@ declare namespace Realm {
         function initiateClientReset(app: App, path: string): void;
         function _hasExistingSessions(app: App): boolean;
         function reconnect(app: App): void;
+
+        /**
+         * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
+         * If this is the first time you open the Realm, it will be empty while the server data is being downloaded in the background.
+         */
+        const openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
+        /**
+         * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
+         */
+        const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
     }
 }
 
@@ -542,7 +549,8 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T & Realm.Object
      */
-    create<T>(type: string, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode): T & Realm.Object
+    create<T>(type: string, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode.Never): T & Realm.Object;
+    create<T>(type: string, properties: Partial<T> | Partial<RealmInsertionModel<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T & Realm.Object;
 
     /**
      * @param  {Class} type
@@ -550,27 +558,8 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T
      */
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode): T
-
-    /**
-     * @param  {string} type
-     * @param  {T} properties
-     * @param  {boolean} update?
-     * @returns T & Realm.Object
-     *
-     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
-     */
-    create<T>(type: string, properties: RealmInsertionModel<T>, update?: boolean): T & Realm.Object
-
-    /**
-     * @param  {Class} type
-     * @param  {T} properties
-     * @param  {boolean} update?
-     * @returns T
-     *
-     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
-     */
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, update?: boolean): T
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode.Never): T;
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: Partial<T> | Partial<RealmInsertionModel<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
@@ -589,11 +578,18 @@ declare class Realm {
     deleteAll(): void;
 
     /**
-     * @param  {string|Realm.ObjectType|Function} type
+     * @param  {string} type
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string | Realm.ObjectId): T & Realm.Object | undefined;
+    objectForPrimaryKey<T>(type: string, key: number | string | Realm.ObjectId): (T & Realm.Object) | undefined;
+
+    /**
+     * @param  {Class} type
+     * @param  {number|string|ObjectId} key
+     * @returns {T | undefined}
+     */
+    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | Realm.ObjectId): T | undefined;
 
     /**
      * @param  {string} type

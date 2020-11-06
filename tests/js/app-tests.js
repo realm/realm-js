@@ -4,46 +4,13 @@
 
 const require_method = require;
 
-// Prevent React Native packager from seeing modules required with this
-function node_require(module) {
-    return require_method(module);
-}
-
 const { ObjectId } = require("bson");
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const AppConfig = require('./support/testConfig')
 const Utils = require('./test-utils');
-
-const tmp = require('tmp');
-const fs = require('fs');
-const execFile = require('child_process').execFile;
-tmp.setGracefulCleanup();
-const path = require("path");
-
-function runOutOfProcess() {
-    const args = Array.prototype.slice.call(arguments);
-    let tmpDir = tmp.dirSync();
-    console.log(`runOutOfProcess : ${args.join(' ')}`);
-    return new Promise((resolve, reject) => {
-        try {
-            execFile(process.execPath, args, { cwd: tmpDir.name }, (error, stdout, stderr) => {
-                if (error) {
-                    console.error("runOutOfProcess failed\n", error, stdout, stderr);
-                    reject(new Error(`Running ${args[0]} failed. error: ${error}`));
-                    return;
-                }
-
-                console.log('runOutOfProcess success\n' + stdout);
-                resolve();
-            });
-        }
-        catch (e) {
-            reject(e);
-        }
-    });
-}
+const schemas = require('./schemas');
 
 const config = AppConfig.integrationAppConfig;
 
@@ -182,16 +149,7 @@ module.exports = {
         let user = await app.logIn(credentials);
         const partition = Utils.genPartition();
         const realmConfig = {
-            schema: [{
-                name: 'Dog',
-                primaryKey: '_id',
-                properties: {
-                  _id: 'objectId?',
-                  breed: 'string?',
-                  name: 'string',
-                  realm_id: 'string?',
-                }
-              }],
+            schema: [schemas.DogForSync],
             sync: {
                 user: user,
                 partitionValue: partition,

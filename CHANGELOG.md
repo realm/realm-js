@@ -4,11 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed an issue with `toJSON` where data from a different object could be serialized. ([#3254](https://github.com/realm/realm-js/issues/3254), since v10.0.0-beta.10)
-* Fixed `create<T>(...)` deprecation warning. ([#3243](https://github.com/realm/realm-js/pull/3243))
-* Throw error when `deleteRealmIfMigrationNeeded` is requested on a synced realm (incompatible options) ([#3245](https://github.com/realm/realm-js/pull/3245))
-* Fixed inheritance when transpiling with Babel which results in TypeError: Reflect.construct requires the first argument to be a constructor ([#3110](https://github.com/realm/realm-js/issues/3110))
-* `-fno-aligned-new` added to podspec as C++ flag for for armv7. This could lead to error messages like Aligned deallocation function of type 'void (void *, std::align_val_t) noexcept' is only available on iOS 11 or newer when archiving an app. ([#3076](https://github.com/realm/realm-js/issues/3076), since v10.0.0-beta.1)
+* Fixed an issue in `toJSON()`, in combination with primaryKeys, where data from another table could be returned. ([#3331](https://github.com/realm/realm-js/issues/3331), since v10.0.0)
+* Fixed an issue in `toJSON()` where `data` would output as `{}`, it now returns the data base64 encoded. ([#3356](https://github.com/realm/realm-js/pull/3356), since v10.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -17,6 +14,141 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * None.
+
+10.0.1 Release notes (2020-10-16)
+==============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version uses the Realm file format to version 20. It is not possible to downgrade to earlier versions than v10.0.0-beta.13. Non-sync Realms will be upgraded automatically. Synced Realms can only be automatically upgraded if created with Realm JavaScript v10.0.0-beta.1 and above.
+
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Fixed
+* Fixed RN Android error: couldn't find DSO to load: librealmreact.so caused by: dlopen failed: cannot locate symbol. ([#3347](https://github.com/realm/realm-js/issues/3347), since v10.0.0)
+* Fixed TS declaration for `app.allUsers` to `Record<string, User>` instead of an array of `User`. ([#3346](https://github.com/realm/realm-js/pull/3346))
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* None
+
+10.0.0 Release notes (2020-10-14)
+============================================================
+NOTE: This is a unified release note covering all v10.0.0-alpha.X and v10.0.0-beta.X releases.
+
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version uses the Realm file format version 20. It is not possible to downgrade to earlier versions than v10.0.0-beta.13. Non-sync Realms will be upgraded automatically. Synced Realms can only be automatically upgraded if created with Realm JavaScript v10.0.0-beta.1 and above.
+
+NOTE: Deprecated methods have been removed.
+
+### Breaking changes
+* `Realm.Sync.User` has been replaced by `Realm.User`.
+* `Realm.Sync.Adapter`, `Realm.Sync.addlistener()`, `Realm.Sync.localListenerRealms()`, `Realm.Sync.removeAllListeners()` and `Realm.Sync.removeListener()` have been removed. ([#2732](https://github.com/realm/realm-js/issues/2732))
+* Query-based Sync has been removed. This includes `Realm.Sync.Subscription`, `Realm.Results.subscribe()`, `Realm.subscriptions()`, `Realm.unsubscribe()`, `Realm.privileges()`. These APIs are not initially supported by MongoDB Realm. They will be re-introduced in a future release. `partitionValue` has been added to the `sync` configuration as a replacement. Please read section ["Partition Atlas Data into Realms"](https://docs.mongodb.com/realm/sync/partitioning/) in documentation for further information.
+* Permissions has been removed. You need to configure permissions through MongoDB Realm.
+* Deprepated API has been removed: `Realm.openAsync()`, `Realm.Sync.setFeatureToken()`, `Realm.Sync.User.register()`, `Realm.Sync.User.registerWithProvider()`, `Realm.Sync.User.authenticate()`, `Realm.automaticSyncConfiguration()`.
+* Renamed configuration option `custom_http_headers` to `customHttpHeaders`.
+* Renamed `Realm.Sync` to `Realm.App.Sync` including all methods and properties.
+
+### Enhancements
+* Added support for compiling on a RaspberryPi. ([#2798](https://github.com/realm/realm-js/issues/2798)
+* Added support for the `Decimal128` data type. ([#2674](https://github.com/realm/realm-js/issues/2674))
+* Added support for the `ObjectId` data type. ([#2675](https://github.com/realm/realm-js/issues/2675))
+* Added support for embedded objects. ([#2676](https://github.com/realm/realm-js/issues/2676))
+* Added `Realm.App` with the following methods: `getApp()`, `logIn()`, `switchUser()`, and `removeUser()` and properties `id`, `emailPasswordAuth`, `currentUser`, `allUsers`. A `Realm.App` instance represents a [MongoDB Realm app](https://docs.mongodb.com/realm/procedures/create-realm-app/). ([#2750](https://github.com/realm/realm-js/issues/2750) and [#2809](https://github.com/realm/realm-js/issues/2809))
+* Added `Realm.Credentials` which represents credentials for MongoDB Realm users. It has the following methods: `emailPassword()`, `facebook`, `anonymous()`, `apple()`, `google()`, `jwt()`, and `function()`. You must enable the credentials validation ([authentication providers](https://docs.mongodb.com/realm/authentication/providers/)) at MongoDB Realm before deploying your app. ([#2750](https://github.com/realm/realm-js/issues/2750) and [#2809](https://github.com/realm/realm-js/issues/2809))
+* Added auth providers `Realm.Auth.EmailPassword` and `Realm.Auth.APIKeys`. ([#2750](https://github.com/realm/realm-js/issues/2750) and [#2809](https://github.com/realm/realm-js/issues/2809))
+* Added support for `customData` readonly property to `Realm.User` objects. ([#2809](https://github.com/realm/realm-js/issues/2809))
+* Added support for calling server functions from `Realm.User` objects. ([#2809](https://github.com/realm/realm-js/issues/2809))
+* Added MongoClient and Push functionality to `Realm.User`.
+* Added `watch()` to `MongoDBCollection` to enable streaming notifications of changes events from the database. Only supported in node.js for now.
+* TS declarations with stricter TS validation of input-models and return-types for `create<T>(...)`, `objects<T>(...)` & `objectForPrimaryKey<T>(...)`. ([#3044](https://github.com/realm/realm-js/pull/3044) & [#3266](https://github.com/realm/realm-js/pull/3266))
+
+### Fixed
+* Realm.login() will not run after hot reloading in RN. ([#3236](https://github.com/realm/realm-js/issues/3236), since v10.0.0-beta.12)
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Upgraded to Realm Core v10.0.0
+* Upgraded to Realm Sync v10.0.0
+
+10.0.0-rc.2 Release notes (2020-10-12)
+=============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version uses the Realm file format to version 20. It is not possible to downgrade to earlier versions than v10.0.0-beta.13. Non-sync Realms will be upgraded automatically. Synced Realms can only be automatically upgraded if created with Realm JavaScript v10.0.0-beta.1 and above.
+
+### Breaking changes
+* Removed the types for `app.services` and `app.functions` (which never had an implementation). ([#3322](https://github.com/realm/realm-js/pull/3322)).
+
+### Enhancements
+* Added descriptive errors for `partitionValue` of unsupported formats & ranges.
+
+### Fixed
+* Added missing `Realm.Credentials.jwt()` to React Native debugger support. ([#3285](https://github.com/realm/realm-js/issues/3285), since v10.0.0-beta.13)
+* Fixed missing `partitionValue` on `syncSession`. ([#3205](https://github.com/realm/realm-js/pull/3205), since v10.0.0-beta.1)
+* Fixed a bug where an integer could prematurely be converted & returned as a `Long` instead of a `number`. ([#3205](https://github.com/realm/realm-js/pull/3205), since v10.0.0-beta.1)
+* TS declaration for `isLoggedIn` added to `User`. ([#3294](https://github.com/realm/realm-js/pull/3294))
+* Fixed error `Attempted import error: 'invalidateCache' is not exported from './util' (imported as 'util').` ([#3314](https://github.com/realm/realm-js/issues/3314))
+* Fixed a bug preventing caching of Realm instances. In certain cases, the Realm file would grow without any new objects added.
+* TS declarations for `OpenRealmBehaviorConfiguration` presets `openLocalRealmBehavior` & `downloadBeforeOpenBehavior` moved to namespace `Realm.App.Sync`, to reflect the implementation. ([#3307](https://github.com/realm/realm-js/pull/3307), since v10.0.0-beta.1)
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Changed CI to abort if changes are exclusively made to the /packages directory. ([#3298](https://github.com/realm/realm-js/pull/3298)) & ([#3307](https://github.com/realm/realm-js/pull/3307))
+* Publish binaries for Raspberry Pi. ([#3272](https://github.com/realm/realm-js/issues/3272), since v10.0.0-beta.13)
+
+10.0.0-rc.1 Release notes (2020-10-1)
+=============================================================
+NOTE: Support for syncing with realm.cloud.io and/or Realm Object Server has been replaced with support for syncing with MongoDB Realm Cloud.
+
+NOTE: This version uses the Realm file format to version 20. It is not possible to downgrade to earlier versions than v10.0.0-beta.13. Non-sync Realms will be upgraded automatically. Synced Realms can only be automatically upgraded if created with Realm JavaScript v10.0.0-beta.1 and above.
+
+### Breaking changes
+* Renamed `Realm.App.getCachedApp()` to `Realm.App.getApp()`.
+
+### Enhancements
+* TS declaration for `objectForPrimaryKey<T>(...)` now mimics behavior of `objects<T>(...)`. ([#3266](https://github.com/realm/realm-js/pull/3266))
+
+### Fixed
+* Fixed an issue with `toJSON` where data from a different object could be serialized. ([#3254](https://github.com/realm/realm-js/issues/3254), since v10.0.0-beta.10)
+* Fixed `create<T>(...)` deprecation warning. ([#3243](https://github.com/realm/realm-js/pull/3243))
+* Throw error when `deleteRealmIfMigrationNeeded` is requested on a synced realm (incompatible options) ([#3245](https://github.com/realm/realm-js/pull/3245))
+* Added missing `Realm.Credentials.function()` to React Native debugger support. ([#3236](https://github.com/realm/realm-js/issues/3236), since v10.0.0-beta.1)
+* Added missing `Realm.Credentials.google()` to React Native debugger support. ([#3279](https://github.com/realm/realm-js/issues/3279), since v10.0.0-beta.1)
+* Fixed inheritance when transpiling with Babel which results in `TypeError: Reflect.construct requires the first argument to be a constructor`. ([#3110](https://github.com/realm/realm-js/issues/3110))
+* `-fno-aligned-new` added to podspec as C++ flag for for armv7. This could lead to error messages like `Aligned deallocation function of type 'void (void *, std::align_val_t) noexcept' is only available on iOS 11 or newer when archiving an app`. ([#3076](https://github.com/realm/realm-js/issues/3076), since v10.0.0-beta.1)
+* TS declaration for `create<T>(...)` has been relaxed when `Realm.UpdateMode` `All` or `Modified` is given. ([#3266](https://github.com/realm/realm-js/pull/3266))
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Upgraded Realm Core from v10.0.0-beta.8 to v10.0.0-beta.9.
+* Upgraded Realm Sync from v10.0.0-beta.12 to v10.0.0-beta.14.
+
+### Notable known issues
+* `Realm.App.logIn()` will not run again after refreshing React Native app. ([#3236](https://github.com/realm/realm-js/issues/3236))
+* `OpenRealmBehaviorConfiguration` was removed in v10.0.0-beta.1 and hasn't been added back yet. The consequence is that it is not possible to open a synced Realm when offline.
+
 
 10.0.0-beta.13 Release notes (2020-9-18)
 =============================================================

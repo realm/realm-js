@@ -40,9 +40,9 @@ describe("ApiKeyAuth", () => {
             },
         ]);
 
-        const provider = new ApiKeyAuth(fetcher);
+        const client = new ApiKeyAuth(fetcher);
 
-        const apiKey = await provider.create("my-key-name");
+        const apiKey = await client.create("my-key-name");
         // Expect something of the newly created key
         expect(typeof apiKey._id).equals("object");
         expect(apiKey._id.constructor.name).equals("ObjectId");
@@ -72,9 +72,9 @@ describe("ApiKeyAuth", () => {
             },
         ]);
 
-        const provider = new ApiKeyAuth(fetcher);
+        const client = new ApiKeyAuth(fetcher);
 
-        const apiKey = await provider.fetch("deadbeefdeadbeefdeadbeef");
+        const apiKey = await client.fetch("deadbeefdeadbeefdeadbeef");
         // Expect something of the key
         expect(apiKey._id).equals("deadbeefdeadbeefdeadbeef");
         expect(apiKey.name).equals("my-key-name");
@@ -109,9 +109,9 @@ describe("ApiKeyAuth", () => {
             ],
         ]);
 
-        const provider = new ApiKeyAuth(fetcher);
+        const client = new ApiKeyAuth(fetcher);
 
-        const apiKeys = await provider.fetchAll();
+        const apiKeys = await client.fetchAll();
         // Expect something of the first key
         const [firstKey, secondKey] = apiKeys;
         expect(firstKey._id).equals("deadbeefdeadbeefdeadbee1");
@@ -137,9 +137,9 @@ describe("ApiKeyAuth", () => {
         const fetcher = new MockFetcher([{}], {
             currentUser: { refreshToken: "very-refreshing" } as User,
         });
-        const provider = new ApiKeyAuth(fetcher);
+        const client = new ApiKeyAuth(fetcher);
 
-        await provider.delete("deadbeefdeadbeefdeadbeef");
+        await client.delete("deadbeefdeadbeefdeadbeef");
         // Expect something of the request
         expect(fetcher.requests).deep.equals([
             {
@@ -158,9 +158,9 @@ describe("ApiKeyAuth", () => {
         const fetcher = new MockFetcher([{}], {
             currentUser: { refreshToken: "very-refreshing" } as User,
         });
-        const provider = new ApiKeyAuth(fetcher);
+        const client = new ApiKeyAuth(fetcher);
 
-        await provider.enable("deadbeefdeadbeefdeadbeef");
+        await client.enable("deadbeefdeadbeefdeadbeef");
         // Expect something of the request
         expect(fetcher.requests).deep.equals([
             {
@@ -179,9 +179,9 @@ describe("ApiKeyAuth", () => {
         const fetcher = new MockFetcher([{}], {
             currentUser: { refreshToken: "very-refreshing" } as User,
         });
-        const provider = new ApiKeyAuth(fetcher);
+        const client = new ApiKeyAuth(fetcher);
 
-        await provider.disable("deadbeefdeadbeefdeadbeef");
+        await client.disable("deadbeefdeadbeefdeadbeef");
         // Expect something of the request
         expect(fetcher.requests).deep.equals([
             {

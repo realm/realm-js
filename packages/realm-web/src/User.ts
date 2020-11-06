@@ -174,13 +174,20 @@ export class User<
      * @returns The current state of the user.
      */
     get state(): UserState {
-        if (this.app.allUsers.indexOf(this) === -1) {
-            return UserState.Removed;
-        } else {
+        if (this.id in this.app.allUsers) {
             return this.refreshToken === null
                 ? UserState.LoggedOut
                 : UserState.Active;
+        } else {
+            return UserState.Removed;
         }
+    }
+
+    /**
+     * @returns The logged in state of the user.
+     */
+    get isLoggedIn(): boolean {
+        return this.state === UserState.Active;
     }
 
     get customData(): CustomDataType {
@@ -252,16 +259,19 @@ export class User<
      */
     public async logOut() {
         // Invalidate the refresh token
-        if (this._refreshToken !== null) {
-            await this.fetcher.fetchJSON({
-                method: "DELETE",
-                path: routes.api().auth().session().path,
-                tokenType: "refresh",
-            });
+        try {
+            if (this._refreshToken !== null) {
+                await this.fetcher.fetchJSON({
+                    method: "DELETE",
+                    path: routes.api().auth().session().path,
+                    tokenType: "refresh",
+                });
+            }
+        } finally {
+            // Forget the access and refresh token
+            this.accessToken = null;
+            this.refreshToken = null;
         }
-        // Forget the access and refresh token
-        this.accessToken = null;
-        this.refreshToken = null;
     }
 
     /** @inheritdoc */

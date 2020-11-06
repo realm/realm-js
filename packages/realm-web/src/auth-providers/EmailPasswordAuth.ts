@@ -74,7 +74,7 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
         const appRoute = this.fetcher.appRoute;
         await this.fetcher.fetchJSON({
             method: "POST",
-            url: appRoute.emailPasswordAuth(this.providerName).reset().path,
+            path: appRoute.emailPasswordAuth(this.providerName).reset().path,
             body: { token, tokenId, password },
         });
     }
@@ -84,7 +84,8 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
         const appRoute = this.fetcher.appRoute;
         await this.fetcher.fetchJSON({
             method: "POST",
-            url: appRoute.emailPasswordAuth(this.providerName).resetSend().path,
+            path: appRoute.emailPasswordAuth(this.providerName).resetSend()
+                .path,
             body: { email },
         });
     }
@@ -98,7 +99,8 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
         const appRoute = this.fetcher.appRoute;
         await this.fetcher.fetchJSON({
             method: "POST",
-            url: appRoute.emailPasswordAuth(this.providerName).resetCall().path,
+            path: appRoute.emailPasswordAuth(this.providerName).resetCall()
+                .path,
             body: { email, password, arguments: args },
         });
     }

@@ -18,13 +18,7 @@
 
 import { expect } from "chai";
 
-import {
-    App,
-    Credentials,
-    User,
-    LocalStorage,
-    getEnvironment,
-} from "realm-web";
+import { App, Credentials, User, getEnvironment } from "realm-web";
 
 import { createApp } from "./utils";
 
@@ -46,7 +40,7 @@ describe("App#constructor", () => {
         const user = await app.logIn(credentials);
         expect(typeof user.id).equals("string");
         expect(app.currentUser).equals(user);
-        expect(app.allUsers).deep.equals([user]);
+        expect(app.allUsers).deep.equals({ [user.id]: user });
     });
 
     it("can log in two users, switch between them and log out", async () => {
@@ -55,36 +49,50 @@ describe("App#constructor", () => {
         // Authenticate the first user
         const user1 = await app.logIn(credentials);
         expect(app.currentUser).equals(user1);
-        expect(app.allUsers).deep.equals([user1]);
+        expect(app.allUsers).deep.equals({ [user1.id]: user1 });
         // Authenticate the second user
         const user2 = await app.logIn(credentials);
         expect(app.currentUser).equals(user2);
-        expect(app.allUsers).deep.equals([user2, user1]);
+        expect(app.allUsers).deep.equals({
+            [user1.id]: user1,
+            [user2.id]: user2,
+        });
         // Ensure that the two users are not one and the same
         expect(user1.id).to.not.equals(user2.id);
         // Switch back to the first user
         app.switchUser(user1);
         expect(app.currentUser).equals(user1);
-        expect(app.allUsers).deep.equals([user1, user2]);
+        expect(app.allUsers).deep.equals({
+            [user1.id]: user1,
+            [user2.id]: user2,
+        });
         // Switch back to the second user
         app.switchUser(user2);
         expect(app.currentUser).equals(user2);
-        expect(app.allUsers).deep.equals([user2, user1]);
+        expect(app.allUsers).deep.equals({
+            [user1.id]: user1,
+            [user2.id]: user2,
+        });
         // Switch back to the first user and log out
         app.switchUser(user1);
         expect(app.currentUser).equals(user1);
         await user1.logOut();
         expect(app.currentUser).equals(user2);
-        expect(app.allUsers).deep.equals([user2, user1]);
+        expect(app.allUsers).deep.equals({
+            [user1.id]: user1,
+            [user2.id]: user2,
+        });
         await app.removeUser(user1);
-        expect(app.allUsers).deep.equals([user2]);
+        expect(app.allUsers).deep.equals({
+            [user2.id]: user2,
+        });
     });
 
     it("restores a user", async () => {
         let user: User<object>;
         {
             const app = createApp();
-            expect(app.allUsers.length).equals(0);
+            expect(app.allUsers).deep.equals({});
             const credentials = Credentials.anonymous();
             user = await app.logIn(credentials);
             expect(typeof user.id).equals("string");
@@ -92,7 +100,7 @@ describe("App#constructor", () => {
         // Recreate the app and expect the user to be restored
         {
             const app = createApp();
-            expect(app.allUsers.length).equals(1);
+            expect(Object.keys(app.allUsers).length).equals(1);
             expect(app.currentUser).instanceOf(User);
             expect(app.currentUser?.id).equals(user.id);
             expect(app.currentUser?.profile).deep.equals(user.profile);

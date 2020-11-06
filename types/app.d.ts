@@ -246,16 +246,6 @@ declare namespace Realm {
         readonly id: string;
 
         /**
-         * Use this to call functions defined by the MongoDB Realm app.
-         */
-        readonly functions: FunctionsFactoryType & BaseFunctionsFactory;
-
-        /**
-         * Use this to call services within by the MongoDB Realm app.
-         */
-        services: Realm.Services;
-
-        /**
          * Perform operations related to the email/password auth provider.
          */
         emailPasswordAuth: Realm.Auth.EmailPasswordAuth;
@@ -269,13 +259,17 @@ declare namespace Realm {
          * All authenticated users.
          */
         readonly allUsers: Readonly<
-            User<FunctionsFactoryType, CustomDataType>[]
+            Record<string, User<FunctionsFactoryType, CustomDataType>>
         >;
 
         /**
-         * Get an app instance from the cache.
+         * Get or create a singleton Realm App from an id.
+         * Calling this function multiple times with the same id will return the same instance.
+         *
+         * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
+         * @returns The Realm App instance.
          */
-        static getCachedApp(appId: string): App;
+        static getApp(appId: string): App;
 
         /**
          * Log in a user using a specific credential
@@ -364,6 +358,11 @@ declare namespace Realm {
          * The state of the user.
          */
         readonly state: UserState;
+
+        /**
+         * The logged in state of the user.
+         */
+        readonly isLoggedIn: boolean;
 
         /**
          * The identities of the user at any of the app's authentication providers.

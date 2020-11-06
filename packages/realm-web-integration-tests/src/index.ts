@@ -36,8 +36,8 @@ if (location.pathname.endsWith("-callback")) {
             require("./user.test");
             require("./functions.test");
             require("./services.test");
-            require("./api-key-auth-provider.test");
-            require("./email-password-auth-provider.test");
+            require("./api-key-auth.test");
+            require("./email-password-auth.test");
             require("./iife.test");
         },
     });

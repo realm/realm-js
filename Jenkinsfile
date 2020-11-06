@@ -19,6 +19,8 @@ def formattedVersion = null
 dependencies = null
 objectStoreDependencies = null
 
+def packagesExclusivelyChanged = null
+
 environment {
   GIT_COMMITTER_NAME="ci"
   GIT_COMMITTER_EMAIL="ci@realm.io"
@@ -41,6 +43,15 @@ stage('check') {
       ],
       userRemoteConfigs: scm.userRemoteConfigs
     ])
+
+    // Abort early if only files in "packages/**" changed, since these will migrate to another CI platform
+    packagesExclusivelyChanged = exclusivelyChanged("^packages/.*")
+    if (packagesExclusivelyChanged) {
+      currentBuild.result = 'SUCCESS'
+      echo 'Stopped since there were only changes to "/packages"'
+      return
+    }
+
     dependencies = readProperties file: 'dependencies.list'
     objectStoreDependencies = readProperties file: 'src/object-store/dependencies.list'
     gitTag = readGitTag()
@@ -67,6 +78,11 @@ stage('check') {
       env.DOCKER_PUSH = "1"
     }
   }
+}
+
+// Ensure no other stages are executed
+if (packagesExclusivelyChanged) {
+  return
 }
 
 stage('pretest') {
@@ -144,6 +160,20 @@ stage('test') {
   parallel parallelExecutors
 }
 
+stage('prepare integration tests') {
+  parallel(
+    'Build integration tests': buildLinux {
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+      dir('integration-tests/tests') {
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack"
+        sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
+        stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
+      }
+    }
+  )
+}
+
 stage('integration tests') {
   parallel(
     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
@@ -155,22 +185,25 @@ stage('integration tests') {
   )
 }
 
+def exclusivelyChanged(regexp) {
+  // Checks if this is a change/pull request and if the files changed exclusively match the provided regular expression
+  return env.CHANGE_TARGET && sh(
+    returnStatus: true,
+    script: "git diff origin/$CHANGE_TARGET --name-only | grep --invert-match '${regexp}'"
+  ) != 0
+}
+
 // == Methods
 def nodeIntegrationTests(nodeVersion, platform) {
   unstash 'source'
   unstash "pre-gyp-${platform}-${nodeVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
-  dir('integration-tests/tests') {
-    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
-  }
-
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-
-    // Package up the integration tests
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
+    // Unstash the integration tests package
+    unstash 'integration-tests-tgz'
   }
 
   dir('integration-tests/environments/node') {
@@ -192,15 +225,11 @@ def electronIntegrationTests(electronVersion, platform) {
   unstash "electron-pre-gyp-${platform}-${electronVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
-  dir('integration-tests/tests') {
-    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
-  }
-
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-    // Package up the integration tests
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
+    // Unstash the integration tests package
+    unstash 'integration-tests-tgz'
   }
 
   // On linux we need to use xvfb to let up open GUI windows on the headless machine
@@ -231,10 +260,6 @@ def reactNativeIntegrationTests(targetPlatform) {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
   }
 
-  dir('integration-tests/tests') {
-    sh "${nvm} npm ci"
-  }
-
   dir('integration-tests') {
     if (targetPlatform == "android") {
       unstash 'android'
@@ -244,8 +269,8 @@ def reactNativeIntegrationTests(targetPlatform) {
     }
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-    // Package up the integration tests
-    sh "${nvm} npm run tests/pack"
+    // Unstash the integration tests package
+    unstash 'integration-tests-tgz'
   }
 
   dir('integration-tests/environments/react-native') {
@@ -463,6 +488,7 @@ def publish(nodeVersions, electronVersions, dependencies, tag) {
     for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
       unstash "pre-gyp-${platform}-${nodePublishVersion}"
     }
+    unstash "pre-gyp-linux-armhf-${nodePublishVersion}"
 
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
       sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}/'"

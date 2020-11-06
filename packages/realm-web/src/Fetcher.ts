@@ -233,12 +233,10 @@ export class Fetcher implements LocationUrlContext {
      * Fetch a network resource as an authenticated user.
      *
      * @param request The request which should be sent to the server.
-     * @param attempts Number of times this request has been attempted. Used when retrying, callers don't need to pass a value.
      * @returns The response from the server.
      */
     public async fetch<RequestBody = unknown>(
         request: AuthenticatedRequest<RequestBody>,
-        attempts = 0,
     ): Promise<FetchResponse> {
         const {
             path,
@@ -269,13 +267,25 @@ export class Fetcher implements LocationUrlContext {
             } else if (
                 user &&
                 response.status === 401 &&
-                tokenType === "access" &&
-                attempts === 0
+                tokenType === "access"
             ) {
-                // Refresh the access token
-                await user.refreshAccessToken();
-                // Retry with the specific user, since the currentUser might have changed.
-                return this.fetch({ ...request, user }, attempts + 1);
+                try {
+                    // If the access token has expired, it would help refreshing it
+                    await user.refreshAccessToken();
+                    // Retry with the specific user, since the currentUser might have changed.
+                    return this.fetch({ ...request, user });
+                } catch (err) {
+                    if (
+                        err instanceof MongoDBRealmError &&
+                        err.statusCode === 401
+                    ) {
+                        // A 401 error while refreshing the access token indicates the refresh token has an issue too
+                        // Log out the user to prevent a live lock.
+                        await user.logOut();
+                    }
+                    // Rethrow
+                    throw err;
+                }
             } else {
                 // Throw an error with a message extracted from the body
                 throw await MongoDBRealmError.fromRequestAndResponse(
