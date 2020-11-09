@@ -285,7 +285,7 @@ case "$TARGET" in
   ;;
 "eslint-ci")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm ci
+  npm ci --ignore-scripts
   ./node_modules/.bin/eslint -f checkstyle . > eslint.xml || true
   ;;
 "license-check")
