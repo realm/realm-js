@@ -160,26 +160,27 @@ def getNdkBuildName() {
 }
 
 def findNdkBuildFullPath() {
+    def ndkDir = null
+
     // we allow to provide full path to ndk-build tool
     if (hasProperty('ndk.command')) {
         return property('ndk.command')
     }
     // or just a path to the containing directory
     if (hasProperty('ndk.path')) {
-        def ndkDir = property('ndk.path')
+        ndkDir = property('ndk.path')
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }
 
     if (System.getenv('ANDROID_NDK') != null) {
-        def ndkDir = System.getenv('ANDROID_NDK')
+        ndkDir = System.getenv('ANDROID_NDK')
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }
     if (System.getenv('ANDROID_NDK_HOME') != null) {
-        def ndkDir = System.getenv('ANDROID_NDK_HOME')
+        ndkDir = System.getenv('ANDROID_NDK_HOME')
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }
 
-    def ndkDir = null
 
     try {
         // Reading [ndk.dir] from local.properties
@@ -191,12 +192,11 @@ def findNdkBuildFullPath() {
             return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
         }
     } catch(FileNotFoundException e) {
-        println("[Warning]: local.properties not found ")
-        println("Error: ", e)
+        println "[Warning]: local.properties not found "
+        println "Error: $e"
     }
 
     try {
-
         ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder :
                 plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
 
