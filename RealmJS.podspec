@@ -9,11 +9,16 @@ app_path = File.expand_path('../..', __dir__)
 # The "React" framework is only available and should be used if the Podfile calls use_frameworks!
 # Therefore we make an assumption on the location of the Podfile and check if it contains "use_frameworks!" ...
 podfile_path = File.expand_path('ios/Podfile', app_path)
-begin
-  podfile = File.read(podfile_path)
-  uses_frameworks = podfile.scan(/\n\s*use_frameworks!\n/).any?
-rescue
-  uses_frameworks = false
+
+if !ENV['REALM_USE_FRAMEWORKS'].present?
+  begin
+    podfile = File.read(podfile_path)
+    uses_frameworks = podfile.scan(/\n\s*use_frameworks!\n/).any?
+  rescue
+    uses_frameworks = false
+  end
+else
+  uses_frameworks = ENV['REALM_USE_FRAMEWORKS'] == 'true' ? true : false
 end
 
 if ENV['DEBUG_REALM_JS_PODSPEC'].present?
