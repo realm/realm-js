@@ -9,7 +9,6 @@ string(REPLACE "\"" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
 # Define an interface target with the cmake-js headers and libraries
 add_library(NodeJS INTERFACE)
 target_include_directories(NodeJS INTERFACE ${CMAKE_JS_INC} ${NODE_ADDON_API_DIR})
-target_sources(NodeJS INTERFACE ${CMAKE_JS_SRC})
 target_link_libraries(NodeJS INTERFACE ${CMAKE_JS_LIB})
 
 # Node.js exports the zlib headers and symbols, so use those

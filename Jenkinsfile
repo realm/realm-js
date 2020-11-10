@@ -371,16 +371,17 @@ def buildWindows(nodeVersion, arch) {
     myNode('windows && nodejs') {
       unstash 'source'
 
-      withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
-        retry(3) {
-          bat "npm run package -- --arch=${arch}"
-        }
+      withEnv([
+        "_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}",
+        "PATH+CMAKE=${tool 'cmake'}\\.."
+        ]) {
+        bat "npm run package -- --arch=${arch} -- --CDCMAKE_TOOLCHAIN_PATH=C:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
       }
 
       dir('prebuilds') {
         // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
         // archiveArtifacts("realm-*")
-        stash includes: "realm-v${dependencies.VERSION}-napi-v${dependencies.NAPI_VERSION}-windows-${arch}*.tar.gz", name: "prebuild-windows-${arch}"
+        stash includes: "realm-v${dependencies.VERSION}-napi-v${dependencies.NAPI_VERSION}-win32-${arch}*.tar.gz", name: "prebuild-win32-${arch}"
       }
     }
   }
@@ -427,7 +428,7 @@ def buildAndroid() {
 def publish(nodeVersions, electronVersions, dependencies, tag) {
   myNode('docker') {
 
-    for (def platform in ['darwin-x64', 'linux-x64', 'windows-ia32', 'windows-x64']) {
+    for (def platform in ['darwin-x64', 'linux-x64', 'win32-ia32', 'win32-x64']) {
       unstash "prebuild-${platform}"
     }
     unstash 'prebuild-linux-arm'

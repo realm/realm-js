@@ -5,6 +5,7 @@ add_library(realm-js SHARED
     node_init.cpp
     platform.cpp
     sync_logger.cpp
+    ${CMAKE_JS_SRC}
 )
 
 set_target_properties(realm-js PROPERTIES 
