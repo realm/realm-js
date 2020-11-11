@@ -32,6 +32,10 @@ const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
 const AppConfig = require('./support/testConfig');
+const { doesNotThrow } = require('assert');
+const { testRealmCreateOrUpdate_diffedUpdatesOnlyTriggerNotificationsForChangedValues } = require('./realm-tests');
+const { Test } = require('tslint');
+const { resolve } = require('url');
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
@@ -931,17 +935,30 @@ module.exports = {
         });
     },
 
-
-    testAnalyticsSubmission() {
-        function waitForMe() {
-            analytics('Test', context);
-            setTimeout(() => {
-            }, 1000);
-        };
-    
+    async testAnalyticsSubmission() {
         var context = require('../../package.json');
-        var analytics = require('../../lib/submit-analytics.js'); //('Test', context);
+        var analytics = require('../../lib/submit-analytics.js');
 
-        waitForMe();
+        const payload = await analytics.fetchPlatformData(context,'TestEvent')
+        .catch((e) => {
+            Promise.reject("Failed to fetch platform data  [Error: " + e + "]");
+        });
+
+        TestCase.assertDefined(payload.webHook);
+        TestCase.assertType(payload.webHook.event, 'string');
+        TestCase.assertDefined(payload.webHook.properties);
+        TestCase.assertType(payload.webHook.properties.Binding, 'string');
+        TestCase.assertDefined(payload.mixPanel);
+        TestCase.assertType(payload.mixPanel.event, 'string');
+        TestCase.assertDefined(payload.mixPanel.properties);
+        TestCase.assertType(payload.mixPanel.properties.Binding, 'object');
+
+
+        await analytics.submitStageAnalytics('TestEvent')
+        .catch((e) => {
+            Promise.reject("Failed to submit webhook analytics  [Error: " + e + "]");
+        });
+
+        Promise.resolve();
     }
 };
