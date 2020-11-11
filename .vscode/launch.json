@@ -8,12 +8,12 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "/Users/franck.franck/.nvm/versions/node/v10.19.0/bin/node",
+            "program": "node",
             "args": [
                 "--expose_gc",
                 "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
                 "spec/unit_tests.js",
-                "--filter=testR2"
+                "--filter=."
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}/tests",
@@ -29,19 +29,6 @@
             ]
         },
         {
-            "type": "lldb",
-            "name": "LLDB Debug",
-            "request": "launch",
-            "program": "/Users/franck.franck/.nvm/versions/node/v10.19.0/bin/node",
-            "args": [
-                "--expose_gc",
-                "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
-                "spec/unit_tests.js",
-                "--filter=testR2"
-            ],
-            "cwd": "${workspaceRoot}/tests",
-        },
-        {
             "type": "node",
             "request": "launch",
             "name": "Debug Node Unit Tests (rebuild)",
@@ -51,7 +38,7 @@
             "runtimeArgs": ["--expose_gc"],
             "args": [
                 "spec/unit_tests.js",
-                "--filter=testR2"
+                "--filter=."
             ]
         },
         {
@@ -63,9 +50,8 @@
             "runtimeArgs": ["--expose_gc"],
             "args": [
                 "spec/unit_tests.js",
-                "--filter=testAnalyticsSubmission"
-            ],
-            "env": {"PATH": "/Users/franck.franck/.nvm/versions/node/v10.19.0/bin/:/usr/sbin"}
+                "--filter=."
+            ]
         },
         {
             "type": "node",
