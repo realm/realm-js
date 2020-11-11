@@ -323,24 +323,24 @@ module.exports = {
       throw err;
   },
 
-  
-  // async testPush() {
-  //   let app = new Realm.App(appConfig);
-  //   let credentials = Realm.Credentials.anonymous();
-  //   let user = await app.logIn(credentials);
+  /*
+  async testPush() {
+    let app = new Realm.App(appConfig);
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
 
-  //   let push = user.push('gcm');
+    let push = user.push('gcm');
 
-  //   await push.deregister(); // deregister never registered not an error
-  //   await push.register("hello");
-  //   await push.register("hello"); // double register not an error
-  //   await push.deregister();
-  //   await push.deregister(); // double deregister not an error
+    await push.deregister(); // deregister never registered not an error
+    await push.register("hello");
+    await push.register("hello"); // double register not an error
+    await push.deregister();
+    await push.deregister(); // double deregister not an error
 
-  //   const err = await TestCase.assertThrowsAsync(async() => await user.push('nonesuch').register('hello'))
-  //   TestCase.assertEqual(err.message, "service not found: 'nonesuch'");
-  // },
- 
+    const err = await TestCase.assertThrowsAsync(async() => await user.push('nonesuch').register('hello'))
+    TestCase.assertEqual(err.message, "service not found: 'nonesuch'");
+  },
+ */
 
   async testAllWithAnonymous() {
     let app = new Realm.App(appConfig);
