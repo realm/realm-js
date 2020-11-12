@@ -1,5 +1,15 @@
 # Working With Realm-JS
 
+
+<!--ts-->
+  * [Install Instructions For Mac](#instructions-for-macos)
+  * [Building Realm for React Native **Android**](#building-for-android)
+  * [Building Realm for React Native **iOS**](#instructions-for-macos)
+  * [Building Realm for **NodeJS**](#building-for-nodejs)
+
+<!--te-->
+
+
 ## Pre-Requisites
 
 Clone [realm-js project](https://github.com/realm/realm-js) and install the required dependencies:
@@ -101,7 +111,10 @@ After adding that you can run it by doing:
 node nlk.js # it will sleep and wait for changes...
 ```
 
+#### Building for Android
+
 Open a new terminal tab and start doing your changes on the ``realm-js/src`` folder for example and once your are ready you can build an Android binary by doing:
+
 
 ```sh
 # from the realm-js root folder...
@@ -160,6 +173,8 @@ sync done for: js_logger.hpp.  12:54:26
 sync done for: js_logger.hpp.  12:54:26
 ```
 
+#### Building for iOS
+
 Now you can just open the xcode project in ```sample-rn-project``` by doing:
 
 ```sh
@@ -209,6 +224,8 @@ That's it run the script to start watching/sync for files:
 ```sh
 node nlk.js
 ```
+
+#### Building for NodeJS
 
 Then once you are fine with changes, you just need to compile the NodeJS module using:
 
