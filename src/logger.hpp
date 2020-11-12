@@ -32,7 +32,7 @@ using LoggerLevel = realm::util::Logger::Level;
 
 // TODO we are coupling core with JS Land here, change to string.
 using Entry = std::pair<LoggerLevel, std::string>;
-using LogsDelegateFunction = std::function<void(int, std::string)>;
+using LoggingFunction = std::function<void(int, std::string)>;
 
 // Concrete Android/iOS implementation proposal
 // for Android/iOS infra logging.
@@ -66,10 +66,20 @@ class IOSLogger {
 
 class RLogger : public realm::util::RootLogger {
    public:
-    void delegate(LogsDelegateFunction&& delegate) {
-        m_scheduler->set_notify_callback([this, delegate = std::move(delegate)] {
-                std::lock_guard<std::mutex> lock(m_mutex);
+    void delegate(LoggingFunction&& delegate) {
+        /*
+         * We don't need a mutex here because of the collaborative nature of
+         * do_log (pushing to the end) and delegate (collecting from the top) in
+         * the worst case scenario <empty> should protect this thread from
+         * accessing half committed entries.
+         *
+         * for more info:
+         *      https://gist.github.com/cesarvr/a40c208c7caefa424a5029158ad679f5
+         *
+         */
 
+        m_scheduler->set_notify_callback(
+            [this, delegate = std::move(delegate)] {
                 while (!m_log_queue.empty()) {
                     auto entry = m_log_queue.front();
                     delegate(static_cast<int>(entry.first), entry.second);
@@ -77,7 +87,7 @@ class RLogger : public realm::util::RootLogger {
                 }
             });
     }
-    
+
    protected:
     void do_log(LoggerLevel level, std::string message) {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -92,7 +102,7 @@ class RLogger : public realm::util::RootLogger {
 
    private:
     std::queue<Entry> m_log_queue;
-    LogsDelegateFunction loggerDelegate;
+    LoggingFunction loggerDelegate;
     std::shared_ptr<realm::util::Scheduler> m_scheduler =
         realm::util::Scheduler::make_default();
     std::mutex m_mutex;
@@ -100,7 +110,7 @@ class RLogger : public realm::util::RootLogger {
 
 class JSLoggerFactory : public realm::SyncLoggerFactory {
    public:
-    void logs(LogsDelegateFunction&& _logs_fn) { logs_fn = _logs_fn; }
+    void logs(LoggingFunction&& _logs_fn) { logs_fn = _logs_fn; }
 
     std::unique_ptr<realm::util::Logger> make_logger(
         realm::util::Logger::Level level) {
@@ -112,7 +122,7 @@ class JSLoggerFactory : public realm::SyncLoggerFactory {
     }
 
    private:
-    LogsDelegateFunction logs_fn;
+    LoggingFunction logs_fn;
 };
 
 class Logger {
@@ -141,7 +151,7 @@ class Logger {
         throw std::runtime_error("Bad log level");
     }
 
-    realm::SyncLoggerFactory& build_sync_logger(LogsDelegateFunction&& log_fn) {
+    realm::SyncLoggerFactory& build_for_sync(LoggingFunction&& log_fn) {
         auto logger_factory = new common::JSLoggerFactory();
         logger_factory->logs(std::move(log_fn));
 

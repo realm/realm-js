@@ -749,7 +749,8 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, arguments);
     };
     
-    app->sync_manager()->set_logger_factory( logger.build_sync_logger(show_logs) );
+    app->sync_manager()->set_logger_factory( 
+            logger.build_for_sync( std::move(show_logs) ) );
 }
 
 template<typename T>
