@@ -4,7 +4,7 @@
 <!--ts-->
   * [Install Instructions For Mac](#instructions-for-macos)
   * [Building Realm for React Native **Android**](#building-for-android)
-  * [Building Realm for React Native **iOS**](#instructions-for-macos)
+  * [Building Realm for React Native **iOS**](#ios)
   * [Building Realm for **NodeJS**](#building-for-nodejs)
 
 <!--te-->
