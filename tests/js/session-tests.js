@@ -932,12 +932,12 @@ module.exports = {
     },
 
     async testAnalyticsSubmission() {
-        var context = require('../../package.json');
-        var analytics = require('../../lib/submit-analytics.js');
+        const context = require('realm/package.json');
+        const analytics = require('realm/lib/submit-analytics');
 
-        const payload = await analytics.fetchPlatformData(context,'TestEvent')
+        const payload = await analytics.fetchPlatformData(context, 'TestEvent')
         .catch((e) => {
-            Promise.reject("Failed to fetch platform data  [Error: " + e + "]");
+            return Promise.reject("Failed to fetch platform data  [Error: " + e + "]");
         });
 
         TestCase.assertDefined(payload.webHook);
@@ -949,12 +949,11 @@ module.exports = {
         TestCase.assertDefined(payload.mixPanel.properties);
         TestCase.assertType(payload.mixPanel.properties.Binding, 'object');
 
-
         await analytics.submitStageAnalytics('TestEvent')
         .catch((e) => {
-            Promise.reject("Failed to submit webhook analytics  [Error: " + e + "]");
+            return Promise.reject("Failed to submit webhook analytics  [" + e + "]")
         });
 
-        Promise.resolve();
+        return Promise.resolve();
     }
 };
