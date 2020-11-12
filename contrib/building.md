@@ -179,7 +179,11 @@ sync done for: js_logger.hpp.  12:54:26
 Now you can just open the xcode project in ```sample-rn-project``` by doing:
 
 ```sh
-open sample-rn-project/ios/MyAwesomeRealmApp.xcworkspace/
+cd sample-rn-project/ios/ 
+pod install # Install iOS dependencies
+
+open sample-rn-project/ios/MyAwesomeRealmApp.xcworkspace 
+#or just open MyAwesomeRealmApp.xcworkspace if you are inside the folder
 ```
 
 After that you can press ```CMD + B``` and see your changes compiled, then you do ```CMD + R``` and you run the new code on the emulator.
