@@ -67,23 +67,21 @@ class IOSLogger {
 class RLogger : public realm::util::RootLogger {
    public:
     void delegate(LoggingFunction&& delegate) {
-        /*
-         * We don't need a mutex here because of the collaborative nature of
-         * do_log (pushing to the end) and delegate (collecting from the top) in
-         * the worst case scenario <empty> should protect this thread from
-         * accessing half committed entries.
-         *
-         * for more info:
-         *      https://gist.github.com/cesarvr/a40c208c7caefa424a5029158ad679f5
-         *
-         */
 
-        m_scheduler->set_notify_callback(
-            [this, delegate = std::move(delegate)] {
+        m_scheduler->set_notify_callback([this, delegate = std::move(delegate)] {
                 while (!m_log_queue.empty()) {
-                    auto entry = m_log_queue.front();
+                    /*
+                     *  Extracting and delegating log entries.
+                     */
+                    Entry entry;
+                    {
+                        std::lock_guard<std::mutex> lock(m_mutex);
+                        if (m_log_queue.empty()) return;
+                        entry = m_log_queue.front();
+                        m_log_queue.pop();
+                    }
+
                     delegate(static_cast<int>(entry.first), entry.second);
-                    m_log_queue.pop();
                 }
             });
     }
@@ -108,7 +106,7 @@ class RLogger : public realm::util::RootLogger {
     std::mutex m_mutex;
 };
 
-class JSLoggerFactory : public realm::SyncLoggerFactory {
+class LoggerDelegatorFactory : public realm::SyncLoggerFactory {
    public:
     void logs(LoggingFunction&& _logs_fn) { logs_fn = _logs_fn; }
 
@@ -152,7 +150,7 @@ class Logger {
     }
 
     realm::SyncLoggerFactory& build_for_sync(LoggingFunction&& log_fn) {
-        auto logger_factory = new common::JSLoggerFactory();
+        auto logger_factory = new common::LoggerDelegatorFactory();
         logger_factory->logs(std::move(log_fn));
 
         return *logger_factory;
