@@ -34,8 +34,13 @@ using LoggerLevel = realm::util::Logger::Level;
 using Entry = std::pair<LoggerLevel, std::string>;
 using LoggingFunction = std::function<void(int, std::string)>;
 
-// Concrete Android/iOS implementation proposal
-// for Android/iOS infra logging.
+/*
+ * The idea here is to one day implement a functionality to delegate the logs
+ * to the mobile OS, for that we got two specialized behaviour that we can inject at
+ * compile time or at runtime.  
+ *
+ */
+
 #if REALM_ANDROID
 class AndroidLogger {
     std::map<LoggerLevel, android_LogPriority> map_android_log_level{
@@ -153,7 +158,7 @@ class Logger {
         auto logger_factory = new common::LoggerDelegatorFactory();
         logger_factory->logs(std::move(log_fn));
 
-        return *logger_factory;
+        return &logger_factory;
     }
 };
 
