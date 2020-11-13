@@ -1,6 +1,6 @@
 ## Sync Logging
 
-![Logger]()
+![Logger](https://raw.githubusercontent.com/realm/realm-js/08b031dc7b4b85bcbd433bd4b766e86405bd04f2/contrib/assets/sync_logging.png)
 
 The logs can be configured using two functions: 
 
