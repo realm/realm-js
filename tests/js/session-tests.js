@@ -934,7 +934,7 @@ module.exports = {
     async testAnalyticsSubmission() {
         // only run in node context
         if (!platformSupported) {
-            return;
+            return Promise.resolve();
         }
 
         const context = require('realm/package.json');
