@@ -731,10 +731,9 @@ template<typename T>
 void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(2);
 
-    common::Logger logger;
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     auto callback_fn = Value::validated_to_function(ctx, args[1], "logger_callback");
-
+    
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<FunctionType> protected_callback(ctx, callback_fn);
 
@@ -748,9 +747,10 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
 
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, arguments);
     };
-    
-    app->sync_manager()->set_logger_factory( 
-            logger.build_for_sync( std::move(show_logs) ) );
+
+    common::Logger logger;
+    auto sync_logger = logger.build_sync_logger(std::move(show_logs));
+    app->sync_manager()->set_logger_factory( *sync_logger );
 }
 
 template<typename T>

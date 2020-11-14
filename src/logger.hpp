@@ -32,33 +32,29 @@ using LoggerLevel = realm::util::Logger::Level;
 
 // TODO we are coupling core with JS Land here, change to string.
 using Entry = std::pair<LoggerLevel, std::string>;
-using LoggingFunction = std::function<void(int, std::string)>;
+using Delegated = std::function<void(int, std::string)>;
 
 /*
  * The idea here is to one day implement a functionality to delegate the logs
- * to the mobile OS, for that we got two specialized behaviour that we can inject at
- * compile time or at runtime.  
+ * to the mobile OS, for that we got two specialized behaviour that we can
+ * inject at compile time or at runtime.
  *
  */
 
 #if REALM_ANDROID
 class AndroidLogger {
     std::map<LoggerLevel, android_LogPriority> map_android_log_level{
-        {LoggerLevel::all, ANDROID_LOG_VERBOSE},
-        {LoggerLevel::info, ANDROID_LOG_INFO},
-        {LoggerLevel::trace, ANDROID_LOG_DEFAULT},
-        {LoggerLevel::debug, ANDROID_LOG_DEBUG},
-        {LoggerLevel::detail, ANDROID_LOG_VERBOSE},
-        {LoggerLevel::warn, ANDROID_LOG_WARN},
-        {LoggerLevel::error, ANDROID_LOG_ERROR},
-        {LoggerLevel::fatal, ANDROID_LOG_FATAL},
+        {LoggerLevel::all, ANDROID_LOG_VERBOSE},    {LoggerLevel::info, ANDROID_LOG_INFO},
+        {LoggerLevel::trace, ANDROID_LOG_DEFAULT},  {LoggerLevel::debug, ANDROID_LOG_DEBUG},
+        {LoggerLevel::detail, ANDROID_LOG_VERBOSE}, {LoggerLevel::warn, ANDROID_LOG_WARN},
+        {LoggerLevel::error, ANDROID_LOG_ERROR},    {LoggerLevel::fatal, ANDROID_LOG_FATAL},
         {LoggerLevel::off, ANDROID_LOG_SILENT},
     };
 
-    void print(Entry& entry) {
+    void print(Entry& entry)
+    {
         auto android_log_level = map_android_log_level[entry.first];
-        __android_log_print(android_log_level, "realm-sync", "%s",
-                            entry.second.c_str());
+        __android_log_print(android_log_level, "realm", "%s", entry.second.c_str());
     }
 };
 #endif
@@ -69,30 +65,32 @@ class IOSLogger {
 };
 #endif
 
-class RLogger : public realm::util::RootLogger {
-   public:
-    void delegate(LoggingFunction&& delegate) {
-
+class SyncLogger : public realm::util::RootLogger {
+public:
+    void delegate(Delegated&& delegate)
+    {
         m_scheduler->set_notify_callback([this, delegate = std::move(delegate)] {
-                while (!m_log_queue.empty()) {
-                    /*
-                     *  Extracting and delegating log entries.
-                     */
-                    Entry entry;
-                    {
-                        std::lock_guard<std::mutex> lock(m_mutex);
-                        if (m_log_queue.empty()) return;
-                        entry = m_log_queue.front();
-                        m_log_queue.pop();
-                    }
-
-                    delegate(static_cast<int>(entry.first), entry.second);
+            while (!m_log_queue.empty()) {
+                /*
+                 *  Extracting and delegating log entries.
+                 */
+                Entry entry;
+                {
+                    std::lock_guard<std::mutex> lock(m_mutex);
+                    if (m_log_queue.empty())
+                        return;
+                    entry = m_log_queue.front();
+                    m_log_queue.pop();
                 }
-            });
+
+                delegate(static_cast<int>(entry.first), entry.second);
+            }
+        });
     }
 
-   protected:
-    void do_log(LoggerLevel level, std::string message) {
+protected:
+    void do_log(LoggerLevel level, std::string message)
+    {
         std::lock_guard<std::mutex> lock(m_mutex);
 
         // TODO we are coupling core with JS here, change to string use hashmap
@@ -103,64 +101,64 @@ class RLogger : public realm::util::RootLogger {
         m_scheduler->notify();
     }
 
-   private:
+private:
     std::queue<Entry> m_log_queue;
-    LoggingFunction loggerDelegate;
-    std::shared_ptr<realm::util::Scheduler> m_scheduler =
-        realm::util::Scheduler::make_default();
+    Delegated loggerDelegate;
+    std::shared_ptr<realm::util::Scheduler> m_scheduler = realm::util::Scheduler::make_default();
     std::mutex m_mutex;
 };
 
-class LoggerDelegatorFactory : public realm::SyncLoggerFactory {
-   public:
-    void logs(LoggingFunction&& _logs_fn) { logs_fn = _logs_fn; }
+class LoggerFactory : public realm::SyncLoggerFactory {
+public:
+    LoggerFactory(Delegated&& logs_fn)
+        : logs_fn{logs_fn}
+    {
+    }
 
-    std::unique_ptr<realm::util::Logger> make_logger(
-        realm::util::Logger::Level level) {
-        auto logger = std::make_unique<RLogger>();
+    std::unique_ptr<realm::util::Logger> make_logger(realm::util::Logger::Level level)
+    {
+        auto logger = std::make_unique<SyncLogger>();
+
         logger->set_level_threshold(level);
         logger->delegate(std::move(logs_fn));
 
-        return std::unique_ptr<realm::util::Logger>(logger.release());
+        return logger;
     }
 
-   private:
-    LoggingFunction logs_fn;
+private:
+    Delegated logs_fn;
 };
 
 class Logger {
-   private:
+private:
     /*
        Log levels available.
        More info in (realm-core) realm/util/logger.hpp
 
        [ all, trace, debug, detail, info, warn, error, fatal, off ]
     */
-
     std::map<LoggerLevel, std::string> map_level{
-        {LoggerLevel::all, "all"},       {LoggerLevel::info, "info"},
-        {LoggerLevel::trace, "trace"},   {LoggerLevel::debug, "debug"},
-        {LoggerLevel::detail, "detail"}, {LoggerLevel::warn, "warn"},
-        {LoggerLevel::error, "error"},   {LoggerLevel::fatal, "fatal"},
-        {LoggerLevel::off, "off"},
+        {LoggerLevel::all, "all"},     {LoggerLevel::info, "info"},     {LoggerLevel::trace, "trace"},
+        {LoggerLevel::debug, "debug"}, {LoggerLevel::detail, "detail"}, {LoggerLevel::warn, "warn"},
+        {LoggerLevel::error, "error"}, {LoggerLevel::fatal, "fatal"},   {LoggerLevel::off, "off"},
     };
 
-   public:
-    LoggerLevel get_level(std::string level) {
+public:
+    LoggerLevel get_level(std::string level)
+    {
         for (auto const& [key, value] : map_level) {
-            if (value == level) return key;
+            if (value == level)
+                return key;
         }
 
         throw std::runtime_error("Bad log level");
     }
 
-    realm::SyncLoggerFactory& build_for_sync(LoggingFunction&& log_fn) {
-        auto logger_factory = new common::LoggerDelegatorFactory();
-        logger_factory->logs(std::move(log_fn));
-
-        return &logger_factory;
+    LoggerFactory* build_sync_logger(Delegated&& log_fn)
+    {
+        return new LoggerFactory{std::move(log_fn)};
     }
 };
 
-}  // namespace common
-}  // namespace realm
+} // namespace common
+} // namespace realm
