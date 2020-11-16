@@ -21,7 +21,7 @@ Clone [realm-js project](https://github.com/realm/realm-js) and install the requ
 * Android NDK 21.0
   - Available via the SDK Manager on Android Studio **Tools > SDK Manager**.
 
-#### Instructions for MacOS:
+### Instructions for MacOS:
 
 ```sh
   #Install brew
@@ -29,6 +29,7 @@ Clone [realm-js project](https://github.com/realm/realm-js) and install the requ
 
   #Install NVM, OpenJDK 8 and cocoapods
   brew install nvm openjdk@8 cocoapods
+
 ```
 
 Android Setup to build from the command-line:
@@ -43,10 +44,30 @@ $ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"
 
 #Setup NDK
 export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.0.6113669
-  ```
+```
+
+### Optimisations
+
+##### JDK
+If you are a user of Android Studio you can reuse their embedded JDK instead, which save you from installing it yourself:  
+
+```sh
+# Add JAVA_HOME
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jre/jdk/Contents/Home"
+```
 
 
-## Test Projects
+##### CCache
+
+To improve compilation speed you can use [ccache](https://ccache.dev/), to install you should do:
+
+```sh
+brew install ccache
+```
+
+
+
+### Projects For Testing
 
 To test your changes on react native you can clone this sample project.
 
@@ -90,6 +111,18 @@ To do that you can use the help of this tool:
 
 You can configure this tool to watch some sections of your ``realm-js`` and deploy those changes automatically to any of those projects.
 
+Once you have the script you just need to go to the bottom and configure the files/folder you want to watch and update in your target, something similar to this:
+
+```js
+syncByAppend(
+  '<source-folder>', // Source folder...
+  '<target-folder>', // Target folder...
+  <RegExp> /* Regular expression to match and update */
+)
+```
+
+
+
 ### On Android
 
 
@@ -103,6 +136,7 @@ syncByAppend(
   '../sample-rn-project/node_modules/realm/android/src/main/jniLibs', // Target folder...
   RegExp('librealmreact.so'))  // copy librealmreact.so if a change has been detected...
 ```
+
 > As you can see this is just a dumb script that copy files anytime they change... you can use [Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions) to handle more complex scenarios.
 
 
@@ -179,10 +213,10 @@ sync done for: js_logger.hpp.  12:54:26
 Now you can just open the xcode project in ```sample-rn-project``` by doing:
 
 ```sh
-cd sample-rn-project/ios/ 
+cd sample-rn-project/ios/
 pod install # Install iOS dependencies
 
-open sample-rn-project/ios/MyAwesomeRealmApp.xcworkspace 
+open sample-rn-project/ios/MyAwesomeRealmApp.xcworkspace
 #or just open MyAwesomeRealmApp.xcworkspace if you are inside the folder
 ```
 
