@@ -210,7 +210,7 @@ sync done for: js_logger.hpp.  12:54:26
 
 #### Building for iOS
 
-Now you can just open the xcode project in ```sample-rn-project``` by doing:
+Now you can just open the xcode project in `sample-rn-project` by doing:
 
 ```sh
 cd sample-rn-project/ios/
