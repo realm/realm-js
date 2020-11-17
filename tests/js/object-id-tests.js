@@ -43,9 +43,9 @@ module.exports = {
                     user,
                     partitionValue: "LoLo"
                 },
-                schema: [{ name: 'IntegerPrimaryKey', properties: { int: 'int?' }, primaryKey: 'int' },
-                    { name: 'StringPrimaryKey', properties: { string: 'string?' }, primaryKey: 'string' },
-                    { name: 'NoPrimaryKey', properties: { string: 'string' }},
+                schema: [
+                    { name: 'IntegerPrimaryKey', properties: { _id: 'objectId', int: 'int?' }, primaryKey: '_id' },
+                    { name: 'StringPrimaryKey', properties: { _id: 'objectId', string: 'string?' }, primaryKey: '_id' }
                 ],
             }
             return Realm.open(config).then(realm => {
@@ -53,24 +53,15 @@ module.exports = {
                 var string, nullString;
                 var none;
                 realm.write(() => {
-                    integer = realm.create('IntegerPrimaryKey', [12345]);
-                    nullInteger = realm.create('IntegerPrimaryKey', [null]);
-                    string = realm.create('StringPrimaryKey', ["hello, world"]);
-                    nullString = realm.create('StringPrimaryKey', [null]);
-                    none = realm.create('NoPrimaryKey', ["hello, world"]);
+                    integer = realm.create('IntegerPrimaryKey', { _id: new ObjectId(), int: 12345 });
+                    string = realm.create('StringPrimaryKey', { _id: new ObjectId(), string: "hello, world" });
                 });
 
                 let integerId = integer._objectId();
-                let nullIntegerId = nullInteger._objectId();
                 let stringId = string._objectId();
-                let nullStringId = nullString._objectId();
-                let noneId = none._objectId();
 
                 TestCase.assertTrue(integer._isSameObject(realm._objectForObjectId('IntegerPrimaryKey', integerId)));
-                TestCase.assertTrue(nullInteger._isSameObject(realm._objectForObjectId('IntegerPrimaryKey', nullIntegerId)));
                 TestCase.assertTrue(string._isSameObject(realm._objectForObjectId('StringPrimaryKey', stringId)));
-                TestCase.assertTrue(nullString._isSameObject(realm._objectForObjectId('StringPrimaryKey', nullStringId)));
-                TestCase.assertTrue(none._isSameObject(realm._objectForObjectId('NoPrimaryKey', noneId)));
             });
         });
 

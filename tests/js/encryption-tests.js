@@ -95,6 +95,7 @@ module.exports = {
         const credentials = Realm.Credentials.anonymous();
         return app.logIn(credentials).then(user => {
             new Realm({
+                path: "encrypted.realm",
                 encryptionKey: new Int8Array(64),
                 sync: {
                     user: user,
