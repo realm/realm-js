@@ -87,7 +87,7 @@ npm install
 
 ## Workflow Suggestion
 
-This workflows are mere suggestions, fee free to include or improve:
+This workflows are mere suggestions, feel free to include or improve:
 
 ### Deploying Changes
 
