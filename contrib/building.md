@@ -237,7 +237,7 @@ Assuming we have the same folder structure:
   sample-rn-project #the sample react-native project.
 ```
 
-We jump to the ``realm-js`` root folder and open the ```nlk.js``` script, jump to the bottom and add:
+We jump to the `realm-js` root folder and open the `nlk.js` script, jump to the bottom and add:
 
 ```js
 // Android
