@@ -220,7 +220,7 @@ open sample-rn-project/ios/MyAwesomeRealmApp.xcworkspace
 #or just open MyAwesomeRealmApp.xcworkspace if you are inside the folder
 ```
 
-After that you can press ```CMD + B``` and see your changes compiled, then you do ```CMD + R``` and you run the new code on the emulator.
+After that you can press <kbd>Cmd ⌘</kbd> + <kbd>B</kbd> and see your changes compiled, then you do <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> and you run the new code on the emulator.
 
 
 ### NodeJS
