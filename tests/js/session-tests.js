@@ -937,8 +937,8 @@ module.exports = {
             return Promise.resolve();
         }
 
-        const context = require('realm/package.json');
-        const analytics = require('realm/lib/submit-analytics');
+        const context = node_require('realm/package.json');
+        const analytics = node_require('realm/lib/submit-analytics');
 
         const payload = await analytics.fetchPlatformData(context, 'TestEvent')
         .catch((e) => {
