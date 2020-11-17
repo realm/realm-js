@@ -44,8 +44,8 @@ module.exports = {
                     partitionValue: "LoLo"
                 },
                 schema: [
-                    { name: 'IntegerPrimaryKey', properties: { _id: 'int' }, primaryKey: '_id' },
-                    { name: 'StringPrimaryKey', properties: { _id: 'string' }, primaryKey: '_id' }
+                    { name: 'IntegerPrimaryKey', properties: { _id: 'int?' }, primaryKey: '_id' },
+                    { name: 'StringPrimaryKey', properties: { _id: 'string?' }, primaryKey: '_id' }
                 ]
             }
             return Realm.open(config).then(realm => {
