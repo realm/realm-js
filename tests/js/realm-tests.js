@@ -469,7 +469,7 @@ module.exports = {
         return app.logIn(credentials)
             .then(user => {
                 const config = {
-                    schema: [schemas.TestObjectSync],
+                    schema: [schemas.TestObjectWithPk],
                     sync: {
                         user,
                         partitionValue: "LoLo"
@@ -1595,7 +1595,7 @@ module.exports = {
         return app.logIn(Realm.Credentials.anonymous())
             .then(user => {
                 const config = {
-                    schema: [schemas.TestObjectSync],
+                    schema: [schemas.TestObjectWithPk],
                     sync: {user, partitionValue: '"Lolo"' },
                 };
 
