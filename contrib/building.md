@@ -37,16 +37,16 @@ Android Setup to build from the command-line:
 ```sh
 # Before following this make sure java is available in the command line.
 # Location of your Android SDK
-export ANDROID_HOME=$HOME/Library/Android/sdk
+export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
 
 #To install NDK
-$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"
+$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "ndk;21.0.6113669"
 
 #Setup NDK
-export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.0.6113669
+export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/21.0.6113669
 ```
 
-### Optimisations
+### Additional Configurations
 
 ##### JDK
 If you are a user of Android Studio you can reuse their embedded JDK instead, which save you from installing it yourself:  
@@ -62,8 +62,29 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jre/jdk/Contents/Hom
 To improve compilation speed you can use [ccache](https://ccache.dev/), to install you should do:
 
 ```sh
+# Install ccache
 brew install ccache
+
+
+# Export the ccache variants of compilation tools
+export PATH=/usr/local/opt/ccache/libexec:$PATH
 ```
+
+
+##### Android Environment Variables
+
+Here are some additional Android environment variables that can be useful.
+
+```sh
+export ANDROID_SDK_HOME=$HOME/.android
+export ANDROID_EMULATOR_HOME=$HOME/.android
+export ANDROID_AVD_HOME=$HOME/.android/avd
+
+# export ANDROID_NDK_ROOT=
+export PATH=$PATH:$ANDROID_SDK_ROOT/tools
+export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+```
+
 
 
 
@@ -87,7 +108,7 @@ npm install
 
 ## Workflow Suggestion
 
-This workflows are mere suggestions, feel free to include or improve:
+This workflows are mere suggestions, fee free to include or improve:
 
 ### Deploying Changes
 
@@ -201,7 +222,7 @@ syncByAppend('./src',
              RegExp('.*'))    
 ```
 
-Now if make a change in the `realm-js/src` folder you will see this change propagate to your React Native project.
+Now if make a change in the ```realm-js/src``` folder you will see this change propagate to your React Native project.
 
 ```sh
 sync done for: js_logger.hpp.  12:54:26
@@ -210,7 +231,7 @@ sync done for: js_logger.hpp.  12:54:26
 
 #### Building for iOS
 
-Now you can just open the xcode project in `sample-rn-project` by doing:
+Now you can just open the xcode project in ```sample-rn-project``` by doing:
 
 ```sh
 cd sample-rn-project/ios/
@@ -220,7 +241,7 @@ open sample-rn-project/ios/MyAwesomeRealmApp.xcworkspace
 #or just open MyAwesomeRealmApp.xcworkspace if you are inside the folder
 ```
 
-After that you can press <kbd>Cmd ⌘</kbd> + <kbd>B</kbd> and see your changes compiled, then you do <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> and you run the new code on the emulator.
+After that you can press ```CMD + B``` and see your changes compiled, then you do ```CMD + R``` and you run the new code on the emulator.
 
 
 ### NodeJS
@@ -237,7 +258,7 @@ Assuming we have the same folder structure:
   sample-rn-project #the sample react-native project.
 ```
 
-We jump to the `realm-js` root folder and open the `nlk.js` script, jump to the bottom and add:
+We jump to the ``realm-js`` root folder and open the ```nlk.js``` script, jump to the bottom and add:
 
 ```js
 // Android
