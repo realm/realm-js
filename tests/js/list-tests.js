@@ -117,33 +117,32 @@ module.exports = {
         TestCase.assertTrue(prim.optObjectId.optional);
     },
 
-    //TODO: disable failing tests
-    // testListLength: function() {
-    //     const realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
-    //     let array;
+    testListLength: function() {
+        const realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        let array;
 
-    //     realm.write(() => {
-    //         let obj = realm.create('LinkTypesObject', {
-    //             objectCol: {doubleCol: 1},
-    //             objectCol1: {doubleCol: 2},
-    //             arrayCol: [{doubleCol: 3}],
-    //         });
+        realm.write(() => {
+            let obj = realm.create('LinkTypesObject', {
+                objectCol: {doubleCol: 1},
+                objectCol1: {doubleCol: 2},
+                arrayCol: [{doubleCol: 3}],
+            });
 
-    //         array = obj.arrayCol;
-    //         TestCase.assertEqual(array.length, 1);
+            array = obj.arrayCol;
+            TestCase.assertEqual(array.length, 1);
 
-    //         obj.arrayCol = [];
-    //         TestCase.assertEqual(array.length, 0);
+            obj.arrayCol = [];
+            TestCase.assertEqual(array.length, 0);
 
-    //         obj.arrayCol = [{doubleCol: 1}, {doubleCol: 2}];
-    //         TestCase.assertEqual(array.length, 2);
+            obj.arrayCol = [{doubleCol: 1}, {doubleCol: 2}];
+            TestCase.assertEqual(array.length, 2);
 
-    //         TestCase.assertThrowsContaining(() => array.length = 0,
-    //                                         "Cannot assign to read only property 'length'");
-    //     });
+            TestCase.assertThrowsContaining(() => array.length = 0,
+                                            "Cannot assign to read only property 'length'");
+        });
 
-    //     TestCase.assertEqual(array.length, 2);
-    // },
+        TestCase.assertEqual(array.length, 2);
+    },
 
     testListSubscriptGetters: function() {
         const realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject, schemas.PrimitiveArrays]});
