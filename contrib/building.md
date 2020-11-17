@@ -46,7 +46,7 @@ $ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"
 export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.0.6113669
 ```
 
-### Optimisations
+### Optimisations
 
 ##### JDK
 If you are a user of Android Studio you can reuse their embedded JDK instead, which save you from installing it yourself:  
