@@ -16,7 +16,7 @@
 Clone [realm-js project](https://github.com/realm/realm-js) and install the required dependencies:
 
 * XCode 9.4+
-* [NodeJS](https://nodejs.org/en/) version 10 or later
+* [Node.js](https://nodejs.org/en/) version 10 or later. Consider [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions.
 * Android SDK 23+
 * Android NDK 21.0
   - Available via the SDK Manager on Android Studio **Tools > SDK Manager**.
