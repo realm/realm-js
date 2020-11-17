@@ -35,7 +35,7 @@ exports.TestObject = {
     primaryKey: '_id',
     name: 'TestObject',
     properties: {
-        _id: 'objectId',
+        _id: 'objectId?',
         doubleCol: 'double',
     }
 };
