@@ -201,7 +201,7 @@ syncByAppend('./src',
              RegExp('.*'))    
 ```
 
-Now if make a change in the ```realm-js/src``` folder you will see this change propagate to your React Native project.
+Now if make a change in the `realm-js/src` folder you will see this change propagate to your React Native project.
 
 ```sh
 sync done for: js_logger.hpp.  12:54:26
