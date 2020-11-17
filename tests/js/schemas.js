@@ -33,9 +33,16 @@ exports.DogForSync = {
 
 exports.TestObject = {
     name: 'TestObject',
-    // primaryKey: '_id',
     properties: {
-        // _id: 'int?',
+        doubleCol: 'double',
+    }
+};
+
+exports.TestObjectSync = {
+    name: 'TestObject',
+    primaryKey: '_id',
+    properties: {
+        _id: 'int?',
         doubleCol: 'double',
     }
 };

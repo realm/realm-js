@@ -469,7 +469,7 @@ module.exports = {
         return app.logIn(credentials)
             .then(user => {
                 const config = {
-                    schema: [schemas.TestObject],
+                    schema: [schemas.TestObjectSync],
                     sync: {
                         user,
                         partitionValue: "LoLo"
