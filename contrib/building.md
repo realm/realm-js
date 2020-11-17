@@ -37,16 +37,16 @@ Android Setup to build from the command-line:
 ```sh
 # Before following this make sure java is available in the command line.
 # Location of your Android SDK
-export ANDROID_HOME=$HOME/Library/Android/sdk
+export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
 
 #To install NDK
-$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"
+$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "ndk;21.0.6113669"
 
 #Setup NDK
-export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.0.6113669
+export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/21.0.6113669
 ```
 
-### Optimisations
+### Additional Configurations
 
 ##### JDK
 If you are a user of Android Studio you can reuse their embedded JDK instead, which save you from installing it yourself:  
@@ -64,6 +64,10 @@ To improve compilation speed you can use [ccache](https://ccache.dev/), to insta
 ```sh
 brew install ccache
 ```
+
+##### Android Environment Variables
+
+
 
 
 
