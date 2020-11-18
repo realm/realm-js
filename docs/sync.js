@@ -162,7 +162,7 @@
  *
  * Class for interacting with Realm Sync.
  *
- * @memberof Realm
+ * @memberof Realm.App
  */
 
 class Sync {
