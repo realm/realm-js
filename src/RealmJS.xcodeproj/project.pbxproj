@@ -40,9 +40,6 @@
 		42D9B5F52465185C00AB3349 /* app_credentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57B224640AE4008679D5 /* app_credentials.cpp */; };
 		42D9B5F72465185C00AB3349 /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BB24640AE4008679D5 /* app.cpp */; };
 		42D9B5F82465185D00AB3349 /* generic_network_transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57C024640AE5008679D5 /* generic_network_transport.cpp */; };
-		42D9B5F92465185D00AB3349 /* remote_mongo_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BA24640AE4008679D5 /* remote_mongo_client.cpp */; };
-		42D9B5FA2465185D00AB3349 /* remote_mongo_collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57B324640AE4008679D5 /* remote_mongo_collection.cpp */; };
-		42D9B5FB2465185D00AB3349 /* remote_mongo_database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42BD57BD24640AE5008679D5 /* remote_mongo_database.cpp */; };
 		42D9B5FC2465185D00AB3349 /* bson.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42D9B5F1246511F300AB3349 /* bson.cpp */; };
 		42D9B5FE2465185D00AB3349 /* regular_expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42D9B5EF246511F300AB3349 /* regular_expression.cpp */; };
 		4BA4036023C6664700DE6856 /* object_changeset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4BA4035F23C6664700DE6856 /* object_changeset.cpp */; };
@@ -58,6 +55,9 @@
 		A45BFF8E253700F2004BF4E6 /* app_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A45BFF8D253700F2004BF4E6 /* app_utils.cpp */; };
 		A482144A24F4043B00A166F4 /* push_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42387E6624C49409007FC5A4 /* push_client.cpp */; };
 		A4DD71E524F3D1CA00B77603 /* scheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F50A4462447C09D003A6F4C /* scheduler.cpp */; };
+		A4F1ACB82563E0E600D52257 /* mongo_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A4F1ACB52563E0E600D52257 /* mongo_client.cpp */; };
+		A4F1ACB92563E0E600D52257 /* mongo_collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A4F1ACB62563E0E600D52257 /* mongo_collection.cpp */; };
+		A4F1ACBA2563E0E600D52257 /* mongo_database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A4F1ACB72563E0E600D52257 /* mongo_database.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
@@ -233,6 +233,9 @@
 		8507156B1E2CFC0100E548DB /* object_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = object_notifier.cpp; sourceTree = "<group>"; };
 		8507156C1E2CFC0100E548DB /* object_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = object_notifier.hpp; sourceTree = "<group>"; };
 		A45BFF8D253700F2004BF4E6 /* app_utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = app_utils.cpp; path = "object-store/src/sync/app_utils.cpp"; sourceTree = "<group>"; };
+		A4F1ACB52563E0E600D52257 /* mongo_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_client.cpp; path = "object-store/src/sync/mongo_client.cpp"; sourceTree = "<group>"; };
+		A4F1ACB62563E0E600D52257 /* mongo_collection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_collection.cpp; path = "object-store/src/sync/mongo_collection.cpp"; sourceTree = "<group>"; };
+		A4F1ACB72563E0E600D52257 /* mongo_database.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_database.cpp; path = "object-store/src/sync/mongo_database.cpp"; sourceTree = "<group>"; };
 		F60102CF1CBB814A00EC01BA /* node_init.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_init.hpp; sourceTree = "<group>"; };
 		F60102D11CBB865A00EC01BA /* jsc_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_init.hpp; sourceTree = "<group>"; };
 		F60102F71CBDA6D400EC01BA /* js_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_collection.hpp; sourceTree = "<group>"; };
@@ -388,6 +391,9 @@
 		02B58CA71AE99CEB009B348C = {
 			isa = PBXGroup;
 			children = (
+				A4F1ACB52563E0E600D52257 /* mongo_client.cpp */,
+				A4F1ACB62563E0E600D52257 /* mongo_collection.cpp */,
+				A4F1ACB72563E0E600D52257 /* mongo_database.cpp */,
 				A45BFF8D253700F2004BF4E6 /* app_utils.cpp */,
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
 				02B58CB21AE99CEC009B348C /* Products */,
@@ -905,15 +911,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A4F1ACB82563E0E600D52257 /* mongo_client.cpp in Sources */,
+				A4F1ACB92563E0E600D52257 /* mongo_collection.cpp in Sources */,
+				A4F1ACBA2563E0E600D52257 /* mongo_database.cpp in Sources */,
 				A45BFF8E253700F2004BF4E6 /* app_utils.cpp in Sources */,
 				A482144A24F4043B00A166F4 /* push_client.cpp in Sources */,
 				A4DD71E524F3D1CA00B77603 /* scheduler.cpp in Sources */,
 				42D9B5F52465185C00AB3349 /* app_credentials.cpp in Sources */,
 				42D9B5F72465185C00AB3349 /* app.cpp in Sources */,
 				42D9B5F82465185D00AB3349 /* generic_network_transport.cpp in Sources */,
-				42D9B5F92465185D00AB3349 /* remote_mongo_client.cpp in Sources */,
-				42D9B5FA2465185D00AB3349 /* remote_mongo_collection.cpp in Sources */,
-				42D9B5FB2465185D00AB3349 /* remote_mongo_database.cpp in Sources */,
 				42D9B5FC2465185D00AB3349 /* bson.cpp in Sources */,
 				42D9B5FE2465185D00AB3349 /* regular_expression.cpp in Sources */,
 				832C1D2F229D3035001A20C1 /* async_open_task.cpp in Sources */,

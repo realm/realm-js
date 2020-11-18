@@ -24,7 +24,7 @@
 #include "js_api_key_auth.hpp"
 #include "js_network_transport.hpp"
 
-#include "sync/remote_mongo_collection.hpp"
+#include "sync/mongo_collection.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
 #include "sync/sync_session.hpp"
