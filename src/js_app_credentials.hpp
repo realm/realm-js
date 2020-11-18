@@ -63,6 +63,12 @@ public:
         {"serverApiKey",     wrap<server_api_key>},
         {"jwt",              wrap<jwt>},
     };
+    
+    static void get_payload(ContextType, ObjectType, ReturnValue &);
+    
+    PropertyMap<T> const properties = {
+        {"payload", {wrap<get_payload>, nullptr}},
+    };
 
     static void provider(ContextType, ObjectType, Arguments &, ReturnValue &);
 
@@ -171,6 +177,12 @@ void CredentialsClass<T>::provider(ContextType ctx, ObjectType this_object, Argu
 
     auto credentials = get_internal<T, CredentialsClass<T>>(ctx, this_object);
     return_value.set(Value::from_string(ctx, credentials->provider_as_string()));
+}
+
+template<typename T>
+void CredentialsClass<T>::get_payload(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
+    auto credentials = get_internal<T, CredentialsClass<T>>(ctx, this_object);
+    return_value.set(Value::from_string(ctx, credentials->serialize_as_json()));
 }
 
 }

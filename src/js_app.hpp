@@ -29,6 +29,7 @@
 #include "js_app_credentials.hpp"
 #include "js_network_transport.hpp"
 #include "js_email_password_auth.hpp"
+#include "rpc_network_transport.hpp"
 
 using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
@@ -50,6 +51,7 @@ class AppClass : public ClassDefinition<T, SharedApp> {
     using Arguments = js::Arguments<T>;
 
     using NetworkTransport = JavaScriptNetworkTransport<T>;
+    using RPCNetworkTransport = RPCNetworkTransport<T>;
 
 public:
     const std::string name = "App";
@@ -70,7 +72,7 @@ public:
         {"allUsers", {wrap<get_all_users>, nullptr}}
     };
 
-    static void login(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void log_in(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_user(ContextType, ObjectType, Arguments&, ReturnValue&);
 
@@ -79,7 +81,7 @@ public:
     static void get_app(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
-        {"_login", wrap<login>},
+        {"_logIn", wrap<log_in>},
         {"switchUser", wrap<switch_user>},
         {"_removeUser", wrap<remove_user>},
     };
@@ -160,12 +162,21 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         throw std::runtime_error("Expected either a configuration object or an app id string.");
     }
 
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    config.transport_generator = [=] {
-        return std::make_unique<NetworkTransport>(protected_ctx);
-    };
-
     auto realm_constructor = js::Value<T>::validated_to_object(ctx, js::Object<T>::get_global(ctx, "Realm"));
+
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    auto network_transport_function = Object::get_property(ctx, realm_constructor, "_networkTransport");
+    if (Value::is_undefined(ctx, network_transport_function)) {
+        // We're most likely running with the Chrome debugger enabled, since the "_networkTransport" property was not provided
+        config.transport_generator = [protected_ctx] {
+            return std::make_unique<RPCNetworkTransport>(protected_ctx);
+        };
+    } else {
+        config.transport_generator = [protected_ctx] {
+            return std::make_unique<NetworkTransport>(protected_ctx);
+        };
+    }
+
     std::string user_agent_binding_info;
     auto user_agent_function = js::Object<T>::get_property(ctx, realm_constructor, "_createUserAgentDescription");
     if (js::Value<T>::is_function(ctx, user_agent_function)) {
@@ -225,7 +236,7 @@ void AppClass<T>::get_app_id(ContextType ctx, ObjectType this_object, ReturnValu
 }
 
 template<typename T>
-void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void AppClass<T>::log_in(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
@@ -234,7 +245,7 @@ void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args
     auto callback_function = Value::validated_to_function(ctx, args[1]);
 
     app::AppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(ctx, credentials_object);
-
+    
     app->log_in_with_credentials(app_credentials, Function::wrap_callback_result_first(ctx, this_object, callback_function,
         [app] (ContextType ctx, SharedUser user) {
             REALM_ASSERT_RELEASE(user);
