@@ -42,4 +42,4 @@ jobs:
       - run: npm run test:github
         working-directory: packages/realm-web-integration-tests
         env:
-          MONGODB_REALM_TEST_SERVER: latest
+          MONGODB_REALM_TEST_SERVER: '2020-11-04' # TODO: Try using 'latest' once it's fixed
