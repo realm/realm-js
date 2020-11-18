@@ -19,115 +19,46 @@
 /* eslint getter-return: "off", no-dupe-class-members: "off" */
 
 /**
- * This describes the different options used to create a {@link Realm} instance with Realm Platform synchronization.
- * @typedef {Object} Realm.Sync~SyncConfiguration
- * @property {Realm.Sync.User} user - A {@link Realm.Sync.User} object obtained by calling `Realm.Sync.User.login`.
- * @property {string} url - A `string` which contains a valid Realm Sync url.
+ * This describes the options used to create a {@link Realm.App} instance.
+ * @typedef {Object} Realm.App~AppConfiguration
+ * @property {string} id - The id of the MongoDB Realm app.
+ * @property {string} url - The URL of the MongoDB Realm end-point.
+ * @property {number} timeout - General timeout (in millisecs) for requests.
+ * @property {Realm.App~LocalAppConfiguration} app - local app configuration
+ */
+
+/**
+ * This describes the options used for local app configuration.
+ * @typedef {Object} Realm.App~LocalAppConfiguration
+ * @property {string} name - The name of the app.
+ * @property {string} version - The version of the app.
+ */
+
+/**
+ * This describes the different options used to create a {@link Realm} instance with Realm Cloud synchronization.
+ * @typedef {Object} Realm.App.Sync~SyncConfiguration
+ * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
+ * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key.
  * @property {function} [error] - A callback function which is called in error situations.
  *    The `error` callback can take up to five optional arguments: `name`, `message`, `isFatal`,
  *    `category`, and `code`.
  *
- * @deprecated
- * @property {boolean} [validate_ssl] - Indicating if SSL certificates must be validated.
- * @deprecated
- * @property {string} [ssl_trust_certificate_path] - A path where to find trusted SSL certificates.
- * @deprecated
- * @property {Realm.Sync~sslValidateCallback} [open_ssl_verify_callback] - A callback function used to
- * accept or reject the server's SSL certificate.
- *
- * @property {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration.
- * @deprecated
- * @property {boolean} [partial] - Whether this Realm should be opened in 'query-based synchronization' mode.
- *    Query-based synchronisation only synchronizes those objects that match the query specified in contrast
- *    to the normal mode of operation that synchronises all objects in a remote Realm.
- * @property {boolean} [fullSynchronization] - Whether this Realm should be opened in query-based or full
- *    synchronization mode. The default is query-based mode which only synchronizes objects that have been subscribed to.
- *    A fully synchronized Realm will synchronize the entire Realm in the background, irrespectively of the data being
- *    used or not.
- * @property {Object} [custom_http_headers] - A map (string, string) of custom HTTP headers.
- * @property {string} [customQueryBasedSyncIdentifier] - A custom identifier to append to the Realm url rather than the default
- *    identifier which is comprised of the user id and a random string. It allows you to reuse query based Realms across
- *    different devices.
- * @property {string} [clientResyncMode] A Client Resync is triggered if the device and server cannot agree on a common shared history
- *     for the Realm file, thus making it impossible for the device to upload or receive any changes.
- *     This can happen if the server is rolled back or restored from backup. Just having the device offline will not trigger a Client Resync.
- *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'manual'` as the default value for
- *     query-based sync and `'recover'` for full sync.
- *     Query-based synced Realm only support `'manual'`.
- * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
+ * @property {Object} [customHttpHeaders] - A map (string, string) of custom HTTP headers.
+ * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
        If not set, the Realm will be downloaded before opened.
- * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
+ * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
  *    file to complete and then open. If not set, the Realm will be downloaded before opened.
- */
-
-/**
- * This describes the client resync modes.
- * @typedef {("recover"|"discard"|"manual")} Realm.Sync~ClientResyncMode
- * @property "recover" - Realm will compare the local Realm with the Realm on the server and automatically transfer
- *     any changes from the local Realm that makes sense to the Realm provided by the server.
- *     This is the default mode for fully synchronized Realms. It is not yet supported by query-based Realms.
- * @property "discard" - The local Realm will be discarded and replaced with the server side Realm.
- *     All local changes will be lost. This mode is not yet supported by query-based Realms.
- * @property "manual" - A manual Client Resync is also known as a Client Reset. An error will be thrown.
- *     See also {@link Realm.Sync.initiateClientReset}.
- */
-
-/**
- * This describes the different options used to create a {@link Realm} instance with Realm Platform synchronization.
- * @typedef {Object} Realm.Sync~SSLConfiguration
- * @property {boolean} validate - Indicating if SSL certificates must be validated. Default is `true`.
- * @property {string} certificatePath - A path where to find trusted SSL certificates.
- * @property {Realm.Sync~sslValidateCallback} validateCallback - A callback function used to
- * accept or reject the server's SSL certificate.
- */
-
-/**
- * When the sync client has received the server's certificate chain, it presents every certificate in
- * the chain to the {@link Realm.Sync~sslValidateCallback} callback.
- *
- * The return value of the callback decides whether the certificate is accepted (`true`)
- * or rejected (`false`). {@link Realm.Sync~sslValidateCallback} is only respected on platforms where
- * OpenSSL is used for the sync client, e.g. Linux. The callback is not
- * allowed to throw exceptions. If the operations needed to verify the certificate lead to an exception,
- * the exception must be caught explicitly before returning. The return value would typically be false
- * in case of an exception.
- * @callback Realm.Sync~sslValidateCallback
- * @param {Realm.Sync~SSLCertificateValidationInfo} validationInfo
- * @return {boolean}
- */
-
-/**
- * @typedef {Object} Realm.Sync~SSLCertificateValidationInfo
- * @property {string} serverAddress
- * @property {number} serverPort
- * @property {string} pemCertificate
- * @property {boolean} acceptedByOpenSSL - `true` if OpenSSL has accepted the certificate,
- * and `false` if OpenSSL has rejected it.
- * It is generally safe to return true when `acceptedByOpenSSL` is `true`. If `acceptedByOpenSSL` is `false`,
- * an independent verification should be made.
- * @property {number} depth - Specifies the position of the certificate in the chain.
- * `depth = 0` represents the actual server certificate. The root
- * certificate has the highest depth. The certificate of highest depth will be presented first.
- */
-
-/**
- * This describes the different options used when adding a Global Notifier listener.
- * @typedef {Object} Realm.Sync~RealmListenerConfiguration
- * @property {string} serverUrl - The sync server to listen to.
- * @property {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
- * @property {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
- * @property {Realm.Sync.SSLConfiguration} sslConfiguration - SSL configuration used by the Realms being observed.
  */
 
 /**
  * Specify how to open a synced Realm.
  *
- * @typedef {Object} Realm.Sync~OpenRealmBehaviorConfiguration
+ * @typedef {Object} Realm.App.Sync~OpenRealmBehaviorConfiguration
  * @property {string} type - how to open a Realm - 'downloadBeforeOpen' to wait for download to complete or 'openImmediately' to open the local Realm
  * @property {number} [timeOut] - how long to wait for a download (in ms). Default: infinity
  * @property {string} [timeOutBehavior] - what to do when download times out - 'openLocalRealm' to open the local Realm or 'throwException' to throw an exception.
- * @see {@link Realm.Sync~openLocalRealmBehavior}
- * @see {@link Realm.Sync~downloadBeforeOpenBehavior}
+ * @see {@link Realm.App.Sync~openLocalRealmBehavior}
+ * @see {@link Realm.App.Sync~downloadBeforeOpenBehavior}
  */
 
 /**
@@ -135,160 +66,171 @@
  * If this is the first time you open the Realm, it will be empty while the server data is being downloaded
  * in the background.
  *
- * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~openLocalRealmBehavior
+ * @typedef {Realm.App.Sync~OpenRealmBehaviorConfiguration} Realm.App.Sync~openLocalRealmBehavior
  */
 
 /**
  * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
  *
- * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~downloadBeforeOpenBehavior
+ * @typedef {Realm.App.Sync~OpenRealmBehaviorConfiguration} Realm.App.Sync~downloadBeforeOpenBehavior
  */
+
+ /**
+  * The class represents a MongoDB Realm App.
+  *
+  * ```js
+  * let app = new Realm.App(config);
+  * ```
+  *
+  * @memberof Realm
+  */
+ class App {
+
+    /**
+     * Creates a new app and connects to a MongoDB Realm instance.
+     *
+     * @param {(Realm.App~AppConfiguration|string)} configOrId - The configuration of the app or a string app id.
+     * @throws If no app id is provided.
+     */
+    constructor(configOrId) { }
+
+    /**
+     * Logs in a user.
+     *
+     * @param {Realm.Credentials} credentials - Valid Credentials for the user.
+     * @returns {Promise<Realm.User>}
+     */
+    logIn(credentials) { }
+
+    /**
+     * Returns the current user if any.
+     *
+     * @returns {Realm.User} The current user, `null` is no current user.
+     */
+    get currentUser() { }
+
+    /**
+     * Returns a dictionary of alll users. Users' identity is used as key.
+     *
+     * @returns {Array}
+     */
+    get allUsers() { }
+
+    /**
+     * Switches the current user.
+     *
+     * @param {Realm.User} user - The user to switch to.
+     * @throws If user is not logged in.
+     */
+    switchUser(user) { }
+
+    /**
+     * Removes the user from MongoDB Realm.
+     *
+     * @param {Realm.User} user - The user to remove.
+     * @returns {Promise<void>}
+     */
+    removeUser(user) { }
+
+    /**
+     * Client for the email/password authentication provider.
+     *
+     * @example
+     * {
+     * // Creating a new user, by registering via email & password
+     * const app = new Realm.App(config);
+     * await app.emailPasswordAuth.registerUser('john@example.com', 'some-secure-password');
+     * }
+     *
+     * @type {Realm.Auth.EmailPasswordAuth}
+     */
+    get emailPasswordAuth() { }
+
+    /**
+     * Returns an instance of an app. If an app with the specified id
+     * hasn't been created, a new app instance will be created.
+     *
+     * @param {string} appId
+     * @returns {Realm.App}
+     * @since v10.0.0
+     */
+    getApp(appId) { }
+ }
+
 
 /**
- * When opening a Realm created with Realm Mobile Platform v1.x, it is automatically
- * migrated to the v2.x format. In case this migration
- * is not possible, an exception is thrown. The exception´s `message` property will be equal
- * to `IncompatibleSyncedRealmException`. The Realm is backed up, and the property `configuration`
- * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and
- * copy objects to a new synced Realm.
  *
- * @memberof Realm
+ * Class for interacting with Realm Sync.
+ *
+ * @memberof Realm.App
  */
+
 class Sync {
-    /**
-     * Add a sync listener to listen to changes across multiple Realms.
-     *
-     * @param {string} serverUrl - The sync server to listen to.
-     * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
-     * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
-     * @param {string} name - The name of the event.
-     * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
-     * @returns {Promise<void>} A promise which is resolved when the worker has started.
-     *
-     * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
-     * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
-     *
-     * Currently supported events:
-     *
-     *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
-     *    path matching the filter regex, either due to the Realm being newly created
-     *    or the listener being added. The virtual path (i.e. the portion of the
-     *    URL after the protocol and hostname) is passed as an argument.
-     *  * `'change'`: Emitted whenever the data within a Realm matching the filter
-     *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
-     *    is passed containing information about which Realm changed and what
-     *    objects within the Realm changed.
-     *  * `'delete'`: Emitted whenever a Realm matching the filter regex has been
-     *    deleted from the server. The virtual path of the Realm being deleted is
-     *    passed as an argument.
-     *
-     * @deprecated Use `addListener(config, eventName, changeCallback)` instead`.
-     */
-    static addListener(serverUrl, adminUser, filterRegex, name, changeCallback) { }
 
     /**
-     * Add a sync listener to listen to changes across multiple Realms.
-     *
-     * @param {Realm.Sync.RealmListenerConfiguration} config - The configuration object for Realms being observed.
-     * @param {string} eventName - The name of the event to observe.
-     * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
-     * @returns {Promise<void>} A promise which is resolved when the worker has started.
-     *
-     * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
-     * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
-     *
-     * Currently supported events:
-     *
-     *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
-     *    path matching the filter regex, either due to the Realm being newly created
-     *    or the listener being added. The virtual path (i.e. the portion of the
-     *    URL after the protocol and hostname) is passed as an argument.
-     *  * `'change'`: Emitted whenever the data within a Realm matching the filter
-     *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
-     *    is passed containing information about which Realm changed and what
-     *    objects within the Realm changed.
-     *  * `'delete'`: Emitted whenever a Realm matching the filter regex has been
-     *    deleted from the server. The virtual path of the Realm being deleted is
-     *    passed as an argument.
-     *
-     */
-    static addListener(config, eventName, changeCallback) { }
-
-    /**
-     * Add a sync listener to listen to changes across multiple Realms.
-     *
-     * @param {string} serverUrl - The sync server to listen to.
-     * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
-     * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
-     * @param {Realm.Worker} worker - Worker to deliver events to.
-     * @returns {Promise<void>} A promise which is resolved when the worker has started.
-     *
-     */
-    static addListener(serverUrl, adminUser, filterRegex, worker) { }
-
-    /**
-     * Calling this method will force Realm to attempt to reconnect to the server immediately.
+     * Calling this method will force Realm to attempt to reconnect the Realm App to the server immediately.
      *
      * Realm will reconnect automatically, but by using exponential backoff. This means that if the device is offline for
      * a long time, restoring the connection after it comes back online can take longer than expected. In situations
      * where it is possible to detect the network condition (e.g. Airplane mode). Manually calling this method can
      * provide a smoother user experience.
-     */
-    static reconnect() { }
-
-    /**
-     * Remove a previously registered sync listener.
      *
-     * @param {string} filterRegex - The regular expression previously used to register the listener.
-     * @param {string} name - The event name.
-     * @param {function(changeEvent)} changeCallback - The previously registered callback to be removed.
+     * @param {Realm.App} app - The Realm app.
      */
-    static removeListener(regex, name, changeCallback) { }
+    static reconnect(app) { }
 
     /**
-     * Remove a previously registered sync listener.
+     * Set the sync log level. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
      *
-     * @param {string} filterRegex - The regular expression previously used to register the listener.
-     * @param {string} worker - The worker registered as a listener.
-     * @return {Promise<void>} A promise which is resolved when the worker has finished shutting down.
+     * @param {Realm.App} app - The Realm app.
+     * @param {Realm.Sync~LogLevel} level - The new log level
+     * @example
+     * {
+     * const app = new Realm.App(getAppConfig());
+     * Realm.App.Sync.setLogLevel("all");
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
+     * }
+     * @param {Realm.App.Sync~LogLevel} level - The log level.
      */
-    static removeListener(regex, worker) { }
+    static setLogLevel(app, level) { }
 
     /**
-     * Remove all previously registered listeners.
-     * @return {Promise<void>} A promise which is resolved when all workers (if any) have finished shutting down.
-     */
-    static removeAllListeners(name) { }
-
-    /**
-     * Set the sync log level.
-     * @param {Realm.Sync~LogLevel} level - The new log level.
-     */
-    static setLogLevel(level) { }
-
-    /**
-     * Enable multiplexing multiple sync sessions over a single connection. 
-     * When having a lot of synchronized realms open the system might run out of file 
-     * descriptors because of all the open sockets to the server. Session multiplexing 
-     * is designed to alleviate that, but it might not work with a server configured with 
+     * Enable multiplexing multiple sync sessions over a single connection for a Realm app.
+     * When having a lot of synchronized realms open the system might run out of file
+     * descriptors because of all the open sockets to the server. Session multiplexing
+     * is designed to alleviate that, but it might not work with a server configured with
      * fail-over. Only use if you're seeing errors about reaching the file descriptor limit
      * and you know you are using many sync sessions.
+     * @param {Realm.App} app - The Realm app.
      */
-    static enableSessionMultiplexing() { }
+    static enableSessionMultiplexing(app) { }
 
     /**
-     * A callback passed to `Realm.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
-     * @callback Realm.Sync~logCallback
+     * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
+     * @callback Realm.App.Sync~logCallback
      * @param {number} level The level of the log entry between 0 and 8 inclusively.
      * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
      * @param {string} message The message of the log entry.
      */
 
     /**
-     * Capture the sync client's log.
+     * Capture the sync client's log. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     *
+     * @param {Realm.App} app - the Realm app.
      * @param {Realm.Sync~logCallback} logger - The log callback.
+     * @example
+     * {
+     * const app = new Realm.App(getAppConfig());
+     * Realm.App.Sync.setLogger((level, message) => console.log(`[${level}] ${message}`);
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
+     * }
+     * @see {Realm.App.Sync~setLogLevel}
      */
-    static setLogger(logger) { }
+    static setLogger(app, logger) { }
 
     /**
      * Set the application part of the User-Agent string that will be sent to the Realm Object Server when a session
@@ -296,132 +238,65 @@ class Sync {
      *
      * This method can only be called up to the point where the first Realm is opened. After that, the User-Agent
      * can no longer be changed.
+     * @param {Realm.App} the Realm app
      * @param {string} the user agent description
      */
-    static setUserAgent(userAgent) { }
+    static setUserAgent(app, userAgent) { }
 
     /**
      * Initiate a client reset. The Realm must be closed prior to the reset.
      *
+     * @param {Realm.App} [app] - The app where the Realm was opened.
      * @param {string} [path] - The path to the Realm to reset.
      * Throws error if reset is not possible.
      * @example
      * {
-     *   const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
+     *   const config = { sync: { user, partitionValue } };
      *   config.sync.error = (sender, error) => {
      *     if (error.name === 'ClientReset') {
-     *       Realm.Sync.initiateClientReset(original_path);
+     *       Realm.Sync.initiateClientReset(app, original_path);
      *       // copy required objects from Realm at error.config.path
      *     }
      *   }
      * }
      */
-    static initiateClientReset(path) { }
+    static initiateClientReset(app, path) { }
 
     /**
      * Returns `true` if Realm still has a reference to any sync sessions regardless of their state.
      * If `false` is returned it means that no sessions currently exist.
+     * @param {Realm.App} [app] - The app where the Realm was opened.
      */
-    static _hasExistingSessions() { }
+    static _hasExistingSessions(app) { }
 
     /**
-     * Returns a list of local Realms previously downloaded via the global notifier.
+     * Returns all sync sessions for a user.
      *
-     * @param {string} regex - The regular expression used to filter the returned Realms by virtual path.
-     * @return {Array<LocalRealm>} An array of [LocalRealm]{@link Realm.Sync.LocalRealm}.
+     * @param {Realm.User} user  - the user.
+     * @returns {Array<Realm.App.Sync.Session>} an array of sessions
+     * @since 10.0.0
      */
-    static localListenerRealms(regex) { }
+    static getAllSyncSessions(user) { }
+
+    /**
+     * Returns the session associated with a user and partition value.
+     *
+     * @param {Realm.User} user
+     * @param {string|number|ObjectId|null} partitionValue
+     * @returns {Realm.App.Sync.Session} the session
+     * @since 10.0.0
+     */
+    static getSyncSession(user, partitionValue) { }
 }
 
 /**
- * Represent an entry for a local Realm, downloaded previously by the global notifier.
- *
- * @memberof Realm.Sync
- */
-class LocalRealm {
-    /**
-     * The virtual path of the local Realm. This is the portion of the URL of
-     * the synced Realm after the protocol and the host name.
-     * @type {string}
-     * @readonly
-     */
-    get path() { }
-
-    /**
-     * An instance of the local Realm.
-     * @returns {Realm}
-     */
-    realm() { }
-}
-
-/**
- * Change information passed when receiving sync `'change'` events.
- *
- * A ChangeEvent object can only be used within the callback which it is
- * supplied to, and cannot be stored for use later. If the callback returns a
- * promise, the ChangeEvent will remain valid until that promise is resolved
- * (and no further notifications for that same Realm will be made until it is
- * resolved). The Realms supplied by the change event do not need to be
- * explicitly closed.
- *
- * @memberof Realm.Sync
- */
-class ChangeEvent {
-    /**
-     * The virtual path of the changed Realm. This is the portion of the URL of
-     * the synced Realm after the protocol and the host name.
-     * @type {string}
-     */
-    get path() { }
-
-    /**
-     * The changed realm, with the changes applied.
-     * @type {Realm}
-     */
-    get realm() { }
-
-    /**
-     * The modified Realm prior to any of the changes being applied. This can
-     * be used in combination with the changed object keys to read the old
-     * values of any objects which were modified.
-     *
-     * @type {Realm}
-     */
-    get oldRealm() { }
-
-    /**
-     * The changed objects for all added, removed, and modified objects in
-     * the changed Realm. This object is a hashmap of object types to arrays of
-     * objects for all objects changed between the two reported realm versions.
-     * The objects in `insertions` and `newModifications` are referencing the
-     * new realm version (`realm()`) while `deletions` and `oldModifications`
-     * refer to the objects in the old realm (`oldRealm()`).
-     *
-     * @example
-     * {
-     *   MyObject: {
-     *     insertions:    [objects...],
-     *     deletions:     [objects...],
-     *     newModifications: [objects...],
-     *     oldModifications: [objects...]
-     *   },
-     *   MyOtherObject:
-     *     ...
-     * }
-     *
-     * @type {object}
-     */
-    get changes() { }
-}
-
-/**
- * @typedef Realm.Sync~LogLevel
+ * @typedef Realm.App.Sync~LogLevel
  * @type {("all"|"trace"|"debug"|"detail"|"info"|"warn"|"error"|"fatal"|"off")}
  */
 
 /**
  * Class that describes authentication errors in the Realm Object Server
- * @memberof Realm.Sync
+ * @memberof Realm.App.Sync
  */
 class AuthError extends Error {
     /**
@@ -439,7 +314,7 @@ class AuthError extends Error {
 
 /**
  * Describes an error when an incompatible synced Realm is opened. The old version of the Realm can be accessed in readonly mode using the configuration() member
- * @memberof Realm.Sync
+ * @memberof Realm.App.Sync
  */
 class IncompatibleSyncedRealmError {
     /**
@@ -456,351 +331,382 @@ class IncompatibleSyncedRealmError {
 
 /**
  * Class for creating user credentials
- * @memberof Realm.Sync
+ * @memberof Realm
  */
 class Credentials {
     /**
-     * Creates credentials based on a login with a username and a password.
+     * Creates credentials based on a login with an email address and a password.
      * @param {string} username The username of the user.
      * @param {string} password The user's password.
-     * @param {boolean} [createUser] optional - `true` if the user should be created, `false` otherwise. If
-     * `true` is provided and the user exists, or `false` is provided and the user doesn't exist,
-     * an error will be thrown. If not specified, if the user doesn't exist, they will be created,
-     * otherwise, they'll be logged in if the password matches.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static usernamePassword(username, password, createUser) { }
+    static emailPassword(email, password) { }
 
     /**
      * Creates credentials based on a Facebook login.
-     * @param {string} token A Facebook authentication token, obtained by logging into Facebook..
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * @param {string} token A Facebook authentication token, obtained by logging into Facebook.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
     static facebook(token) { }
 
     /**
      * Creates credentials based on a Google login.
-     * @param {string} token A Google authentication token, obtained by logging into Google..
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * @param {string} authCode A Google authentication code, obtained by logging into Google.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static google(token) { }
+    static google(authCode) { }
 
     /**
      * Creates credentials for an anonymous user. These can only be used once - using them a second
      * time will result in a different user being logged in. If you need to get a user that has already logged
-     * in with the Anonymous credentials, use {@linkcode Realm.Sync.User.current|User.current} or {@linkcode Realm.Sync.User.all|User.all}
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * in with the Anonymous credentials, use {@linkcode Realm.App.currentUser} or {@linkcode Realm.App.allUsers}
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
     static anonymous() { }
 
     /**
-     * Creates credentials based on a login with a nickname. If multiple users try to login
-     * with the same nickname, they'll get the same underlying sync user.
-     * @param {string} value The nickname of the user.
-     * @param {boolean} [isAdmin] An optional parameter controlling whether the user is admin. Default is `false`.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
-     */
-    static nickname(value, isAdmin) { }
-
-    /**
-     * Creates credentials based on an Active Directory login.
-     * @param {string} token An access token, obtained by logging into Azure Active Directory.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
-     */
-    static azureAD(token) { }
-
-    /**
-     * Creates credentials based on a JWT login.
-     * @param {string} token A JSON Web Token, that will be validated against the server's configured rules.
-     * @param {string} [providerName] The name of the provider as configured in the Realm Object. If not specified, the default
-     * name - `jwt` - will be used.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
-     */
-    static jwt(token, providerName) { }
-
-    /**
-     * Creates credentials based on an admin token. Using this credential will not contact the Realm Object Server.
-     * @param {string} token The admin token.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
-     */
-    static adminToken(token) { }
-
-    /**
-     * Creates credentials with a custom provider and user identifier.
-     * @param {string} providerName Provider used to verify the credentials.
+     * Creates credentials with a JSON Web Token (JWT) provider and user identifier.
      * @param {string} token A string identifying the user. Usually an identity token or a username.
-     * @param {userInfo} userInfo Data describing the user further or null if the user does not have any extra data.
-     * The data will be serialized to JSON, so all values must be mappable to a valid JSON data type.
-     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static custom(providerName, token, userInfo) { }
+    static jwt(token) { }
 
+    /**
+     * Creates credentials with a MongoDB Realm function and user identifier.
+     * @param {string} payload A string identifying the user. Usually an identity token or a username.
+     * @return {Promise<Credentials>} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static function(payload) { }
+
+    /**
+     * Creates credentials from a user API key.
+     * @param {string} key A string identifying the user by API key.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static userApiKey(token) { }
+
+    /**
+     * Creates credentials from a server API key.
+     * @param {string} key A string identifying the user by API key.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static serverApiKey(token) { }
+
+    /**
+     * Creates credentials based on an Apple login.
+     * @param {string} token An Apple authentication token, obtained by logging into Apple.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static apple(token) { }
 
     /**
      * Gets the identity provider for the credentials.
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
-    get identityProvider() { }
-
-    /**
-     * Gets the access token.
-     * @returns {string}
-     */
-    get token() { }
-
-    /**
-     * Gets additional user information associated with the credentials.
-     * @returns {object} A dictionary, containing the additional information.
-     */
-    get userInfo() { }
+    get provider() { }
 }
 
 /**
- * Class for managing Sync users.
- * @memberof Realm.Sync
+ * A namespace for auth providers
+ * @see Realm.Auth.EmailPasswordAuth
+ * @see Realm.Auth.ApiKeyAuth
+ * @memberof Realm
+ */
+class Auth {
+}
+
+
+/**
+ * Class for managing email/password for users
+ * @memberof Realm.Auth
+ */
+class EmailPasswordAuth {
+
+    /**
+     * Registers a new email identity with the email/password provider,
+     * and sends a confirmation email to the provided address.
+     *
+     * @param {string} email - The email address of the user to register.
+     * @param {string} password  - The password that the user created for the new username/password identity.
+     * @returns {Promise<void>}
+     */
+    registerUser(email, password) { }
+
+    /**
+     * Confirms an email identity with the email/password provider.
+     *
+     * @param {string} token - The confirmation token that was emailed to the user.
+     * @param {string} id - The confirmation token id that was emailed to the user.
+     * @returns {Promise<void>}
+     */
+    confirmUser(token, id) { }
+
+    /**
+     * Re-sends a confirmation email to a user that has registered but
+     * not yet confirmed their email address.
+     *
+     * @param {string} email - The email address of the user to re-send a confirmation for.
+     * @returns {Promise<void>}
+     */
+    resendConfirmationEmail(email) { }
+
+    /**
+     * Sends an email to the user for resetting the password.
+     * @param {string} email - The email address of the user to re-send a confirmation for.
+     * @returns {Promise<void>}
+     */
+    sendResetPasswordEmail(email) { }
+
+    /**
+     * Resets the password of an email identity using the password reset token emailed to a user.
+     * @param {string} password - The desired new password.
+     * @param {string} token - The password reset token that was emailed to the user.
+     * @param {string} id - The password reset token id that was emailed to the user.
+     * @returns {Promise<void>}
+     */
+    resetPassword(password, token, id) { }
+
+    /**
+     * Resets the password of an email identity using the
+     * password reset function set up in the application.
+     *
+     * @param {string} email - The email address of the user.
+     * @param {string} password - The desired new password.
+     * @param {Array<BSON>} args - Arguments passed onto the function.
+     * @return {Promose<void>}
+     */
+    callResetPasswordFunction(email, password, ...args) { }
+}
+
+/**
+ * A client for the user API key authentication provider which
+ * can be used to create and modify user API keys. This
+ * client should only be used by an authenticated user.
+ * @memberof Realm.Auth
+ */
+class ApiKeyAuth {
+
+    /**
+     * Creates a user API key that can be used to authenticate as the current user.
+     *
+     * @param {string} name - The name of the API key to be created.
+     * @returns {Promise<void>}
+     */
+    create(name) { }
+
+    /**
+     * Fetches a user API key associated with the current user.
+     *
+     * @param {string} id - The id of the API key to fetch.
+     * @returns {Promise<Object>}
+     */
+    fetch(id) { }
+
+    /**
+     * Fetches the user API keys associated with the current user.
+     *
+     * @returns {Promise<Array>}
+     */
+    fetchAll() { }
+
+    /**
+     * Deletes a user API key associated with the current user.
+     *
+     * @param {string} id - The id of the API key to delete.
+     * @returns {Promise<void>}
+     */
+    delete(id) { }
+
+    /**
+     * Enables a user API key associated with the current user.
+     *
+     * @param {string} id - The id of the API key to enable.
+     * @returns {Promise<void>}
+     */
+    enable(id) { }
+
+    /**
+     * Disables a user API key associated with the current user.
+     *
+     * @param {string} id - The id of the API key to disable.
+     * @returns {Promise<void>}
+     */
+    disable(id) { }
+}
+
+
+/**
+ * Class for managing users.
+ * @memberof Realm
  */
 class User {
     /**
-     * Logs the user in to the Realm Object Server.
-     * @param {string} server The url of the server that the user is authenticated against.
-     * @param {Credentials} credentials The credentials to use for authentication. Obtain them by calling one of
-     * the {@linkcode Realm.Sync.Credentials|Credentials} static methods.
-     * @return {Promise<User> | User} A {@linkcode Realm.Sync.User|User} object if the credentials are
-     * {@linkcode Realm.Sync.Credentials.adminToken|adminToken}, {@link Realm.Sync.User|`Promise<User>`} otherwise.
+     * Gets the identity of this user on MongoDB Realm Cloud.
+     * The identity is a guaranteed to be unique among all users on MongoDB Realm Cloud .
+     * @type {string}
      */
-    static login(server, credentials) { }
+    get id() { }
 
     /**
-     * Request a password reset email to be sent to a user's email.
-     * This will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
-     *
-     * This can only be used for users who authenticated with the 'password' provider, and passed a valid email address as a username.
-     *
-     * @param {string} server - authentication server
-     * @param {string} email - The email that corresponds to the user's username.
-     * @return {Promise<void>} A promise which is resolved when the request has been sent.
+     * Gets an array of identities for this user on MongoDB Realm Cloud.
+     * Each element in the array is an object with properties userId and providerType.
+     * @type {Array<Object>}
      */
-    static requestPasswordReset(server, email) { }
+    get identities() { }
 
     /**
-     * Complete the password reset flow by using the reset token sent to the user's email as a one-time authorization token to change the password.
-     *
-     * By default, Realm Object Server will send a link to the user's email that will redirect to a webpage where they can enter their new password.
-     * If you wish to provide a native UX, you may wish to modify the password authentication provider to use a custom URL with deep linking, so you can
-     * open the app, extract the token, and navigate to a view that allows to change the password within the app.
-     *
-     * @param {string} server - authentication server
-     * @param {string} resetToken - The token that was sent to the user's email address.
-     * @param {string} newPassword - The user's new password.
-     * @return {Promise<void>} A promise which is resolved when the request has been sent.
+     * Gets the provider type for the identity.
+     * @type {string}
      */
-    static completePasswordReset(server, resetToken, newPassword) { }
+    get providerType() { }
 
     /**
-     * Request an email confirmation email to be sent to a user's email.
-     * This will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
-     *
-     * @param {string} server - authentication server
-     * @param {string} email - The email that corresponds to the user's username.
-     * @return {Promise<void>} A promise which is resolved when the request has been sent.
+     * Gets the device id. `null` if no device id.
+     * @type {string}
      */
-    static requestEmailConfirmation(server, email) { }
+    get deviceId() { }
 
     /**
-     * Complete the email confirmation flow by using the confirmation token sent to the user's email as a one-time authorization token to confirm their email.
-     *
-     * By default, Realm Object Server will send a link to the user's email that will redirect to a webpage where they can enter their new password.
-     * If you wish to provide a native UX, you may wish to modify the password authentication provider to use a custom URL with deep linking, so you can
-     * open the app, extract the token, and navigate to a view that allows to confirm the email within the app.
-     *
-     * @param {string} server - authentication server
-     * @param {string} confirmationToken - The token that was sent to the user's email address.
-     * @return {Promise<void>} A promise which is resolved when the request has been sent.
+     * Gets this user's access token. This is the user's credential for accessing the MongoDB
+     * Realm Cloud and should be treated as sensitive data.
+     * @type {string}
      */
-    static confirmEmail(server, confirmationToken) { }
+    get accessToken() { }
 
     /**
-     * Creates a new sync user instance from the serialized representation.
-     * @param {object} serialized - the serialized version of the user, obtained by calling {@link User#serialize}.
+     * Gets this user's refresh token. This is the user's credential for accessing the MongoDB
+     * Realm Cloud and should be treated as sensitive data.
+     * @type {string}
      */
-    static deserialize(serialized) { }
+    get refreshToken() { }
 
     /**
-     * A dictionary containing users that are currently logged in.
-     * The keys in the dictionary are user identities, values are corresponding User objects.
+     * Gets this user's associated custom data. This is application-specific data provided by the server.
+     * @type {object?}
+     */
+    get customData() { }
+
+    /**
+     * Is true if the user is logged in. False otherwise.
+     * @type {boolean}
+     */
+    get isLoggedIn() { }
+
+    /**
+     * Gets the user's state which can be one of the following:
+     *  - `LoggedOut` - the user is logged out
+     *  - `LoggedIn` - the user is logged in
+     *  - `Removed`  - the user has been removed
+     * @type {string}
+     */
+    get state() { }
+
+    /**
+     * Gets the user's profile (name, email address, etc.).
      * @type {object}
      */
-    static get all() { }
+    get profile() { }
 
     /**
-     * Get the currently logged in user.
-     * Throws error if > 1 user logged in, returns undefined if no users logged in.
-     * @type {User}
+     * Logs out the user.
+     * @returns {Promise<void>} - resolves when the user has been logged out
      */
-    static get current() { }
+    logOut() { }
 
     /**
-     * Gets the server URL that was used for authentication.
-     * @type {string}
+     * Links a user to another credentials. This is useful when linking
+     * different account togteher.
+     * @param {Realm.Credentials} credentials
+     * @returns {Promise<void>} - resolves when the user has been linked with the other credentials.
      */
-    get server() { }
+    linkCredentials(credentials) { }
+
 
     /**
-     * Gets the identity of this user on the Realm Object Server.
-     * The identity is a guaranteed to be unique among all users on the Realm Object Server.
-     * @type {string}
+     * Refresh user's custom data.
+     * @returns {Promise<Object>}
+     * @see {Realm.User.customData}
      */
-    get identity() { }
+    refreshCustomData() { }
 
     /**
-     * Gets this user's refresh token. This is the user's credential for accessing the Realm
-     * Object Server and should be treated as sensitive data.
-     * @type {string}
+     * Returns a provider to interact with API keys.
+     * @return {Realm.Auth.ApiKeyAuth} - the provider
      */
-    get token() { }
+    apiKeys() { }
 
     /**
-     * Returns true if this user is an administrator.
-     * @type {bool}
+     * Calls the named server function as this user.
+     * @param {string} name - name of the function to call
+     * @param {any[]} args - list of arguments to pass
      */
-    get isAdmin() { }
+    callFunction(name, args) { }
 
     /**
-     * Returns true if the token is an administrator token.
-     */
-    get isAdminToken() { }
-
-    /**
-     * Creates the configuration object required to open a synchronized Realm.
+     * Convenience wrapper around `call_function(name, [args])`
      *
-     * @param {Realm.PartialConfiguration} config - optional parameters that should override any default settings.
-     * @returns {Realm.Configuration} the full Realm configuration
-     * @since 3.0.0
-     */
-    createConfiguration(config) { }
-
-    /**
-     * Serializes a user to an object, that can be persisted or passed to another component to create a new instance
-     * by calling {@link User.deserialize}. The serialized user instance includes the user's refresh token and should
-     * be treated as sensitive data.
-     * @returns {object} an object, containing the user identity, server url, and refresh token.
-     */
-    serialize() { }
-
-    /**
-     * Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user
-     * credentials will be deleted from this device.
-     * @return {Promise<void>} A promise which is resolved when the user has logged out both locally and on the server.
-     */
-    logout() { }
-
-    /**
-     * Get account information for a user. (requires administrator privilidges)
-     * @param {string} provider - the provider to query for user account information (ex. 'password')
-     * @param {string} username - the target username which account information should be retrieved
-     * @returns {Promise} - a promise that will be resolved with the retrieved account information as JSON object
      * @example
-     * {
-     *   "user_id": "f7a8d2ad9768d73d9d161723935f6f95",
-     *   "is_admin": false,
-     *   "accounts": [
-     *     {
-     *       "provider": "password",
-     *       "provider_id": "user@email.com"
-     *     }
-     *   ],
-     *   "metadata":[]
-     * }
+     * // These are all equivalent:
+     * await user.call_function("do_thing", [a1, a2, a3]);
+     * await user.functions.do_thing(a1, a2, a3);
+     * await user.functions["do_thing"](a1, a2, a3);
+     *
+     * @example
+     * // It it legal to store the functions as first-class values:
+     * const do_thing = user.functions.do_thing;
+     * await do_thing(a1);
+     * await do_thing(a2);
      */
-    retrieveAccount(provider, username) { }
+    get functions() { }
 
     /**
-     * Asynchronously retrieves all permissions associated with the user calling this method.
-     * @param {string} recipient the optional recipient of the permission. Can be either
-     * 'any', which is the default, 'currentUser', or 'otherUser' if you want only permissions
-     * belonging to the user or *not* belonging to the user.
-     * @returns {Promise} a Promise with a collection of permission objects that provides detailed
-     * information regarding the granted access.
+     * Returns a connection to the MongoDB service.
+     *
+     * @example
+     * let blueWidgets = user.mongoClient('myClusterName')
+     *                       .db('myDb')
+     *                       .collection('widgets')
+     *                       .find({color: 'blue'});
+     *
+     * @param {string} serviceName
+     * @returns {Realm~MongoDB}
      */
-    getGrantedPermissions(recipient) { }
+    mongoClient(serviceName) { }
 
     /**
-     * Changes the permissions of a Realm.
-     * @param {object} condition - A condition that will be used to match existing users against.
-     * This should be an object, containing either the key 'userId', or 'metadataKey' and 'metadataValue'.
-     * @param {string} realmUrl - The path to the Realm that you want to apply permissions to.
-     * @param {string} accessLevel - The access level you want to set: 'none', 'read', 'write' or 'admin'.
-     * @returns {Promise} a Promise that, upon completion, indicates that the permissions have been
-     * successfully applied by the server.
+     * @class Realm.User~Push Access to the operations of the push service.
      */
-    applyPermissions(condition, realmUrl, accessLevel) { }
 
     /**
-     * Generates a token that can be used for sharing a Realm.
-     * @param {string} realmUrl - The Realm URL whose permissions settings should be changed. Use * to change
-     * the permissions of all Realms managed by this user.
-     * @param {string} accessLevel - The access level to grant matching users. Note that the access level
-     * setting is additive, i.e. you cannot revoke permissions for users who previously had a higher access level.
-     * Can be 'read', 'write' or 'admin'.
-     * @param {Date} [expiresAt] - Optional expiration date of the offer. If set to null, the offer doesn't expire.
-     * @returns {Promise} A Promise that, upon completion, contains a token that can be shared with another user,
-     * e.g. via email or message and then consumed by {@link Realm#Sync#User#.acceptPermissionOffer} to obtain
-     * permissions to a Realm.
+     * Registers the provided token with this User's device.
+     *
+     * @function Realm.User~Push#register
+     * @param {string} token
+     * @returns {Promise<void>} completed when the user is registered, or the operation fails.
      */
-    offerPermissions(realmUrl, accessLevel, expiresAt) { }
 
     /**
-     * Consumes a token generated by {@link Realm#Sync#User#offerPermissions offerPermissions} to obtain permissions to a shared Realm.
-     * @param {string} token - The token, generated by User.offerPermissions
-     * @returns {Promise} A Promise that, upon completion, contains the url of the Realm that the token has granted permissions to.
+     * Deregisters this User's device.
+     *
+     * @function Realm.User~Push#deregister
+     * @returns {Promise<void>} completed when the user is deregistered, or the operation fails.
      */
-    acceptPermissionOffer(token) { }
 
     /**
-     * Invalidates a permission offer.
-     * Invalidating an offer prevents new users from consuming its token. It doesn't revoke any permissions that have
-     * already been granted.
-     * @param {string|PermissionOffer} permissionOfferOrToken - Either the token or the entire
-     * {@link PermissionOffer PermissionOffer} object that was generated with
-     * {@link Realm#Sync#User#offerPermissions offerPermissions}.
+     * Access the operations of the push service.
+     *
+     * @param {string} serviceName
+     * @returns {Realm.User~Push}
      */
-    invalidatePermissionOffer(permissionOfferOrToken) { }
-
-    /**
-     * Asynchronously retrieve the permission offers that this user has created by invoking
-     * {@link Realm#Sync#User#offerPermissions offerPermissions}.
-     * @returns {Promise} A promise that, upon completion, contains a collection of {@link PermissionOffer PermissionOffer} objects.
-     */
-    getPermissionOffers() { }
-
-    // Deprecated
-    /**
-     * @deprecated to be removed in future versions. Use User.login(server, Credentials.usernamePassword) instead.
-     */
-    static register(server, username, password) { }
-
-    /**
-     * @deprecated to be removed in future versions. Use User.login(server, Credentials.adminToken) instead.
-     */
-    static adminUser(adminToken, server) { }
-
-    /**
-     * @deprecated to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
-     */
-    static registerWithProvider(server, options) { }
-
-    /**
-     * @deprecated to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
-     */
-    static authenticate(server, provider, options) { }
+    push(serviceName) { }
 }
 
 /**
- * An object encapsulating a Realm Object Server session. Sessions represent the communication between the
+ * An object encapsulating a MongoDB Realm Cloud session. Sessions represent the communication between the
  * client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
  * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions
  * associated with Realms are managed automatically.
- * @memberof Realm.Sync
+ * @memberof Realm.App.Sync
  */
 class Session {
     /**
@@ -877,9 +783,9 @@ class Session {
      * connection. In that case, any connection change is sent to all sessions.
      *
      * Can be either:
-     *  - Realm.Sync.ConnectionState.Disconnected: No connection to the server is available.
-     *  - Realm.Sync.ConnectionState.Connecting: An attempt to connect to the server is in progress.
-     *  - Realm.Sync.ConnectionState.Connected: The connection to the server is active and data can be synchronized.
+     *  - Realm.App.Sync.ConnectionState.Disconnected: No connection to the server is available.
+     *  - Realm.App.Sync.ConnectionState.Connecting: An attempt to connect to the server is in progress.
+     *  - Realm.App.Sync.ConnectionState.Connected: The connection to the server is active and data can be synchronized.
      *
      * Data will only be synchronized with the Realm ObjectServer if this method returns `Connected` and `state()`
      * returns `Active` or `Dying`.
@@ -941,138 +847,6 @@ class Session {
 }
 
 /**
- * A managed Realm object representing a subscription. Subscriptions are used by Query-based Realms to define which
- * data should be available on the device.
- *
- * @property {string|Realm.Results} query - Defines the query handled by this subscription. A string representation
- *   is always returned. When setting the query either a string representation of the query or the
- *   {@link Realm.Results} directly can can be used. It is possible to get the string representation of a query
- *   using {@link Realm.Results.description()}.
- * @property {number} timeToLive - Defines, in milliseconds, for how long the subscription should be kept alive after
- *   last being used. If `null` the subscription is kept alive indefinitely. If set to a value
- *   {@link Subscription.expiresAt} returns the date after which Realm automatically will delete the subscription.
- *   Deleting the subscription implies the data covered by it are removed locally from the device, but not deleted on
- *   the server.
- * @memberOf Realm.Sync
- * @extends Realm.Object
- */
-class NamedSubscription {
-
-    /**
-     * Gets the current state of the subscription.
-     * Can be either:
-     *  - Realm.Sync.SubscriptionState.Error: An error occurred while creating or processing the query-based sync subscription.
-     *  - Realm.Sync.SubscriptionState.Creating: The subscription is being created.
-     *  - Realm.Sync.SubscriptionState.Pending: The subscription was created, but has not yet been processed by the sync server.
-     *  - Realm.Sync.SubscriptionState.Complete: The subscription has been processed by the sync server and data is being synced to the device.
-     *  - Realm.Sync.SubscriptionState.Invalidated: The subscription has been removed.
-     * @type {number}
-     */
-    get state() {}
-
-    /**
-     * Returns the error message if  the server encountered an error when evaluating the query covered by this
-     * subscription. `undefined` is returned if `state != Realm.Sync.SubscriptionState.Error`.
-     * @readonly
-     * @type {string}
-     */
-    get error() {}
-
-    /**
-     * Returns the date for when this subscription was first created.
-     */
-    get createdAt() {}
-
-    /**
-     * Returns when this subscription was last used or updated.
-     *
-     * "Used" in this context means that someone resubscribed to the subscription.
-     *
-     * "Updated" means that someone updated the {@link Subscription.query} or some other field part of this class.
-     *
-     * This field is NOT updated whenever the results of the query changes.
-     *
-     * This field plus {@link Subscription.timeToLive} defines {@link Subscription.expiresAt}.
-     */
-    get updatedAt() {}
-
-    /**
-     * Returns the point in time from which Realm can safely delete this subscription. This will
-     * happen automatically.
-     *
-     * Realm will attempt to cleanup expired subscriptions when the app is started or whenever
-     * any subscription is modified, there is no guarantee it will happen immediately after it
-     * expires.
-     */
-    get expiresAt() {}
-}
-
-/**
- * An immutable object encapsulating a snapshot of the state of a query-based sync subscriptions.
- *
- * @memberof Realm.Sync
- */
-class Subscription {
-    /**
-     * Gets the current state of the subscription.
-     * Can be either:
-     *  - Realm.Sync.SubscriptionState.Error: An error occurred while creating or processing the query-based sync subscription.
-     *  - Realm.Sync.SubscriptionState.Creating: The subscription is being created.
-     *  - Realm.Sync.SubscriptionState.Pending: The subscription was created, but has not yet been processed by the sync server.
-     *  - Realm.Sync.SubscriptionState.Complete: The subscription has been processed by the sync server and data is being synced to the device.
-     *  - Realm.Sync.SubscriptionState.Invalidated: The subscription has been removed.
-     * @type {number}
-     */
-    get state() { }
-
-    /**
-     * Returns the error message if  the server encountered an error when evaluating the query covered by this
-     * subscription. `undefined` is returned if `state != Realm.Sync.SubscriptionState.Error`.
-     * @type {string}
-     */
-    get error() { }
-
-    /**
-     * Unsubscribe a query-based synced `Realm.Results`. The state will change to `Realm.Sync.SubscriptionState.Invalidated`.
-     * The `Realm.Results` will not produce any meaningful values. Moreover, any objects matching the query will be
-     * removed if they are not matched by any other query. The object removal is done asynchronously.
-     */
-    unsubscribe() { }
-
-    /**
-     * Adds a listener `callback` which will be called when the state of the subscription changes.
-     * @param {function(subscription, state)} callback - A function to be called when changes to the subscription occur.
-     * @throws {Error} If `callback` is not a function.
-     * @example
-     * let subscription = results.subscribe();
-     * subscription.addListener((subscription, state) => {
-     *     switch (state) {
-     *     case Realm.Sync.SubscriptionState.Complete:
-     *         // results is ready to be consumed
-     *         break;
-     *     case Realm.Sync.SubscriptionState.Error:
-     *         console.log('An error occurred: ', subscription.error);
-     *         break;
-     *     }
-     * }
-     */
-    addListener(callback) { }
-
-    /**
-     * Remove the listener `callback` from the subscription instance.
-     * @param {function(subscription, state)} callback - Callback function that was previously
-     *   added as a listener through the {@link Subscription#addListener addListener} method.
-     * @throws {Error} If `callback` is not a function.
-     */
-    removeListener(callback) { }
-
-    /**
-     * Remove all listeners from the subscription instance.
-     */
-    removeAllListeners() { }
-}
-
-/**
  * A Realm Worker can be used to process Sync events in multiple automatically-managed child processes.
  *
  * Similar to Web Workers, a Worker is initialized by passing it the name of a module which should be loaded in the new process.
@@ -1085,7 +859,7 @@ class Subscription {
  *    or the listener being added. The virtual path (i.e. the portion of the
  *    URL after the protocol and hostname) is passed as an argument.
  *  * `'change'`: Emitted whenever the data within a Realm matching the filter
- *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
+ *    regex has changed. A [ChangeEvent]{@link Realm.App.Sync.ChangeEvent} argument
  *    is passed containing information about which Realm changed and what
  *    objects within the Realm changed.
  *  * `'delete'`: Emitted whenever a Realm matching the filter regex has been
@@ -1114,7 +888,7 @@ class Subscription {
  * module.exports = {onchange, oncavailable, ondelete};
  *
  * // server script
- * Realm.Sync.addListener(realmServerURL, adminUser, '.*', new Realm.Worker('my-worker'));
+ * Realm.App.Sync.addListener(realmServerURL, adminUser, '.*', new Realm.Worker('my-worker'));
  *
  * @memberof Realm
  */
@@ -1133,113 +907,268 @@ class Worker {
     constructor(moduleName, options = {}) { }
 }
 
+
+
 /**
- * Custom Data Connectors.
- * @memberof Realm.Sync
+ * The MongoDB service can be used to get database and collection objects for interacting with MongoDB data.
+ * @alias Realm~MongoDB
  */
-class Adapter {
-	/**
-	 * Create a new Adapter to monitor and process changes made across multiple Realms
-	 * @param {string} localPath - the local path where realm files are stored
-	 * @param {string} serverUrl - the sync server to listen to
-	 * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
-	 * @param {(string|Realm.Sync.Adapter~RealmWatchPredicate)} filter - a filter used to determine which changed Realms should be monitored -
-	 *  can be a regular expression string or a predicate function. Use `'.*'` to match all Realms.
-	 * @param {Realm.Sync.Adapter~RealmChangeCallback} changeCallback - called when a new transaction is available
-	 *  to process for the given realm_path
-     * @param {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration for the spawned sync sessions.
-	 */
-    constructor(localPath, serverUrl, adminUser, regex, changeCallback, ssl) { }
+class MongoDB {
+    /**
+     * Get the service name.
+     * @return {string} The service name.
+     */
+    get serviceName() { }
 
-	/**
-	 * Get the Array of current instructions for the given Realm.
-	 * @param {string} path - the path for the Realm being monitored
+    /**
+     * Get the interface to a remote MongoDB database.
      *
-     * The following Instructions can be returned. Each instruction object has
-     * a `type` property which is one of the following types. For each type below we list the other properties
-     * that will exist in the instruction object.
-     * @type {(INSERT|SET|DELETE|CLEAR|CHANGE_IDENTITY|LIST_SET|LIST_INSERT|LIST_ERASE|LIST_CLEAR|ADD_TYPE|ADD_PROPERTY)}
-     * @property INSERT - insert a new object
-     * - `object_type` - type of the object being inserted
-     * - `identity` - primary key value or row index for the object
-     * - `values` - map of property names and property values for the object to insert
-     * @property SET - set property values for an existing object
-     * - `object_type` - type of the object
-     * - `identity` - primary key value or row index for the object
-     * - `values` - map of property names and property values to update for the object
-     * @property DELETE - delete an exising object
-     * - `object_type` - type of the object
-     * - `identity` - primary key value or row index for the object
-     * @property CLEAR - delete all objects of a given type
-     * - `object_type` - type of the object
-     * @property LIST_SET - set the object at a given list index to an object
-     * - `object_type` - type of the object
-     * - `identity` - primary key for the object
-     * - `property` - property name for the list property to mutate
-     * - `list_index` - list index to set
-     * - `object_identity` - primary key or row number of the object being set
-     * @property LIST_INSERT - insert an object in the list at the given index
-     * - `object_type` - type of the object
-     * - `identity` - primary key for the object
-     * - `property` - property name for the list property to mutate
-     * - `list_index` - list index at which to insert
-     * - `object_identity` - primary key or row number of the object to insert
-     * @property LIST_ERASE - erase an object in the list at the given index - this removes the object
-     * from the list but the object will still exist in the Realm
-     * - `object_type` - type of the object
-     * - `identity` - primary key for the object
-     * - `property` - property name for the list property to mutate
-     * - `list_index` - list index which should be erased
-     * @property LIST_CLEAR - clear a list removing all objects - objects are not deleted from the Realm
-     * - `object_type` - type of the object
-     * - `identity` - primary key for the object
-     * - `property` - property name for the list property to clear
-     * @property ADD_TYPE - add a new type
-     * - `object_type` - name of the type
-     * - `primary_key` - name of primary key property for this type
-     * - `properties` - Property map as described in {@link Realm~ObjectSchema}
-     * @property ADD_PROPERTIES - add properties to an existing type
-     * - `object_type` - name of the type
-     * - `properties` - Property map as described in {@link Realm~ObjectSchema}
-     * @property CHANGE_IDENTITY - change the row index for an existing object - not called for objects
-     * with primary keys
-     * - `object_type` - type fo the object
-     * - `identity` - old row value for the object
-     * - `new_identity` - new row value for the object
-     *
-	 * @returns {Array(instructions)} or {undefined} if all transactions have been processed
-	 */
-    current(path) { }
-
-	/**
-	 * Advance the to the next transaction indicating that you are done processing the current
-	 * instructions for the given Realm.
-	 * @param {string} path - the path for the Realm to advance
-	 */
-    advance(path) { }
-
-	/**
-	 * Open the Realm used by the Adapter for the given path. This is useful for writing two way
-	 * adapters as transactions written to this realm will be ignored when calling `current` and `advance`
-	 * @param {string} path - the path for the Realm to open
-     * @param {Realm~ObjectSchema[]} [schema] - optional schema to apply when opening the Realm
-	 * @returns {Realm}
-	 */
-    realmAtPath(path, schema) { }
-
-	/**
-	 * Close the adapter and all opened Realms.
-	 */
-    close() { }
+     * @param {string} databaseName The name of the database.
+     * @returns {Realm~MongoDBDatabase} The remote MongoDB database.
+     */
+    db(databaseName) { }
 }
 
 /**
- * @callback Realm.Sync.Adapter~RealmWatchPredicate
- * @param {string} path - the path of the realm to consider for change tracking
- * @returns {boolean} - whether or not to track changes for the realm
+ * The MongoDB service can be used to get database and collection objects for interacting with MongoDB data.
+ * @alias Realm~MongoDBDatabase
  */
+class MongoDBDatabase {
+    /**
+     * Get the database name.
+     * @return {string} The database name.
+     */
+    get name() { }
+
+    /**
+     * Get the interface to a remote MongoDB collection.
+     *
+     * @param {string} name The name of the collection.
+     * @returns {Realm.MongoDBCollection} The remote MongoDB collection.
+     */
+    collection(name) { }
+}
 
 /**
- * @callback Realm.Sync.Adapter~RealmChangeCallback
- * @param {string} path - the path of the realm for which a new transaction is available
+ * A remote collection of documents in a MongoDB database.
+ * @memberof Realm
  */
+class MongoDBCollection {
+    /**
+     * Gets the name of the collection.
+     * @return {string} The name.
+     */
+    get name() { }
+
+    /**
+     * Finds the documents which match the provided query.
+     *
+     * @param {object} [filter] An optional filter applied to narrow down the results.
+     * @param {object} [options] Additional options to apply.
+     * @param {object} [options.projection] Limits the fields to return for all matching documents.
+     * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+     * @param {object} [options.sort] The order in which to return matching documents.
+     * @param {number} [options.limit] The maximum number of documents to return.
+     * @returns {Promise<object[]>} The documents.
+     */
+    async find(filter, options) { }
+
+    /**
+     * Finds a document which matches the provided filter.
+     *
+     * @param {object} [filter] An optional filter applied to narrow down the results.
+     * @param {object} [options] Additional options to apply.
+     * @param {object} [options.projection] Limits the fields to return for all matching documents.
+     * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+     * @param {object} [options.sort] The order in which to return matching documents.
+     * @returns {Promise<object>} The document or null if nothing matched.
+     */
+    async findOne(filter, options) { }
+
+    /**
+     * Finds a document which matches the provided query and performs the desired update to individual fields.
+     *
+     * @param {object} filter A filter applied to narrow down the results.
+     * @param {object} update The new values for the document.
+     * @param {object} [options] Additional options to apply.
+     * @param {object} [options.projection] Limits the fields to return for all matching documents.
+     * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+     * @param {object} [options.sort] The order in which to return matching documents.
+     * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
+     * query filter when the query does not match any existing documents in the collection.
+     * @param {boolean} [options.returnNewDocument=false] if true, indicates that the action should return
+     * the document in its updated form instead of its original, pre-update form.
+     * @returns {Promise<?object>} The document (before or after modification) or null if nothing matched.
+     */
+    async findOneAndUpdate(filter, update, options) { }
+
+    /**
+     * Finds a document which matches the provided filter and replaces it with a new document.
+     *
+     * @param {object} filter A filter applied to narrow down the results.
+     * @param {object} replacement The new values for the document.
+     * @param {object} [options] Additional options to apply.
+     * @param {object} [options.projection] Limits the fields to return for all matching documents.
+     * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+     * @param {object} [options.sort] The order in which to return matching documents.
+     * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
+     * query filter when the query does not match any existing documents in the collection.
+     * @param {boolean} [options.returnNewDocument=false] if true, indicates that the action should return
+     * the document in its updated form instead of its original, pre-update form.
+     * @returns {Promise<?object>} The document (before or after modification) or null if nothing matched.
+     */
+    async findOneAndReplace(filter, replacement, options) { }
+
+    /**
+     * Finds a document which matches the provided filter and deletes it
+     *
+     * @param {object} filter A filter applied to narrow down the results.
+     * @param {object} [options] Additional options to apply.
+     * @param {object} [options.projection] Limits the fields to return for all matching documents.
+     * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
+     * @param {object} [options.sort] The order in which to return matching documents.
+     * @returns {Promise<object>} The document or null if nothing matched.
+     */
+    async findOneAndDelete(filter, options) { }
+
+    /**
+     * Runs an aggregation framework pipeline against this collection.
+     *
+     * @param {object[]} pipeline An array of aggregation pipeline stages.
+     * @returns {Promise<object[]>} The result.
+     */
+    async aggregate(pipeline) { }
+
+    /**
+     * Counts the number of documents in this collection matching the provided filter.
+     *
+     * @param {object} [filter] An optional filter applied to narrow down the results.
+     * @param {object} [options] Additional options to apply.
+     * @param {number} [options.limit] The maximum number of documents to return.
+     * @returns {Promise<number>}
+     */
+    async count(filter, options) { }
+
+    /**
+     * @typedef Realm.MongoDBCollection~InsertOneResult Result of inserting a document
+     * @property insertedId The id of the inserted document
+     */
+
+    /**
+     * Inserts a single document into the collection.
+     * Note: If the document is missing an _id, one will be generated for it by the server.
+     *
+     * @param {object} document The document.
+     * @returns {Promise<Realm.MongoDBCollection~InsertOneResult>} The _id of the inserted document.
+     */
+    async insertOne(document) { }
+
+    /**
+     * @typedef Realm.MongoDBCollection~InsertManyResult Result of inserting many documents
+     * @property {Array} insertedIds The ids of the inserted documents
+     */
+
+    /**
+     * Inserts an array of documents into the collection.
+     * If any values are missing identifiers, they will be generated by the server.
+     *
+     * @param {object[]} documents The array of documents.
+     * @returns {Promise<Realm.MongoDBCollection~InsertManyResult>} The _ids of the inserted documents.
+     */
+    async insertMany(documents) { }
+
+    /**
+     * @typedef {object} Realm.MongoDBCollection~DeleteResult Result of deleting documents
+     * @property {number} deletedCount The number of documents that were deleted.
+     */
+
+    /**
+     * Deletes a single matching document from the collection.
+     *
+     * @param {object} filter A filter applied to narrow down the result.
+     * @returns {Promise<Realm.MongoDBCollection~DeleteResult>}
+     */
+    async deleteOne(filter) { }
+
+    /**
+     * Deletes multiple documents.
+     *
+     * @param {object} filter A filter applied to narrow down the result.
+     * @returns {Promise<Realm.MongoDBCollection~DeleteResult>}
+     */
+    async deleteMany(filter) { }
+
+    /**
+     * @typedef {object} Realm.MongoDBCollection~UpdateResult Result of updating documents
+     * @property {number} matchedCount The number of documents that matched the filter.
+     * @property {number} modifedCount The number of documents matched by the query.
+     * @property [upsertedId] The identifier of the inserted document if an upsert took place.
+     */
+
+    /**
+     * Updates a single document matching the provided filter in this collection.
+     *
+     * @param {object} filter A filter applied to narrow down the results.
+     * @param {object} update The new values for the document.
+     * @param {object} [options] Additional options to apply.
+     * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
+     * query filter when the query does not match any existing documents in the collection.
+     * @returns {Promise<Realm.MongoDBCollection~UpdateResult>}
+     */
+    async updateOne(filter, update, options) { }
+
+    /**
+     * Updates multiple documents matching the provided filter in this collection.
+     *
+     * @param {object} filter A filter applied to narrow down the results.
+     * @param {object} update The new values for the document.
+     * @param {object} [options] Additional options to apply.
+     * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
+     * query filter when the query does not match any existing documents in the collection.
+     * @returns {Promise<Realm.MongoDBCollection~UpdateResult>}
+     */
+    async updateMany(filter, update, options) { }
+
+    /**
+     * @typedef {object} Realm.MongoDBCollection~ChangeEvent An event in a change stream.
+     *
+     * Note that which properties are present will depend on both the
+     * `operationType` field, which is itself always present, and the MongoDB
+     * server version.
+     *
+     * @see https://docs.mongodb.com/manual/reference/change-events/
+     * @property _id The opaque resume token for this event.
+     * @property {string} operationType What kind of operation was this? One of:
+     * `"insert"`, `"delete"`, `"replace"`, `"update"`, `"drop"`, `"rename"`, `"dropDatabase"`, or `"invalidate"`.
+     * @property {object} fullDocument A full copy of the document that was touched by this operation.
+     * See the mongodb reference manual for details about which version of the document will be returned.
+     * @property {object} ns Namespace of the collection affected by this event.
+     * @property {string} ns.db Database name
+     * @property {string} ns.coll Collection name
+     * @property {object} to Destination namespace for `"rename"` events.
+     * @property {string} to.db Database name
+     * @property {string} to.coll Collection name
+     * @property {object} documentKey The `_id` and shard key of the modified document. `_id` is not duplicated
+     * if it is part of the shard key.
+     * @property {object} updateDescription
+     * @property {object} updateDescription.updatedFields An object mapping from modified field names to their new values.
+     * @property {string[]} updateDescription.removedFields A list of field names that were removed.
+     * @property {Timestamp} clusterTime The timestamp from the oplog entry associated with the event.
+     * @property {Long} txnNumber The transaction number. Only present if part of a multi-document transaction.
+     * @property {object} lsid The logical session id of the transaction. Only present if part of a multi-document transaction.
+     */
+
+    /**
+     * Creates an asynchronous change stream to monitor this collection for changes.
+     *
+     * By default, yields all change events for this collection. You may specify at most one of
+     * the `filter` or `ids` options.
+     *
+     * @param {object} [options={}]
+     * @param {object} [options.filter] A filter for which change events you are interested in.
+     * @param {any[]} [options.ids] A list of ids that you are interested in watching
+     *
+     * @yields {Realm.MongoDBCollection~ChangeEvent} a change event
+     */
+    async* watch(options) {}
+}

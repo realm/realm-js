@@ -22,6 +22,9 @@
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
+const AppConfig = require('./support/testConfig');
+
+const { ObjectId } = require("bson");
 
 const isNodeProcess = (typeof process === 'object' && process + '' === '[object process]');
 
@@ -30,15 +33,21 @@ module.exports = {
         if (!global.enableSyncTests) {
             return Promise.resolve();
         }
+        const appConfig = AppConfig.integrationAppConfig;
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
 
-        const credentials = Realm.Sync.Credentials.anonymous();
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
-            const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm', fullSynchronization: true },
-                             schema: [{ name: 'IntegerPrimaryKey', properties: { int: 'int?' }, primaryKey: 'int' },
-                                      { name: 'StringPrimaryKey', properties: { string: 'string?' }, primaryKey: 'string' },
-                                      { name: 'NoPrimaryKey', properties: { string: 'string' }},
-                                     ],
-                           });
+        return app.logIn(credentials).then(user => {
+            const config = {
+                sync: {
+                    user,
+                    partitionValue: "LoLo"
+                },
+                schema: [
+                    { name: 'IntegerPrimaryKey', properties: { _id: 'int?' }, primaryKey: '_id' },
+                    { name: 'StringPrimaryKey', properties: { _id: 'string?' }, primaryKey: '_id' }
+                ]
+            }
             return Realm.open(config).then(realm => {
                 var integer, nullInteger;
                 var string, nullString;
@@ -48,20 +57,17 @@ module.exports = {
                     nullInteger = realm.create('IntegerPrimaryKey', [null]);
                     string = realm.create('StringPrimaryKey', ["hello, world"]);
                     nullString = realm.create('StringPrimaryKey', [null]);
-                    none = realm.create('NoPrimaryKey', ["hello, world"]);
                 });
 
                 let integerId = integer._objectId();
                 let nullIntegerId = nullInteger._objectId();
                 let stringId = string._objectId();
                 let nullStringId = nullString._objectId();
-                let noneId = none._objectId();
-
+                
                 TestCase.assertTrue(integer._isSameObject(realm._objectForObjectId('IntegerPrimaryKey', integerId)));
                 TestCase.assertTrue(nullInteger._isSameObject(realm._objectForObjectId('IntegerPrimaryKey', nullIntegerId)));
                 TestCase.assertTrue(string._isSameObject(realm._objectForObjectId('StringPrimaryKey', stringId)));
                 TestCase.assertTrue(nullString._isSameObject(realm._objectForObjectId('StringPrimaryKey', nullStringId)));
-                TestCase.assertTrue(none._isSameObject(realm._objectForObjectId('NoPrimaryKey', noneId)));
             });
         });
 

@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { DogSchema, PersonSchema } from "./schemas/person-and-dogs";
+import { PersonSchema, DogSchema } from "./schemas/person-and-dogs";
 
 describe("realm._updateSchema", () => {
     it("is a function", () => {
@@ -53,8 +53,9 @@ describe("realm._updateSchema", () => {
             ]);
         });
         const MyClassSchema = realm.schema.find(s => s.name === "MyClass");
-        expect(MyClassSchema).to.deep.equal({
+        expect(MyClassSchema).deep.equals({
             name: "MyClass",
+            embedded: false,
             properties: {
                 myField: {
                     indexed: false,
@@ -81,8 +82,9 @@ describe("realm._updateSchema", () => {
         });
 
         const ModifiedDogSchema = realm.schema.find(s => s.name === "Dog");
-        expect(ModifiedDogSchema).to.deep.equal({
+        expect(ModifiedDogSchema).deep.equals({
             name: "Dog",
+            embedded: false,
             properties: {
                 age: {
                     indexed: false,

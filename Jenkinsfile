@@ -5,18 +5,21 @@ import groovy.json.JsonOutput
 repoName = 'realm-js' // This is a global variable
 
 // These versions must be written in ascending order (lowest version is used when testing)
-def nodeVersions = ['10.19.0']
+def nodeVersions = ['10.22.0']
 nodeTestVersion = nodeVersions[0]
-nodePublishVersion = '10.19.0';
+nodePublishVersion = '10.22.0';
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
 //For more see https://www.npmjs.com/package/spectron
-def electronVersions = ['8.1.1']
+def electronVersions = ['8.4.1']
 electronTestVersion = electronVersions[0]
 
 def gitTag = null
 def formattedVersion = null
 dependencies = null
+objectStoreDependencies = null
+
+def packagesExclusivelyChanged = null
 
 environment {
   GIT_COMMITTER_NAME="ci"
@@ -40,7 +43,17 @@ stage('check') {
       ],
       userRemoteConfigs: scm.userRemoteConfigs
     ])
+
+    // Abort early if only files in "packages/**" changed, since these will migrate to another CI platform
+    packagesExclusivelyChanged = exclusivelyChanged("^packages/.*")
+    if (packagesExclusivelyChanged) {
+      currentBuild.result = 'SUCCESS'
+      echo 'Stopped since there were only changes to "/packages"'
+      return
+    }
+
     dependencies = readProperties file: 'dependencies.list'
+    objectStoreDependencies = readProperties file: 'src/object-store/dependencies.list'
     gitTag = readGitTag()
     def gitSha = readGitSha()
     def version = getVersion()
@@ -65,6 +78,11 @@ stage('check') {
       env.DOCKER_PUSH = "1"
     }
   }
+}
+
+// Ensure no other stages are executed
+if (packagesExclusivelyChanged) {
+  return
 }
 
 stage('pretest') {
@@ -99,6 +117,7 @@ stage('build') {
     nodeVersions.each { nodeVersion ->
       parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
       parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
+      parallelExecutors["Linux Rpi Node ${nodeVersion}"] = buildLinuxRpi { buildCommon(nodeVersion, it, '--arch=arm') }
       parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
       parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
     }
@@ -114,7 +133,7 @@ stage('build') {
 
 if (gitTag) {
   stage('publish') {
-    publish(dependencies, gitTag)
+    publish(nodeVersions, electronVersions, dependencies, gitTag)
   }
 }
 
@@ -124,7 +143,7 @@ stage('test') {
   parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
   parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
   parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
-  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}")
+  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
@@ -141,6 +160,20 @@ stage('test') {
   parallel parallelExecutors
 }
 
+stage('prepare integration tests') {
+  parallel(
+    'Build integration tests': buildLinux {
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+      dir('integration-tests/tests') {
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack"
+        sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
+        stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
+      }
+    }
+  )
+}
+
 stage('integration tests') {
   parallel(
     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
@@ -152,22 +185,25 @@ stage('integration tests') {
   )
 }
 
+def exclusivelyChanged(regexp) {
+  // Checks if this is a change/pull request and if the files changed exclusively match the provided regular expression
+  return env.CHANGE_TARGET && sh(
+    returnStatus: true,
+    script: "git diff origin/$CHANGE_TARGET --name-only | grep --invert-match '${regexp}'"
+  ) != 0
+}
+
 // == Methods
 def nodeIntegrationTests(nodeVersion, platform) {
   unstash 'source'
   unstash "pre-gyp-${platform}-${nodeVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
-  dir('integration-tests/tests') {
-    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
-  }
-
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-
-    // Package up the integration tests
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
+    // Unstash the integration tests package
+    unstash 'integration-tests-tgz'
   }
 
   dir('integration-tests/environments/node') {
@@ -189,15 +225,11 @@ def electronIntegrationTests(electronVersion, platform) {
   unstash "electron-pre-gyp-${platform}-${electronVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
-  dir('integration-tests/tests') {
-    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
-  }
-
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-    // Package up the integration tests
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
+    // Unstash the integration tests package
+    unstash 'integration-tests-tgz'
   }
 
   // On linux we need to use xvfb to let up open GUI windows on the headless machine
@@ -228,10 +260,6 @@ def reactNativeIntegrationTests(targetPlatform) {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
   }
 
-  dir('integration-tests/tests') {
-    sh "${nvm} npm ci"
-  }
-
   dir('integration-tests') {
     if (targetPlatform == "android") {
       unstash 'android'
@@ -241,8 +269,8 @@ def reactNativeIntegrationTests(targetPlatform) {
     }
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-    // Package up the integration tests
-    sh "${nvm} npm run tests/pack"
+    // Unstash the integration tests package
+    unstash 'integration-tests-tgz'
   }
 
   dir('integration-tests/environments/react-native') {
@@ -260,7 +288,7 @@ def reactNativeIntegrationTests(targetPlatform) {
       }
     }
 
-    timeout(time: 30, unit: 'MINUTES') {
+    timeout(30) { // minutes
       try {
         sh "${nvm} npm run test/${targetPlatform} -- --junit-output-path test-results.xml"
       } finally {
@@ -295,34 +323,32 @@ def buildDockerEnv(name, extra_args='') {
   return docker.image(name)
 }
 
-def buildCommon(nodeVersion, platform) {
-  timeout(time: 1, unit: 'HOURS') {
-    sshagent(credentials: ['realm-ci-ssh']) {
-      sh "mkdir -p ~/.ssh"
-      sh "ssh-keyscan github.com >> ~/.ssh/known_hosts"
-      sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
-      sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package"
-    }
-    
-    dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
-      stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
-    }
+def buildCommon(nodeVersion, platform, extraFlags='') {
+  sshagent(credentials: ['realm-ci-ssh']) {
+    sh "mkdir -p ~/.ssh"
+    sh "ssh-keyscan github.com >> ~/.ssh/known_hosts"
+    sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
+    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
+  }
+
+  dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
+    // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
+    // archiveArtifacts("realm-*")
+    stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
   }
 }
 
 def buildElectronCommon(electronVersion, platform) {
-  timeout(time: 1, unit: 'HOURS') {
-    withEnv([
-      "npm_config_target=${electronVersion}",
-      "npm_config_disturl=https://atom.io/download/electron",
-      "npm_config_runtime=electron",
-      "npm_config_devdir=${env.HOME}/.electron-gyp"
-    ]) {
-      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm run package"
-      
-      dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
-        stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
-      }
+  withEnv([
+    "npm_config_target=${electronVersion}",
+    "npm_config_disturl=https://atom.io/download/electron",
+    "npm_config_runtime=electron",
+    "npm_config_devdir=${env.HOME}/.electron-gyp"
+  ]) {
+    sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm run package"
+
+    dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
+      stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
     }
   }
 }
@@ -338,6 +364,20 @@ def buildLinux(workerFunction) {
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
       image.inside('-e HOME=/tmp') {
         workerFunction('linux')
+      }
+    }
+  }
+}
+
+def buildLinuxRpi(workerFunction) {
+  return {
+    myNode('docker') {
+      unstash 'source'
+      sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+      buildDockerEnv("realm-js:rpi", '-f armhf.Dockerfile').inside('-e HOME=/tmp') {
+        withEnv(['CC=arm-linux-gnueabihf-gcc', 'CXX=arm-linux-gnueabihf-g++']) {
+          workerFunction('linux-armhf')
+        }
       }
     }
   }
@@ -359,21 +399,20 @@ def buildMacOS(workerFunction) {
 
 def buildWindows(nodeVersion, arch) {
   return {
-    myNode('windows-vs2017 && nodejs') {
+    myNode('windows && nodejs') {
       unstash 'source'
 
       bat 'npm install --ignore-scripts --production'
 
-      timeout(time: 1, unit: 'HOURS') {
-        withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
-          retry(3) {
-            bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
-          }
+      withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
+        retry(3) {
+          bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
         }
-        bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
-        dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
-          stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
-        }
+      }
+      bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
+
+      dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
+        stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
       }
     }
   }
@@ -381,7 +420,7 @@ def buildWindows(nodeVersion, arch) {
 
 def buildWindowsElectron(electronVersion, arch) {
   return {
-    myNode('windows-vs2017 && nodejs') {
+    myNode('windows && nodejs') {
       unstash 'source'
       bat 'npm install --ignore-scripts --production'
       withEnv([
@@ -391,13 +430,12 @@ def buildWindowsElectron(electronVersion, arch) {
         'npm_config_runtime=electron',
         "npm_config_devdir=${env.HOME}/.electron-gyp"
       ]) {
-        timeout(time: 1, unit: 'HOURS') {
-          withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
-            bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --realm_enable_sync'
-          }
-          bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package'
+        withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
+          bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --realm_enable_sync'
         }
+        bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package'
       }
+
       dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
         stash includes: 'realm-*', name: "electron-pre-gyp-windows-${arch}-${electronVersion}"
       }
@@ -414,7 +452,7 @@ def inAndroidContainer(workerFunction) {
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
         image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       }
-      
+
       // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
       // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
       lock("${env.NODE_NAME}-android") {
@@ -444,17 +482,20 @@ def buildAndroid() {
   }
 }
 
-def publish(dependencies, tag) {
+def publish(nodeVersions, electronVersions, dependencies, tag) {
   myNode('docker') {
+
     for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
       unstash "pre-gyp-${platform}-${nodePublishVersion}"
     }
+    unstash "pre-gyp-linux-armhf-${nodePublishVersion}"
 
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
       sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}/'"
     }
   }
 }
+
 
 def readGitTag() {
   return sh(returnStdout: true, script: 'git describe --exact-match --tags HEAD || echo ""').readLines().last().trim()
@@ -508,11 +549,9 @@ def doInside(script, target, postStep = null) {
       }
     }
     wrap([$class: 'AnsiColorBuildWrapper']) {
-      withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
         timeout(time: 1, unit: 'HOURS') {
-          sh "SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} bash ${script} ${target}"
+          sh "bash ${script} ${target}"
         }
-      }
     }
     if (postStep) {
        postStep.call()
@@ -545,7 +584,7 @@ def testAndroid(target, postStep = null) {
   }
 }
 
-def testLinux(target, postStep = null) {
+def testLinux(target, postStep = null, Boolean enableSync = false) {
   return {
       node('docker') {
       def reportName = "Linux ${target}"
@@ -557,23 +596,39 @@ def testLinux(target, postStep = null) {
       }
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
-      try {
-        reportStatus(reportName, 'PENDING', 'Build has started')
-        image.inside('-e HOME=/tmp') {
-          timeout(time: 1, unit: 'HOURS') {
-            withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target}"
+      def buildSteps = { String dockerArgs = "" ->
+          image.inside("-e HOME=/tmp ${dockerArgs}") {
+            if (enableSync) {
+                // check the network connection to local mongodb before continuing to compile everything
+                sh "curl http://mongodb-realm:9090"
             }
+            timeout(time: 1, unit: 'HOURS') {
+              sh "scripts/test.sh ${target}"
+            }
+            if (postStep) {
+              postStep.call()
+            }
+            deleteDir()
+            reportStatus(reportName, 'SUCCESS', 'Success!')
           }
-          if (postStep) {
-            postStep.call()
+      }
+
+      try {
+          reportStatus(reportName, 'PENDING', 'Build has started')
+          if (enableSync) {
+              // stitch images are auto-published every day to our CI
+              // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
+              // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
+              // if there's really a new feature you need from the latest stitch, upgrade this manually
+            withRealmCloud(version: objectStoreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/src/object-store/tests/mongodb"]) { networkName ->
+                buildSteps("-e MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\" --network=${networkName}")
+            }
+          } else {
+            buildSteps("")
           }
-          deleteDir()
-          reportStatus(reportName, 'SUCCESS', 'Success!')
-        }
-      } catch(Exception e) {
-        reportStatus(reportName, 'FAILURE', e.toString())
-        throw e
+        } catch(Exception e) {
+          reportStatus(reportName, 'FAILURE', e.toString())
+          throw e
       }
     }
   }
@@ -583,7 +638,8 @@ def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer',
-               'REALM_SET_NVM_ALIAS=1']) {
+               'REALM_SET_NVM_ALIAS=1',
+               'REALM_DISABLE_SYNC_TESTS=1']) {
         doInside('./scripts/test.sh', target, postStep)
       }
     }

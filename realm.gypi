@@ -87,22 +87,18 @@
         "src/object-store/src/impl/generic/external_commit_helper.hpp",
         "src/object-store/src/impl/windows/external_commit_helper.hpp",
         "src/object-store/src/sync/async_open_task.hpp",
-        "src/object-store/src/sync/partial_sync.hpp",
-        "src/object-store/src/sync/subscription_state.hpp",
         "src/object-store/src/sync/sync_config.hpp",
         "src/object-store/src/sync/sync_manager.hpp",
         "src/object-store/src/sync/sync_session.hpp",
         "src/object-store/src/sync/sync_user.hpp",
+        "src/object-store/src/sync/app.hpp",
+        "src/object-store/src/sync/app_credentials.hpp",
         "src/object-store/src/sync/impl/apple/network_reachability_observer.hpp",
         "src/object-store/src/sync/impl/apple/system_configuration.hpp",
         "src/object-store/src/sync/impl/network_reachability.hpp",
         "src/object-store/src/sync/impl/sync_client.hpp",
         "src/object-store/src/sync/impl/sync_file.hpp",
         "src/object-store/src/sync/impl/sync_metadata.hpp",
-        "src/object-store/src/sync/impl/work_queue.hpp",
-        "src/object-store/src/server/adapter.hpp",
-        "src/object-store/src/server/admin_realm.hpp",
-        "src/object-store/src/server/global_notifier.hpp",
         "src/object-store/src/util/aligned_union.hpp",
         "src/object-store/src/util/atomic_shared_ptr.hpp",
         "src/object-store/src/util/event_loop_dispatcher.hpp",
@@ -113,6 +109,8 @@
         "src/object-store/src/util/apple/scheduler.hpp",
         "src/object-store/src/util/generic/scheduler.hpp",
         "src/object-store/src/util/uv/scheduler.hpp",
+        "src/object-store/src/util/bson/bson.cpp",
+        "src/object-store/src/util/bson/regular_expression.cpp",
       ],
       "conditions": [
         ["OS=='win'", {
@@ -136,19 +134,20 @@
         ["realm_enable_sync", {
           "dependencies": [ "realm-sync" ],
           "sources": [
-            "src/object-store/src/server/adapter.cpp",
-            "src/object-store/src/server/admin_realm.cpp",
-            "src/object-store/src/server/global_notifier.cpp",
             "src/object-store/src/sync/impl/sync_file.cpp",
             "src/object-store/src/sync/impl/sync_metadata.cpp",
-            "src/object-store/src/sync/impl/work_queue.cpp",
-            "src/object-store/src/sync/partial_sync.cpp",
             "src/object-store/src/sync/async_open_task.cpp",
-            "src/object-store/src/sync/sync_config.cpp",
-            "src/object-store/src/sync/sync_config.cpp",
             "src/object-store/src/sync/sync_manager.cpp",
             "src/object-store/src/sync/sync_session.cpp",
             "src/object-store/src/sync/sync_user.cpp",
+            "src/object-store/src/sync/app.cpp",
+            "src/object-store/src/sync/app_utils.cpp",
+            "src/object-store/src/sync/app_credentials.cpp",
+            "src/object-store/src/sync/mongo_client.cpp",
+            "src/object-store/src/sync/mongo_collection.cpp",
+            "src/object-store/src/sync/mongo_database.cpp",
+            "src/object-store/src/sync/generic_network_transport.cpp",
+            "src/object-store/src/sync/push_client.cpp",
           ],
         }, {
           "dependencies": [ "realm-core" ]
@@ -242,20 +241,21 @@
                 "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
               }],
             ],
-            # This inserts ssleay32.lib at the beginning of the linker input list,
+            # This inserts libssl.lib at the beginning of the linker input list,
             # causing it to be considered before node.lib and its OpenSSL symbols.
-            # Additionally, we request that all the symbols from ssleay32.lib are included
+            # Additionally, we request that all the symbols from libssl.lib are included
             # in the final executable.
             "msvs_settings": {
               "VCLinkerTool": {
-                "AdditionalDependencies": [ "libeay32.lib", "ssleay32.lib" ],
+                "AdditionalDependencies": [ "libcrypto.lib", "libssl.lib" ],
                 "AdditionalOptions": [
-                  "/WHOLEARCHIVE:ssleay32.lib"
+                  "/WHOLEARCHIVE:libssl.lib"
                 ]
               }
             }
           }],
-          ["OS=='linux'", {
+          ["OS=='linux' and target_arch!='arm'", {
+            # Use embedded openssl on non-RPi linux. We assume that linux+arm is RPi for now.
             "libraries": [ "<(vendor_dir)/openssl/lib/libssl.a", "<(vendor_dir)/openssl/lib/libcrypto.a" ],
             "library_dirs": [ "<(vendor_dir)/openssl/lib" ],
           }]
@@ -269,7 +269,7 @@
       "target_name": "vendored-realm",
       "type": "none",
       "all_dependent_settings": {
-        "include_dirs": [ "<(vendor_dir)/include" ],
+        "include_dirs": [ "<(vendor_dir)/include", "<(vendor_dir)/include/realm" ],
         "library_dirs": [
           "<(vendor_dir)/lib",
           "<(vendor_dir)/lib64",

@@ -20,17 +20,17 @@
 #include "node_init.hpp"
 #include "napi.h"
 
-#include "js_realm.hpp"
-#if REALM_ENABLE_SYNC
-#include "js_adapter.hpp"
-#else
+#if !REALM_ENABLE_SYNC
 #pragma comment( lib, "ws2_32.lib")
+#pragma comment (lib, "crypt32");
 #endif
+
+#include "js_realm.hpp"
 
  namespace realm {
  namespace node {
 
-static void napi_init(Napi::Env env, Napi::Object exports) {
+ static void napi_init(Napi::Env env, Napi::Object exports) {
 	node_class_init(env);
 
 	Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
@@ -48,7 +48,3 @@ static void napi_init(Napi::Env env, Napi::Object exports) {
  }
 
 NODE_API_MODULE(realm, NAPI_Init)
-
-
-
-

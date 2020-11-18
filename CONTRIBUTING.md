@@ -180,3 +180,15 @@ The Podspec file expects to be located in the `./node_modules/realm/` folder of 
 
 It's also possible to run `pod lib lint --verbose` from the `./node_modules/realm/` directory, but then it's required that `'#{app_path}/ios/Pods/Headers/Public/React-Core'` is added to the `HEADER_SEARCH_PATHS` of `s.pod_target_xcconfig`.
 Consider adding `--no-clean` to prevent the CocoaPods CLI from deleting the temporary project created during linting. Once linting passes, try installing the pod and running the consuming app on an iOS device.
+
+### How To: Login to the GitHub docker container registry
+
+Testing against the MongoDB Realm server locally requires that you have access to the MongoDB Realm docker image (`docker.pkg.github.com/realm/ci/mongodb-realm-test-server`). To provide your local docker deamon with the credentials necessary to pull the image, you must first authenticate using you GitHub username and an API token.
+
+First navigate to https://github.com/settings/tokens to generate a token - it just needs the `read:packages` scope.
+
+Then run the following to log into the GitHub container registry, entering your GitHub username and the API token that you've just created as password.
+
+```
+docker login docker.pkg.github.com
+```

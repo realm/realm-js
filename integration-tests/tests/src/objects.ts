@@ -1,10 +1,12 @@
 import { expect } from "chai";
+
+import { IPerson, Person, PersonSchema } from "./schemas/person-and-dogs";
 import {
     IPerson as IPersonWithId,
     Person as PersonWithId,
-    PersonSchema as PersonSchemaWithId
-} from "./schemas/person-and-dog-with-primary-ids";
-import { IPerson, Person, PersonSchema } from "./schemas/person-and-dogs";
+    PersonSchema as PersonSchemaWithId,
+} from "./schemas/person-and-dog-with-object-ids";
+import { ObjectId } from "bson";
 
 describe("Realm objects", () => {
     describe("Interface & object literal", () => {
@@ -15,7 +17,7 @@ describe("Realm objects", () => {
             realm.write(() => {
                 john = realm.create<IPerson>(PersonSchema.name, {
                     name: "John Doe",
-                    age: 42
+                    age: 42,
                 });
             });
 
@@ -33,7 +35,7 @@ describe("Realm objects", () => {
             realm.write(() => {
                 john = realm.create<IPerson>(PersonSchema.name, {
                     name: "John Doe",
-                    age: 42
+                    age: 42,
                 });
             });
 
@@ -43,13 +45,13 @@ describe("Realm objects", () => {
 
         it("can be fetched with objectForPrimaryKey", () => {
             const realm = new Realm({ schema: [PersonSchemaWithId] });
-            const _id = "0e19bcb8-c77a-44e5-9713-d6a59702869f";
+            const _id = new ObjectId();
 
             realm.write(() => {
                 realm.create<PersonWithId>(PersonSchemaWithId.name, {
                     _id,
                     name: "John Doe",
-                    age: 42
+                    age: 42,
                 });
             });
 
@@ -59,7 +61,7 @@ describe("Realm objects", () => {
             );
 
             expect(john).instanceOf(Realm.Object);
-            expect(john._id).equals(_id);
+            expect(john._id.equals(_id)).equals(true);
             expect(john.name).equals("John Doe");
             expect(john.age).equals(42);
         });
@@ -67,16 +69,17 @@ describe("Realm objects", () => {
         it("can be updated", () => {
             const realm = new Realm({ schema: [PersonSchemaWithId] });
             let john: IPersonWithId;
-            const _id = "8ef4d2e2-a8be-468d-995d-36068d15b520";
+            const _id = new ObjectId();
 
             realm.write(() => {
                 john = realm.create<IPersonWithId>(PersonSchemaWithId.name, {
                     _id,
                     name: "John Doe",
-                    age: 42
+                    age: 42,
                 });
             });
 
+            expect(john._id.equals(_id)).equals(true);
             expect(john.name).equals("John Doe");
             expect(john.age).equals(42);
 
@@ -88,12 +91,13 @@ describe("Realm objects", () => {
                 );
             });
 
+            expect(john._id.equals(_id)).equals(true);
             expect(john.name).equals("John Doe");
             expect(john.age).equals(43);
 
             const update: Partial<IPersonWithId> = {
                 _id,
-                name: "Mr. John Doe"
+                name: "Mr. John Doe",
             };
 
             realm.write(() => {
@@ -104,6 +108,7 @@ describe("Realm objects", () => {
                 );
             });
 
+            expect(john._id.equals(_id)).equals(true);
             expect(john.name).equals("Mr. John Doe");
             expect(john.age).equals(43);
 
@@ -116,9 +121,7 @@ describe("Realm objects", () => {
                     );
                 })
             ).throws(
-                `Attempting to create an object of type '${
-                    PersonSchemaWithId.name
-                }' with an existing primary key value ''${_id}''.`
+                `Attempting to create an object of type '${PersonSchemaWithId.name}' with an existing primary key value '${_id}'.`
             );
 
             // Excpect only one instance of 'PersonSchemaWithId' in db after all updates
@@ -135,7 +138,7 @@ describe("Realm objects", () => {
             realm.write(() => {
                 john = realm.create(Person, {
                     name: "John Doe",
-                    age: 42
+                    age: 42,
                 });
             });
             // Expect John to be the one and only result
@@ -151,8 +154,9 @@ describe("Realm objects", () => {
             realm.write(() => {
                 const john = realm.create(Person, {
                     name: "John Doe",
-                    age: 42
+                    age: 42,
                 });
+
                 expect(john.name).equals("John Doe");
                 expect(john.age).equals(42);
             });
@@ -160,20 +164,20 @@ describe("Realm objects", () => {
 
         it("can be fetched with objectForPrimaryKey", () => {
             const realm = new Realm({ schema: [PersonWithId] });
-            const _id = "1d84d60b-8c64-4531-bfdc-87cdd9e029c3";
+            const _id = new ObjectId();
 
             realm.write(() => {
                 realm.create(PersonWithId, {
                     _id,
                     name: "John Doe",
-                    age: 42
+                    age: 42,
                 });
             });
 
             const john = realm.objectForPrimaryKey(PersonWithId, _id);
 
             expect(john).instanceOf(PersonWithId);
-            expect(john._id).equals(_id);
+            expect(john._id.equals(_id)).equals(true);
             expect(john.name).equals("John Doe");
             expect(john.age).equals(42);
         });
@@ -181,16 +185,17 @@ describe("Realm objects", () => {
         it("can be updated", () => {
             const realm = new Realm({ schema: [PersonWithId] });
             let john: PersonWithId;
-            const _id = "e4762cd3-b92f-47ae-857a-26eba201e7db";
+            const _id = new ObjectId();
 
             realm.write(() => {
                 john = realm.create(PersonWithId, {
                     _id,
                     name: "John Doe",
-                    age: 42
+                    age: 42,
                 });
             });
 
+            expect(john._id.equals(_id)).equals(true);
             expect(john.name).equals("John Doe");
             expect(john.age).equals(42);
 
@@ -202,18 +207,20 @@ describe("Realm objects", () => {
                 );
             });
 
+            expect(john._id.equals(_id)).equals(true);
             expect(john.name).equals("John Doe");
             expect(john.age).equals(43);
 
             const update: Partial<PersonWithId> = {
                 _id,
-                name: "Mr. John Doe"
+                name: "Mr. John Doe",
             };
 
             realm.write(() => {
                 realm.create(PersonWithId, update, Realm.UpdateMode.Modified);
             });
 
+            expect(john._id.equals(_id)).equals(true);
             expect(john.name).equals("Mr. John Doe");
             expect(john.age).equals(43);
 
@@ -226,9 +233,7 @@ describe("Realm objects", () => {
                     );
                 })
             ).throws(
-                `Attempting to create an object of type '${
-                    PersonWithId.schema.name
-                }' with an existing primary key value ''${_id}''.`
+                `Attempting to create an object of type '${PersonWithId.schema.name}' with an existing primary key value '${_id}'.`
             );
 
             // Excpect only one instance of 'PersonWithId' in db after all updates

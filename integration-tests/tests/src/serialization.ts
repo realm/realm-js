@@ -17,24 +17,25 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { ObjectId } from "bson";
 import {
     IPlaylist as IPlaylistNoId,
     ISong as ISongNoId,
-    Playlist as PlaylistNoId,
     PlaylistSchema as PlaylistSchemaNoId,
+    SongSchema as SongSchemaNoId,
+    Playlist as PlaylistNoId,
     Song as SongNoId,
-    SongSchema as SongSchemaNoId
 } from "./schemas/playlist-with-songs";
 import {
     IPlaylist as IPlaylistWithId,
     ISong as ISongWithId,
-    Playlist as PlaylistWithId,
     PlaylistSchema as PlaylistSchemaWithId,
+    SongSchema as SongSchemaWithId,
+    Playlist as PlaylistWithId,
     Song as SongWithId,
-    SongSchema as SongSchemaWithId
 } from "./schemas/playlist-with-songs-with-ids";
-import * as circularCollectionResultWithIds from "./structures/circular-collection-result-with-primary-ids.json";
 import * as circularCollectionResult from "./structures/circular-collection-result.json";
+import * as circularCollectionResultWithIds from "./structures/circular-collection-result-with-primary-ids.json";
 
 describe("JSON serialization (exposed properties)", () => {
     it("JsonSerializationReplacer is exposed on the Realm constructor", () => {
@@ -43,13 +44,13 @@ describe("JSON serialization (exposed properties)", () => {
     });
 });
 
-interface ITestSetup {
+type TestSetup = {
     name: string;
     testData: () => {
         realm: Realm;
         predefinedStructure: any;
     };
-}
+};
 
 interface ICacheIdTestSetup {
     type: string;
@@ -65,28 +66,28 @@ interface ICacheIdTestSetup {
  * 3. Literals with primaryKeys
  * 4. Class Models with primaryKeys
  */
-const testSetups: ITestSetup[] = [
+const testSetups: TestSetup[] = [
     {
         name: "Object literal (NO primaryKey)",
         testData: () => {
             const realm = new Realm({
                 inMemory: true,
-                schema: [PlaylistSchemaNoId, SongSchemaNoId]
+                schema: [PlaylistSchemaNoId, SongSchemaNoId],
             });
 
             realm.write(() => {
                 // Shared songs
                 const s1 = realm.create<ISongNoId>(SongSchemaNoId.name, {
                     artist: "Shared artist name 1",
-                    title: "Shared title name 1"
+                    title: "Shared title name 1",
                 });
                 const s2 = realm.create<ISongNoId>(SongSchemaNoId.name, {
                     artist: "Shared artist name 2",
-                    title: "Shared title name 2"
+                    title: "Shared title name 2",
                 });
                 const s3 = realm.create<ISongNoId>(SongSchemaNoId.name, {
                     artist: "Shared artist name 3",
-                    title: "Shared title name 3"
+                    title: "Shared title name 3",
                 });
 
                 // Playlists
@@ -100,13 +101,13 @@ const testSetups: ITestSetup[] = [
                             s3,
                             {
                                 artist: "Unique artist 1",
-                                title: "Unique title 1"
+                                title: "Unique title 1",
                             },
                             {
                                 artist: "Unique artist 2",
-                                title: "Unique title 2"
-                            }
-                        ]
+                                title: "Unique title 2",
+                            },
+                        ],
                     }
                 );
                 const p2 = realm.create<IPlaylistNoId>(
@@ -116,15 +117,15 @@ const testSetups: ITestSetup[] = [
                         songs: [
                             {
                                 artist: "Unique artist 3",
-                                title: "Unique title 3"
+                                title: "Unique title 3",
                             },
                             {
                                 artist: "Unique artist 4",
-                                title: "Unique title 4"
+                                title: "Unique title 4",
                             },
-                            s3
+                            s3,
                         ],
-                        related: [p1]
+                        related: [p1],
                     }
                 );
                 const p3 = realm.create<IPlaylistNoId>(
@@ -135,15 +136,15 @@ const testSetups: ITestSetup[] = [
                             s1,
                             {
                                 artist: "Unique artist 5",
-                                title: "Unique title 5"
+                                title: "Unique title 5",
                             },
                             {
                                 artist: "Unique artist 6",
-                                title: "Unique title 6"
+                                title: "Unique title 6",
                             },
-                            s2
+                            s2,
                         ],
-                        related: [p1, p2]
+                        related: [p1, p2],
                     }
                 );
 
@@ -153,31 +154,31 @@ const testSetups: ITestSetup[] = [
 
             return {
                 realm,
-                predefinedStructure: circularCollectionResult
+                predefinedStructure: circularCollectionResult,
             };
-        }
+        },
     },
     {
         name: "Class models (NO primaryKey)",
         testData: () => {
             const realm = new Realm({
                 inMemory: true,
-                schema: [PlaylistNoId, SongNoId]
+                schema: [PlaylistNoId, SongNoId],
             });
 
             realm.write(() => {
                 // Shared songs
                 const s1 = realm.create(SongNoId, {
                     artist: "Shared artist name 1",
-                    title: "Shared title name 1"
+                    title: "Shared title name 1",
                 });
                 const s2 = realm.create(SongNoId, {
                     artist: "Shared artist name 2",
-                    title: "Shared title name 2"
+                    title: "Shared title name 2",
                 });
                 const s3 = realm.create(SongNoId, {
                     artist: "Shared artist name 3",
-                    title: "Shared title name 3"
+                    title: "Shared title name 3",
                 });
 
                 // Playlists
@@ -188,17 +189,17 @@ const testSetups: ITestSetup[] = [
                         s2,
                         s3,
                         { artist: "Unique artist 1", title: "Unique title 1" },
-                        { artist: "Unique artist 2", title: "Unique title 2" }
-                    ]
+                        { artist: "Unique artist 2", title: "Unique title 2" },
+                    ],
                 });
                 const p2 = realm.create(PlaylistNoId, {
                     title: "Playlist 2",
                     songs: [
                         { artist: "Unique artist 3", title: "Unique title 3" },
                         { artist: "Unique artist 4", title: "Unique title 4" },
-                        s3
+                        s3,
                     ],
-                    related: [p1]
+                    related: [p1],
                 });
                 const p3 = realm.create(PlaylistNoId, {
                     title: "Playlist 3",
@@ -206,9 +207,9 @@ const testSetups: ITestSetup[] = [
                         s1,
                         { artist: "Unique artist 5", title: "Unique title 5" },
                         { artist: "Unique artist 6", title: "Unique title 6" },
-                        s2
+                        s2,
                     ],
-                    related: [p1, p2]
+                    related: [p1, p2],
                 });
 
                 // ensure circular references for p1 (ensure p1 reference self fist)
@@ -217,16 +218,16 @@ const testSetups: ITestSetup[] = [
 
             return {
                 realm,
-                predefinedStructure: circularCollectionResult
+                predefinedStructure: circularCollectionResult,
             };
-        }
+        },
     },
     {
         name: "Object literal (Int primaryKey)",
         testData: () => {
             const realm = new Realm({
                 inMemory: true,
-                schema: [PlaylistSchemaWithId, SongSchemaWithId]
+                schema: [PlaylistSchemaWithId, SongSchemaWithId],
             });
 
             realm.write(() => {
@@ -234,17 +235,17 @@ const testSetups: ITestSetup[] = [
                 const s1 = realm.create<ISongWithId>(SongSchemaWithId.name, {
                     _id: 1,
                     artist: "Shared artist name 1",
-                    title: "Shared title name 1"
+                    title: "Shared title name 1",
                 });
                 const s2 = realm.create<ISongWithId>(SongSchemaWithId.name, {
                     _id: 2,
                     artist: "Shared artist name 2",
-                    title: "Shared title name 2"
+                    title: "Shared title name 2",
                 });
                 const s3 = realm.create<ISongWithId>(SongSchemaWithId.name, {
                     _id: 3,
                     artist: "Shared artist name 3",
-                    title: "Shared title name 3"
+                    title: "Shared title name 3",
                 });
 
                 // Playlists
@@ -260,14 +261,14 @@ const testSetups: ITestSetup[] = [
                             {
                                 _id: 4,
                                 artist: "Unique artist 1",
-                                title: "Unique title 1"
+                                title: "Unique title 1",
                             },
                             {
                                 _id: 5,
                                 artist: "Unique artist 2",
-                                title: "Unique title 2"
-                            }
-                        ]
+                                title: "Unique title 2",
+                            },
+                        ],
                     }
                 );
                 const p2 = realm.create<IPlaylistWithId>(
@@ -279,16 +280,16 @@ const testSetups: ITestSetup[] = [
                             {
                                 _id: 6,
                                 artist: "Unique artist 3",
-                                title: "Unique title 3"
+                                title: "Unique title 3",
                             },
                             {
                                 _id: 7,
                                 artist: "Unique artist 4",
-                                title: "Unique title 4"
+                                title: "Unique title 4",
                             },
-                            s3
+                            s3,
                         ],
-                        related: [p1]
+                        related: [p1],
                     }
                 );
                 const p3 = realm.create<IPlaylistWithId>(
@@ -301,16 +302,16 @@ const testSetups: ITestSetup[] = [
                             {
                                 _id: 8,
                                 artist: "Unique artist 5",
-                                title: "Unique title 5"
+                                title: "Unique title 5",
                             },
                             {
                                 _id: 9,
                                 artist: "Unique artist 6",
-                                title: "Unique title 6"
+                                title: "Unique title 6",
                             },
-                            s2
+                            s2,
                         ],
-                        related: [p1, p2]
+                        related: [p1, p2],
                     }
                 );
 
@@ -320,16 +321,16 @@ const testSetups: ITestSetup[] = [
 
             return {
                 realm,
-                predefinedStructure: circularCollectionResultWithIds
+                predefinedStructure: circularCollectionResultWithIds,
             };
-        }
+        },
     },
     {
         name: "Class models (Int primaryKey)",
         testData: () => {
             const realm = new Realm({
                 inMemory: true,
-                schema: [PlaylistWithId, SongWithId]
+                schema: [PlaylistWithId, SongWithId],
             });
 
             realm.write(() => {
@@ -337,17 +338,17 @@ const testSetups: ITestSetup[] = [
                 const s1 = realm.create(SongWithId, {
                     _id: 1,
                     artist: "Shared artist name 1",
-                    title: "Shared title name 1"
+                    title: "Shared title name 1",
                 });
                 const s2 = realm.create(SongWithId, {
                     _id: 2,
                     artist: "Shared artist name 2",
-                    title: "Shared title name 2"
+                    title: "Shared title name 2",
                 });
                 const s3 = realm.create(SongWithId, {
                     _id: 3,
                     artist: "Shared artist name 3",
-                    title: "Shared title name 3"
+                    title: "Shared title name 3",
                 });
 
                 // Playlists
@@ -361,14 +362,14 @@ const testSetups: ITestSetup[] = [
                         {
                             _id: 4,
                             artist: "Unique artist 1",
-                            title: "Unique title 1"
+                            title: "Unique title 1",
                         },
                         {
                             _id: 5,
                             artist: "Unique artist 2",
-                            title: "Unique title 2"
-                        }
-                    ]
+                            title: "Unique title 2",
+                        },
+                    ],
                 });
                 const p2 = realm.create(PlaylistWithId, {
                     _id: 2,
@@ -377,16 +378,16 @@ const testSetups: ITestSetup[] = [
                         {
                             _id: 6,
                             artist: "Unique artist 3",
-                            title: "Unique title 3"
+                            title: "Unique title 3",
                         },
                         {
                             _id: 7,
                             artist: "Unique artist 4",
-                            title: "Unique title 4"
+                            title: "Unique title 4",
                         },
-                        s3
+                        s3,
                     ],
-                    related: [p1]
+                    related: [p1],
                 });
                 const p3 = realm.create(PlaylistWithId, {
                     _id: 3,
@@ -396,16 +397,16 @@ const testSetups: ITestSetup[] = [
                         {
                             _id: 8,
                             artist: "Unique artist 5",
-                            title: "Unique title 5"
+                            title: "Unique title 5",
                         },
                         {
                             _id: 9,
                             artist: "Unique artist 6",
-                            title: "Unique title 6"
+                            title: "Unique title 6",
                         },
-                        s2
+                        s2,
                     ],
-                    related: [p1, p2]
+                    related: [p1, p2],
                 });
 
                 // ensure circular references for p1 (ensure p1 reference self fist)
@@ -414,10 +415,10 @@ const testSetups: ITestSetup[] = [
 
             return {
                 realm,
-                predefinedStructure: circularCollectionResultWithIds
+                predefinedStructure: circularCollectionResultWithIds,
             };
-        }
-    }
+        },
+    },
 ];
 
 const cacheIdTestSetups: ICacheIdTestSetup[] = [
@@ -425,7 +426,7 @@ const cacheIdTestSetups: ICacheIdTestSetup[] = [
         type: "int",
         schemaName: "IntIdTest",
         testId: 1337,
-        expectedResult: "IntIdTest#1337"
+        expectedResult: "IntIdTest#1337",
     },
     {
         type: "string",
@@ -433,13 +434,19 @@ const cacheIdTestSetups: ICacheIdTestSetup[] = [
         testId:
             "~!@#$%^&*()_+=-,./<>? 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå",
         expectedResult:
-            "StringIdTest#~!@#$%^&*()_+=-,./<>? 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå"
-    }
+            "StringIdTest#~!@#$%^&*()_+=-,./<>? 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå",
+    },
+    {
+        type: "objectId",
+        schemaName: "ObjectIdTest",
+        testId: new ObjectId("5f99418846da9c45005f50bf"),
+        expectedResult: "ObjectIdTest#5f99418846da9c45005f50bf",
+    },
 ];
 
 describe("JSON serialization", () => {
     describe(`Internal cache id check for types: ${cacheIdTestSetups
-        .map(t => t.type)
+        .map((t) => t.type)
         .join(" / ")}`, () => {
         for (const test of cacheIdTestSetups) {
             const { type, schemaName, testId, expectedResult } = test;
@@ -453,16 +460,16 @@ describe("JSON serialization", () => {
                             primaryKey: "_id",
                             properties: {
                                 _id: type,
-                                title: "string"
-                            }
-                        }
-                    ]
+                                title: "string",
+                            },
+                        },
+                    ],
                 });
 
                 realm.write(() => {
                     realm.create(schemaName, {
                         _id: testId,
-                        title: `Chache id should be: ${expectedResult}`
+                        title: `Cache id should be: ${expectedResult}`,
                     });
                 });
 
@@ -524,8 +531,8 @@ describe("JSON serialization", () => {
 
                     // Check that no props are functions on the serializable object.
                     expect(
-                        Object.keys(serializable).some(
-                            key => typeof serializable[key] === "function"
+                        Object.values(serializable).some(
+                            (val) => typeof val === "function"
                         )
                     ).equals(false);
 

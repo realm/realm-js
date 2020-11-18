@@ -105,6 +105,12 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     else if (type == "data") {
         prop.type |= PropertyType::Data;
     }
+    else if (type == "decimal128") {
+        prop.type |= PropertyType::Decimal;
+    }
+    else if (type == "objectId") {
+        prop.type |= PropertyType::ObjectId;
+    }
     else if (type == "list") {
         if (prop.object_type == "bool") {
             prop.type |= PropertyType::Bool | PropertyType::Array;
@@ -132,6 +138,14 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         }
         else if (prop.object_type == "data") {
             prop.type |= PropertyType::Data | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "decimal128") {
+            prop.type |= PropertyType::Decimal | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "objectId") {
+            prop.type |= PropertyType::ObjectId | PropertyType::Array;
             prop.object_type = "";
         }
         else {
@@ -246,6 +260,7 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
     static const String primary_string = "primaryKey";
     static const String properties_string = "properties";
     static const String schema_string = "schema";
+    static const String embedded_string = "embedded";
 
     FunctionType object_constructor = {};
     if (Value::is_constructor(ctx, object_schema_object)) {
@@ -263,7 +278,15 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         for (uint32_t i = 0; i < length; i++) {
             ObjectType property_object = Object::validated_get_object(ctx, properties_object, i);
             std::string property_name = Object::validated_get_string(ctx, property_object, name_string);
-            Property property = parse_property(ctx, property_object, object_schema.name, std::move(property_name), object_defaults);
+            Property property;
+            try {
+                property = parse_property(ctx, property_object, object_schema.name, property_name, object_defaults);
+            }
+            catch (std::invalid_argument& ex) {
+                std::string message = util::format("Error while parsing property '%1' of object with name '%2'. Error: %3", std::string(property_name), object_schema.name, ex.what());
+                throw std::logic_error(message);
+            }
+
             if (property.type == realm::PropertyType::LinkingObjects) {
                 object_schema.computed_properties.emplace_back(std::move(property));
             }
@@ -277,7 +300,14 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         auto property_names = Object::get_property_names(ctx, properties_object);
         for (auto& property_name : property_names) {
             ValueType property_value = Object::get_property(ctx, properties_object, property_name);
-            Property property = parse_property(ctx, property_value, object_schema.name, property_name, object_defaults);
+            Property property;
+            try {
+                property = parse_property(ctx, property_value, object_schema.name, property_name, object_defaults);
+            }
+            catch (std::invalid_argument& ex) {
+                std::string message = util::format("Error while parsing property '%1' of object with name '%2'. Error: %3", std::string(property_name), object_schema.name, ex.what());
+                throw std::logic_error(message);
+            }
             if (property.type == realm::PropertyType::LinkingObjects) {
                 object_schema.computed_properties.emplace_back(std::move(property));
             }
@@ -295,6 +325,14 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
             throw std::runtime_error("Schema named '" + object_schema.name + "' specifies primary key of '" + object_schema.primary_key + "' but does not declare a property of that name.");
         }
         property->is_primary = true;
+    }
+
+    ValueType embedded_value = Object::get_property(ctx, object_schema_object, embedded_string);
+    if (!Value::is_undefined(ctx, embedded_value)) {
+        object_schema.is_embedded = Value::validated_to_boolean(ctx, embedded_value);
+    }
+    else {
+        object_schema.is_embedded = false;
     }
 
     // Store prototype so that objects of this type will have their prototype set to this prototype object.
@@ -357,6 +395,9 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
         Object::set_property(ctx, object, primary_key_string, Value::from_string(ctx, object_schema.primary_key));
     }
 
+    static const String embedded_string = "embedded";
+    Object::set_property(ctx, object, embedded_string, Value::from_boolean(ctx, object_schema.is_embedded));
+
     return object;
 }
 
@@ -377,7 +418,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
         }
     }
     else {
-        Object::set_property(ctx, object, type_string, Value::from_string(ctx, string_for_property_type(property.type)));
+        Object::set_property(ctx, object, type_string, Value::from_string(ctx, local_string_for_property_type(property.type)));
     }
 
     static const String object_type_string = "objectType";
@@ -385,7 +426,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
         Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, property.object_type));
     }
     else if (is_array(property.type)) {
-        Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, string_for_property_type(property.type & ~realm::PropertyType::Flags)));
+        Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, local_string_for_property_type(property.type & ~realm::PropertyType::Flags)));
     }
 
     static const String property_string = "property";

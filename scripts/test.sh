@@ -19,6 +19,8 @@ if [ "${CONFIGURATION}" == "Debug" ]; then
       USE_REALM_DEBUG=1
 fi
 
+USE_REALM_SYNC=1
+
 IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set and re-exported
 
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
@@ -42,9 +44,10 @@ if [[ $TARGET = *-android ]]; then
   export REALM_BUILD_ANDROID=1
 fi
 
-SERVER_PID=0
+# SERVER_PID=0
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
 LOGCAT_OUT="$SRCROOT/logcat_out.txt"
+RUN_STITCH_IN_FORGROUND=""
 
 die() {
   echo "$@" >&2
@@ -52,28 +55,41 @@ die() {
 }
 
 start_server() {
-  echo "test.sh: starting ROS"
-  if [ -z "${SYNC_WORKER_FEATURE_TOKEN}" ]; then
-     die "SYNC_WORKER_FEATURE_TOKEN must be set to run tests."
+  echo "test.sh: starting stitch"
+  if [ "$CI_RUN" == "true" ]; then
+    echo "CI Run detected, not manually starting a server"
+    return;
   fi
 
-  ./scripts/download-object-server.sh
-  mkdir -p "$(pwd)/build"
-  local ros_log_temp=$(mktemp)
-  node ./scripts/test-ros-server.js | tee $ros_log_temp &
-  ( tail -f $ros_log_temp & ) | grep -q 'Started: '
-
-  SERVER_PID=$(jobs -l | grep 'test-ros-server' | awk '{split($0, a, / */); print a[2]}')
-  export ROS_DATA_DIR="$(perl -ne 'print "$1\n" if /^Started: (.*?)$/' $ros_log_temp)"
-  echo ROS PID: ${SERVER_PID}
+  if [[ -z "$(command -v docker)" ]]; then
+    echo "starting stitch requires docker"
+    exit 1
+  fi
+  local EXISTING_STITCH=$(docker ps | grep "mongodb-realm-test-server.*9090")
+  if [[ -n "$EXISTING_STITCH" ]]; then
+    echo "found existing stitch running, not attempting to start another"
+  else
+    echo "no existing stitch instance running in docker, attempting to start one"
+    . "${SRCROOT}/src/object-store/dependencies.list"
+    echo "using object-store stitch dependency: ${MDBREALM_TEST_SERVER_TAG}"
+    if [[ -n "$RUN_STITCH_IN_FORGROUND" ]]; then
+      # we don't worry about tracking the STITCH_DOCKER_ID because without the -d flag, this docker is tied to the shell
+      docker run -v "${SRCROOT}/src/object-store/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}"
+    else
+      STITCH_DOCKER_ID=$(docker run -d $BACKGROUND_FLAG -v "${SRCROOT}/src/object-store/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}")
+      echo "starting docker image $STITCH_DOCKER_ID"
+      # wait for stitch to import apps and start serving before continuing
+      docker logs --follow "$STITCH_DOCKER_ID" | grep -m 1 "Serving on.*9090" || true
+      echo "Started stitch with docker id: ${STITCH_DOCKER_ID}"
+    fi
+  fi
 }
 
 stop_server() {
   echo stopping server
-  if [[ ${SERVER_PID} -gt 0 ]] ; then
-    echo server is running. killing it
-    kill -9 ${SERVER_PID} >/dev/null 2>&1  || true
-    wait ${SERVER_PID} >/dev/null 2>&1 || true # wait may fail if the server exits fast enough
+  if [[ -n "$STITCH_DOCKER_ID" ]] ; then
+    echo "stopping the docker instance that we started earlier: ${STITCH_DOCKER_ID}"
+    docker stop "$STITCH_DOCKER_ID"
   fi
 }
 
@@ -313,9 +329,12 @@ case "$TARGET" in
   xctest ReactExample
   popd
   ;;
+"start-server")
+  RUN_STITCH_IN_FORGROUND=true
+  start_server
+  ;;
 "react-tests-android")
   npm run check-environment
-  start_server
 
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
@@ -361,7 +380,7 @@ case "$TARGET" in
 
 "node")
   npm run check-environment
-  npm ci --build-from-source=realm --realm_enable_sync --use_realm_debug=${USE_REALM_DEBUG}
+  npm ci --build-from-source=realm --realm_enable_sync=${USE_REALM_SYNC} --use_realm_debug=${USE_REALM_DEBUG}
   start_server
 
   # Change to a temp directory.

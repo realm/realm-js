@@ -22,6 +22,16 @@ var Realm = require('realm');
 var TestCase = require('./asserts');
 var Schemas = require('./schemas');
 
+const { ObjectId } = require("bson");
+
+// Prevent React Native packager from seeing modules required with this
+const require_method = require;
+function nodeRequire(module) {
+    return require_method(module);
+}
+
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+
 module.exports = {
     testEncryptedInvalidKeys: function() {
         // test failure with invalid keys
@@ -71,21 +81,28 @@ module.exports = {
     },
 
     testEncryptionWithSync: function() {
+        //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+        if (!isNodeProcess) {
+            return Promise.resolve();;
+        }
+
         if (!global.enableSyncTests) {
             return Promise.resolve();
         }
+        const config = nodeRequire('./support/testConfig').integrationAppConfig;
+        let app = new Realm.App(config);
 
- 
-        const credentials = Realm.Sync.Credentials.usernamePassword("realm-admin", "");
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(adminUser => {
+        const credentials = Realm.Credentials.anonymous();
+        return app.logIn(credentials).then(user => {
             new Realm({
+                path: "encrypted.realm",
                 encryptionKey: new Int8Array(64),
                 sync: {
-                    user: adminUser,
-                    url: 'realm://127.0.0.1:9080/~/encryptedRealm'
+                    user: user,
+                    partitionValue: "LoLo"
                 }
             });
-            adminUser.logout(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work
+            return user.logOut(); // FIXME: clearTestState() doesn't clean up enough and Realm.User.current might not work
         });
     }
 };

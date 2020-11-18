@@ -62,6 +62,24 @@ public:
     , m_object_schema(collection.get_type() == realm::PropertyType::Object ? &collection.get_object_schema() : nullptr)
     { }
 
+    NativeAccessor(NativeAccessor& na, Obj parent, Property const& prop)
+        : m_ctx(na.m_ctx)
+        , m_realm(na.m_realm)
+        , m_parent(std::move(parent))
+        , m_property(&prop)
+        , m_object_schema(nullptr)
+    {
+        if (prop.type == realm::PropertyType::Object) {
+            auto schema = m_realm->schema().find(prop.object_type);
+            if (schema != m_realm->schema().end()) {
+			    m_object_schema = &*schema;
+            }
+        }
+        else {
+            m_object_schema = na.m_object_schema;
+        }
+    }
+
     NativeAccessor(NativeAccessor& parent, const Property& prop)
 		: m_ctx(parent.m_ctx)
 		, m_realm(parent.m_realm)
@@ -94,6 +112,14 @@ public:
     template<typename T>
     T unbox(ValueType value, realm::CreatePolicy policy = realm::CreatePolicy::Skip, ObjKey current_obj = ObjKey());
 
+    Obj create_embedded_object() {
+        if (!m_parent) {
+            throw std::runtime_error("Embedded objects cannot be created directly.");
+        }
+
+        return m_parent.create_and_set_linked_object(m_property->column_key);
+    }
+
     template<typename T>
     util::Optional<T> unbox_optional(ValueType value) {
         return is_null(value) ? util::none : util::make_optional(unbox<T>(value));
@@ -108,6 +134,8 @@ public:
     ValueType box(double number)     { return Value::from_number(m_ctx, number); }
     ValueType box(StringData string) { return Value::from_string(m_ctx, string.data()); }
     ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
+    ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
+    ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
     ValueType box(Mixed)             { throw std::runtime_error("'Any' type is unsupported"); }
 
     ValueType box(Timestamp ts) {
@@ -167,10 +195,11 @@ public:
 private:
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
+    Obj m_parent;
+    const Property* m_property = nullptr;
     const ObjectSchema* m_object_schema;
     std::string m_string_buffer;
     OwnedBinaryData m_owned_binary_data;
-
     template<typename, typename>
     friend struct _impl::Unbox;
 };
@@ -205,31 +234,55 @@ struct Unbox<JSEngine, double> {
 };
 
 template<typename JSEngine>
+struct Unbox<JSEngine, Decimal128> {
+    static Decimal128 call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        if (ctx->is_null(value)) {
+            return Decimal128(realm::null());
+        }
+        return js::Value<JSEngine>::validated_to_decimal128(ctx->m_ctx, value, "Property");
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, ObjectId> {
+    static ObjectId call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        return js::Value<JSEngine>::validated_to_object_id(ctx->m_ctx, value, "Property");
+    }
+};
+
+template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<bool>> {
     static util::Optional<bool> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<bool>(value);
-}
+    }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<int64_t>> {
     static util::Optional<int64_t> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<int64_t>(value);
-}
+    }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<float>> {
     static util::Optional<float> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<float>(value);
-}
+    }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<double>> {
     static util::Optional<double> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<double>(value);
-}
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, util::Optional<ObjectId>> {
+    static util::Optional<ObjectId> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        return ctx->template unbox_optional<ObjectId>(value);
+    }
 };
 
 template<typename JSEngine>
@@ -310,12 +363,15 @@ struct Unbox<JSEngine, Obj> {
             if (realm_object->realm() == ctx->m_realm) {
                 return realm_object->obj();
             }
-            if (policy == realm::CreatePolicy::Skip) {
+
+            bool updating = policy.copy && policy.update;
+            if (!updating && !policy.create) {
                 throw std::runtime_error("Realm object is from another Realm");
             }
         }
-        if (policy == realm::CreatePolicy::Skip) {
-            throw NonRealmObjectException();
+
+        if (!policy.create) {
+            return Obj();
         }
 
         if (Value::is_array(ctx->m_ctx, object)) {

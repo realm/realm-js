@@ -34,17 +34,17 @@ export const PlaylistSchema: Realm.ObjectSchema = {
         _id: "int",
         title: "string",
         songs: "Song[]",
-        related: "Playlist[]"
-    }
+        related: "Playlist[]",
+    },
 };
 
 export class Playlist extends Realm.Object implements IPlaylist {
-    public static schema = PlaylistSchema;
+    _id: number;
+    title: string;
+    songs: Realm.List<Song>;
+    related: Realm.List<Playlist>;
 
-    public _id: number;
-    public title: string;
-    public songs: Realm.List<Song>;
-    public related: Realm.List<Playlist>;
+    static schema = PlaylistSchema;
 }
 
 export interface ISong {
@@ -59,14 +59,14 @@ export const SongSchema: Realm.ObjectSchema = {
     properties: {
         _id: "int",
         artist: "string",
-        title: "string"
-    }
+        title: "string",
+    },
 };
 
 export class Song extends Realm.Object implements ISong {
-    public static schema = SongSchema;
+    _id: number;
+    artist: string;
+    title: string;
 
-    public _id: number;
-    public artist: string;
-    public title: string;
+    static schema = SongSchema;
 }

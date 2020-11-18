@@ -1,0 +1,19 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"types": [
+			"realm-web",
+			"mocha",
+			"chai",
+			"webpack-env",
+			"mocha-remote-client"
+		],
+		"lib": [
+			"ES2020",
+			"DOM"
+		]
+	},
+	"include": [
+		"src/**/*.ts"
+	]
+}

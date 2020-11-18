@@ -175,6 +175,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = F606900A1CA2766F0003FB26;
@@ -250,7 +251,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CC = "$(SRCROOT)/../../scripts/ccache-clang.sh";
 				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -292,7 +293,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
@@ -312,7 +313,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CC = "$(SRCROOT)/../../scripts/ccache-clang.sh";
 				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -348,7 +349,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -367,10 +368,10 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../src",
-					"$(SRCROOT)/../../src/object-store/src",
-					"$(SRCROOT)/../../src/object-store/external/json",
-					"$(SRCROOT)/../../vendor",
-					"$(SRCROOT)/../../vendor/realm-ios/include",
+					"$(SRCROOT)/../../src/object-store/src/**",
+					"$(SRCROOT)/../../src/object-store/external/json/**",
+					"$(SRCROOT)/../../vendor/**",
+					"$(SRCROOT)/../../vendor/realm-ios/include/**",
 					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**",
@@ -389,10 +390,10 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../src",
-					"$(SRCROOT)/../../src/object-store/src",
-					"$(SRCROOT)/../../src/object-store/external/json",
-					"$(SRCROOT)/../../vendor",
-					"$(SRCROOT)/../../vendor/realm-ios/include",
+					"$(SRCROOT)/../../src/object-store/src/**",
+					"$(SRCROOT)/../../src/object-store/external/json/**",
+					"$(SRCROOT)/../../vendor/**",
+					"$(SRCROOT)/../../vendor/realm-ios/include/**",
 					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**",

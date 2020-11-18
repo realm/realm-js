@@ -1,0 +1,4 @@
+--watch-extensions ts
+--require ./test/env.js
+--require ts-node/register
+--file src/node/index.ts

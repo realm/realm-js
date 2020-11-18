@@ -123,6 +123,48 @@ inline bool jsc::Value::is_valid(const JSValueRef &value) {
     return value != nullptr;
 }
 
+inline bool is_bson_type(JSContextRef ctx, const JSValueRef &value, std::string type) {
+    if (JSValueIsNull(ctx, value) || JSValueIsUndefined(ctx, value) || !JSValueIsObject(ctx, value)) {
+        return false;
+    }
+
+
+    JSValueRef error = nullptr;
+    JSObjectRef object = JSValueToObject(ctx, value, &error);
+    if (error) {
+        throw jsc::Exception(ctx, error);
+    }
+
+    JSValueRef bsonType = JSObjectGetProperty(ctx, object, JSStringCreateWithUTF8CString("_bsontype"), &error);
+    if (error) {
+        throw jsc::Exception(ctx, error);
+    }
+
+    if (JSValueIsUndefined(ctx, value)) {
+        return false;
+    }
+
+    jsc::String bsonTypeValue = JSValueToStringCopy(ctx, bsonType, &error);
+    // Since the string's retain value is +2 here, we need to manually release it before returning.
+    JSStringRelease(bsonTypeValue);
+    if (error) {
+        throw jsc::Exception(ctx, error);
+    }
+
+    std::string bsonTypeStringValue = bsonTypeValue;
+    return bsonTypeStringValue == type;
+}
+
+template<>
+inline bool jsc::Value::is_decimal128(JSContextRef ctx, const JSValueRef &value) {
+    return is_bson_type(ctx, value, "Decimal128");
+}
+
+template<>
+inline bool jsc::Value::is_object_id(JSContextRef ctx, const JSValueRef &value) {
+    return is_bson_type(ctx, value, "ObjectID");
+}
+
 template<>
 inline JSValueRef jsc::Value::from_boolean(JSContextRef ctx, bool boolean) {
     return JSValueMakeBoolean(ctx, boolean);
@@ -150,6 +192,12 @@ inline JSValueRef jsc::Value::from_undefined(JSContextRef ctx) {
 
 template<>
 JSValueRef jsc::Value::from_nonnull_binary(JSContextRef ctx, BinaryData data);
+
+template<>
+JSValueRef jsc::Value::from_decimal128(JSContextRef ctx, const Decimal128& value);
+
+template<>
+JSValueRef jsc::Value::from_object_id(JSContextRef ctx, const ObjectId& value);
 
 template<>
 inline bool jsc::Value::to_boolean(JSContextRef ctx, const JSValueRef &value) {
@@ -225,6 +273,12 @@ inline JSObjectRef jsc::Value::to_function(JSContextRef ctx, const JSValueRef &v
 
 template<>
 OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, JSValueRef value);
+
+template<>
+Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, const JSValueRef& value);
+
+template<>
+ObjectId jsc::Value::to_object_id(JSContextRef ctx, const JSValueRef& value);
 
 } // js
 } // realm

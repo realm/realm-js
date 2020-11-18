@@ -1,0 +1,36 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"target": "es2019",
+		"moduleResolution": "node",
+		"forceConsistentCasingInFileNames": true,
+		"noResolve": true,
+		"typeRoots": [
+			"./types",
+			"./node_modules/@types",
+			"../../node_modules/@types",
+		],
+		"types": [
+			"realm-network-transport",
+			"realm",
+			"js-base64",
+			"bson"
+		],
+		"lib": [
+			"es2019"
+		]
+	},
+	"include": [
+		"types/realm/app.d.ts",
+		"types/realm/bson.d.ts",
+		"types/realm/services.d.ts",
+		"types/realm/auth-providers.d.ts",
+		"types/environment.d.ts",
+		"src/**/*.ts"
+	],
+	"exclude": [
+		"src/dom/**/*.ts",
+		"src/node/**/*.ts",
+		"src/tests/**/*.ts"
+	]
+}

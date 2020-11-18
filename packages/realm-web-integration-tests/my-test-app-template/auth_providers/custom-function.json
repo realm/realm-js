@@ -1,0 +1,8 @@
+{
+    "name": "custom-function",
+    "type": "custom-function",
+    "config": {
+        "authFunctionName": "customAuthentication"
+    },
+    "disabled": false
+}

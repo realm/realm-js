@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'json'
 
 package = JSON.parse(File.read(File.expand_path('package.json', __dir__)))
@@ -44,9 +45,9 @@ Pod::Spec.new do |s|
   # 1) As "prepare_command" (executed when running `pod install`), to have the files available when  to modify the XCode project correctly.
   # 2) As "script_phase" (executed by XCode when building), to allow developers to commit their `ios/Pods` directory to their repository (and not run `pod install` after cloning it).
   # Note: It leaves a lock file, ensuring it will only download the archive once.
-  s.prepare_command        = 'node ./scripts/download-realm.js ios --sync'
+  s.prepare_command        = './scripts/xcode-download-realm.sh ./scripts'
   s.script_phase           = { :name => 'Download Realm Core & Sync',
-                               :script => 'echo "Using Node.js $(node --version)" && node "${PODS_TARGET_SRCROOT}/scripts/download-realm.js" ios --sync',
+                               :script => '${PODS_TARGET_SRCROOT}/scripts/xcode-download-realm.sh ${PODS_TARGET_SRCROOT}/scripts',
                                :execution_position => :before_compile }
 
   s.source_files           = 'src/*.cpp',
@@ -60,6 +61,7 @@ Pod::Spec.new do |s|
                              'src/object-store/src/impl/apple/*.cpp',
                              'src/object-store/src/util/*.cpp',
                              'src/object-store/src/util/apple/*.cpp',
+                             'src/object-store/src/util/bson/*.cpp',
                              'react-native/ios/RealmReact/*.mm',
                              'vendor/*.cpp'
 
@@ -71,7 +73,7 @@ Pod::Spec.new do |s|
                                'CC' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang.sh',
                                'CXX' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang++.sh',
                                # Setting up clang
-                               'CLANG_CXX_LANGUAGE_STANDARD' => 'c++14',
+                               'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
                                'CLANG_CXX_LIBRARY' => 'libc++',
                                # Disabling warnings that object store, core and sync has a lot of
                                'CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF' => 'NO',
@@ -79,6 +81,8 @@ Pod::Spec.new do |s|
                                # Setting the current project version and versioning system to get a symbol for analytics
                                'CURRENT_PROJECT_VERSION' => s.version,
                                'VERSIONING_SYSTEM' => 'apple-generic',
+                               # Disable C++17 features for unsupported platforms
+                               'OTHER_CPLUSPLUSFLAGS[arch=armv7]' => '-fno-aligned-new',
                                # Header search paths are prefixes to the path specified in #include macros
                                'HEADER_SEARCH_PATHS' => [
                                  '"$(PODS_TARGET_SRCROOT)/src/"',
@@ -87,6 +91,7 @@ Pod::Spec.new do |s|
                                  '"$(PODS_TARGET_SRCROOT)/src/object-store/external/json/"',
                                  '"$(PODS_TARGET_SRCROOT)/vendor/"',
                                  '"$(PODS_TARGET_SRCROOT)/vendor/realm-ios/include/"',
+                                 '"$(PODS_TARGET_SRCROOT)/vendor/realm-ios/include/realm/"',
                                  '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
                                  '"$(PODS_ROOT)/Headers/Public/React-Core/"'
                                  # "'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting

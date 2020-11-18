@@ -1,17 +1,24 @@
 {
 	"compilerOptions": {
-		"target": "es6",
+		"target": "es2018",
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"outDir": "dist",
-		"types": ["realm", "node", "mocha", "chai"],
-		"noResolve": true,
-		"noImplicitAny": true,
-		"lib": ["es5", "es2015", "es2015.promise", "es2015.symbol", "es2015.iterable"]
+		"types": [
+			"node",
+			"realm",
+			"mocha",
+			"chai"
+		],
+		"typeRoots": [
+			"types",
+			"node_modules/@types"
+		],
+		"noImplicitAny": true
 	},
 	"include": [
-		"src/**/*.ts",
-		"src/**/*.json"
+		"src/**/typings.d.ts",
+		"src/**/*.ts"
 	]
 }

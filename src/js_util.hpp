@@ -43,6 +43,17 @@ static inline RealmDelegate<T> *get_delegate(realm::Realm *realm) {
     return static_cast<RealmDelegate<T> *>(realm->m_binding_context.get());
 }
 
+static const char *local_string_for_property_type(realm::PropertyType type)
+{
+    switch (type & ~realm::PropertyType::Flags) {
+        // Override naming given by ObjectStore
+        case realm::PropertyType::ObjectId: return "objectId";
+        case realm::PropertyType::Decimal: return "decimal128";
+
+        default: return string_for_property_type(type);
+    }
+}
+
 template<typename T>
 static inline T stot(const std::string &s) {
     std::istringstream iss(s);

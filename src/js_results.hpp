@@ -32,7 +32,6 @@
 #include <realm/util/optional.hpp>
 #ifdef REALM_ENABLE_SYNC
 #include "js_sync.hpp"
-#include "sync/partial_sync.hpp"
 #endif
 
 namespace realm {
@@ -90,9 +89,6 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void sorted(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void is_valid(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void is_empty(ContextType, ObjectType, Arguments &, ReturnValue &);
-#if REALM_ENABLE_SYNC
-    static void subscribe(ContextType, ObjectType, Arguments &, ReturnValue &);
-#endif
 
     static void index_of(ContextType, ObjectType, Arguments &, ReturnValue &);
 
@@ -120,9 +116,6 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
         {"isEmpty", wrap<is_empty>},
-#if REALM_ENABLE_SYNC
-        {"subscribe", wrap<subscribe>},
-#endif
         {"min", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Min>>},
         {"max", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Max>>},
         {"sum", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Sum>>},
@@ -232,7 +225,7 @@ void ResultsClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue
 template<typename T>
 void ResultsClass<T>::get_type(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(ctx, object);
-    return_value.set(string_for_property_type(results->get_type() & ~realm::PropertyType::Flags));
+    return_value.set(local_string_for_property_type(results->get_type() & ~realm::PropertyType::Flags));
 }
 
 template<typename T>
@@ -286,87 +279,6 @@ template<typename T>
 void ResultsClass<T>::is_empty(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(ctx, this_object)->size() == 0);
 }
-
-#if REALM_ENABLE_SYNC
-template<typename T>
-void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_maximum(1);
-
-    auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
-    auto realm = results->get_realm();
-    auto object_schema = results->get_object_schema();
-    auto sync_config = realm->config().sync_config;
-    IncludeDescriptor inclusion_paths;
-
-    util::Optional<std::string> subscription_name;
-    bool update = false;
-    util::Optional<int64_t> ttl = util::none;
-    if (args.count == 1) {
-        if (Value::is_string(ctx, args[0])) {
-            subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, args[0]));
-        } else {
-            ObjectType options_object = Value::validated_to_object(ctx, args[0]);
-
-            std::vector<const char*> available_options = {"name", "update", "timeToLive", "includeLinkingObjects"};
-            enum SubscriptionOptions { NAME, UPDATE, TTL, INCLUSIONS };
-            auto prop_names = Object::get_property_names(ctx, options_object);
-            for (size_t i = 0; i < prop_names.size(); ++i) {
-                std::string prop = prop_names[i];
-                if (std::find(available_options.begin(), available_options.end(), prop) == available_options.end()) {
-                    throw std::logic_error("Unexpected property in subscription options: '" + prop + "'.");
-                }
-            }
-
-            ValueType name_value = Object::get_property(ctx, options_object, available_options[NAME]);
-            if (!Value::is_undefined(ctx, name_value)) {
-                subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, name_value, available_options[NAME]));
-            }
-
-            ValueType update_value = Object::get_property(ctx, options_object, available_options[UPDATE]);
-            if (!Value::is_undefined(ctx, update_value))
-                update = Value::validated_to_boolean(ctx, update_value, available_options[UPDATE]);
-
-            ValueType ttl_value = Object::get_property(ctx, options_object, available_options[TTL]);
-            if (!Value::is_undefined(ctx, ttl_value))
-                ttl = util::Optional<int64_t>(Value::validated_to_number(ctx, ttl_value, available_options[TTL]));
-
-            ValueType user_includes = Object::get_property(ctx, options_object, available_options[INCLUSIONS]);
-            if (!Value::is_undefined(ctx, user_includes)) {
-                ObjectType property_paths = Value::validated_to_array(ctx, user_includes, available_options[INCLUSIONS]);
-
-                parser::KeyPathMapping mapping;
-                realm::populate_keypath_mapping(mapping, *realm); // this enables user defined linkingObjects property names to be parsed
-                DescriptorOrdering combined_orderings;
-
-                size_t prop_count = Object::validated_get_length(ctx, property_paths);
-                for (unsigned int i = 0; i < prop_count; i++) {
-                    std::string path = Object::validated_get_string(ctx, property_paths, i);
-                    DescriptorOrdering ordering;
-                    // the parser provides a special function just for this
-                    parser::DescriptorOrderingState ordering_state = parser::parse_include_path(path); // throws
-                    query_builder::apply_ordering(ordering, results->get_query().get_table(), ordering_state, mapping);
-                    combined_orderings.append_include(ordering.compile_included_backlinks());
-                }
-                if (combined_orderings.will_apply_include()) {
-                    inclusion_paths = combined_orderings.compile_included_backlinks();
-                }
-            }
-        }
-    }
-    else {
-        subscription_name = util::none;
-    }
-
-    partial_sync::SubscriptionOptions options;
-    options.user_provided_name = subscription_name;
-    options.inclusions = inclusion_paths;
-    options.time_to_live_ms = ttl;
-    options.update = update;
-    auto subscription = partial_sync::subscribe(*results, options);
-
-    return_value.set(SubscriptionClass<T>::create_instance(ctx, std::move(subscription), subscription_name));
-}
-#endif
 
 template<typename T>
 template<typename Fn>

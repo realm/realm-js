@@ -18,6 +18,7 @@ exports.execute = (filter) => {
   process.chdir(path.join(__dirname, "..", ".."));
 
   global.REALM_MODULE_PATH = path.resolve(__dirname, '../node_modules/realm');
+  process.env.ELECTRON_TESTS_REALM_MODULE_PATH = global.REALM_MODULE_PATH;
   process.env.REALM_ELECTRON_VERSION = process.versions.electron;
 
   jasmine.clearReporters();

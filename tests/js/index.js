@@ -16,69 +16,57 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+"use strict";
 
-const Realm = require('realm');
+const Realm = require("realm");
 
-if (typeof Realm.Sync !== 'undefined' && Realm.Sync !== null) {
+if (typeof Realm.App !== "undefined" && Realm.App !== null) {
     global.WARNING = "global is not available in React Native. Use it only in tests";
-    global.enableSyncTests = true;
+    global.enableSyncTests = process.env.REALM_DISABLE_SYNC_TESTS ? false : true;
 }
 
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
+const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
+const isElectronProcess = typeof process === "object" && process.versions && process.versions.electron;
 const require_method = require;
 function node_require(module) { return require_method(module); }
 
-if (isNodeProcess && process.platform === 'win32') {
+if (isNodeProcess && process.platform === "win32") {
     global.enableSyncTests = false;
 }
 
-// catching segfaults during testing can help debugging
-// uncomment to enable segfault handler
-// if (isNodeProcess) {
-//     const SegfaultHandler = node_require('segfault-handler');
-//     SegfaultHandler.registerHandler("crash.log");
-// }
-
 var TESTS = {
-    ListTests: require('./list-tests'),
-    LinkingObjectsTests: require('./linkingobjects-tests'),
-    ObjectTests: require('./object-tests'),
-    RealmTests: require('./realm-tests'),
-    ResultsTests: require('./results-tests'),
-    QueryTests: require('./query-tests'),
-    MigrationTests: require('./migration-tests'),
-    EncryptionTests: require('./encryption-tests'),
-    ObjectIDTests: require('./object-id-tests'),
-    AliasTests: require('./alias-tests'),
+    ListTests: require("./list-tests"),
+    LinkingObjectsTests: require("./linkingobjects-tests"),
+    ObjectTests: require("./object-tests"),
+    RealmTests: require("./realm-tests"),
+    ResultsTests: require("./results-tests"),
+    QueryTests: require("./query-tests"),
+    MigrationTests: require("./migration-tests"),
+    EncryptionTests: require("./encryption-tests"),
+    AliasTests: require("./alias-tests"),
+    BsonTests: require("./bson-tests"),
     // Garbagecollectiontests: require('./garbage-collection'),
 };
 
+//TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+if (isNodeProcess) {
+    TESTS.ObjectIDTests = require("./object-id-tests");
+}
+
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
-    TESTS.OpenBehaviorTests = require('./open-behavior-tests');
-    TESTS.UserTests = require('./user-tests');
-    TESTS.SessionTests = require('./session-tests');
-    TESTS.SubscriptionTests = require('./subscription-tests');
-
-    if (isNodeProcess && !isElectronProcess) {
-        // FIXME: Permission tests currently fail in react native
-        TESTS.PermissionTests = require('./permission-tests');
-        node_require('./adapter-tests');
-        node_require('./notifier-tests');
+    //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+    if (isNodeProcess) {
+        TESTS.AppTests = require("./app-tests");
+        TESTS.OpenBehaviorTests = require("./open-behavior-tests");
+        TESTS.UserTests = require("./user-tests");
+        TESTS.SessionTests = require("./session-tests");
     }
 }
 
 // If on node, run the async tests
-if (isNodeProcess && process.platform !== 'win32') {
-    TESTS.AsyncTests = node_require('./async-tests');
-}
-
-if (global.enableSyncTests) {
-    // Ensure that the sync manager is initialized as initializing it
-    // after calling clearTestState() doesn't work
-    Realm.Sync.User.all;
+if (isNodeProcess && process.platform !== "win32") {
+    TESTS.AsyncTests = node_require("./async-tests");
 }
 
 var SPECIAL_METHODS = {
@@ -93,7 +81,7 @@ exports.getTestNames = function() {
         var testSuite = TESTS[suiteName];
 
         testNames[suiteName] = Object.keys(testSuite).filter(function(testName) {
-            return !(testName in SPECIAL_METHODS) && typeof testSuite[testName] == 'function';
+            return !(testName in SPECIAL_METHODS) && typeof testSuite[testName] == "function";
         });
     }
 
@@ -106,22 +94,8 @@ exports.registerTests = function(tests) {
     }
 };
 
-exports.prepare = function(done) {
-    if (!global.enableSyncTests || !isNodeProcess || global.testAdminUserInfo) {
-        done();
-        return;
-    }
-
-    require('./admin-user-helper')
-        .createAdminUser()
-        .then(userInfo => {
-            global.testAdminUserInfo = userInfo;
-            done();
-        })
-        .catch(error => {
-            console.error("Error running admin-user-helper", error);
-            done.fail(error);
-        });
+exports.prepare = function (done) {
+    done();
 };
 
 exports.runTest = function(suiteName, testName) {
@@ -143,7 +117,7 @@ exports.runTest = function(suiteName, testName) {
                 global.gc();
             }
         }
-        
+
         return result;
     }
 

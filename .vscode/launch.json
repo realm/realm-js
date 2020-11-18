@@ -56,8 +56,9 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Download & Start Server",
-            "cwd": "${workspaceRoot}/scripts"
+            "name": "Start Stitch in Docker",
+            "cwd": "${workspaceRoot}/scripts",
+            "preLaunchTask": "start_stitch",
         },
         {
             "type": "node",
@@ -70,9 +71,9 @@
     ],
     "compounds": [
         {
-            "name": "Rebuild + Start Server + Debug",
+            "name": "Start Server + Debug",
             "configurations": [
-                "Download & Start Server",
+                "Start Stitch in Docker",
                 "Debug Node Unit Tests (rebuild)"
             ]
         },

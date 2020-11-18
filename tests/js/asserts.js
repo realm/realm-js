@@ -29,8 +29,14 @@ module.exports = {
         else if (type === 'float' || type === 'double') {
             this.assertEqualWithTolerance(val1, val2, 0.000001, errorMessage, depth + 1);
         }
+        else if (type === 'decimal128') {
+            this.assertEqual(val1.toString(), val2.toString(), errorMessage, depth + 1);
+        }
         else if (type === 'data') {
             this.assertArraysEqual(new Uint8Array(val1), val2, errorMessage, depth + 1);
+        }
+        else if (type === 'objectId') {
+            this.assertEqual(val1.toString(), val2.toString(), errorMessage, depth + 1);
         }
         else if (type === 'date') {
             this.assertEqual(val1 && val1.getTime(), val2.getTime(), errorMessage, depth + 1);
@@ -140,17 +146,23 @@ module.exports = {
     },
 
     assertThrows: function(func, errorMessage, depth) {
-        let caught = false;
         try {
             func();
         }
         catch (e) {
-            caught = true;
+            return e
         }
+        throw new TestFailureError(errorMessage || `Expected exception not thrown from ${func}`, depth);
+    },
 
-        if (!caught) {
-            throw new TestFailureError(errorMessage || 'Expected exception not thrown', depth);
+    assertThrowsAsync: async function(func, errorMessage, depth) {
+        try {
+            await func();
         }
+        catch (e) {
+            return e
+        }
+        throw new TestFailureError(errorMessage || `Expected exception not thrown from ${func}`, depth);
     },
 
     assertThrowsException: function(func, expectedException) {
@@ -177,6 +189,22 @@ module.exports = {
         let caught = false;
         try {
             func();
+        }
+        catch (e) {
+            caught = true;
+            if (!e.message.includes(expectedMessage)) {
+                throw new TestFailureError(`Expected exception "${expectedMessage}" not thrown - instead caught: "${e}"`, depth);
+            }
+        }
+
+        if (!caught) {
+            throw new TestFailureError(`Expected exception "${expectedMessage}" not thrown`, depth);
+        }
+    },
+    assertThrowsAsyncContaining: async function(func, expectedMessage, depth) {
+        let caught = false;
+        try {
+            await func();
         }
         catch (e) {
             caught = true;
@@ -232,6 +260,12 @@ module.exports = {
     assertNull: function(value, errorMessage, depth) {
         if (value !== null) {
             throw new TestFailureError(errorMessage || `Value ${value} expected to be null`, depth);
+        }
+    },
+
+    assertNotNull: function(value, errorMessage, depth) {
+        if (value === null) {
+            throw new TestFailureError(errorMessage || `Value ${value} expected to be not null`, depth);
         }
     },
 

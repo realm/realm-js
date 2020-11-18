@@ -18,11 +18,8 @@
 
 'use strict';
 
-/* global navigator, WorkerNavigator */
-
-const require_method = require;
-
 // Prevent React Native packager from seeing modules required with this
+const require_method = require;
 function nodeRequire(module) {
     return require_method(module);
 }
@@ -35,6 +32,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
+const { Decimal128, ObjectId } = require("bson");
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -54,7 +52,7 @@ module.exports = {
         TestCase.assertEqual(typeof Realm, 'function');
         TestCase.assertTrue(Realm instanceof Function);
     },
-    
+
     testRealmObjectCreationByObject: function () {
         const CarSchema = {
             name: 'Car',
@@ -79,7 +77,7 @@ module.exports = {
             TestCase.assertEqual(carZero.make, "Audi");
             TestCase.assertEqual(carZero.model, "A4");
             TestCase.assertEqual(carZero.kilometers, 24);
-            
+
             let car2 = realm.create('Car', { make: 'VW', model: 'Touareg', kilometers: 13 });
             TestCase.assertEqual(car2.make, "VW");
             TestCase.assertEqual(car2.model, "Touareg");
@@ -194,7 +192,6 @@ module.exports = {
 
             //methods from Realm.Objects should be present
             TestCase.assertDefined(car3.addListener);
-
         });
         realm.close();
     },
@@ -276,7 +273,7 @@ module.exports = {
         const realm = new Realm({schema: []});
         realm.close();
         TestCase.assertTrue(realm.isClosed);
-	realm.close();
+    	realm.close();
         TestCase.assertTrue(realm.isClosed);
     },
 
@@ -308,10 +305,10 @@ module.exports = {
         if (!isNodeProcess && !isElectronProcess) {
             return;
         }
-        
+
         let realm = new Realm({schema: []});
-        function failingFunction() { 
-            throw new Error('not implemented'); 
+        function failingFunction() {
+            throw new Error('not implemented');
         }
 
         try {
@@ -344,7 +341,7 @@ module.exports = {
 
     testRealmConstructorSchemaValidation: function() {
         TestCase.assertThrowsContaining(() => new Realm({schema: schemas.AllTypes}),
-                                        "schema must be of type 'array', got");
+                                        "must be of type 'array', got");
         TestCase.assertThrowsContaining(() => new Realm({schema: ['SomeType']}),
                                         "Failed to read ObjectSchema: JS value must be of type 'object', got (SomeType)");
         TestCase.assertThrowsContaining(() => new Realm({schema: [{}]}),
@@ -449,6 +446,10 @@ module.exports = {
     },
 
     testRealmExists: function() {
+        //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+        if (!isNodeProcess) {
+            return Promise.resolve();
+        }
 
         // Local Realms
         let config = {schema: [schemas.TestObject]};
@@ -458,30 +459,26 @@ module.exports = {
 
         // Sync Realms
         if (!global.enableSyncTests) {
-            return;
+            return Promise.resolve();
         }
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
-            .then(user => {
-                const fullSyncConfig = user.createConfiguration({
-                    schema: [schemas.TestObject],
-                    sync: {
-                        url: `realm://127.0.0.1:9080/testRealmExists_${Utils.uuid()}`,
-                        fullSynchronization: true,
-                    },
-                });
-                TestCase.assertFalse(Realm.exists(fullSyncConfig));
-                new Realm(fullSyncConfig).close();
-                TestCase.assertTrue(Realm.exists(fullSyncConfig));
 
-                const queryBasedConfig = user.createConfiguration({
-                    schema: [schemas.TestObject],
+        const appConfig = nodeRequire('./support/testConfig').integrationAppConfig;
+
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+
+        return app.logIn(credentials)
+            .then(user => {
+                const config = {
+                    schema: [schemas.TestObjectWithPk],
                     sync: {
-                        url: `realm://127.0.0.1:9080/testRealmExists_${Utils.uuid()}`,
+                        user,
+                        partitionValue: "LoLo"
                     },
-                });
-                TestCase.assertFalse(Realm.exists(queryBasedConfig));
-                new Realm(queryBasedConfig).close();
-                TestCase.assertTrue(Realm.exists(queryBasedConfig));
+                };
+                TestCase.assertFalse(Realm.exists(config));
+                new Realm(config).close();
+                TestCase.assertTrue(Realm.exists(config));
             });
     },
 
@@ -1390,7 +1387,8 @@ module.exports = {
         }
     },
 
-    testCopyBundledRealmFiles: function() {
+    // FIXME: reenable this test!
+/*    testCopyBundledRealmFiles: function() {
         let config = {path: 'realm-bundle.realm', schema: [schemas.DateObject]};
         if (Realm.exists(config)) {
             Realm.deleteFile(config);
@@ -1412,7 +1410,7 @@ module.exports = {
         Realm.copyBundledRealmFiles();
         realm = new Realm(config);
         TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1);
-    },
+    },*/
 
     testErrorMessageFromInvalidWrite: function() {
         const realm = new Realm({schema: [schemas.PersonObject]});
@@ -1584,15 +1582,22 @@ module.exports = {
 
     testRealmDeleteFileSyncConfig: function() {
         if (!global.enableSyncTests) {
-            return;
+            return Promise.resolve();
         }
 
-        return Realm.Sync.User
-            .login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
+        //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+        if (!isNodeProcess) {
+            return Promise.resolve();
+        }
+
+        const appConfig = nodeRequire('./support/testConfig').integrationAppConfig;
+
+        let app = new Realm.App(appConfig);
+        return app.logIn(Realm.Credentials.anonymous())
             .then(user => {
                 const config = {
-                    schema: [schemas.TestObject],
-                    sync: {user, url: 'realm://127.0.0.1:9080/~/test', fullSynchronization: true },
+                    schema: [schemas.TestObjectWithPk],
+                    sync: {user, partitionValue: '"Lolo"' },
                 };
 
                 const realm = new Realm(config);
@@ -1611,6 +1616,28 @@ module.exports = {
                     });
             });
     },
+
+    //TODO: enable when v10 CI is green
+    /*testNoMigrationOnSync: function() {
+        if (!global.enableSyncTests) {
+            return Promise.resolve();
+        }
+
+        const appConfig = require('./support/testConfig').integrationAppConfig;
+        let app = new Realm.App(appConfig);
+        return app.logIn(Realm.Credentials.anonymous())
+        .then(user => {
+            const config = {
+                schema: [schemas.TestObject],
+                sync: {user, partitionValue: '"Lolo"' },
+                deleteRealmIfMigrationNeeded: true,
+            };
+
+            TestCase.assertThrows(function() {
+                new Realm(config);
+            }, "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
+        });
+    },*/
 
     testRealmDeleteRealmIfMigrationNeededVersionChanged: function() {
         const schema = [{
@@ -1799,68 +1826,6 @@ module.exports = {
         });
     },
 
-    testSchemaUpdatesPartialRealm: function() {
-        if (!global.enableSyncTests) {
-            return;
-        }
-
-        const realmId = Utils.uuid();
-        let realm2 = null, called = false;
-        const config = {
-            schema: [schemas.TestObject],
-            sync: {
-                url: `realm://127.0.0.1:9080/${realmId}`,
-                fullSynchronization: false,
-            },
-        };
-
-        // We need an admin user to create the reference Realm
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword("realm-admin", ""))
-            .then(user1 => {
-                config.sync.user = user1;
-                return Realm.open(config);
-            }).then(realm => {
-                TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                return closeAfterUpload(realm);
-            })
-            .then(() => {
-                return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
-            }).then((user2) => {
-                const dynamicConfig = {
-                    sync: { user: user2, url: `realm://127.0.0.1:9080/${realmId}`, fullSynchronization: false },
-                };
-                return Realm.open(dynamicConfig);
-            }).then(r => {
-                realm2 = r;
-                TestCase.assertEqual(realm2.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                realm2.addListener('schema', (realm, event, schema) => {
-                    TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
-                    called = true;
-                });
-            }).then(() => {
-                config.schema.push({
-                    name: 'Foo',
-                    properties: {
-                        doubleCol: 'double',
-                    }
-                });
-                return Realm.open(config);
-            }).then((realm3) => {
-                return closeAfterUpload(realm3);
-            }).then(() => {
-                return new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        realm2.close();
-                        if (called) {
-                            resolve();
-                        } else {
-                            reject('listener never called');
-                        }
-                    }, 1000);
-                });
-            });
-    },
-
     testCreateTemplateObject: function() {
         var realm = new Realm({schema: [
             schemas.AllTypes,
@@ -1891,8 +1856,9 @@ module.exports = {
         TestCase.assertEqual(managedObj.objectCol.doubleCol, 1);
         TestCase.assertEqual(managedObj.nullObjectCol, null);
         TestCase.assertEqual(managedObj.arrayCol[0].doubleCol, 2);
-    },
 
+        realm.close();
+    },
 
     testWriteCopyTo: function() {
         const realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
@@ -1942,42 +1908,155 @@ module.exports = {
         realm.close();
     },
 
-
-    testQueryBasedOnlyMethods: function() {
-        if (!global.enableSyncTests) {
-            return;
-        }
-
-        const realm = new Realm({sync: true});
-        TestCase.assertThrowsContaining(() =>  {
-            realm.privileges();
-        }, 'Wrong Realm type');
-        TestCase.assertThrowsContaining(() =>  {
-            realm.privileges('__Role');
-        }, 'Wrong Realm type');
-        TestCase.assertThrowsContaining(() =>  {
-            realm.permissions();
-        }, 'Wrong Realm type');
-        TestCase.assertThrowsContaining(() =>  {
-            realm.permissions('__Class');
-        }, 'Wrong Realm type');
-        TestCase.assertThrowsContaining(() =>  {
-            realm.subscriptions();
-        }, 'Wrong Realm type');
-        TestCase.assertThrowsContaining(() =>  {
-            realm.unsubscribe('foo');
-        }, 'Wrong Realm type');
-    } ,
-
     testObjectWithoutProperties: function() {
         const realm = new Realm({schema: [schemas.ObjectWithoutProperties]});
         realm.write(() => {
-//            TestCase.assertThrows(() => {
-                realm.create(schemas.ObjectWithoutProperties.name, {});
-//            });
+            realm.create(schemas.ObjectWithoutProperties.name, {});
         });
         realm.objects(schemas.ObjectWithoutProperties.name);
         realm.close();
-    }
+    },
 
+    testDecimal128: function() {
+        const realm = new Realm({schema: [schemas.Decimal128Object]});
+
+        let numbers = [42, 3.1415, 6.022e23, -7, -100.2, 1.02E9];
+
+        numbers.forEach(number => {
+            let d = Decimal128.fromString(number.toString());
+            realm.write(() => {
+                realm.create(schemas.Decimal128Object.name, { decimal128Col: d});
+            });
+        });
+
+        let objects = realm.objects(schemas.Decimal128Object.name);
+        TestCase.assertEqual(objects.length, numbers.length);
+
+        var d128Col = objects[0].objectSchema().properties.decimal128Col;
+        TestCase.assertEqual(d128Col.type, "decimal128");
+
+        for (let i = 0; i < numbers.length; i++) {
+            let d128 = objects[i]["decimal128Col"];
+            TestCase.assertTrue(d128 instanceof Decimal128);
+            TestCase.assertEqual(d128.toString(), numbers[i].toString().toUpperCase());
+        }
+
+        realm.close();
+    },
+
+    testDecimal128_LargeNumbers: function() {
+        const realm = new Realm({schema: [schemas.Decimal128Object]});
+        // Core doesn't support numbers like 9.99e+6143 yet.
+        let numbers = ["1.02e+6102", "-1.02e+6102", "1.02e-6102", /*"9.99e+6143",*/ "1e-6142"];
+
+        numbers.forEach(number => {
+            let d = Decimal128.fromString(number);
+            realm.write(() => {
+                realm.create(schemas.Decimal128Object.name, { decimal128Col: d});
+            });
+        });
+
+        let objects = realm.objects(schemas.Decimal128Object.name);
+        TestCase.assertEqual(objects.length, numbers.length);
+
+        for (let i = 0; i < numbers.length; i++) {
+            let d128 = objects[i]["decimal128Col"];
+            TestCase.assertTrue(d128 instanceof Decimal128);
+            TestCase.assertEqual(d128.toString(), numbers[i].toUpperCase());
+        }
+
+        realm.close();
+    },
+
+    testObjectId: function() {
+        const realm = new Realm({schema: [schemas.ObjectIdObject]});
+        let values = ["0000002a9a7969d24bea4cf2", "0000002a9a7969d24bea4cf3"];
+        let oids = [];
+
+        values.forEach(v => {
+            let oid = new ObjectId(v);
+            realm.write(() => {
+                realm.create(schemas.ObjectIdObject.name, { id: oid });
+            });
+            oids.push(oid);
+        });
+
+        let objects = realm.objects(schemas.ObjectIdObject.name);
+        TestCase.assertEqual(objects.length, values.length);
+
+        var idCol = objects[0].objectSchema().properties.id;
+        TestCase.assertEqual(idCol.type, "objectId");
+
+        for (let i = 0; i < values.length; i++) {
+            let oid2 = objects[i]["id"];
+            TestCase.assertTrue(oid2 instanceof ObjectId, "instaceof");
+            TestCase.assertTrue(oids[i].equals(oid2), "equal");
+            TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
+        }
+
+        realm.close();
+    },
+
+    testObjectIdFromTimestamp: function() {
+        const realm = new Realm({schema: [schemas.ObjectIdObject]});
+        let values = [1, 1000000000, 2000000000];
+        let oids = [];
+
+        values.forEach(v => {
+            let oid = ObjectId.createFromTime(v);
+            realm.write(() => {
+                realm.create(schemas.ObjectIdObject.name, { id: oid });
+            });
+            oids.push(oid);
+        });
+
+        let objects = realm.objects(schemas.ObjectIdObject.name);
+        TestCase.assertEqual(objects.length, values.length);
+
+        for (let i = 0; i < values.length; i++) {
+            let oid2 = objects[i]["id"];
+            TestCase.assertTrue(oid2 instanceof ObjectId, "instaceof");
+            TestCase.assertTrue(oids[i].equals(oid2), "equal");
+            TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
+            TestCase.assertEqual(oid2.getTimestamp().toISOString(), oids[i].getTimestamp().toISOString());
+        }
+
+        realm.close();
+    },
+
+    testExpandEmbeddedObjectSchemas: function() {
+        const realm = new Realm({schema: schemas.EmbeddedObjectSchemas});
+
+        const schema = realm.schema;
+
+        TestCase.assertArrayLength(schema, 4);
+
+        let tableNames = [];
+        schema.forEach(os => tableNames.push(os.name));
+        tableNames.sort();
+        TestCase.assertArraysEqual(tableNames, ['Car', 'Cat', 'Dog', 'Person']);
+
+        schema.forEach(os => {
+            switch (os.name) {
+                case 'Car':
+                    TestCase.assertFalse(os.embedded);
+                    TestCase.assertEqual(os.primaryKey, 'id');
+                    break;
+                case 'Cat':
+                    TestCase.assertTrue(os.embedded);
+                    TestCase.assertUndefined(os.primaryKey);
+                    break;
+                case 'Dog':
+                    TestCase.assertTrue(os.embedded);
+                    TestCase.assertUndefined(os.primaryKey);
+                    break;
+                case 'Person':
+                    TestCase.assertFalse(os.embedded);
+                    TestCase.assertUndefined(os.primaryKey);
+                    break;
+            }
+        });
+
+        realm.close();
+    }
 };

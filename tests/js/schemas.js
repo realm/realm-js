@@ -20,10 +20,46 @@
 
 const Realm = require('realm');
 
+exports.DogForSync = {
+    name: 'Dog',
+    primaryKey: '_id',
+    properties: {
+        _id: 'objectId?', // NOTE: this needs to be changed to non-optional in the docker image.
+        breed: 'string?',
+        name: 'string',
+        realm_id: 'string?',
+    }
+}
+
+//use for local Realms. Keeping this for legacy non sync tests
 exports.TestObject = {
     name: 'TestObject',
     properties: {
         doubleCol: 'double',
+    }
+};
+
+//use with sync. Sync requires a primary key with name _id and any type
+exports.TestObjectWithPk = {
+    name: 'TestObject',
+    primaryKey: '_id',
+    properties: {
+        _id: 'int?',
+        doubleCol: 'double',
+    }
+};
+
+exports.Decimal128Object = {
+    name: 'Decimal128Object',
+    properties: {
+        decimal128Col: 'decimal128'
+    }
+};
+
+exports.ObjectIdObject = {
+    name: 'ObjectIdObject',
+    properties: {
+        id: 'objectId'
     }
 };
 
@@ -58,13 +94,15 @@ exports.PersonList = {
 exports.BasicTypes = {
     name: 'BasicTypesObject',
     properties: {
-        boolCol:   'bool',
-        intCol:    'int',
-        floatCol:  'float',
-        doubleCol: 'double',
-        stringCol: 'string',
-        dateCol:   'date',
-        dataCol:   'data',
+        boolCol:     'bool',
+        intCol:      'int',
+        floatCol:    'float',
+        doubleCol:   'double',
+        stringCol:   'string',
+        dateCol:     'date',
+        dataCol:     'data',
+        decimal128Col:  'decimal128',
+        objectIdCol: 'objectId',
     }
 };
 
@@ -168,6 +206,8 @@ exports.PrimitiveArrays = {
         string: 'string[]',
         date:   'date[]',
         data:   'data[]',
+        decimal128: 'decimal128[]',
+        objectId:    'objectId[]',
 
         optBool:   'bool?[]',
         optInt:    'int?[]',
@@ -176,6 +216,8 @@ exports.PrimitiveArrays = {
         optString: 'string?[]',
         optDate:   'date?[]',
         optData:   'data?[]',
+        optDecimal128: 'decimal128?[]',
+        optObjectId:    'objectId?[]'
     }
 };
 
@@ -314,7 +356,9 @@ exports.LinkingObjectsObject = {
 
 exports.ParentObject = {
     name: 'ParentObject',
+    primaryKey: '_id',
     properties: {
+        _id:           'objectId?',
         id:            'int',
         name:          'NameObject[]'
     }
@@ -322,12 +366,32 @@ exports.ParentObject = {
 
 exports.NameObject = {
     name: 'NameObject',
+    primaryKey: '_id',
+    properties: {
+        _id:          'objectId?',
+        family:       'string',
+        given:        'string[]',
+        prefix:       'string[]'
+    }
+};
+
+exports.ParentObjectLocal = {
+    name: 'ParentObject',
+    properties: {
+        id:            'int',
+        name:          'NameObject[]'
+    }
+};
+
+exports.NameObjectLocal = {
+    name: 'NameObject',
     properties: {
         family:       'string',
         given:        'string[]',
         prefix:       'string[]'
     }
 };
+
 
 exports.MultiListObject = {
     name: 'MultiListObject',
@@ -359,3 +423,90 @@ exports.ObjectWithoutProperties = {
     properties: {}
 };
 
+exports.EmbeddedObjectSchemas = [
+    {
+        name: 'Person',
+        properties: {
+            id: 'int',
+            dog: {
+                name: 'Dog',
+                properties: {
+                    'name': 'string',
+                    'color': 'string'
+                }
+            },
+            cars: 'Car[]',
+            truck: 'Car',
+            vans: { type: 'list', objectType: 'Car' },
+            cat: {
+                type: 'list',
+                name: 'Cat',
+                properties: {
+                    name: 'string'
+                }
+            }
+        }
+    },
+    {
+        name: 'Car',
+        primaryKey: 'id',
+        properties: {
+            id: 'int',
+            model: 'string',
+            mileage: { type: 'int', optional: true, indexed: true },
+            owners: { type: 'linkingObjects', objectType: 'Person', property: 'cars' }
+        }
+    }
+];
+
+exports.ContactSchema = {
+    name: 'Contact',
+    properties: {
+        name: 'string',
+        address: 'Address'
+    }
+};
+
+exports.HouseOwnerSchema = {
+    name: 'HouseOwner',
+    primaryKey: "name",
+    properties: {
+        name: "string",
+        addresses: { type: "list", objectType: "Address" }
+    }
+};
+
+exports.AddressSchema = {
+    name: 'Address',
+    embedded: true,
+    properties: {
+        street: 'string',
+        city: 'string'
+    }
+};
+
+exports.ScoutDivisionSchema = {
+    name: 'ScoutDivision',
+    primaryKey: 'name',
+    properties: {
+        name: 'string',
+        groups: { type: 'list', objectType: 'ScoutGroup' }
+    }
+};
+
+exports.ScoutGroupSchema = {
+    name: 'ScoutGroup',
+    embedded: true,
+    properties: {
+        name: 'string',
+        branches: { type: 'list', objectType: 'ScoutBranch' }
+    }
+};
+
+exports.ScoutBranchSchema = {
+    name: 'ScoutBranch',
+    embedded: true,
+    properties: {
+        name: 'string'
+    }
+};

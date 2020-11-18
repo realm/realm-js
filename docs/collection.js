@@ -144,34 +144,6 @@ class Collection {
     snapshot() { }
 
     /**
-     * Subscribe to a subset of objects matching the query of the collection. The Realm will only be
-     * partially synced. Not all queries are currently supported. Once subscribed, it is highly recommended
-     * to add a listener.
-     *
-     * @example
-     * let wines = realm.objects('Wine').filtered('vintage <= $0', maxYear);
-     * let subscription = wines.subscribe();
-     * wines.addListener((collection, changes) => {
-     *     if (subscription.state === Realm.Sync.SubscriptionState.Complete) {
-     *         // update UI
-     *     }
-     * });
-     *
-     * @param {string|Realm.Sync.SubscriptionOptions} options - an optional name or configuration object for the subscription.
-     *   The configuration object has the following optional properties available: `name`, `update`, `timeToLive` and `includeLinkingObjects`.
-     *   If `update` is true the query on an existing subscription referred to by `name` will be updated. If `timeToLive` is set,
-     *   the subscription will be kept alive only for this amount of time in milliseconds. A subscription which expires will be automatically removed.
-     *   The `includeLinkingObjects` property is an array of property path strings which specifies which linkingObjects relationships should be included in the subscription.
-     *   This can be a set of paths to a linkingObject (eg: link.to.myLinkingObject) or if the reverse relationship is not named
-     *   with a linkingObject, it can be verbosly specified using the forward link syntax `@links.MyClassName.myLinkProperty`.
-     *   Subscriptions already include link and list properties (in the forward direction) automatically by default.
-     * @returns {Realm.Sync.Subscription} - the Realm.Sync.Subscription instance.
-     * @throws {Error} if the partial sync is not enabled in the configuration or the query is not supported by Realm Object Server.
-     * @since 2.3.0
-     */
-    subscribe(subscriptionName) { }
-
-    /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries Array.prototype.entries}
      * @returns {Realm.Collection~Iterator<T>} of each `[index, object]` pair in the collection
      * @since 0.11.0

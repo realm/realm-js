@@ -1,0 +1,24 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"target": "es2018",
+		"forceConsistentCasingInFileNames": true,
+		"esModuleInterop": true,
+		"noResolve": true,
+		"typeRoots": [
+			"./types",
+			"./node_modules/@types"
+		],
+		"types": [],
+		"lib": [
+			"ES2018",
+			"ES2018.AsyncIterable"
+		]
+	},
+	"include": [
+		"src/**/*.ts",
+		"types/index.d.ts",
+		"types/generated/app.d.ts"
+	],
+	"exclude": []
+}

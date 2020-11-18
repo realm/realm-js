@@ -1,0 +1,16 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"types": [
+			"node-fetch",
+			"abort-controller"
+		],
+		"lib": [
+			"ES2015"
+		]
+	},
+	"exclude": [
+		"../dom/*",
+		"../**/*.test.ts"
+	]
+}

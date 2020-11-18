@@ -18,6 +18,9 @@
 
 'use strict';
 
+const Decimal128 = require('bson').Decimal128;
+const ObjectId = require('bson').ObjectId;
+
 const Realm = require('realm');
 let TestCase = require('./asserts');
 let schemas = require('./schemas');
@@ -51,6 +54,7 @@ module.exports = {
             prim = realm.create('PrimitiveArrays', {});
         });
 
+        // Check instance type
         TestCase.assertEqual(obj.arrayCol.type, 'object');
         TestCase.assertEqual(obj.arrayCol1.type, 'object');
 
@@ -60,25 +64,57 @@ module.exports = {
         TestCase.assertEqual(prim.double.type, 'double');
         TestCase.assertEqual(prim.string.type, 'string');
         TestCase.assertEqual(prim.date.type, 'date');
+        TestCase.assertEqual(prim.decimal128.type, 'decimal128');
+        TestCase.assertEqual(prim.objectId.type, 'objectId');
+
         TestCase.assertEqual(prim.optBool.type, 'bool');
         TestCase.assertEqual(prim.optInt.type, 'int');
         TestCase.assertEqual(prim.optFloat.type, 'float');
         TestCase.assertEqual(prim.optDouble.type, 'double');
         TestCase.assertEqual(prim.optString.type, 'string');
         TestCase.assertEqual(prim.optDate.type, 'date');
+        TestCase.assertEqual(prim.optDecimal128.type, 'decimal128');
+        TestCase.assertEqual(prim.optObjectId.type, 'objectId');
 
+        // Check schema objectType
+        const pa = realm.schema.find((s) => s.name === schemas.PrimitiveArrays.name);
+
+        TestCase.assertEqual(pa.properties.bool.objectType, "bool");
+        TestCase.assertEqual(pa.properties.int.objectType, "int");
+        TestCase.assertEqual(pa.properties.float.objectType, "float");
+        TestCase.assertEqual(pa.properties.double.objectType, "double");
+        TestCase.assertEqual(pa.properties.string.objectType, "string");
+        TestCase.assertEqual(pa.properties.date.objectType, "date");
+        TestCase.assertEqual(pa.properties.decimal128.objectType, "decimal128");
+        TestCase.assertEqual(pa.properties.objectId.objectType, "objectId");
+
+        TestCase.assertEqual(pa.properties.optBool.objectType, "bool");
+        TestCase.assertEqual(pa.properties.optInt.objectType, "int");
+        TestCase.assertEqual(pa.properties.optFloat.objectType, "float");
+        TestCase.assertEqual(pa.properties.optDouble.objectType, "double");
+        TestCase.assertEqual(pa.properties.optString.objectType, "string");
+        TestCase.assertEqual(pa.properties.optDate.objectType, "date");
+        TestCase.assertEqual(pa.properties.optDecimal128.objectType, "decimal128");
+        TestCase.assertEqual(pa.properties.optObjectId.objectType, "objectId");
+
+        // Check optional
         TestCase.assertFalse(prim.bool.optional);
         TestCase.assertFalse(prim.int.optional);
         TestCase.assertFalse(prim.float.optional);
         TestCase.assertFalse(prim.double.optional);
         TestCase.assertFalse(prim.string.optional);
         TestCase.assertFalse(prim.date.optional);
+        TestCase.assertFalse(prim.decimal128.optional);
+        TestCase.assertFalse(prim.objectId.optional);
+
         TestCase.assertTrue(prim.optBool.optional);
         TestCase.assertTrue(prim.optInt.optional);
         TestCase.assertTrue(prim.optFloat.optional);
         TestCase.assertTrue(prim.optDouble.optional);
         TestCase.assertTrue(prim.optString.optional);
         TestCase.assertTrue(prim.optDate.optional);
+        TestCase.assertTrue(prim.optDecimal128.optional);
+        TestCase.assertTrue(prim.optObjectId.optional);
     },
 
     testListLength: function() {
@@ -127,6 +163,8 @@ module.exports = {
                 string: ['a', 'b'],
                 date:   [new Date(1), new Date(2)],
                 data:   [DATA1, DATA2],
+                decimal128: [Decimal128.fromString('1'), Decimal128.fromString('2')],
+                objectId:    [new ObjectId('0000002a9a7969d24bea4cf2'), new ObjectId('0000002a9a7969d24bea4cf3')],
 
                 optBool:   [true, null],
                 optInt:    [1, null],
@@ -135,6 +173,8 @@ module.exports = {
                 optString: ['a', null],
                 optDate:   [new Date(1), null],
                 optData:   [DATA1, null],
+                optDecimal128: [Decimal128.fromString('1'), null],
+                optObjectId:    [new ObjectId('0000002a9a7969d24bea4cf2'), null]
             });
         });
 
@@ -155,7 +195,7 @@ module.exports = {
             TestCase.assertEqual(prim[field][-1], undefined);
             TestCase.assertEqual(prim[field]['foo'], undefined);
             if (field.includes('opt')) {
-                TestCase.assertEqual(prim[field][1], null);
+                TestCase.assertEqual(prim[field][1], null, `FIELD: ${field}`);
             }
         }
 
@@ -173,6 +213,10 @@ module.exports = {
         TestCase.assertSimilar('data', prim.data[1], DATA2);
         TestCase.assertSimilar('date', prim.date[0], new Date(1));
         TestCase.assertSimilar('date', prim.date[1], new Date(2));
+        TestCase.assertSimilar('decimal128', prim.decimal128[0], Decimal128.fromString('1'));
+        TestCase.assertSimilar('decimal128', prim.decimal128[1], Decimal128.fromString('2'));
+        TestCase.assertSimilar('objectId', prim.objectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
+        TestCase.assertSimilar('objectId', prim.objectId[1], new ObjectId('0000002a9a7969d24bea4cf3'));
 
         TestCase.assertSimilar('bool', prim.optBool[0], true);
         TestCase.assertSimilar('int', prim.optInt[0], 1);
@@ -181,6 +225,9 @@ module.exports = {
         TestCase.assertSimilar('string', prim.optString[0], 'a');
         TestCase.assertSimilar('data', prim.optData[0], DATA1);
         TestCase.assertSimilar('date', prim.optDate[0], new Date(1));
+        TestCase.assertSimilar('decimal128', prim.optDecimal128[0], Decimal128.fromString('1'));
+        TestCase.assertNull(prim.optDecimal128[1]);
+        TestCase.assertSimilar('objectId', prim.optObjectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
     },
 
     testListSubscriptSetters: function() {
@@ -1291,20 +1338,22 @@ module.exports = {
         realm.write(() => {
             realm.create('ParentObject', {
                 id: 1,
+                _id: new ObjectId(),
                 name: [
-                    { family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
-                    { family: 'Hansen', given: ['Ib'], prefix: [] }
+                    { _id: new ObjectId(), family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
+                    { _id: new ObjectId(), family: 'Hansen', given: ['Ib'], prefix: [] }
                 ]
             });
             realm.create('ParentObject', {
                 id: 2,
+                _id: new ObjectId(),
                 name: [
-                    {family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
+                    {_id: new ObjectId(), family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
                 ]
             });
         });
 
-        let objects = realm.objects('ParentObject');
+        let objects = realm.objects('ParentObject').sorted([['id', false]])
         TestCase.assertEqual(objects.length, 2);
         TestCase.assertEqual(objects[0].name.length, 2);
         TestCase.assertEqual(objects[0].name[0].given.length, 2);
@@ -1325,7 +1374,7 @@ module.exports = {
     testListNestedFromJSON: function() {
         let json = '{"id":1, "name": [{ "family": "Larsen", "given": ["Hans", "Jørgen"], "prefix": [] }, { "family": "Hansen", "given": ["Ib"], "prefix": [] }] }';
         let parent = JSON.parse(json);
-        const realm = new Realm({schema: [schemas.ParentObject, schemas.NameObject]});
+        const realm = new Realm({schema: [schemas.ParentObjectLocal, schemas.NameObjectLocal]});
         realm.write(() => {
             realm.create('ParentObject', parent);
         });
@@ -1367,11 +1416,11 @@ module.exports = {
 
     testGetAndApplySchema: function() {
         const realm1 = new Realm({
-            schema: [schemas.NameObject],
+            schema: [schemas.NameObjectLocal],
             _cache: false,
         });
         realm1.write(() => {
-            realm1.create(schemas.NameObject.name, { family: 'Smith', given: [ 'Bob', 'Ted']});
+            realm1.create(schemas.NameObjectLocal.name, { family: 'Smith', given: [ 'Bob', 'Ted']});
         })
         const schema = realm1.schema;
         realm1.close();
@@ -1380,10 +1429,176 @@ module.exports = {
             schema: schema,
             _cache: false,
         });
-        let names = realm2.objects(schemas.NameObject.name);
+        let names = realm2.objects(schemas.NameObjectLocal.name);
         TestCase.assertEqual(names.length, 1);
         TestCase.assertEqual(names[0]['family'], 'Smith');
         TestCase.assertEqual(names[0]['given'].length, 2);
         realm2.close();
+    },
+
+    testCreateEmbeddedObjects: function() {
+        const realm = new Realm({schema: [schemas.ContactSchema, schemas.AddressSchema]});
+
+        realm.write(() => {
+            realm.create(schemas.ContactSchema.name, { name: "Freddy Krueger", address: { street: "Elm Street", city: "Springwood" }} );
+        });
+
+        TestCase.assertEqual(realm.objects(schemas.ContactSchema.name).length, 1);
+        TestCase.assertEqual(realm.objects(schemas.ContactSchema.name)[0]["address"]["street"], "Elm Street");
+
+        realm.write(() => {
+            realm.create(schemas.ContactSchema.name, { name: "John Doe" } );
+        });
+
+        let contacts = realm.objects(schemas.ContactSchema.name);
+        TestCase.assertEqual(contacts.length, 2);
+        TestCase.assertEqual(contacts[0]["address"]["street"], "Elm Street");
+        TestCase.assertNull(contacts[1]["address"]);
+
+        realm.close();
+    },
+
+    testCreateMultipleEmbeddedObjects: function() {
+        const realm = new Realm({schema: [schemas.HouseOwnerSchema, schemas.AddressSchema]});
+
+        realm.write(() => {
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Ib", addresses: [
+                { street: "Algade", city: "Nordby" },
+                { street: "Skolevej", city: "Sydpynten" }
+            ]});
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Petra", addresses: [
+                { street: "Algade", city: "Nordby" }
+            ]});
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Hans" });
+        });
+
+        let owners = realm.objects(schemas.HouseOwnerSchema.name).sorted("name");
+        TestCase.assertEqual(owners.length, 3);
+        let expectedLength = [0, 2, 1]; // sorted: "Hans", "Ib", "Petra"
+        for (let i = 0; i < expectedLength.length; i++) {
+            TestCase.assertEqual(owners[i]["addresses"].length, expectedLength[i]);
+        }
+
+        const names = ["Hans", "Ib", "Petra"];
+        for (let i = 0; i < names.length; i++) {
+            TestCase.assertEqual(owners[i]["name"], names[i]);
+        }
+
+        // insert an extra address into Hans's list (add embedded object)
+        let hans_addrs = owners[0].addresses;
+        realm.write(() => {
+            hans_addrs.push({ street: "Njalsgade", city: "Islands Brygge" });
+        });
+
+        expectedLength = [1, 2, 1];
+        for (let i = 0; i < expectedLength.length; i++) {
+            TestCase.assertEqual(owners[i]["addresses"].length, expectedLength[i]);
+        }
+
+        // remove the last of Hans' addresses
+        realm.write(() => {
+            hans_addrs.pop();
+        });
+
+        expectedLength = [0, 2, 1];
+        for (let i = 0; i < expectedLength.length; i++) {
+            TestCase.assertEqual(owners[i]["addresses"].length, expectedLength[i]);
+        }
+
+        realm.close();
+    },
+
+    testCreateNestedEmbeddedObjects: function() {
+        const realm = new Realm({schema: [schemas.ScoutDivisionSchema, schemas.ScoutGroupSchema, schemas.ScoutBranchSchema]});
+
+        realm.write(() => {
+            realm.create(schemas.ScoutDivisionSchema.name, {
+                name: "Oeresund Division",
+                groups: [
+                    {
+                        name: "RungstedSpejderne",
+                        branches: [ { name: "Micro" }, { name: "Mini" }, { name: "Junior" }, {name: "Trop" } ]
+                    },
+                    {
+                        name: "Bent Byg",
+                        branches: [ { name: "Mini" }, { name: "Junior" }, { name: "Trop" }, { name: "Klan" } ]
+                    }
+                ]
+            });
+            realm.create(schemas.ScoutDivisionSchema.name, {
+                name: "Bernstorff Division",
+                groups: [
+                    {
+                        name: 'HellerupSpejderne',
+                        branches: [ { name: 'Mini' }, { name: 'Flok' }, { name: 'Klan' } ]
+                    }
+                ]
+            });
+        });
+
+        let divisions = realm.objects(schemas.ScoutDivisionSchema.name).sorted("name");
+        TestCase.assertEqual(divisions.length, 2);
+
+        let bernstorff_groups = divisions[0].groups;
+        TestCase.assertEqual(bernstorff_groups.length, 1);
+
+        // add a Group to Bernstorff Division
+        realm.write(() => {
+            bernstorff_groups.push({
+                name: "1. Ordrup",
+                branches: [ { name: 'FamilieSpejd' }, { name: 'Mikro' }, { name: 'Ulve' }, { name: 'Hvalpe' }, { name: 'Trop' }, { name: 'Klan' } ]
+            });
+        });
+
+        // check that we have successfully added a Group
+        TestCase.assertEqual(divisions[0]["groups"].length, 2);
+
+        realm.close();
+    },
+
+    testCreateFreeFloatingEmbeddedObject: function() {
+        const realm = new Realm({schema: [schemas.HouseOwnerSchema, schemas.AddressSchema]});
+
+        // creating standalone embedded object is not allowed
+        realm.write(() => {
+            TestCase.assertThrows(() => {
+                realm.create(schemas.AddressSchema.name, { street: "Njalsgade", city: "Islands Brygge" });
+            });
+        });
+
+        realm.close();
+    },
+
+    testAddEmbeddedObject: function() {
+        const realm = new Realm({schema: [schemas.HouseOwnerSchema, schemas.AddressSchema]});
+
+        realm.write(() => {
+            realm.create(schemas.HouseOwnerSchema.name, { name: "Ib", addresses: [
+                { street: "Algade", city: "Nordby" },
+                { street: "Skolevej", city: "Sydpynten" }
+            ]});
+        });
+
+        let ib = realm.objectForPrimaryKey(schemas.HouseOwnerSchema.name, "Ib");
+        TestCase.assertEqual(ib.addresses.length, 2);
+
+        realm.write(() => {
+            TestCase.assertThrows(() => {
+                realm.create(schemas.AddressSchema.name, { street: "Njalsgade", city: "Islands Brygge" });
+            });
+
+            ib.addresses.push({ street: "Njalsgade", city: "Islands Brygge" });
+            TestCase.assertEqual(3, ib.addresses.length);
+        });
+
+        realm.close();
+    },
+
+    testQueryEmbeddedObject: function() {
+        const realm = new Realm({schema: [schemas.HouseOwnerSchema, schemas.AddressSchema]});
+        TestCase.assertThrows(() => {
+            realm.objects(schemas.AddressSchema.name);
+        });
+        realm.close();
     },
 };

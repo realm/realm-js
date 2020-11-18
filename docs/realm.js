@@ -118,20 +118,9 @@ class Realm {
     static open(config) { }
 
     /**
-     * Open a Realm asynchronously with a callback. If the Realm is synced, it will be fully
-     * synchronized before it is available.
-     * @param {Realm~Configuration} config
-     * @param  {callback(error, realm)} - will be called when the Realm is ready.
-     * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
-     * @throws {Error} If anything in the provided `config` is invalid
-     * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
-     */
-    static openAsync(config, callback, progressCallback) { }
-
-    /**
      * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
      * the URL for the synced Realm. If no user is supplied, the current user will be used.
-     * @param {Realm.Sync.User} - an optional sync user
+     * @param {Realm.User} - an optional sync user
      * @throws {Error} if zero or multiple users are logged in
      * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
      * @since 2.3.0
@@ -154,39 +143,6 @@ class Realm {
      * The method is idempotent.
      */
     close() { }
-
-    /**
-     * Returns the granted privileges.
-     *
-     * This combines all privileges granted on the Realm/Class/Object by all Roles which
-     * the current User is a member of into the final privileges which will
-     * be enforced by the server.
-     *
-     * The privilege calculation is done locally using cached data, and inherently may
-     * be stale. It is possible that this method may indicate that an operation is
-     * permitted but the server will still reject it if permission is revoked before
-     * the changes have been integrated on the server.
-     *
-     * Non-synchronized Realms always have permission to perform all operations.
-     *
-     * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute privileges from. If no
-     *   argument is given, the privileges for the Realm is returned.
-     * @returns {Realm.Permissions.RealmPrivileges|Realm.Permissions.ClassPrivileges|Realm.Permissions.ObjectPrivileges} as the computed privileges as properties
-     * @since 2.3.0
-     * @see {Realm.Permissions} for details of privileges and roles.
-     */
-    privileges(arg) { }
-
-    /**
-     * Returns the fine-grained permissions object associated with either the Realm itself or a Realm model class.
-     *
-     * @param {Realm~ObjectType} [arg] - If no argument is provided, the Realm-level permissions are returned.
-     *   Otherwise, the Class-level permissions for the provided type is returned.
-     * @returns {Realm.Permissions.Realm|Realm.Permissions.Class} The permissions object
-     * @since 2.18.0
-     * @see {Realm.Permissions} for details of priviliges and roles.
-     */
-    permissions(arg) { }
 
     /**
      * Create a new Realm object of the given type and with the specified properties.
@@ -228,7 +184,7 @@ class Realm {
     /**
      * Returns all objects of the given `type` in the Realm.
      * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
-     * @throws {Error} If type passed into this method is invalid.
+     * @throws {Error} If type passed into this method is invalid or if the type is marked embedded.
      * @returns {Realm.Results} that will live-update as objects are created and destroyed.
      */
     objects(type) { }
@@ -275,7 +231,7 @@ class Realm {
 
     /**
      * Synchronously call the provided `callback` inside a write transaction. If an exception happens inside a transaction,
-     * you'll lose the changes in that transaction, but the Realm itself won't be affected (or corrupted). 
+     * you’ll lose the changes in that transaction, but the Realm itself won’t be affected (or corrupted).
      * More precisely, {@link Realm#beginTransaction beginTransaction()} and {@link Realm#commitTransaction commitTransaction()} will be called
      * automatically. If any exception is thrown during the transaction {@link Realm#cancelTransaction cancelTransaction()} will
      * be called instead of {@link Realm#commitTransaction commitTransaction()} and the exception will be re-thrown to the caller of `write()`.
@@ -384,22 +340,6 @@ class Realm {
      * @throws {Error} If an I/O error occured or method is not implemented.
      */
     static copyBundledRealmFiles() { }
-
-    /**
-     * Get a list of subscriptions. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
-     * @param {string} name - Optional parameter to query for either a specific name or pattern (using
-     *   cards `?` and `*`).
-     * @throws {Error} If `name` is not a string.
-     * @returns {Realm.Results} containing all current {@link Realm.Sync.NamedSubscription}s.
-     */
-    subscriptions(name) { }
-
-    /**
-     * Unsubscribe a named subscription. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
-     * @param {string} name - The name of the subscription.
-     * @throws {Error} If `name` is not a string or an empty string.
-     */
-    unsubscribe(name) { }
 }
 /**
  * This describes the different options used to create a {@link Realm} instance.
@@ -415,6 +355,7 @@ class Realm {
  *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
  * @property {boolean} [deleteRealmIfMigrationNeeded=false] - Specifies if this Realm should be deleted
  *   if a migration is needed.
+ *   This option is not available on synced realms.
  * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening
  *   a Realm for the first time during the life of a process to determine if it should be compacted
  *   before being returned to the user. The function takes two arguments:
@@ -444,7 +385,7 @@ class Realm {
  *   If omitted, the schema will be read from the existing Realm file.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
  *   changing the `schema`.
- * @property {Realm.Sync~SyncConfiguration} [sync] - Sync configuration parameters.
+ * @property {Realm.App.Sync~SyncConfiguration} [sync] - Sync configuration parameters.
  */
 
 /**
@@ -462,7 +403,9 @@ class Realm {
  * @property {string} name - Represents the object type.
  * @property {string} [primaryKey] - The name of a `"string"` or `"int"` property
  *   that must be unique across all objects of this type within the same Realm.
- * @property {Object<string, (Realm~PropertyType|Realm~ObjectSchemaProperty)>} properties -
+ * @property {boolean} [embedded] - True if the object type is embedded. An embedded object
+ *   can be linked to by at most one parent object. Default value: false.
+ * @property {Object<string, (Realm~PropertyType|Realm~ObjectSchemaProperty|Realm~ObjectSchema)>} properties -
  *   An object where the keys are property names and the values represent the property type.
  *
  * @example
@@ -527,7 +470,7 @@ class Realm {
  * use these forms.
  *
  * @typedef Realm~PropertyType
- * @type {("bool"|"int"|"float"|"double"|"string"|"date"|"data"|"list"|"linkingObjects"|"<ObjectType>")}
+ * @type {("bool"|"int"|"float"|"double"|"string"|"decimal128"|"objectId"|"date"|"data"|"list"|"linkingObjects"|"<ObjectType>")}
  *
  * @property {boolean} "bool" - Property value may either be `true` or `false`.
  * @property {number} "int" - Property may be assigned any number, but will be stored as a
@@ -537,6 +480,8 @@ class Realm {
  * @property {number} "double" - Property may be assigned any number, and will have no loss
  *   of precision.
  * @property {string} "string" - Property value may be any arbitrary string.
+ * @property {Decimal128} "decimal128" - Property value may be a `Decimal128` object (see `bson` for details).
+ * @property {ObjectId} "objectId" - Property valye may be an `ObjectId` object (see `bson` for details).
  * @property {Date} "date" - Property may be assigned any `Date` instance.
  * @property {ArrayBuffer} "data" - Property may either be assigned an `ArrayBuffer`
  *   or `ArrayBufferView` (e.g. `DataView`, `Int8Array`, `Float32Array`, etc.) instance,
