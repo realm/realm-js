@@ -18,8 +18,11 @@
 
 #pragma once
 #include <iostream>
+#include <memory>
+#include <queue>
 
-#include "sync/sync_manager.hpp"
+#include "sync/sync_manager.hpp"  // SyncLoggerFactory
+#include "util/scheduler.hpp"     // realm::util::Scheduler
 
 #if REALM_ANDROID
 #include <android/log.h>
@@ -65,11 +68,11 @@ class IOSLogger {
 };
 #endif
 
-class SyncLogger : public realm::util::RootLogger {
+class SyncLoggerDelegator : public realm::util::RootLogger {
 public:
-    void delegate(Delegated&& delegate)
+    void delegate(Delegated& delegate)
     {
-        m_scheduler->set_notify_callback([this, delegate = std::move(delegate)] {
+        m_scheduler->set_notify_callback([this, delegate] {
             while (!m_log_queue.empty()) {
                 /*
                  *  Extracting and delegating log entries.
@@ -103,24 +106,24 @@ protected:
 
 private:
     std::queue<Entry> m_log_queue;
-    Delegated loggerDelegate;
     std::shared_ptr<realm::util::Scheduler> m_scheduler = realm::util::Scheduler::make_default();
     std::mutex m_mutex;
+    Delegated loggerDelegate;
 };
 
-class LoggerFactory : public realm::SyncLoggerFactory {
+class SyncLoggerDelegatorFactory : public realm::SyncLoggerFactory {
 public:
-    LoggerFactory(Delegated&& logs_fn)
+    SyncLoggerDelegatorFactory(Delegated logs_fn)
         : logs_fn{logs_fn}
     {
     }
 
     std::unique_ptr<realm::util::Logger> make_logger(realm::util::Logger::Level level)
     {
-        auto logger = std::make_unique<SyncLogger>();
+        auto logger = std::make_unique<SyncLoggerDelegator>();
 
         logger->set_level_threshold(level);
-        logger->delegate(std::move(logs_fn));
+        logger->delegate(logs_fn);
 
         return logger;
     }
@@ -131,22 +134,24 @@ private:
 
 class Logger {
 private:
+
+    //Warning: If this grows to big (for example: another method) we should make this class non-static.  
     /*
        Log levels available.
        More info in (realm-core) realm/util/logger.hpp
 
        [ all, trace, debug, detail, info, warn, error, fatal, off ]
     */
-    std::map<LoggerLevel, std::string> map_level{
+    const static inline std::map<LoggerLevel, std::string> map_level = {
         {LoggerLevel::all, "all"},     {LoggerLevel::info, "info"},     {LoggerLevel::trace, "trace"},
         {LoggerLevel::debug, "debug"}, {LoggerLevel::detail, "detail"}, {LoggerLevel::warn, "warn"},
         {LoggerLevel::error, "error"}, {LoggerLevel::fatal, "fatal"},   {LoggerLevel::off, "off"},
     };
 
-public:
-    LoggerLevel get_level(std::string level)
+    public:
+    static LoggerLevel get_level(const std::string level) 
     {
-        for (auto const& [key, value] : map_level) {
+        for (auto const& [key, value] : Logger::map_level) {
             if (value == level)
                 return key;
         }
@@ -154,9 +159,9 @@ public:
         throw std::runtime_error("Bad log level");
     }
 
-    LoggerFactory* build_sync_logger(Delegated&& log_fn)
+    static SyncLoggerDelegatorFactory* build_sync_logger(Delegated& log_fn) 
     {
-        return new LoggerFactory{std::move(log_fn)};
+        return new SyncLoggerDelegatorFactory( log_fn );
     }
 };
 
