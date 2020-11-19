@@ -29,7 +29,6 @@
 #include "js_app_credentials.hpp"
 #include "js_network_transport.hpp"
 #include "js_email_password_auth.hpp"
-#include "rpc_network_transport.hpp"
 
 using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
@@ -38,11 +37,15 @@ namespace realm {
 namespace js {
 
 template<typename T>
+using NetworkTransportFactory = std::function<std::unique_ptr<app::GenericNetworkTransport>(typename T::Context)>;
+
+template<typename T>
 class AppClass : public ClassDefinition<T, SharedApp> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using Context = js::Context<T>;
     using String = js::String<T>;
     using Value = js::Value<T>;
     using Object = js::Object<T>;
@@ -51,10 +54,10 @@ class AppClass : public ClassDefinition<T, SharedApp> {
     using Arguments = js::Arguments<T>;
 
     using NetworkTransport = JavaScriptNetworkTransport<T>;
-    using RPCNetworkTransport = RPCNetworkTransport<T>;
 
 public:
     const std::string name = "App";
+    static NetworkTransportFactory<T> transport_generator;
 
     static void constructor(ContextType, ObjectType, Arguments &);
     static FunctionType create_constructor(ContextType);
@@ -90,6 +93,12 @@ public:
         {"_clearAppCache", wrap<clear_app_cache>},
         {"_getApp", wrap<get_app>}
     };
+};
+
+
+template<typename T>
+NetworkTransportFactory<T> AppClass<T>::transport_generator = [] (ContextType ctx) {
+    return std::make_unique<NetworkTransport>(ctx);
 };
 
 template<typename T>
@@ -163,19 +172,11 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     }
 
     auto realm_constructor = js::Value<T>::validated_to_object(ctx, js::Object<T>::get_global(ctx, "Realm"));
-
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    auto network_transport_function = Object::get_property(ctx, realm_constructor, "_networkTransport");
-    if (Value::is_undefined(ctx, network_transport_function)) {
-        // We're most likely running with the Chrome debugger enabled, since the "_networkTransport" property was not provided
-        config.transport_generator = [protected_ctx] {
-            return std::make_unique<RPCNetworkTransport>(protected_ctx);
-        };
-    } else {
-        config.transport_generator = [protected_ctx] {
-            return std::make_unique<NetworkTransport>(protected_ctx);
-        };
-    }
+    
+    Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
+    config.transport_generator = [protected_ctx] {
+        return AppClass<T>::transport_generator(protected_ctx);
+    };
 
     std::string user_agent_binding_info;
     auto user_agent_function = js::Object<T>::get_property(ctx, realm_constructor, "_createUserAgentDescription");

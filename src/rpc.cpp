@@ -28,7 +28,8 @@
 #include "object_accessor.hpp"
 #include "shared_realm.hpp"
 #include "results.hpp"
-#include "rpc_network_transport.hpp"
+#include "jsc_rpc_network_transport.hpp"
+#include "js_app.hpp"
 
 using namespace realm;
 using namespace realm::rpc;
@@ -245,6 +246,11 @@ RPCServer::RPCServer() {
     m_context = JSGlobalContextCreate(NULL);
     get_rpc_server(m_context) = this;
     m_callback_call_counter = 1;
+    
+    // Make the App use the RPC Network Transport from now on
+    js::AppClass<jsc::Types>::transport_generator = [] (jsc::Types::Context ctx) {
+        return std::make_unique<RPCNetworkTransport>(ctx);
+    };
 
     // JavaScriptCore crashes when trying to walk up the native stack to print the stacktrace.
     // FIXME: Avoid having to do this!
@@ -260,8 +266,12 @@ RPCServer::RPCServer() {
         JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(m_context, JSContextGetGlobalObject(m_context), realm_string);
 
         // Enable the RCP network transport to issue calls to the remote fetch function
-        JSValueRef fetch_function = deserialize_json_value(dict["fetch"]);
-        realm::js::RPCNetworkTransport<jsc::Types>::fetch_function = fetch_function;
+        jsc::Types::Value fetch_function = deserialize_json_value(dict["fetch"]);
+        if (js::Value<jsc::Types>::is_function(m_context, fetch_function)) {
+            RPCNetworkTransport::fetch_function = js::Protected<jsc::Types::Function>(m_context, (jsc::Types::Function)fetch_function);
+        } else {
+            throw std::runtime_error("Expected 'fetch' to be a function");
+        }
          
         m_session_id = store_object(realm_constructor);
         return (json){{"result", m_session_id}};
@@ -441,14 +451,14 @@ RPCServer::RPCServer() {
             m_objects.emplace(m_session_id, realm_constructor);
         }
 
-        // The JS side of things only gives us the refreshAccessToken callback
+        // The JS side of things only gives us the fetch function callback
         // when creating a session so we need to hold onto it.
-        auto refresh_access_token = m_callbacks[0];
+        auto fetch_function = m_callbacks[0];
 
         m_callbacks.clear();
         m_callback_ids.clear();
-        m_callbacks[0] = refresh_access_token;
-        m_callback_ids[refresh_access_token] = 0;
+        m_callbacks[0] = fetch_function;
+        m_callback_ids[fetch_function] = 0;
         ++m_reset_counter;
         JSGarbageCollect(m_context);
         js::clear_test_state();
