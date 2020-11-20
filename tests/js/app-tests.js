@@ -143,6 +143,7 @@ module.exports = {
     },
 
     async testMongoDBRealmSync() {
+        let nCalls = 0;
         let app = new Realm.App(config);
 
         let credentials = Realm.Credentials.anonymous();
@@ -150,7 +151,10 @@ module.exports = {
         const partition = Utils.genPartition();
         const realmConfig = {
             schema: [schemas.DogForSync],
-            shouldCompactOnLaunch: (t, u) => { return true },
+            shouldCompactOnLaunch: (t, u) => {
+                nCalls++;
+                return true;
+            },
             sync: {
                 user: user,
                 partitionValue: partition,
@@ -159,6 +163,7 @@ module.exports = {
         };
         Realm.deleteFile(realmConfig);
         let realm = await Realm.open(realmConfig);
+        TestCase.assertEqual(nCalls, 1);
         realm.write(() => {
             realm.create("Dog", { "_id": new ObjectId(), name: "King" });
             realm.create("Dog", { "_id": new ObjectId(), name: "King" });
@@ -171,6 +176,7 @@ module.exports = {
         Realm.deleteFile(realmConfig);
 
         let realm2 = await Realm.open(realmConfig);
+        TestCase.assertEqual(nCalls, 2);
         await realm2.syncSession.downloadAllServerChanges();
 
         TestCase.assertEqual(realm2.objects("Dog").length, 2);
