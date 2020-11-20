@@ -150,6 +150,7 @@ module.exports = {
         const partition = Utils.genPartition();
         const realmConfig = {
             schema: [schemas.DogForSync],
+            shouldCompactOnLaunch: (t, u) => { return true },
             sync: {
                 user: user,
                 partitionValue: partition,
