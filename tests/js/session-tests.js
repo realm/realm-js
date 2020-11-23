@@ -933,9 +933,9 @@ module.exports = {
 
     async testAnalyticsSubmission() {
         // only run in node context
-        if (!platformSupported) {
-            return Promise.resolve();
-        }
+        // if (!platformSupported) {
+        //     return Promise.resolve();
+        // }
 
         const context = node_require('realm/package.json');
         const analytics = node_require('realm/lib/submit-analytics');
@@ -952,7 +952,7 @@ module.exports = {
         TestCase.assertDefined(payload.mixPanel);
         TestCase.assertType(payload.mixPanel.event, 'string');
         TestCase.assertDefined(payload.mixPanel.properties);
-        TestCase.assertType(payload.mixPanel.properties.Binding, 'object');
+        TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
 
         await analytics.submitStageAnalytics('TestEvent')
         .catch((e) => {
