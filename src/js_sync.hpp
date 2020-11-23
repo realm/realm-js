@@ -722,7 +722,7 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     std::string log_level = Value::validated_to_string(ctx, args[1], "log level");
 
-    auto level = common::Logger::get_level(log_level);
+    auto level = common::logger::Logger::get_level(log_level);
     app->sync_manager()->set_log_level(level);
 }
 
@@ -736,7 +736,7 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<FunctionType> protected_callback(ctx, callback_fn);
 
-    common::Delegated show_logs = [=](int level, std::string message) { 
+    common::logger::Delegated show_logs = [=](int level, std::string message) { 
         HANDLESCOPE(protected_ctx)
 
         ValueType arguments[2] = {
@@ -747,7 +747,7 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, arguments); 
     };
 
-    auto sync_logger = common::Logger::build_sync_logger(show_logs);
+    auto sync_logger = common::logger::Logger::build_sync_logger(show_logs);
     app->sync_manager()->set_logger_factory( *sync_logger );
 }
 

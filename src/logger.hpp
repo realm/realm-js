@@ -30,6 +30,7 @@
 
 namespace realm {
 namespace common {
+namespace logger {
 
 using LoggerLevel = realm::util::Logger::Level;
 
@@ -165,5 +166,6 @@ private:
     }
 };
 
+} // logger 
 } // namespace common
 } // namespace realm
