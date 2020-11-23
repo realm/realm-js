@@ -29,8 +29,7 @@
             "src/js_email_password_auth.hpp",
             "src/js_api_key_auth.hpp",
             "src/js_auth.hpp",
-            "src/node/sync_logger.cpp",
-            "src/node/sync_logger.hpp",
+            "src/logger.hpp"
           ]
         }]
       ],
