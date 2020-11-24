@@ -121,7 +121,7 @@ stage('build') {
       parallelExecutors["Windows ia32 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'ia32')
       parallelExecutors["Windows x64 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'x64')
     }
-    parallelExecutors["Android React Native"] = buildAndroid()
+    //parallelExecutors["Android React Native"] = buildAndroid()
     parallel parallelExecutors
 }
 
