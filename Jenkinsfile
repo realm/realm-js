@@ -592,7 +592,10 @@ def testWindows(nodeVersion) {
       unstash 'source'
       bat "nodist add ${nodeVersion}"
       try {
-        withEnv(["NODE_NODIST_VERSION=${nodeVersion}"]) {
+        withEnv([
+          "NODE_NODIST_VERSION=${nodeVersion}",
+          "PATH+CMAKE=${tool 'cmake'}\\..",
+        ]) {
           bat 'npm install --build-from-source=realm'
           dir('tests') {
             bat 'npm install'
