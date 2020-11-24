@@ -31,9 +31,20 @@ exports.DogForSync = {
     }
 }
 
+//use for local Realms. Keeping this for legacy non sync tests
 exports.TestObject = {
     name: 'TestObject',
     properties: {
+        doubleCol: 'double',
+    }
+};
+
+//use with sync. Sync requires a primary key with name _id and any type
+exports.TestObjectWithPk = {
+    name: 'TestObject',
+    primaryKey: '_id',
+    properties: {
+        _id: 'int?',
         doubleCol: 'double',
     }
 };

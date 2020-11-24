@@ -585,7 +585,6 @@ inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const uti
         return from_string(ctx, value.get<StringData>().data());
     case type_Binary:
         return from_binary(ctx, value.get<BinaryData>());
-
     case type_Link:
     case type_LinkList:
     case type_OldDateTime:
@@ -726,7 +725,7 @@ auto Function<T>::wrap_callback_error_first(ContextType ctx, const ObjectType& t
         (const util::Optional<app::AppError>& error, auto&& result) {
             HANDLESCOPE(ctx);
             Function::callback(ctx, callback, this_object, {
-                error ? Value<T>::from_undefined(ctx) : converter(ctx, std::forward<decltype(result)>(result)), 
+                error ? Value<T>::from_undefined(ctx) : converter(ctx, std::forward<decltype(result)>(result)),
                 Object<T>::create_from_optional_app_error(ctx, error),
             });
         };

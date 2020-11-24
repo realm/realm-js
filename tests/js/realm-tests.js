@@ -189,9 +189,9 @@ module.exports = {
             TestCase.assertEqual(car3.make, "Audi");
             TestCase.assertEqual(car3.model, "A4");
             TestCase.assertEqual(car3.kilometers, 24);
+
             //methods from Realm.Objects should be present
             TestCase.assertDefined(car3.addListener);
-
         });
         realm.close();
     },
@@ -273,6 +273,7 @@ module.exports = {
         const realm = new Realm({schema: []});
         realm.close();
         TestCase.assertTrue(realm.isClosed);
+    	realm.close();
         TestCase.assertTrue(realm.isClosed);
     },
 
@@ -469,7 +470,7 @@ module.exports = {
         return app.logIn(credentials)
             .then(user => {
                 const config = {
-                    schema: [schemas.TestObject],
+                    schema: [schemas.TestObjectWithPk],
                     sync: {
                         user,
                         partitionValue: "LoLo"
@@ -1538,7 +1539,7 @@ module.exports = {
     testManualCompactMultipleInstances: function() {
         const realm1 = new Realm({schema: [schemas.StringOnly]});
         const realm2 = new Realm({schema: [schemas.StringOnly]});
-        // realm1 and realm2 are the same Realm instance
+        // realm1 and realm2 are wrapping the same Realm instance
         realm2.objects('StringOnlyObject');
         TestCase.assertTrue(realm1.compact());
     },
@@ -1595,7 +1596,7 @@ module.exports = {
         return app.logIn(Realm.Credentials.anonymous())
             .then(user => {
                 const config = {
-                    schema: [schemas.TestObject],
+                    schema: [schemas.TestObjectWithPk],
                     sync: {user, partitionValue: '"Lolo"' },
                 };
 
@@ -1910,9 +1911,7 @@ module.exports = {
     testObjectWithoutProperties: function() {
         const realm = new Realm({schema: [schemas.ObjectWithoutProperties]});
         realm.write(() => {
-//            TestCase.assertThrows(() => {
-                realm.create(schemas.ObjectWithoutProperties.name, {});
-//            });
+            realm.create(schemas.ObjectWithoutProperties.name, {});
         });
         realm.objects(schemas.ObjectWithoutProperties.name);
         realm.close();
