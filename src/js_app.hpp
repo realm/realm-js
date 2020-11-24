@@ -173,9 +173,8 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 
     auto realm_constructor = js::Value<T>::validated_to_object(ctx, js::Object<T>::get_global(ctx, "Realm"));
     
-    Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
-    config.transport_generator = [protected_ctx] {
-        return AppClass<T>::transport_generator(protected_ctx);
+    config.transport_generator = [ctx = Protected(Context::get_global_context(ctx))] {
+        return AppClass<T>::transport_generator(ctx);
     };
 
     std::string user_agent_binding_info;

@@ -527,9 +527,7 @@ RPCServer::RPCServer() {
         }
 
         JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, email_password_method, arg_count, arg_values);
-        
-        auto serialized_result = serialize_json_value(credentials_object);
-        return (json){{"result", serialized_result}};
+        return (json){{"result", serialize_json_value(credentials_object)}};
     };
     m_requests["/_function"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
