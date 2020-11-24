@@ -1,3 +1,18 @@
+?.?.? Release notes (2020-??-??)
+=============================================================
+
+### Breaking Changes
+* None
+
+### Enhancements
+* None
+
+### Fixed
+* Fixed the type returned by `getApp` and `App.getApp`, such that an `app.currentUser` will match the `User` exported by the package. ([#3420](https://github.com/realm/realm-js/pull/3420), since v1.0.0-rc.1)
+
+### Internal
+* None
+
 1.0.0 Release notes (2020-10-16)
 =============================================================
 

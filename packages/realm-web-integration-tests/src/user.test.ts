@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import { Base64 } from "js-base64";
 
-import { Credentials, User, UserState, handleAuthRedirect } from "realm-web";
+import { Credentials, User, UserState } from "realm-web";
 
 import { createApp, INVALID_TOKEN, describeIf } from "./utils";
 
