@@ -185,8 +185,8 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         user_agent_binding_info = js::Value<T>::validated_to_string(ctx, result);
     }
     else {
-        // FIXME: When debugging RN apps, _createUserAgentDescription cannot be found
-        user_agent_binding_info = "N/A";
+        // The `_createUserAgentDescription` method is undefined when chrome debugging a React Native app
+        user_agent_binding_info = "unknown";
     }
     ensure_directory_exists_for_file(default_realm_file_directory());
 
@@ -202,10 +202,10 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         config.sdk_version = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, sdk_version_name));
     }
     else {
-        // FIXME: When debugging RN apps, _createPlatformDescription() cannot be found
-        config.platform = "N/A";
-        config.platform_version = "N/A";
-        config.sdk_version = "N/A";
+        // The `_createPlatformDescription` method is undefined when chrome debugging a React Native app
+        config.platform = "js-unknown";
+        config.platform_version = "unknown";
+        config.sdk_version = "unknown";
     }
 
     SyncClientConfig client_config;
