@@ -108,8 +108,8 @@ std::string TypeErrorException::type_string(Property const& prop)
         case PropertyType::Object:
             ret = prop.object_type;
             break;
-        case PropertyType::Any:
-            throw std::runtime_error("'Any' type is not supported");
+        case PropertyType::Mixed:
+            throw std::runtime_error("'Mixed' type support is not implemented yet");
         default:
             REALM_UNREACHABLE();
     }
