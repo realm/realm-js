@@ -375,7 +375,7 @@ def buildWindows(nodeVersion, arch) {
         "_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}",
         "PATH+CMAKE=${tool 'cmake'}\\.."
         ]) {
-        bat "npm run package -- --arch=${arch} -- --CDCMAKE_TOOLCHAIN_PATH=C:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+        bat "npm run package -- --arch=${arch}"
       }
 
       dir('prebuilds') {
