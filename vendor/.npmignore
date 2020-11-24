@@ -14,3 +14,8 @@ GCDWebServer/Tests
 GCDWebServer/tvOS
 
 realm-*
+!realm-core
+realm-core/src/external/IntelRDFPMathLib20U2/TESTS
+realm-core/test
+realm-core/external
+realm-core/doc
