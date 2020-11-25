@@ -33,6 +33,7 @@
   "main": "lib/index.js",
   "files": [
     "android",
+    "cmake",
     "lib",
     "types",
     "react-native",
