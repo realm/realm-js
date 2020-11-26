@@ -146,8 +146,7 @@ async function run() {
   });
 }
 
-run().then(null, err => {
+run().catch(err => {
   console.error(err.message);
   process.exit(1);
 });
-
