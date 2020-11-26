@@ -27,16 +27,20 @@ const fs = require("fs");
 
 const realmPackagePath = path.resolve(__dirname, "..");
 
-const TRIGGERS = [{
-  path: "src",
-  pattern: "src/*",
-}, {
-  path: "lib",
-  pattern: "lib/*",
-}, {
-  path: "react-native",
-  pattern: "react-native/*",
-}];
+const EXCLUDED_PATHS = [
+  // Handled by npm installing
+  "node_modules",
+  // This is handled by the download-realm.js script
+  "vendor/realm-*",
+  // Useful only for Node.js
+  "compiled",
+  // No need to care about tests, examples or docs
+  "integration-tests",
+  "tests",
+  "examples",
+  "docs",
+  "contrib",
+];
 
 function readPackageJson(packagePath) {
   const packageJsonPath = path.resolve(packagePath, "package.json");
@@ -56,6 +60,9 @@ const watchman = {
   },
   trigger(rootPath, triggerObject) {
     return this.exec("trigger", rootPath, triggerObject);
+  },
+  triggerDel(rootPath, name) {
+    return this.exec("trigger-del", rootPath, name);
   }
 };
 
@@ -85,18 +92,40 @@ try {
   watchman.watchProject(realmPackagePath);
   
   // Setting up a trigger
-  console.log("Updating triggers:");
-  for (const trigger of TRIGGERS) {
-    const srcPath = path.resolve(realmPackagePath, trigger.path);
-    const destPath = path.resolve(dependencyRealmPath, trigger.path);
-    const name = `${trigger.path} → ${destPath}`;
-    console.log(`• ${name}`);
-    watchman.trigger(realmPackagePath, {
-      name,
-      expression: ["match", trigger.pattern, "wholename"],
-      command: ["rsync", "--archive", "--delete", srcPath + "/", destPath + "/"],
-    });
+  console.log("Setting a trigger");
+  const triggerName = `realm → ${dependencyRealmPath}`;
+  watchman.trigger(realmPackagePath, {
+    name: triggerName,
+    expression: ["match", "**"],
+    command: [
+      "rsync",
+      "--verbose",
+      "--archive",
+      "--delete",
+      ...EXCLUDED_PATHS.map(p => ["--exclude", p]).flat(),
+      realmPackagePath + "/",
+      dependencyRealmPath + "/",
+    ],
+  });
+
+  function deleteTrigger() {
+    console.log("Deleting trigger");
+    watchman.triggerDel(realmPackagePath, triggerName);
   }
+
+  process.on('SIGINT', () => {
+    console.log("Caught interrupt signal");
+    deleteTrigger();
+    process.exit();
+  });
+
+  process.on("beforeExit", () => {
+    deleteTrigger();
+  });
+
+  setInterval(() => {
+    // Keeping the process alive ...
+  }, 1000);
 } catch (err) {
   console.error(err.message);
   process.exit(1);
