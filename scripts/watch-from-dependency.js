@@ -24,22 +24,15 @@ const cp = require("child_process");
 const cla = require("command-line-args");
 const path = require("path");
 const fs = require("fs");
-
-const realmPackagePath = path.resolve(__dirname, "..");
+const Watchman = require("fb-watchman");
 
 const EXCLUDED_PATHS = [
-  // Handled by npm installing
-  "node_modules",
+  // Handled by npm installing in the application package
+  "react-native/node_modules",
+  // Skipping the Pods of the react-native project as these are not used by the application package
+  "react-native/ios/Pods",
   // This is handled by the download-realm.js script
   "vendor/realm-*",
-  // Useful only for Node.js
-  "compiled",
-  // No need to care about tests, examples or docs
-  "integration-tests",
-  "tests",
-  "examples",
-  "docs",
-  "contrib",
 ];
 
 function readPackageJson(packagePath) {
@@ -48,31 +41,50 @@ function readPackageJson(packagePath) {
   return JSON.parse(packageJsonContent);
 }
 
+const realmPackagePath = path.resolve(__dirname, "..");
+const realmPackageJson = readPackageJson(realmPackagePath);
+const realmPackageFileGlobs = realmPackageJson.files.map(p => {
+  const resolvedPath = path.resolve(realmPackagePath, p);
+  if (fs.existsSync(resolvedPath) && fs.lstatSync(resolvedPath).isDirectory()) {
+    return p + "/**";
+  } else {
+    return p;
+  }
+});
+
 const watchman = {
-  exec(command, ...args) {
-    return cp.execFileSync("watchman", ["-j"], {
-      encoding: "utf8",
-      input: JSON.stringify([command, ...args]),
+  client: new Watchman.Client(),
+  command(...args) {
+    // Wrap the command API
+    return new Promise((resolve, reject) => {
+      this.client.command(args, (err, resp) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(resp);
+        }
+      });
     });
   },
   watchProject(rootPath) {
-    return this.exec("watch-project", rootPath);
+    return this.command("watch-project", rootPath);
   },
   trigger(rootPath, triggerObject) {
-    return this.exec("trigger", rootPath, triggerObject);
+    return this.command("trigger", rootPath, triggerObject);
   },
   triggerDel(rootPath, name) {
-    return this.exec("trigger-del", rootPath, name);
+    return this.command("trigger-del", rootPath, name);
+  },
+  subscribe(rootPath, name, subscriptionObject) {
+    return this.command("subscribe", rootPath, name, subscriptionObject);
   }
 };
 
-try {
+async function run() {
+
   const options = cla({
     name: "path", alias: "p",
   });
-  
-  const watchmanVersion = cp.execSync("watchman --version");
-  console.log(`Using watchman v${watchmanVersion}`);
   
   const dependencyPath = path.resolve(options.path);
   // Ensure that a dependency on the "realm" package
@@ -87,46 +99,55 @@ try {
   }
 
   // Ensure the "realm" directory is being watched
-  console.log(`Ensuring a watch is present for the realm project '${realmPackagePath}'`);
+  console.log(`Watching the realm project '${realmPackagePath}'`);
   // Note: Watching a project which is already being watched is a no-op
-  watchman.watchProject(realmPackagePath);
-  
-  // Setting up a trigger
-  console.log("Setting a trigger");
-  const triggerName = `realm → ${dependencyRealmPath}`;
-  watchman.trigger(realmPackagePath, {
-    name: triggerName,
-    expression: ["match", "**"],
-    command: [
-      "rsync",
-      "--verbose",
+  const { watch: rootPath } = await watchman.watchProject(realmPackagePath);
+
+  // Register a listner to handle changes
+  watchman.client.on("subscription", (resp) => {
+    if (resp.canceled) {
+      console.log("💥 Subscription cancelled ...");
+      process.exit();
+    } else if (resp.is_fresh_instance) {
+      console.log(`🚀 Performing initial sync on ${resp.files.length} files`);
+    } else {
+      console.log(`🚀 Performing sync: ${resp.files.length} file(s) changed`);
+    }
+    cp.spawnSync("rsync", [
+      // "--verbose",
+      "--progress",
       "--archive",
       "--delete",
       ...EXCLUDED_PATHS.map(p => ["--exclude", p]).flat(),
+      // The file or directory itself
+      ...realmPackageJson.files.map(f => ["--include", f]).flat(),
+      // Any files under this
+      ...realmPackageJson.files.map(f => ["--include", f + "/**"]).flat(),
+      // Exclude anything that was not explicitly included
+      "--exclude",
+      "*",
       realmPackagePath + "/",
       dependencyRealmPath + "/",
+    ], { stdio: "inherit" });
+    console.log("💤 Waiting for changes\n");
+  });
+
+  // Create a subscription
+  const subscriptionName = `realm → ${dependencyRealmPath}`;
+  console.log("Creating subscription ...\n");
+  await watchman.subscribe(rootPath, subscriptionName, {
+    expression: [
+      "allof",
+      // Include all the files included by the package
+      ["anyof", ...realmPackageFileGlobs.map(pattern => ["match", pattern, "wholename"])],
+      ...EXCLUDED_PATHS.map(p => ["not", ["match", p + "/**", "wholename"]])
     ],
+    fields: ["name"],
   });
+}
 
-  function deleteTrigger() {
-    console.log("Deleting trigger");
-    watchman.triggerDel(realmPackagePath, triggerName);
-  }
-
-  process.on('SIGINT', () => {
-    console.log("Caught interrupt signal");
-    deleteTrigger();
-    process.exit();
-  });
-
-  process.on("beforeExit", () => {
-    deleteTrigger();
-  });
-
-  setInterval(() => {
-    // Keeping the process alive ...
-  }, 1000);
-} catch (err) {
+run().then(null, err => {
   console.error(err.message);
   process.exit(1);
-}
+});
+

@@ -118,6 +118,7 @@
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-native": "^3.8.1",
     "eslint-visitor-keys": "^1.1.0",
+    "fb-watchman": "^2.0.1",
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
     "jasmine-xml-reporter": "^1.2.1",

@@ -21,11 +21,16 @@ The script is located in `scripts/watch-from-dependency.js` (relative to the roo
 ./scripts/watch-from-dependency.js -p ~/Projects/my-awesome-app
 ```
 
-In the example above we're setting up a project-wide watch of our Realm JS repository and registering triggers on relevant directories (`/src`, `/lib` and `/react-native` at the time of writing) which will execute an "rsync" command to ultimately, incrementally (not a full copy every time) synchronize changes made our Realm JS repository into the app's `node_modules/realm` directory.
+In the example above we're setting up a project-wide watch of our Realm JS repository and registering a subscription on all files exported by the Realm JS `package.json` which will execute an "rsync" command to ultimately, incrementally (not a full copy every time) synchronize changes made our Realm JS repository into the app's `node_modules/realm` directory.
 
-## Stop watching
+When you the process is interrupted (<kbd>Ctrl</kbd>+<kbd>C</kbd>) the subscription is removed and the files are no longer being copied.
 
-To stop watching, simply delete the watch from watchman (from the realm-js project root directory)
+## Removing the project watch completely
+
+After exiting the script, a project watch on the Realm JS project will still exist.
+It won't be performing any operations on file change, so it's not a huge waste of resources, but if you see a need for it you might want to completely remove the watch on the project.
+
+Simply run this in the root of this repository:
 
 ```
 watchman watch-del .
