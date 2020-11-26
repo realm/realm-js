@@ -25,6 +25,10 @@ In the example above we're setting up a project-wide watch of our Realm JS repos
 
 When you the process is interrupted (<kbd>Ctrl</kbd>+<kbd>C</kbd>) the subscription is removed and the files are no longer being copied.
 
+## The order of execution is important
+
+In order for the CocoaPods to generate the right XCode project files, you'll need to run the watcher after `npm install` in the application but *before* running `pod install` in the `/ios` directory. If you mess this up, you'll have to re-run `pod install` after starting the `watch-from-dependency.js` script.
+
 ## Removing the project watch completely
 
 After exiting the script, a project watch on the Realm JS project will still exist.
