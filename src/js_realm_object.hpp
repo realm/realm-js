@@ -255,9 +255,6 @@ void RealmObjectClass<T>::get_realm(ContextType ctx, ObjectType object, ReturnVa
         ObjectType realm_obj = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm_object->realm()));
         return_value.set(realm_obj);
     }
-
-    ObjectType realm_obj = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm_object->realm()));
-    return_value.set(realm_obj);
 }
 
 template<typename T>

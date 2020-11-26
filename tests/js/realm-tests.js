@@ -2058,5 +2058,25 @@ module.exports = {
         });
 
         realm.close();
+    },
+
+    testRealmObject_realm: function() {
+        const realm = new Realm({schema: [schemas.TestObjectWithPk]});
+        realm.write(() => {
+            realm.create(schemas.TestObjectWithPk.name, { _id: 1, doubleCol: 2.0 });
+        });
+
+        let obj = realm.objectForPrimaryKey(schemas.TestObjectWithPk.name, 1);
+        TestCase.assertDefined(obj._realm);
+        TestCase.assertFalse(obj._realm.isClosed);
+        TestCase.assertEqualWithTolerance(obj.doubleCol, 2.0, 0.001);
+
+        obj._realm.write(() => {
+            obj.doubleCol = 3.0;
+        });
+
+        TestCase.assertEqualWithTolerance(obj.doubleCol, 3.0, 0.001);
+
+        realm.close();
     }
 };
