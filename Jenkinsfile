@@ -596,7 +596,8 @@ def testWindows(nodeVersion) {
           "NODE_NODIST_VERSION=${nodeVersion}",
           "PATH+CMAKE=${tool 'cmake'}\\..",
         ]) {
-          bat 'npm install --build-from-source=realm'
+          // FIXME: remove debug option when the Release builds are working again
+          bat 'npm install --build-from-source=realm -- --debug'
           dir('tests') {
             bat 'npm install'
             bat 'npm run test'
