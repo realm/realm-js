@@ -597,7 +597,10 @@ def testWindows(nodeVersion) {
           "PATH+CMAKE=${tool 'cmake'}\\..",
         ]) {
           // FIXME: remove debug option when the Release builds are working again
-          bat 'npm install --build-from-source=realm -- --debug'
+          bat '''
+            npm install --ignore-scripts
+            npm run build -- --debug
+          '''
           dir('tests') {
             bat 'npm install'
             bat 'npm run test'
