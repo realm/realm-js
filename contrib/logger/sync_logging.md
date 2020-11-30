@@ -9,4 +9,4 @@ The logs can be configured using two functions:
    Realm.App.Sync.setLogger()
 ```
 
-These two functions are the entry point to configure the sync behaviour which is handled natively. Then in C++ land, we use the ``logger.hpp`` class to isolate our JS engine (``js_sync.hpp``) from the other two frameworks we depend on which are ``object-store`` and ``realm-core`.
+These two functions are the entry point to configure the sync behaviour which is handled natively. Then in C++ land, we use the ``logger.hpp`` class to isolate our JS engine (``js_sync.hpp``) from the other two frameworks we depend on which are ``object-store`` and `realm-core`.
