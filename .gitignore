@@ -16,6 +16,7 @@
 *.management/
 
 vendor/realm-*
+!vendor/realm-core
 
 # jsdoc
 /docs/output
@@ -31,7 +32,7 @@ DerivedData
 node_modules/
 npm-debug.log
 build/
-/compiled/
+/prebuilds/
 *.lock
 
 # Emacs

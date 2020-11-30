@@ -17,7 +17,7 @@ electronTestVersion = electronVersions[0]
 def gitTag = null
 def formattedVersion = null
 dependencies = null
-objectStoreDependencies = null
+coreDependencies = null
 
 def packagesExclusivelyChanged = null
 
@@ -53,7 +53,7 @@ stage('check') {
     }
 
     dependencies = readProperties file: 'dependencies.list'
-    objectStoreDependencies = readProperties file: 'src/object-store/dependencies.list'
+    coreDependencies = readProperties file: 'vendor/realm-core/dependencies.list'
     gitTag = readGitTag()
     def gitSha = readGitSha()
     def version = getVersion()
@@ -115,19 +115,13 @@ stage('pretest') {
 stage('build') {
     parallelExecutors = [:]
     nodeVersions.each { nodeVersion ->
-      parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
-      parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-      parallelExecutors["Linux Rpi Node ${nodeVersion}"] = buildLinuxRpi { buildCommon(nodeVersion, it, '--arch=arm') }
-      parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
-      parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
+      parallelExecutors["macOS x86_64 NAPI ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
+      parallelExecutors["Linux x86_64 NAPI ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
+      parallelExecutors["Linux armhf NAPI ${nodeVersion}"] = buildLinuxRpi { buildCommon(nodeVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
+      parallelExecutors["Windows ia32 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'ia32')
+      parallelExecutors["Windows x64 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'x64')
     }
-    electronVersions.each { electronVersion ->
-      parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
-      parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
-      parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
-      parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
-    }
-    parallelExecutors["Android React Native"] = buildAndroid()
+    //parallelExecutors["Android React Native"] = buildAndroid()
     parallel parallelExecutors
 }
 
@@ -196,7 +190,7 @@ def exclusivelyChanged(regexp) {
 // == Methods
 def nodeIntegrationTests(nodeVersion, platform) {
   unstash 'source'
-  unstash "pre-gyp-${platform}-${nodeVersion}"
+  unstash "prebuild-${platform}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
   dir('integration-tests') {
@@ -222,7 +216,7 @@ def nodeIntegrationTests(nodeVersion, platform) {
 def electronIntegrationTests(electronVersion, platform) {
   def nodeVersion = nodeTestVersion
   unstash 'source'
-  unstash "electron-pre-gyp-${platform}-${electronVersion}"
+  unstash "prebuild-${platform}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
   dir('integration-tests') {
@@ -324,32 +318,12 @@ def buildDockerEnv(name, extra_args='') {
 }
 
 def buildCommon(nodeVersion, platform, extraFlags='') {
-  sshagent(credentials: ['realm-ci-ssh']) {
-    sh "mkdir -p ~/.ssh"
-    sh "ssh-keyscan github.com >> ~/.ssh/known_hosts"
-    sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
-    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
-  }
+  sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
 
-  dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
+  dir('prebuilds') {
     // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
     // archiveArtifacts("realm-*")
-    stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
-  }
-}
-
-def buildElectronCommon(electronVersion, platform) {
-  withEnv([
-    "npm_config_target=${electronVersion}",
-    "npm_config_disturl=https://atom.io/download/electron",
-    "npm_config_runtime=electron",
-    "npm_config_devdir=${env.HOME}/.electron-gyp"
-  ]) {
-    sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm run package"
-
-    dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
-      stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
-    }
+    stash includes: "realm-v${dependencies.VERSION}-napi-v${dependencies.NAPI_VERSION}-${platform}*.tar.gz", name: "prebuild-${platform}"
   }
 }
 
@@ -357,13 +331,10 @@ def buildLinux(workerFunction) {
   return {
     myNode('docker') {
       unstash 'source'
-      def image
-      withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-        image = buildDockerEnv('ci/realm-js:build')
-      }
+      def image = buildDockerEnv('ci/realm-js:build')
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
       image.inside('-e HOME=/tmp') {
-        workerFunction('linux')
+        workerFunction('linux-x64')
       }
     }
   }
@@ -375,9 +346,7 @@ def buildLinuxRpi(workerFunction) {
       unstash 'source'
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
       buildDockerEnv("realm-js:rpi", '-f armhf.Dockerfile').inside('-e HOME=/tmp') {
-        withEnv(['CC=arm-linux-gnueabihf-gcc', 'CXX=arm-linux-gnueabihf-g++']) {
-          workerFunction('linux-armhf')
-        }
+        workerFunction('linux-arm')
       }
     }
   }
@@ -391,7 +360,7 @@ def buildMacOS(workerFunction) {
       ]) {
         unstash 'source'
         sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-        workerFunction('macos')
+        workerFunction('darwin-x64')
       }
     }
   }
@@ -402,47 +371,21 @@ def buildWindows(nodeVersion, arch) {
     myNode('windows && nodejs') {
       unstash 'source'
 
-      bat 'npm install --ignore-scripts --production'
-
-      withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
-        retry(3) {
-          bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
-        }
-      }
-      bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
-
-      dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
-        stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
-      }
-    }
-  }
-}
-
-def buildWindowsElectron(electronVersion, arch) {
-  return {
-    myNode('windows && nodejs') {
-      unstash 'source'
-      bat 'npm install --ignore-scripts --production'
       withEnv([
-        "npm_config_target=${electronVersion}",
-        "npm_config_target_arch=${arch}",
-        'npm_config_disturl=https://atom.io/download/electron',
-        'npm_config_runtime=electron',
-        "npm_config_devdir=${env.HOME}/.electron-gyp"
-      ]) {
-        withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
-          bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --realm_enable_sync'
-        }
-        bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package'
+        "_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}",
+        "PATH+CMAKE=${tool 'cmake'}\\.."
+        ]) {
+        bat "npm run package -- --arch=${arch}"
       }
 
-      dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
-        stash includes: 'realm-*', name: "electron-pre-gyp-windows-${arch}-${electronVersion}"
+      dir('prebuilds') {
+        // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
+        // archiveArtifacts("realm-*")
+        stash includes: "realm-v${dependencies.VERSION}-napi-v${dependencies.NAPI_VERSION}-win32-${arch}*.tar.gz", name: "prebuild-win32-${arch}"
       }
     }
   }
 }
-
 
 def inAndroidContainer(workerFunction) {
   return {
@@ -485,13 +428,13 @@ def buildAndroid() {
 def publish(nodeVersions, electronVersions, dependencies, tag) {
   myNode('docker') {
 
-    for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
-      unstash "pre-gyp-${platform}-${nodePublishVersion}"
+    for (def platform in ['darwin-x64', 'linux-x64', 'win32-ia32', 'win32-x64']) {
+      unstash "prebuild-${platform}"
     }
-    unstash "pre-gyp-linux-armhf-${nodePublishVersion}"
+    unstash 'prebuild-linux-arm'
 
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
-      sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}/'"
+      sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/realm-js-prebuilds/${dependencies.VERSION}/'"
     }
   }
 }
@@ -590,10 +533,7 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
       def reportName = "Linux ${target}"
       deleteDir()
       unstash 'source'
-      def image
-      withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-        image = buildDockerEnv('ci/realm-js:build')
-      }
+      def image = buildDockerEnv('ci/realm-js:build')
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
       def buildSteps = { String dockerArgs = "" ->
@@ -620,7 +560,7 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
               // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
               // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
               // if there's really a new feature you need from the latest stitch, upgrade this manually
-            withRealmCloud(version: objectStoreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/src/object-store/tests/mongodb"]) { networkName ->
+            withRealmCloud(version: coreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/vendor/realm-core/test/object-store/mongodb"]) { networkName ->
                 buildSteps("-e MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\" --network=${networkName}")
             }
           } else {
@@ -652,8 +592,15 @@ def testWindows(nodeVersion) {
       unstash 'source'
       bat "nodist add ${nodeVersion}"
       try {
-        withEnv(["NODE_NODIST_VERSION=${nodeVersion}"]) {
-          bat 'npm install --build-from-source=realm --realm_enable_sync'
+        withEnv([
+          "NODE_NODIST_VERSION=${nodeVersion}",
+          "PATH+CMAKE=${tool 'cmake'}\\..",
+        ]) {
+          // FIXME: remove debug option when the Release builds are working again
+          bat '''
+            npm install --ignore-scripts
+            npm run build -- --debug
+          '''
           dir('tests') {
             bat 'npm install'
             bat 'npm run test'

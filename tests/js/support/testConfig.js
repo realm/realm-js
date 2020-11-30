@@ -28,13 +28,13 @@ function nodeRequire(module) {
     return require_method(module);
 }
 
-let pathToStitchJson = "../../../src/object-store/tests/mongodb/stitch.json";
+let pathToStitchJson = "../../../vendor/realm-core/test/object-store/mongodb/stitch.json";
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 
 if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
     const path = nodeRequire("path");
     console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
-    pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, '../../../../src/object-store/tests/mongodb/stitch.json')
+    pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, '../../../../vendor/realm-core/test/object-store/mongodb/stitch.json')
 }
 console.log("pathToStitchJson " + pathToStitchJson);
 
