@@ -1,6 +1,6 @@
 # Guide: Setting up watchman to copy changes from this package to an app
 
-You're debugging an issue reproduced in a React Native app, which uses Realm JS. You want to interate fast, such that a change in the Realm JS source code gets reflected in the library used in the app, as fast as possible.
+You're debugging an issue reproduced in a React Native app, which uses Realm JS. You want to iterate fast, such that a change in the Realm JS source code gets reflected in the library used in the app, as fast as possible.
 
 ## Prerequisites
 
