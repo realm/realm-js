@@ -246,13 +246,12 @@ public:
     static void main_loop_handler(ShouldCompactOnLaunchFunctor<T>* this_object,
                                   const uint64_t total_bytes,
                                   const uint64_t used_bytes) {
-        const Protected<typename T::GlobalContext>& ctx = this_object->m_ctx;
-        HANDLESCOPE(ctx);
+        HANDLESCOPE(this_object->m_ctx);
 
         const int argc = 2;
-        typename T::Value arguments[argc] = { Value<T>::from_number(ctx, total_bytes), Value<T>::from_number(ctx, used_bytes) };
-        typename T::Value ret_val = Function<T>::callback(ctx, this_object->m_func, typename T::Object(), argc, arguments);
-        bool ret_val_bool = Value<T>::to_boolean(ctx, ret_val);
+        typename T::Value arguments[argc] = { Value<T>::from_number(this_object->m_ctx, total_bytes), Value<T>::from_number(this_object->m_ctx, used_bytes) };
+        typename T::Value ret_val = Function<T>::callback(this_object->m_ctx, this_object->m_func, typename T::Object(), argc, arguments);
+        bool ret_val_bool = Value<T>::validated_to_boolean(this_object->m_ctx, ret_val);
 
         {
             std::lock_guard<std::mutex> lock {*this_object->m_mutex};
