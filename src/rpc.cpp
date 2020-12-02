@@ -35,6 +35,7 @@ using namespace realm;
 using namespace realm::rpc;
 
 using Accessor = realm::js::NativeAccessor<jsc::Types>;
+using AppClass = js::AppClass<jsc::Types>;
 
 namespace {
 static const char * const RealmObjectTypesData = "data";
@@ -248,7 +249,7 @@ RPCServer::RPCServer() {
     m_callback_call_counter = 1;
     
     // Make the App use the RPC Network Transport from now on
-    js::AppClass<jsc::Types>::transport_generator = [] (jsc::Types::Context ctx) {
+    AppClass::transport_generator = [] (jsc::Types::Context ctx) {
         return std::make_unique<RPCNetworkTransport>(ctx);
     };
 
@@ -463,6 +464,14 @@ RPCServer::RPCServer() {
         JSGarbageCollect(m_context);
         js::clear_test_state();
 
+        return json::object();
+    };
+    m_requests["/set_versions"] = [this](const json dict) {
+        JSObjectRef versions = jsc::Value::validated_to_object(m_context, deserialize_json_value(dict["versions"]), "versions");
+        AppClass::package_version = jsc::Object::validated_get_string(m_context, versions, "packageVersion");
+        AppClass::platform_context = jsc::Object::validated_get_string(m_context, versions, "platformContext");
+        AppClass::platform_os = jsc::Object::validated_get_string(m_context, versions, "platformOs");
+        AppClass::platform_version = jsc::Object::validated_get_string(m_context, versions, "platformVersion");
         return json::object();
     };
     m_requests["/_anonymous"] = [this](const json dict) {
