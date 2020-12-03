@@ -34,6 +34,7 @@
 using namespace realm;
 using namespace realm::rpc;
 
+using Value = js::Value<jsc::Types>;
 using Accessor = realm::js::NativeAccessor<jsc::Types>;
 using AppClass = js::AppClass<jsc::Types>;
 
@@ -267,12 +268,8 @@ RPCServer::RPCServer() {
         JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(m_context, JSContextGetGlobalObject(m_context), realm_string);
 
         // Enable the RCP network transport to issue calls to the remote fetch function
-        jsc::Types::Value fetch_function = deserialize_json_value(dict["fetch"]);
-        if (js::Value<jsc::Types>::is_function(m_context, fetch_function)) {
-            RPCNetworkTransport::fetch_function = js::Protected<jsc::Types::Function>(m_context, (jsc::Types::Function)fetch_function);
-        } else {
-            throw std::runtime_error("Expected 'fetch' to be a function");
-        }
+        jsc::Types::Function fetch_function = Value::validated_to_function(m_context, deserialize_json_value(dict["fetch"]), "fetch");
+        RPCNetworkTransport::fetch_function = js::Protected<jsc::Types::Function>(m_context, fetch_function);
          
         m_session_id = store_object(realm_constructor);
         return (json){{"result", m_session_id}};
