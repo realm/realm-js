@@ -55,6 +55,7 @@ static const char * const RealmObjectTypesCredentials = "credentials";
 static const char * const RealmObjectTypesUndefined = "undefined";
 static const char * const RealmObjectTypesError = "error";
 static const char * const RealmObjectTypesFetchResponseHandler = "fetchresponsehandler";
+static const char * const RealmObjectTypesEmailPasswordAuth = "emailpasswordauth";
 
 json serialize_object_schema(const realm::ObjectSchema &object_schema) {
     std::vector<std::string> properties;
@@ -895,6 +896,12 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     else if (jsc::Object::is_instance<js::ResponseHandlerClass<jsc::Types>>(m_context, js_object)) {
         return {
             {"type", RealmObjectTypesFetchResponseHandler},
+            {"id", store_object(js_object)},
+        };
+    }
+    else if (jsc::Object::is_instance<js::EmailPasswordAuthClass<jsc::Types>>(m_context, js_object)) {
+        return {
+            {"type", RealmObjectTypesEmailPasswordAuth},
             {"id", store_object(js_object)},
         };
     }
