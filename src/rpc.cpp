@@ -269,7 +269,7 @@ RPCServer::RPCServer() {
 
         // Enable the RCP network transport to issue calls to the remote fetch function
         jsc::Types::Function fetch_function = Value::validated_to_function(m_context, deserialize_json_value(dict["fetch"]), "fetch");
-        RPCNetworkTransport::fetch_function = js::Protected<jsc::Types::Function>(m_context, fetch_function);
+        RPCNetworkTransport::fetch_function = js::Protected(m_context, fetch_function);
          
         m_session_id = store_object(realm_constructor);
         return (json){{"result", m_session_id}};
@@ -623,6 +623,9 @@ RPCServer::~RPCServer() {
     // The protected values should be unprotected before releasing the context.
     m_objects.clear();
     m_callbacks.clear();
+
+    // Clear the Object Store App cache, to prevent instances from using the context which is going to be released.
+    app::App::clear_cached_apps();
 
     get_rpc_server(m_context) = nullptr;
     JSGlobalContextRelease(m_context);
