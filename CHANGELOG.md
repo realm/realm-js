@@ -9,6 +9,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed a bug where setting `shouldCompactOnLaunch` would lead to a crash with the error `Fatal error in HandleScope::HandleScope` (on node.js). (since v1.0.0)
 * TS: `RealmInsertionModel<T>` used in `realm.create<T>(...)` now ignores functions on Class Models. ([#3421](https://github.com/realm/realm-js/pull/3421), since v10.0.0)
 * Fixing the creation of an RPC session when running in React Native Chrome debugging mode. ([#3411](https://github.com/realm/realm-js/pull/3411), [#3358](https://github.com/realm/realm-js/issues/3358), [#3361](https://github.com/realm/realm-js/issues/3361), since v10.0.0)
+* Fixed a crash in case insensitive query on indexed string properties when nothing matches. ([realm/realm-cocoa#6836](https://github.com/realm/realm-cocoa/issues/6836), since v6.0.0)
+* Fixed a bug where queries for the size of a list of primitive nullable `int`s returned size + 1. ([realm/realm-core#4016](https://github.com/realm/realm-core/pull/4016), since v6.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -16,7 +18,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Upgraded to Realm Core v10.1.0
+* Upgraded to Realm Sync v10.1.0
 
 6.1.5 Release notes (2020-11-4)
 =============================================================
