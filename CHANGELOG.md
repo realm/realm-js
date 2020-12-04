@@ -11,6 +11,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixing the creation of an RPC session when running in React Native Chrome debugging mode. ([#3411](https://github.com/realm/realm-js/pull/3411), [#3358](https://github.com/realm/realm-js/issues/3358), [#3361](https://github.com/realm/realm-js/issues/3361), since v10.0.0)
 * Fixed a crash in case insensitive query on indexed string properties when nothing matches. ([realm/realm-cocoa#6836](https://github.com/realm/realm-cocoa/issues/6836), since v6.0.0)
 * Fixed a bug where queries for the size of a list of primitive nullable `int`s returned size + 1. ([realm/realm-core#4016](https://github.com/realm/realm-core/pull/4016), since v6.0.0)
+* Files upgraded on 32-bit devices could end up being inconsistent resulting in `Key not found` exception to be thrown. ([realm/realm-java#6992)(https://github.com/realm/realm-java/issues/6992), since v6.0.5)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -18,8 +19,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded to Realm Core v10.1.0
-* Upgraded to Realm Sync v10.1.0
+* Upgraded to Realm Core v10.1.3
+* Upgraded to Realm Sync v10.1.3
 
 6.1.5 Release notes (2020-11-4)
 =============================================================
