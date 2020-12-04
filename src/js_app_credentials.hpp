@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <stdexcept>
 #include "js_class.hpp"
 #include "sync/app_credentials.hpp"
 
@@ -63,9 +64,9 @@ public:
         {"serverApiKey",     wrap<server_api_key>},
         {"jwt",              wrap<jwt>},
     };
-    
+
     static void get_payload(ContextType, ObjectType, ReturnValue &);
-    
+
     PropertyMap<T> const properties = {
         {"payload", {wrap<get_payload>, nullptr}},
     };
@@ -114,10 +115,38 @@ void CredentialsClass<T>::apple(ContextType ctx, ObjectType this_object, Argumen
 template<typename T>
 void CredentialsClass<T>::google(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
     arguments.validate_maximum(1);
+    realm::app::AppCredentials credentials;
 
-    realm::app::AppCredentialsToken auth_code = Value::validated_to_string(ctx, arguments[0]);
+    // the bare string is deprecated but we keep it until next major version
+    // auth_code begins with "4/" while we assume all other cases are id_tokens
+    if (Value::is_string(ctx, arguments[0])) {
+        std::string token = Value::validated_to_string(ctx, arguments[0]);
+        if (token.substr(0, 2) == "4/") {
+            credentials = app::AppCredentials::google(app::AuthCode(token));
+        }
+        else {
+            credentials = app::AppCredentials::google(app::IdToken(token));
+        }
+    }
+    else if (Value::is_object(ctx, arguments[0])) {
+        auto object = Value::validated_to_object(ctx, arguments[0]);
 
-    auto credentials = realm::app::AppCredentials::google(auth_code);
+        static const String auth_code_string = "authCode";
+        ValueType auth_code = Object::get_property(ctx, object, auth_code_string);
+        if (!Value::is_undefined(ctx, auth_code)) {
+            credentials = app::AppCredentials::google(app::AuthCode(std::string(Value::validated_to_string(ctx, auth_code))));
+        }
+
+        static const String id_token_string = "idToken";
+        ValueType id_token = Object::get_property(ctx, object, id_token_string);
+        if (!Value::is_undefined(ctx, id_token)) {
+            credentials = app::AppCredentials::google(app::IdToken(std::string(Value::validated_to_string(ctx, id_token))));
+        }
+    }
+    else {
+        throw std::runtime_error("Invalid arguments for Realm.App.Credentials.google()");
+    }
+
     return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 
