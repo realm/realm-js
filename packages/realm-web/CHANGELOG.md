@@ -5,7 +5,7 @@
 * None
 
 ### Enhancements
-* None
+* Added support of OpenID Connect credential for the Google authentication provider. ([#3383](https://github.com/realm/realm-js/issues/3383))
 
 ### Fixed
 * Fixed the type returned by `getApp` and `App.getApp`, such that an `app.currentUser` will match the `User` exported by the package. ([#3420](https://github.com/realm/realm-js/pull/3420), since v1.0.0-rc.1)
