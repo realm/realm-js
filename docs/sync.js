@@ -404,6 +404,11 @@ class Credentials {
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
     get provider() { }
+
+    /**
+     * @returns {object} A simple object which can be passed to the server as the body of a request to authenticate.
+     */
+    get payload() { }
 }
 
 /**

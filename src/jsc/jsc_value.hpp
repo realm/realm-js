@@ -86,6 +86,12 @@ inline bool jsc::Value::is_constructor(JSContextRef ctx, const JSValueRef &value
 }
 
 template<>
+inline bool jsc::Value::is_error(JSContextRef ctx, const JSValueRef &value) {
+    static const jsc::String type = "Error";
+    return is_object_of_type(ctx, value, type);
+}
+
+template<>
 inline bool jsc::Value::is_function(JSContextRef ctx, const JSValueRef &value) {
     return JSValueIsObject(ctx, value) && JSObjectIsFunction(ctx, (JSObjectRef)value);
 }
