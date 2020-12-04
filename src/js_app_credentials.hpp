@@ -124,8 +124,11 @@ void CredentialsClass<T>::google(ContextType ctx, ObjectType this_object, Argume
         if (token.substr(0, 2) == "4/") {
             credentials = app::AppCredentials::google(app::AuthCode(token));
         }
-        else {
+        else if (token.substr(0, 2) == "ey") {
             credentials = app::AppCredentials::google(app::IdToken(token));
+        }
+        else {
+            throw std::runtime_error("Invalid arguments for Real.App.Credentials.google()");
         }
     }
     else if (Value::is_object(ctx, arguments[0])) {
