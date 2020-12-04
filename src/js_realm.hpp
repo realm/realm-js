@@ -311,7 +311,6 @@ public:
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
         {"deleteFile", wrap<delete_file>},
         {"exists", wrap<realm_file_exists>},
-        {"_createUserAgentDescription", wrap<create_user_agent_description>},
         {"_bsonParseJsonForTest", wrap<bson_parse_json>},
 #if REALM_ENABLE_SYNC
         {"_asyncOpen", wrap<async_open_realm>},
