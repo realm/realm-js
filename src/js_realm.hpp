@@ -222,15 +222,13 @@ public:
     : m_ctx(Context<T>::get_global_context(ctx))
     , m_func(ctx, should_compact_on_launch_func)
     , m_event_loop_dispatcher {ShouldCompactOnLaunchFunctor<T>::main_loop_handler}
-    , m_mutex{new std::mutex}
-    , m_cond_var{new std::condition_variable}
     {
     }
 
     bool operator ()(const uint64_t total_bytes, const uint64_t used_bytes) {
         m_event_loop_dispatcher(this, total_bytes, used_bytes);
-        std::unique_lock<std::mutex> lock(*m_mutex);
-        m_cond_var->wait(lock, [this] { return this->m_ready; });
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_cond_var.wait(lock, [this] { return this->m_ready; });
 
         return m_should_compact_on_launch;
     }
@@ -245,7 +243,7 @@ public:
         typename T::Value ret_val = Function<T>::callback(this_object->m_ctx, this_object->m_func, typename T::Object(), argc, arguments);
         this_object->m_should_compact_on_launch = Value<T>::validated_to_boolean(this_object->m_ctx, ret_val);
         this_object->m_ready = true;
-        this_object->m_cond_var->notify_one();
+        this_object->m_cond_var.notify_one();
     }
 
 private:
@@ -256,8 +254,8 @@ private:
                                    uint64_t used_bytes)> m_event_loop_dispatcher;
     bool m_ready = false;
     bool m_should_compact_on_launch = false;
-    std::shared_ptr<std::mutex> m_mutex;
-    std::shared_ptr<std::condition_variable> m_cond_var;
+    std::mutex m_mutex;
+    std::condition_variable m_cond_var;
 };
 
 std::string default_path();
@@ -626,7 +624,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
 
                 FunctionType should_compact_on_launch_function = Value::validated_to_function(ctx, compact_value, "shouldCompactOnLaunch");
                 ShouldCompactOnLaunchFunctor<T> should_compact_on_launch_functor {ctx, should_compact_on_launch_function};
-                config.should_compact_on_launch_function = std::move(should_compact_on_launch_functor);
+                config.should_compact_on_launch_function = should_compact_on_launch_functor;
             }
 
             static const String migration_string = "migration";
