@@ -57,6 +57,7 @@
 #include <cctype>
 #include <list>
 #include <map>
+#include <any>
 
 namespace realm {
 namespace js {
@@ -227,20 +228,11 @@ public:
     }
 
     bool operator ()(const uint64_t total_bytes, const uint64_t used_bytes) {
-        {
-            std::lock_guard<std::mutex> lock {*m_mutex};
-            m_should_compact_on_launch_callback_done = false;
-        }
-
         m_event_loop_dispatcher(this, total_bytes, used_bytes);
-        bool should_compact_on_launch = false;
-        {
-            std::unique_lock<std::mutex> lock(*m_mutex);
-            m_cond_var->wait(lock, [this] { return this->m_should_compact_on_launch_callback_done; });
-            should_compact_on_launch= m_should_compact_on_launch;
-        }
+        std::unique_lock<std::mutex> lock(*m_mutex);
+        m_cond_var->wait(lock, [this] { return this->m_ready; });
 
-        return should_compact_on_launch;
+        return m_should_compact_on_launch;
     }
 
     static void main_loop_handler(ShouldCompactOnLaunchFunctor<T>* this_object,
@@ -251,16 +243,10 @@ public:
         const int argc = 2;
         typename T::Value arguments[argc] = { Value<T>::from_number(this_object->m_ctx, total_bytes), Value<T>::from_number(this_object->m_ctx, used_bytes) };
         typename T::Value ret_val = Function<T>::callback(this_object->m_ctx, this_object->m_func, typename T::Object(), argc, arguments);
-        bool ret_val_bool = Value<T>::validated_to_boolean(this_object->m_ctx, ret_val);
-
-        {
-            std::lock_guard<std::mutex> lock {*this_object->m_mutex};
-            this_object->m_should_compact_on_launch_callback_done = true;
-            this_object->m_should_compact_on_launch = ret_val_bool;
-        }
-
+        this_object->m_should_compact_on_launch = Value<T>::validated_to_boolean(this_object->m_ctx, ret_val);
+        this_object->m_ready = true;
         this_object->m_cond_var->notify_one();
-    };
+    }
 
 private:
     const Protected<typename T::GlobalContext> m_ctx;
@@ -268,7 +254,7 @@ private:
     util::EventLoopDispatcher<void(ShouldCompactOnLaunchFunctor<T>* this_object,
                                    uint64_t total_bytes,
                                    uint64_t used_bytes)> m_event_loop_dispatcher;
-    bool m_should_compact_on_launch_callback_done = false;
+    bool m_ready = false;
     bool m_should_compact_on_launch = false;
     std::shared_ptr<std::mutex> m_mutex;
     std::shared_ptr<std::condition_variable> m_cond_var;
@@ -640,7 +626,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 }
 
                 FunctionType should_compact_on_launch_function = Value::validated_to_function(ctx, compact_value, "shouldCompactOnLaunch");
-                ShouldCompactOnLaunchFunctor<T> should_compact_on_launch_functor { ctx, should_compact_on_launch_function };
+                ShouldCompactOnLaunchFunctor<T> should_compact_on_launch_functor {ctx, should_compact_on_launch_function};
                 config.should_compact_on_launch_function = std::move(should_compact_on_launch_functor);
             }
 

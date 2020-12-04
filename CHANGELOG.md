@@ -6,7 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Fixed an issue in `toJSON()`, in combination with primaryKeys, where data from another table could be returned. ([#3331](https://github.com/realm/realm-js/issues/3331), since v10.0.0)
 * Fixed an issue in `toJSON()` where `data` would output as `{}`, it now returns the data base64 encoded. ([#3356](https://github.com/realm/realm-js/pull/3356), since v10.0.0)
-* Fixed a bug where setting `shouldCompactOnLaunch` would lead to a crash with the error `Fatal error in HandleScope::HandleScope` (on node.js).
+* Fixed a bug where setting `shouldCompactOnLaunch` would lead to a crash with the error `Fatal error in HandleScope::HandleScope` (on node.js). (since v1.0.0)
 * TS: `RealmInsertionModel<T>` used in `realm.create<T>(...)` now ignores functions on Class Models. ([#3421](https://github.com/realm/realm-js/pull/3421), since v10.0.0)
 
 ### Compatibility
