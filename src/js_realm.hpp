@@ -57,7 +57,7 @@
 #include <cctype>
 #include <list>
 #include <map>
-#include <any>
+#include <mutex>
 
 namespace realm {
 namespace js {
@@ -222,8 +222,14 @@ public:
     : m_ctx(Context<T>::get_global_context(ctx))
     , m_func(ctx, should_compact_on_launch_func)
     , m_event_loop_dispatcher {ShouldCompactOnLaunchFunctor<T>::main_loop_handler}
+    , m_mutex()
     {
     }
+
+    ShouldCompactOnLaunchFunctor(const ShouldCompactOnLaunchFunctor&) = default;
+    ShouldCompactOnLaunchFunctor& operator=(const ShouldCompactOnLaunchFunctor&) = default;
+    ShouldCompactOnLaunchFunctor(ShouldCompactOnLaunchFunctor &&) = default;
+    ShouldCompactOnLaunchFunctor& operator=(ShouldCompactOnLaunchFunctor &&) = default;
 
     bool operator ()(const uint64_t total_bytes, const uint64_t used_bytes) {
         m_event_loop_dispatcher(this, total_bytes, used_bytes);
@@ -623,8 +629,9 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 }
 
                 FunctionType should_compact_on_launch_function = Value::validated_to_function(ctx, compact_value, "shouldCompactOnLaunch");
-                ShouldCompactOnLaunchFunctor<T> should_compact_on_launch_functor {ctx, should_compact_on_launch_function};
-                config.should_compact_on_launch_function = should_compact_on_launch_functor;
+                //ShouldCompactOnLaunchFunctor<T> should_compact_on_launch_functor {ctx, should_compact_on_launch_function};
+                //config.should_compact_on_launch_function = std::move(should_compact_on_launch_functor);
+                config.should_compact_on_launch_function = ShouldCompactOnLaunchFunctor<T>(ctx, should_compact_on_launch_function);
             }
 
             static const String migration_string = "migration";
