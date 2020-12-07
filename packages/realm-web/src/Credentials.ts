@@ -169,18 +169,21 @@ export class Credentials<PayloadType extends object = any>
     >(payload: string | GoogleOptions): P {
         if (typeof payload === "string") {
             if (payload.includes("://")) {
-                return { redirectUrl: payload } as P;
+                return this.derivePayload({ redirectUrl: payload });
             } else if (payload.startsWith("4/")) {
-                return { authCode: payload } as P;
+                return this.derivePayload({ authCode: payload });
             } else if (payload.startsWith("ey")) {
                 // eslint-disable-next-line @typescript-eslint/camelcase
-                return { id_token: payload } as P;
+                return this.derivePayload({ idToken: payload });
             } else {
                 throw new Error(`Unexpected payload: ${payload}`);
             }
         } else if (Object.keys(payload).length === 1) {
             if ("authCode" in payload || "redirectUrl" in payload) {
                 return payload as P;
+            } else if ("idToken" in payload) {
+                // eslint-disable-next-line @typescript-eslint/camelcase
+                return { id_token: payload.idToken } as P;
             } else {
                 throw new Error(
                     "Unexpected payload: " + JSON.stringify(payload),

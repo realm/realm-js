@@ -76,10 +76,50 @@ describe("Credentials", () => {
             });
         });
 
+        it("produce redirect payloads payloads", () => {
+            const credentials = Credentials.google({
+                redirectUrl: "some-redirect-url",
+            });
+            expect(credentials).to.be.instanceOf(Credentials);
+            expect(credentials.payload).deep.equals({
+                redirectUrl: "some-redirect-url",
+            });
+        });
+
+        it("produce auth codes payloads", () => {
+            const credentials = Credentials.google({
+                authCode: "some-auth-code",
+            });
+            expect(credentials).to.be.instanceOf(Credentials);
+            expect(credentials.payload).deep.equals({
+                authCode: "some-auth-code",
+            });
+        });
+
+        it("produce id token payloads", () => {
+            const credentials = Credentials.google({
+                idToken: "some-id-token",
+            });
+            expect(credentials).to.be.instanceOf(Credentials);
+            expect(credentials.payload).deep.equals({
+                // eslint-disable-next-line @typescript-eslint/camelcase
+                id_token: "some-id-token",
+            });
+        });
+
         it("throws if an unexpected format is encountered", () => {
             expect(() => {
                 Credentials.google("whatever");
             }).throws("Unexpected payload: whatever");
+        });
+
+        it("throws if called with multiple properties", () => {
+            expect(() => {
+                Credentials.google({
+                    authCode: "some-auth-code",
+                    idToken: "an-id-token",
+                });
+            }).throws("Expected only one property in payload");
         });
     });
 });
