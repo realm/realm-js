@@ -342,7 +342,6 @@ public:
     static void delete_file(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void realm_file_exists(ContextType, ObjectType, Arguments &, ReturnValue &);
 
-    static void create_user_agent_description(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void bson_parse_json(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // static properties
@@ -599,12 +598,8 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             static const String schema_string = "schema";
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
-                auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
-
-                // embedded object schemas need to expanded into regular object schemas
-                ObjectType expanded_schema_object = Value::validated_to_array(ctx, Object::call_method(ctx, realm_constructor, "_expandEmbeddedObjectSchemas", 1, &schema_value), "schema");
-
-                config.schema.emplace(Schema<T>::parse_schema(ctx, expanded_schema_object, defaults, constructors));
+                ObjectType schema_array = Value::validated_to_array(ctx, schema_value, "schema");
+                config.schema.emplace(Schema<T>::parse_schema(ctx, schema_array, defaults, constructors));
                 schema_updated = true;
             }
 
@@ -1341,12 +1336,6 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
         nullptr,
         true
     );
-}
-
-// These are replaced by the JS-defined functions when running outside of the RPC environment
-template<typename T>
-void RealmClass<T>::create_user_agent_description(ContextType, ObjectType, Arguments&, ReturnValue &return_value) {
-    return_value.set("RealmJS/RPC");
 }
 
 template<typename T>
