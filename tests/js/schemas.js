@@ -450,6 +450,7 @@ exports.EmbeddedObjectSchemas = [
     },
     {
         name: 'Dog',
+        embedded: true,
         properties: {
             'name': 'string',
             'color': 'string'
@@ -457,6 +458,7 @@ exports.EmbeddedObjectSchemas = [
     },
     {
         name: 'Cat',
+        embedded: true,
         properties: {
             name: 'string'
         }
