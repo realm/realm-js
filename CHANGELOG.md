@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added support of OpenID Connect credential for the Google authentication provider. ([#3383](https://github.com/realm/realm-js/issues/3383))
 
 ### Fixed
 * Fixing the construction of Realm instances declararing the schema, when running in the React Native Chrome debugging mode, by removing it. Note: This is not considered a breaking change, since this behaviour was never documented. ([#3442](https://github.com/realm/realm-js/pull/3442), since v10.0.0)
