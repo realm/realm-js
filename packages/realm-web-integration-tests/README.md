@@ -56,7 +56,7 @@ To enable testing credentials that require interaction, run with DEV_TOOLS and T
 DEV_TOOLS=1 TEST_CREDENTIALS=anonymous,email-password,google npm test
 ```
 
-## Running the Google Sing-In integration test
+## Running the Google Sign-In integration test
 
 Run the tests once to import a test app into the MongoDB Realm server you're testing against.
 Take note of the app id that it gets assigned and navigate to the Admin UI of the server to setup the Google Authentication Provider.
