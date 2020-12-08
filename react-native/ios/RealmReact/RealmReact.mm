@@ -214,7 +214,6 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 }
 
 - (void)startRPC {
-    realm::_impl::RealmCoordinator::clear_all_caches();
     [GCDWebServer setLogLevel:3];
     _webServer = [[GCDWebServer alloc] init];
     _rpcServer = std::make_unique<RPCServer>();
