@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.1.0 Release notes (2020-12-8)
 =============================================================
 ### Enhancements
 * Added support of OpenID Connect credential for the Google authentication provider. ([#3383](https://github.com/realm/realm-js/issues/3383))
