@@ -5,14 +5,16 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixing the construction of Realm instances declararing the schema, when running in the React Native Chrome debugging mode, by removing it. Note: This is not considered a breaking change, since this behaviour was never documented. ([#3442](https://github.com/realm/realm-js/pull/3442), since v10.0.0)
+* Fixed a bug that would prevent eventual consistency during conflict resolution. Affected clients would experience data divergence and potentially consistency errors as a result if they experienced conflict resolution between cycles of Create-Erase-Create for objects with primary keys.
 
 ### Compatibility
-* MongoDB Realm Cloud.
+* MongoDB Realm Cloud version 20201202 or later.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Upgraded to Realm Sync from v10.1.3 to v10.1.4
+* The sync client now requires a server that speaks protocol version 2 (Cloud version 20201202 or newer).
 
 10.0.2 Release notes (2020-12-5)
 =============================================================
