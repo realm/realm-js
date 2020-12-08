@@ -30,6 +30,7 @@
 #include "results.hpp"
 #include "jsc_rpc_network_transport.hpp"
 #include "js_app.hpp"
+#include "impl/realm_coordinator.hpp"
 
 using namespace realm;
 using namespace realm::rpc;
@@ -627,6 +628,7 @@ RPCServer::~RPCServer() {
 
     // Clear the Object Store App cache, to prevent instances from using the context which is going to be released.
     app::App::clear_cached_apps();
+    realm::_impl::RealmCoordinator::clear_all_caches();
 
     get_rpc_server(m_context) = nullptr;
     JSGlobalContextRelease(m_context);
