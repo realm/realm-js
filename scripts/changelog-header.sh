@@ -14,7 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Compatibility
-* MongoDB Realm Cloud version 20201202 or later.
+* MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
