@@ -1,6 +1,6 @@
 {
   "name": "realm-web",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Authenticate and communicate with the MongoDB Realm platform, from your web-browser",
   "main": "./dist/bundle.cjs.js",
   "module": "./dist/bundle.es.js",
