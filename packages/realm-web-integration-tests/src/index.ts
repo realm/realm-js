@@ -24,7 +24,7 @@ if (location.pathname.endsWith("-callback")) {
     Realm.handleAuthRedirect();
 } else if (location.pathname.endsWith("/google-login")) {
     console.log("Hello to Google Login ...");
-    require("./google-login.test");
+    require("./google-login");
 } else {
     const mochaClient = new MochaRemoteClient({
         onInstrumented: () => {
