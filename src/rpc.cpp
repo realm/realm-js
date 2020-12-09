@@ -56,6 +56,7 @@ static const char * const RealmObjectTypesUndefined = "undefined";
 static const char * const RealmObjectTypesError = "error";
 static const char * const RealmObjectTypesFetchResponseHandler = "fetchresponsehandler";
 static const char * const RealmObjectTypesEmailPasswordAuth = "emailpasswordauth";
+static const char * const RealmObjectTypesEJSON = "ejson";
 
 json serialize_object_schema(const realm::ObjectSchema &object_schema) {
     std::vector<std::string> properties;
@@ -234,6 +235,20 @@ static json read_object_properties(Object& object) {
                 if (str.size() < 100) {
                     cache_value(str);
                 }
+                break;
+            }
+            case PropertyType::Decimal: {
+                cache[property.name] = {
+                    {"type", RealmObjectTypesEJSON},
+                    {"value", {"$numberDecimal", obj.get<Decimal>(property.column_key).to_string()}},
+                };
+                break;
+            }
+            case PropertyType::ObjectId: {
+                cache[property.name] = {
+                    {"type", RealmObjectTypesEJSON},
+                    {"value", {"$oid", obj.get<ObjectId>(property.column_key).to_string()}},
+                };
                 break;
             }
             case PropertyType::Data:
