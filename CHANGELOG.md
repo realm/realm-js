@@ -22,7 +22,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixing the construction of Realm instances declararing the schema, when running in the React Native Chrome debugging mode, by removing it. Note: This is not considered a breaking change, since this behaviour was never documented. ([#3442](https://github.com/realm/realm-js/pull/3442), since v10.0.0)
-* Fixed a bug that would prevent eventual consistency during conflict resolution. Affected clients would experience data divergence and potentially consistency errors as a result if they experienced conflict resolution between cycles of Create-Erase-Create for objects with primary keys.
+* Fixed a bug that would prevent eventual consistency during conflict resolution. Affected clients would experience data divergence and potentially consistency errors as a result if they experienced conflict resolution between cycles of Create-Erase-Create for objects with same primary key.
 
 ### Compatibility
 * MongoDB Realm Cloud.
