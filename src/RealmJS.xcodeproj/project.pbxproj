@@ -236,6 +236,7 @@
 		A4F1ACB52563E0E600D52257 /* mongo_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_client.cpp; path = "object-store/src/sync/mongo_client.cpp"; sourceTree = "<group>"; };
 		A4F1ACB62563E0E600D52257 /* mongo_collection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_collection.cpp; path = "object-store/src/sync/mongo_collection.cpp"; sourceTree = "<group>"; };
 		A4F1ACB72563E0E600D52257 /* mongo_database.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_database.cpp; path = "object-store/src/sync/mongo_database.cpp"; sourceTree = "<group>"; };
+		DC0FCC4C256817E80028429B /* jsc_rpc_network_transport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_rpc_network_transport.hpp; sourceTree = "<group>"; };
 		F60102CF1CBB814A00EC01BA /* node_init.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_init.hpp; sourceTree = "<group>"; };
 		F60102D11CBB865A00EC01BA /* jsc_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_init.hpp; sourceTree = "<group>"; };
 		F60102F71CBDA6D400EC01BA /* js_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_collection.hpp; sourceTree = "<group>"; };
@@ -727,6 +728,7 @@
 		F6874A441CAD2ACD00EEEE36 /* JSC */ = {
 			isa = PBXGroup;
 			children = (
+				DC0FCC4C256817E80028429B /* jsc_rpc_network_transport.hpp */,
 				F620F0531CAF2EF70082977B /* jsc_class.hpp */,
 				F60103091CC4B5E800EC01BA /* jsc_context.hpp */,
 				F60103111CC4BA6500EC01BA /* jsc_exception.hpp */,
@@ -1015,7 +1017,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10.0.1;
+				CURRENT_PROJECT_VERSION = 10.1.0;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1097,7 +1099,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10.0.1;
+				CURRENT_PROJECT_VERSION = 10.1.0;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;

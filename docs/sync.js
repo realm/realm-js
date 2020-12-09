@@ -353,8 +353,16 @@ class Credentials {
      * Creates credentials based on a Google login.
      * @param {string} authCode A Google authentication code, obtained by logging into Google.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     * @deprecated
      */
     static google(authCode) { }
+
+    /**
+     * Creates credentials based on a Google login.
+     * @param {object} An object with either an `authCode` or `idToken` property.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static google(authObject) { }
 
     /**
      * Creates credentials for an anonymous user. These can only be used once - using them a second
@@ -404,6 +412,11 @@ class Credentials {
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
     get provider() { }
+
+    /**
+     * @returns {object} A simple object which can be passed to the server as the body of a request to authenticate.
+     */
+    get payload() { }
 }
 
 /**

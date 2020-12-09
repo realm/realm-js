@@ -57,6 +57,7 @@
 #include <cctype>
 #include <list>
 #include <map>
+#include <any>
 
 namespace realm {
 namespace js {
@@ -213,6 +214,52 @@ public:
     friend class RealmClass<T>;
 };
 
+
+template<typename T>
+class ShouldCompactOnLaunchFunctor {
+public:
+    ShouldCompactOnLaunchFunctor(typename T::Context ctx, typename T::Function should_compact_on_launch_func)
+    : m_ctx(Context<T>::get_global_context(ctx))
+    , m_func(ctx, should_compact_on_launch_func)
+    , m_event_loop_dispatcher {ShouldCompactOnLaunchFunctor<T>::main_loop_handler}
+    , m_mutex{new std::mutex}
+    , m_cond_var{new std::condition_variable}
+    {
+    }
+
+    bool operator ()(const uint64_t total_bytes, const uint64_t used_bytes) {
+        m_event_loop_dispatcher(this, total_bytes, used_bytes);
+        std::unique_lock<std::mutex> lock(*m_mutex);
+        m_cond_var->wait(lock, [this] { return this->m_ready; });
+
+        return m_should_compact_on_launch;
+    }
+
+    static void main_loop_handler(ShouldCompactOnLaunchFunctor<T>* this_object,
+                                  const uint64_t total_bytes,
+                                  const uint64_t used_bytes) {
+        HANDLESCOPE(this_object->m_ctx);
+
+        const int argc = 2;
+        typename T::Value arguments[argc] = { Value<T>::from_number(this_object->m_ctx, total_bytes), Value<T>::from_number(this_object->m_ctx, used_bytes) };
+        typename T::Value ret_val = Function<T>::callback(this_object->m_ctx, this_object->m_func, typename T::Object(), argc, arguments);
+        this_object->m_should_compact_on_launch = Value<T>::validated_to_boolean(this_object->m_ctx, ret_val);
+        this_object->m_ready = true;
+        this_object->m_cond_var->notify_one();
+    }
+
+private:
+    const Protected<typename T::GlobalContext> m_ctx;
+    const Protected<typename T::Function> m_func;
+    util::EventLoopDispatcher<void(ShouldCompactOnLaunchFunctor<T>* this_object,
+                                   uint64_t total_bytes,
+                                   uint64_t used_bytes)> m_event_loop_dispatcher;
+    bool m_ready = false;
+    bool m_should_compact_on_launch = false;
+    std::shared_ptr<std::mutex> m_mutex;
+    std::shared_ptr<std::condition_variable> m_cond_var;
+};
+
 std::string default_path();
 void set_default_path(std::string path);
 void clear_test_state();
@@ -241,7 +288,6 @@ public:
 
     using WaitHandler = void(std::error_code);
     using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
-
 
     static FunctionType create_constructor(ContextType);
 
@@ -296,7 +342,6 @@ public:
     static void delete_file(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void realm_file_exists(ContextType, ObjectType, Arguments &, ReturnValue &);
 
-    static void create_user_agent_description(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void bson_parse_json(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // static properties
@@ -311,7 +356,6 @@ public:
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
         {"deleteFile", wrap<delete_file>},
         {"exists", wrap<realm_file_exists>},
-        {"_createUserAgentDescription", wrap<create_user_agent_description>},
         {"_bsonParseJsonForTest", wrap<bson_parse_json>},
 #if REALM_ENABLE_SYNC
         {"_asyncOpen", wrap<async_open_realm>},
@@ -554,12 +598,8 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             static const String schema_string = "schema";
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
-                auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
-
-                // embedded object schemas need to expanded into regular object schemas
-                ObjectType expanded_schema_object = Value::validated_to_array(ctx, Object::call_method(ctx, realm_constructor, "_expandEmbeddedObjectSchemas", 1, &schema_value), "schema");
-
-                config.schema.emplace(Schema<T>::parse_schema(ctx, expanded_schema_object, defaults, constructors));
+                ObjectType schema_array = Value::validated_to_array(ctx, schema_value, "schema");
+                config.schema.emplace(Schema<T>::parse_schema(ctx, schema_array, defaults, constructors));
                 schema_updated = true;
             }
 
@@ -580,15 +620,8 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 }
 
                 FunctionType should_compact_on_launch_function = Value::validated_to_function(ctx, compact_value, "shouldCompactOnLaunch");
-                config.should_compact_on_launch_function = [=](uint64_t total_bytes, uint64_t used_bytes) {
-                    ValueType arguments[2] = {
-                        Value::from_number(ctx, total_bytes),
-                        Value::from_number(ctx, used_bytes)
-                    };
-
-                    ValueType should_compact = Function<T>::callback(ctx, should_compact_on_launch_function, {}, 2, arguments);
-                    return Value::to_boolean(ctx, should_compact);
-                };
+                ShouldCompactOnLaunchFunctor<T> should_compact_on_launch_functor {ctx, should_compact_on_launch_function};
+                config.should_compact_on_launch_function = std::move(should_compact_on_launch_functor);
             }
 
             static const String migration_string = "migration";
@@ -1303,12 +1336,6 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
         nullptr,
         true
     );
-}
-
-// These are replaced by the JS-defined functions when running outside of the RPC environment
-template<typename T>
-void RealmClass<T>::create_user_agent_description(ContextType, ObjectType, Arguments&, ReturnValue &return_value) {
-    return_value.set("RealmJS/RPC");
 }
 
 template<typename T>
