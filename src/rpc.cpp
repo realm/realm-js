@@ -1037,6 +1037,14 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
         else if (type_string == RealmObjectTypesUndefined) {
             return jsc::Value::from_undefined(m_context);
         }
+        else if (type_string == RealmObjectTypesEJSON) {
+            JSObjectRef js_object = jsc::Object::create_empty(m_context);
+            for (auto& el : value.items()) {
+                auto el_value = jsc::Value::from_string(m_context, el.value().get<std::string>());
+                jsc::Object::set_property(m_context, js_object, el.key(), el_value);
+            }
+            return js_object;
+        }
         assert(0);
     }
 
