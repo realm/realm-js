@@ -163,16 +163,16 @@ stage('test') {
 //   )
 // }
 
-stage('integration tests') {
-  parallel(
-    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
-    'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
-    'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
-    'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
-    'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
-    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
-  )
-}
+// stage('integration tests') {
+//   parallel(
+//     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
+//     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
+//     'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
+//     'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
+//     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
+//     'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
+//   )
+// }
 
 def exclusivelyChanged(regexp) {
   // Checks if this is a change/pull request and if the files changed exclusively match the provided regular expression
@@ -514,14 +514,21 @@ def doDockerInside(script, target, postStep = null) {
 }
 
 def testAndroid(target, postStep = null) {
-  return {
-    node('android') {
-        timeout(time: 1, unit: 'HOURS') {
-            // doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
-            doDockerInside('./scripts/test.sh', target, postStep)
-        }
-    }
-  }
+  doDockerInside('./scripts/test.sh', target, postStep)
+  // sh ''
+  // sh "./scripts/test.sh ${target}"
+  // if (postStep) {
+  //   postStep.call()
+  // }
+
+  // return {
+  //   node('android') {
+  //       timeout(time: 1, unit: 'HOURS') {
+  //           // doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
+  //           doDockerInside('./scripts/test.sh', target, postStep)
+  //       }
+  //   }
+  // }
 }
 
 def testLinux(target, postStep = null, Boolean enableSync = false) {
