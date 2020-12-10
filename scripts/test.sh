@@ -353,7 +353,7 @@ case "$TARGET" in
   pushd tests/react-test-app
   npm ci
   
-  npm install ../realm-tests.tgz
+  npm install ../js/realm-tests.tgz
 
   # install manually packed realm package
   npm install ../../realm.tgz --ignore-scripts
