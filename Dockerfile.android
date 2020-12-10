@@ -51,7 +51,7 @@ RUN echo 'Installing Android SDK' && \
     unzip -q sdk-tools-linux-*.zip && \
     rm sdk-tools-linux-*.zip && \
     sdkmanager --update && \
-    yes | sdkmanager "tools" "platform-tools" "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" "platforms;android-26" && \
+    yes | sdkmanager "tools" "platform-tools" "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" "platforms;android-26" "cmake;3.10.2.4988404" && \
     \
     echo 'Installing Android NDK' && \
     cd ${ANDROID_NDK}/.. && \

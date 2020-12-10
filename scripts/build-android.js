@@ -70,7 +70,7 @@ for (const arch of architectures) {
         "-GNinja",
         `-DANDROID_NDK=${ndkPath}`,
         `-DANDROID_ABI=${arch}`,
-        "-DCMAKE_MAKE_PROGRAM=ninja",
+        `-DCMAKE_MAKE_PROGRAM=${sdkPath}/cmake/3.10.2.4988404/bin/ninja`,
         `-DCMAKE_TOOLCHAIN_FILE=${ndkPath}/build/cmake/android.toolchain.cmake`,
         "-DANDROID_TOOLCHAIN=clang",
         "-DANDROID_NATIVE_API_LEVEL=16",
