@@ -15,7 +15,8 @@
     "xmlbuilder": "^4.2.1"
   },
   "resolutions": {
-    "moment": "2.19.1"
+    "moment": "2.19.1",
+    "graceful-fs": "4.2.4"
   },
   "devDependencies": {
     "babel-preset-react-native": "4.0.0",
