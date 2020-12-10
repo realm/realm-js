@@ -8,7 +8,7 @@ export NPM_CONFIG_PROGRESS=false
 
 TARGET=$1
 CONFIGURATION=${2:-Release}
-NODE_VERSION=${3:-v12.20.0}
+NODE_VERSION=${3:-v12.18.2}
 
 if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
