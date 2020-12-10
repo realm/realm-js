@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixing creating objects and assigning properties of BSON Decimal128 and ObjectId types, when running in React Native Chrome debugging mode. ([#3452](https://github.com/realm/realm-js/issues/3452) & [#3454](https://github.com/realm/realm-js/issues/3454), since v10.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
