@@ -387,7 +387,7 @@ def buildMacOS(workerFunction) {
   return {
     myNode('osx_vegas') {
       withEnv([
-        "DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer",
+        "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer",
       ]) {
         unstash 'source'
         sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
