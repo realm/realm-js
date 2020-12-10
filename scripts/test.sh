@@ -347,7 +347,6 @@ case "$TARGET" in
 
   pushd tests/js
   npm pack .
-  realm-tests-0.0.1.tgz
   mv realm-tests-*.*.*.tgz realm-tests.tgz
   popd
 
