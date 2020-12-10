@@ -59,3 +59,9 @@ RUN echo 'Installing Android SDK' && \
     unzip -q android-ndk-*-linux-x86_64.zip && \
     rm android-ndk-*-linux-x86_64.zip && \
     mv android-ndk-* android-ndk
+
+# Ensure a new enough version of CMake is available.
+RUN cd /opt \
+    && curl -O -J https://cmake.org/files/v3.15/cmake-3.15.2-Linux-x86_64.tar.gz \
+    && tar zxf cmake-3.15.2-Linux-x86_64.tar.gz
+ENV PATH "/opt/cmake-3.15.2-Linux-x86_64/bin:$PATH"
