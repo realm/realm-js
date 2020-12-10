@@ -156,7 +156,7 @@ stage('test') {
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
   android_react_tests: testAndroid('react-tests-android', {
     junit 'tests/react-test-app/tests.xml'
-  }),
+  })
   parallel parallelExecutors
 }
 
