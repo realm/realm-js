@@ -337,16 +337,29 @@ case "$TARGET" in
   npm ci --ignore-scripts
   npm run check-environment
 
+  node scripts/build-android.js --arch=x86
+  pushd react-native/android
+  $(pwd)/gradlew buildAndroidPackage
+
   # pack realm package manually since install-local does not allow passing --ignore-scripts
-  REALM_BUILD_ANDROID_PACKAGE=1 && npm pack .
+  npm pack .
   mv realm-*.*.*.tgz realm.tgz
+
+  pushd tests/js
+  npm pack .
+  realm-tests-0.0.1.tgz
+  mv realm-tests-*.*.*.tgz realm-tests.tgz
+  popd
 
   pushd tests/react-test-app
   npm ci
+  
+  npm install ../realm-tests.tgz
+
   # install manually packed realm package
   npm install ../../realm.tgz --ignore-scripts
   
-  ./node_modules/.bin/install-local
+  # ./node_modules/.bin/install-local
 
   echo "Resetting logcat"
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
