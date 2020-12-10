@@ -334,6 +334,7 @@ case "$TARGET" in
   start_server
   ;;
 "test-android")
+  npm ci --ignore-scripts
   npm run check-environment
 
   node scripts/build-android.js --arch=x86
