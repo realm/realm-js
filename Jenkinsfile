@@ -121,7 +121,8 @@ stage('build') {
       parallelExecutors["Windows ia32 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'ia32')
       parallelExecutors["Windows x64 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'x64')
     }
-    //parallelExecutors["Android React Native"] = buildAndroid()
+    
+    parallelExecutors["Android RN"] = buildAndroid()
     parallel parallelExecutors
 }
 
@@ -141,16 +142,11 @@ stage('test') {
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
-
-  //parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  //parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
+  parallelExecutors["React Native Android Release"] = testAndroid('test-android')
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
-  //android_react_tests: testAndroid('react-tests-android', {
-  //  junit 'tests/react-test-app/tests.xml'
-  //}),
   parallel parallelExecutors
 }
 
@@ -419,9 +415,10 @@ def inAndroidContainer(workerFunction) {
 def buildAndroid() {
   inAndroidContainer {
     sh 'npm ci --ignore-scripts'
-    sh 'cd react-native/android && ./gradlew publishAndroid'
-    sh 'npm pack'
-    stash includes: 'realm-*.tgz', name: 'android'
+    //sh 'cd react-native/android && ./gradlew publishAndroid'
+    sh 'node scripts/build-android.js'
+    //sh 'export REALM_BUILD_ANDROID_PACKAGE=1 && npm pack'
+    // stash includes: 'realm-*.tgz', name: 'build-android'
   }
 }
 

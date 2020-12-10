@@ -23,9 +23,9 @@
 #include <thread>
 
 #include "concurrent_deque.hpp"
-#include "json.hpp"
-#include "jsc/jsc_types.hpp"
-#include "jsc/jsc_protected.hpp"
+#include <external/json/json.hpp>
+#include "jsc_types.hpp"
+#include "jsc_protected.hpp"
 
 namespace realm {
 

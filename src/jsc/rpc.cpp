@@ -961,5 +961,9 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
 
         return jsc::Object::create_array(m_context, (uint32_t)count, js_values);
     }
+    else {
+        throw std::runtime_error("deserialize_json_value: Unkown value");
+    }
+
     assert(0);
 }

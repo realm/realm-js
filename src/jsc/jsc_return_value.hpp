@@ -54,7 +54,7 @@ class ReturnValue<jsc::Types> {
         m_value = JSValueMakeNumber(m_context, number);
     }
     void set(const util::Optional<realm::Mixed>& mixed) {
-        m_value = Value<jsc::Types>::from_mixed(m_context, mixed);
+        m_value = Value<jsc::Types>::from_mixed(m_context, mixed.value());
     }
     void set_null() {
         m_value = JSValueMakeNull(m_context);

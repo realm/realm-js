@@ -1,5 +1,3 @@
-
-
 add_library(realm-js SHARED
     $<TARGET_OBJECTS:realm-js-shared>
     node_init.cpp

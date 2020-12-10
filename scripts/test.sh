@@ -41,7 +41,7 @@ PATH="$PWD/node_modules/.bin:$PATH"
 
 if [[ $TARGET = *-android ]]; then
   # Inform the prepublish script to build Android modules.
-  export REALM_BUILD_ANDROID=1
+  export REALM_BUILD_ANDROID_PACKAGE=1
 fi
 
 # SERVER_PID=0
@@ -333,14 +333,12 @@ case "$TARGET" in
   RUN_STITCH_IN_FORGROUND=true
   start_server
   ;;
-"react-tests-android")
+"test-android")
   npm run check-environment
 
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  XCPRETTY=''
-
+  node scripts/build-android.js --arch=x86
   pushd react-native/android
-  $(pwd)/gradlew publishAndroid
+  $(pwd)/gradlew buildAndroidPackage
   popd
 
   pushd tests/react-test-app

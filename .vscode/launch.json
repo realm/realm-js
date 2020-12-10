@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Build Realm Android",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/scripts/build-realm-android.js",
+            "args": ["--arch=x186"],
+            "request": "launch",
+            "type": "node"
+        },
+        {
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",

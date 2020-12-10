@@ -26,11 +26,11 @@ const dependencies = ini(fs.readFileSync(path.resolve(__dirname, '../dependencie
 console.log(`Core version: ${dependencies.REALM_CORE_VERSION}`);
 console.log(`Sync version: ${dependencies.REALM_SYNC_VERSION}`);
 
-if ('REALM_BUILD_ANDROID' in process.env) {
+if ('REALM_BUILD_ANDROID_PACKAGE' in process.env) {
     const gradlew = process.platform === 'win32' ? 'gradlew.bat' : 'gradlew';
     const androidPath = path.resolve(__dirname, '../react-native/android');
 
-    exec(`${androidPath}/${gradlew}`, ['publishAndroid'], { cwd: androidPath, stdio: 'inherit' });
+    exec(`${androidPath}/${gradlew}`, ['buildAndroidPackage'], { cwd: androidPath, stdio: 'inherit' });
 }
 
 function ini(string) {

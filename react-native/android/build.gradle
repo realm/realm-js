@@ -13,16 +13,16 @@ allprojects {
     repositories {
         google()
         jcenter()
-        mavenLocal()
-        maven {
-            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            url "$projectDir/../../tests/react-test-app/node_modules/react-native/android"
-        }
+        // mavenLocal()
+        // maven {
+        //     // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+        //     url "$projectDir/../../tests/react-test-app/node_modules/react-native/android"
+        // }
     }
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
+// apply plugin: 'maven'
 apply plugin: 'signing'
 apply plugin: 'de.undercouch.download'
 
@@ -30,21 +30,21 @@ import de.undercouch.gradle.tasks.download.Download
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.apache.tools.ant.filters.ReplaceTokens
 
-def openSSLVersion = "1.1.1b"
+//TODO: remove comments
+//////////////////// def openSSLVersion = "1.1.1b"
+///////////////////// We download various C++ open-source dependencies into downloads.
+/////////////////////// We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
+//////////////////////// After that we build native code from src/main/jni with module path pointing at third-party-ndk.
 
-// We download various C++ open-source dependencies into downloads.
-// We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
-// After that we build native code from src/main/jni with module path pointing at third-party-ndk.
-
-ext.coreVersion = getDependenciesVersion("REALM_CORE_VERSION").trim()
-ext.syncVersion = getDependenciesVersion("REALM_SYNC_VERSION").trim()
+// ext.coreVersion = getDependenciesVersion("REALM_CORE_VERSION").trim()
+// ext.syncVersion = getDependenciesVersion("REALM_SYNC_VERSION").trim()
 def currentVersion = getDependenciesVersion("VERSION").trim()
-println "Realm Core Version: $ext.coreVersion"
-println "Realm Sync Version: $ext.syncVersion"
+// println "Realm Core Version: $ext.coreVersion"
+// println "Realm Sync Version: $ext.syncVersion"
 
 def downloadsDir = new File("$projectDir/downloads")
-def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
-def coreDownloadDir = new File("$projectDir/src/main/jni")
+// def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
+// def coreDownloadDir = new File("$projectDir/src/main/jni")
 def publishDir = new File("$projectDir/../../android/")
 // to build with sync run: ./gradlew assembleDebug -PbuildWithSync=true
 ext.buildSync = project.hasProperty('buildWithSync') ? project.getProperty('buildWithSync').toBoolean() : true
@@ -56,84 +56,84 @@ task generateVersionClass(type: Copy) {
     outputs.upToDateWhen { false }
 }
 
-task createNativeDepsDirectories {
-    downloadsDir.mkdirs()
-}
+// task createNativeDepsDirectories {
+//     downloadsDir.mkdirs()
+// }
 
-task downloadRealmCore(type: Download) {
-    if (project.buildSync) {
-        src "https://static.realm.io/downloads/sync/realm-sync-android-${project.syncVersion}.tar.gz"
-    } else {
-        src "https://static.realm.io/downloads/core/realm-core-android-v${project.coreVersion}.tar.gz"
-    }
-    onlyIfNewer true
-    overwrite true
-    if (project.buildSync) {
-        dest new File(downloadsDir, "realm-core-android-${project.syncVersion}.tar.gz")
-    } else {
-        dest new File(downloadsDir, "realm-core-android-${project.coreVersion}.tar.gz")
-    }
-}
+// task downloadRealmCore(type: Download) {
+//     if (project.buildSync) {
+//         src "https://static.realm.io/downloads/sync/realm-sync-android-${project.syncVersion}.tar.gz"
+//     } else {
+//         src "https://static.realm.io/downloads/core/realm-core-android-v${project.coreVersion}.tar.gz"
+//     }
+//     onlyIfNewer true
+//     overwrite true
+//     if (project.buildSync) {
+//         dest new File(downloadsDir, "realm-core-android-${project.syncVersion}.tar.gz")
+//     } else {
+//         dest new File(downloadsDir, "realm-core-android-${project.coreVersion}.tar.gz")
+//     }
+// }
 
-task prepareRealmCore(dependsOn: downloadRealmCore, type:Copy) {
-    from tarTree(downloadRealmCore.dest)
-    into "$coreDownloadDir/core"
-    rename { String fileName ->
-        fileName.replace("-arm-", "-armeabi-")
-    }
-}
+// task prepareRealmCore(dependsOn: downloadRealmCore, type:Copy) {
+//     from tarTree(downloadRealmCore.dest)
+//     into "$coreDownloadDir/core"
+//     rename { String fileName ->
+//         fileName.replace("-arm-", "-armeabi-")
+//     }
+// }
 
-task downloadOpenSSL_x86(type: Download) {
-    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/x86/openssl.tgz"
-    onlyIfNewer true
-    overwrite true
-    dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-x86.tar.gz")
-}
+// task downloadOpenSSL_x86(type: Download) {
+//     src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/x86/openssl.tgz"
+//     onlyIfNewer true
+//     overwrite true
+//     dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-x86.tar.gz")
+// }
 
-task downloadOpenSSL_x86_64(type: Download) {
-    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/x86_64/openssl.tgz"
-    onlyIfNewer true
-    overwrite true
-    dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-x86_64.tar.gz")
-}
+// task downloadOpenSSL_x86_64(type: Download) {
+//     src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/x86_64/openssl.tgz"
+//     onlyIfNewer true
+//     overwrite true
+//     dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-x86_64.tar.gz")
+// }
 
-task prepareOpenSSL_x86(dependsOn: downloadOpenSSL_x86, type:Copy) {
-    from tarTree(downloadOpenSSL_x86.dest)
-    into "$coreDownloadDir/core"
-    rename 'lib(.*).a', 'lib$1-x86.a'
-}
+// task prepareOpenSSL_x86(dependsOn: downloadOpenSSL_x86, type:Copy) {
+//     from tarTree(downloadOpenSSL_x86.dest)
+//     into "$coreDownloadDir/core"
+//     rename 'lib(.*).a', 'lib$1-x86.a'
+// }
 
-task prepareOpenSSL_x86_64(dependsOn: downloadOpenSSL_x86_64, type:Copy) {
-    from tarTree(downloadOpenSSL_x86_64.dest)
-    into "$coreDownloadDir/core"
-    rename 'lib(.*).a', 'lib$1-x86_64.a'
-}
+// task prepareOpenSSL_x86_64(dependsOn: downloadOpenSSL_x86_64, type:Copy) {
+//     from tarTree(downloadOpenSSL_x86_64.dest)
+//     into "$coreDownloadDir/core"
+//     rename 'lib(.*).a', 'lib$1-x86_64.a'
+// }
 
-task downloadOpenSSL_arm(type: Download) {
-    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/armeabi-v7a/openssl.tgz"
-    onlyIfNewer true
-    overwrite true
-    dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-armeabi-v7a.tar.gz")
-}
+// task downloadOpenSSL_arm(type: Download) {
+//     src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/armeabi-v7a/openssl.tgz"
+//     onlyIfNewer true
+//     overwrite true
+//     dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-armeabi-v7a.tar.gz")
+// }
 
-task downloadOpenSSL_arm_64(type: Download) {
-    src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/arm64-v8a/openssl.tgz"
-    onlyIfNewer true
-    overwrite true
-    dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-arm64-v8a.tar.gz")
-}
+// task downloadOpenSSL_arm_64(type: Download) {
+//     src "https://static.realm.io/downloads/openssl/${openSSLVersion}/Android/arm64-v8a/openssl.tgz"
+//     onlyIfNewer true
+//     overwrite true
+//     dest new File(downloadsDir, "openssl-release-${openSSLVersion}-Android-arm64-v8a.tar.gz")
+// }
 
-task prepareOpenSSL_arm(dependsOn: downloadOpenSSL_arm, type:Copy) {
-    from tarTree(downloadOpenSSL_arm.dest)
-    into "$coreDownloadDir/core"
-    rename 'lib(.*).a', 'lib$1-armeabi-v7a.a'
-}
+// task prepareOpenSSL_arm(dependsOn: downloadOpenSSL_arm, type:Copy) {
+//     from tarTree(downloadOpenSSL_arm.dest)
+//     into "$coreDownloadDir/core"
+//     rename 'lib(.*).a', 'lib$1-armeabi-v7a.a'
+// }
 
-task prepareOpenSSL_arm_64(dependsOn: downloadOpenSSL_arm_64, type:Copy) {
-    from tarTree(downloadOpenSSL_arm_64.dest)
-    into "$coreDownloadDir/core"
-    rename 'lib(.*).a', 'lib$1-arm64-v8a.a'
-}
+// task prepareOpenSSL_arm_64(dependsOn: downloadOpenSSL_arm_64, type:Copy) {
+//     from tarTree(downloadOpenSSL_arm_64.dest)
+//     into "$coreDownloadDir/core"
+//     rename 'lib(.*).a', 'lib$1-arm64-v8a.a'
+// }
 
 
 def getDependenciesVersion(keyName) {
@@ -151,167 +151,173 @@ def getDependenciesVersion(keyName) {
     }
 }
 
-def getNdkBuildName() {
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        return "ndk-build.cmd"
-    } else {
-        return "ndk-build"
-    }
-}
+// def getNdkBuildName() {
+//     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+//         return "ndk-build.cmd"
+//     } else {
+//         return "ndk-build"
+//     }
+// }
 
-def findNdkBuildFullPath() {
-    def ndkDir = null
+// def findNdkBuildFullPath() {
+//     def ndkDir = null
 
-    // we allow to provide full path to ndk-build tool
-    if (hasProperty('ndk.command')) {
-        return property('ndk.command')
-    }
-    // or just a path to the containing directory
-    if (hasProperty('ndk.path')) {
-        ndkDir = property('ndk.path')
-        return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
-    }
+//     // we allow to provide full path to ndk-build tool
+//     if (hasProperty('ndk.command')) {
+//         println "Using NDK path from ndk.command"
+//         return property('ndk.command')
+//     }
+//     // or just a path to the containing directory
+//     if (hasProperty('ndk.path')) {
+//         println "Using NDK pth from ndk.path"
+//         ndkDir = property('ndk.path')
+//         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+//     }
 
-    if (System.getenv('ANDROID_NDK') != null) {
-        ndkDir = System.getenv('ANDROID_NDK')
-        return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
-    }
-    if (System.getenv('ANDROID_NDK_HOME') != null) {
-        ndkDir = System.getenv('ANDROID_NDK_HOME')
-        return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
-    }
+//     if (System.getenv('ANDROID_NDK') != null) {
+//         println "Using NDK path from ANDROID_NDK environment variable"
+//         ndkDir = System.getenv('ANDROID_NDK')
+//         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+//     }
+//     if (System.getenv('ANDROID_NDK_HOME') != null) {
+//         println "Using NDK path from ANDROID_NDK_HOME environment variable"
+//         ndkDir = System.getenv('ANDROID_NDK_HOME')
+//         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+//     }
 
+//     try {
+//         // Reading [ndk.dir] from local.properties
+//         Properties properties = new Properties()
+//         properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
-    try {
-        // Reading [ndk.dir] from local.properties
-        Properties properties = new Properties()
-        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+//         ndkDir = properties.getProperty('ndk.dir')
+//         if (ndkDir != null) {
+//             println "Using NDK path from local.properties"
+//             return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+//         }
+//     } catch(FileNotFoundException e) {
+//         println "local.properties not found."
+//     }
 
-        ndkDir = properties.getProperty('ndk.dir')
-        if (ndkDir != null) {
-            return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
-        }
-    } catch(FileNotFoundException e) {
-        println "[Warning]: local.properties not found "
-        println "Error: $e"
-    }
+//     try {
+//         ndkDir = android.hasProperty('plugin') ? 
+//             android.plugin.ndkFolder :
+//             plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
 
-    try {
-        ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder :
-                plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
+//         if (ndkDir) {
+//             println "Using NDK path from gradle configuration"
+//             return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+//         }
+//     } catch(MissingPropertyException e) {
+//         println "Unable to locate your NDK path from gradle configuration."
+//     }
 
-        if (ndkDir) {
-            return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
-        }
-    } catch(MissingPropertyException e) {
-        throw new GradleException("Unable to locate your NDK configuration. Did you forget to install the Android NDK?\n" +
-                "more info: https://developer.android.com/studio/projects/install-ndk \n")
-    }
+//     throw new GradleException("Did you forget to install the Android NDK?\n" +
+//                 "more info: https://developer.android.com/studio/projects/install-ndk \n")
+// }
 
-    return null
-}
+// def checkNdkVersion(ndkBuildFullPath) {
+//     def ndkPath = new File(ndkBuildFullPath).getParent()
+//     def detectedNdkVersion
+//     def releaseFile = new File(ndkPath, 'RELEASE.TXT')
+//     def propertyFile = new File(ndkPath, 'source.properties')
+//     if (releaseFile.isFile()) {
+//         detectedNdkVersion = releaseFile.text.trim().split()[0].split('-')[0]
+//     } else if (propertyFile.isFile()) {
+//         detectedNdkVersion = getValueFromPropertiesFile(propertyFile, 'Pkg.Revision')
+//         if (detectedNdkVersion == null) {
+//             throw new GradleException("Failed to obtain the NDK version information from ${ndkPath}/source.properties")
+//         }
+//     } else {
+//         throw new GradleException("Neither ${releaseFile.getAbsolutePath()} nor ${propertyFile.getAbsolutePath()} is a file.")
+//     }
+//     if (detectedNdkVersion.split('\\.')[0] != project.ndkVersion) {
+//         throw new GradleException("Your NDK version: ${detectedNdkVersion}."
+//                 + " Realm JNI must be compiled with the version ${project.ndkVersion} of NDK.")
+//     }
+// }
 
-def checkNdkVersion(ndkBuildFullPath) {
-    def ndkPath = new File(ndkBuildFullPath).getParent()
-    def detectedNdkVersion
-    def releaseFile = new File(ndkPath, 'RELEASE.TXT')
-    def propertyFile = new File(ndkPath, 'source.properties')
-    if (releaseFile.isFile()) {
-        detectedNdkVersion = releaseFile.text.trim().split()[0].split('-')[0]
-    } else if (propertyFile.isFile()) {
-        detectedNdkVersion = getValueFromPropertiesFile(propertyFile, 'Pkg.Revision')
-        if (detectedNdkVersion == null) {
-            throw new GradleException("Failed to obtain the NDK version information from ${ndkPath}/source.properties")
-        }
-    } else {
-        throw new GradleException("Neither ${releaseFile.getAbsolutePath()} nor ${propertyFile.getAbsolutePath()} is a file.")
-    }
-    if (detectedNdkVersion.split('\\.')[0] != project.ndkVersion) {
-        throw new GradleException("Your NDK version: ${detectedNdkVersion}."
-                + " Realm JNI must be compiled with the version ${project.ndkVersion} of NDK.")
-    }
-}
+// static def getValueFromPropertiesFile(File propFile, String key) {
+//     if (!propFile.isFile() || !propFile.canRead()) {
+//         return null
+//     }
+//     def prop = new Properties()
+//     def reader = propFile.newReader()
+//     try {
+//         prop.load(reader)
+//     } finally {
+//         reader.close()
+//     }
+//     return prop.get(key)
+// }
 
-static def getValueFromPropertiesFile(File propFile, String key) {
-    if (!propFile.isFile() || !propFile.canRead()) {
-        return null
-    }
-    def prop = new Properties()
-    def reader = propFile.newReader()
-    try {
-        prop.load(reader)
-    } finally {
-        reader.close()
-    }
-    return prop.get(key)
-}
+// def getNdkBuildFullPath() {
+//     def ndkBuildFullPath = findNdkBuildFullPath()
+//     if (ndkBuildFullPath == null) {
+//         throw new GradleScriptException(
+//             "ndk-build binary cannot be found, check if you've set " +
+//             "\$ANDROID_NDK environment variable correctly or if ndk.dir is " +
+//             "setup in local.properties",
+//             null)
+//     }
+//     if (!new File(ndkBuildFullPath).canExecute()) {
+//         throw new GradleScriptException(
+//             "ndk-build binary " + ndkBuildFullPath + " doesn't exist or isn't executable.\n" +
+//             "Check that the \$ANDROID_NDK environment variable, or ndk.dir in local.proerties, is set correctly.\n" +
+//             "(On Windows, make sure you escape backslashes in local.properties or use forward slashes, e.g. C:\\\\ndk or C:/ndk rather than C:\\ndk)",
+//             null)
+//     }
 
-def getNdkBuildFullPath() {
-    def ndkBuildFullPath = findNdkBuildFullPath()
-    if (ndkBuildFullPath == null) {
-        throw new GradleScriptException(
-            "ndk-build binary cannot be found, check if you've set " +
-            "\$ANDROID_NDK environment variable correctly or if ndk.dir is " +
-            "setup in local.properties",
-            null)
-    }
-    if (!new File(ndkBuildFullPath).canExecute()) {
-        throw new GradleScriptException(
-            "ndk-build binary " + ndkBuildFullPath + " doesn't exist or isn't executable.\n" +
-            "Check that the \$ANDROID_NDK environment variable, or ndk.dir in local.proerties, is set correctly.\n" +
-            "(On Windows, make sure you escape backslashes in local.properties or use forward slashes, e.g. C:\\\\ndk or C:/ndk rather than C:\\ndk)",
-            null)
-    }
+//     checkNdkVersion(ndkBuildFullPath);
 
-    checkNdkVersion(ndkBuildFullPath);
+//     return ndkBuildFullPath
+// }
 
-    return ndkBuildFullPath
-}
+// def checkForHeadersFile(folder){
+//     File[] files = new File("$projectDir/../../$folder").listFiles();
 
-def checkForHeadersFile(folder){
-    File[] files = new File("$projectDir/../../$folder").listFiles();
+//     if (files == null || files.length == 0)
+//         throw new GradleException("Unable to locate any headers in the '/$folder' folder.\n" +
+//         "Please make sure you go to the root folder (realm-js) and do:\n" +
+//         "git submodule update --init --recursive")
+// }
 
-    if (files == null || files.length == 0)
-        throw new GradleException("Unable to locate any headers in the '/$folder' folder.\n" +
-        "Please make sure you go to the root folder (realm-js) and do:\n" +
-        "git submodule update --init --recursive")
-}
+// task buildReactNdkLib(dependsOn: [prepareRealmCore, prepareOpenSSL_x86, prepareOpenSSL_x86_64, prepareOpenSSL_arm, prepareOpenSSL_arm_64], type: Exec) {
+//     checkForHeadersFile('src/object-store')
+//     checkForHeadersFile('docs/jsdoc-template')
+//     checkForHeadersFile('vendor/GCDWebServer')
 
-task buildReactNdkLib(dependsOn: [prepareRealmCore, prepareOpenSSL_x86, prepareOpenSSL_x86_64, prepareOpenSSL_arm, prepareOpenSSL_arm_64], type: Exec) {
-    checkForHeadersFile('src/object-store')
-    checkForHeadersFile('docs/jsdoc-template')
-    checkForHeadersFile('vendor/GCDWebServer')
+//     inputs.files('src/main/jni')
+//     outputs.dir("$buildDir/realm-react-ndk/all")
+//     commandLine getNdkBuildFullPath(),
+//             '-e',
+//             project.buildSync ? 'BUILD_TYPE_SYNC=1' : 'BUILD_TYPE_SYNC=0',
+//             'NDK_PROJECT_PATH=null',
+//             "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
+//             'NDK_OUT=' + temporaryDir,
+//             "NDK_LIBS_OUT=$buildDir/realm-react-ndk/all",
+//             '-C', file('src/main/jni').absolutePath,
+//             'NDK_LOG=1',
+//             'NDK_DEBUG=' + (DEBUG_BUILD.toBoolean() ? '1' : '0'),
+//             '--jobs', Runtime.runtime.availableProcessors(),
+//             'V=1'
+// }
 
-    inputs.files('src/main/jni')
-    outputs.dir("$buildDir/realm-react-ndk/all")
-    commandLine getNdkBuildFullPath(),
-            '-e',
-            project.buildSync ? 'BUILD_TYPE_SYNC=1' : 'BUILD_TYPE_SYNC=0',
-            'NDK_PROJECT_PATH=null',
-            "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
-            'NDK_OUT=' + temporaryDir,
-            "NDK_LIBS_OUT=$buildDir/realm-react-ndk/all",
-            '-C', file('src/main/jni').absolutePath,
-            'NDK_LOG=1',
-            'NDK_DEBUG=' + (DEBUG_BUILD.toBoolean() ? '1' : '0'),
-            '--jobs', Runtime.runtime.availableProcessors(),
-            'V=1'
-}
+// task cleanReactNdkLib(type: Exec) {
+//     commandLine getNdkBuildFullPath(),
+//             '-C', file('src/main/jni').absolutePath,
+//             'clean'
+// }
 
-task cleanReactNdkLib(type: Exec) {
-    commandLine getNdkBuildFullPath(),
-            '-C', file('src/main/jni').absolutePath,
-            'clean'
-}
+// task packageReactNdkLibs(dependsOn: buildReactNdkLib, type: Copy) {
+//     from "$buildDir/libs"
+//     exclude '**/libjsc.so'
+//     exclude '**/gdbserver'
+//     exclude '**/gdb.setup'
+//     into "$buildDir/realm-react-ndk/libs"
+// }
 
-task packageReactNdkLibs(dependsOn: buildReactNdkLib, type: Copy) {
-    from "$buildDir/realm-react-ndk/all"
-    exclude '**/libjsc.so'
-    exclude '**/gdbserver'
-    exclude '**/gdb.setup'
-    into "$buildDir/realm-react-ndk/exported"
-}
-
+println "BUILDDIR $buildDir"
 android {
     compileSdkVersion 28
 
@@ -323,23 +329,23 @@ android {
     sourceSets.main {
         java.srcDir "$buildDir/generated-src/main/java"
         jni.srcDirs = []
-        jniLibs.srcDir "$buildDir/realm-react-ndk/exported"
+        jniLibs.srcDir "$buildDir/libs"
         res.srcDirs = ['src/main/res/devsupport', 'src/main/res/shell']
     }
 
     tasks.withType(JavaCompile) {
-        compileTask -> compileTask.dependsOn generateVersionClass, packageReactNdkLibs
+        compileTask -> compileTask.dependsOn generateVersionClass 
+        // , packageReactNdkLibs
     }
-
-    clean.dependsOn cleanReactNdkLib
 
     lintOptions {
         abortOnError false
     }
 }
 
-task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type: Sync) {
-    group = 'Publishing'
+task buildAndroidPackage(dependsOn: [generateVersionClass], type: Sync) {
+    println ""
+    group = 'Building Android Package'
 
     // Copy task can only have one top level
     into "$publishDir"
@@ -352,7 +358,7 @@ task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type
 
     // add compiled shared object
     into ('/src/main/jniLibs') {
-        from "$buildDir/realm-react-ndk/exported/"
+        from "$buildDir/libs/"
     }
 
     // copy gradle wrapper files
@@ -379,35 +385,34 @@ task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type
 }
 
 // publishing into maven local
+// def configureRealmReactNativePom(def pom) {
+//     pom.project {
+//         name POM_NAME
+//         artifactId POM_ARTIFACT_ID
+//         packaging POM_PACKAGING
+//         description POM_DESCRIPTION
+//         url 'https://github.com/realm/realm-js'
 
-def configureRealmReactNativePom(def pom) {
-    pom.project {
-        name POM_NAME
-        artifactId POM_ARTIFACT_ID
-        packaging POM_PACKAGING
-        description POM_DESCRIPTION
-        url 'https://github.com/realm/realm-js'
+//         issueManagement {
+//             system 'github'
+//             url 'https://github.com/realm/realm-js/issues'
+//         }
 
-        issueManagement {
-            system 'github'
-            url 'https://github.com/realm/realm-js/issues'
-        }
+//         scm {
+//             url 'scm:https://github.com/realm/realm-js'
+//             connection 'scm:git@github.com:realm/realm-js.git'
+//             developerConnection 'scm:git@github.com:realm/realm-js.git'
+//         }
 
-        scm {
-            url 'scm:https://github.com/realm/realm-js'
-            connection 'scm:git@github.com:realm/realm-js.git'
-            developerConnection 'scm:git@github.com:realm/realm-js.git'
-        }
-
-        licenses {
-            license {
-                name 'The Apache Software License, Version 2.0'
-                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                distribution 'repo'
-            }
-        }
-    }
-}
+//         licenses {
+//             license {
+//                 name 'The Apache Software License, Version 2.0'
+//                 url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//                 distribution 'repo'
+//             }
+//         }
+//     }
+// }
 
 afterEvaluate { project ->
     task androidSourcesJar(type: Jar) {
@@ -435,17 +440,17 @@ afterEvaluate { project ->
         sign configurations.archives
     }
 
-    task installArchives(type: Upload) {
-        configuration = configurations.archives
-        repositories.mavenDeployer {
-            beforeDeployment {
-                MavenDeployment deployment -> signing.signPom(deployment)
-            }
+    // task installArchives(type: Upload) {
+    //     configuration = configurations.archives
+    //     repositories.mavenDeployer {
+    //         beforeDeployment {
+    //             MavenDeployment deployment -> signing.signPom(deployment)
+    //         }
 
-            repository url: "file://${System.properties['user.home']}/.m2/repository"
-            configureRealmReactNativePom pom
-        }
-    }
+    //         repository url: "file://${System.properties['user.home']}/.m2/repository"
+    //         configureRealmReactNativePom pom
+    //     }
+    // }
 }
 
 def dependencyType = "implementation"
