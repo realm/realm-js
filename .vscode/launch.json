@@ -7,8 +7,8 @@
         {
             "name": "Build Realm Android",
             "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/scripts/build-realm-android.js",
-            "args": ["--arch=x186"],
+            "program": "${workspaceFolder}/scripts/build-android.js",
+            "args": ["--arch=x86"],
             "request": "launch",
             "type": "node"
         },

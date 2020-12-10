@@ -48,7 +48,7 @@ if (!"ANDROID_NDK" in process.env) {
 const ndkPath = process.env["ANDROID_NDK"];
 
 const sdkPath = getAndroidSdkPath();
-const cmakePath = getCmakePath();
+const cmakePath = getCmakePath(sdkPath);
 
 const buildPath = path.resolve(process.cwd(), 'build-realm-android');
 if (fs.existsSync(buildPath)) {
@@ -123,11 +123,20 @@ function getAndroidSdkPath() {
     throw new Error("Android SDK not found. ANDROID_SDK or ANDROID_HOME or ANDROID_SDK_ROOT needs to be set");
 }
 
-function getCmakePath() {
+function getCmakePath(sdkPath) {
     if ("CMAKE_PATH" in process.env) {
+        console.log("Using cmake from CMAKE_PATH environment variable");
         return process.env["CMAKE_PATH"];
     }
 
     const executableName = process.platform === 'win32' ? 'cmake.exe' : 'cmake';
+
+    const cmakePath = path.resolve(sdkPath, "cmake", "3.10.2.4988404", "bin", executableName);
+    if (fs.existsSync(cmakePath)) {
+        console.log(`Using cmake from ${cmakePath}`);
+        return cmakePath; 
+    }
+
+    console.log("Cmake not found. Assuming cmake is in $PATH");
     return executableName;
 }
