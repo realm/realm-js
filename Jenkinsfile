@@ -514,12 +514,10 @@ def doDockerInside(script, target, postStep = null) {
 }
 
 def testAndroid(target, postStep = null) {
-  doDockerInside('./scripts/test.sh', target, postStep)
-  // sh ''
-  // sh "./scripts/test.sh ${target}"
-  // if (postStep) {
-  //   postStep.call()
-  // }
+  sh "./scripts/test.sh ${target}"
+  if (postStep) {
+    postStep.call()
+  }
 
   // return {
   //   node('android') {
