@@ -130,13 +130,5 @@ function getCmakePath(sdkPath) {
     }
 
     const executableName = process.platform === 'win32' ? 'cmake.exe' : 'cmake';
-
-    const cmakePath = path.resolve(sdkPath, "cmake", "3.10.2.4988404", "bin", executableName);
-    if (fs.existsSync(cmakePath)) {
-        console.log(`Using cmake from ${cmakePath}`);
-        return cmakePath; 
-    }
-
-    console.log("Cmake not found. Assuming cmake is in $PATH");
     return executableName;
 }
