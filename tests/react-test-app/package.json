@@ -12,7 +12,8 @@
     "react-native-exception-handler": "^2.4.3",
     "react-native-exit-app-no-history": "^1.0.2",
     "react-native-fs": "^2.16.6",
-    "xmlbuilder": "^4.2.1"
+    "xmlbuilder": "^4.2.1",
+    "graceful-fs": "^4.2.4"
   },
   "resolutions": {
     "moment": "2.19.1",
