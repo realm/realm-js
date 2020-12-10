@@ -340,6 +340,7 @@ case "$TARGET" in
   node scripts/build-android.js --arch=x86
   pushd react-native/android
   $(pwd)/gradlew buildAndroidPackage
+  popd
 
   # pack realm package manually since install-local does not allow passing --ignore-scripts
   npm pack .
@@ -361,9 +362,9 @@ case "$TARGET" in
   # ./node_modules/.bin/install-local
 
   echo "Resetting logcat"
-  # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   mkdir -p $(pwd)/build || true
   adb logcat -c
+  # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   adb logcat -T 1 | tee "$LOGCAT_OUT" | tee $(pwd)/build/out.txt &
 
   ./run-android.sh
