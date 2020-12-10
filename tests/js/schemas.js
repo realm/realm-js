@@ -31,6 +31,19 @@ exports.DogForSync = {
     }
 }
 
+exports.PersonForSync = {
+    name: 'Person',
+    primaryKey: '_id',
+    properties: {
+        _id: 'objectId?',
+        age: 'int',
+        dogs: 'Dog[]',
+        firstName: 'string',
+        lastName: 'string',
+        realm_id: 'string?'
+    }
+}
+
 //use for local Realms. Keeping this for legacy non sync tests
 exports.TestObject = {
     name: 'TestObject',
