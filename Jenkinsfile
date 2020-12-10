@@ -148,15 +148,15 @@ stage('test') {
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
 
-  //parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
+  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  //parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
+  parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
-  //android_react_tests: testAndroid('react-tests-android', {
-  //  junit 'tests/react-test-app/tests.xml'
-  //}),
+  android_react_tests: testAndroid('react-tests-android', {
+    junit 'tests/react-test-app/tests.xml'
+  }),
   parallel parallelExecutors
 }
 
