@@ -120,7 +120,8 @@ stage('build') {
       // parallelExecutors["Windows x64 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'x64')
     }
     
-    parallelExecutors["Android RN"] = buildAndroid()
+    // parallelExecutors["Android RN"] = buildAndroid()
+
     parallel parallelExecutors
 }
 
@@ -141,7 +142,7 @@ stage('test') {
   // parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
   // parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  parallelExecutors["React Native Android Release"] = testAndroid('test-android')
+  parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
   // parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   // parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   // parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
@@ -516,7 +517,8 @@ def testAndroid(target, postStep = null) {
   return {
     node('android') {
         timeout(time: 1, unit: 'HOURS') {
-            doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
+            // doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
+            doDockerInside('./scripts/test.sh', target, postStep)
         }
     }
   }
