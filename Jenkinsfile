@@ -514,9 +514,11 @@ def doDockerInside(script, target, postStep = null) {
 }
 
 def testAndroid(target, postStep = null) {
-  sh "./scripts/test.sh ${target}"
-  if (postStep) {
-    postStep.call()
+  timeout(30) {
+    sh "./scripts/test.sh ${target}"
+    if (postStep) {
+      postStep.call()
+    }
   }
 
   // return {
