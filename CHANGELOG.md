@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Integrating changesets from the server would sometimes hit the assertion failure `n != realm::npos` inside `Table::create_object_with_primary_key()` (in JS: `Realm.create()`) when creating an object with a primary key which previously had been used and had incoming links. ([realm/realm-core#4180](https://github.com/realm/realm-core/pull/4180), since v10.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -13,7 +12,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Upgraded Realm Core from v10.1.3 to v10.1.4.
+* Upgraded Realm Sync from v10.1.4 to v10.1.5.
 
 10.1.0 Release notes (2020-12-8)
 =============================================================
