@@ -497,6 +497,19 @@ module.exports = {
         });
     },
 
+    testRealmOpenShouldCompactOnLaunch: function() {
+        let called = false;
+        const shouldCompactOnLaunch = (total, used) => {
+            called = true;
+            return true;
+        };
+
+        return Realm.open({schema: [schemas.TestObject], shouldCompactOnLaunch: shouldCompactOnLaunch}).then(realm => {
+            TestCase.assertTrue(called);
+            realm.close();
+        });
+    },
+
     testRealmOpenNoConfig: function() {
         let realm = new Realm({schema: [schemas.TestObject], schemaVersion: 1});
         realm.write(() => {

@@ -345,8 +345,10 @@ def buildLinuxRpi(workerFunction) {
     myNode('docker') {
       unstash 'source'
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-      buildDockerEnv("realm-js:rpi", '-f armhf.Dockerfile').inside('-e HOME=/tmp') {
-        workerFunction('linux-arm')
+      buildDockerEnv("ci/realm-js:rpi", '-f armhf.Dockerfile').inside('-e HOME=/tmp') {
+        withEnv(['CC=arm-linux-gnueabihf-gcc', 'CXX=arm-linux-gnueabihf-g++']) {
+          workerFunction('linux-armhf')
+        }
       }
     }
   }

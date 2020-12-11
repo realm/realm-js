@@ -56,6 +56,20 @@ To enable testing credentials that require interaction, run with DEV_TOOLS and T
 DEV_TOOLS=1 TEST_CREDENTIALS=anonymous,email-password,google npm test
 ```
 
+## Running the Google Sign-In integration test
+
+Run the tests once to import a test app into the MongoDB Realm server you're testing against.
+Take note of the app id that it gets assigned and navigate to the Admin UI of the server to setup the Google Authentication Provider.
+Make sure to toggle on "OpenID Connect".
+
+Start the integration tests dev server with dev tools enabled (to keep the browser opened) and provide both the app id and your Google client id:
+
+```
+GOOGLE_CLIENT_ID=414565162824-bqn7utq2u2hue0qum7eu7lfpmmq8p4qg.apps.googleusercontent.com MDB_REALM_APP_ID=my-test-app-fwoue DEV_TOOLS=1 npm test
+```
+
+After the tests have run, navigate the browser window to http://localhost:8080/google-login, click the button to "Sign in with Google" and complete the authentication flow.
+
 ## Additional environment variables
 
 To skip importing the app or use a different server, specify one or more of the following environment variables:

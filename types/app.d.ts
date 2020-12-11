@@ -83,14 +83,29 @@ declare namespace Realm {
         };
 
         /**
-         * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         * Payload sent when authenticating using the OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
          */
-        type GooglePayload = {
+        type GoogleAuthCodePayload = {
             /**
-             * The auth code returned from Google.
+             * The auth code from Google.
              */
             authCode: string;
         };
+
+        /**
+         * Payload sent when authenticating using the OpenID Connect [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         */
+        type GoogleIdTokenPayload = {
+            /**
+             * The OpenID token from Google.
+             */
+            id_token: string;
+        };
+
+        /**
+         * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         */
+        type GooglePayload = GoogleAuthCodePayload | GoogleIdTokenPayload;
 
         /**
          * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
@@ -107,7 +122,7 @@ declare namespace Realm {
          */
         type ApplePayload = {
             /**
-             * The ID token from Apple.
+             * The OpenID token from Apple.
              */
             id_token: string;
         };
@@ -200,7 +215,35 @@ declare namespace Realm {
          * @param authCode The auth code returned from Google.
          * @returns A `Credentials` object for logging in using `app.logIn`.
          */
-        static google(authCode: string): Credentials<Credentials.GooglePayload>;
+        static google(
+            authCodeOrIdToken: string,
+        ): Credentials<Credentials.GooglePayload>;
+
+        /**
+         * Factory for `Credentials` which authenticate using the Auth Token OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         *
+         * @param payload.authCode The auth code from Google.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
+         */
+        static google(payload: {
+            /**
+             * The auth code from Google.
+             */
+            authCode: string;
+        }): Credentials<Credentials.GoogleAuthCodePayload>;
+
+        /**
+         * Factory for `Credentials` which authenticate using the OpenID Connect OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         *
+         * @param payload.idToken The OpenID Connect token from Google.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
+         */
+        static google(payload: {
+            /**
+             *
+             */
+            idToken: string;
+        }): Credentials<Credentials.GoogleIdTokenPayload>;
 
         /**
          * Factory for `Credentials` which authenticate using the [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
