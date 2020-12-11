@@ -143,7 +143,7 @@ module.exports = {
     },
 
     async testMongoDBRealmSync() {
-        const dogNames = ["King", "Rex"];
+        const dogNames = ["King", "Rex"]; // must be sorted
         let nCalls = 0;
         let app = new Realm.App(config);
 
@@ -190,7 +190,7 @@ module.exports = {
         TestCase.assertEqual(nCalls, 2);
         await realm2.syncSession.downloadAllServerChanges();
 
-        let dogs = realm2.objects("Dog");
+        let dogs = realm2.objects("Dog").sorted("name");
         TestCase.assertEqual(dogs.length, dogNames.length);
         for (let i = 0; i < dogNames.length; i++) {
             TestCase.assertEqual(dogs[i].name, dogNames[i]);
