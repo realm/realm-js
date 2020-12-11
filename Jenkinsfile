@@ -143,11 +143,11 @@ stage('test') {
 
 
   //parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
-  parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
+  // parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
   //parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
-  parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
-  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
+  // parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
+  //parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
+  //parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
   //android_react_tests: testAndroid('react-tests-android', {
   //  junit 'tests/react-test-app/tests.xml'
   //}),
@@ -170,8 +170,8 @@ stage('prepare integration tests') {
 
 stage('integration tests') {
   parallel(
-    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
-    'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
+    //'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
+    //'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
     'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
     'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
