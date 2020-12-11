@@ -652,15 +652,16 @@ class User {
      * Calls the named server function as this user.
      * @param {string} name - name of the function to call
      * @param {any[]} args - list of arguments to pass
+     * @return {Promise<any>} - resolves when the function terminates.
      */
     callFunction(name, args) { }
 
     /**
-     * Convenience wrapper around `call_function(name, [args])`
+     * Convenience wrapper around `callFunction(name, [args])`
      *
      * @example
      * // These are all equivalent:
-     * await user.call_function("do_thing", [a1, a2, a3]);
+     * await user.callFunction("do_thing", [a1, a2, a3]);
      * await user.functions.do_thing(a1, a2, a3);
      * await user.functions["do_thing"](a1, a2, a3);
      *
