@@ -13,7 +13,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* CI integration updated to use Xcode 12.
+* Support for newest version of Object Store.
 
 10.1.1 Release notes (2020-12-11)
 =============================================================
