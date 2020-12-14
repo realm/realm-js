@@ -193,17 +193,17 @@
 		42BD57B024640AE4008679D5 /* generic_network_transport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = generic_network_transport.hpp; path = src/sync/generic_network_transport.hpp; sourceTree = "<group>"; };
 		42BD57B124640AE4008679D5 /* app_credentials.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = app_credentials.hpp; path = src/sync/app_credentials.hpp; sourceTree = "<group>"; };
 		42BD57B224640AE4008679D5 /* app_credentials.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = app_credentials.cpp; path = src/sync/app_credentials.cpp; sourceTree = "<group>"; };
-		42BD57B324640AE4008679D5 /* remote_mongo_collection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = remote_mongo_collection.cpp; path = src/sync/remote_mongo_collection.cpp; sourceTree = "<group>"; };
-		42BD57B424640AE4008679D5 /* remote_mongo_database.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = remote_mongo_database.hpp; path = src/sync/remote_mongo_database.hpp; sourceTree = "<group>"; };
+		42BD57B324640AE4008679D5 /* mongo_collection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_collection.cpp; path = src/sync/mongo_collection.cpp; sourceTree = "<group>"; };
+		42BD57B424640AE4008679D5 /* mongo_database.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = mongo_database.hpp; path = src/sync/mongo_database.hpp; sourceTree = "<group>"; };
 		42BD57B524640AE4008679D5 /* app.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = app.hpp; path = src/sync/app.hpp; sourceTree = "<group>"; };
-		42BD57B724640AE4008679D5 /* remote_mongo_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = remote_mongo_collection.hpp; path = src/sync/remote_mongo_collection.hpp; sourceTree = "<group>"; };
+		42BD57B724640AE4008679D5 /* mongo_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = mongo_collection.hpp; path = src/sync/mongo_collection.hpp; sourceTree = "<group>"; };
 		42BD57B824640AE4008679D5 /* app_utils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = app_utils.hpp; path = src/sync/app_utils.hpp; sourceTree = "<group>"; };
 		42BD57B924640AE4008679D5 /* app_service_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = app_service_client.hpp; path = src/sync/app_service_client.hpp; sourceTree = "<group>"; };
-		42BD57BA24640AE4008679D5 /* remote_mongo_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = remote_mongo_client.cpp; path = src/sync/remote_mongo_client.cpp; sourceTree = "<group>"; };
+		42BD57BA24640AE4008679D5 /* mongo_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_client.cpp; path = src/sync/mongo_client.cpp; sourceTree = "<group>"; };
 		42BD57BB24640AE4008679D5 /* app.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = app.cpp; path = src/sync/app.cpp; sourceTree = "<group>"; };
 		42BD57BC24640AE5008679D5 /* async_open_task.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = async_open_task.hpp; path = src/sync/async_open_task.hpp; sourceTree = "<group>"; };
-		42BD57BD24640AE5008679D5 /* remote_mongo_database.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = remote_mongo_database.cpp; path = src/sync/remote_mongo_database.cpp; sourceTree = "<group>"; };
-		42BD57BE24640AE5008679D5 /* remote_mongo_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = remote_mongo_client.hpp; path = src/sync/remote_mongo_client.hpp; sourceTree = "<group>"; };
+		42BD57BD24640AE5008679D5 /* mongo_database.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_database.cpp; path = src/sync/mongo_database.cpp; sourceTree = "<group>"; };
+		42BD57BE24640AE5008679D5 /* mongo_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = mongo_client.hpp; path = src/sync/mongo_client.hpp; sourceTree = "<group>"; };
 		42BD57BF24640AE5008679D5 /* auth_request_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = auth_request_client.hpp; path = src/sync/auth_request_client.hpp; sourceTree = "<group>"; };
 		42BD57C024640AE5008679D5 /* generic_network_transport.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = generic_network_transport.cpp; path = src/sync/generic_network_transport.cpp; sourceTree = "<group>"; };
 		42D9B5EC246511F200AB3349 /* indexed_map.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = indexed_map.hpp; sourceTree = "<group>"; };
@@ -236,6 +236,7 @@
 		A4F1ACB52563E0E600D52257 /* mongo_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_client.cpp; path = "object-store/src/sync/mongo_client.cpp"; sourceTree = "<group>"; };
 		A4F1ACB62563E0E600D52257 /* mongo_collection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_collection.cpp; path = "object-store/src/sync/mongo_collection.cpp"; sourceTree = "<group>"; };
 		A4F1ACB72563E0E600D52257 /* mongo_database.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = mongo_database.cpp; path = "object-store/src/sync/mongo_database.cpp"; sourceTree = "<group>"; };
+		DC0FCC4C256817E80028429B /* jsc_rpc_network_transport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_rpc_network_transport.hpp; sourceTree = "<group>"; };
 		F60102CF1CBB814A00EC01BA /* node_init.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_init.hpp; sourceTree = "<group>"; };
 		F60102D11CBB865A00EC01BA /* jsc_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_init.hpp; sourceTree = "<group>"; };
 		F60102F71CBDA6D400EC01BA /* js_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_collection.hpp; sourceTree = "<group>"; };
@@ -469,12 +470,12 @@
 				42BD57BF24640AE5008679D5 /* auth_request_client.hpp */,
 				42BD57C024640AE5008679D5 /* generic_network_transport.cpp */,
 				42BD57B024640AE4008679D5 /* generic_network_transport.hpp */,
-				42BD57BA24640AE4008679D5 /* remote_mongo_client.cpp */,
-				42BD57BE24640AE5008679D5 /* remote_mongo_client.hpp */,
-				42BD57B324640AE4008679D5 /* remote_mongo_collection.cpp */,
-				42BD57B724640AE4008679D5 /* remote_mongo_collection.hpp */,
-				42BD57BD24640AE5008679D5 /* remote_mongo_database.cpp */,
-				42BD57B424640AE4008679D5 /* remote_mongo_database.hpp */,
+				42BD57BA24640AE4008679D5 /* mongo_client.cpp */,
+				42BD57BE24640AE5008679D5 /* mongo_client.hpp */,
+				42BD57B324640AE4008679D5 /* mongo_collection.cpp */,
+				42BD57B724640AE4008679D5 /* mongo_collection.hpp */,
+				42BD57BD24640AE5008679D5 /* mongo_database.cpp */,
+				42BD57B424640AE4008679D5 /* mongo_database.hpp */,
 				504CF8521EBCAE3600A9A4B6 /* impl */,
 				02E315CD1DB80DF200555337 /* sync_client.hpp */,
 				02E315C21DB80DDD00555337 /* sync_config.hpp */,
@@ -727,6 +728,7 @@
 		F6874A441CAD2ACD00EEEE36 /* JSC */ = {
 			isa = PBXGroup;
 			children = (
+				DC0FCC4C256817E80028429B /* jsc_rpc_network_transport.hpp */,
 				F620F0531CAF2EF70082977B /* jsc_class.hpp */,
 				F60103091CC4B5E800EC01BA /* jsc_context.hpp */,
 				F60103111CC4BA6500EC01BA /* jsc_exception.hpp */,
@@ -1015,7 +1017,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10.0.1;
+				CURRENT_PROJECT_VERSION = 10.1.1;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1097,7 +1099,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10.0.1;
+				CURRENT_PROJECT_VERSION = 10.1.1;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;

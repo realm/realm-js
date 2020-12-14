@@ -61,7 +61,7 @@ public:
 
     MethodMap<T> const methods = {
         {"onSuccess", wrap<on_success>},
-        {"onError", wrap<on_error>}
+        {"onError", wrap<on_error>},
     };
 };
 

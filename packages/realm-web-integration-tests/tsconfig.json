@@ -14,7 +14,12 @@
 			"realm-web",
 			"node-fetch",
 			"fs-extra",
-			"mocha-remote-client"
+			"mocha-remote-client",
+			"jwt-encode"
+		],
+		"typeRoots": [
+			"./src/types",
+			"node_modules/@types"
 		],
 		"outDir": "dist",
 		"allowJs": true,
@@ -22,6 +27,6 @@
 	},
 	"include": [
 		"src/**/*.ts",
-		"harness/**/*.ts",
+		"harness/**/*.ts"
 	]
 }

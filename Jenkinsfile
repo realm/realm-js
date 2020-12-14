@@ -387,7 +387,7 @@ def buildMacOS(workerFunction) {
   return {
     myNode('osx_vegas') {
       withEnv([
-        "DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer",
+        "DEVELOPER_DIR=/Applications/Xcode-12.2.app/Contents/Developer",
       ]) {
         unstash 'source'
         sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
@@ -637,7 +637,7 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
 def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
-      withEnv(['DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer',
+      withEnv(['DEVELOPER_DIR=/Applications/Xcode-12.2.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1',
                'REALM_DISABLE_SYNC_TESTS=1']) {
         doInside('./scripts/test.sh', target, postStep)

@@ -353,8 +353,16 @@ class Credentials {
      * Creates credentials based on a Google login.
      * @param {string} authCode A Google authentication code, obtained by logging into Google.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     * @deprecated
      */
     static google(authCode) { }
+
+    /**
+     * Creates credentials based on a Google login.
+     * @param {object} An object with either an `authCode` or `idToken` property.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static google(authObject) { }
 
     /**
      * Creates credentials for an anonymous user. These can only be used once - using them a second
@@ -404,6 +412,11 @@ class Credentials {
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
     get provider() { }
+
+    /**
+     * @returns {object} A simple object which can be passed to the server as the body of a request to authenticate.
+     */
+    get payload() { }
 }
 
 /**
@@ -639,15 +652,16 @@ class User {
      * Calls the named server function as this user.
      * @param {string} name - name of the function to call
      * @param {any[]} args - list of arguments to pass
+     * @return {Promise<any>} - resolves when the function terminates.
      */
     callFunction(name, args) { }
 
     /**
-     * Convenience wrapper around `call_function(name, [args])`
+     * Convenience wrapper around `callFunction(name, [args])`
      *
      * @example
      * // These are all equivalent:
-     * await user.call_function("do_thing", [a1, a2, a3]);
+     * await user.callFunction("do_thing", [a1, a2, a3]);
      * await user.functions.do_thing(a1, a2, a3);
      * await user.functions["do_thing"](a1, a2, a3);
      *

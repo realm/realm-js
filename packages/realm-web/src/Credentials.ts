@@ -20,11 +20,18 @@ type AnonymousPayload = Realm.Credentials.AnonymousPayload;
 type ApiKeyPayload = Realm.Credentials.ApiKeyPayload;
 type EmailPasswordPayload = Realm.Credentials.EmailPasswordPayload;
 type OAuth2RedirectPayload = Realm.Credentials.OAuth2RedirectPayload;
+type GoogleAuthCodePayload = Realm.Credentials.GoogleAuthCodePayload;
+type GoogleIdTokenPayload = Realm.Credentials.GoogleIdTokenPayload;
 type GooglePayload = Realm.Credentials.GooglePayload;
 type FacebookPayload = Realm.Credentials.FacebookPayload;
 type FunctionPayload = Realm.Credentials.FunctionPayload;
 type JWTPayload = Realm.Credentials.JWTPayload;
 type ApplePayload = Realm.Credentials.ApplePayload;
+
+type GoogleOptions =
+    | OAuth2RedirectPayload
+    | GoogleAuthCodePayload
+    | { idToken: string };
 
 /**
  * Types of an authentication provider.
@@ -140,19 +147,54 @@ export class Credentials<PayloadType extends object = any>
     /**
      * Creates credentials that logs in using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
      *
-     * @param redirectUrlOrAuthCode The URL that users should be redirected to or the auth code returned from Google.
+     * @param payload The URL that users should be redirected to, the auth code or id token from Google.
      * @returns The credentials instance, which can be passed to `app.logIn`.
      */
-    static google<
-        PayloadType extends object = OAuth2RedirectPayload | GooglePayload
-    >(redirectUrlOrAuthCode: string) {
-        return new Credentials<PayloadType>(
+    static google<P extends object = OAuth2RedirectPayload | GooglePayload>(
+        payload: string | GoogleOptions,
+    ): Credentials<P> {
+        return new Credentials<P>(
             "oauth2-google",
             "oauth2-google",
-            redirectUrlOrAuthCode.includes("://")
-                ? { redirectUrl: redirectUrlOrAuthCode }
-                : { authCode: redirectUrlOrAuthCode },
+            Credentials.derivePayload(payload),
         );
+    }
+
+    /**
+     * @param payload The payload string.
+     * @returns A payload object based on the string.
+     */
+    private static derivePayload<
+        P extends object = OAuth2RedirectPayload | GooglePayload
+    >(payload: string | GoogleOptions): P {
+        if (typeof payload === "string") {
+            if (payload.includes("://")) {
+                return this.derivePayload({ redirectUrl: payload });
+            } else if (payload.startsWith("4/")) {
+                return this.derivePayload({ authCode: payload });
+            } else if (payload.startsWith("ey")) {
+                // eslint-disable-next-line @typescript-eslint/camelcase
+                return this.derivePayload({ idToken: payload });
+            } else {
+                throw new Error(`Unexpected payload: ${payload}`);
+            }
+        } else if (Object.keys(payload).length === 1) {
+            if ("authCode" in payload || "redirectUrl" in payload) {
+                return payload as P;
+            } else if ("idToken" in payload) {
+                // eslint-disable-next-line @typescript-eslint/camelcase
+                return { id_token: payload.idToken } as P;
+            } else {
+                throw new Error(
+                    "Unexpected payload: " + JSON.stringify(payload),
+                );
+            }
+        } else {
+            throw new Error(
+                "Expected only one property in payload, got " +
+                    JSON.stringify(payload),
+            );
+        }
     }
 
     /**

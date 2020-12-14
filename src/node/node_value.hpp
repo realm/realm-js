@@ -84,6 +84,11 @@ inline bool node::Value::is_constructor(Napi::Env env, const Napi::Value& value)
 
 
 template<>
+inline bool node::Value::is_error(Napi::Env env, const Napi::Value& value) {
+	return value.IsObject() && value.As<Napi::Object>().InstanceOf(env.Global().Get("Error").As<Napi::Function>());
+}
+
+template<>
 inline bool node::Value::is_function(Napi::Env env, const Napi::Value& value) {
 	return value.IsFunction();
 }
