@@ -15,6 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * CI integration updated to use Xcode 12.
 * Support for newest version of Object Store.
+* Push functionality test re-enabled.
 
 10.1.1 Release notes (2020-12-11)
 =============================================================
