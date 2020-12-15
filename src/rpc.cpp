@@ -266,6 +266,7 @@ RPCServer::RPCServer() {
     m_callback_call_counter = 1;
     
     // Make the App use the RPC Network Transport from now on
+    previous_transport_generator = AppClass::transport_generator;
     AppClass::transport_generator = [] (jsc::Types::Context ctx) {
         return std::make_unique<RPCNetworkTransport>(ctx);
     };
@@ -640,8 +641,8 @@ RPCServer::~RPCServer() {
     m_objects.clear();
     m_callbacks.clear();
 
-    // Clear the Object Store App cache, to prevent instances from using the context which is going to be released.
-    app::App::clear_cached_apps();
+    // Restore the previous transport generator
+    AppClass::transport_generator = previous_transport_generator;
 
     get_rpc_server(m_context) = nullptr;
     JSGlobalContextRelease(m_context);
