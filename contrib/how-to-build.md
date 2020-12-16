@@ -26,7 +26,7 @@ git submodule update --init --recursive
 Now you should get [cmake-js](https://www.npmjs.com/package/cmake-js) which is a [node-gyp](https://github.com/nodejs/node-gyp) replacement:
 
 ```sh
-  npm install cmake-js -g
+  npm install
 ```
 
 ## Compiling From Scratch
