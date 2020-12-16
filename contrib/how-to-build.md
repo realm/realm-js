@@ -34,7 +34,7 @@ Now you should get [cmake-js](https://www.npmjs.com/package/cmake-js) which is a
 To build the project from scratch you can use the `rebuild` command:
 
 ```sh
-cmake-js rebuild
+npx cmake-js rebuild
 ```
 
 ## Fast Iteration
