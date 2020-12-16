@@ -42,7 +42,7 @@ npx cmake-js rebuild
 To improve the development speed, you should avoid recompiling the whole project each time you make new changes, to avoid that you can pass the `build` argument:
 
 ```sh
-cmake-js build 
+npx cmake-js build 
 ```
 > Now `cmake` should detect changes in the workspace and compile only the necessary dependencies.
 
