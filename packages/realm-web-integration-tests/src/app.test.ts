@@ -25,13 +25,23 @@ import { createApp } from "./utils";
 const environment = getEnvironment();
 
 describe("App#constructor", () => {
+    afterEach(() => {
+        environment.defaultStorage.clear();
+    });
+
     it("constructs", () => {
         const app = new App("default-app-id");
         expect(app).to.be.instanceOf(App);
     });
 
-    afterEach(() => {
-        environment.defaultStorage.clear();
+    it("construct singletons", () => {
+        const app1 = App.getApp("default-app-id");
+        const app2 = App.getApp("default-app-id");
+        expect(app1).to.be.instanceOf(App);
+        expect(app1).equals(app2);
+        // Assume that the current user's type match the exported User type
+        const user: User | null = app1.currentUser;
+        expect(user).equals(null);
     });
 
     it("can login a user", async () => {

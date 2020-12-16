@@ -62,7 +62,7 @@ export class App<
     /**
      * A map of app instances returned from calling getApp.
      */
-    private static appCache: { [id: string]: Realm.App } = {};
+    private static appCache: { [id: string]: App } = {};
 
     /**
      * Get or create a singleton Realm App from an id.
