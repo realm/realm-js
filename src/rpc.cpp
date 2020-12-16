@@ -237,20 +237,18 @@ static json read_object_properties(Object& object) {
                 }
                 break;
             }
-            case PropertyType::Decimal: {
+            case PropertyType::Decimal:
                 cache[property.name] = {
                     {"type", RealmObjectTypesEJSON},
                     {"value", {"$numberDecimal", obj.get<Decimal>(property.column_key).to_string()}},
                 };
                 break;
-            }
-            case PropertyType::ObjectId: {
+            case PropertyType::ObjectId:
                 cache[property.name] = {
                     {"type", RealmObjectTypesEJSON},
                     {"value", {"$oid", obj.get<ObjectId>(property.column_key).to_string()}},
                 };
                 break;
-            }
             case PropertyType::Data:
             case PropertyType::Object:
             break;
