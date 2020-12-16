@@ -51,6 +51,6 @@ cmake-js build
 In order to debug the binary we need to tell the compiler to add debug symbols into it:
 
 ```sh
-cmake-js <build/rebuild> --debug
+npx cmake-js <build/rebuild> --debug
 ```
 > Now you can use tools like lldb to debug the native module.
