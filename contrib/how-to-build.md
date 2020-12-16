@@ -3,7 +3,7 @@
 To build this project you can still use `npm install`, but here some advice to improve your development experience:
 
 
-## Getting Started
+## Getting Started
 
 First clone the project:
 ```sh
@@ -37,13 +37,14 @@ To build the project from scratch you can use the `rebuild` command:
 cmake-js rebuild
 ```
 
-## Compiling Changes
+## Fast Iteration
 
-To improve the development speed, you should avoid recompiling the whole project each time you make a change, that can be achieved passing the `build` argument:
+To improve the development speed, you should avoid recompiling the whole project each time you make new changes, to avoid that you can pass the `build` argument:
 
 ```sh
-cmake-js build
+cmake-js build 
 ```
+> Now `cmake` should detect changes in the workspace and compile only the necessary dependencies.
 
 ## Debug
 
@@ -51,6 +52,5 @@ In order to debug the binary we need to tell the compiler to add debug symbols i
 
 ```sh
 cmake-js <build/rebuild> --debug
-
-# Now you can use tools like lldb to debug the native module.
 ```
+> Now you can use tools like lldb to debug the native module.
