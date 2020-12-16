@@ -1,10 +1,9 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.1.2 Release notes (2020-12-16)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed creating objects and assigning properties of BSON Decimal128 and ObjectId types, when running in React Native Chrome debugging mode. ([#3452](https://github.com/realm/realm-js/issues/3452) & [#3454](https://github.com/realm/realm-js/issues/3454), since v10.0.0)
 * Fixed a crash that would happen if the app did a network request after the app got refreshed during development and the Chrome debugging mode was disabled. NOTE: Because of [#3206](https://github.com/realm/realm-js/issues/3206) the fix has not been implemented on Android. ([#3457](https://github.com/realm/realm-js/issues/3457), since v10.0.2)
 
