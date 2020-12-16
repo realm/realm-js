@@ -35,7 +35,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/realm/realm-js.git"
+    "url": "https://github.com/realm/realm-js.git",
+    "directory": "packages/realm-web"
   },
   "homepage": "https://github.com/realm/realm-js/tree/master/packages/realm-web#readme",
   "bugs": {
