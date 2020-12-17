@@ -31,11 +31,17 @@ import routes from "./routes";
 
 const DEFAULT_DEVICE_ID = "000000000000000000000000";
 
+interface HydratableUserParameters {
+    app: App<any>;
+    id: string;
+}
+
 interface UserParameters {
     app: App<any>;
     id: string;
-    accessToken: string | null;
-    refreshToken: string | null;
+    providerType: ProviderType;
+    accessToken: string;
+    refreshToken: string;
 }
 
 type JWT<CustomDataType extends object = any> = {
@@ -68,76 +74,75 @@ export enum UserType {
  */
 export class User<
     FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
-    CustomDataType extends object = any
-> implements Realm.User<FunctionsFactoryType, CustomDataType> {
+    CustomDataType extends object = any,
+    UserProfileDataType = Realm.DefaultUserProfileData
+> implements
+        Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType> {
     /**
      * The app that this user is associated with.
      */
     public readonly app: App<FunctionsFactoryType, CustomDataType>;
 
     /** @inheritdoc */
+    public readonly id: string;
+
+    /** @inheritdoc */
     public readonly functions: FunctionsFactoryType &
         Realm.BaseFunctionsFactory;
 
     /** @inheritdoc */
-    public apiKeys: ApiKeyAuth;
+    public readonly providerType: ProviderType;
 
-    /**
-     * Creates a user from the data stored in the storage of an `App` instance.
-     *
-     * @param app The app that the user was logged into.
-     * @param userId The id of the user to restore.
-     * @returns The user created from values retrieved from storage.
-     */
-    public static hydrate<
-        FunctionsFactoryType extends object,
-        CustomDataType extends object
-    >(app: App<FunctionsFactoryType, CustomDataType>, userId: string) {
-        const user = new User<FunctionsFactoryType, CustomDataType>({
-            app,
-            id: userId,
-            accessToken: null,
-            refreshToken: null,
-        });
-        user.hydrate();
-        return user;
-    }
+    /** @inheritdoc */
+    public readonly apiKeys: ApiKeyAuth;
 
-    private _id: string;
     private _accessToken: string | null;
     private _refreshToken: string | null;
-    private _profile: UserProfile | undefined;
+    private _profile: UserProfile<UserProfileDataType> | undefined;
     private fetcher: Fetcher;
-    private storage: UserStorage;
+    private storage: UserStorage<UserProfileDataType>;
 
     /**
      * @param parameters Parameters of the user.
      */
-    public constructor({ app, id, accessToken, refreshToken }: UserParameters) {
-        this.app = app;
-        this._id = id;
-        this._accessToken = accessToken;
-        this._refreshToken = refreshToken;
-        this.fetcher = app.fetcher.clone({
+    public constructor(parameters: HydratableUserParameters);
+    /**
+     * @param parameters Parameters of the user.
+     */
+    public constructor(parameters: UserParameters);
+    /**
+     * @param parameters Parameters of the user.
+     */
+    public constructor(parameters: HydratableUserParameters | UserParameters) {
+        this.app = parameters.app;
+        this.id = parameters.id;
+        this.storage = new UserStorage(this.app.storage, this.id);
+        if (
+            "accessToken" in parameters &&
+            "refreshToken" in parameters &&
+            "providerType" in parameters
+        ) {
+            this._accessToken = parameters.accessToken;
+            this.storage.accessToken = parameters.accessToken;
+            this._refreshToken = parameters.refreshToken;
+            this.storage.refreshToken = parameters.refreshToken;
+            this.providerType = parameters.providerType;
+        } else {
+            this._accessToken = this.storage.accessToken;
+            this._refreshToken = this.storage.refreshToken;
+            const providerType = this.storage.providerType;
+            this._profile = this.storage.profile;
+            if (providerType) {
+                this.providerType = providerType;
+            } else {
+                throw new Error("Storage is missing a provider type");
+            }
+        }
+        this.fetcher = this.app.fetcher.clone({
             userContext: { currentUser: this },
         });
         this.apiKeys = new ApiKeyAuth(this.fetcher);
         this.functions = FunctionsFactory.create(this.fetcher);
-        this.storage = new UserStorage(app.storage, id);
-        // Store tokens in storage for later hydration
-        if (accessToken) {
-            this.storage.accessToken = accessToken;
-        }
-        if (refreshToken) {
-            this.storage.refreshToken = refreshToken;
-        }
-    }
-
-    /**
-     * @returns The automatically-generated internal id of the user in the MongoDB Realm database.
-     */
-    get id() {
-        return this._id;
     }
 
     /**
@@ -202,9 +207,9 @@ export class User<
     /**
      * @returns Profile containing detailed information about the user.
      */
-    get profile(): Realm.UserProfile {
+    get profile(): UserProfileDataType {
         if (this._profile) {
-            return this._profile;
+            return this._profile.data;
         } else {
             throw new Error("A profile was never fetched for this user");
         }
@@ -216,10 +221,6 @@ export class User<
         } else {
             throw new Error("A profile was never fetched for this user");
         }
-    }
-
-    get providerType(): ProviderType {
-        throw new Error("Not yet implemented");
     }
 
     get deviceId(): string | null {
@@ -317,25 +318,6 @@ export class User<
     /** @inheritdoc */
     public callFunction(name: string, ...args: any[]) {
         return this.functions.callFunction(name, ...args);
-    }
-
-    /**
-     * Restore a user from the data stored in the storage of an `App` instance.
-     */
-    public hydrate() {
-        // Hydrate tokens
-        const accessToken = this.storage.accessToken;
-        const refreshToken = this.storage.refreshToken;
-        const profile = this.storage.profile;
-        if (typeof accessToken === "string") {
-            this.accessToken = accessToken;
-        }
-        if (typeof refreshToken === "string") {
-            this.refreshToken = refreshToken;
-        }
-        if (typeof profile === "object") {
-            this._profile = profile;
-        }
     }
 
     /**

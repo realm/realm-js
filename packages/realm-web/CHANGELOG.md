@@ -5,10 +5,11 @@
 * None
 
 ### Enhancements
-* None
+* Adding data from authentication providers, to be included in the `User#profile` object. ([#3268](https://github.com/realm/realm-js/issues/3268) via [#3481](https://github.com/realm/realm-js/pull/3481))
+* Exposing the authentication provider used to authenticate a user as a `providerType` property on a `User` instance. ([#3481](https://github.com/realm/realm-js/pull/3481))
 
 ### Fixed
-* None
+* Fixed an error in the types, where elements in the `User#identities` array would have a `userId` which was actually an `id` of the identity. ([#3481](https://github.com/realm/realm-js/pull/3481), since v0.9.0)
 
 ### Internal
 * None

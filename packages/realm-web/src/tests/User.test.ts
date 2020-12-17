@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import { inspect } from "util";
 
-import { UserType, User, Credentials } from "..";
+import { User, Credentials } from "..";
 import { MongoDBRealmError } from "../MongoDBRealmError";
 
 import {
@@ -42,6 +42,7 @@ describe("User", () => {
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
+            providerType: "anon-user",
         });
         // Assume that the user has an access token
         expect(user.accessToken).equals("deadbeef");
@@ -54,6 +55,7 @@ describe("User", () => {
             id: "some-user-id",
             accessToken: "deadbeef.eyJleHAiOjAsImlhdCI6MH0=.e30=",
             refreshToken: "very-refreshing",
+            providerType: "anon-user",
         });
         {
             const output = inspect(user);
@@ -74,6 +76,7 @@ describe("User", () => {
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
+            providerType: "anon-user",
         });
         // Log out the user
         await user.logOut();
@@ -111,6 +114,7 @@ describe("User", () => {
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
+            providerType: "anon-user",
         });
         // Log out the user
         try {
@@ -139,6 +143,7 @@ describe("User", () => {
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
+            providerType: "anon-user",
         });
         // Expect an exception if the profile was never fetched
         expect(() => {
@@ -146,11 +151,7 @@ describe("User", () => {
         }).throws("A profile was never fetched for this user");
         // Refresh the profile and expect a firstName
         await user.refreshProfile();
-        expect(user.profile).deep.equals({
-            identities: [],
-            type: UserType.Normal,
-            firstName: "John",
-        });
+        expect(user.profile).deep.equals({ firstName: "John" });
     });
 
     it("exposes custom data", async () => {
@@ -161,6 +162,7 @@ describe("User", () => {
             accessToken:
                 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTg2NDAzMTIsImlhdCI6MTU5MzQ1NjMxMiwidXNlcl9kYXRhIjp7Im5hbWUiOiJKb2hubnkifX0.l-ElbkTTcmMmM4EqO6gm--cIH6dmgtb5vdYfArPtBAE",
             refreshToken: "very-refreshing",
+            providerType: "anon-user",
         });
         // Try calling a function on the user
         expect(user.customData).deep.equals({
@@ -177,6 +179,7 @@ describe("User", () => {
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
+            providerType: "anon-user",
         });
         // Try calling a function on the user
         const pong = await user.functions.ping();
@@ -201,6 +204,7 @@ describe("User", () => {
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
+            providerType: "anon-user",
         });
         // Try calling a function on the user
         const keys = await user.apiKeys.fetchAll();
@@ -230,6 +234,7 @@ describe("User", () => {
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
+            providerType: "anon-user",
         });
         // Fetch the profile
         await user.refreshProfile();
@@ -240,7 +245,9 @@ describe("User", () => {
         const profileBefore = JSON.parse(userStorage.get("profile") || "");
 
         expect(profileBefore).deep.equals({
-            firstName: "John",
+            data: {
+                firstName: "John",
+            },
             identities: [],
             type: "normal",
         });
@@ -249,9 +256,9 @@ describe("User", () => {
         expect(userStorage.get("accessToken")).equals(null);
         expect(userStorage.get("refreshToken")).equals(null);
         // Logging out shouldn't delete information about the profile
-        expect(user.profile).deep.equals(profileBefore);
+        expect(user.profile).deep.equals(profileBefore.data);
         const profileAfter = JSON.parse(userStorage.get("profile") || "");
-        expect(profileAfter).deep.equals(profileBefore);
+        expect(profileAfter.data).deep.equals(profileBefore.data);
     });
 
     it("can link credentials", async () => {
@@ -274,6 +281,7 @@ describe("User", () => {
             id: "some-user-id",
             accessToken: "deadbeef",
             refreshToken: "very-refreshing",
+            providerType: "anon-user",
         });
 
         const credentials = Credentials.emailPassword(

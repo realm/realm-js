@@ -80,7 +80,7 @@ export class Authenticator {
      */
     public async authenticate(
         credentials: Realm.Credentials<any>,
-        linkingUser?: User<object, object>,
+        linkingUser?: User<object, object, unknown>,
     ): Promise<AuthResponse> {
         const deviceInformation = this.getDeviceInformation();
         const isLinking = typeof linkingUser === "object";
