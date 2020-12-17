@@ -28,18 +28,18 @@ if (!fs.existsSync(rnDir)) {
     throw new Error("This script needs to be run at the root dir of the project");
 }
 
-let architectures = ["x86", "armeabi-v7a", "arm64-v8a", "x86_64"];
 const copyOutputPath = path.resolve(process.cwd(), "react-native", "android", "build", "libs");
 
+const buildTypes = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"];
+let architectures = ["x86", "armeabi-v7a", "arm64-v8a", "x86_64"];
 const optionDefinitions = [
-    { name: 'arch', type: String, multiple: false, description: "Build only for a single architecture" },
+    { name: 'arch', type: validateArchitectures, multiple: false, description: "Build only for a single architecture" },
     { name: 'changes', type: Boolean, defaultValue: false, multiple: false, description: "Build changes only" },
+    { name: 'buildType', type: validateBuildType, defaultValue: "Release", multiple: false, description: "CMAKE_BUILD_TYPE: Debug, Release, RelWithDebInfo, MinSizeRel" },
 ];
 const options = require('command-line-args')(optionDefinitions);
+
 if (options.arch) {
-    if (!architectures.includes(options.arch)) {
-        throw new Error(`"Invalid architecture. Supported architectures ${architectures}`);
-    }
     architectures = [options.arch];
 }
 
@@ -80,8 +80,7 @@ for (const arch of architectures) {
         `-DCMAKE_TOOLCHAIN_FILE=${ndkPath}/build/cmake/android.toolchain.cmake`,
         "-DANDROID_TOOLCHAIN=clang",
         "-DANDROID_NATIVE_API_LEVEL=16",
-        "-DCMAKE_BUILD_TYPE=MinSizeRel",
-        // "-DANDROID_ALLOW_UNDEFINED_SYMBOLS=0",
+        `-DCMAKE_BUILD_TYPE=${options.buildType}`,
         "-DANDROID_STL=c++_static",
         `-DJSC_ROOT_DIR=${jscDir}`,
         path.resolve(process.cwd())
@@ -138,4 +137,20 @@ function getCmakePath(sdkPath) {
 
     const executableName = process.platform === 'win32' ? 'cmake.exe' : 'cmake';
     return executableName;
+}
+
+function validateBuildType(buildTypeOption) {
+    if (!buildTypes.includes(buildTypeOption)) {
+        throw new Error(`Invalid build type: ${buildTypeOption}. Supported architectures ${buildTypes}`);
+    }
+
+    return buildTypeOption;
+}
+
+function validateArchitectures(arch) {
+    if (!architectures.includes(arch)) {
+        throw new Error(`"Invalid architecture ${arch}. Supported architectures ${architectures}`);
+    }
+
+    return arch;
 }

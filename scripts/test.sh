@@ -337,7 +337,7 @@ case "$TARGET" in
   npm ci --ignore-scripts
   npm run check-environment
 
-  node scripts/build-android.js --arch=armeabi-v7a
+  node scripts/build-android.js --arch=armeabi-v7a --buildType="RelWithDebInfo"
   pushd react-native/android
   $(pwd)/gradlew buildAndroidPackage
   popd
