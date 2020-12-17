@@ -123,11 +123,14 @@ export class User<
             "providerType" in parameters
         ) {
             this._accessToken = parameters.accessToken;
-            this.storage.accessToken = parameters.accessToken;
             this._refreshToken = parameters.refreshToken;
-            this.storage.refreshToken = parameters.refreshToken;
             this.providerType = parameters.providerType;
+            // Save the parameters to storage, for future instances to be hydrated from
+            this.storage.accessToken = parameters.accessToken;
+            this.storage.refreshToken = parameters.refreshToken;
+            this.storage.providerType = parameters.providerType;
         } else {
+            // Hydrate the rest of the parameters from storage
             this._accessToken = this.storage.accessToken;
             this._refreshToken = this.storage.refreshToken;
             const providerType = this.storage.providerType;
