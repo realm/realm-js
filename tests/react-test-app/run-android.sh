@@ -14,7 +14,7 @@ echo "Reversing port for physical device"
 adb reverse tcp:8081 tcp:8081
 
 echo "Building Release APK"
-pushd android && ./gradlew assembleRelease
+pushd android && ./gradlew assembleDebug
 
 echo "Installing APK"
 adb install app/build/outputs/apk/release/app-release.apk
