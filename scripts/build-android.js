@@ -73,7 +73,7 @@ for (const arch of architectures) {
 
     let args = [
         cmakePath,
-        "-GNinja",
+        // "-GNinja",
         `-DANDROID_NDK=${ndkPath}`,
         `-DANDROID_ABI=${arch}`,
         // `-DCMAKE_MAKE_PROGRAM=${sdkPath}/cmake/3.10.2.4988404/bin/ninja`,
