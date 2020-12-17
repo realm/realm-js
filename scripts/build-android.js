@@ -33,6 +33,7 @@ const copyOutputPath = path.resolve(process.cwd(), "react-native", "android", "b
 
 const optionDefinitions = [
     { name: 'arch', type: String, multiple: false, description: "Build only for a single architecture" },
+    { name: 'changes', type: Boolean, defaultValue: false, multiple: false, description: "Build changes only" },
 ];
 const options = require('command-line-args')(optionDefinitions);
 if (options.arch) {
@@ -51,10 +52,15 @@ const sdkPath = getAndroidSdkPath();
 const cmakePath = getCmakePath(sdkPath);
 
 const buildPath = path.resolve(process.cwd(), 'build-realm-android');
-if (fs.existsSync(buildPath)) {
-    fs.rmdirSync(buildPath, { recursive: true });
+if (!options.changes) {
+    if (fs.existsSync(buildPath)) {
+        fs.rmdirSync(buildPath, { recursive: true });
+    }
+    fs.mkdirSync(buildPath);
 }
-fs.mkdirSync(buildPath);
+
+//shared root dir to download jsc once for all architectures
+const jscDir = path.resolve(buildPath, "jsc-android");
 
 for (const arch of architectures) {
     console.log(`\nBuilding Realm JS Android for ${arch}`);
@@ -75,8 +81,9 @@ for (const arch of architectures) {
         "-DANDROID_TOOLCHAIN=clang",
         "-DANDROID_NATIVE_API_LEVEL=16",
         "-DCMAKE_BUILD_TYPE=MinSizeRel",
-        "-DANDROID_ALLOW_UNDEFINED_SYMBOLS=1",
+        // "-DANDROID_ALLOW_UNDEFINED_SYMBOLS=0",
         "-DANDROID_STL=c++_static",
+        `-DJSC_ROOT_DIR=${jscDir}`,
         path.resolve(process.cwd())
     ];
     exec(cmakePath, args, { cwd: archBuildDir, stdio: 'inherit' });

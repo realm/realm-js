@@ -7,4 +7,3 @@ add_library(realm-js-jsc OBJECT
 target_include_directories(realm-js-jsc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(realm-js-jsc realm-js-shared)
-
