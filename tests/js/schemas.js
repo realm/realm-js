@@ -76,6 +76,13 @@ exports.ObjectIdObject = {
     }
 };
 
+exports.UUIDObject = {
+    name: "uuid",
+    properties: {
+        id: "uuid"
+    }
+};
+
 function PersonObject() {}
 PersonObject.schema = {
     name: 'PersonObject',
