@@ -33,6 +33,8 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
 const { Decimal128, ObjectId } = require("bson");
+const { v4: uuidv4 } = require('uuid');
+const MUUID = require('uuid-mongodb');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -2037,6 +2039,23 @@ module.exports = {
             TestCase.assertEqual(oid2.getTimestamp().toISOString(), oids[i].getTimestamp().toISOString());
         }
 
+        realm.close();
+    },
+
+    testUUID: function() {
+        const realm = new Realm({schema: [schemas.UUIDObject]});
+        TestCase.assertEqual(realm.schema.length, 1);
+        TestCase.assertEqual(realm.schema[0].properties["id"].type, "uuid");
+
+        const mUUID4 = MUUID.v4();
+        realm.write(() => {
+            realm.create(schemas.UUIDObject.name, { id: mUUID4 });
+        });
+
+        TestCase.assertEqual(realm.objects(schemas.UUIDObject.name).length, 1);
+        const obj = realm.objects(schemas.UUIDObject.name)[0];
+        // TODO: check if obj.id is UUID using instanceof
+        TestCase.assertEqual(obj.id.sub_type, 4);
         realm.close();
     },
 
