@@ -13,8 +13,26 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
+* None.
+
+10.1.2 Release notes (2020-12-16)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed creating objects and assigning properties of BSON Decimal128 and ObjectId types, when running in React Native Chrome debugging mode. ([#3452](https://github.com/realm/realm-js/issues/3452) & [#3454](https://github.com/realm/realm-js/issues/3454), since v10.0.0)
+* Fixed a crash that would happen if the app did a network request after the app got refreshed during development and the Chrome debugging mode was disabled. NOTE: Because of [#3206](https://github.com/realm/realm-js/issues/3206) the fix has not been implemented on Android. ([#3457](https://github.com/realm/realm-js/issues/3457), since v10.0.2)
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
 * CI integration updated to use Xcode 12.
 * Support for newest version of Object Store.
+* Push functionality test re-enabled.
 
 10.1.1 Release notes (2020-12-11)
 =============================================================

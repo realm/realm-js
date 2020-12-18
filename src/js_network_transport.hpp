@@ -166,6 +166,7 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
     using Object = js::Object<T>;
     using Value = js::Value<T>;
 
+    using NetworkTransportFactory = std::function<std::unique_ptr<app::GenericNetworkTransport>(ContextType)>;
     using SendRequestHandler = void(ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback);
 
 	JavaScriptNetworkTransport(ContextType ctx) : m_ctx(ctx),
