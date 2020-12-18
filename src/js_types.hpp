@@ -36,6 +36,8 @@
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
 #include <realm/object-store/sync/generic_network_transport.hpp>
 
+//#include "js_mixed.hpp"
+
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
 #elif defined(_MSC_VER) && !(defined(DEBUG) && DEBUG)
@@ -178,6 +180,7 @@ struct Value {
 #define VALIDATED(return_t, type) \
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
         if (!is_##type(ctx, value)) { \
+            printf("wtf ?????"); \
             throw TypeErrorException(name, #type, to_string(ctx, value)); \
         } \
         return to_##type(ctx, value); \
@@ -464,6 +467,7 @@ template<typename T>
 inline bool Value<T>::is_valid_for_property_type(ContextType context, const ValueType &value, realm::PropertyType type, StringData object_type) {
     using realm::PropertyType;
 
+
     auto check_value = [&](auto&& value) {
         if (is_nullable(type) && (is_null(context, value) || is_undefined(context, value))) {
             return true;
@@ -487,8 +491,11 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
                 return is_date(context, value) || is_string(context, value);
             case PropertyType::Object:
                 return true;
-            case PropertyType::Mixed:
-                throw std::runtime_error("'Mixed' type support is not implemented yet");
+            case PropertyType::Mixed: {           
+                //MixedValidation<typename T::Value> mixed; 
+                //return mixed.is_valid(value);  
+                return true;
+            }
             case PropertyType::UUID:
                 throw std::runtime_error("'UUID' type support is not implemented yet");
             default:
