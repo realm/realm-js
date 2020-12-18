@@ -390,73 +390,50 @@ module.exports = {
     },
 
     /*
-    testClientReset() {
-        // FIXME: try to enable for React Native
+    testProgressNotificationsForRealmOpenAsync() {
         if (!platformSupported) {
             return;
         }
 
-        return Realm.App.Sync.User.login('http://127.0.0.1:9080', Realm.App.Sync.Credentials.anonymous()).then(user => {
-            return new Promise((resolve, _reject) => {
-                var realm;
-                const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
-                config.sync.clientResyncMode = 'manual';
-                config.sync.error = (sender, error) => {
-                    try {
-                        TestCase.assertEqual(error.name, 'ClientReset');
-                        TestCase.assertDefined(error.config);
-                        TestCase.assertNotEqual(error.config.path, '');
-                        const path = realm.path;
-                        realm.close();
-                        Realm.App.Sync.initiateClientReset(path);
-                        // open Realm with error.config, and copy required objects a Realm at `path`
-                        resolve();
-                    }
-                    catch (e) {
-                        _reject(e);
-                    }
-                };
-                realm = new Realm(config);
-                const session = Realm.App.SyncSession;
+        const username = Utils.uuid();
+        const realmName = Utils.uuid();
 
-                TestCase.assertEqual(session.config.error, config.sync.error);
-                session._simulateError(211, 'ClientReset'); // 211 -> divering histories
+        const credentials = Realm.Sync.Credentials.nickname(username);
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+            .then(user => {
+                return new Promise((resolve, reject) => {
+                    let config = {
+                        sync: {
+                            user,
+                            url: `realm://127.0.0.1:9080/~/${realmName}`
+                        },
+                        schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                    };
+
+                    let progressCalled = false;
+
+                    Realm.openAsync(config,
+                        (error, realm) => {
+                            if (error) {
+                                reject(error);
+                                return;
+                            }
+
+                            TestCase.assertTrue(progressCalled);
+                            resolve();
+                        },
+                        (transferred, total) => {
+                            progressCalled = true;
+                        });
+
+                    setTimeout(function() {
+                        reject("Progress Notifications API failed to call progress callback for Realm constructor");
+                    }, 5000);
+                });
             });
-        });
     },
-    */
-
-    /*
-    testClientResyncMode() {
-        TestCase.assertEqual(Realm.App.Sync.ClientResyncMode.Discard, 'discard');
-        TestCase.assertEqual(Realm.App.Sync.ClientResyncMode.Manual, 'manual');
-        TestCase.assertEqual(Realm.App.Sync.ClientResyncMode.Recover, 'recover');
-    },
-    */
-
-    /*
-    testClientResyncIncorrectMode() {
-        // FIXME: try to enable for React Native
-        if (!platformSupported) {
-            return;
-        }
-
-        return Realm.App.Sync.User.login('http://127.0.0.1:9080', Realm.App.Sync.Credentials.anonymous()).then(user => {
-            return new Promise((resolve, reject) => {
-                var realm;
-                const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
-                config.sync.clientResyncMode = 'foobar'; // incorrect mode
-                try {
-                    new Realm(config);
-                    reject('Should have failed if incorrect resync mode.');
-                }
-                catch (e) {
-                    resolve();
-                }
-            });
-        });
-    },
-    */
+*/
 
     /*
     async testClientResyncDiscard() {

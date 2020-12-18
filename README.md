@@ -18,14 +18,15 @@ Please see the detailed instructions in our docs to use [Realm JavaScript for no
 
 ### Realm React Native and Node.js
 
-The documentation can be found at [docs.mongodb.com/realm/react-native/realm.io/docs/javascript/latest/](https://docs.mongodb.com/realm/react-native/).
+The documentation can be found at [docs.mongodb.com/realm/react-native/](https://docs.mongodb.com/realm/react-native/).
 The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
 ## Getting Help
 
-* **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We actively monitor and answer questions on SO!
+* **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). You can also check out our [Community Forum](https://developer.mongodb.com/community/forums/tags/c/realm/9/realm-sdk) where general questions about how to do something can be discussed.
 * **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
 * **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
+
 
 ## Building Realm
 
@@ -37,7 +38,9 @@ Prerequisites:
 * nvm (on Mac and Linux)
 * cocoapods (on Mac)
 * Android SDK 23+
-* [Android NDK 21](https://developer.android.com/ndk/downloads/index.html)
+* [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
+    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.
+    - From the command-line: ```$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
 
 Clone RealmJS repository:
 
@@ -77,6 +80,7 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 
 ### Building for Android:
 * `cd react-native/android`
+* `export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.0.6113669  #Location for your NDK folder`
 * `./gradlew publishAndroid`
 * The compiled version of the Android module is here: `<project-root>/android`
 

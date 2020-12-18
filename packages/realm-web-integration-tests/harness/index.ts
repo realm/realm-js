@@ -86,6 +86,8 @@ export async function run(devtools = false) {
                 IIFE_BUNDLE_URL: JSON.stringify(
                     `${BASE_URL}/realm-web/dist/bundle.iife.js`,
                 ),
+                // Used when testing Google Sign-In
+                GOOGLE_CLIENT_ID: JSON.stringify(process.env.GOOGLE_CLIENT_ID),
             }),
         ],
     });

@@ -20,3 +20,20 @@ All code located in `./src/dom` is aware of browser's DOM runtime.
 ### Code intended for testing / Mocha
 
 All code located in `./src/tests` is aware of Mocha globals and the Node.js runtime.
+
+## Releasing
+
+Run the NPM version command with the proper increment (major, minor, patch) based on the changes in the changelog.
+
+For a breaking change `npm version major`, for enhancements and features `npm version minor` and for bugfixes `npm version patch`.
+
+This will:
+- Update the versions in package.json and package-lock.json,
+- Update the versions in the CHANGELOG.md and README.md
+- Commit and create a tag.
+
+When you've verified this an you're ready to release, simply push (with tags) to the master branch and let CI complete the build, test and publish of the package.
+
+```
+git push --tags
+```
