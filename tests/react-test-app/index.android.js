@@ -54,7 +54,7 @@ async function runTests() {
         let nbrTests = 0;
         let nbrFailures = 0;
 
-        console.error('Starting ' + suiteName);
+        console.log('Starting ' + suiteName);
 
         for (let testName of testNames[suiteName]) {
             nbrTests++;

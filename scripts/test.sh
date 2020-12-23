@@ -337,27 +337,33 @@ case "$TARGET" in
   npm ci --ignore-scripts
   npm run check-environment
 
-  node scripts/build-android.js --arch=armeabi-v7a --buildType="Debug"
+  # building for armeabi-v7a since thats what's current CI is using for emulator
+  node scripts/build-android.js --arch=armeabi-v7a
   pushd react-native/android
   $(pwd)/gradlew buildAndroidPackage
   popd
 
   # pack realm package manually since install-local does not allow passing --ignore-scripts
+  echo "manually packing realm package"
   npm pack .
   mv realm-*.*.*.tgz realm.tgz
 
+  echo "manually packing realm tests package"
   pushd tests/js
   npm pack .
   mv realm-tests-*.*.*.tgz realm-tests.tgz
   popd
 
   pushd tests/react-test-app
-  npm ci
+  echo "installing react-test-app dependencies"
+  npm ci --no-optional
   
-  npm install ../js/realm-tests.tgz
+  echo "installing manually packed realm package"
+  npm install --save-optional  --ignore-scripts ../../realm.tgz 
 
-  # install manually packed realm package
-  npm install ../../realm.tgz --ignore-scripts
+  echo "installing manually packed realm tests package"
+  npm install --save-optional ../js/realm-tests.tgz
+
   
   # ./node_modules/.bin/install-local
 

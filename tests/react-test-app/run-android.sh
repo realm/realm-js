@@ -10,16 +10,9 @@ if adb shell pm list packages | grep -q io.realm.react.testapp; then
     adb uninstall io.realm.react.testapp
 fi
 
-echo "Reversing port for physical device"
-adb reverse tcp:8081 tcp:8081
+echo "Running test application"
+npx react-native run-android
 
-echo "Building Release APK"
-pushd android && ./gradlew assembleRelease --info
-
-echo "Installing APK"
-adb install app/build/outputs/apk/release/app-release.apk
-
-echo "Starting the Main Activity"
-adb shell am start -n io.realm.react.testapp/.MainActivity
-
-popd
+# granting permissions after react-native run-android since the package needs to be installed
+echo "Granting permission to write to sdcard"
+adb shell pm grant io.realm.react.testapp android.permission.WRITE_EXTERNAL_STORAGE
