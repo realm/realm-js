@@ -1,8 +1,7 @@
 #include <iostream>
-#include <type_traits>
 #include <map>
-
 #include <realm/mixed.hpp>
+#include <type_traits>
 
 namespace realm {
 
@@ -10,7 +9,6 @@ namespace realm {
 #include "napi.h"
 
 struct TypeDeduction {
-
     static std::string realm_typeof(DataType value) {
         std::map<DataType, std::string> realm_typeof = {
             {DataType::type_String, "string"},
@@ -64,12 +62,11 @@ struct TypeDeduction {
 #include <JavaScriptCore/JSStringRef.h>
 #endif
 
-
 template <typename Context, typename Value, typename JSUtils>
 struct Strategies {
+    /* DB Storing strategies */
     static auto javascript_value_to_mixed_string(Context context,
                                                  Value const& value) {
-
         // we need this to keep the value life long enough to get into the DB,
         // because the Mixed type is just a reference container.
         auto cache = JSUtils::to_string(context, value);
@@ -91,21 +88,22 @@ struct Strategies {
         return realm::Mixed();
     };
 
-    static Value mixed_to_boolean(Context context, realm::Mixed mixed) {
+    /* DB Loading strategies */
+    static Value load_boolean(Context context, realm::Mixed mixed) {
         return JSUtils::from_boolean(context, mixed.get<bool>());
     }
 
-    static Value mixed_to_string(Context context, realm::Mixed mixed) {
+    static Value load_string(Context context, realm::Mixed mixed) {
         return JSUtils::from_string(context,
-                                   mixed.get<realm::StringData>().data());
+                                    mixed.get<realm::StringData>().data());
     }
 
     template <typename NumberType>
-    static Value mixed_to_number(Context context, realm::Mixed mixed) {
+    static Value load_number(Context context, realm::Mixed mixed) {
         return JSUtils::from_number(context, mixed.get<NumberType>());
     }
 
-    static Value mixed_to_decimal(Context context, realm::Mixed mixed) {
+    static Value load_decimal128(Context context, realm::Mixed mixed) {
         return JSUtils::from_decimal128(context, mixed.get<Decimal128>());
     }
 };
@@ -115,21 +113,23 @@ class TypeMixed {
    private:
     using Context = typename JavascriptEngine::Context;
     using Value = typename JavascriptEngine::Value;
-    using JSSetterSignature = std::function<Value(Context, realm::Mixed)>;
-    using MixedSetterSignature = std::function<realm::Mixed(Context, Value const&)>;
+    using JSSetterSignature = std::function<Value(Context, Mixed)>;
+    using MixedSetterSignature = std::function<Mixed(Context, Value const&)>;
     using S = Strategies<Context, Value, js::Value<JavascriptEngine>>;
+    using Loaders = std::map<DataType, JSSetterSignature>;
+    using Storanges = std::map<std::string, MixedSetterSignature>;
 
-    std::map<DataType, JSSetterSignature> mixed_to_js_strategies = {
-        {DataType::type_String, S::mixed_to_string},
-        {DataType::type_Int, S::template mixed_to_number<realm::Int>},
-        {DataType::type_Float, S::template mixed_to_number<realm::Float>},
-        {DataType::type_Double, S::template mixed_to_number<realm::Double>},
-        {DataType::type_Decimal, S::mixed_to_decimal},
-        {DataType::type_Bool, S::mixed_to_boolean},
+    Loaders mixed_to_js_strategies = {
+        {DataType::type_String, S::load_string},
+        {DataType::type_Int, S::template load_number<realm::Int>},
+        {DataType::type_Float, S::template load_number<realm::Float>},
+        {DataType::type_Double, S::template load_number<realm::Double>},
+        {DataType::type_Decimal, S::load_decimal128},
+        {DataType::type_Bool, S::load_boolean},
     };
 
-    std::map<std::string, MixedSetterSignature> js_to_mixed_strategies = {
-        {"string", S::javascript_value_to_mixed_string },
+    Storanges js_to_mixed_strategies = {
+        {"string", S::javascript_value_to_mixed_string},
         {"number", S::javascript_value_to_mixed_int},
         {"null", S::javascript_value_to_mixed_null},
         {"boolean", S::javascript_value_to_mixed_boolean},
@@ -146,7 +146,8 @@ class TypeMixed {
 
         if (strategy == nullptr)
             throw std::runtime_error(
-                "The " + TypeDeduction::realm_typeof(mixed_type) + " value is not supported for the mixed type.");
+                "The " + TypeDeduction::realm_typeof(mixed_type) +
+                " value is not supported for the mixed type.");
         return strategy(context, mixed);
     }
 
