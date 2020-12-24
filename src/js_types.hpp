@@ -491,9 +491,7 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
                 return is_date(context, value) || is_string(context, value);
             case PropertyType::Object:
                 return true;
-            case PropertyType::Mixed: {           
-                //MixedValidation<typename T::Value> mixed; 
-                //return mixed.is_valid(value);  
+            case PropertyType::Mixed: {
                 return true;
             }
             case PropertyType::UUID:

@@ -219,6 +219,7 @@ public:
     std::string print(ValueType const&);
     void print(std::string&, ValueType const&);
     const char *typeof(ValueType const& v) { return Value::typeof(m_ctx, v); }
+    auto& get_mixed_api() {return mixed_type; }
 
 private:
     ContextType m_ctx;
@@ -355,8 +356,8 @@ struct Unbox<JSEngine, BinaryData> {
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
     static Mixed call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        TypeMixed <JSEngine> mixed_type {native_accessor->m_ctx};  
-        return mixed_type.unwrap(value);
+        return native_accessor->get_mixed_api().unwrap(value); 
+        //return mixed_type.unwrap(value);
     }
 };
 
