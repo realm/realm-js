@@ -912,10 +912,7 @@ module.exports = {
         const context = node_require('realm/package.json');
         const analytics = node_require('realm/lib/submit-analytics');
 
-        const payload = await analytics.fetchPlatformData(context, 'TestEvent')
-        .catch((e) => {
-            return Promise.reject("Failed to fetch platform data  [Error: " + e + "]");
-        });
+        const payload = await analytics.fetchPlatformData(context, 'TestEvent');
 
         TestCase.assertDefined(payload.webHook);
         TestCase.assertType(payload.webHook.event, 'string');
