@@ -923,10 +923,7 @@ module.exports = {
         TestCase.assertDefined(payload.mixPanel.properties);
         TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
 
-        await analytics.submitStageAnalytics('TestEvent')
-        .catch((e) => {
-            return Promise.reject("Failed to submit webhook analytics  [" + e + "]")
-        });
+        await analytics.submitStageAnalytics('TestEvent');
 
         return Promise.resolve();
     }
