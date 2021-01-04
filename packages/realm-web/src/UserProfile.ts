@@ -96,7 +96,6 @@ export class UserProfile<UserProfileDataType = Realm.DefaultUserProfileData> {
                 this.identities = identities.map((identity: any) => {
                     return {
                         id: identity.id,
-                        // providerId: identity["provider_id"],
                         providerType: identity["provider_type"],
                     };
                 });

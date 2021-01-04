@@ -554,7 +554,8 @@ class ApiKeyAuth {
  */
 
 /**
- * Describes an error when an incompatible synced Realm is opened. The old version of the Realm can be accessed in readonly mode using the configuration() member
+ * The identity of a user with a specific authentication provider.
+ * NOTE: A particular user might have identities with multiple providers.
  * @memberof Realm.App.Sync
  */
 class UserIdentity {
