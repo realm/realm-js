@@ -1,0 +1,18 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "noResolve": false,
+        "types": [
+            "mocha",
+            "chai",
+            "@testing-library/react"
+        ],
+        "lib": [
+            "DOM"
+        ]
+    },
+    "include": [
+        "./**/*.ts"
+    ],
+    "exclude": []
+}

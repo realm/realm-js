@@ -1,0 +1,29 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"target": "es2018",
+		"forceConsistentCasingInFileNames": true,
+		"esModuleInterop": true,
+		"noResolve": true,
+		"moduleResolution": "node",
+		"jsx": "react",
+		"typeRoots": [
+			"./types",
+			"./node_modules/@types"
+		],
+		"types": [
+			"realm-web",
+			"react"
+		],
+		"lib": [
+			"ES2018",
+			"ES2018.AsyncIterable"
+		]
+	},
+	"include": [
+		"src/**/*.ts"
+	],
+	"exclude": [
+		"src/tests/**/*.ts"
+	]
+}

@@ -1,0 +1,4 @@
+--watch-extensions ts,tsx
+--require ./test/env.js
+--require ts-node/register
+--require jsdom-global/register

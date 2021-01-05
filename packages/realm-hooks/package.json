@@ -1,0 +1,67 @@
+{
+  "name": "realm-hooks",
+  "version": "0.1.0",
+  "description": "React hooks for MongoDB Realm & the Realm database",
+  "main": "./dist/bundle.cjs.js",
+  "module": "./dist/bundle.es.js",
+  "types": "./dist/bundle.d.ts",
+  "scripts": {
+    "build": "run-s build:*",
+    "start": "run-p \"build:* -- --watch\"",
+    "build:rollup": "rollup --config",
+    "build:types": "tsc --project tsconfig.types.json",
+    "lint": "eslint --ext .js,.ts .",
+    "test": "mocha 'src/tests/**/*.test.tsx'",
+    "prepare": "rm -rf dist && npm run build:types && npm run build",
+    "postprepare": "cd ../realm-hooks-example && rm -rf node_modules/react && ln -s ../../realm-hooks/node_modules/react node_modules/react"
+  },
+  "files": [
+    "dist",
+    "types/realm",
+    "LICENSE"
+  ],
+  "keywords": [
+    "realm",
+    "react",
+    "hooks"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git",
+    "directory": "packages/realm-hooks"
+  },
+  "homepage": "https://github.com/realm/realm-js/tree/master/packages/realm-hooks#readme",
+  "bugs": {
+    "url": "https://github.com/realm/realm-js/issues"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "peerDependencies": {
+    "react": "^17",
+    "realm-web": "^1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^4.1.1",
+    "@testing-library/react": "^11.2.2",
+    "@types/chai": "^4.2.9",
+    "@types/mocha": "^7.0.1",
+    "@types/react": "^17.0.0",
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "jsdom": "^16.4.0",
+    "jsdom-global": "^3.0.2",
+    "mocha": "^5.2.0",
+    "npm-run-all": "^4.1.5",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "realm-web": "^1.1.0",
+    "rollup": "^2.6.1",
+    "rollup-plugin-dts": "^2.0.1",
+    "ts-node": "^8.8.2",
+    "typescript": "^4.0.2"
+  }
+}
