@@ -180,7 +180,6 @@ struct Value {
 #define VALIDATED(return_t, type) \
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
         if (!is_##type(ctx, value)) { \
-            printf("wtf ?????"); \
             throw TypeErrorException(name, #type, to_string(ctx, value)); \
         } \
         return to_##type(ctx, value); \
