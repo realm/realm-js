@@ -21,26 +21,27 @@ struct TypeDeduction {
         return realm_typeof[value];
     }
 
-    static std::string typeof(const Napi::Value& value) {
+    static DataType typeof(const Napi::Value& value) {
         if (value.IsNull()) {
-            return "null";
+            return DataType::type_TypedLink;
         }
         if (value.IsNumber()) {
-            return "number";
+            return DataType::type_Double;
         }
         if (value.IsString()) {
-            return "string";
+            return DataType::type_String;
         }
         if (value.IsBoolean()) {
-            return "boolean";
+            return DataType::type_Bool;
         }
         if (value.IsUndefined()) {
-            return "undefined";
+            return DataType::type_TypedLink;
         }
         if (value.IsObject()) {
-            return "object";
+            return DataType::type_Link;
         }
-        return "unknown";
+
+        return DataType::type_Link;
     }
 
     static bool is_boolean(const Napi::Value& value) {
@@ -62,49 +63,52 @@ struct TypeDeduction {
 #include <JavaScriptCore/JSStringRef.h>
 #endif
 
-template <typename Context, typename Value, typename JSUtils>
-struct Strategies {
-    /* DB Storing strategies */
-    static auto javascript_value_to_mixed_string(Context context,
-                                                 Value const& value) {
-        // we need this to keep the value life long enough to get into the DB,
-        // because the Mixed type is just a reference container.
-        auto cache = JSUtils::to_string(context, value);
+template <typename Context, typename Value>
+class MixedWrapper {
+   public:
+    virtual Mixed wrap(Context, Value const&) = 0;
+    virtual Value unwrap(Context, Mixed) = 0;
+};
+
+template <typename Context, typename Value, typename Utils>
+class StringMixed : public MixedWrapper<Context, Value> {
+    // we need this <cache> to keep the value life long enough to get into the
+    // DB, we do this because the realm::Mixed type is just a reference
+    // container.
+    std::string cache;
+
+   public:
+    Mixed wrap(Context context, Value const& value) {
+        cache = Utils::to_string(context, value);
         return realm::Mixed(cache);
-    };
-
-    static auto javascript_value_to_mixed_int(Context context,
-                                              Value const& value) {
-        return realm::Mixed(JSUtils::to_number(context, value));
-    };
-
-    static auto javascript_value_to_mixed_boolean(Context context,
-                                                  Value const& value) {
-        return realm::Mixed(JSUtils::to_boolean(context, value));
-    };
-
-    static auto javascript_value_to_mixed_null(Context context,
-                                               Value const& value) {
-        return realm::Mixed();
-    };
-
-    /* DB Loading strategies */
-    static Value load_boolean(Context context, realm::Mixed mixed) {
-        return JSUtils::from_boolean(context, mixed.get<bool>());
     }
 
-    static Value load_string(Context context, realm::Mixed mixed) {
-        return JSUtils::from_string(context,
-                                    mixed.get<realm::StringData>().data());
+    Value unwrap(Context context, Mixed mixed) {
+        return Utils::from_string(
+            context, mixed.template get<realm::StringData>().data());
+    }
+};
+
+template <typename Context, typename Value, typename Utils>
+class BooleanMixed : public MixedWrapper<Context, Value> {
+    Mixed wrap(Context context, Value const& value) {
+        return realm::Mixed(Utils::to_boolean(context, value));
     }
 
-    template <typename NumberType>
-    static Value load_number(Context context, realm::Mixed mixed) {
-        return JSUtils::from_number(context, mixed.get<NumberType>());
+    Value unwrap(Context context, Mixed mixed) {
+        return Utils::from_boolean(context, mixed.get<bool>());
+    }
+};
+
+template <typename Context, typename Value, typename Utils,
+          typename RealmNumberType>
+class Number : public MixedWrapper<Context, Value> {
+    Mixed wrap(Context context, Value const& value) {
+        return Utils::to_number(context, value);
     }
 
-    static Value load_decimal128(Context context, realm::Mixed mixed) {
-        return JSUtils::from_decimal128(context, mixed.get<Decimal128>());
+    Value unwrap(Context context, Mixed mixed) {
+        return Utils::from_number(context, mixed.get<RealmNumberType>());
     }
 };
 
@@ -113,53 +117,42 @@ class TypeMixed {
    private:
     using Context = typename JavascriptEngine::Context;
     using Value = typename JavascriptEngine::Value;
-    using JSSetterSignature = std::function<Value(Context, Mixed)>;
-    using MixedSetterSignature = std::function<Mixed(Context, Value const&)>;
-    using S = Strategies<Context, Value, js::Value<JavascriptEngine>>;
-    using Loaders = std::map<DataType, JSSetterSignature>;
-    using Storanges = std::map<std::string, MixedSetterSignature>;
+    using U = js::Value<JavascriptEngine>;
+    using Strategy = MixedWrapper<Context, Value>*;
 
-    Loaders mixed_to_js_strategies = {
-        {DataType::type_String, S::load_string},
-        {DataType::type_Int, S::template load_number<realm::Int>},
-        {DataType::type_Float, S::template load_number<realm::Float>},
-        {DataType::type_Double, S::template load_number<realm::Double>},
-        {DataType::type_Decimal, S::load_decimal128},
-        {DataType::type_Bool, S::load_boolean},
-    };
-
-    Storanges js_to_mixed_strategies = {
-        {"string", S::javascript_value_to_mixed_string},
-        {"number", S::javascript_value_to_mixed_int},
-        {"null", S::javascript_value_to_mixed_null},
-        {"boolean", S::javascript_value_to_mixed_boolean},
-    };
+    std::map<DataType, Strategy> strategies = {
+        {DataType::type_String, new StringMixed<Context, Value, U>},
+        {DataType::type_Int, new Number<Context, Value, U, realm::Int>},
+        {DataType::type_Float, new Number<Context, Value, U, realm::Float>},
+        {DataType::type_Double, new Number<Context, Value, U, realm::Double>},
+        {DataType::type_Bool, new BooleanMixed<Context, Value, U>}};
 
     Context context;
+    Strategy get_strategy(DataType type) { return strategies[type]; }
 
    public:
     TypeMixed(Context ctx) : context{ctx} {}
 
     Value wrap(realm::Mixed mixed) {
-        auto mixed_type = mixed.get_type();
-        auto strategy = mixed_to_js_strategies[mixed_type];
+        auto strategy = get_strategy(mixed.get_type());
 
         if (strategy == nullptr)
             throw std::runtime_error(
-                "The " + TypeDeduction::realm_typeof(mixed_type) +
+                "The " + TypeDeduction::realm_typeof(mixed.get_type()) +
                 " value is not supported for the mixed type.");
-        return strategy(context, mixed);
+        return strategy->unwrap(context, mixed);
     }
 
     realm::Mixed unwrap(Value const& js_value) {
         auto type = TypeDeduction::typeof(js_value);
-        auto js_to_mixed_strategy = js_to_mixed_strategies[type];
+        auto strategy = get_strategy(type);
 
-        if (js_to_mixed_strategy == nullptr)
+        if (strategy == nullptr)
             throw std::runtime_error(
-                "Mixed conversion not possible for type: " + type);
+                "Mixed conversion not possible for type: " +
+                TypeDeduction::realm_typeof(type));
 
-        return js_to_mixed_strategy(context, js_value);
+        return strategy->wrap(context, js_value);
     }
 };
 

@@ -21,6 +21,7 @@
 #include <realm/keys.hpp>
 
 #include "js_mixed.hpp"
+#include "common/single.hpp"
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
@@ -54,13 +55,12 @@ public:
     using OptionalValue = util::Optional<ValueType>;
 
     NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm, const ObjectSchema& object_schema)
-    : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(&object_schema), mixed_type(ctx) { }
+    : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(&object_schema) { }
 
     template<typename Collection>
     NativeAccessor(ContextType ctx, Collection const& collection)
     : m_ctx(ctx)
     , m_realm(collection.get_realm())
-    , mixed_type(ctx)
     , m_object_schema(collection.get_type() == realm::PropertyType::Object ? &collection.get_object_schema() : nullptr)
     { }
 
@@ -70,7 +70,6 @@ public:
         , m_parent(std::move(parent))
         , m_property(&prop)
         , m_object_schema(nullptr)
-        , mixed_type(na.m_ctx)
     {
         if (prop.type == realm::PropertyType::Object) {
             auto schema = m_realm->schema().find(prop.object_type);
@@ -87,7 +86,6 @@ public:
 		: m_ctx(parent.m_ctx)
 		, m_realm(parent.m_realm)
 		, m_object_schema(nullptr)
-        , mixed_type(parent.m_ctx)
 	{
 		auto schema = m_realm->schema().find(prop.object_type);
 		if (schema != m_realm->schema().end()) {
@@ -143,7 +141,7 @@ public:
     ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
     ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
     ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
-    ValueType box(Mixed mixed)       { return mixed_type.wrap(mixed); }
+    ValueType box(Mixed mixed)       { return Singleton<TypeMixed<JSEngine>, ContextType>::getInstance(m_ctx)->wrap(mixed); }
     ValueType box(UUID)              { throw std::runtime_error("'UUID' type support is not implemented yet"); }
 
     ValueType box(Timestamp ts) {
@@ -219,7 +217,6 @@ public:
     std::string print(ValueType const&);
     void print(std::string&, ValueType const&);
     const char *typeof(ValueType const& v) { return Value::typeof(m_ctx, v); }
-    auto& get_mixed_api() {return mixed_type; }
 
 private:
     ContextType m_ctx;
@@ -231,7 +228,6 @@ private:
     OwnedBinaryData m_owned_binary_data;
     template<typename, typename>
     friend struct _impl::Unbox;
-    TypeMixed<JSEngine> mixed_type;
 };
 
 namespace _impl {
@@ -356,8 +352,8 @@ struct Unbox<JSEngine, BinaryData> {
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
     static Mixed call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        return native_accessor->get_mixed_api().unwrap(value); 
-        //return mixed_type.unwrap(value);
+
+        return Singleton<TypeMixed<JSEngine>, typename JSEngine::Context>::getInstance(native_accessor->m_ctx)->unwrap(value);
     }
 };
 
