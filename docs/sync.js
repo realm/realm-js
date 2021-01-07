@@ -547,6 +547,31 @@ class ApiKeyAuth {
     disable(id) { }
 }
 
+/**
+ * The type of an authentication provider, used to authenticate a user.
+ * @typedef Realm.App.Sync~ProviderType
+ * @type {("anon-user"|"api-key"|"local-userpass"|"custom-function"|"custom-token"|"oauth2-google"|"oauth2-facebook"|"oauth2-apple")}
+ */
+
+/**
+ * The identity of a user with a specific authentication provider.
+ * NOTE: A particular user might have identities with multiple providers.
+ * @memberof Realm.App.Sync
+ */
+class UserIdentity {
+    /**
+     * The id of a users identity at an authentication provider.
+     * @type {string}
+     */
+    get id() { }
+
+    /**
+     * The type of the authentication provider.
+     * @type {Realm.App.Sync~ProviderType}
+     */
+    get providerType() { }
+}
+
 
 /**
  * Class for managing users.
@@ -554,22 +579,21 @@ class ApiKeyAuth {
  */
 class User {
     /**
-     * Gets the identity of this user on MongoDB Realm Cloud.
-     * The identity is a guaranteed to be unique among all users on MongoDB Realm Cloud .
+     * Gets the id of this user on MongoDB Realm Cloud.
+     * The id is a guaranteed to be unique among all users on MongoDB Realm Cloud .
      * @type {string}
      */
     get id() { }
 
     /**
-     * Gets an array of identities for this user on MongoDB Realm Cloud.
-     * Each element in the array is an object with properties userId and providerType.
-     * @type {Array<Object>}
+     * Gets an array of identities for this user.
+     * @type {Array<Realm.App.Sync.UserIdentity>}
      */
     get identities() { }
 
     /**
      * Gets the provider type for the identity.
-     * @type {string}
+     * @type {Realm.App.Sync~ProviderType}
      */
     get providerType() { }
 
