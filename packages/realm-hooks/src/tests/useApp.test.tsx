@@ -20,7 +20,7 @@ import React from "react";
 import { render, screen, cleanup } from "@testing-library/react";
 import { expect } from "chai";
 
-import { useApp } from "../useApp";
+import { AppProvider, useApp } from "../AppContext";
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -29,10 +29,14 @@ afterEach(cleanup);
 describe("useApp hook", () => {
     it("can render", () => {
         function App() {
-            const app = useApp("test-app-id");
+            const app = useApp();
             return <>app-id = {app.id}</>;
         }
-        render(<App />);
+        render(
+            <AppProvider id="test-app-id">
+                <App />
+            </AppProvider>,
+        );
         const p = screen.getByText(/app-id = [\w]/);
         expect(p.innerHTML).equals("app-id = test-app-id");
     });
