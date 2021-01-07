@@ -56,6 +56,7 @@ static const char * const RealmObjectTypesUndefined = "undefined";
 static const char * const RealmObjectTypesError = "error";
 static const char * const RealmObjectTypesFetchResponseHandler = "fetchresponsehandler";
 static const char * const RealmObjectTypesEmailPasswordAuth = "emailpasswordauth";
+static const char * const RealmObjectTypesEJSON = "ejson";
 
 json serialize_object_schema(const realm::ObjectSchema &object_schema) {
     std::vector<std::string> properties;
@@ -236,6 +237,18 @@ static json read_object_properties(Object& object) {
                 }
                 break;
             }
+            case PropertyType::Decimal:
+                cache[property.name] = {
+                    {"type", RealmObjectTypesEJSON},
+                    {"value", {"$numberDecimal", obj.get<Decimal>(property.column_key).to_string()}},
+                };
+                break;
+            case PropertyType::ObjectId:
+                cache[property.name] = {
+                    {"type", RealmObjectTypesEJSON},
+                    {"value", {"$oid", obj.get<ObjectId>(property.column_key).to_string()}},
+                };
+                break;
             case PropertyType::Data:
             case PropertyType::Object:
             break;
@@ -251,6 +264,7 @@ RPCServer::RPCServer() {
     m_callback_call_counter = 1;
 
     // Make the App use the RPC Network Transport from now on
+    previous_transport_generator = AppClass::transport_generator;
     AppClass::transport_generator = [] (jsc::Types::Context ctx) {
         return std::make_unique<RPCNetworkTransport>(ctx);
     };
@@ -625,8 +639,8 @@ RPCServer::~RPCServer() {
     m_objects.clear();
     m_callbacks.clear();
 
-    // Clear the Object Store App cache, to prevent instances from using the context which is going to be released.
-    app::App::clear_cached_apps();
+    // Restore the previous transport generator
+    AppClass::transport_generator = previous_transport_generator;
 
     get_rpc_server(m_context) = nullptr;
     JSGlobalContextRelease(m_context);
@@ -1026,6 +1040,14 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
         }
         else if (type_string == RealmObjectTypesUndefined) {
             return jsc::Value::from_undefined(m_context);
+        }
+        else if (type_string == RealmObjectTypesEJSON) {
+            JSObjectRef js_object = jsc::Object::create_empty(m_context);
+            for (auto& el : value.items()) {
+                auto el_value = jsc::Value::from_string(m_context, el.value().get<std::string>());
+                jsc::Object::set_property(m_context, js_object, el.key(), el_value);
+            }
+            return js_object;
         }
         assert(0);
     }
