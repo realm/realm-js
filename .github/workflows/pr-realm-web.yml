@@ -1,6 +1,7 @@
 name: Testing Realm Web (Pull Request)
 
 on:
+  push:
   pull_request:
     paths:
       # Only run when the PR makes changes to the packages
