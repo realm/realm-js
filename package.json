@@ -113,7 +113,6 @@
     "lerna": "^3.20.2",
     "license-checker": "^8.0.3",
     "mockery": "^2.0.0",
-    "mongodb": "^3.6.3",
     "prebuild": "^10.0.1",
     "prettier": "^2.0.4",
     "rimraf": "^2.6.3",
@@ -125,9 +124,7 @@
     "tslint-eslint-rules": "^5.4.0",
     "tslint-plugin-prettier": "^2.1.0",
     "typescript": "^3.8.2",
-    "cmake-js": "^6.1.0",
-    "uuid": "^8.3.2",
-    "uuid-mongodb": "^2.4.0"
+    "cmake-js": "^6.1.0"
   },
   "engines": {
     "node": ">=10"
