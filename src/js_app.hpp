@@ -37,9 +37,6 @@ namespace realm {
 namespace js {
 
 template<typename T>
-using NetworkTransportFactory = std::function<std::unique_ptr<app::GenericNetworkTransport>(typename T::Context)>;
-
-template<typename T>
 class AppClass : public ClassDefinition<T, SharedApp> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -52,12 +49,19 @@ class AppClass : public ClassDefinition<T, SharedApp> {
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
-
     using NetworkTransport = JavaScriptNetworkTransport<T>;
+    using NetworkTransportFactory = typename NetworkTransport::NetworkTransportFactory;
 
 public:
     const std::string name = "App";
-    static NetworkTransportFactory<T> transport_generator;
+    
+    /**
+     * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network requests.
+     * Exposed to allow other components (ex the RPCServer) to override the underlying implementation.
+     */
+    static inline NetworkTransportFactory transport_generator = [] (ContextType ctx) {
+        return std::make_unique<NetworkTransport>(ctx);
+    };
 
     // These values are overridden at runtime
     static inline std::string package_version = "?.?.?";
@@ -106,12 +110,6 @@ public:
         {"_getApp", wrap<get_app>},
         {"_setVersions", wrap<set_versions>}
     };
-};
-
-
-template<typename T>
-NetworkTransportFactory<T> AppClass<T>::transport_generator = [] (ContextType ctx) {
-    return std::make_unique<NetworkTransport>(ctx);
 };
 
 template<typename T>
