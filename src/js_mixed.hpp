@@ -181,7 +181,14 @@ class HandleBinary : public MixedWrapper<Context, Value> {
 template <typename Context, typename Value, typename Utils>
 class HandleTimeStamp : public MixedWrapper<Context, Value> {
     Mixed wrap(Context context, Value const &value) {
-        return realm::Mixed(Utils::validated_to_date(context, value));
+        auto date = Utils::to_date(context, value);
+
+        double milliseconds = Utils::to_number(context, date);
+        int64_t seconds = milliseconds / 1000;
+        int32_t nanoseconds = ((int64_t)milliseconds % 1000) * 1000000;
+        Timestamp ts(seconds, nanoseconds);
+
+        return realm::Mixed(ts);
     }
 
     Value unwrap(Context context, Mixed mixed) {
