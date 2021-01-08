@@ -130,8 +130,7 @@ inline bool node::Value::is_object_id(Napi::Env env, const Napi::Value& value) {
 
 template <>
 inline bool node::Value::is_uuid(Napi::Env env, const Napi::Value& value) {
-	// FIXME: change to UUID when bson-js has a proper UUID class
-    return is_bson_type(env, value, "Binary");
+    return is_bson_type(env, value, "UUID");
 }
 
 template<>
@@ -335,12 +334,10 @@ Napi::Value node::Value::from_uuid(Napi::Env env, const UUID& uuid) {
     Napi::EscapableHandleScope scope(env);
 
     Napi::Function realm_constructor = node::RealmClassConstructor.Value();
-    Napi::Function binary_constructor = realm_constructor.Get("_Binary").As<Napi::Function>();
-    napi_value args[] = {
-		Napi::Buffer<std::uint8_t>::New(env, uuid.to_bytes().data(), UUID::num_bytes),
-		Napi::Number::New(env, 4)
-	};
-    Napi::Value result = binary_constructor.New(2, args);
+    Napi::Function uuid_constructor = realm_constructor.Get("_UUID").As<Napi::Function>();
+    napi_value args[] = { Napi::String::New(env, uuid.to_string()), };
+    Napi::Value result = uuid_constructor.New(1, args);
+
     return scope.Escape(result);
 }
 
@@ -349,14 +346,11 @@ inline UUID node::Value::to_uuid(Napi::Env env, const Napi::Value& value) {
     Napi::HandleScope scope(env);
 
     Napi::Object uuid = value.As<Napi::Object>();
-    Napi::Function toValue = uuid.Get("value").As<Napi::Function>();
-    Napi::Buffer<std::uint8_t> buffer = toValue.Call(value, { Napi::Boolean::New(env, true) }).As<Napi::Buffer<std::uint8_t>>();
-    std::array<uint8_t, UUID::num_bytes> bytes;
-	auto data = buffer.Data();
-	for (size_t i = 0; i < UUID::num_bytes; ++i) {
-		bytes[i] = data[i];
-	}
-    UUID result(bytes);
+    node::String str = uuid.Get("toHexString").As<Napi::Function>().Call(value, {}).As<Napi::String>();
+
+    std::string uuidAsString = str;
+
+    UUID result(uuidAsString.c_str());
     return result;
 }
 

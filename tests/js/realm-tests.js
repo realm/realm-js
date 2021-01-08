@@ -33,8 +33,7 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
 const { Decimal128, ObjectId } = require("bson");
-const { v4: uuidv4 } = require('uuid');
-const MUUID = require('uuid-mongodb');
+const UUID = Realm._UUID;
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -2042,20 +2041,50 @@ module.exports = {
         realm.close();
     },
 
+    // TODO: Cleanup debugging logs.
     testUUID: function() {
         const realm = new Realm({schema: [schemas.UUIDObject]});
+        // Check schema
         TestCase.assertEqual(realm.schema.length, 1);
         TestCase.assertEqual(realm.schema[0].properties["id"].type, "uuid");
-
-        const mUUID4 = MUUID.v4();
+        
+        // Auto-generate checks
+        const uuid = new UUID();
         realm.write(() => {
-            realm.create(schemas.UUIDObject.name, { id: mUUID4 });
+            realm.create(schemas.UUIDObject.name, { id: uuid });
         });
 
         TestCase.assertEqual(realm.objects(schemas.UUIDObject.name).length, 1);
         const obj = realm.objects(schemas.UUIDObject.name)[0];
-        // TODO: check if obj.id is UUID using instanceof
-        TestCase.assertEqual(obj.id.sub_type, 4);
+
+        TestCase.assertTrue(obj.id instanceof UUID);
+        TestCase.assertTrue(obj.id.equals(uuid));
+
+        // "cleanup"
+        realm.close();
+    },
+
+    testPredefinedUUID: function() {
+        const realm = new Realm({schema: [schemas.UUIDObject]});
+        // Check schema
+        TestCase.assertEqual(realm.schema.length, 1);
+        TestCase.assertEqual(realm.schema[0].properties["id"].type, "uuid");
+
+        // Predefined uuid checks
+        const uuidStr = "af4f40c0-e833-4ab1-b026-484cdeadd782";
+        const uuid = new UUID(uuidStr);
+        realm.write(() => {
+            realm.create(schemas.UUIDObject.name, { id: uuid });
+        });
+
+        TestCase.assertEqual(realm.objects(schemas.UUIDObject.name).length, 1);
+        const obj = realm.objects(schemas.UUIDObject.name)[0];
+
+        TestCase.assertTrue(obj.id instanceof UUID);
+        TestCase.assertTrue(obj.id.equals(uuid));
+        TestCase.assertEqual(obj.id.toString(), uuidStr);
+
+        // "cleanup"
         realm.close();
     },
 

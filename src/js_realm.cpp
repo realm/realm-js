@@ -104,6 +104,9 @@ std::string TypeErrorException::type_string(Property const& prop)
         case PropertyType::ObjectId:
             ret = "objectId";
             break;
+        case PropertyType::UUID:
+            ret = "uuid";
+            break;
         case PropertyType::LinkingObjects:
         case PropertyType::Object:
             ret = prop.object_type;
