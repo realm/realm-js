@@ -925,6 +925,5 @@ module.exports = {
 
         await analytics.submitStageAnalytics('TestEvent');
 
-        return Promise.resolve();
     }
 };
