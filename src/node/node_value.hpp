@@ -331,27 +331,29 @@ inline ObjectId node::Value::to_object_id(Napi::Env env, const Napi::Value& valu
 
 template<>
 Napi::Value node::Value::from_uuid(Napi::Env env, const UUID& uuid) {
-    Napi::EscapableHandleScope scope(env);
+	Napi::EscapableHandleScope scope(env);
 
-    Napi::Function realm_constructor = node::RealmClassConstructor.Value();
-    Napi::Function uuid_constructor = realm_constructor.Get("_UUID").As<Napi::Function>();
-    napi_value args[] = { Napi::String::New(env, uuid.to_string()), };
-    Napi::Value result = uuid_constructor.New(1, args);
+	Napi::Function realm_constructor = node::RealmClassConstructor.Value();
+	Napi::Function uuid_constructor = realm_constructor.Get("_UUID").As<Napi::Function>();
 
-    return scope.Escape(result);
+	napi_value args[] = { Napi::Buffer<std::uint8_t>::Copy(env, uuid.to_bytes().data(), UUID::num_bytes) };
+	Napi::Value result = uuid_constructor.New(1, args);
+
+	return scope.Escape(result);
 }
 
 template <>
 inline UUID node::Value::to_uuid(Napi::Env env, const Napi::Value& value) {
-    Napi::HandleScope scope(env);
+	Napi::HandleScope scope(env);
 
-    Napi::Object uuid = value.As<Napi::Object>();
-    node::String str = uuid.Get("toHexString").As<Napi::Function>().Call(value, {}).As<Napi::String>();
+	Napi::Object uuid = value.As<Napi::Object>();
+	// TODO: Temp implementation of JS UUID has a buffer on the "id" key. This is corresponding to the official ObjectId implementation - BUT could change.
+	auto buffer = uuid.Get("id").As<Napi::Buffer<std::uint8_t>>();
+	UUID::UUIDBytes bytes;
+	memcpy(&bytes, buffer.Data(), UUID::num_bytes);
 
-    std::string uuidAsString = str;
-
-    UUID result(uuidAsString.c_str());
-    return result;
+	UUID result(bytes);
+	return result;
 }
 
 } // js
