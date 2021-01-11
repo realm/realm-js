@@ -924,6 +924,5 @@ module.exports = {
         TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
 
         await analytics.submitStageAnalytics('TestEvent');
-
     }
 };
