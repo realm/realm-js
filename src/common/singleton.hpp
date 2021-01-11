@@ -1,4 +1,6 @@
 #include <iostream>
+#pragma once
+
 
 template <typename T, typename Context>
 class Singleton

@@ -21,7 +21,7 @@
 #include <realm/keys.hpp>
 
 #include "js_mixed.hpp"
-#include "common/single.hpp"
+#include "common/singleton.hpp"
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
