@@ -33,8 +33,8 @@ import {
     Playlist as PlaylistWithId,
     Song as SongWithId,
 } from "./schemas/playlist-with-songs-with-ids";
-import * as circularCollectionResult from "./structures/circular-collection-result.json";
-import * as circularCollectionResultWithIds from "./structures/circular-collection-result-with-primary-ids.json";
+import circularCollectionResult from "./structures/circular-collection-result.json";
+import circularCollectionResultWithIds from "./structures/circular-collection-result-with-primary-ids.json";
 
 describe("JSON serialization (exposed properties)", () => {
     it("JsonSerializationReplacer is exposed on the Realm constructor", () => {
