@@ -124,7 +124,7 @@ NOTE: This version uses the Realm file format to version 20. It is not possible 
 * None
 
 ### Enhancements
-* None
+* Added an export of the `bson` module on the package, making it possible to access the BSON types via `import Realm from "realm";` followed by `Realm.BSON.ObjectId`, `Realm.BSON.Decimal128`, `Realm.BSON.Binary` etc. ([#3363](https://github.com/realm/realm-js/pull/3363))
 
 ### Fixed
 * Fixed RN Android error: couldn't find DSO to load: librealmreact.so caused by: dlopen failed: cannot locate symbol. ([#3347](https://github.com/realm/realm-js/issues/3347), since v10.0.0)

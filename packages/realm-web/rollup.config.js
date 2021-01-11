@@ -101,10 +101,7 @@ export default [
         output: {
             file: "dist/bundle.d.ts",
             format: "es",
-            intro: [
-                '/// <reference path="../types/realm/bson.d.ts" />',
-                '/// <reference path="../types/realm/app.d.ts" />',
-            ].join("\n"),
+            intro: '/// <reference path="../types/realm/app.d.ts" />',
         },
         plugins: [
             dts({
@@ -113,5 +110,6 @@ export default [
             }),
             nodeResolve(),
         ],
+        external: ["bson"],
     },
 ];

@@ -18,7 +18,7 @@
 
 /* tslint:disable max-classes-per-file */
 
-import * as Realm from "realm";
+import Realm from "realm";
 import { ObjectId } from "bson";
 
 export interface IPerson {

@@ -45,8 +45,7 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "@types/bson": "^4.0.0",
-    "bson": "4.0.0",
+    "bson": "^4.2.0",
     "detect-browser": "^5.1.1",
     "js-base64": "^2.6.3"
   },
