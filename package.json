@@ -32,7 +32,6 @@
   "types": "types/index.d.ts",
   "main": "lib/index.js",
   "files": [
-    "android",
     "cmake",
     "lib",
     "types",
@@ -56,7 +55,6 @@
     "build": "npm run build-changes",
     "build-changes": "cmake-js build --debug",
     "rebuild-changes": "cmake-js rebuild --debug && cd tests && npm install",
-    "prepublish": "echo prepublishing && node scripts/prepublish.js",
     "eslint": "npm install --ignore-scripts && npm run lint .",
     "license-check": "npm install && license-checker --exclude \"MIT,ISC,BSD,Apache-2.0,BSD-2-Clause,BSD-3-Clause,WTFPL,Unlicense,(MIT AND CC-BY-3.0)\" | node scripts/handle-license-check.js",
     "jsdoc:clean": "rimraf ./docs/output",

@@ -99,7 +99,7 @@ async function runTests() {
             console.error('\n\nREALM_FAILING_TESTS\n');
             console.error(failingTests);
         }
-        console.warn("Realm Tests App finished. Exiting. Disable this to debug the app locally");
+        console.log("Realm Tests App finished. Exiting. Disable this to debug the app locally");
         RNExitApp.exitApp();
     }
 }

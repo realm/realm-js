@@ -28,7 +28,7 @@ if (!fs.existsSync(rnDir)) {
     throw new Error("This script needs to be run at the root dir of the project");
 }
 
-const copyOutputPath = path.resolve(process.cwd(), "react-native", "android", "build", "libs");
+const copyOutputPath = path.resolve(process.cwd(), "react-native", "android", "src", "main", "jniLibs");
 
 const buildTypes = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"];
 let architectures = ["x86", "armeabi-v7a", "arm64-v8a", "x86_64"];
@@ -92,6 +92,38 @@ for (const arch of architectures) {
     exec(cmakePath, args, { cwd: archBuildDir, stdio: 'inherit' });
 
     copyOutput(arch, archBuildDir);
+}
+
+generateVersionFile();
+
+function generateVersionFile() {
+    const targetFile = path.resolve(process.cwd(), "react-native", "android", "src", "main", "java", "io", "realm", "react", "Version.java");
+    const version = getVersion();
+    const versionFileContents = `package io.realm.react;
+
+public class Version {
+    public static final String VERSION = "${version}";
+}
+`;
+
+    fs.writeFileSync(targetFile, versionFileContents);
+}
+
+function getVersion() {
+    const depencenciesListFile = path.resolve(process.cwd(), "dependencies.list");
+    const contents = fs.readFileSync(depencenciesListFile, "UTF-8");
+    const lines = contents.split(/\r?\n/);
+    const versionValue = lines.find(line => line.startsWith("VERSION="));
+    if (!versionValue) {
+        throw new Error("Realm version not found. Invalid dependencies.list file");
+    }
+
+    const version = versionValue.split("=")[1];
+    if (!version) {
+        throw new Error("Realm version not found. Invalid version value in dependencies.list file");
+    }
+
+    return version;
 }
 
 function copyOutput(arch, buildDir) {
