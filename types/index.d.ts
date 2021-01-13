@@ -460,7 +460,7 @@ type ExtractPropertyNamesOfType<T, PropType> = {
 /**
  * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
  */
-type RealmOptionalParMappedModel<T> = {
+type RealmListsRemappedModelPart<T> = {
     [K in keyof T]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
 }
 
@@ -468,10 +468,9 @@ type RealmOptionalParMappedModel<T> = {
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
  * with only the keys which value extends Realm.List, remapped as Arrays.
  */
-//
-type RealmInsertionModel<T> =
-    Omit<Omit<T, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
-    & RealmOptionalParMappedModel<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
+type RealmInsertionModel<T> = 
+    Omit<Omit<Omit<T, ExtractPropertyNamesOfType<T, Function>>, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
+    & RealmListsRemappedModelPart<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
 
 declare class Realm {
     static defaultPath: string;

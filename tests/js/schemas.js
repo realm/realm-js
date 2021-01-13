@@ -428,22 +428,13 @@ exports.EmbeddedObjectSchemas = [
         name: 'Person',
         properties: {
             id: 'int',
-            dog: {
-                name: 'Dog',
-                properties: {
-                    'name': 'string',
-                    'color': 'string'
-                }
-            },
+            dog: 'Dog',
             cars: 'Car[]',
             truck: 'Car',
             vans: { type: 'list', objectType: 'Car' },
             cat: {
                 type: 'list',
-                name: 'Cat',
-                properties: {
-                    name: 'string'
-                }
+                objectType: 'Cat'
             }
         }
     },
@@ -455,6 +446,21 @@ exports.EmbeddedObjectSchemas = [
             model: 'string',
             mileage: { type: 'int', optional: true, indexed: true },
             owners: { type: 'linkingObjects', objectType: 'Person', property: 'cars' }
+        }
+    },
+    {
+        name: 'Dog',
+        embedded: true,
+        properties: {
+            'name': 'string',
+            'color': 'string'
+        }
+    },
+    {
+        name: 'Cat',
+        embedded: true,
+        properties: {
+            name: 'string'
         }
     }
 ];

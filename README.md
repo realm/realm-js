@@ -18,7 +18,7 @@ Please see the detailed instructions in our docs to use [Realm JavaScript for no
 
 ### Realm React Native and Node.js
 
-The documentation can be found at [docs.mongodb.com/realm/react-native/realm.io/docs/javascript/latest/](https://docs.mongodb.com/realm/react-native/).
+The documentation can be found at [docs.mongodb.com/realm/react-native/](https://docs.mongodb.com/realm/react-native/).
 The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
 ## Getting Help

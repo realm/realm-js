@@ -22,6 +22,9 @@ import * as Realm from "realm-web";
 if (location.pathname.endsWith("-callback")) {
     console.log("This is the callback from Google OAuth 2.0 flow");
     Realm.handleAuthRedirect();
+} else if (location.pathname.endsWith("/google-login")) {
+    console.log("Hello to Google Login ...");
+    require("./google-login");
 } else {
     const mochaClient = new MochaRemoteClient({
         onInstrumented: () => {

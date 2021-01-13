@@ -128,6 +128,7 @@ struct Value {
     static bool is_boolean(ContextType, const ValueType &);
     static bool is_constructor(ContextType, const ValueType &);
     static bool is_date(ContextType, const ValueType &);
+    static bool is_error(ContextType, const ValueType &);
     static bool is_function(ContextType, const ValueType &);
     static bool is_null(ContextType, const ValueType &);
     static bool is_number(ContextType, const ValueType &);

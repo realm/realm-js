@@ -86,6 +86,12 @@ inline bool jsc::Value::is_constructor(JSContextRef ctx, const JSValueRef &value
 }
 
 template<>
+inline bool jsc::Value::is_error(JSContextRef ctx, const JSValueRef &value) {
+    static const jsc::String type = "Error";
+    return is_object_of_type(ctx, value, type);
+}
+
+template<>
 inline bool jsc::Value::is_function(JSContextRef ctx, const JSValueRef &value) {
     return JSValueIsObject(ctx, value) && JSObjectIsFunction(ctx, (JSObjectRef)value);
 }
@@ -135,7 +141,7 @@ inline bool is_bson_type(JSContextRef ctx, const JSValueRef &value, std::string 
         throw jsc::Exception(ctx, error);
     }
 
-    JSValueRef bsonType = JSObjectGetProperty(ctx, object, JSStringCreateWithUTF8CString("_bsontype"), &error);
+    JSValueRef bson_type = JSObjectGetProperty(ctx, object, JSStringCreateWithUTF8CString("_bsontype"), &error);
     if (error) {
         throw jsc::Exception(ctx, error);
     }
@@ -144,25 +150,47 @@ inline bool is_bson_type(JSContextRef ctx, const JSValueRef &value, std::string 
         return false;
     }
 
-    jsc::String bsonTypeValue = JSValueToStringCopy(ctx, bsonType, &error);
+    jsc::String bson_type_value = JSValueToStringCopy(ctx, bson_type, &error);
     // Since the string's retain value is +2 here, we need to manually release it before returning.
-    JSStringRelease(bsonTypeValue);
+    JSStringRelease(bson_type_value);
     if (error) {
         throw jsc::Exception(ctx, error);
     }
 
-    std::string bsonTypeStringValue = bsonTypeValue;
-    return bsonTypeStringValue == type;
+    return (std::string)bson_type_value == type;
+}
+
+/**
+ * Checks if a `value` is an EJSON representation of a particular type (determined by the existance of a particular property).
+ */
+inline bool is_ejson_type(JSContextRef ctx, const JSValueRef &value, std::string property_name) {
+    if (JSValueIsNull(ctx, value) || JSValueIsUndefined(ctx, value) || !JSValueIsObject(ctx, value)) {
+        return false;
+    }
+
+    JSValueRef error = nullptr;
+    JSObjectRef object = JSValueToObject(ctx, value, &error);
+    if (error) {
+        throw jsc::Exception(ctx, error);
+    }
+
+    JSStringRef property_name_string = JSStringCreateWithUTF8CString(property_name.c_str());
+    auto property = JSObjectGetProperty(ctx, object, property_name_string, &error);
+    if (error) {
+        throw jsc::Exception(ctx, error);
+    }
+
+    return JSValueIsUndefined(ctx, property) == false;
 }
 
 template<>
 inline bool jsc::Value::is_decimal128(JSContextRef ctx, const JSValueRef &value) {
-    return is_bson_type(ctx, value, "Decimal128");
+    return is_bson_type(ctx, value, "Decimal128") || is_ejson_type(ctx, value, "$numberDecimal");
 }
 
 template<>
 inline bool jsc::Value::is_object_id(JSContextRef ctx, const JSValueRef &value) {
-    return is_bson_type(ctx, value, "ObjectID");
+    return is_bson_type(ctx, value, "ObjectID") || is_ejson_type(ctx, value, "$oid");
 }
 
 template<>

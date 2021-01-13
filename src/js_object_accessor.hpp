@@ -174,6 +174,35 @@ public:
     bool is_null(ValueType const& value) {
         return Value::is_null(m_ctx, value) || Value::is_undefined(m_ctx, value);
     }
+    DataType get_type_of(ValueType const& value)
+    {
+        if (Value::is_number(m_ctx, value)) {
+            return type_Double;
+        }
+        if (Value::is_string(m_ctx, value)) {
+            return type_String;
+        }
+        if (Value::is_date(m_ctx, value)) {
+            return type_Timestamp;
+        }
+        if (Value::is_boolean(m_ctx, value)) {
+            return type_Bool;
+        }
+        if (Value::is_binary(m_ctx, value)) {
+            return type_Binary;
+        }
+        if (Value::is_object_id(m_ctx, value)) {
+            return type_ObjectId;
+        }
+        if (Value::is_decimal128(m_ctx, value)) {
+            return type_Decimal;
+        }
+        if (Value::is_object(m_ctx, value)) {
+            return type_Link;
+        }
+        return DataType(-1);
+    }
+
     ValueType null_value() {
         return Value::from_null(m_ctx);
     }

@@ -160,7 +160,7 @@
 
 /**
  *
- * Class for interacting with Realm Sync.
+ * Class for interacting with MongoDB Realm Cloud.
  *
  * @memberof Realm.App
  */
@@ -184,7 +184,7 @@ class Sync {
      * but before opening any Realms.
      *
      * @param {Realm.App} app - The Realm app.
-     * @param {Realm.Sync~LogLevel} level - The new log level
+     * @param {Realm.App.Sync~LogLevel} level - The new log level
      * @example
      * {
      * const app = new Realm.App(getAppConfig());
@@ -208,7 +208,7 @@ class Sync {
     static enableSessionMultiplexing(app) { }
 
     /**
-     * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
+     * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the MongoDB Realm Cloud client with a custom logger.
      * @callback Realm.App.Sync~logCallback
      * @param {number} level The level of the log entry between 0 and 8 inclusively.
      * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
@@ -220,7 +220,7 @@ class Sync {
      * but before opening any Realms.
      *
      * @param {Realm.App} app - the Realm app.
-     * @param {Realm.Sync~logCallback} logger - The log callback.
+     * @param {Realm.App.Sync~logCallback} logger - The log callback.
      * @example
      * {
      * const app = new Realm.App(getAppConfig());
@@ -254,7 +254,7 @@ class Sync {
      *   const config = { sync: { user, partitionValue } };
      *   config.sync.error = (sender, error) => {
      *     if (error.name === 'ClientReset') {
-     *       Realm.Sync.initiateClientReset(app, original_path);
+     *       Realm.App.Sync.initiateClientReset(app, original_path);
      *       // copy required objects from Realm at error.config.path
      *     }
      *   }
@@ -353,8 +353,16 @@ class Credentials {
      * Creates credentials based on a Google login.
      * @param {string} authCode A Google authentication code, obtained by logging into Google.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     * @deprecated
      */
     static google(authCode) { }
+
+    /**
+     * Creates credentials based on a Google login.
+     * @param {object} An object with either an `authCode` or `idToken` property.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     */
+    static google(authObject) { }
 
     /**
      * Creates credentials for an anonymous user. These can only be used once - using them a second
@@ -404,6 +412,11 @@ class Credentials {
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
     get provider() { }
+
+    /**
+     * @returns {object} A simple object which can be passed to the server as the body of a request to authenticate.
+     */
+    get payload() { }
 }
 
 /**
@@ -639,15 +652,16 @@ class User {
      * Calls the named server function as this user.
      * @param {string} name - name of the function to call
      * @param {any[]} args - list of arguments to pass
+     * @return {Promise<any>} - resolves when the function terminates.
      */
     callFunction(name, args) { }
 
     /**
-     * Convenience wrapper around `call_function(name, [args])`
+     * Convenience wrapper around `callFunction(name, [args])`
      *
      * @example
      * // These are all equivalent:
-     * await user.call_function("do_thing", [a1, a2, a3]);
+     * await user.callFunction("do_thing", [a1, a2, a3]);
      * await user.functions.do_thing(a1, a2, a3);
      * await user.functions["do_thing"](a1, a2, a3);
      *
