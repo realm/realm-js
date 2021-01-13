@@ -22,7 +22,6 @@
 #include "napi.h"
 
 #include "js_mixed.hpp"
-#include "common/singleton.hpp"
 
 namespace realm {
 namespace js {
@@ -79,7 +78,7 @@ class ReturnValue<node::Types> {
     }
 
     void set(realm::Mixed mixed) {
-        m_value = Singleton<TypeMixed<node::Types>, Napi::Env>::getInstance(m_env)->wrap(mixed);
+        m_value = TypeMixed<node::Types>::get_instance().wrap(m_env, mixed);
     }
 
     void set_null() {

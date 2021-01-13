@@ -21,7 +21,6 @@
 #include <realm/keys.hpp>
 
 #include "js_mixed.hpp"
-#include "common/singleton.hpp"
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
@@ -141,7 +140,7 @@ public:
     ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
     ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
     ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
-    ValueType box(Mixed mixed)       { return Singleton<TypeMixed<JSEngine>, ContextType>::getInstance(m_ctx)->wrap(mixed); }
+    ValueType box(Mixed mixed)       { return TypeMixed<JSEngine>::get_instance().wrap(m_ctx, mixed); }
     ValueType box(UUID)              { throw std::runtime_error("'UUID' type support is not implemented yet"); }
 
     ValueType box(Timestamp ts) {
@@ -352,8 +351,7 @@ struct Unbox<JSEngine, BinaryData> {
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
     static Mixed call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-
-        return Singleton<TypeMixed<JSEngine>, typename JSEngine::Context>::getInstance(native_accessor->m_ctx)->unwrap(value);
+        return TypeMixed<JSEngine>::get_instance().unwrap(native_accessor->m_ctx, value);
     }
 };
 

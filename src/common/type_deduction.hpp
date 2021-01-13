@@ -9,6 +9,11 @@
 namespace realm {
 namespace js {
 
+/*
+ * Here we encapsulate some type deduction capabilities for all supported Javascript
+ * environments.
+ */
+
 struct TypeDeduction : TypeDeductionImpl {};
 
 }  // namespace js

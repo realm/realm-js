@@ -118,13 +118,13 @@ class TypeMixed {
     using Value = typename JavascriptEngine::Value;
     using Utils = js::Value<JavascriptEngine>;
     using Strategy = MixedWrapper<Context, Value> *;
-    Context context;
 
     std::map<DataType, Strategy> strategies = {
         {DataType::type_String, new HandleString<Context, Value, Utils>},
         {DataType::type_Int, new HandleNumber<Context, Value, Utils, Int>},
         {DataType::type_Float, new HandleNumber<Context, Value, Utils, Float>},
-        {DataType::type_Double, new HandleNumber<Context, Value, Utils, Double>},
+        {DataType::type_Double,
+         new HandleNumber<Context, Value, Utils, Double>},
         {DataType::type_Bool, new HandleBoolean<Context, Value, Utils>},
         {DataType::type_Decimal, new HandleDecimal128<Context, Value, Utils>},
         {DataType::type_ObjectId, new HandleObjectID<Context, Value, Utils>},
@@ -134,10 +134,15 @@ class TypeMixed {
 
     Strategy get_strategy(DataType type) { return strategies[type]; }
 
-   public:
-    TypeMixed(Context ctx) : context{ctx} {}
+    TypeMixed() {}
 
-    Value wrap(Mixed mixed) {
+   public:
+    static TypeMixed &get_instance() {
+        static TypeMixed<JavascriptEngine> instance;
+        return instance;
+    }
+
+    Value wrap(Context context, Mixed mixed) {
         auto strategy = get_strategy(mixed.get_type());
 
         if (strategy == nullptr) {
@@ -148,7 +153,7 @@ class TypeMixed {
         return strategy->unwrap(context, mixed);
     }
 
-    Mixed unwrap(Value const &js_value) {
+    Mixed unwrap(Context context, Value const &js_value) {
         auto type = TypeDeduction::typeof(js_value);
         auto strategy = get_strategy(type);
 
