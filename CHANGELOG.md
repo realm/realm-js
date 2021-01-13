@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Adding Mixed types [RJS-544](https://jira.mongodb.org/browse/RJS-544).
 * None.
 
 ### Compatibility
