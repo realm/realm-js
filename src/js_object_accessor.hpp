@@ -194,6 +194,9 @@ public:
         if (Value::is_object_id(m_ctx, value)) {
             return type_ObjectId;
         }
+        if (Value::is_uuid(m_ctx, value)) {
+            return type_UUID;
+        }
         if (Value::is_decimal128(m_ctx, value)) {
             return type_Decimal;
         }

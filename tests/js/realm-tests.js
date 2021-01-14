@@ -2089,26 +2089,27 @@ module.exports = {
         realm.close();
     },
 
-    // testUUIDQuery: function() {
-    //     const realm = new Realm({schema: [schemas.UUIDObject]});
+    testUUIDQuery: function() {
+        const realm = new Realm({schema: [schemas.UUIDObject]});
 
-    //     const uuidStr = "7c203d29-3f00-4395-86de-2b7f9b78d8e9";
-    //     const uuid = new UUID(uuidStr);
-    //     realm.write(() => {
-    //         realm.create(schemas.UUIDObject.name, { id: new UUID }); // extra data
-    //         realm.create(schemas.UUIDObject.name, { id: uuid });
-    //         realm.create(schemas.UUIDObject.name, { id: new UUID }); // extra data
-    //     });
-    //     const allResults = realm.objects(schemas.UUIDObject.name);
-    //     const filtered = allResults.filtered("id == $0", uuid);
-    //     TestCase.assertTrue(allResults.length > 1, "Realm contains more than targeted result.");
-    //     TestCase.assertEqual(filtered.length, 1, "Found ONE result filtered on id.");
-    //     TestCase.assertTrue(filtered[0] instanceof UUID, "Object from query is instance of UUID.");
-    //     TestCase.assertEqual(filtered[0].id.toString(), uuidStr, "Roundtrip string representation equals predefined input string.");
+        const uuidStr = "7c203d29-3f00-4395-86de-2b7f9b78d8e9";
+        const uuid = new UUID(uuidStr);
+        realm.write(() => {
+            realm.create(schemas.UUIDObject.name, { id: new UUID }); // padded extra data
+            realm.create(schemas.UUIDObject.name, { id: uuid });     // actual test data
+            realm.create(schemas.UUIDObject.name, { id: new UUID }); // padded extra data
+        });
+        const allResults = realm.objects(schemas.UUIDObject.name);
+        const filtered = allResults.filtered("id == $0", uuid);
+        const obj = filtered[0];
+        TestCase.assertTrue(allResults.length > 1, "Realm contains more than targeted result.");
+        TestCase.assertEqual(filtered.length, 1, "Found ONE result filtered on id.");
+        TestCase.assertTrue(obj.id instanceof UUID, "Object id from query is instance of UUID.");
+        TestCase.assertEqual(obj.id.toString(), uuidStr, "Roundtrip string representation equals predefined input string.");
 
-    //     // "cleanup"
-    //     realm.close();
-    // },
+        // "cleanup"
+        realm.close();
+    },
 
     testUUIDPkSingleQuery: function() {
         const realm = new Realm({schema: [schemas.UUIDPkObject]});
