@@ -393,11 +393,11 @@ def inAndroidContainer(workerFunction) {
 
       // Locking prevent concurrent usage of the gradle-cache
       lock("${env.NODE_NAME}-realmjs") {
-        image.inside(
+        image.inside(          
           // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
           "-v ${HOME}/.android/adbkey:~/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:~/.android/adbkey.pub:ro " +
           // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
-          "-v ${HOME}/gradle-cache:~/.gradle " +
+          "-v ${HOME}/gradle-cache:~/.gradlejs " +
           // Mounting ~/ccache as ~/.ccache to reuse the cache across builds
           "-v ${HOME}/ccache:~/.ccache " +
           // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
