@@ -45,6 +45,16 @@ const runTest = tests.runTest;
 //import { getTestNames, runTest } from './tests';
 ////////////
 
+//split a string into multiple strings limited to a max length
+function split(str) {
+    const splits = [];
+    const splitSize = 250;
+    for (let i = 0, len = str.length; i < len; i += splitSize) {
+        splits.push(str.substring(i, i + splitSize));
+    }
+    return splits;
+}
+
 async function runTests() {
     let testNames = getTestNames();
     let rootXml = builder.create('testsuites');
@@ -88,17 +98,27 @@ async function runTests() {
 
     // write the unit tests reports
     try {
-        await RNFS.writeFile('/sdcard/tests.xml', xmlString, 'utf8');
+        const resultsFile = RNFS.DocumentDirectoryPath + '/tests.xml';
+        await RNFS.writeFile(resultsFile, xmlString, 'utf8');
+        console.log(`Test results file path ${resultsFile}`);
+        console.log("Test Results ==============================================");
+        const lines = xmlString.split(/\r?\n/);
+        //lines.forEach(line => console.log(line));
+        lines.forEach(line => split(line).forEach(str => console.log(str)));
     }
     catch (e) {
         console.error(e);
     }
     finally {
-        console.log('__REALM_JS_TESTS_COMPLETED__');
         if (failingTests.length !== 0) {
+            console.log('__REALM_JS_TESTS_FAILED__');
             console.error('\n\nREALM_FAILING_TESTS\n');
             console.error(failingTests);
         }
+        else {
+            console.log('__REALM_JS_TESTS_SUCCEEDED__');
+        }
+        
         console.log("Realm Tests App finished. Exiting. Disable this to debug the app locally");
         RNExitApp.exitApp();
     }

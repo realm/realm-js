@@ -54,7 +54,7 @@ export async function runTests() {
     let passed = true;
 
     for (let suiteName in testNames) {
-        console.warn('Starting ' + suiteName);
+        console.log('Starting ' + suiteName);
 
         for (let testName of testNames[suiteName]) {
             try {
@@ -73,6 +73,7 @@ export async function runTest(suiteName, testName) {
     await RealmTests.runTest(suiteName, 'beforeEach');
 
     try {
+        console.log("calling RealmTests.runTest");
         await RealmTests.runTest(suiteName, testName);
         console.warn('+ ' + testName);
     }

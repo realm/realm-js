@@ -338,19 +338,19 @@ case "$TARGET" in
   npm run check-environment
 
   # building for armeabi-v7a since thats what's current CI is using for emulator
+  echo "building android binaries"
   node scripts/build-android.js --arch=armeabi-v7a
-  pushd react-native/android
-  $(pwd)/gradlew buildAndroidPackage
-  popd
 
   # pack realm package manually since install-local does not allow passing --ignore-scripts
   echo "manually packing realm package"
   npm pack .
+  rm -rf realm.tgz
   mv realm-*.*.*.tgz realm.tgz
 
   echo "manually packing realm tests package"
   pushd tests/js
   npm pack .
+  rm -rf realm-tests.tgz
   mv realm-tests-*.*.*.tgz realm-tests.tgz
   popd
 
@@ -364,38 +364,38 @@ case "$TARGET" in
   echo "installing manually packed realm tests package"
   npm install --save-optional ../js/realm-tests.tgz
 
-  
-  # ./node_modules/.bin/install-local
-
   echo "Resetting logcat"
   mkdir -p $(pwd)/build || true
   adb logcat -c
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   adb logcat -T 1 | tee "$LOGCAT_OUT" | tee $(pwd)/build/out.txt &
 
+  start_packager
   ./run-android.sh
 
   echo "Start listening for Test completion"
 
+  TESTS_FAILED=TRUE
   while :; do
-    if grep -q "__REALM_JS_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
+    if grep -q "__REALM_JS_TESTS_SUCCEEDED__" "$LOGCAT_OUT"; then
+      TESTS_FAILED=FALSE
+      break
+    elif grep -q "__REALM_JS_TESTS_FAILED__" "$LOGCAT_OUT"; then
+      echo "*** REALM JS TESTS FAILED. See tests results above ***"
       break
     else
       echo "Waiting for tests."
-      sleep 2
+      sleep 10
     fi
   done
-
-  rm -f tests.xml
-  adb pull /sdcard/tests.xml .
 
   # Stop running child processes before printing results.
   cleanup
   echo "********* TESTS COMPLETED *********";
-  echo "********* File location: $(pwd)/tests.xml *********";
-  cat tests.xml
-
-  check_test_results ReactTests
+  
+  if $TESTS_FAILED; then
+    exit 20
+  fi
   ;;
 
 "node")

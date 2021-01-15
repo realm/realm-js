@@ -104,7 +104,7 @@ exports.runTest = function(suiteName, testName) {
 
     if (testMethod) {
         Realm.clearTestState();
-        console.warn("Starting test " + testName);
+        console.log("Starting test " + testName);
         var result = testMethod.call(testSuite);
 
         //make sure v8 GC can collect garbage after each test and does not fail
