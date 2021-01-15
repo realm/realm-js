@@ -545,46 +545,55 @@ module.exports = {
         });
     },
 
-    async testNotification() {
-        const realm = new Realm({schema: [schemas.StringOnly]});
+    testNotification: async function () {
+        const realm = new Realm({ schema: [schemas.StringOnly] });
 
+        let calls = 0;
+        let resolve;
+        let reject;
+        
+        let promise = new Promise((res, rej) => { resolve = res, reject = rej });
         let obj;
         realm.write(() => {
             obj = realm.create(schemas.StringOnly.name, { stringCol: 'foo' });
         });
 
-        let calls = 0;
-        let resolve;
-
         obj.addListener((obj, changes) => {
-            calls++;
-            switch (calls) {
-                case 1:
-                    break;
-                case 2:
-                    TestCase.assertFalse(changes.deleted);
-                    TestCase.assertEqual(changes.changedProperties.length, 1);
-                    TestCase.assertEqual(changes.changedProperties[0], 'stringCol');
-                    TestCase.assertEqual(obj['stringCol'], 'bar');
-                    break;
-                case 3:
-                    TestCase.assertTrue(changes.deleted);
-                    TestCase.assertEqual(changes.changedProperties.length, 0);
-                    realm.close();
+            try {
+                calls++;
+                switch (calls) {
+                    case 1:
+                        break;
+                    case 2:
+                        TestCase.assertFalse(changes.deleted);
+                        TestCase.assertEqual(changes.changedProperties.length, 1);
+                        TestCase.assertEqual(changes.changedProperties[0], 'stringCol');
+                        TestCase.assertEqual(obj['stringCol'], 'bar');
+                        break;
+                    case 3:
+                        TestCase.assertTrue(changes.deleted);
+                        TestCase.assertEqual(changes.changedProperties.length, 0);
+                        realm.close();
+                }
+                resolve();
             }
-            resolve();
+            catch (e) {
+                reject(e);
+            }
         });
-        await new Promise(r => resolve = r);
+        await promise;
 
+        promise = new Promise((res, rej) => { resolve = res, reject = rej });
         realm.write(() => {
             obj['stringCol'] = 'bar';
         });
-        await new Promise(r => resolve = r);
+        await promise;
 
+        promise = new Promise((res, rej) => { resolve = res, reject = rej });
         realm.write(() => {
             realm.delete(obj);
         });
-        await new Promise(r => resolve = r);
+        await promise;
     },
 
     testAddAndRemoveListener: async function() {
