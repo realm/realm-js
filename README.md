@@ -33,7 +33,7 @@ The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https:/
 In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
 
 Prerequisites:
-* Xcode 11+
+* Xcode 12+
 * node.js version 10.19 or later
 * nvm (on Mac and Linux)
 * cocoapods (on Mac)
