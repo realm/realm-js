@@ -99,7 +99,8 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     }
     else if (type == "double") {
         prop.type |= PropertyType::Double;
-    }else if (type == "string") {
+    }
+    else if (type == "string") {
         prop.type |= PropertyType::String;
     }
     else if (type == "date") {

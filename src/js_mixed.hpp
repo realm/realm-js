@@ -1,10 +1,28 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
 #include <common/type_deduction.hpp>
 #include <iostream>
 #include <map>
 #include <realm/mixed.hpp>
 #include <type_traits>
-
-#pragma once
 
 namespace realm {
 namespace js {
@@ -120,16 +138,15 @@ class TypeMixed {
     using Strategy = MixedWrapper<Context, Value> *;
 
     std::map<DataType, Strategy> strategies = {
-        {DataType::type_String, new HandleString<Context, Value, Utils>},
-        {DataType::type_Int, new HandleNumber<Context, Value, Utils, Int>},
-        {DataType::type_Float, new HandleNumber<Context, Value, Utils, Float>},
-        {DataType::type_Double,
-         new HandleNumber<Context, Value, Utils, Double>},
-        {DataType::type_Bool, new HandleBoolean<Context, Value, Utils>},
-        {DataType::type_Decimal, new HandleDecimal128<Context, Value, Utils>},
-        {DataType::type_ObjectId, new HandleObjectID<Context, Value, Utils>},
-        {DataType::type_Binary, new HandleBinary<Context, Value, Utils>},
-        {DataType::type_Timestamp, new HandleTimeStamp<Context, Value, Utils>},
+        {type_String, new HandleString<Context, Value, Utils>},
+        {type_Int, new HandleNumber<Context, Value, Utils, Int>},
+        {type_Float, new HandleNumber<Context, Value, Utils, Float>},
+        {type_Double, new HandleNumber<Context, Value, Utils, Double>},
+        {type_Bool, new HandleBoolean<Context, Value, Utils>},
+        {type_Decimal, new HandleDecimal128<Context, Value, Utils>},
+        {type_ObjectId, new HandleObjectID<Context, Value, Utils>},
+        {type_Binary, new HandleBinary<Context, Value, Utils>},
+        {type_Timestamp, new HandleTimeStamp<Context, Value, Utils>},
     };
 
     Strategy get_strategy(DataType type) { return strategies[type]; }

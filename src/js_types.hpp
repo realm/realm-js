@@ -36,8 +36,6 @@
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
 #include <realm/object-store/sync/generic_network_transport.hpp>
 
-//#include "js_mixed.hpp"
-
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
 #elif defined(_MSC_VER) && !(defined(DEBUG) && DEBUG)
@@ -157,7 +155,6 @@ struct Value {
     static ValueType from_nonnull_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
     static ValueType from_timestamp(ContextType, Timestamp);
-    //static ValueType from_mixed(ContextType, const Mixed &);
     static ValueType from_uuid(ContextType, const UUID&);
     static ValueType from_objkey(ContextType, const ObjKey&);
     static ValueType from_objlink(ContextType, const ObjLink&);

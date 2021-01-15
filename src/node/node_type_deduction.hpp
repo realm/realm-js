@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include "napi.h"
 #include "realm/data_type.hpp"
@@ -31,50 +49,47 @@ struct TypeDeductionImpl {
 
     static std::string realm_typeof(DataType value) {
         std::map<DataType, std::string> realm_typeof = {
-            {DataType::type_String, "string"},
-            {DataType::type_Int, "Int"},
-            {DataType::type_Float, "Float"},
-            {DataType::type_Double, "Double"},
-            {DataType::type_Decimal, "Decimal128"},
-            {DataType::type_Bool, "Boolean"},
-            {DataType::type_ObjectId, "ObjectId"}};
+            {type_String, "string"},      {type_Int, "Int"},
+            {type_Float, "Float"},        {type_Double, "Double"},
+            {type_Decimal, "Decimal128"}, {type_Bool, "Boolean"},
+            {type_ObjectId, "ObjectId"}};
         return realm_typeof[value];
     }
 
     static DataType typeof(Value &value) {
         if (value.IsNull()) {
-            return DataType::type_TypedLink;
+            return type_TypedLink;
         }
         if (value.IsNumber()) {
-            return DataType::type_Double;
+            return type_Double;
         }
         if (value.IsString()) {
-            return DataType::type_String;
+            return type_String;
         }
         if (value.IsBoolean()) {
-            return DataType::type_Bool;
+            return type_Bool;
         }
         if (value.IsDate()) {
-            return DataType::type_Timestamp;
+            return type_Timestamp;
         }
         if (value.IsUndefined()) {
-            return DataType::type_TypedLink;
+            return type_TypedLink;
         }
         if (value.IsArrayBuffer() || value.IsTypedArray() ||
             value.IsDataView()) {
             return type_Binary;
         }
         if (TypeDeductionImpl::is_decimal128(value)) {
-            return DataType::type_Decimal;
+            return type_Decimal;
         }
         if (TypeDeductionImpl::is_object_id(value)) {
-            return DataType::type_ObjectId;
+            return type_ObjectId;
         }
         if (value.IsObject()) {
-            return DataType::type_Link;
+            return type_Link;
         }
 
-        return DataType::type_Link;
+        return type_Link;
     }
 
     static bool is_boolean(Value &value) { return value.IsBoolean(); }
