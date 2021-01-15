@@ -338,8 +338,8 @@ case "$TARGET" in
   npm run check-environment
 
   # building for armeabi-v7a since thats what's current CI is using for emulator
-  echo "building android binaries"
-  node scripts/build-android.js --arch=armeabi-v7a
+  #echo "building android binaries"
+  #node scripts/build-android.js --arch=armeabi-v7a
 
   # pack realm package manually since install-local does not allow passing --ignore-scripts
   echo "manually packing realm package"

@@ -384,7 +384,7 @@ def buildWindows(nodeVersion, arch) {
 
 def inAndroidContainer(workerFunction) {
   return {
-    myNode('android') {
+    myNode('docker-cph-03') {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
@@ -515,9 +515,19 @@ def doDockerInside(script, target, postStep = null) {
 
 def testAndroid(target, postStep = null) {
   timeout(30) {
-    sh "./scripts/test.sh ${target}"
-    if (postStep) {
-      postStep.call()
+    // TODO: We should wait until the emulator is online. For now assume it starts fast enough
+    //  before the tests will run, since the library needs to build first.
+    sh """yes '\n' | avdmanager create avd -n CIEmulator -k '${emulatorImage}' --force"""
+    sh "adb start-server" // https://stackoverflow.com/questions/56198290/problems-with-adb-exe
+    // Need to go to ANDROID_HOME due to https://askubuntu.com/questions/1005944/emulator-avd-does-not-launch-the-virtual-device
+    sh "cd \$ANDROID_HOME/tools && emulator -avd CIEmulator -no-boot-anim -no-window -wipe-data -noaudio -partition-size 4098 &"
+    try {
+      sh "./scripts/test.sh ${target}"
+    } finally {
+      sh "adb emu kill"
+      if (postStep) {
+        postStep.call()
+      }
     }
   }
 
