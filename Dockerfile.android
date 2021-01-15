@@ -42,7 +42,7 @@ USER jenkins
 
 # Install the Android SDK and NDK
 ENV ANDROID_HOME /home/jenkins/android-sdk
-ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
+ENV PATH ${PATH}:${ANDROID_HOME}/emulator:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
 ENV ANDROID_NDK /home/jenkins/android-ndk
 
 RUN echo 'Installing Android SDK' && \
