@@ -7,7 +7,6 @@ ARG ANDROID_SDK_VERSION=4333796
 ARG ANDROID_NDK_VERSION=r21
 ARG ANDROID_BUILD_TOOLS_VERSION=28.0.3
 ARG NODE_VERSION=12.x
-ARG USER_NAME=jenkins
 
 # Locales
 ENV LANG C.UTF-8
@@ -37,16 +36,14 @@ RUN dpkg --add-architecture i386 && \
     apt-get clean
 
 # Jenkins will run this image as user 1001, let's ensure that user exists and has a home directory
-RUN adduser --uid 1001 --disabled-password --gecos "" ${USER_NAME}
+RUN adduser --uid 1001 --disabled-password --gecos "" jenkins
 # Install the SDK and NDK
-USER ${USER_NAME}
-
-ENV HOME /home/${USER_NAME}
+USER jenkins
 
 # Install the Android SDK and NDK
-ENV ANDROID_HOME ${HOME}/android-sdk
+ENV ANDROID_HOME /home/jenkins/android-sdk
 ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
-ENV ANDROID_NDK ${HOME}/android-ndk
+ENV ANDROID_NDK /home/jenkins/android-ndk
 
 RUN echo 'Installing Android SDK' && \
     mkdir -p ${ANDROID_HOME} && cd ${ANDROID_HOME} && \
@@ -70,8 +67,8 @@ RUN echo 'Installing Android SDK' && \
     mv android-ndk-* android-ndk
 
 # Ensure a new enough version of CMake is available.
-RUN mkdir -p ${HOME}/cmake && \
-    cd ${HOME}/cmake && \
+RUN mkdir -p /home/jenkins/cmake && \
+    cd /home/jenkins/cmake && \
     curl -O -J https://cmake.org/files/v3.17/cmake-3.17.5-Linux-x86_64.tar.gz &&\
     tar zxf cmake-3.17.5-Linux-x86_64.tar.gz
 ENV PATH "~/cmake/cmake-3.17.5-Linux-x86_64/bin:$PATH"
