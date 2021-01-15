@@ -397,7 +397,7 @@ def inAndroidContainer(workerFunction) {
           // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
           "-v ${HOME}/.android/adbkey:/home/jenkins/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:/home/jenkins/.android/adbkey.pub:ro " +
           // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
-          "-v ${HOME}/gradle-cache:/home/jenkins/.gradlejs " +
+          "-v ${HOME}/gradle-cache-js:/home/jenkins/.gradle" +
           // Mounting ~/ccache as ~/.ccache to reuse the cache across builds
           "-v ${HOME}/ccache:/home/jenkins/.ccache " +
           // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
@@ -512,11 +512,12 @@ def doDockerInside(script, target, postStep = null) {
   }
 }
 
+
 def testAndroid(target, postStep = null) {
   timeout(30) {
     // TODO: We should wait until the emulator is online. For now assume it starts fast enough
     //  before the tests will run, since the library needs to build first.
-    sh """yes '\n' | avdmanager create avd -n CIRJSEmulator -k system-images;android-29;default;x86 --force"""
+    sh """yes '\n' | avdmanager create avd -n CIRJSEmulator -k 'system-images;android-29;default;x86' --force"""
     sh "adb start-server" // https://stackoverflow.com/questions/56198290/problems-with-adb-exe
     // Need to go to ANDROID_HOME due to https://askubuntu.com/questions/1005944/emulator-avd-does-not-launch-the-virtual-device
     sh "cd \$ANDROID_HOME/tools && emulator -avd CIRJSEmulator -no-boot-anim -no-window -wipe-data -noaudio -partition-size 4098 &"
