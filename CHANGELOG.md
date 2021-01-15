@@ -5,6 +5,7 @@
 
 ### Fixed
 * Fixed a bug where elements in the `User#identities` array would have a `userId` which was actually an `id` of the identity. ([#3481](https://github.com/realm/realm-js/pull/3481), since v10.0.0-beta.13)
+* Fixed a crash after getting a 401 error inside sync. ([#3503](https://github.com/realm/realm-js/issues/3206), since v10.0.0)
 * Fixed a bug which could lead to a `BadChangeset Error` (`ProtocolErrorCode=212`).
 
 ### Compatibility
