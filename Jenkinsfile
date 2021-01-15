@@ -2,7 +2,7 @@
 import groovy.json.JsonOutput
 
 @Library('realm-ci') _
-repoName = 'realm-js' // This is a global variable
+repoName = 'realm-js'
 
 def nodeVersions = ['12.20.0']
 nodeTestVersion = nodeVersions[0]
@@ -391,16 +391,15 @@ def inAndroidContainer(workerFunction) {
         image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       }
 
-      // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
-      // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
-      lock("${env.NODE_NAME}-android") {
+      // Locking prevent concurrent usage of the gradle-cache
+      lock("${env.NODE_NAME}-realmjs") {
         image.inside(
           // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
-          "-v ${HOME}/.android/adbkey:/home/jenkins/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:/home/jenkins/.android/adbkey.pub:ro " +
+          "-v ${HOME}/.android/adbkey:~/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:~/.android/adbkey.pub:ro " +
           // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
-          "-v ${HOME}/gradle-cache:/home/jenkins/.gradle " +
+          "-v ${HOME}/gradle-cache:~/.gradle " +
           // Mounting ~/ccache as ~/.ccache to reuse the cache across builds
-          "-v ${HOME}/ccache:/home/jenkins/.ccache " +
+          "-v ${HOME}/ccache:~/.ccache " +
           // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
           "-v /dev/bus/usb:/dev/bus/usb --privileged"
         ) {
@@ -517,10 +516,10 @@ def testAndroid(target, postStep = null) {
   timeout(30) {
     // TODO: We should wait until the emulator is online. For now assume it starts fast enough
     //  before the tests will run, since the library needs to build first.
-    sh """yes '\n' | avdmanager create avd -n CIEmulator -k system-images;android-29;default;x86 --force"""
+    sh """yes '\n' | avdmanager create avd -n CIRJSEmulator -k system-images;android-29;default;x86 --force"""
     sh "adb start-server" // https://stackoverflow.com/questions/56198290/problems-with-adb-exe
     // Need to go to ANDROID_HOME due to https://askubuntu.com/questions/1005944/emulator-avd-does-not-launch-the-virtual-device
-    sh "cd \$ANDROID_HOME/tools && emulator -avd CIEmulator -no-boot-anim -no-window -wipe-data -noaudio -partition-size 4098 &"
+    sh "cd \$ANDROID_HOME/tools && emulator -avd CIRJSEmulator -no-boot-anim -no-window -wipe-data -noaudio -partition-size 4098 &"
     try {
       sh "./scripts/test.sh ${target}"
     } finally {
