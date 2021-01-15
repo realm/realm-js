@@ -189,20 +189,8 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
     }
 
     static void init(ContextType ctx) {
-        //this initializes the EventLoopDispatcher on the main JS thread
-        get_send_request_handler();
-    }
-
-    void send_request_to_server(const app::Request request, std::function<void(const app::Response)> completion_callback) override {
-        auto& send_request_handler = get_send_request_handler();
-        send_request_handler(m_ctx, request, completion_callback);
-    }
-
-private:
-    ContextType m_ctx;
-
-    static realm::util::EventLoopDispatcher<SendRequestHandler>& get_send_request_handler() {
-        static auto dispatcher = realm::util::EventLoopDispatcher([]
+        // This initializes the EventLoopDispatcher on the main JS thread.
+        s_dispatcher.reset(new realm::util::EventLoopDispatcher([]
             (ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback) {
                 HANDLESCOPE(m_ctx);
 
@@ -213,10 +201,17 @@ private:
                     makeRequest(m_ctx, request),
                     ResponseHandlerClass<T>::create_instance(m_ctx, std::move(completion_callback)),
                 });
-            });
+            }));
 
-        return dispatcher;
     }
+
+    void send_request_to_server(const app::Request request, std::function<void(const app::Response)> completion_callback) override {
+        (*s_dispatcher)(m_ctx, request, completion_callback);
+    }
+
+private:
+    ContextType m_ctx;
+    inline static std::unique_ptr<realm::util::EventLoopDispatcher<SendRequestHandler>> s_dispatcher;
 
     std::string static fromHttpMethod(app::HttpMethod method) {
         switch (method) {
