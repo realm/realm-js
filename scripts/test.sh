@@ -367,7 +367,7 @@ case "$TARGET" in
   echo "Adb devices"
   adb devices
   echo "Resetting logcat"
-  adb logcat -c
+  adb logcat -c || true
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   adb logcat -T 1 | tee "$LOGCAT_OUT" | tee $(pwd)/build/out.txt &
 
