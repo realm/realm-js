@@ -73,4 +73,4 @@ RUN mkdir -p /home/jenkins/cmake && \
     cd /home/jenkins/cmake && \
     curl -O -J https://cmake.org/files/v3.17/cmake-3.17.5-Linux-x86_64.tar.gz &&\
     tar zxf cmake-3.17.5-Linux-x86_64.tar.gz
-ENV PATH "home/jenkins/cmake/cmake-3.17.5-Linux-x86_64/bin:$PATH"
+ENV PATH "/home/jenkins/cmake/cmake-3.17.5-Linux-x86_64/bin:$PATH"
