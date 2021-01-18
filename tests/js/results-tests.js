@@ -463,16 +463,17 @@ module.exports = {
             realm.create('TestObject', { doubleCol: 3 });
         });
 
-        let resolve = () => {};
-        let first = true;
+        let resolve = null;
+        let firstCall = true;
 
         realm.objects('TestObject').addListener((testObjects, changes) => {
-            if (first) {
+            if (firstCall) {
                 TestCase.assertEqual(testObjects.length, 3);
                 TestCase.assertEqual(changes.insertions.length, 0);
                 TestCase.assertEqual(changes.modifications.length, 0);
                 TestCase.assertEqual(changes.newModifications.length, 0);
                 TestCase.assertEqual(changes.oldModifications.length, 0);
+                firstCall = false;
             }
             else {
                 TestCase.assertEqual(testObjects.length, 4);
@@ -481,9 +482,10 @@ module.exports = {
                 TestCase.assertEqual(changes.newModifications.length, 1);
                 TestCase.assertEqual(changes.oldModifications.length, 1);
             }
-            first = false;
-            realm.objects('TestObject').removeAllListeners();
-            resolve();
+
+            if (resolve) {
+                resolve();
+            }
         });
 
         return new Promise((r, _reject) => {
@@ -492,7 +494,7 @@ module.exports = {
                 realm.objects('TestObject')[0].doubleCol = 5;
                 realm.create('TestObject', { doubleCol: 1 });
             });
-        });
+        }).finally(() => realm.objects('TestObject').removeAllListeners());
     },
 
     testResultsAggregateFunctions: function() {
