@@ -116,9 +116,7 @@ export async function run(devtools = false) {
 
     // Start the mocha remote server
     const mochaServer = new MochaRemoteServer(undefined, {
-        runOnConnection: true,
-        // Only stop after completion if we're not showing dev-tools
-        stopAfterCompletion: !devtools,
+        runOnConnection: devtools,
     });
 
     process.once("exit", () => {
@@ -153,6 +151,10 @@ export async function run(devtools = false) {
         }
     });
     await page.goto("http://localhost:8080");
+    // We will have to manually invoke running the tests if we're not running on connections
+    if (!devtools) {
+        await mochaServer.runAndStop();
+    }
     // Wait for the tests to complete
     await mochaServer.stopped;
     // Check the issues logged in the browser

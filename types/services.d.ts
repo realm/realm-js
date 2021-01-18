@@ -16,6 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+type Binary = import("bson").Binary;
+type Long = import("bson").Long;
+type Timestamp = import("bson").Timestamp;
+
 declare namespace Realm {
     /**
      * The MongoDB Realm Services bound to an app.

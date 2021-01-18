@@ -644,18 +644,22 @@ describe("App", () => {
         const alicesStorage = appStorage.prefix("user(alices-id)");
         alicesStorage.set("accessToken", "alices-access-token");
         alicesStorage.set("refreshToken", "alices-refresh-token");
+        alicesStorage.set("providerType", "anon-user");
         alicesStorage.set(
             "profile",
             JSON.stringify({
                 type: "normal",
                 identities: [],
-                firstName: "Alice",
+                data: {
+                    firstName: "Alice",
+                },
             }),
         );
 
         const bobsStorage = appStorage.prefix("user(bobs-id)");
         bobsStorage.set("accessToken", "bobs-access-token");
         bobsStorage.set("refreshToken", "bobs-refresh-token");
+        bobsStorage.set("providerType", "anon-user");
 
         const app = new App({
             id: "my-mocked-app",
@@ -670,12 +674,14 @@ describe("App", () => {
         expect(alice.id).equals("alices-id");
         expect(alice.accessToken).equals("alices-access-token");
         expect(alice.refreshToken).equals("alices-refresh-token");
+        expect(alice.providerType).equals("anon-user");
         expect(alice.profile.firstName).equals("Alice");
 
         const bob = app.allUsers["bobs-id"];
         expect(bob.id).equals("bobs-id");
         expect(bob.accessToken).equals("bobs-access-token");
         expect(bob.refreshToken).equals("bobs-refresh-token");
+        expect(bob.providerType).equals("anon-user");
     });
 
     it("saves users to storage when logging in", async () => {
@@ -775,7 +781,9 @@ describe("App", () => {
         expect(bobsProfileBefore).deep.equals({
             type: "normal",
             identities: [],
-            firstName: "Bobby",
+            data: {
+                firstName: "Bobby",
+            },
         });
 
         await bob.logOut();

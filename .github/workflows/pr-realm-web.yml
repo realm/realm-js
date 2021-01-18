@@ -30,7 +30,8 @@ jobs:
         working-directory: packages/realm-web
       - run: npm run build
         working-directory: packages/realm-web
-      - run: npm test
+      - name: Run unit tests
+        run: npm test
         working-directory: packages/realm-web
       # Login with the Docker CLI to enable the integration test harness to pull the mongodb-realm-test-server
       - name: Docker Login
@@ -39,7 +40,8 @@ jobs:
           login-server: docker.pkg.github.com
           username: realm-ci
           password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
-      - run: npm run test:github
+      - name: Run integration tests
+        run: npm run test:github
         working-directory: packages/realm-web-integration-tests
         env:
           MONGODB_REALM_TEST_SERVER: '2020-11-04' # TODO: Try using 'latest' once it's fixed

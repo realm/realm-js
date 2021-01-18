@@ -82,4 +82,10 @@ describeIf(typeof window === "object", "IIFE bundle", () => {
         const response = await user.functions.translate("hello", "en_fr");
         expect(response).to.equal("bonjour");
     });
+
+    it("constructs a BSON.ObjectId", async () => {
+        const objectId = new Realm.BSON.ObjectId();
+        expect(objectId).instanceOf(Realm.BSON.ObjectId);
+        expect(typeof objectId.toHexString()).equals("string");
+    });
 });

@@ -18,15 +18,19 @@
 
 import { PrefixedStorage, Storage } from "./storage";
 import { UserProfile } from "./UserProfile";
+import { ProviderType } from "./Credentials";
 
 const ACCESS_TOKEN_STORAGE_KEY = "accessToken";
 const REFRESH_TOKEN_STORAGE_KEY = "refreshToken";
 const PROFILE_STORAGE_KEY = "profile";
+const PROVIDER_TYPE_STORAGE_KEY = "providerType";
 
 /**
  * Storage specific to the app.
  */
-export class UserStorage extends PrefixedStorage {
+export class UserStorage<
+    UserProfileDataType = Realm.DefaultUserProfileData
+> extends PrefixedStorage {
     /**
      * Construct a storage for a `User`.
      *
@@ -89,7 +93,7 @@ export class UserStorage extends PrefixedStorage {
     get profile() {
         const value = this.get(PROFILE_STORAGE_KEY);
         if (value) {
-            const profile = new UserProfile();
+            const profile = new UserProfile<UserProfileDataType>();
             // Patch in the values
             Object.assign(profile, JSON.parse(value));
             return profile;
@@ -101,11 +105,36 @@ export class UserStorage extends PrefixedStorage {
      *
      * @param value User profile (undefined if its unknown).
      */
-    set profile(value: UserProfile | undefined) {
-        if (!value) {
-            this.remove(PROFILE_STORAGE_KEY);
-        } else {
+    set profile(value: UserProfile<UserProfileDataType> | undefined) {
+        if (value) {
             this.set(PROFILE_STORAGE_KEY, JSON.stringify(value));
+        } else {
+            this.remove(PROFILE_STORAGE_KEY);
+        }
+    }
+
+    /**
+     * Get the type of authentication provider used to authenticate
+     *
+     * @returns User profile (undefined if its unknown).
+     */
+    get providerType() {
+        const value = this.get(PROVIDER_TYPE_STORAGE_KEY);
+        if (value) {
+            return value as ProviderType;
+        }
+    }
+
+    /**
+     * Set the type of authentication provider used to authenticate
+     *
+     * @param value Type of authentication provider.
+     */
+    set providerType(value: ProviderType | undefined) {
+        if (value) {
+            this.set(PROVIDER_TYPE_STORAGE_KEY, value);
+        } else {
+            this.remove(PROVIDER_TYPE_STORAGE_KEY);
         }
     }
 }

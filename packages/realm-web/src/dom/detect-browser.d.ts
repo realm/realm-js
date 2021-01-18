@@ -16,23 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * as BSON from "bson";
-
-import { App } from "./App";
-
 /**
- * Get or create a singleton Realm App from an id.
- * Calling this function multiple times with the same id will return the same instance.
- *
- * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
- * @returns The Realm App instance.
+ * Used by the "detect-browser" package.
  */
-export function getApp(id: string) {
-    return App.getApp(id);
+declare namespace NodeJS {
+    type Platform = string;
 }
-
-export * from "./App";
-export * from "./Credentials";
-export * from "./User";
-export { MongoDBRealmError } from "./MongoDBRealmError";
-export { getEnvironment, setEnvironment } from "./environment";

@@ -6,7 +6,7 @@
 			"realm-network-transport",
 			"js-base64",
 			"bson",
-			"simplified-node",
+			"buffer",
 			"detect-browser"
 		],
 		"lib": [
