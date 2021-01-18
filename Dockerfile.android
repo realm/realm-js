@@ -26,6 +26,7 @@ RUN dpkg --add-architecture i386 && \
       gnupg \
       unzip \
       git \
+      qemu-kvm \
       # Tools ndeed when building Android module
       build-essential \
     && \
