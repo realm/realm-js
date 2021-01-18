@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { deserialize } from "./utils/ejson";
+
 /**
  * The type of a user.
  */
@@ -52,7 +54,7 @@ enum DataKey {
     MAX_AGE = "max_age",
 }
 
-const DATA_MAPPING: { [k in DataKey]: keyof UserProfile } = {
+const DATA_MAPPING: { [k in DataKey]: keyof Realm.DefaultUserProfileData } = {
     [DataKey.NAME]: "name",
     [DataKey.EMAIL]: "email",
     [DataKey.PICTURE]: "pictureUrl",
@@ -65,56 +67,35 @@ const DATA_MAPPING: { [k in DataKey]: keyof UserProfile } = {
 };
 
 /** @inheritdoc */
-export class UserProfile implements Realm.UserProfile {
-    /** @inheritdoc */
-    public readonly name?: string;
-
-    /** @inheritdoc */
-    public readonly email?: string;
-
-    /** @inheritdoc */
-    public readonly pictureUrl?: string;
-
-    /** @inheritdoc */
-    public readonly firstName?: string;
-
-    /** @inheritdoc */
-    public readonly lastName?: string;
-
-    /** @inheritdoc */
-    public readonly gender?: string;
-
-    /** @inheritdoc */
-    public readonly birthday?: string;
-
-    /** @inheritdoc */
-    public readonly minAge?: string;
-
-    /** @inheritdoc */
-    public readonly maxAge?: string;
-
-    /** @inheritdoc */
+export class UserProfile<UserProfileDataType = Realm.DefaultUserProfileData> {
+    /** @ignore */
     public readonly type: Realm.UserType = UserType.Normal;
 
-    /** @inheritdoc */
+    /** @ignore */
     public readonly identities: Realm.UserIdentity[] = [];
+
+    /** @ignore */
+    public readonly data: UserProfileDataType;
 
     /**
      * @param response The response of a call fetching the users profile.
      */
-    constructor(response?: any) {
-        if (response) {
-            if (typeof response.type === "string") {
-                this.type = response.type;
+    constructor(response?: unknown) {
+        if (typeof response === "object" && response !== null) {
+            const { type, identities, data } = response as {
+                [k: string]: unknown;
+            };
+
+            if (typeof type === "string") {
+                this.type = type as UserType;
             } else {
                 throw new Error("Expected 'type' in the response body");
             }
 
-            if (Array.isArray(response.identities)) {
-                this.identities = response.identities.map((identity: any) => {
+            if (Array.isArray(identities)) {
+                this.identities = identities.map((identity: any) => {
                     return {
                         id: identity.id,
-                        providerId: identity["provider_id"],
                         providerType: identity["provider_type"],
                     };
                 });
@@ -122,22 +103,26 @@ export class UserProfile implements Realm.UserProfile {
                 throw new Error("Expected 'identities' in the response body");
             }
 
-            const { data } = response;
-            if (typeof data === "object") {
-                for (const key in DATA_MAPPING) {
-                    const value = data[key];
-                    const propertyName = DATA_MAPPING[key as DataKey];
-                    if (
-                        typeof value === "string" &&
-                        propertyName !== "identities" &&
-                        propertyName !== "type"
-                    ) {
-                        this[propertyName] = value;
-                    }
-                }
+            if (typeof data === "object" && data !== null) {
+                const mappedData = Object.fromEntries(
+                    Object.entries(data).map(([key, value]) => {
+                        if (key in DATA_MAPPING) {
+                            // Translate any known data field to its JS idiomatic alias
+                            return [DATA_MAPPING[key as DataKey], value];
+                        } else {
+                            // Pass through any other values
+                            return [key, value];
+                        }
+                    }),
+                );
+                // We can use `any` since we trust the user supplies the correct type
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                this.data = deserialize<any>(mappedData);
             } else {
                 throw new Error("Expected 'data' in the response body");
             }
+        } else {
+            this.data = {} as UserProfileDataType;
         }
     }
 }
