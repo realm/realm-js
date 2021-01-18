@@ -1,3 +1,19 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* App crashed if a native error was thrown during `Realm.open(...)` ([#3414](https://github.com/realm/realm-js/issues/3414), since v10.0.0)
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* None.
+
 10.1.3 Release notes (2021-1-15)
 =============================================================
 ### Enhancements
