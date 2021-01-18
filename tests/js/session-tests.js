@@ -190,8 +190,6 @@ module.exports = {
         const user = await app.logIn(Realm.Credentials.anonymous());
         const config = getSyncConfiguration(user, partition);
 
-        throw new Error('Steffen threw a new Error()');
-
         const realm = await Realm.open(config)
         realm.close();
 
