@@ -337,9 +337,9 @@ case "$TARGET" in
   npm ci --ignore-scripts
   npm run check-environment
 
-  # building for armeabi-v7a since thats what's current CI is using for emulator
-  #echo "building android binaries"
-  #node scripts/build-android.js --arch=armeabi-v7a
+  # building only for x86 emulator to speed CI
+  echo "building android binaries"
+  node scripts/build-android.js --arch=x86
 
   # pack realm package manually since install-local does not allow passing --ignore-scripts
   echo "manually packing realm package"
