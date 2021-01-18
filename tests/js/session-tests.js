@@ -177,37 +177,30 @@ module.exports = {
             });
     },
 
-    testRealmOpenWithDestructiveSchemaUpdate() {
+    async testRealmOpenWithDestructiveSchemaUpdate() {
         if (!isNodeProcess) {
             return;
         }
 
         const partition = Utils.genPartition();
-        const expectedObjectsCount = 3;
 
-        let user, config;
-        let credentials = Realm.Credentials.anonymous();
-        let app = new Realm.App(appConfig);
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
-            .then(() => { return app.logIn(credentials) })
-            .then(u => {
-                user = u;
-                config = getSyncConfiguration(u, partition);
-                return Realm.open(config)
-            }).then(realm => {
-                realm.close();
-                // change the 'breed' property from 'string?' to 'string'
-                config.schema[0].properties.breed = "string";
-            }).then(() => {
-                return Realm.open(config);
-            }).then((realm) => {
-                // this should never happen (a better way of doing this?)
-                TestCase.assertNull(realm, "UNEXPECTED: Realm.open() with destructive schema update resolved.");
-            }).catch((err) => {
-                TestCase.assertDefined(err);
-                TestCase.assertDefined(err.message);
-                TestCase.assertTrue(/^The following changes cannot be made in additive-only schema mode:/.test(err.message));
-            });
+        await runOutOfProcess(__dirname + "/download-api-helper.js", appConfig.id, appConfig.url, partition, REALM_MODULE_PATH);
+
+        const app = new Realm.App(appConfig);
+        const user = await app.logIn(Realm.Credentials.anonymous());
+        const config = getSyncConfiguration(user, partition);
+
+        throw new Error('Steffen threw a new Error()');
+
+        const realm = await Realm.open(config)
+        realm.close();
+
+        // change the 'breed' property from 'string?' to 'string' to trigger a non-additive-only error.
+        config.schema[0].properties.breed = "string";
+
+        await TestCase.assertThrowsAsyncContaining(
+            async() => await Realm.open(config), // This crashed in bug #3414.
+            "The following changes cannot be made in additive-only schema mode:");
     },
 
     testRealmOpenWithExistingLocalRealm() {
