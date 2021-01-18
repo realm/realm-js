@@ -520,7 +520,7 @@ def testAndroid(target, postStep = null) {
     sh """yes '\n' | avdmanager create avd -n CIRJSEmulator -k 'system-images;android-29;default;x86' --force"""
     sh "adb start-server" // https://stackoverflow.com/questions/56198290/problems-with-adb-exe
     // Need to go to ANDROID_HOME due to https://askubuntu.com/questions/1005944/emulator-avd-does-not-launch-the-virtual-device
-    sh "cd \$ANDROID_HOME/tools && emulator -avd CIRJSEmulator -no-boot-anim -no-window -wipe-data -noaudio -partition-size 4098 -gpu off &"
+    sh "cd \$ANDROID_HOME/tools && emulator -avd CIRJSEmulator -no-boot-anim -no-window -wipe-data -noaudio -partition-size 4098 -gpu swiftshader_indirect &"
     try {
       sh "./scripts/test.sh ${target}"
     } finally {

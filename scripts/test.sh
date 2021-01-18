@@ -364,8 +364,10 @@ case "$TARGET" in
   echo "installing manually packed realm tests package"
   npm install --save-optional ../js/realm-tests.tgz
 
+  echo "Adb devices"
+  adb devices
   echo "Resetting logcat"
-  adb logcat -b all -c
+  adb logcat -c
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   adb logcat -T 1 | tee "$LOGCAT_OUT" | tee $(pwd)/build/out.txt &
 
