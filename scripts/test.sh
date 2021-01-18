@@ -365,8 +365,7 @@ case "$TARGET" in
   npm install --save-optional ../js/realm-tests.tgz
 
   echo "Resetting logcat"
-  mkdir -p $(pwd)/build || true
-  adb logcat -c
+  adb logcat -b all -c
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   adb logcat -T 1 | tee "$LOGCAT_OUT" | tee $(pwd)/build/out.txt &
 
