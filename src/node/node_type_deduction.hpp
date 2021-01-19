@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ struct TypeDeductionImpl {
 
     static std::string realm_typeof(DataType value) {
         std::map<DataType, std::string> realm_typeof = {
-            {type_String, "string"},      {type_Int, "Int"},
+            {type_String, "String"},      {type_Int, "Int"},
             {type_Float, "Float"},        {type_Double, "Double"},
             {type_Decimal, "Decimal128"}, {type_Bool, "Boolean"},
             {type_ObjectId, "ObjectId"}};

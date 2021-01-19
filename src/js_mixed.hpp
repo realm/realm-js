@@ -101,9 +101,15 @@ class MixedObjectID : public MixedWrapper<Context, Value> {
 
 template <typename Context, typename Value, typename Utils>
 class MixedBinary : public MixedWrapper<Context, Value> {
+    // Same as with string, we need to keep this data stored on memory until the data is commited.
+    private: 
+    OwnedBinaryData cache; 
+
+    public: 
+
     Mixed wrap(Context context, Value const &value) {
-        auto owned_binary_data = Utils::to_binary(context, value);
-        return Mixed(owned_binary_data.get());
+        cache = Utils::to_binary(context, value);
+        return Mixed(cache.get());
     }
 
     Value unwrap(Context context, Mixed mixed) {
