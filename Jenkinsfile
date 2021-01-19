@@ -414,10 +414,12 @@ def buildAndroid() {
     myNode('docker') {
       unstash 'source'
       def image = buildDockerEnv('ci/realm-js:build')
-      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts" //using --ignore-scripts to skip building for node
-      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
-      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack ."
-      stash includes: 'realm-*.*.*.tgz', name: 'android-package'
+      image.inside('-e HOME=/tmp') {
+        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts" //using --ignore-scripts to skip building for node
+        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
+        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack ."
+        stash includes: 'realm-*.*.*.tgz', name: 'android-package'
+      }
     }
   }
 }
