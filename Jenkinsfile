@@ -412,9 +412,9 @@ def inAndroidContainer(workerFunction) {
 def buildAndroid() {
   return {
     myNode('docker') {
-      sh 'npm ci --ignore-scripts' //using --ignore-scripts to skip building for node
-      sh 'node scripts/build-android.js'
-      sh 'npm pack .'
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts" //using --ignore-scripts to skip building for node
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack ."
       stash includes: 'realm-*.*.*.tgz', name: 'android-package'
     }
   }
