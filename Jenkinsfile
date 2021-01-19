@@ -120,7 +120,7 @@ stage('build') {
       parallelExecutors["Windows x64 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'x64')
     }
     
-    // parallelExecutors["Android RN"] = buildAndroid()
+    parallelExecutors["Android RN"] = buildAndroid()
 
     parallel parallelExecutors
 }
@@ -149,30 +149,30 @@ stage('test') {
   parallel parallelExecutors
 }
 
-// stage('prepare integration tests') {
-//   parallel(
-//     'Build integration tests': buildLinux {
-//       sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
-//       dir('integration-tests/tests') {
-//         sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
-//         sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack"
-//         sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
-//         stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
-//       }
-//     }
-//   )
-// }
+stage('prepare integration tests') {
+  parallel(
+    'Build integration tests': buildLinux {
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+      dir('integration-tests/tests') {
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack"
+        sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
+        stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
+      }
+    }
+  )
+}
 
-// stage('integration tests') {
-//   parallel(
-//     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
-//     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
-//     'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
-//     'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
-//     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
-//     'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
-//   )
-// }
+stage('integration tests') {
+  parallel(
+    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
+    'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
+    'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
+    'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
+    'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
+    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
+  )
+}
 
 def exclusivelyChanged(regexp) {
   // Checks if this is a change/pull request and if the files changed exclusively match the provided regular expression
@@ -251,7 +251,7 @@ def reactNativeIntegrationTests(targetPlatform) {
 
   dir('integration-tests') {
     if (targetPlatform == "android") {
-      unstash 'android'
+      unstash 'android-package'
     } else {
       // Pack up Realm JS into a .tar
       sh "${nvm} npm pack .."
@@ -266,9 +266,8 @@ def reactNativeIntegrationTests(targetPlatform) {
     sh "${nvm} npm install"
 
     if (targetPlatform == "android") {
+      runEmulator();
       // In case the tests fail, it's nice to have an idea on the devices attached to the machine
-      sh 'adb devices'
-      sh 'adb wait-for-device'
       // Uninstall any other installations of this package before trying to install it again
       sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
     } else if (targetPlatform == "ios") {
@@ -411,12 +410,13 @@ def inAndroidContainer(workerFunction) {
 }
 
 def buildAndroid() {
-  inAndroidContainer {
-    sh 'npm ci --ignore-scripts'
-    //sh 'cd react-native/android && ./gradlew publishAndroid'
-    sh 'node scripts/build-android.js'
-    //sh 'export REALM_BUILD_ANDROID_PACKAGE=1 && npm pack'
-    // stash includes: 'realm-*.tgz', name: 'build-android'
+  return {
+    myNode('docker') {
+      sh 'npm ci --ignore-scripts' //using --ignore-scripts to skip building for node
+      sh 'node scripts/build-android.js'
+      sh 'npm pack .'
+      stash includes: 'realm-*.*.*.tgz', name: 'android-package'
+    }
   }
 }
 
@@ -512,15 +512,19 @@ def doDockerInside(script, target, postStep = null) {
   }
 }
 
+def runEmulator() {
+  sh """yes '\n' | avdmanager create avd -n CIRJSEmulator -k 'system-images;android-29;default;x86' --force"""
+  sh "adb start-server" // https://stackoverflow.com/questions/56198290/problems-with-adb-exe
+  // Need to go to ANDROID_HOME due to https://askubuntu.com/questions/1005944/emulator-avd-does-not-launch-the-virtual-device
+  sh "cd \$ANDROID_HOME/tools && emulator -avd CIRJSEmulator -no-boot-anim -no-window -wipe-data -noaudio -partition-size 4098 -gpu swiftshader_indirect &"
+  echo "Waiting for the emulator to be available"
+  sh 'adb wait-for-device'
+  sh 'adb devices'
+}
 
 def testAndroid(target, postStep = null) {
   timeout(30) {
-    // TODO: We should wait until the emulator is online. For now assume it starts fast enough
-    //  before the tests will run, since the library needs to build first.
-    sh """yes '\n' | avdmanager create avd -n CIRJSEmulator -k 'system-images;android-29;default;x86' --force"""
-    sh "adb start-server" // https://stackoverflow.com/questions/56198290/problems-with-adb-exe
-    // Need to go to ANDROID_HOME due to https://askubuntu.com/questions/1005944/emulator-avd-does-not-launch-the-virtual-device
-    sh "cd \$ANDROID_HOME/tools && emulator -avd CIRJSEmulator -no-boot-anim -no-window -wipe-data -noaudio -partition-size 4098 -gpu swiftshader_indirect &"
+    runEmulator();
     try {
       sh "./scripts/test.sh ${target}"
     } finally {
@@ -530,15 +534,6 @@ def testAndroid(target, postStep = null) {
       }
     }
   }
-
-  // return {
-  //   node('android') {
-  //       timeout(time: 1, unit: 'HOURS') {
-  //           // doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
-  //           doDockerInside('./scripts/test.sh', target, postStep)
-  //       }
-  //   }
-  // }
 }
 
 def testLinux(target, postStep = null, Boolean enableSync = false) {
