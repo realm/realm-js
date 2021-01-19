@@ -413,7 +413,7 @@ def buildAndroid() {
   return {
     myNode('docker') {
       unstash 'source'
-      def image = buildDockerEnv('ci/realm-js:build')
+      def image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       image.inside('-e HOME=/tmp') {
         sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts" //using --ignore-scripts to skip building for node
         sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
