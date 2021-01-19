@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ class MixedWrapper {
 };
 
 template <typename Context, typename Value, typename Utils>
-class HandleString : public MixedWrapper<Context, Value> {
+class MixedString : public MixedWrapper<Context, Value> {
    private:
     // we need this <cache> to keep the value life long enough to get into the
     // DB, we do this because the realm::Mixed type is just a reference
@@ -55,7 +55,7 @@ class HandleString : public MixedWrapper<Context, Value> {
 };
 
 template <typename Context, typename Value, typename Utils>
-class HandleBoolean : public MixedWrapper<Context, Value> {
+class MixedBoolean : public MixedWrapper<Context, Value> {
     Mixed wrap(Context context, Value const &value) {
         return Mixed(Utils::to_boolean(context, value));
     }
@@ -67,7 +67,7 @@ class HandleBoolean : public MixedWrapper<Context, Value> {
 
 template <typename Context, typename Value, typename Utils,
           typename RealmNumberType>
-class HandleNumber : public MixedWrapper<Context, Value> {
+class MixedNumber : public MixedWrapper<Context, Value> {
     Mixed wrap(Context context, Value const &value) {
         return Mixed(Utils::to_number(context, value));
     }
@@ -78,7 +78,7 @@ class HandleNumber : public MixedWrapper<Context, Value> {
 };
 
 template <typename Context, typename Value, typename Utils>
-class HandleDecimal128 : public MixedWrapper<Context, Value> {
+class MixedDecimal128 : public MixedWrapper<Context, Value> {
     Mixed wrap(Context context, Value const &value) {
         return Mixed(Utils::to_decimal128(context, value));
     }
@@ -89,7 +89,7 @@ class HandleDecimal128 : public MixedWrapper<Context, Value> {
 };
 
 template <typename Context, typename Value, typename Utils>
-class HandleObjectID : public MixedWrapper<Context, Value> {
+class MixedObjectID : public MixedWrapper<Context, Value> {
     Mixed wrap(Context context, Value const &value) {
         return Mixed(Utils::to_object_id(context, value));
     }
@@ -100,7 +100,7 @@ class HandleObjectID : public MixedWrapper<Context, Value> {
 };
 
 template <typename Context, typename Value, typename Utils>
-class HandleBinary : public MixedWrapper<Context, Value> {
+class MixedBinary : public MixedWrapper<Context, Value> {
     Mixed wrap(Context context, Value const &value) {
         auto owned_binary_data = Utils::to_binary(context, value);
         return Mixed(owned_binary_data.get());
@@ -112,7 +112,7 @@ class HandleBinary : public MixedWrapper<Context, Value> {
 };
 
 template <typename Context, typename Value, typename Utils>
-class HandleTimeStamp : public MixedWrapper<Context, Value> {
+class MixedTimeStamp : public MixedWrapper<Context, Value> {
     Mixed wrap(Context context, Value const &value) {
         auto date = Utils::to_date(context, value);
 
@@ -137,16 +137,22 @@ class TypeMixed {
     using Utils = js::Value<JavascriptEngine>;
     using Strategy = MixedWrapper<Context, Value> *;
 
+    /*
+        This table acts as a global hashmap, 
+        attached to the lifecycle of the process. 
+
+        All these pointer will be deallocated when the process exits. 
+    */
     std::map<DataType, Strategy> strategies = {
-        {type_String, new HandleString<Context, Value, Utils>},
-        {type_Int, new HandleNumber<Context, Value, Utils, Int>},
-        {type_Float, new HandleNumber<Context, Value, Utils, Float>},
-        {type_Double, new HandleNumber<Context, Value, Utils, Double>},
-        {type_Bool, new HandleBoolean<Context, Value, Utils>},
-        {type_Decimal, new HandleDecimal128<Context, Value, Utils>},
-        {type_ObjectId, new HandleObjectID<Context, Value, Utils>},
-        {type_Binary, new HandleBinary<Context, Value, Utils>},
-        {type_Timestamp, new HandleTimeStamp<Context, Value, Utils>},
+        {type_String, new MixedString<Context, Value, Utils>},
+        {type_Int, new MixedNumber<Context, Value, Utils, Int>},
+        {type_Float, new MixedNumber<Context, Value, Utils, Float>},
+        {type_Double, new MixedNumber<Context, Value, Utils, Double>},
+        {type_Bool, new MixedBoolean<Context, Value, Utils>},
+        {type_Decimal, new MixedDecimal128<Context, Value, Utils>},
+        {type_ObjectId, new MixedObjectID<Context, Value, Utils>},
+        {type_Binary, new MixedBinary<Context, Value, Utils>},
+        {type_Timestamp, new MixedTimeStamp<Context, Value, Utils>},
     };
 
     Strategy get_strategy(DataType type) { return strategies[type]; }
