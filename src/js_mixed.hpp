@@ -37,7 +37,7 @@ class MixedWrapper {
 template <typename Context, typename Value, typename Utils>
 class HandleString : public MixedWrapper<Context, Value> {
    private:
-    // we need this <cache> to keep the value life long enough to get into the
+    // we need this <cache> to keep the value alive long enough to get into the
     // DB, we do this because the realm::Mixed type is just a reference
     // container.
     std::string cache;
