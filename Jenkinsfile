@@ -83,41 +83,41 @@ if (packagesExclusivelyChanged) {
   return
 }
 
-// stage('pretest') {
-//   parallelExecutors = [:]
-//     parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}", { // "Release" is not used
-//     step([
-//       $class: 'CheckStylePublisher',
-//       canComputeNew: false,
-//       canRunOnFailed: true,
-//       defaultEncoding: '',
-//       healthy: '',
-//       pattern: 'eslint.xml',
-//       unHealthy: '',
-//       maxWarnings: 0,
-//       ignoreFailures: false])
-//   })
-//     parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
-//     publishHTML([
-//       allowMissing: false,
-//       alwaysLinkToLastBuild: false,
-//       keepAll: false,
-//       reportDir: 'docs/output',
-//       reportFiles: 'index.html',
-//       reportName: 'Docs'
-//     ])
-//   })
-//   parallel parallelExecutors
-// }
+stage('pretest') {
+  parallelExecutors = [:]
+    parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}", { // "Release" is not used
+    step([
+      $class: 'CheckStylePublisher',
+      canComputeNew: false,
+      canRunOnFailed: true,
+      defaultEncoding: '',
+      healthy: '',
+      pattern: 'eslint.xml',
+      unHealthy: '',
+      maxWarnings: 0,
+      ignoreFailures: false])
+  })
+    parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
+    publishHTML([
+      allowMissing: false,
+      alwaysLinkToLastBuild: false,
+      keepAll: false,
+      reportDir: 'docs/output',
+      reportFiles: 'index.html',
+      reportName: 'Docs'
+    ])
+  })
+  parallel parallelExecutors
+}
 
 stage('build') {
     parallelExecutors = [:]
     nodeVersions.each { nodeVersion ->
-      // parallelExecutors["macOS x86_64 NAPI ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
-      // parallelExecutors["Linux x86_64 NAPI ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-      // parallelExecutors["Linux armhf NAPI ${nodeVersion}"] = buildLinuxRpi { buildCommon(nodeVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
-      // parallelExecutors["Windows ia32 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'ia32')
-      // parallelExecutors["Windows x64 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'x64')
+      parallelExecutors["macOS x86_64 NAPI ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
+      parallelExecutors["Linux x86_64 NAPI ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
+      parallelExecutors["Linux armhf NAPI ${nodeVersion}"] = buildLinuxRpi { buildCommon(nodeVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
+      parallelExecutors["Windows ia32 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'ia32')
+      parallelExecutors["Windows x64 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'x64')
     }
     
     parallelExecutors["Android RN"] = buildAndroid()
@@ -131,48 +131,48 @@ if (gitTag) {
   }
 }
 
-// stage('test') {
-//   parallelExecutors = [:]
+stage('test') {
+  parallelExecutors = [:]
 
-//   parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
-//   parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
-//   parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
-//   parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
-//   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
-//   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
+  parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
+  parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
+  parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
+  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
+  parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
+  parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
-//   // parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-//   parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
-//   // parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
-//   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-//   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
-//   parallel parallelExecutors
-// }
+  // parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
+  parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
+  // parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
+  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
+  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
+  parallel parallelExecutors
+}
 
-// stage('prepare integration tests') {
-//   parallel(
-//     'Build integration tests': buildLinux {
-//       sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
-//       dir('integration-tests/tests') {
-//         sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
-//         sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack"
-//         sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
-//         stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
-//       }
-//     }
-//   )
-// }
+stage('prepare integration tests') {
+  parallel(
+    'Build integration tests': buildLinux {
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+      dir('integration-tests/tests') {
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack"
+        sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
+        stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
+      }
+    }
+  )
+}
 
-// stage('integration tests') {
-//   parallel(
-//     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
-//     'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
-//     'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
-//     'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
-//     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
-//     'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
-//   )
-// }
+stage('integration tests') {
+  parallel(
+    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
+    'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
+    'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
+    'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
+    'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
+    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
+  )
+}
 
 def exclusivelyChanged(regexp) {
   // Checks if this is a change/pull request and if the files changed exclusively match the provided regular expression
