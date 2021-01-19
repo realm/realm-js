@@ -83,32 +83,32 @@ if (packagesExclusivelyChanged) {
   return
 }
 
-stage('pretest') {
-  parallelExecutors = [:]
-    parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}", { // "Release" is not used
-    step([
-      $class: 'CheckStylePublisher',
-      canComputeNew: false,
-      canRunOnFailed: true,
-      defaultEncoding: '',
-      healthy: '',
-      pattern: 'eslint.xml',
-      unHealthy: '',
-      maxWarnings: 0,
-      ignoreFailures: false])
-  })
-    parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
-    publishHTML([
-      allowMissing: false,
-      alwaysLinkToLastBuild: false,
-      keepAll: false,
-      reportDir: 'docs/output',
-      reportFiles: 'index.html',
-      reportName: 'Docs'
-    ])
-  })
-  parallel parallelExecutors
-}
+// stage('pretest') {
+//   parallelExecutors = [:]
+//     parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}", { // "Release" is not used
+//     step([
+//       $class: 'CheckStylePublisher',
+//       canComputeNew: false,
+//       canRunOnFailed: true,
+//       defaultEncoding: '',
+//       healthy: '',
+//       pattern: 'eslint.xml',
+//       unHealthy: '',
+//       maxWarnings: 0,
+//       ignoreFailures: false])
+//   })
+//     parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
+//     publishHTML([
+//       allowMissing: false,
+//       alwaysLinkToLastBuild: false,
+//       keepAll: false,
+//       reportDir: 'docs/output',
+//       reportFiles: 'index.html',
+//       reportName: 'Docs'
+//     ])
+//   })
+//   parallel parallelExecutors
+// }
 
 stage('build') {
     parallelExecutors = [:]
@@ -410,12 +410,14 @@ def inAndroidContainer(workerFunction) {
 }
 
 def buildAndroid() {
-  myNode('docker') {
-    unstash 'source'
-    sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts" //using --ignore-scripts to skip building for node
-    sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
-    sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack ."
-    stash includes: 'realm-*.*.*.tgz', name: 'android-package'
+  return {
+    myNode('docker') {
+      unstash 'source'
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts" //using --ignore-scripts to skip building for node
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack ."
+      stash includes: 'realm-*.*.*.tgz', name: 'android-package'
+    }
   }
 }
 
