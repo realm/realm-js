@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <iostream>
 #include "node_types.hpp"
 #include "napi.h"
 
@@ -217,19 +218,16 @@ inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value v
         auto buffer = value.As<Napi::Buffer<char>>();
         return OwnedBinaryData((const char *)buffer.Data(), buffer.Length() );
     }
-
     if(value.IsTypedArray()) {
         auto typed_array = value.As<Napi::TypedArray>();
         auto buffer  = typed_array.ArrayBuffer();
         return OwnedBinaryData((const char *)buffer.Data(), buffer.ByteLength() );
     }
-    
     if(value.IsArrayBuffer()) {
         auto buffer = value.As<Napi::ArrayBuffer>();
         return OwnedBinaryData((const char *)buffer.Data(), buffer.ByteLength() );
     }
 
-    
     throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
 }
 
