@@ -74,6 +74,24 @@ module.exports = {
             TestCase.assertEqual(p1, p2, 'buffers should be equals');
         }
     },
+
+    testABNodeBuffer() {
+        let realm = new Realm({schema: [SingleSchema]})
+        let n_buffer = new Buffer.from([0xca,0xfe, 0xba, 0xbe]);
+        realm.write(()=> realm.create(SingleSchema.name, { a:n_buffer } ))
+
+        let data = realm.objects(SingleSchema.name)[0]
+        TestCase.assertEqual(data.a.byteLength, n_buffer.length, 'Data size should be equals');
+
+        let into_int = new Uint8Array(data.a)
+
+        for(let i=0; i<n_buffer.byteLength; i++ ){
+            let p1 = n_buffer[i]
+            let p2 = into_int[i]
+            TestCase.assertEqual(p1, p2, 'Data points should be the same');
+        }
+
+    }
 }
 
  
