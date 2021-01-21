@@ -18,6 +18,7 @@
     
 'use strict';
 
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const Realm = require('realm');
 let TestCase = require('./asserts');
 
@@ -53,6 +54,10 @@ module.exports = {
     },
 
     testABuffer() {
+        if(!isNodeProcess) { 
+            return;
+        }
+
         let realm = new Realm({schema: [SingleSchema]})
         let array_buffer = new ArrayBuffer(32);
         const view = new Uint8Array(array_buffer); 
