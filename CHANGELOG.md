@@ -2,8 +2,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 
 ### Fixed
-* Fixed an [issue](https://jira.mongodb.org/browse/RJS-1018), in Node.js, where utilizing an ArrayBuffer for setting a binary property, would mangle the data.
-
+* Fixed an issue in Node.js, where utilizing an ArrayBuffer for setting a binary property, would mangle the data. ([3518](https://github.com/realm/realm-js/issues/3518))
 
 10.1.3 Release notes (2021-1-15)
 =============================================================
