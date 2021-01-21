@@ -1,10 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
-### Enhancements
-* Fixing Array Buffer. Close [RJS-1018](https://jira.mongodb.org/browse/RJS-1018).
-
 ### Fixed
 * App crashed if a native error was thrown during `Realm.open(...)` ([#3414](https://github.com/realm/realm-js/issues/3414), since v10.0.0)
+* Fixed an [issue](https://jira.mongodb.org/browse/RJS-1018), in Node.js, where utilizing an ArrayBuffer for setting a binary property, would mangle the data.
 
 ### Compatibility
 * MongoDB Realm Cloud.
