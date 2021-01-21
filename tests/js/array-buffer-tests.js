@@ -54,10 +54,6 @@ module.exports = {
     },
 
     testABuffer() {
-        if(!isNodeProcess) { 
-            return;
-        }
-
         let realm = new Realm({schema: [SingleSchema]})
         let array_buffer = new ArrayBuffer(32);
         const view = new Uint8Array(array_buffer); 
@@ -81,6 +77,10 @@ module.exports = {
     },
 
     testABNodeBuffer() {
+        if(!isNodeProcess) { 
+            return;
+        }
+
         let realm = new Realm({schema: [SingleSchema]})
         let n_buffer = new Buffer.from([0xca,0xfe, 0xba, 0xbe]);
         realm.write(()=> realm.create(SingleSchema.name, { a:n_buffer } ))
