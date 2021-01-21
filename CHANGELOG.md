@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Fixing Array Buffer.
+* Fixing Array Buffer. Close [1018](https://jira.mongodb.org/browse/RJS-1018)
 
 
 10.1.3 Release notes (2021-1-15)
