@@ -213,26 +213,21 @@ inline double node::Value::to_number(Napi::Env env, const Napi::Value& value) {
 
 template<>
 inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value value) {
-	// Make a non-null OwnedBinaryData, even when `data` is nullptr.
-	auto make_owned_binary_data = [](const char* data, size_t length) {
-		REALM_ASSERT(data || length == 0);
-		char placeholder;
-		return OwnedBinaryData(data ? data : &placeholder, length);
-	};
+    if(value.IsBuffer()) {
+        auto buffer = value.As<Napi::Buffer<char>>();
+        return OwnedBinaryData((const char *)buffer.Data(), buffer.Length() );
+    }
+    if(value.IsTypedArray()) {
+        auto typed_array = value.As<Napi::TypedArray>();
+        auto buffer  = typed_array.ArrayBuffer();
+        return OwnedBinaryData((const char *)buffer.Data(), buffer.ByteLength() );
+    }
+    if(value.IsArrayBuffer()) {
+        auto buffer = value.As<Napi::ArrayBuffer>();
+        return OwnedBinaryData((const char *)buffer.Data(), buffer.ByteLength() );
+    }
 
-	if (Value::is_array_buffer(env, value)) {
-		auto arrayBuffer = value.As<Napi::ArrayBuffer>();
-		return make_owned_binary_data(static_cast<char*>(arrayBuffer.Data()), arrayBuffer.ByteLength());
-	}
-	else if (Value::is_array_buffer_view(env, value)) {
-		int64_t byteLength = value.As<Napi::Object>().Get("byteLength").As<Napi::Number>();
-		int64_t byteOffset = value.As<Napi::Object>().Get("byteOffset").As<Napi::Number>();
-		Napi::ArrayBuffer arrayBuffer = value.As<Napi::Object>().Get("buffer").As<Napi::ArrayBuffer>();
-		return make_owned_binary_data(static_cast<char*>(arrayBuffer.Data()) + byteOffset, byteLength);
-	}
-	else {
-		throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
-	}
+    throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
 }
 
 template<>
