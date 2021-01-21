@@ -76,6 +76,13 @@ module.exports = {
         realm.write(()=>  data.a = 12345678   )
         TestCase.assertEqual(data.a, 12345678, 'Should be the same 12345678');
 
+    },
+
+    testMixedWrongType() {
+        let realm = new Realm({schema: [SingleSchema]});
+
+
+        TestCase.assertThrows(() => realm.write(()=> realm.create(SingleSchema.name, { a: Object.create({}) }  )))
     }
 }
 
