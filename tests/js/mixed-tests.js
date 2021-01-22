@@ -76,13 +76,19 @@ module.exports = {
         realm.write(()=>  data.a = 12345678   )
         TestCase.assertEqual(data.a, 12345678, 'Should be the same 12345678');
 
+        realm.write(()=>  data.a = null   )
+        TestCase.assertEqual(data.a, null, 'Should be the same null');
+
+        realm.write(()=>  data.a = undefined   )
+        TestCase.assertEqual(data.a, null, 'Should be the same null');
     },
 
     testMixedWrongType() {
         let realm = new Realm({schema: [SingleSchema]});
 
-
-        TestCase.assertThrows(() => realm.write(()=> realm.create(SingleSchema.name, { a: Object.create({}) }  )))
+        TestCase.assertThrowsException(
+            () => realm.write(()=> realm.create(SingleSchema.name, { a: Object.create({}) }  ) ), 
+            new Error('Mixed conversion not possible for type: Object') )
     }
 }
 

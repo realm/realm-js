@@ -18,11 +18,12 @@
 
 #pragma once
 
-#include <common/type_deduction.hpp>
-#include <iostream>
 #include <map>
 #include <realm/mixed.hpp>
 #include <type_traits>
+
+#include <common/type_deduction.hpp>
+#include <common/types.hpp>
 
 namespace realm {
 namespace js {
@@ -101,12 +102,11 @@ class MixedObjectID : public MixedWrapper<Context, Value> {
 
 template <typename Context, typename Value, typename Utils>
 class MixedBinary : public MixedWrapper<Context, Value> {
-    // Same as with string, we need to keep this data stored on memory until the data is commited.
     private: 
+    // Same as with string, we need to keep this data stored on memory until the data is commited.
     OwnedBinaryData cache; 
 
     public: 
-
     Mixed wrap(Context context, Value const &value) {
         cache = Utils::to_binary(context, value);
         return Mixed(cache.get());
@@ -149,19 +149,19 @@ class TypeMixed {
 
         All these pointer will be deallocated when the process exits. 
     */
-    std::map<DataType, Strategy> strategies = {
-        {type_String, new MixedString<Context, Value, Utils>},
-        {type_Int, new MixedNumber<Context, Value, Utils, Int>},
-        {type_Float, new MixedNumber<Context, Value, Utils, Float>},
-        {type_Double, new MixedNumber<Context, Value, Utils, Double>},
-        {type_Bool, new MixedBoolean<Context, Value, Utils>},
-        {type_Decimal, new MixedDecimal128<Context, Value, Utils>},
-        {type_ObjectId, new MixedObjectID<Context, Value, Utils>},
-        {type_Binary, new MixedBinary<Context, Value, Utils>},
-        {type_Timestamp, new MixedTimeStamp<Context, Value, Utils>},
+    std::map<types::Type, Strategy> strategies = {
+        {types::String, new MixedString<Context, Value, Utils>},
+        {types::Integer, new MixedNumber<Context, Value, Utils, Int>},
+        {types::Float, new MixedNumber<Context, Value, Utils, Float>},
+        {types::Double, new MixedNumber<Context, Value, Utils, Double>},
+        {types::Boolean, new MixedBoolean<Context, Value, Utils>},
+        {types::Decimal, new MixedDecimal128<Context, Value, Utils>},
+        {types::ObjectId, new MixedObjectID<Context, Value, Utils>},
+        {types::Binary, new MixedBinary<Context, Value, Utils>},
+        {types::Timestamp, new MixedTimeStamp<Context, Value, Utils>},
     };
 
-    Strategy get_strategy(DataType type) { return strategies[type]; }
+    Strategy get_strategy(types::Type type) { return strategies[type]; }
 
     TypeMixed() {}
 
@@ -172,11 +172,12 @@ class TypeMixed {
     }
 
     Value wrap(Context context, Mixed mixed) {
-        auto strategy = get_strategy(mixed.get_type());
+        auto rjs_type = TypeDeduction::from(mixed.get_type());
+        auto strategy = get_strategy(rjs_type);
 
         if (strategy == nullptr) {
             throw std::runtime_error(
-                "The " + TypeDeduction::realm_typeof(mixed.get_type()) +
+                "The " + TypeDeduction::to_javascript(rjs_type) +
                 " value is not supported for the mixed type.");
         }
         return strategy->unwrap(context, mixed);
@@ -189,7 +190,7 @@ class TypeMixed {
         if (strategy == nullptr) {
             throw std::runtime_error(
                 "Mixed conversion not possible for type: " +
-                TypeDeduction::realm_typeof(type));
+                TypeDeduction::to_javascript(type));
         }
         return strategy->wrap(context, js_value);
     }
