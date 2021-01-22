@@ -10,7 +10,7 @@ npm pack
 tar -xzf realm-$VERSION.tgz
 mkdir package/compiled
 cd package/compiled
-tar -xzf ../../realm-*.tar.gz
+tar -xzf ../../prebuilds/realm-*.tar.gz
 cd ../..
 tar -cz package > integration-tests/realm-$VERSION.tgz
 rm -r package
