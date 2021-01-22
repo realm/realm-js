@@ -25,6 +25,7 @@ namespace js {
 
 using NodeBuffer = Napi::Buffer<char>;
 using TypedArray = Napi::TypedArray;
+using DataView = Napi::DataView;
 
 template <typename ArrayBuffer>
 int get_size(ArrayBuffer array_buffer)
@@ -41,6 +42,13 @@ int get_size<NodeBuffer>(NodeBuffer buffer)
 template <typename ArrayBuffer>
 auto get_data(ArrayBuffer buffer)
 {
+    return static_cast<const char*>(buffer.Data());
+}
+
+template <>
+auto get_data<DataView>(DataView data_view)
+{
+    auto buffer = data_view.ArrayBuffer();
     return static_cast<const char*>(buffer.Data());
 }
 

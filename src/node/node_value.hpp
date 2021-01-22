@@ -217,7 +217,10 @@ inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value v
 
     NodeBinary *node_binary = nullptr;
     
-    if(value.IsBuffer()) {
+
+    if(value.IsDataView()) {
+        node_binary = new NodeBinaryManager<Napi::DataView, Napi::Value>{value};
+    }else if(value.IsBuffer()) {
         node_binary = new NodeBinaryManager<Napi::Buffer<char>, Napi::Value>{value};
     }else if(value.IsTypedArray()) {
         node_binary = new NodeBinaryManager<Napi::TypedArray, Napi::Value>{value};
