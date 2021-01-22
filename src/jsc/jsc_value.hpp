@@ -228,6 +228,9 @@ template<>
 JSValueRef jsc::Value::from_object_id(JSContextRef ctx, const ObjectId& value);
 
 template<>
+JSValueRef jsc::Value::from_uuid(JSContextRef ctx, const UUID& value);
+
+template<>
 inline bool jsc::Value::to_boolean(JSContextRef ctx, const JSValueRef &value) {
     return JSValueToBoolean(ctx, value);
 }
@@ -307,6 +310,9 @@ Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, const JSValueRef& value);
 
 template<>
 ObjectId jsc::Value::to_object_id(JSContextRef ctx, const JSValueRef& value);
+
+template<>
+UUID jsc::Value::to_uuid(JSContextRef ctx, const JSValueRef& value);
 
 } // js
 } // realm
