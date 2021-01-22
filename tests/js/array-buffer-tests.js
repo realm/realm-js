@@ -82,7 +82,7 @@ module.exports = {
         }
 
         let realm = new Realm({schema: [SingleSchema]})
-        let n_buffer = new Buffer.from([0xca,0xfe, 0xba, 0xbe]);
+        let n_buffer = Buffer.from([0xca,0xfe, 0xba, 0xbe]);
         realm.write(()=> realm.create(SingleSchema.name, { a:n_buffer } ))
 
         let data = realm.objects(SingleSchema.name)[0]
@@ -96,6 +96,23 @@ module.exports = {
             TestCase.assertEqual(p1, p2, 'Data points should be the same');
         }
 
+    },
+
+    testABEmptyInputValidation() {
+        SingleSchema.properties.a = 'data'
+        let realm = new Realm({schema: [SingleSchema]})
+
+        TestCase.assertThrowsException(() => realm.write(()=> realm.create(SingleSchema.name, { a:new ArrayBuffer() } )), new Error("A non-empty ArrayBuffer, BufferView or Buffer is expected.") )
+    },
+
+
+    testABEmptyOptionalInputValidation() {
+        SingleSchema.properties.a = 'data?'
+        let realm = new Realm({schema: [SingleSchema]})
+
+        // No exceptions are expected here...
+        realm.write(()=> realm.create(SingleSchema.name, { a: null } ))
+        let data = realm.objects(SingleSchema.name)[0]
     },
 
     testABHandlingWrongInput() {

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "node_types.hpp"
+#include "node_buffer.hpp"
 #include "napi.h"
 
 namespace realm {
@@ -213,22 +214,28 @@ inline double node::Value::to_number(Napi::Env env, const Napi::Value& value) {
 
 template<>
 inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value value) {
+
+    NodeBinary *node_binary = nullptr;
+    
     if(value.IsBuffer()) {
-        auto buffer = value.As<Napi::Buffer<char>>();
-        return OwnedBinaryData(static_cast<const char *>(buffer.Data()), buffer.Length() );
-    }
-    if(value.IsTypedArray()) {
-        auto typed_array = value.As<Napi::TypedArray>();
-        auto buffer  = typed_array.ArrayBuffer();
-        return OwnedBinaryData(static_cast<const char *>(buffer.Data()), buffer.ByteLength() );
-    }
-    if(value.IsArrayBuffer()) {
-        auto buffer = value.As<Napi::ArrayBuffer>();
-        return OwnedBinaryData(static_cast<const char *>(buffer.Data()), buffer.ByteLength() );
+        node_binary = new NodeBinaryManager<Napi::Buffer<char>, Napi::Value>{value};
+    }else if(value.IsTypedArray()) {
+        node_binary = new NodeBinaryManager<Napi::TypedArray, Napi::Value>{value};
+    }else if(value.IsArrayBuffer()) {
+        node_binary = new NodeBinaryManager<Napi::ArrayBuffer, Napi::Value>{value};
     }
 
-    throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
+    if(node_binary == nullptr) {
+        throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
+    }
+
+    if(node_binary->is_empty()) {
+        throw std::runtime_error("A non-empty ArrayBuffer, BufferView or Buffer is expected.");
+    }
+
+    return node_binary->create_binary_blob();
 }
+
 
 template<>
 inline Napi::Object node::Value::to_object(Napi::Env env, const Napi::Value& value) {
