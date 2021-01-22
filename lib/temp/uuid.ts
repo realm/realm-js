@@ -26,6 +26,10 @@ const UUID_RX = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-
 
 /* from `uuid` npm module END */
 
+export interface UUIDExtended {
+    $uuid: string;
+}
+
 export class UUID {
     readonly _bsontype = "UUID"; // mimic the real bson types & let us validate in the same manner as other bson types.
     id: Buffer;
@@ -69,7 +73,7 @@ export class UUID {
         return this.toString("hex");
     }
 
-    toExtendedJSON() {
+    toExtendedJSON(): UUIDExtended {
         return { $uuid: this.toHexString() };
     }
 
@@ -96,5 +100,9 @@ export class UUID {
         const buf = Buffer.from(input.replace(/-/g, ""), "hex");
 
         return new UUID(buf);
+    }
+
+    static fromExtendedJSON(doc: UUIDExtended): UUID {
+        return new UUID(doc.$uuid);
     }
 }
