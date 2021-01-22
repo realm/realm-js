@@ -545,7 +545,7 @@ inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Times
 template<typename T>
 inline typename T::Object Object<T>::create_bson_type(ContextType ctx, StringData type, std::initializer_list<ValueType> args) {
     auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
+    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
     auto ctor = Value<T>::to_constructor(ctx, Object<T>::get_property(ctx, bson, type));
     return Function<T>::construct(ctx, ctor, args);
 }
@@ -681,7 +681,7 @@ inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value) {
     // For now going through the bson.EJSON.stringify() since it will correctly handle the special JS types.
     // Consider directly converting to Bson if we need more control or there are performance issues.
     auto realm = Value::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
+    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
     auto ejson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, bson, "EJSON"));
     auto call_args_json = Object<T>::call_method(ctx, ejson, "stringify", {
         value,

@@ -245,7 +245,7 @@ export class Credentials<PayloadType extends object = any>
     /**
      * The type of the authentication provider used when authenticating.
      */
-    public readonly providerType: string;
+    public readonly providerType: ProviderType;
 
     /**
      * The data being sent to the service when authenticating.
