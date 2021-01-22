@@ -100,6 +100,20 @@ JSValueRef jsc::Value::from_object_id(JSContextRef ctx, const ObjectId& value)
 }
 
 template<>
+JSValueRef jsc::Value::from_uuid(JSContextRef ctx, const UUID& value)
+{
+    static jsc::String s_realm = "Realm";
+    static jsc::String s_uuid = "_UUID";
+
+    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(ctx, global_object, s_realm);
+    JSObjectRef uuid_constructor = jsc::Object::validated_get_constructor(ctx, realm_constructor, s_uuid);
+
+    std::array<JSValueRef, 1> args { {jsc::Value::from_nonnull_string(ctx, jsc::String(value.to_string())) } };
+    return jsc::Function::construct(ctx, uuid_constructor, args.size(), args.data());
+}
+
+template<>
 OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, JSValueRef value)
 {
     static jsc::String s_array_buffer = "ArrayBuffer";
@@ -152,6 +166,7 @@ template<>
 Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, const JSValueRef& value)
 {
     auto object = to_object(ctx, value);
+    // EJSON input supported (in RN only) for enabling debugging of synced realms.
     auto ejson_property = jsc::Object::get_property(ctx, object, "$numberDecimal");
     
     if (is_undefined(ctx, ejson_property)) {
@@ -170,6 +185,7 @@ template<>
 ObjectId jsc::Value::to_object_id(JSContextRef ctx, const JSValueRef& value)
 {
     auto object = to_object(ctx, value);
+    // EJSON input supported (in RN only) for enabling debugging of synced realms.
     auto ejson_property = jsc::Object::get_property(ctx, object, "$oid");
 
     if (is_undefined(ctx, ejson_property)) {
@@ -179,6 +195,23 @@ ObjectId jsc::Value::to_object_id(JSContextRef ctx, const JSValueRef& value)
         return ObjectId(std::string(to_string(ctx, as_string)).c_str());
     } else {
         return ObjectId(std::string(to_string(ctx, ejson_property)).c_str());
+    }
+}
+
+template<>
+UUID jsc::Value::to_uuid(JSContextRef ctx, const JSValueRef& value)
+{
+    auto object = to_object(ctx, value);
+    // EJSON input supported (in RN only) for enabling debugging of synced realms.
+    auto ejson_property = jsc::Object::get_property(ctx, object, "$uuid");
+
+    if (is_undefined(ctx, ejson_property)) {
+        static jsc::String s_to_hex_string = "toHexString";
+        JSValueRef args[] = {};
+        JSValueRef as_string = jsc::Object::call_method(ctx, to_object(ctx, value), s_to_hex_string, 0, args);
+        return UUID(std::string(to_string(ctx, as_string)).c_str());
+    } else {
+        return UUID(std::string(to_string(ctx, ejson_property)).c_str());
     }
 }
 
