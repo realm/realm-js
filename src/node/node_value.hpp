@@ -19,6 +19,7 @@
 #pragma once
 
 #include "node_types.hpp"
+#include "node_buffer.hpp"
 #include "napi.h"
 
 namespace realm {
@@ -213,27 +214,31 @@ inline double node::Value::to_number(Napi::Env env, const Napi::Value& value) {
 
 template<>
 inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value value) {
-	// Make a non-null OwnedBinaryData, even when `data` is nullptr.
-	auto make_owned_binary_data = [](const char* data, size_t length) {
-		REALM_ASSERT(data || length == 0);
-		char placeholder;
-		return OwnedBinaryData(data ? data : &placeholder, length);
-	};
 
-	if (Value::is_array_buffer(env, value)) {
-		auto arrayBuffer = value.As<Napi::ArrayBuffer>();
-		return make_owned_binary_data(static_cast<char*>(arrayBuffer.Data()), arrayBuffer.ByteLength());
-	}
-	else if (Value::is_array_buffer_view(env, value)) {
-		int64_t byteLength = value.As<Napi::Object>().Get("byteLength").As<Napi::Number>();
-		int64_t byteOffset = value.As<Napi::Object>().Get("byteOffset").As<Napi::Number>();
-		Napi::ArrayBuffer arrayBuffer = value.As<Napi::Object>().Get("buffer").As<Napi::ArrayBuffer>();
-		return make_owned_binary_data(static_cast<char*>(arrayBuffer.Data()) + byteOffset, byteLength);
-	}
-	else {
-		throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
-	}
+    NodeBinary *node_binary = nullptr;
+    
+
+    if(value.IsDataView()) {
+        node_binary = new NodeBinaryManager<Napi::DataView, Napi::Value>{value};
+    }else if(value.IsBuffer()) {
+        node_binary = new NodeBinaryManager<Napi::Buffer<char>, Napi::Value>{value};
+    }else if(value.IsTypedArray()) {
+        node_binary = new NodeBinaryManager<Napi::TypedArray, Napi::Value>{value};
+    }else if(value.IsArrayBuffer()) {
+        node_binary = new NodeBinaryManager<Napi::ArrayBuffer, Napi::Value>{value};
+    }
+
+    if(node_binary == nullptr) {
+        throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
+    }
+
+    if(node_binary->is_empty()) {
+        throw std::runtime_error("A non-empty ArrayBuffer, BufferView or Buffer is expected.");
+    }
+
+    return node_binary->create_binary_blob();
 }
+
 
 template<>
 inline Napi::Object node::Value::to_object(Napi::Env env, const Napi::Value& value) {

@@ -1,10 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
-### Enhancements
-* None.
-
 ### Fixed
 * App crashed if a native error was thrown during `Realm.open(...)` ([#3414](https://github.com/realm/realm-js/issues/3414), since v10.0.0)
+* Fixed an issue in Node.js, where utilizing an ArrayBuffer for setting a binary property, would mangle the data. ([3518](https://github.com/realm/realm-js/issues/3518))
 
 ### Compatibility
 * MongoDB Realm Cloud.
