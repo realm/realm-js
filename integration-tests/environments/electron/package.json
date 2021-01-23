@@ -10,7 +10,7 @@
   "private": true,
   "main": "app/main.js",
   "scripts": {
-    "preinstall": "npm install ../../realm-integration-tests.tgz ../../realm.tgz --no-save",
+    "preinstall": "npm install cmake-js ../../realm-integration-tests.tgz ../../realm.tgz --no-save",
     "package": "electron-builder --dir",
     "start": "electron ./app/main.js",
     "test": "npm run test/main && npm run test/renderer",
@@ -18,6 +18,7 @@
     "test/renderer": "node runner.js renderer"
   },
   "devDependencies": {
+    "cmake-js": "^6.1.0",
     "command-line-args": "^4.0.6",
     "electron": "^8.1.1",
     "electron-builder": "^22.3.2",
