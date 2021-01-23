@@ -122,6 +122,11 @@ module.exports = {
     },
 
     testABEmptyInputValidation() {
+        // TODO: Only NodeJS implementation verify for empty buffer.
+        if(!isNodeProcess) { 
+            return;
+        }
+
         SingleSchema.properties.a = 'data'
         let realm = new Realm({schema: [SingleSchema]})
 

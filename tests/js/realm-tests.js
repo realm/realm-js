@@ -716,7 +716,7 @@ module.exports = {
             // Create Initial object
             realm.create('AllPrimaryTypesObject', Object.assign(template, {
                 primaryCol: '35',
-                dataCol: Buffer.from([0xca,0xfe, 0xba, 0xbe]),
+                dataCol: new ArrayBuffer(1), 
                 boolCol: false,
             }));
             realm.create('AllPrimaryTypesObject', Object.assign(template, {
@@ -1854,7 +1854,7 @@ module.exports = {
         // Test all simple data types
         let template = Realm.createTemplateObject(schemas.AllTypes);
         TestCase.assertEqual(Object.keys(template).length, 7);
-        let unmanagedObj = Object.assign(template, { boolCol: true, dataCol: new Buffer.from([666])  });
+        let unmanagedObj = Object.assign(template, { boolCol: true, dataCol: new ArrayBuffer(1) });
         let managedObj = realm.create(schemas.AllTypes.name, unmanagedObj) ;
         TestCase.assertEqual(managedObj.boolCol, true);
 
