@@ -4,7 +4,7 @@
   "description": "Realm JS tests running in a Node.js environment",
   "private": true,
   "scripts": {
-    "preinstall": "npm install ../../realm-integration-tests.tgz ../../realm.tgz --no-save",
+    "preinstall": "npm install cmake-js ../../realm-integration-tests.tgz ../../realm.tgz --no-save",
     "test": "mocha --exit index.js"
   },
   "dependencies": {
