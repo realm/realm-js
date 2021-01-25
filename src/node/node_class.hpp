@@ -195,8 +195,6 @@ class ObjectWrap {
 	static bool has_native_method(const std::string& name);
 
   private:
-    //These wrapper methods exists to force the compiler to initialize these class template static members in sequence before they are used
-	//https://stackoverflow.com/questions/42743048/c-template-the-static-member-in-a-global-object-is-not-initialized (https://stackoverflow.com/a/42743520)
 	static ClassType& get_class();
 	static auto& get_nativeMethods();
 	static auto& get_schemaObjectTypes();
@@ -267,7 +265,6 @@ static inline std::vector<napi_value> napi_get_arguments(const Napi::CallbackInf
 	return arguments;
 }
 
-//This forces initialization of the static member in sequence
 template<typename ClassType>
 inline ClassType& ObjectWrap<ClassType>::get_class() {
 	static ClassType s_class;
@@ -1102,7 +1099,7 @@ template<typename ClassType>
 Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Napi::Function& constructor, const realm::ObjectSchema& schema, Internal* internal) {
 	Napi::EscapableHandleScope scope(env);
 	auto& s_schemaObjectTypes = get_schemaObjectTypes();
-	ClassType& s_class = get_class();
+	auto& s_class = get_class();
 
 	bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
 	if (!isRealmObjectClass) {
