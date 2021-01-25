@@ -46,7 +46,7 @@ export class UUID {
                 throw new Error("Unknown/unsupported input for UUID");
             }
         } else {
-            this.id = randomUuidBuffer();
+            this.id = UUID.generate();
         }
     }
 
@@ -85,9 +85,8 @@ export class UUID {
         return false;
     }
 
-    static generate(): UUID {
-        const buf = randomUuidBuffer();
-        return new UUID(buf);
+    static generate(): Buffer {
+        return randomUuidBuffer();
     }
 
     static fromString(input: string): UUID {
