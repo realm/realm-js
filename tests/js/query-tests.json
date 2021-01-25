@@ -217,7 +217,7 @@
         { "type": "BinaryObject", "value": [[1, 100, 233, 255, 0]] },
         { "type": "BinaryObject", "value": [[1, 100]] },
         { "type": "BinaryObject", "value": [[100]] },
-        { "type": "BinaryObject", "value": [[]] },
+        { "type": "BinaryObject", "value": [[2]] },
         { "type": "BinaryObject", "value": [[255, 0]] }
     ],
     "tests": [

@@ -46,6 +46,7 @@ describe(global.title, () => {
     require("./objects");
     require("./iterators");
     require("./dynamic-schema-updates");
+    require("./bson");
 });
 
 beforeEach(() => {

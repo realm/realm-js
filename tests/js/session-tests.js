@@ -177,6 +177,30 @@ module.exports = {
             });
     },
 
+    async testRealmOpenWithDestructiveSchemaUpdate() {
+        if (!isNodeProcess) {
+            return;
+        }
+
+        const partition = Utils.genPartition();
+
+        await runOutOfProcess(__dirname + "/download-api-helper.js", appConfig.id, appConfig.url, partition, REALM_MODULE_PATH);
+
+        const app = new Realm.App(appConfig);
+        const user = await app.logIn(Realm.Credentials.anonymous());
+        const config = getSyncConfiguration(user, partition);
+
+        const realm = await Realm.open(config)
+        realm.close();
+
+        // change the 'breed' property from 'string?' to 'string' to trigger a non-additive-only error.
+        config.schema[0].properties.breed = "string";
+
+        await TestCase.assertThrowsAsyncContaining(
+            async() => await Realm.open(config), // This crashed in bug #3414.
+            "The following changes cannot be made in additive-only schema mode:");
+    },
+
     testRealmOpenWithExistingLocalRealm() {
         if (!platformSupported) {
             return;

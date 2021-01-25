@@ -16,23 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * as BSON from "bson";
+import { expect } from "chai";
+import { BSON } from "realm-web";
 
-import { App } from "./App";
+describe("BSON", () => {
+    it("gets exported", () => {
+        expect(typeof BSON).equals("object");
+    });
 
-/**
- * Get or create a singleton Realm App from an id.
- * Calling this function multiple times with the same id will return the same instance.
- *
- * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
- * @returns The Realm App instance.
- */
-export function getApp(id: string) {
-    return App.getApp(id);
-}
+    it("can construct an ObjectId", () => {
+        const objectId = new BSON.ObjectId();
+        expect(objectId).instanceOf(BSON.ObjectId);
+        expect(typeof objectId.toHexString()).equals("string");
+    });
 
-export * from "./App";
-export * from "./Credentials";
-export * from "./User";
-export { MongoDBRealmError } from "./MongoDBRealmError";
-export { getEnvironment, setEnvironment } from "./environment";
+    it("can parse EJSON", () => {
+        const result = BSON.EJSON.parse('{ "int32": { "$numberInt": "10" } }', {
+            relaxed: false,
+        }) as { int32: BSON.Int32 };
+        expect(typeof result).equals("object");
+        expect(typeof result.int32).equals("object");
+        expect(result.int32).instanceOf(BSON.Int32);
+    });
+});

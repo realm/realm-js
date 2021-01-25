@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2016 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-declare namespace Realm {
-    // See https://stackoverflow.com/a/51114250 on why we're importing the BSON types like this
-    type ObjectId = import("bson").ObjectId;
-    type Binary = import("bson").Binary;
-    type Long = import("bson").Long;
-    type Timestamp = import("bson").Timestamp;
-}
+ /**
+  * A re-export of the "bson" package, enabling access to the BSON types without requiring an explict dependency on the "bson" package.
+  * 
+  * @see {@link https://www.npmjs.com/package/bson#documentation|the BSON documentation} for more information.
+  * @memberof Realm
+  */
+const BSON = {};

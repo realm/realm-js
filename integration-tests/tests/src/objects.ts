@@ -6,7 +6,6 @@ import {
     Person as PersonWithId,
     PersonSchema as PersonSchemaWithId,
 } from "./schemas/person-and-dog-with-object-ids";
-import { ObjectId } from "bson";
 
 describe("Realm objects", () => {
     describe("Interface & object literal", () => {
@@ -45,7 +44,7 @@ describe("Realm objects", () => {
 
         it("can be fetched with objectForPrimaryKey", () => {
             const realm = new Realm({ schema: [PersonSchemaWithId] });
-            const _id = new ObjectId();
+            const _id = new Realm.BSON.ObjectId();
 
             realm.write(() => {
                 realm.create<PersonWithId>(PersonSchemaWithId.name, {
@@ -69,7 +68,7 @@ describe("Realm objects", () => {
         it("can be updated", () => {
             const realm = new Realm({ schema: [PersonSchemaWithId] });
             let john: IPersonWithId;
-            const _id = new ObjectId();
+            const _id = new Realm.BSON.ObjectId();
 
             realm.write(() => {
                 john = realm.create<IPersonWithId>(PersonSchemaWithId.name, {
@@ -164,7 +163,7 @@ describe("Realm objects", () => {
 
         it("can be fetched with objectForPrimaryKey", () => {
             const realm = new Realm({ schema: [PersonWithId] });
-            const _id = new ObjectId();
+            const _id = new Realm.BSON.ObjectId();
 
             realm.write(() => {
                 realm.create(PersonWithId, {
@@ -185,7 +184,7 @@ describe("Realm objects", () => {
         it("can be updated", () => {
             const realm = new Realm({ schema: [PersonWithId] });
             let john: PersonWithId;
-            const _id = new ObjectId();
+            const _id = new Realm.BSON.ObjectId();
 
             realm.write(() => {
                 john = realm.create(PersonWithId, {
