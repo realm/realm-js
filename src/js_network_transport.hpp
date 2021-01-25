@@ -166,10 +166,22 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
     using Object = js::Object<T>;
     using Value = js::Value<T>;
 
-    using NetworkTransportFactory = std::function<std::unique_ptr<app::GenericNetworkTransport>(ContextType)>;
-    using SendRequestHandler = void(ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback);
+    using Dispatcher = util::EventLoopDispatcher<void(std::function<void()>)>;
 
-    JavaScriptNetworkTransport(ContextType ctx) : m_ctx(ctx) {};
+    // Creates a dispatcher to pass into the constructor. This must be called from the JS thread, even if
+    // the NetworkTransport will be constructed elsewhere.
+    static Dispatcher make_dispatcher() {
+        // This is just a thin "run any function" dispatcher to allow the actual logic to be executed
+        // to live in a more natural location (send_request_to_server).
+        return util::EventLoopDispatcher([] (std::function<void()> func) {
+            func();
+        });
+    }
+
+    using SendRequestHandler = void(ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback);
+    using NetworkTransportFactory = std::function<std::unique_ptr<app::GenericNetworkTransport>(ContextType, Dispatcher)>;
+
+    JavaScriptNetworkTransport(ContextType ctx, Dispatcher eld) : m_ctx(ctx), m_dispatcher(std::move(eld)) {};
 
     static ObjectType makeRequest(ContextType ctx, const app::Request& request) {
         ObjectType headers_object = Object::create_empty(ctx);
@@ -188,30 +200,26 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
         return request_object;
     }
 
-    static void init(ContextType ctx) {
-        // This initializes the EventLoopDispatcher on the main JS thread.
-        s_dispatcher.reset(new realm::util::EventLoopDispatcher([]
-            (ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback) {
-                HANDLESCOPE(m_ctx);
+    void send_request_to_server(app::Request request, std::function<void(const app::Response)> completion_callback) override {
+        m_dispatcher([ctx = m_ctx,
+                      request = std::move(request),
+                      completion_callback = std::move(completion_callback)
+                     ] () mutable {
+                HANDLESCOPE(ctx);
 
-                ObjectType realm_constructor = Value::validated_to_object(m_ctx, Object::get_global(m_ctx, "Realm"));
-                ValueType network_transport = Object::get_property(m_ctx, realm_constructor, "_networkTransport");
+                ObjectType realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+                ValueType network_transport = Object::get_property(ctx, realm_constructor, "_networkTransport");
 
-                Object::call_method(m_ctx, Value::to_object(m_ctx, network_transport), "fetchWithCallbacks", {
-                    makeRequest(m_ctx, request),
-                    ResponseHandlerClass<T>::create_instance(m_ctx, std::move(completion_callback)),
+                Object::call_method(ctx, Value::to_object(ctx, network_transport), "fetchWithCallbacks", {
+                    makeRequest(ctx, request),
+                    ResponseHandlerClass<T>::create_instance(ctx, std::move(completion_callback)),
                 });
-            }));
-
-    }
-
-    void send_request_to_server(const app::Request request, std::function<void(const app::Response)> completion_callback) override {
-        (*s_dispatcher)(m_ctx, request, completion_callback);
+            });
     }
 
 private:
     ContextType m_ctx;
-    inline static std::unique_ptr<realm::util::EventLoopDispatcher<SendRequestHandler>> s_dispatcher;
+    Dispatcher m_dispatcher;
 
     std::string static fromHttpMethod(app::HttpMethod method) {
         switch (method) {
