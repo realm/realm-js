@@ -39,7 +39,7 @@ function determineSpawnParameters(processType, serverUrl) {
         if (platform === "darwin") {
             return {
                 command: appPath,
-                args: ["--", "--no-sandbox", "--enable-logging", processType, serverUrl],
+                args: ["--", processType, serverUrl],
             };
         } else {
             throw new Error(`Running tests on ${platform} is not supported yet`);
@@ -48,7 +48,7 @@ function determineSpawnParameters(processType, serverUrl) {
         console.warn("🚧 Running an unpackaged version of the app 🚧");
         return {
             command: require("electron"),
-            args: ["--no-sandbox", "--enable-logging", ".", processType, serverUrl],
+            args: [".", processType, serverUrl, "--enable-logging"],
         };
     }
 }
