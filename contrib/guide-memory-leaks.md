@@ -18,13 +18,13 @@ There's a couple of reasons this guide won't delve too much into this type of le
 
 Since both Node.js and Chrome are using the V8 JavaScript engine, we can use the Chromium dev-tools to inspect the process on any of our supported development platforms.
 
-Run the process with the `--inspect` (or `--inspect-brk` to pause the process until the debugger attach) runtime parameter:
+Run the process with the `--inspect` (or `--inspect-brk` to pause the process until the debugger attaches) runtime parameter:
 
 ```
 node --inspect index.js
 ```
 
-Navigate a Chromium browser to and click the "inspect" link next to the target representing the Node.js process
+Navigate a Chromium browser to the URL below and click the "inspect" link next to the target representing the Node.js process
 
 ```
 chrome://inspect
@@ -34,13 +34,13 @@ Besides access to the console, ability to set breakpoints and execute code step-
 
 ## Everything else ...
 
-Majority of our code is C++ code wrapping the Realm Object Store to expose object and property access. This is probably the part of our repository most ripe for memory leaks.
+The majority of our code is C++ code wrapping the Realm Object Store to expose object and property access. This is probably the part of our repository most ripe for memory leaks.
 
 ### Running a Node.js script or React Native App (attaching with Instruments for macOS)
 
 Instruments can either attach to a running process (on the host or a simulator) or you can "Choose Target ..." to have Instruments start and run the app (making it possible to attach from the beginning).
 
-An advantage is that it provides a great GUI. Disadvantage is that it cannot attach to all processes (ex Android process running in a simulator) and that it's only available on macOS.
+An advantage is that it provides a great GUI. Disadvantage is that it cannot attach to all processes (e.g., Android process running in a simulator) and that it's only available on macOS.
 
 ### Running a Node.js script (taking heap snapshots with Google Performance Tools)
 
@@ -48,7 +48,7 @@ An advantage is that it provides a great GUI. Disadvantage is that it cannot att
 
 > gperftools is a collection of a high-performance multi-threaded malloc() implementation, plus some pretty nifty performance analysis tools.
 
-gperftools can be installed using brew.
+On MacOS, gperftools can be installed using brew.
 
 ```
 brew install gperftools
@@ -74,7 +74,7 @@ The SVG can be inspected to get an idea of the flow of allocations and hopefully
 
 ### Running a Node.js script using Valgrind
 
-Some might say that Valgrind is not exactly the "new kid on the block" and as such has a UI and output which is harder to wrap your head around. Valgrind can be installed [via a brew tab](https://github.com/LouisBrunner/valgrind-macos) on macOS. 
+Some might say that Valgrind is not exactly the "new kid on the block" and as such has a UI and output which is harder to wrap your head around. Valgrind can be installed [via a brew tap](https://github.com/LouisBrunner/valgrind-macos) on macOS. 
 
 ```
 brew tap LouisBrunner/valgrind
