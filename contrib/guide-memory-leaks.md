@@ -9,7 +9,7 @@ Generally speaking memory leaks will fall into one of two categories:
 
 ## Leaking JavaScript objects
 
-There's a couple of reasons this guide won't dwelve too much on this type of leak:
+There's a couple of reasons this guide won't delve too much into this type of leak:
 - JavaScript is garbage collected, which limits the risk of the most obvious mistakes.
 - JavaScript is a minority language in our codebase.
 - This is not where we've had leaks historically.
