@@ -79,6 +79,7 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         prop.type |= PropertyType::Array;
         type = type.substr(0, type.size() - 2);
     }
+
     if (type.ends_with("?")) {
         prop.type |= PropertyType::Nullable;
         type = type.substr(0, type.size() - 1);
@@ -86,6 +87,9 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
 
     if (type == "bool") {
         prop.type |= PropertyType::Bool;
+    }
+    else if (type == "mixed") {
+        prop.type |= PropertyType::Nullable | PropertyType::Mixed;
     }
     else if (type == "int") {
         prop.type |= PropertyType::Int;
