@@ -95,13 +95,6 @@ async function run() {
     // Spawn the electron process
     const appProcess = runElectron(processType, server.getUrl());
     console.log(`Started the Electron app (pid = ${appProcess.pid})`);
-    appProcess.stdout.on('data', (data) => {
-        console.log(`Electron stdout: ${data}`);
-      });
-      
-    appProcess.stderr.on('data', (data) => {
-        console.error(`Electron stderr: ${data}`);
-    });
 
     try {
         await new Promise((resolve, reject) => {
