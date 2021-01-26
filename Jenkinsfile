@@ -4,6 +4,7 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js'
 
+def platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'linux-x64', 'linux-arm']
 def nodeVersions = ['12.20.0']
 nodeTestVersion = nodeVersions[0]
 
@@ -209,6 +210,9 @@ def nodeIntegrationTests(nodeVersion, platform) {
 }
 
 def electronIntegrationTests(electronVersion, platform) {
+  //validate platform argument
+  assert (platform in platforms)
+
   def nodeVersion = nodeTestVersion
   unstash 'source'
   unstash "prebuild-${platform}"
@@ -222,7 +226,7 @@ def electronIntegrationTests(electronVersion, platform) {
   }
 
   // On linux we need to use xvfb to let up open GUI windows on the headless machine
-  def commandPrefix = platform == 'linux' ? 'xvfb-run ' : ''
+  def commandPrefix = platform == 'linux-x64' ? 'xvfb-run ' : ''
 
   dir('integration-tests/environments/electron') {
     sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
@@ -427,10 +431,9 @@ def buildAndroid() {
 def publish(nodeVersions, electronVersions, dependencies, tag) {
   myNode('docker') {
 
-    for (def platform in ['darwin-x64', 'linux-x64', 'win32-ia32', 'win32-x64']) {
+    for (def platform in platforms) {
       unstash "prebuild-${platform}"
     }
-    unstash 'prebuild-linux-arm'
 
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
       sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/realm-js-prebuilds/${dependencies.VERSION}/'"
