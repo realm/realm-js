@@ -5,11 +5,11 @@ import groovy.json.JsonOutput
 repoName = 'realm-js'
 
 platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'linux-x64', 'linux-arm']
-nodeTestVersion = ['12.20.0']
+nodeTestVersion = '12.20.0'
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
 //For more see https://www.npmjs.com/package/spectron
-electronTestVersion = ['8.4.1']
+electronTestVersion = '8.4.1'
 
 def gitTag = null
 def formattedVersion = null
