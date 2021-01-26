@@ -4,14 +4,12 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js'
 
-def platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'linux-x64', 'linux-arm']
-def nodeVersions = ['12.20.0']
-nodeTestVersion = nodeVersions[0]
+platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'linux-x64', 'linux-arm']
+nodeTestVersion = ['12.20.0']
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
 //For more see https://www.npmjs.com/package/spectron
-def electronVersions = ['8.4.1']
-electronTestVersion = electronVersions[0]
+electronTestVersion = ['8.4.1']
 
 def gitTag = null
 def formattedVersion = null
@@ -113,22 +111,18 @@ if (packagesExclusivelyChanged) {
 
 stage('build') {
     parallelExecutors = [:]
-    nodeVersions.each { nodeVersion ->
-      parallelExecutors["macOS x86_64 NAPI ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
-      parallelExecutors["Linux x86_64 NAPI ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-      parallelExecutors["Linux armhf NAPI ${nodeVersion}"] = buildLinuxRpi { buildCommon(nodeVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
-      parallelExecutors["Windows ia32 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'ia32')
-      parallelExecutors["Windows x64 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'x64')
-    }
-    
+    parallelExecutors["macOS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
+    parallelExecutors["Linux x86_64 NAPI ${nodeTestVersion}"] = buildLinux { buildCommon(nodeTestVersion, it) }
+    parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
+    parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
+    parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
     parallelExecutors["Android RN"] = buildAndroid()
-
     parallel parallelExecutors
 }
 
 if (gitTag) {
   stage('publish') {
-    publish(nodeVersions, electronVersions, dependencies, gitTag)
+    publish(dependencies, gitTag)
   }
 }
 
@@ -428,7 +422,7 @@ def buildAndroid() {
   }
 }
 
-def publish(nodeVersions, electronVersions, dependencies, tag) {
+def publish(dependencies, tag) {
   myNode('docker') {
 
     for (def platform in platforms) {
