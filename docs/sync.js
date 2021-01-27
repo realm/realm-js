@@ -39,11 +39,10 @@
  * @typedef {Object} Realm.App.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
  * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key.
- * @property {function} [error] - A callback function which is called in error situations.
- *    The errpr callback can take up to two arguments: `session` and `syncErr`. If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set
- *    and `syncError.readOnly` is true. Otherwise, `syncError` can have up to five properties: `name`, `message`, `isFatal`,
- *    `category`, and `code`.
- *
+ * @property {callback(session, syncError)} [error] - A callback function which is called in error situations.
+ *    The callback is passed two arguments: `session` and `syncErr`. If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set
+ *    and `syncError.readOnly` is true. Otherwise, `syncError` can have upto five properties:
+ *    `name`, `message`, `isFatal`, `category`, and `code`.
  * @property {Object} [customHttpHeaders] - A map (string, string) of custom HTTP headers.
  * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
        If not set, the Realm will be downloaded before opened.
@@ -246,39 +245,40 @@ class Sync {
     /**
      * Initiate a client reset. The Realm must be closed prior to the reset.
      *
-     * A synced Realm may need to be reset because the MongoDB Realm Server encountered an error and had
-     * to be restored from a backup or because it has been too long since the client connected to the
-     * server so the server has rotated the logs.
+     * A synced Realm may need to be reset if the communications with the MongoDB Realm Server
+     * indicate an unrecoverable error that prevents continuing with normal synchronization. The
+     * most common reason for this is if a client has been disconnected for too long.
      *
-     * The Client Reset thus occurs because the server does not have the full information required to
-     * bring the Client fully up to date.
+     * The local copy of the Realm is moved into a recovery directory
+     * for safekeeping.
      *
-     * The reset process is as follows: the local copy of the Realm is copied into a recovery directory
-     * for safekeeping, and then deleted from the original location. The next time the Realm for that
-     * URL is opened, the Realm will automatically be re-downloaded from MongoDB Realm, and
-     * can be used as normal.
-     *
-     * Data written to the Realm after the local copy of the Realm diverged from the backup remote copy
+     * Local writes that were not successfully synchronized to the MongoDB Realm server
      * will be present in the local recovery copy of the Realm file. The re-downloaded Realm will
-     * initially contain only the data present at the time the Realm was backed up on the server.
+     * initially contain only the data present at the time the Realm was synchronized up on the server.
      *
      * @param {Realm.App} [app] - The app where the Realm was opened.
      * @param {string} [path] - The path to the Realm to reset.
      * Throws error if reset is not possible.
      * @example
      * {
-     *   const config = { sync: { user, partitionValue } };
-     *   config.sync.error = (session, error) => {
-     *     if (error.name === 'ClientReset') {
-     *       let path = realm.path;
-     *       realm.close();
-     *       Realm.App.Sync.initiateClientReset(app, path);
-     *       // - open Realm at `error.config.path` (oldRealm)
-     *       // - open Realm with `config` (newRealm)
-     *       // - copy required objects from oldRealm to newRealm
-     *       // - close both Realms
+     *   const config = {
+     *     // schema, etc.
+     *     sync: {
+     *       user,
+     *       partitionValue,
+     *       error: (session, error) => {
+     *         if (error.name === 'ClientReset') {
+     *           let path = realm.path; // realm.path will no be accessible after realm.close()
+     *           realm.close();
+     *           Realm.App.Sync.initiateClientReset(app, path);
+     *           // - open Realm at `error.config.path` (oldRealm)
+     *           // - open Realm with `config` (newRealm)
+     *           // - copy required objects from oldRealm to newRealm
+     *           // - close both Realms
+     *         }
+     *       }
      *     }
-     *   }
+     *   };
      * }
      */
     static initiateClientReset(app, path) { }
