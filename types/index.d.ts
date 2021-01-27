@@ -343,7 +343,14 @@ declare namespace Realm {
         code: number;
     }
 
-    type ErrorCallback = (session: App.Sync.Session, error: SyncError) => void;
+    interface ClientResetError {
+        name: "ClientReset";
+        path: string;
+        config: SyncConfiguration;
+        readOnly: true;
+    }
+
+    type ErrorCallback = (session: App.Sync.Session, error: SyncError | ClientResetError) => void;
 
     const enum SessionStopPolicy {
         AfterUpload = "after-upload",
@@ -471,7 +478,7 @@ type RealmListsRemappedModelPart<T> = {
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
  * with only the keys which value extends Realm.List, remapped as Arrays.
  */
-type RealmInsertionModel<T> = 
+type RealmInsertionModel<T> =
     Omit<Omit<Omit<T, ExtractPropertyNamesOfType<T, Function>>, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
     & RealmListsRemappedModelPart<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
 
