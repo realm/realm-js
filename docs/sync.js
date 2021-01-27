@@ -39,9 +39,9 @@
  * @typedef {Object} Realm.App.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
  * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key.
- * @property {function} [callback] - A callback function which is called in error situations.
- *    The callback can take up to two arguments: `session` and `error`. If `error.name == "ClientReset"`, `error.path` and `error.config` are set
- *    and `error.readOnly` is true. Otherwise, `error` can have up to five properties: `name`, `message`, `isFatal`,
+ * @property {function} [error] - A callback function which is called in error situations.
+ *    The errpr callback can take up to two arguments: `session` and `syncErr`. If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set
+ *    and `syncError.readOnly` is true. Otherwise, `syncError` can have up to five properties: `name`, `message`, `isFatal`,
  *    `category`, and `code`.
  *
  * @property {Object} [customHttpHeaders] - A map (string, string) of custom HTTP headers.
