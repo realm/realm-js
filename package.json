@@ -121,7 +121,7 @@
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
     "jasmine-xml-reporter": "^1.2.1",
-    "jsdoc": "^3.6.3",
+    "jsdoc": "3.6.3",
     "lerna": "^3.20.2",
     "license-checker": "^8.0.3",
     "mockery": "^2.0.0",
