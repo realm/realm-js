@@ -23,8 +23,7 @@ var Realm = require("realm");
 var TestCase = require("./asserts");
 var testCases = require("./query-tests.json");
 var schemas = require("./schemas");
-const {Decimal128, ObjectId} = require("bson");
-const {UUID} = require("../../lib/temp/uuid"); // TODO: replace with the one from bson, once updated.
+const {Decimal128, ObjectId, UUID} = require("bson");
 
 var typeConverters = {};
 
