@@ -40,8 +40,8 @@
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
  * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key.
  * @property {callback(session, syncError)} [error] - A callback function which is called in error situations.
- *    The callback is passed two arguments: `session` and `syncErr`. If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set
- *    and `syncError.readOnly` is true. Otherwise, `syncError` can have upto five properties:
+ *    The callback is passed two arguments: `session` and `syncError`. If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set
+ *    and `syncError.readOnly` is true. Otherwise, `syncError` can have up to five properties:
  *    `name`, `message`, `isFatal`, `category`, and `code`.
  * @property {Object} [customHttpHeaders] - A map (string, string) of custom HTTP headers.
  * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
