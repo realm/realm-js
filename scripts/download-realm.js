@@ -147,7 +147,7 @@ function extract(downloadedArchive, targetFolder, archiveRootFolder) {
 function acquire(desired, target) {
     const corePath = desired.CORE_ARCHIVE && path.resolve(getTempDir(), desired.CORE_ARCHIVE);
     const syncPath = desired.SYNC_ARCHIVE && path.resolve(getTempDir(), desired.SYNC_ARCHIVE);
-    const openSSLPath = desired.OPENSSL && path.resolve(getTempDir(), "openssl.tar.gz");
+    const openSSLPath = desired.USE_OPENSSL && path.resolve(getTempDir(), "openssl.tar.gz");
 
     return fs.emptyDir(target)
         .then(() => corePath && download(desired.CORE_SERVER_FOLDER, desired.CORE_ARCHIVE, corePath))
@@ -180,7 +180,7 @@ function getCoreRequirements(dependencies, options, required = {}) {
         case 'linux':
             const arch_string = options.arch == 'arm' ? '-armhf': '';
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Linux${arch_string}-devel.tar.gz`;
-            required.OPENSSL = true;
+            required.USE_OPENSSL = true;
             return required;
         default:
             throw new Error(`Unsupported core platform '${options.platform}'`);
@@ -209,7 +209,7 @@ function getSyncRequirements(dependencies, options, required = {}) {
             const arch_string = options.arch == 'arm' ? '-armhf': '';
             // flavor is ignored since we only publish Release mode
             required.SYNC_ARCHIVE = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}-Linux${arch_string}-devel.tar.gz`;
-            required.OPENSSL = "https://static.realm.io/downloads/openssl/1.1.1b/Linux/x86_64/openssl.tgz";
+            required.USE_OPENSSL = true;
             return getCoreRequirements(dependencies, options, required);
         default:
             throw new Error(`Unsupported sync platform '${options.platform}'`);
