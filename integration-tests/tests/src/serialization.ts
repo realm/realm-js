@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { ObjectId } from "bson";
 import {
     IPlaylist as IPlaylistNoId,
     ISong as ISongNoId,
@@ -34,8 +33,8 @@ import {
     Playlist as PlaylistWithId,
     Song as SongWithId,
 } from "./schemas/playlist-with-songs-with-ids";
-import * as circularCollectionResult from "./structures/circular-collection-result.json";
-import * as circularCollectionResultWithIds from "./structures/circular-collection-result-with-primary-ids.json";
+import circularCollectionResult from "./structures/circular-collection-result.json";
+import circularCollectionResultWithIds from "./structures/circular-collection-result-with-primary-ids.json";
 
 describe("JSON serialization (exposed properties)", () => {
     it("JsonSerializationReplacer is exposed on the Realm constructor", () => {
@@ -439,7 +438,7 @@ const cacheIdTestSetups: ICacheIdTestSetup[] = [
     {
         type: "objectId",
         schemaName: "ObjectIdTest",
-        testId: new ObjectId("5f99418846da9c45005f50bf"),
+        testId: new Realm.BSON.ObjectId("5f99418846da9c45005f50bf"),
         expectedResult: "ObjectIdTest#5f99418846da9c45005f50bf",
     },
 ];

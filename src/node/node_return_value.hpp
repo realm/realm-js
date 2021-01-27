@@ -21,6 +21,8 @@
 #include "node_types.hpp"
 #include "napi.h"
 
+#include "js_mixed.hpp"
+
 namespace realm {
 namespace js {
 
@@ -76,7 +78,7 @@ class ReturnValue<node::Types> {
     }
 
     void set(realm::Mixed mixed) {
-		m_value = Napi::Value(m_env, Value<node::Types>::from_mixed(m_env, mixed));
+        m_value = TypeMixed<node::Types>::get_instance().wrap(m_env, mixed);
     }
 
     void set_null() {

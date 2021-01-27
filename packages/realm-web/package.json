@@ -1,6 +1,6 @@
 {
   "name": "realm-web",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Authenticate and communicate with the MongoDB Realm platform, from your web-browser",
   "main": "./dist/bundle.cjs.js",
   "module": "./dist/bundle.es.js",
@@ -15,6 +15,7 @@
     "update-types": "ts-node --project scripts/tsconfig.json scripts/update-types.ts",
     "generate-types": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
     "build": "npm run generate-types && rollup --config",
+    "start": "npm run build -- --watch",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha 'src/tests/**/*.test.ts'",
     "postversion": "ts-node --project scripts/tsconfig.json scripts/postversion.ts"
@@ -35,15 +36,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/realm/realm-js.git"
+    "url": "https://github.com/realm/realm-js.git",
+    "directory": "packages/realm-web"
   },
+  "homepage": "https://github.com/realm/realm-js/tree/master/packages/realm-web#readme",
   "bugs": {
     "url": "https://github.com/realm/realm-js/issues"
   },
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "@types/bson": "^4.0.0",
-    "bson": "4.0.0",
+    "bson": "^4.2.0",
     "detect-browser": "^5.1.1",
     "js-base64": "^2.6.3"
   },

@@ -150,21 +150,36 @@ OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, JSValueRef value)
 
 template<>
 Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, const JSValueRef& value)
-{    static jsc::String s_to_string = "toString";
-
-    JSValueRef args[] = {};
-    JSValueRef as_string = jsc::Object::call_method(ctx, to_object(ctx, value), s_to_string, 0, args);
-    std::string str = to_string(ctx, as_string);
-    return Decimal128(StringData(str));
+{
+    auto object = to_object(ctx, value);
+    auto ejson_property = jsc::Object::get_property(ctx, object, "$numberDecimal");
+    
+    if (is_undefined(ctx, ejson_property)) {
+        static jsc::String s_to_string = "toString";
+        JSValueRef args[] = {};
+        JSValueRef as_string = jsc::Object::call_method(ctx, to_object(ctx, value), s_to_string, 0, args);
+        std::string str = to_string(ctx, as_string);
+        return Decimal128(StringData(str));
+    } else {
+        std::string str = to_string(ctx, ejson_property);
+        return Decimal128(StringData(str));
+    }
 }
 
 template<>
 ObjectId jsc::Value::to_object_id(JSContextRef ctx, const JSValueRef& value)
-{    static jsc::String s_to_hex_string = "toHexString";
+{
+    auto object = to_object(ctx, value);
+    auto ejson_property = jsc::Object::get_property(ctx, object, "$oid");
 
-    JSValueRef args[] = {};
-    JSValueRef as_string = jsc::Object::call_method(ctx, to_object(ctx, value), s_to_hex_string, 0, args);
-    return ObjectId(std::string(to_string(ctx, as_string)).c_str());
+    if (is_undefined(ctx, ejson_property)) {
+        static jsc::String s_to_hex_string = "toHexString";
+        JSValueRef args[] = {};
+        JSValueRef as_string = jsc::Object::call_method(ctx, to_object(ctx, value), s_to_hex_string, 0, args);
+        return ObjectId(std::string(to_string(ctx, as_string)).c_str());
+    } else {
+        return ObjectId(std::string(to_string(ctx, ejson_property)).c_str());
+    }
 }
 
 } // namespace js

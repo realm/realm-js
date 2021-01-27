@@ -23,7 +23,7 @@ import {
 import { ObjectId } from "bson";
 
 import { User, UserState } from "./User";
-import { Credentials } from "./Credentials";
+import { Credentials, ProviderType } from "./Credentials";
 import { EmailPasswordAuth } from "./auth-providers";
 import { Storage } from "./storage";
 import { AppStorage } from "./AppStorage";
@@ -62,7 +62,7 @@ export class App<
     /**
      * A map of app instances returned from calling getApp.
      */
-    private static appCache: { [id: string]: Realm.App } = {};
+    private static appCache: { [id: string]: App } = {};
 
     /**
      * Get or create a singleton Realm App from an id.
@@ -199,11 +199,14 @@ export class App<
      * @param fetchProfile Should the users profile be fetched? (default: true)
      */
     public async logIn(
-        credentials: Realm.Credentials<any>,
+        credentials: Credentials<any>,
         fetchProfile = true,
     ): Promise<User<FunctionsFactoryType, CustomDataType>> {
         const response = await this.authenticator.authenticate(credentials);
-        const user = this.createOrUpdateUser(response);
+        const user = this.createOrUpdateUser(
+            response,
+            credentials.providerType,
+        );
         // Let's ensure this will be the current user, in case the user object was reused.
         this.switchUser(user);
         // If neeeded, fetch and set the profile on the user
@@ -329,10 +332,12 @@ export class App<
      * This helps de-duplicating users in the list of users known to the app.
      *
      * @param response A response from the Authenticator.
+     * @param providerType The type of the authentication provider used.
      * @returns A new or an existing user.
      */
     private createOrUpdateUser(
         response: AuthResponse,
+        providerType: ProviderType,
     ): User<FunctionsFactoryType, CustomDataType> {
         const existingUser = this.users.find(u => u.id === response.userId);
         if (existingUser) {
@@ -342,11 +347,15 @@ export class App<
             return existingUser;
         } else {
             // Create and store a new user
+            if (!response.refreshToken) {
+                throw new Error("No refresh token in response from server");
+            }
             const user = new User<FunctionsFactoryType, CustomDataType>({
                 app: this,
                 id: response.userId,
                 accessToken: response.accessToken,
                 refreshToken: response.refreshToken,
+                providerType,
             });
             this.users.unshift(user);
             return user;
@@ -359,7 +368,7 @@ export class App<
     private hydrate() {
         try {
             const userIds = this.storage.getUserIds();
-            this.users = userIds.map(id => User.hydrate(this, id));
+            this.users = userIds.map(id => new User({ app: this, id }));
         } catch (err) {
             // The storage was corrupted
             this.storage.clear();

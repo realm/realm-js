@@ -20,6 +20,7 @@
 
 #include <realm/keys.hpp>
 
+#include "js_mixed.hpp"
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
@@ -125,6 +126,9 @@ public:
         return is_null(value) ? util::none : util::make_optional(unbox<T>(value));
     }
 
+    
+
+
     template<typename T>
     ValueType box(util::Optional<T> v) { return v ? box(*v) : null_value(); }
 
@@ -136,7 +140,7 @@ public:
     ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
     ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
     ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
-    ValueType box(Mixed)             { throw std::runtime_error("'Mixed' type support is not implemented yet"); }
+    ValueType box(Mixed mixed)       { return TypeMixed<JSEngine>::get_instance().wrap(m_ctx, mixed); }
     ValueType box(UUID)              { throw std::runtime_error("'UUID' type support is not implemented yet"); }
 
     ValueType box(Timestamp ts) {
@@ -170,6 +174,35 @@ public:
     bool is_null(ValueType const& value) {
         return Value::is_null(m_ctx, value) || Value::is_undefined(m_ctx, value);
     }
+    DataType get_type_of(ValueType const& value)
+    {
+        if (Value::is_number(m_ctx, value)) {
+            return type_Double;
+        }
+        if (Value::is_string(m_ctx, value)) {
+            return type_String;
+        }
+        if (Value::is_date(m_ctx, value)) {
+            return type_Timestamp;
+        }
+        if (Value::is_boolean(m_ctx, value)) {
+            return type_Bool;
+        }
+        if (Value::is_binary(m_ctx, value)) {
+            return type_Binary;
+        }
+        if (Value::is_object_id(m_ctx, value)) {
+            return type_ObjectId;
+        }
+        if (Value::is_decimal128(m_ctx, value)) {
+            return type_Decimal;
+        }
+        if (Value::is_object(m_ctx, value)) {
+            return type_Link;
+        }
+        return DataType(-1);
+    }
+
     ValueType null_value() {
         return Value::from_null(m_ctx);
     }
@@ -346,8 +379,8 @@ struct Unbox<JSEngine, BinaryData> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
-    static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        throw std::runtime_error("'Mixed' type support is not implemented yet");
+    static Mixed call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        return TypeMixed<JSEngine>::get_instance().unwrap(native_accessor->m_ctx, value);
     }
 };
 

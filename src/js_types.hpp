@@ -30,7 +30,7 @@
 #include <realm/util/to_string.hpp>
 #include <realm/util/optional.hpp>
 #include <realm/util/base64.hpp>
-#include <realm/mixed.hpp>
+
 
 #include <realm/object-store/util/bson/bson.hpp>
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
@@ -126,6 +126,7 @@ struct Value {
     static bool is_boolean(ContextType, const ValueType &);
     static bool is_constructor(ContextType, const ValueType &);
     static bool is_date(ContextType, const ValueType &);
+    static bool is_error(ContextType, const ValueType &);
     static bool is_function(ContextType, const ValueType &);
     static bool is_null(ContextType, const ValueType &);
     static bool is_number(ContextType, const ValueType &);
@@ -154,7 +155,6 @@ struct Value {
     static ValueType from_nonnull_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
     static ValueType from_timestamp(ContextType, Timestamp);
-    static ValueType from_mixed(ContextType, const Mixed &);
     static ValueType from_uuid(ContextType, const UUID&);
     static ValueType from_objkey(ContextType, const ObjKey&);
     static ValueType from_objlink(ContextType, const ObjLink&);
@@ -487,8 +487,8 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
                 return is_date(context, value) || is_string(context, value);
             case PropertyType::Object:
                 return true;
-            case PropertyType::Mixed:
-                throw std::runtime_error("'Mixed' type support is not implemented yet");
+            case PropertyType::Mixed: 
+                return true;
             case PropertyType::UUID:
                 throw std::runtime_error("'UUID' type support is not implemented yet");
             default:
@@ -545,7 +545,7 @@ inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Times
 template<typename T>
 inline typename T::Object Object<T>::create_bson_type(ContextType ctx, StringData type, std::initializer_list<ValueType> args) {
     auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
+    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
     auto ctor = Value<T>::to_constructor(ctx, Object<T>::get_property(ctx, bson, type));
     return Function<T>::construct(ctx, ctor, args);
 }
@@ -565,45 +565,7 @@ inline typename T::Value Object<T>::create_from_optional_app_error(ContextType c
     return create_from_app_error(ctx, *error);
 }
 
-template<typename T>
-inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const Mixed& mixed) {
-    if (mixed.is_null()) {
-        return from_undefined(ctx);
-    }
 
-    switch (mixed.get_type()) {
-    case type_Bool:
-        return from_boolean(ctx, mixed.get<bool>());
-    case type_Int:
-        return from_number(ctx, static_cast<double>(mixed.get<int64_t>()));
-    case type_Float:
-        return from_number(ctx, mixed.get<float>());
-    case type_Double:
-        return from_number(ctx, mixed.get<double>());
-    case type_Decimal:
-        return from_decimal128(ctx, mixed.get<Decimal128>());
-    case type_ObjectId:
-        return from_object_id(ctx, mixed.get<ObjectId>());
-    case type_Timestamp:
-        return from_timestamp(ctx, mixed.get<Timestamp>());
-    case type_String:
-        return from_string(ctx, mixed.get<StringData>().data());
-    case type_Binary:
-        return from_binary(ctx, mixed.get<BinaryData>());
-    case type_UUID:
-        return from_uuid(ctx, mixed.get<UUID>());
-    case type_Link:
-        return from_objkey(ctx, mixed.get<ObjKey>());
-    case type_TypedLink:
-        return from_objlink(ctx, mixed.get<ObjLink>());
-    case type_LinkList:
-    case type_OldDateTime:
-    case type_OldTable:
-    case type_Mixed:
-        break;
-    }
-    throw std::invalid_argument("Value not convertible.");
-}
 
 template<typename T>
 inline typename T::Value Value<T>::from_uuid(typename T::Context ctx, const UUID& value) {
@@ -719,7 +681,7 @@ inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value) {
     // For now going through the bson.EJSON.stringify() since it will correctly handle the special JS types.
     // Consider directly converting to Bson if we need more control or there are performance issues.
     auto realm = Value::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
+    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
     auto ejson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, bson, "EJSON"));
     auto call_args_json = Object<T>::call_method(ctx, ejson, "stringify", {
         value,

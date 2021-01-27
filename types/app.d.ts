@@ -23,6 +23,19 @@
 /// <reference path="auth-providers.d.ts" />
 
 declare namespace Realm {
+    /**
+     * Types of an authentication provider.
+     */
+    type ProviderType =
+        | "anon-user"
+        | "api-key"
+        | "local-userpass"
+        | "custom-function"
+        | "custom-token"
+        | "oauth2-google"
+        | "oauth2-facebook"
+        | "oauth2-apple";
+
     namespace Credentials {
         /**
          * Payload sent when authenticating using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
@@ -83,14 +96,29 @@ declare namespace Realm {
         };
 
         /**
-         * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         * Payload sent when authenticating using the OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
          */
-        type GooglePayload = {
+        type GoogleAuthCodePayload = {
             /**
-             * The auth code returned from Google.
+             * The auth code from Google.
              */
             authCode: string;
         };
+
+        /**
+         * Payload sent when authenticating using the OpenID Connect [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         */
+        type GoogleIdTokenPayload = {
+            /**
+             * The OpenID token from Google.
+             */
+            id_token: string;
+        };
+
+        /**
+         * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         */
+        type GooglePayload = GoogleAuthCodePayload | GoogleIdTokenPayload;
 
         /**
          * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
@@ -107,7 +135,7 @@ declare namespace Realm {
          */
         type ApplePayload = {
             /**
-             * The ID token from Apple.
+             * The OpenID token from Apple.
              */
             id_token: string;
         };
@@ -127,7 +155,7 @@ declare namespace Realm {
         /**
          * Type of the authentication provider.
          */
-        readonly providerType: string;
+        readonly providerType: ProviderType;
 
         /**
          * A simple object which can be passed to the server as the body of a request to authenticate.
@@ -200,7 +228,35 @@ declare namespace Realm {
          * @param authCode The auth code returned from Google.
          * @returns A `Credentials` object for logging in using `app.logIn`.
          */
-        static google(authCode: string): Credentials<Credentials.GooglePayload>;
+        static google(
+            authCodeOrIdToken: string,
+        ): Credentials<Credentials.GooglePayload>;
+
+        /**
+         * Factory for `Credentials` which authenticate using the Auth Token OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         *
+         * @param payload.authCode The auth code from Google.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
+         */
+        static google(payload: {
+            /**
+             * The auth code from Google.
+             */
+            authCode: string;
+        }): Credentials<Credentials.GoogleAuthCodePayload>;
+
+        /**
+         * Factory for `Credentials` which authenticate using the OpenID Connect OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         *
+         * @param payload.idToken The OpenID Connect token from Google.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
+         */
+        static google(payload: {
+            /**
+             *
+             */
+            idToken: string;
+        }): Credentials<Credentials.GoogleIdTokenPayload>;
 
         /**
          * Factory for `Credentials` which authenticate using the [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
@@ -337,7 +393,8 @@ declare namespace Realm {
      */
     class User<
         FunctionsFactoryType extends object = DefaultFunctionsFactory,
-        CustomDataType extends object = any
+        CustomDataType extends object = any,
+        UserProfileDataType = DefaultUserProfileData
     > {
         /**
          * The automatically-generated internal ID of the user.
@@ -345,9 +402,9 @@ declare namespace Realm {
         readonly id: string;
 
         /**
-         * The provider type for the user.
+         * The provider type used when authenticating the user.
          */
-        readonly providerType: string;
+        readonly providerType: ProviderType;
 
         /**
          * The id of the device.
@@ -390,7 +447,7 @@ declare namespace Realm {
         /**
          * A profile containing additional information about the user.
          */
-        readonly profile: UserProfile;
+        readonly profile: UserProfileDataType;
 
         /**
          * Use this to call functions defined by the MongoDB Realm app, as this user.
@@ -492,20 +549,20 @@ declare namespace Realm {
      */
     interface UserIdentity {
         /**
-         * The id of the user.
+         * The id of the identity.
          */
-        userId: string;
+        id: string;
 
         /**
          * The type of the provider associated with the identity.
          */
-        providerType: string;
+        providerType: ProviderType;
     }
 
     /**
      * An extended profile with detailed information about the user.
      */
-    interface UserProfile {
+    type DefaultUserProfileData = {
         /**
          * The commonly displayed name of the user.
          */
@@ -550,13 +607,12 @@ declare namespace Realm {
          * The maximal age of the user.
          */
         maxAge?: string;
-
+    } & {
         /**
-         * The type of user
-         * // TODO: Determine the meaning of the different possibilities.
+         * Authentication providers might store other data here.
          */
-        type: UserType;
-    }
+        [key: string]: string;
+    };
 
     /**
      * A function which executes on the MongoDB Realm platform.

@@ -45,6 +45,7 @@ var TESTS = {
     EncryptionTests: require("./encryption-tests"),
     AliasTests: require("./alias-tests"),
     BsonTests: require("./bson-tests"),
+    MixedTests: require("./mixed-tests"),
     // Garbagecollectiontests: require('./garbage-collection'),
 };
 

@@ -42,21 +42,41 @@ class AppClass : public ClassDefinition<T, SharedApp> {
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using Context = js::Context<T>;
     using String = js::String<T>;
     using Value = js::Value<T>;
     using Object = js::Object<T>;
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
-
     using NetworkTransport = JavaScriptNetworkTransport<T>;
+    using NetworkTransportFactory = typename NetworkTransport::NetworkTransportFactory;
 
 public:
     const std::string name = "App";
+    
+    /**
+     * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network requests.
+     * Exposed to allow other components (ex the RPCServer) to override the underlying implementation.
+     */
+    static inline NetworkTransportFactory transport_generator = [] (ContextType ctx) {
+        return std::make_unique<NetworkTransport>(ctx);
+    };
+
+    // These values are overridden at runtime
+    static inline std::string package_version = "?.?.?";
+    static inline std::string platform_context = "unknown-context";
+    static inline std::string platform_os = "unknown-os";
+    static inline std::string platform_version = "?.?.?";
 
     static void constructor(ContextType, ObjectType, Arguments &);
     static FunctionType create_constructor(ContextType);
     static ObjectType create_instance(ContextType, SharedApp);
+
+    /**
+     * Build a user agent string.
+     */
+    static std::string get_user_agent();
 
     static void get_app_id(ContextType, ObjectType, ReturnValue &);
     static void get_email_password_auth(ContextType, ObjectType, ReturnValue &);
@@ -70,29 +90,32 @@ public:
         {"allUsers", {wrap<get_all_users>, nullptr}}
     };
 
-    static void login(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void log_in(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_user(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     // static methods
     static void clear_app_cache(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_app(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void set_versions(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
-        {"_login", wrap<login>},
+        {"_logIn", wrap<log_in>},
         {"switchUser", wrap<switch_user>},
         {"_removeUser", wrap<remove_user>},
     };
 
     MethodMap<T> const static_methods = {
         {"_clearAppCache", wrap<clear_app_cache>},
-        {"_getApp", wrap<get_app>}
+        {"_getApp", wrap<get_app>},
+        {"_setVersions", wrap<set_versions>}
     };
 };
 
 template<typename T>
 inline typename T::Function AppClass<T>::create_constructor(ContextType ctx) {
     FunctionType app_constructor = ObjectWrap<T, AppClass<T>>::create_constructor(ctx);
+    NetworkTransport::init(ctx);
     return app_constructor;
 }
 
@@ -159,37 +182,22 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     else {
         throw std::runtime_error("Expected either a configuration object or an app id string.");
     }
-
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    config.transport_generator = [=] {
-        return std::make_unique<NetworkTransport>(protected_ctx);
+    
+    config.transport_generator = [ctx = Protected(Context::get_global_context(ctx))] {
+        return AppClass<T>::transport_generator(ctx);
     };
 
-    auto realm_constructor = js::Value<T>::validated_to_object(ctx, js::Object<T>::get_global(ctx, "Realm"));
-    std::string user_agent_binding_info;
-    auto user_agent_function = js::Object<T>::get_property(ctx, realm_constructor, "_createUserAgentDescription");
-    if (js::Value<T>::is_function(ctx, user_agent_function)) {
-        auto result = js::Function<T>::call(ctx, js::Value<T>::to_function(ctx, user_agent_function), realm_constructor, 0, nullptr);
-        user_agent_binding_info = js::Value<T>::validated_to_string(ctx, result);
-    }
-    ensure_directory_exists_for_file(default_realm_file_directory());
-
-    auto platform_description_function = js::Object<T>::get_property(ctx, realm_constructor, "_createPlatformDescription");
-    if (js::Value<T>::is_function(ctx, platform_description_function)) {
-        auto result = js::Function<T>::call(ctx, js::Value<T>::to_function(ctx, platform_description_function), realm_constructor, 0, nullptr);
-        auto result_object = js::Value<T>::validated_to_object(ctx, result);
-        static const String platform_name = "platform";
-        static const String platform_version_name = "platform_version";
-        static const String sdk_version_name = "sdk_version";
-        config.platform = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, platform_name));
-        config.platform_version = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, platform_version_name));
-        config.sdk_version = js::Value<T>::validated_to_string(ctx, Object::get_property(ctx, result_object, sdk_version_name));
-    }
+    config.platform = platform_os;
+    config.platform_version = platform_version;
+    config.sdk_version = "RealmJS/" + package_version;
+    
+    auto realm_file_directory = default_realm_file_directory();
+    ensure_directory_exists_for_file(realm_file_directory);
 
     SyncClientConfig client_config;
-    client_config.base_file_path = default_realm_file_directory();
+    client_config.base_file_path = realm_file_directory;
     client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
-    client_config.user_agent_binding_info = user_agent_binding_info;
+    client_config.user_agent_binding_info = get_user_agent();
 
     SharedApp app = app::App::get_shared_app(config, client_config);
 
@@ -197,15 +205,8 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 }
 
 template<typename T>
-void AppClass<T>::get_app(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_count(1);
-    auto app_id = Value::validated_to_string(ctx, args[0]);
-    if (auto app = app::App::get_cached_app(app_id)) {
-        return_value.set(AppClass<T>::create_instance(ctx, app));
-    }
-    else {
-        return_value.set(Value::from_null(ctx));
-    }
+std::string AppClass<T>::get_user_agent() {
+    return "RealmJS/" + package_version + " (" + platform_context + ", " + platform_os + ", v" + platform_version + ")";
 }
 
 template<typename T>
@@ -215,7 +216,7 @@ void AppClass<T>::get_app_id(ContextType ctx, ObjectType this_object, ReturnValu
 }
 
 template<typename T>
-void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void AppClass<T>::log_in(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
@@ -224,7 +225,7 @@ void AppClass<T>::login(ContextType ctx, ObjectType this_object, Arguments &args
     auto callback_function = Value::validated_to_function(ctx, args[1]);
 
     app::AppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(ctx, credentials_object);
-
+    
     app->log_in_with_credentials(app_credentials, Function::wrap_callback_result_first(ctx, this_object, callback_function,
         [app] (ContextType ctx, SharedUser user) {
             REALM_ASSERT_RELEASE(user);
@@ -280,15 +281,37 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
 }
 
 template<typename T>
+void AppClass<T>::get_email_password_auth(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    return_value.set(EmailPasswordAuthClass<T>::create_instance(ctx, app));
+}
+
+template<typename T>
 void AppClass<T>::clear_app_cache(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
     args.validate_count(0);
     realm::app::App::clear_cached_apps();
 }
 
 template<typename T>
-void AppClass<T>::get_email_password_auth(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
-    return_value.set(EmailPasswordAuthClass<T>::create_instance(ctx, app));
+void AppClass<T>::get_app(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
+    auto app_id = Value::validated_to_string(ctx, args[0]);
+    if (auto app = app::App::get_cached_app(app_id)) {
+        return_value.set(AppClass<T>::create_instance(ctx, app));
+    }
+    else {
+        return_value.set(Value::from_null(ctx));
+    }
+}
+
+template<typename T>
+void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+    args.validate_count(1);
+    auto versions = Value::validated_to_object(ctx, args[0]);
+    AppClass<T>::package_version = Object::validated_get_string(ctx, versions, "packageVersion");
+    AppClass<T>::platform_context = Object::validated_get_string(ctx, versions, "platformContext");
+    AppClass<T>::platform_os = Object::validated_get_string(ctx, versions, "platformOs");
+    AppClass<T>::platform_version = Object::validated_get_string(ctx, versions, "platformVersion");
 }
 
 }

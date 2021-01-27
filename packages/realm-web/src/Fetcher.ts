@@ -76,7 +76,7 @@ export type UserContext = {
     /**
      * The currently active user.
      */
-    currentUser: User<object, object> | null;
+    currentUser: User<object, object, unknown> | null;
 };
 
 /**
@@ -113,7 +113,7 @@ export type AuthenticatedRequest<RequestBody> = {
     /**
      * The user issuing the request.
      */
-    user?: User<object, object>;
+    user?: User<object, object, unknown>;
 } & (RequestWithUrl<RequestBody> | RequestWithPath<RequestBody>);
 
 /**
@@ -153,7 +153,7 @@ export class Fetcher implements LocationUrlContext {
      * @returns An object containing the user's token as "Authorization" header or undefined if no user is given.
      */
     private static buildAuthorizationHeader(
-        user: User<object, object> | null,
+        user: User<object, object, unknown> | null,
         tokenType: TokenType,
     ): Headers {
         if (!user || tokenType === "none") {

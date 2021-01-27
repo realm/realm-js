@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import { Base64 } from "js-base64";
 
-import { Credentials, User, UserState, handleAuthRedirect } from "realm-web";
+import { Credentials, User, UserState } from "realm-web";
 
 import { createApp, INVALID_TOKEN, describeIf } from "./utils";
 
@@ -49,11 +49,25 @@ describe("User", () => {
         expect(typeof user.id).equals("string");
         expect(user.state).equals(UserState.Active);
         expect(user.state).equals("active");
+        expect(user.isLoggedIn).equals(true);
+    });
+
+    it("has a profile", async () => {
+        const app = createApp();
+        const credentials = Credentials.anonymous();
+        const user = await app.logIn(credentials);
         // Expect something of the user profile
-        expect(user.profile.type).equals("normal");
-        // TODO: expect(Array.isArray(user.profile.identities)).equals(true);
-        // TODO: expect(user.profile.identities.length).equals(1);
+        expect(typeof user.profile).equals("object");
         expect(user.profile.name).equals(undefined);
+        expect(Array.isArray(user.identities)).equals(true);
+        expect(user.identities.length).equals(1);
+    });
+
+    it("has custom data", async () => {
+        const app = createApp();
+        const credentials = Credentials.anonymous();
+        const user = await app.logIn(credentials);
+        // TODO: Add some data first ...
         expect(user.customData).deep.equals({});
     });
 

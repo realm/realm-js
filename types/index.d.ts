@@ -19,8 +19,9 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
-/// <reference path="./bson.d.ts"/>
 /// <reference path="./app.d.ts"/>
+
+type ObjectId = import("bson").ObjectId;
 
 declare namespace Realm {
     interface CollectionChangeSet {
@@ -444,6 +445,8 @@ declare namespace Realm {
          */
         const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
     }
+
+    const BSON: typeof import("bson");
 }
 
 interface ProgressPromise extends Promise<Realm> {
@@ -460,7 +463,7 @@ type ExtractPropertyNamesOfType<T, PropType> = {
 /**
  * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
  */
-type RealmOptionalParMappedModel<T> = {
+type RealmListsRemappedModelPart<T> = {
     [K in keyof T]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
 }
 
@@ -468,10 +471,9 @@ type RealmOptionalParMappedModel<T> = {
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
  * with only the keys which value extends Realm.List, remapped as Arrays.
  */
-//
-type RealmInsertionModel<T> =
-    Omit<Omit<T, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
-    & RealmOptionalParMappedModel<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
+type RealmInsertionModel<T> = 
+    Omit<Omit<Omit<T, ExtractPropertyNamesOfType<T, Function>>, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
+    & RealmListsRemappedModelPart<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
 
 declare class Realm {
     static defaultPath: string;
@@ -582,14 +584,14 @@ declare class Realm {
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string, key: number | string | Realm.ObjectId): (T & Realm.Object) | undefined;
+    objectForPrimaryKey<T>(type: string, key: number | string | ObjectId): (T & Realm.Object) | undefined;
 
     /**
      * @param  {Class} type
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | Realm.ObjectId): T | undefined;
+    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | ObjectId): T | undefined;
 
     /**
      * @param  {string} type

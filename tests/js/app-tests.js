@@ -143,13 +143,19 @@ module.exports = {
     },
 
     async testMongoDBRealmSync() {
+        const dogNames = ["King", "Rex"]; // must be sorted
+        let nCalls = 0;
         let app = new Realm.App(config);
 
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
         const partition = Utils.genPartition();
         const realmConfig = {
-            schema: [schemas.DogForSync],
+            schema: [schemas.PersonForSync, schemas.DogForSync],
+            shouldCompactOnLaunch: (t, u) => {
+                nCalls++;
+                return true;
+            },
             sync: {
                 user: user,
                 partitionValue: partition,
@@ -158,9 +164,20 @@ module.exports = {
         };
         Realm.deleteFile(realmConfig);
         let realm = await Realm.open(realmConfig);
+        TestCase.assertEqual(nCalls, 1);
         realm.write(() => {
-            realm.create("Dog", { "_id": new ObjectId(), name: "King" });
-            realm.create("Dog", { "_id": new ObjectId(), name: "King" });
+            let tmpDogs = [];
+            dogNames.forEach(n => {
+                let dog = realm.create("Dog", { "_id": new ObjectId(), name: n });
+                tmpDogs.push(dog);
+            });
+            realm.create("Person", {
+                "_id": new ObjectId(),
+                age: 12,
+                firstName: "John",
+                lastName: "Smith",
+                dogs: tmpDogs
+            });
         });
 
         await realm.syncSession.uploadAllLocalChanges();
@@ -170,9 +187,17 @@ module.exports = {
         Realm.deleteFile(realmConfig);
 
         let realm2 = await Realm.open(realmConfig);
+        TestCase.assertEqual(nCalls, 2);
         await realm2.syncSession.downloadAllServerChanges();
 
-        TestCase.assertEqual(realm2.objects("Dog").length, 2);
+        let dogs = realm2.objects("Dog").sorted("name");
+        TestCase.assertEqual(dogs.length, dogNames.length);
+        for (let i = 0; i < dogNames.length; i++) {
+            TestCase.assertEqual(dogs[i].name, dogNames[i]);
+        }
+        let persons = realm2.objects("Person");
+        TestCase.assertEqual(persons.length, 1);
+        TestCase.assertEqual(persons[0].dogs.length, dogNames.length);
         realm2.close();
         await user.logOut();
     },

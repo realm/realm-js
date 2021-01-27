@@ -3,17 +3,15 @@
 		"target": "es2018",
 		"module": "commonjs",
 		"moduleResolution": "node",
+		"esModuleInterop": true,
 		"resolveJsonModule": true,
 		"outDir": "dist",
 		"types": [
-			"node",
 			"realm",
+			"bson",
+			"buffer",
 			"mocha",
 			"chai"
-		],
-		"typeRoots": [
-			"types",
-			"node_modules/@types"
 		],
 		"noImplicitAny": true
 	},

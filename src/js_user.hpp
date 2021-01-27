@@ -224,7 +224,7 @@ void UserClass<T>::get_identities(ContextType ctx, ObjectType object, ReturnValu
     std::vector<ValueType> identity_objects;
     for (auto identity : identities) {
         auto identity_object = Object::create_empty(ctx);
-        Object::set_property(ctx, identity_object, "userId", Value::from_string(ctx, identity.id));
+        Object::set_property(ctx, identity_object, "id", Value::from_string(ctx, identity.id));
         Object::set_property(ctx, identity_object, "providerType", Value::from_string(ctx, identity.provider_type));
         identity_objects.push_back(identity_object);
     }

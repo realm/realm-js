@@ -195,9 +195,7 @@ class ObjectWrap {
 	static bool has_native_method(const std::string& name);
 
   private:
-    //These wrapper methods exists to force the compiler to initialize these class template static members in sequence before they are used
-	//https://stackoverflow.com/questions/42743048/c-template-the-static-member-in-a-global-object-is-not-initialized (https://stackoverflow.com/a/42743520)
-	static ClassType& get_class();
+	static auto& get_class();
 	static auto& get_nativeMethods();
 	static auto& get_schemaObjectTypes();
 	
@@ -267,9 +265,8 @@ static inline std::vector<napi_value> napi_get_arguments(const Napi::CallbackInf
 	return arguments;
 }
 
-//This forces initialization of the static member in sequence
 template<typename ClassType>
-inline ClassType& ObjectWrap<ClassType>::get_class() {
+inline auto& ObjectWrap<ClassType>::get_class() {
 	static ClassType s_class;
 	return s_class;
 }
@@ -896,7 +893,7 @@ static Napi::Value property_getter_callback(const Napi::CallbackInfo& info) {
 template<typename ClassType>
 Napi::Value ObjectWrap<ClassType>::property_getter(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	ClassType& s_class = get_class();
+	auto& s_class = get_class();
 	try {
 		auto propertyName = (node::String*)info.Data();
 		return s_class.string_accessor.getter(info, info.This().As<Napi::Object>(), propertyName->ToString(env));
@@ -910,7 +907,7 @@ Napi::Value ObjectWrap<ClassType>::property_getter(const Napi::CallbackInfo& inf
 template<typename ClassType>
 void ObjectWrap<ClassType>::property_setter(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	ClassType& s_class = get_class();
+	auto& s_class = get_class();
 	try {
 		auto propertyName = (node::String*)info.Data();
 		auto value = info[0];
@@ -923,7 +920,7 @@ void ObjectWrap<ClassType>::property_setter(const Napi::CallbackInfo& info) {
 
 template<typename ClassType>
 Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
-	ClassType& s_class = get_class();
+	auto& s_class = get_class();
 	Napi::Function ctor = init_class(env);
 	
 	//If the class has no index accessor we can create an instance of the class itself and can skip proxy objects
@@ -951,7 +948,7 @@ Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
 
 template<typename ClassType>
 Napi::Function ObjectWrap<ClassType>::init_class(Napi::Env env) {
-	ClassType& s_class = get_class();
+	auto& s_class = get_class();
 	//check if the constructor is already created. It means this class and it's parent are already initialized.
 	Napi::Function ctor = WrappedObject<ClassType>::get_constructor(env);
 	if (!ctor.IsNull()) {
@@ -1102,7 +1099,7 @@ template<typename ClassType>
 Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Napi::Function& constructor, const realm::ObjectSchema& schema, Internal* internal) {
 	Napi::EscapableHandleScope scope(env);
 	auto& s_schemaObjectTypes = get_schemaObjectTypes();
-	ClassType& s_class = get_class();
+	auto& s_class = get_class();
 
 	bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
 	if (!isRealmObjectClass) {
@@ -1308,7 +1305,7 @@ template<typename ClassType>
 Napi::Value ObjectWrap<ClassType>::constructor_callback(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	Napi::EscapableHandleScope scope(env);
-	ClassType& s_class = get_class();
+	auto& s_class = get_class();
 
 	if (reinterpret_cast<void*>(s_class.constructor) != nullptr) {
 		auto arguments = get_arguments(info);

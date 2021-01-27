@@ -91,7 +91,10 @@ describe("Credentials", () => {
             const credentials = Credentials.jwt(token);
             const user = await app.logIn(credentials);
             expect(user).to.be.instanceOf(User);
-            // TODO: Expect that we can read "some-secret-stuff" out of the accessToken
+            // Expect that we can read "some-secret-stuff" out of the profile
+            // NOTE: The mapping from mySecretField → secret is declared in the Realm App configuration
+            expect(Object.keys(user.profile)).deep.equals(["secret"]);
+            expect(user.profile.secret).equals("some-secret-stuff");
         });
     });
 
