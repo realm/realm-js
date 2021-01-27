@@ -18,17 +18,16 @@
 
 #pragma once
 #include <common/types.hpp>
-#include "realm/data_type.hpp"
 
 #include "napi.h"
+#include "realm/data_type.hpp"
 
 namespace realm {
 namespace js {
 
 struct TypeDeductionImpl {
     using Value = const Napi::Value;
-    static bool is_bson_type(Value& value, std::string type)
-    {
+    static bool is_bson_type(Value& value, std::string type) {
         if (!value.IsObject()) {
             return false;
         }
@@ -42,34 +41,30 @@ struct TypeDeductionImpl {
 
         return false;
     }
-    static bool is_decimal128(Value& value)
-    {
+    static bool is_decimal128(Value& value) {
         return TypeDeductionImpl::is_bson_type(value, "Decimal128");
     }
 
-    static bool is_object_id(Value& value)
-    {
+    static bool is_object_id(Value& value) {
         return TypeDeductionImpl::is_bson_type(value, "ObjectID");
     }
 
-    static std::string to_javascript(types::Type value)
-    {
+    static std::string to_javascript(types::Type value) {
         std::map<types::Type, std::string> realm_typeof = {
-            {types::String, "String"},     {types::Integer, "Int"},        {types::Float, "Float"},
-            {types::Double, "Double"},     {types::Decimal, "Decimal128"}, {types::Boolean, "Boolean"},
-            {types::ObjectId, "ObjectId"}, {types::Object, "Object"},
-        };
+            {types::String, "String"},      {types::Integer, "Int"},
+            {types::Float, "Float"},        {types::Double, "Double"},
+            {types::Decimal, "Decimal128"}, {types::Boolean, "Boolean"},
+            {types::ObjectId, "ObjectId"},  {types::Object, "Object"},
+            {types::Link, "Link"}};
         return realm_typeof[value];
     }
 
-    static types::Type from(DataType data_type)
-    {
+    static types::Type from(DataType data_type) {
         int realm_type = static_cast<int>(data_type);
         return static_cast<types::Type>(realm_type);
     }
 
-    static types::Type typeof(Value& value)
-    {
+    static types::Type typeof(Value& value) {
         if (value.IsNull()) {
             return types::Null;
         }
@@ -88,7 +83,8 @@ struct TypeDeductionImpl {
         if (value.IsUndefined()) {
             return types::Undefined;
         }
-        if (value.IsArrayBuffer() || value.IsTypedArray() || value.IsDataView()) {
+        if (value.IsArrayBuffer() || value.IsTypedArray() ||
+            value.IsDataView()) {
             return types::Binary;
         }
         if (TypeDeductionImpl::is_decimal128(value)) {
@@ -104,31 +100,16 @@ struct TypeDeductionImpl {
         return types::NotImplemented;
     }
 
-    static bool is_boolean(Value& value)
-    {
-        return value.IsBoolean();
-    }
+    static bool is_boolean(Value& value) { return value.IsBoolean(); }
 
-    static bool is_null(Value& value)
-    {
-        return value.IsNull();
-    }
+    static bool is_null(Value& value) { return value.IsNull(); }
 
-    static bool is_number(Value& value)
-    {
-        return value.IsNumber();
-    }
+    static bool is_number(Value& value) { return value.IsNumber(); }
 
-    static bool is_string(Value& value)
-    {
-        return value.IsString();
-    }
+    static bool is_string(Value& value) { return value.IsString(); }
 
-    static bool is_undefined(Value& value)
-    {
-        return value.IsUndefined();
-    }
+    static bool is_undefined(Value& value) { return value.IsUndefined(); }
 };
 
-} // namespace js
-} // namespace realm
+}  // namespace js
+}  // namespace realm

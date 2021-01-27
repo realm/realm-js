@@ -24,6 +24,7 @@
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
+#include "js_links.hpp"
 
 #if REALM_ENABLE_SYNC
 #include <realm/util/base64.hpp>
@@ -54,18 +55,20 @@ public:
     using OptionalValue = util::Optional<ValueType>;
 
     NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm, const ObjectSchema& object_schema)
-    : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(&object_schema) { }
+    : m_ctx(ctx), m_realm(std::move(realm)), link_object{realm, ctx}, m_object_schema(&object_schema) { }
 
     template<typename Collection>
     NativeAccessor(ContextType ctx, Collection const& collection)
     : m_ctx(ctx)
     , m_realm(collection.get_realm())
+    , link_object{collection.get_realm(), ctx}
     , m_object_schema(collection.get_type() == realm::PropertyType::Object ? &collection.get_object_schema() : nullptr)
     { }
 
     NativeAccessor(NativeAccessor& na, Obj parent, Property const& prop)
         : m_ctx(na.m_ctx)
         , m_realm(na.m_realm)
+        , link_object{na.m_realm, na.m_ctx}
         , m_parent(std::move(parent))
         , m_property(&prop)
         , m_object_schema(nullptr)
@@ -84,6 +87,7 @@ public:
     NativeAccessor(NativeAccessor& parent, const Property& prop)
 		: m_ctx(parent.m_ctx)
 		, m_realm(parent.m_realm)
+        , link_object{parent.m_realm, parent.m_ctx}
 		, m_object_schema(nullptr)
 	{
 		auto schema = m_realm->schema().find(prop.object_type);
@@ -247,6 +251,7 @@ public:
     const char *typeof(ValueType const& v) { return Value::typeof(m_ctx, v); }
 
 private:
+    LinkObject<JSEngine> link_object; 
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
     Obj m_parent;
@@ -421,33 +426,32 @@ struct Unbox<JSEngine, Timestamp> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Obj> {
-    static Obj call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
+    static Obj call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
+
         using Value = js::Value<JSEngine>;
         using ValueType = typename JSEngine::Value;
 
-        auto object = Value::validated_to_object(ctx->m_ctx, value);
-        if (js::Object<JSEngine>::template is_instance<RealmObjectClass<JSEngine>>(ctx->m_ctx, object)) {
-            auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(ctx->m_ctx, object);
-            if (realm_object->realm() == ctx->m_realm) {
-                return realm_object->obj();
-            }
+        auto link = native_accessor->link_object;
+        if(link.is_instance(value) && link.not_from_this_realm(policy)){
+            throw std::runtime_error("Realm object is from another Realm");
+        }
 
-            bool updating = policy.copy && policy.update;
-            if (!updating && !policy.create) {
-                throw std::runtime_error("Realm object is from another Realm");
-            }
+        if(link.is_instance(value)) {
+            return link.create(value); 
         }
 
         if (!policy.create) {
-            return Obj();
+            return link.create_empty();
         }
 
-        if (Value::is_array(ctx->m_ctx, object)) {
-            object = Schema<JSEngine>::dict_for_property_array(ctx->m_ctx, *ctx->m_object_schema, object);
+        auto object = Value::validated_to_object(native_accessor->m_ctx, value);
+        if (Value::is_array(native_accessor->m_ctx, object)) {
+            object = Schema<JSEngine>::dict_for_property_array(native_accessor->m_ctx, *native_accessor->m_object_schema, object);
         }
 
-        auto child = realm::Object::create<ValueType>(*ctx, ctx->m_realm, *ctx->m_object_schema,
-                                                      static_cast<ValueType>(object), policy, current_row);
+        auto child = realm::Object::create<ValueType>
+            (*native_accessor, native_accessor->m_realm, *native_accessor->m_object_schema,
+                    static_cast<ValueType>(object), policy, current_row);
         return child.obj();
     }
 };
