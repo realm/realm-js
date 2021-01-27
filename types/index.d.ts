@@ -344,9 +344,10 @@ declare namespace Realm {
     }
 
     interface ClientResetError {
-        name: string;
+        name: "ClientReset";
         path: string;
         config: SyncConfiguration;
+        readOnly: true;
     }
 
     type ErrorCallback = (session: App.Sync.Session, error: SyncError | ClientResetError) => void;
