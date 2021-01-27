@@ -164,7 +164,7 @@ stage('prepare integration tests') {
 stage('integration tests') {
   parallel(
     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
-    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
+    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) },
 
     'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
     'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
