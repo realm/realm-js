@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <common/mixed_type.hpp>
 #include <common/types.hpp>
 
 #include "js_realm_object.hpp"
@@ -74,6 +75,31 @@ struct LinkObject {
     }
 
     realm::Obj create_empty() { return realm::Obj(); }
+};
+
+template <typename T>
+class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
+   private:
+    using Context = typename T::Context;
+    using Value = typename T::Value;
+
+    std::shared_ptr<LinkObject<T>> link_object;
+
+   public:
+    MixedLink() {}
+
+    void set_link_object(std::shared_ptr<LinkObject<T>> link) {
+        link_object = link;
+    }
+
+    Mixed wrap(Context context, Value const& value) {
+        auto realm_object = link_object.create(value); 
+        return Mixed(realm_object);
+    }
+
+    Value unwrap(Context context, Mixed mixed) {
+        return link_object.to_javascript_value(mixed.get_link());
+    }
 };
 
 }  // namespace js

@@ -64,6 +64,7 @@ public:
     , m_object_schema(collection.get_type() == realm::PropertyType::Object ? &collection.get_object_schema() : nullptr)
     , link_object{collection.get_realm(), ctx}
     { 
+        register_mixed_plugins();
     }
 
     NativeAccessor(NativeAccessor& na, Obj parent, Property const& prop)
@@ -84,6 +85,7 @@ public:
         }
 
         link_object.set_schema(m_object_schema);
+        register_mixed_plugins();
     }
 
     NativeAccessor(NativeAccessor& parent, const Property& prop)
@@ -98,7 +100,14 @@ public:
 		}
 
         link_object.set_schema(m_object_schema);
+        register_mixed_plugins();
 	}
+
+    void register_mixed_plugins() {
+        auto mixed_manager = TypeMixed<JSEngine>::get_instance(); 
+        auto *n = new MixedLink<JSEngine>();
+        mixed_manager.register_strategy(types::Object,n);
+    }
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
@@ -133,9 +142,6 @@ public:
     util::Optional<T> unbox_optional(ValueType value) {
         return is_null(value) ? util::none : util::make_optional(unbox<T>(value));
     }
-
-    
-
 
     template<typename T>
     ValueType box(util::Optional<T> v) { return v ? box(*v) : null_value(); }
@@ -253,6 +259,7 @@ public:
 
 private:
     LinkObject<JSEngine> link_object; 
+    MixedLink<JSEngine> *mixed_link_strategy = nullptr; 
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
     Obj m_parent;

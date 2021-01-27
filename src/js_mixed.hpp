@@ -19,21 +19,14 @@
 #pragma once
 
 #include <map>
-#include <realm/mixed.hpp>
 #include <type_traits>
 
 #include <common/type_deduction.hpp>
+#include <common/mixed_type.hpp>
 #include <common/types.hpp>
 
 namespace realm {
 namespace js {
-
-template <typename Context, typename Value>
-class MixedWrapper {
-   public:
-    virtual Mixed wrap(Context, Value const &) = 0;
-    virtual Value unwrap(Context, Mixed) = 0;
-};
 
 template <typename Context, typename Value, typename Utils>
 class MixedString : public MixedWrapper<Context, Value> {
@@ -169,6 +162,10 @@ class TypeMixed {
     static TypeMixed &get_instance() {
         static TypeMixed<JavascriptEngine> instance;
         return instance;
+    }
+
+    void register_strategy(types::Type type, Strategy* strategy) {
+        //strategies.insert( std::pair<types::Type, Strategy*>(type, strategy));
     }
 
     Value wrap(Context context, Mixed mixed) {
