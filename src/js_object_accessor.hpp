@@ -55,24 +55,24 @@ public:
     using OptionalValue = util::Optional<ValueType>;
 
     NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm, const ObjectSchema& object_schema)
-    : m_ctx(ctx), m_realm(std::move(realm)), link_object{realm, ctx}, m_object_schema(&object_schema) { }
+    : m_ctx(ctx), m_realm(std::move(realm)), link_object(realm, ctx, &object_schema), m_object_schema(&object_schema) { }
 
     template<typename Collection>
     NativeAccessor(ContextType ctx, Collection const& collection)
     : m_ctx(ctx)
     , m_realm(collection.get_realm())
-    , link_object{collection.get_realm(), ctx}
     , m_object_schema(collection.get_type() == realm::PropertyType::Object ? &collection.get_object_schema() : nullptr)
-    { }
+    , link_object{collection.get_realm(), ctx}
+    { 
+    }
 
     NativeAccessor(NativeAccessor& na, Obj parent, Property const& prop)
         : m_ctx(na.m_ctx)
         , m_realm(na.m_realm)
-        , link_object{na.m_realm, na.m_ctx}
         , m_parent(std::move(parent))
         , m_property(&prop)
         , m_object_schema(nullptr)
-    {
+        , link_object{na.m_realm, na.m_ctx} {
         if (prop.type == realm::PropertyType::Object) {
             auto schema = m_realm->schema().find(prop.object_type);
             if (schema != m_realm->schema().end()) {
@@ -82,18 +82,22 @@ public:
         else {
             m_object_schema = na.m_object_schema;
         }
+
+        link_object.set_schema(m_object_schema);
     }
 
     NativeAccessor(NativeAccessor& parent, const Property& prop)
 		: m_ctx(parent.m_ctx)
 		, m_realm(parent.m_realm)
-        , link_object{parent.m_realm, parent.m_ctx}
 		, m_object_schema(nullptr)
+        , link_object{parent.m_realm, parent.m_ctx}
 	{
 		auto schema = m_realm->schema().find(prop.object_type);
 		if (schema != m_realm->schema().end()) {
 			m_object_schema = &*schema;
 		}
+
+        link_object.set_schema(m_object_schema);
 	}
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
@@ -157,10 +161,7 @@ public:
         return RealmObjectClass<JSEngine>::create_instance(m_ctx, std::move(realm_object));
     }
     ValueType box(Obj obj) {
-        if (!obj.is_valid()) {
-            return Value::from_null(m_ctx);
-        }
-        return RealmObjectClass<JSEngine>::create_instance(m_ctx, realm::Object(m_realm, *m_object_schema, obj));
+        return link_object.to_javascript_value(obj);
     }
     ValueType box(realm::List list) {
         return ListClass<JSEngine>::create_instance(m_ctx, std::move(list));

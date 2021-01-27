@@ -30,12 +30,19 @@ struct LinkObject {
     using Context = typename JavascriptEngine::Context;
     using Object = js::Object<JavascriptEngine>;
     using RealmClass = RealmObjectClass<JavascriptEngine>;
-    const ObjectSchema* schema;
+
+    const ObjectSchema* schema = nullptr;
     std::shared_ptr<Realm> realm;
     Context context;
 
     LinkObject(std::shared_ptr<Realm> _realm, Context ctx)
         : realm{_realm}, context{ctx} {}
+
+    LinkObject(std::shared_ptr<Realm> _realm, Context ctx,
+               const ObjectSchema* _schema)
+        : realm{_realm}, context{ctx}, schema{_schema} {}
+
+    void set_schema(const ObjectSchema* schm) { schema = schm; }
 
     realm::Obj create(ValueType value) {
         auto object = Value::validated_to_object(context, value);
@@ -51,9 +58,9 @@ struct LinkObject {
 
     ValueType to_javascript_value(realm::Obj realm_object) {
         if (!realm_object.is_valid()) {
-            return Value::from_null(m_ctx);
+            return Value::from_null(context);
         }
-        return RealmObjectClass<JSEngine>::create_instance(
+        return RealmClass::create_instance(
             context, realm::Object(realm, *schema, realm_object));
     }
 
