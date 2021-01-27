@@ -154,7 +154,7 @@ function acquire(desired, target) {
         .then(() => corePath && extract(corePath, target, desired.CORE_ARCHIVE_ROOT))
         .then(() => syncPath && download(desired.SYNC_SERVER_FOLDER, desired.SYNC_ARCHIVE, syncPath))
         .then(() => syncPath && extract(syncPath, target, desired.SYNC_ARCHIVE_ROOT))
-        .then(() => openSSLPath && download("openssl/1.1.1g/Linux/x86_64", "openssl.tgz", openSSLPath))
+        .then(() => openSSLPath && download(`openssl/${dependencies.OPENSSL_VERSION}/Linux/x86_64`, "openssl.tgz", openSSLPath))
         .then(() => openSSLPath && extract(openSSLPath, path.resolve(target, "openssl"), ""))
         .then(() => writeLockfile(target, desired))
 }
@@ -180,7 +180,7 @@ function getCoreRequirements(dependencies, options, required = {}) {
         case 'linux':
             const arch_string = options.arch == 'arm' ? '-armhf': '';
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Linux${arch_string}-devel.tar.gz`;
-            required.OPENSSL = "https://static.realm.io/downloads/openssl/1.1.1b/Linux/x86_64/openssl.tgz";
+            required.OPENSSL = true;
             return required;
         default:
             throw new Error(`Unsupported core platform '${options.platform}'`);
