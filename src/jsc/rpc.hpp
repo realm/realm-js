@@ -22,6 +22,7 @@
 #include <future>
 #include <thread>
 
+#include "jsc_init.hpp"
 #include "concurrent_deque.hpp"
 #include <external/json/json.hpp>
 #include "jsc_types.hpp"

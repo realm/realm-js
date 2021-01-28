@@ -54,7 +54,9 @@ class ReturnValue<jsc::Types> {
         m_value = JSValueMakeNumber(m_context, number);
     }
     void set(const util::Optional<realm::Mixed>& mixed) {
-        m_value = Value<jsc::Types>::from_mixed(m_context, mixed.value());
+        //FIXME: MIXED: fix for JSC
+        //m_value = Value<jsc::Types>::from_mixed(m_context, mixed.value());
+        throw std::runtime_error("Not implemented");
     }
     void set_null() {
         m_value = JSValueMakeNull(m_context);
