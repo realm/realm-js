@@ -302,6 +302,7 @@ module.exports = {
         realm.write(function() {
             object.dataCol = RANDOM_DATA.buffer;
         });
+        
         TestCase.assertArraysEqual(new Uint8Array(object.dataCol), RANDOM_DATA);
 
         if (Realm.App.Sync) {
@@ -317,6 +318,7 @@ module.exports = {
         realm.write(function() {
             object.dataCol = new DataView(RANDOM_DATA.buffer);
         });
+
         TestCase.assertArraysEqual(new Uint8Array(object.dataCol), RANDOM_DATA);
 
         // Test that a variety of size and slices of data still work.
@@ -332,10 +334,16 @@ module.exports = {
         ].forEach(function(range) {
             var array = RANDOM_DATA.subarray(range[0], range[1]);
             realm.write(function() {
-                // Use a partial "view" of the underlying ArrayBuffer.
-                object.dataCol = new Uint8Array(RANDOM_DATA.buffer, range[0], array.length);
+               // Use a partial "view" of the underlying ArrayBuffer.
+               if(array.length > 0){
+                    object.dataCol = new Uint8Array(RANDOM_DATA.buffer, range[0], array.length);
+               }
             });
-            TestCase.assertArraysEqual(new Uint8Array(object.dataCol), array, range.join('...'));
+
+            if(array.length > 0){
+                TestCase.assertArraysEqual(new Uint8Array(object.dataCol), array, range.join('...')); 
+            }
+
         });
 
         // Test other TypedArrays to make sure they all work for setting data properties.
@@ -355,6 +363,7 @@ module.exports = {
             });
             TestCase.assertArraysEqual(new TypedArray(object.dataCol), array, TypedArray.name);
         });
+
 
         realm.write(function() {
             TestCase.assertThrows(function() {

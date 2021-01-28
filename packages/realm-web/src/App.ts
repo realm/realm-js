@@ -274,7 +274,7 @@ export class App<
      * @returns An array of users active or loggedout users (current user being the first).
      */
     public get allUsers(): Readonly<
-        Record<string, Realm.User<FunctionsFactoryType, CustomDataType>>
+        Record<string, User<FunctionsFactoryType, CustomDataType>>
     > {
         // Returning a freezed copy of the list of users to prevent outside changes
         return Object.fromEntries(this.users.map(user => [user.id, user]));

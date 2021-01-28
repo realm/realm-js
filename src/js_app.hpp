@@ -59,8 +59,8 @@ public:
      * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network requests.
      * Exposed to allow other components (ex the RPCServer) to override the underlying implementation.
      */
-    static inline NetworkTransportFactory transport_generator = [] (ContextType ctx) {
-        return std::make_unique<NetworkTransport>(ctx);
+    static inline NetworkTransportFactory transport_generator = [] (ContextType ctx, typename NetworkTransport::Dispatcher eld) {
+        return std::make_unique<NetworkTransport>(ctx, std::move(eld));
     };
 
     // These values are overridden at runtime
@@ -114,9 +114,7 @@ public:
 
 template<typename T>
 inline typename T::Function AppClass<T>::create_constructor(ContextType ctx) {
-    FunctionType app_constructor = ObjectWrap<T, AppClass<T>>::create_constructor(ctx);
-    NetworkTransport::init(ctx);
-    return app_constructor;
+    return ObjectWrap<T, AppClass<T>>::create_constructor(ctx);
 }
 
 template<typename T>
@@ -183,8 +181,8 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         throw std::runtime_error("Expected either a configuration object or an app id string.");
     }
     
-    config.transport_generator = [ctx = Protected(Context::get_global_context(ctx))] {
-        return AppClass<T>::transport_generator(ctx);
+    config.transport_generator = [ctx = Protected(Context::get_global_context(ctx)), eld=NetworkTransport::make_dispatcher()] {
+        return AppClass<T>::transport_generator(ctx, eld);
     };
 
     config.platform = platform_os;
