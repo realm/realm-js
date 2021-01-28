@@ -26,38 +26,32 @@ namespace js {
 
 template <typename JavascriptEngine>
 struct LinkObject {
+private:
     using Value = js::Value<JavascriptEngine>;
     using ValueType = typename JavascriptEngine::Value;
     using Context = typename JavascriptEngine::Context;
     using Object = js::Object<JavascriptEngine>;
     using RealmClass = RealmObjectClass<JavascriptEngine>;
 
-    const ObjectSchema* schema = nullptr;
     std::shared_ptr<Realm> realm;
     Context context;
 
+    /* Nothing to do with realm::Obj, this one is from realm-core */
+    realm::Object* into_realm_object(ValueType value) {
+        auto object = Value::validated_to_object(context, value);
+        return get_internal<JavascriptEngine, RealmClass>(context, object);
+    }
+
+public:
     LinkObject(std::shared_ptr<Realm> _realm, Context ctx)
         : realm{_realm}, context{ctx} {}
 
-    LinkObject(std::shared_ptr<Realm> _realm, Context ctx,
-               const ObjectSchema* _schema)
-        : realm{_realm}, context{ctx}, schema{_schema} {}
-
-    void set_schema(const ObjectSchema* schm) { schema = schm; }
-
     realm::Obj create(ValueType value) {
-        auto object = Value::validated_to_object(context, value);
-        auto realm_object =
-            get_internal<JavascriptEngine, RealmClass>(context, object);
-
-        if (realm_object->realm() != realm) {
-            throw std::runtime_error("Realm object is from another Realm");
-        }
-
+        auto realm_object = into_realm_object(value);
         return realm_object->obj();
     }
 
-    ValueType to_javascript_value(realm::Obj realm_object) {
+    ValueType to_javascript_value(realm::Obj realm_object, const realm::ObjectSchema *schema) {
         if (!realm_object.is_valid()) {
             return Value::from_null(context);
         }
@@ -65,12 +59,23 @@ struct LinkObject {
             context, realm::Object(realm, *schema, realm_object));
     }
 
+    ValueType to_javascript_value(realm::ObjLink link) {
+        realm::Object realm_object(realm, link);
+        return RealmClass::create_instance(context, realm_object);
+    }
+
     bool is_instance(ValueType value) {
         auto object = Value::validated_to_object(context, value);
         return Object::template is_instance<RealmClass>(context, object);
     }
 
-    bool not_from_this_realm(realm::CreatePolicy policy) {
+    bool belongs_to_realm(ValueType value){
+        auto realm_object = into_realm_object(value);
+        return realm_object->realm() == realm;
+    }
+
+    template <typename Policies>
+    bool is_read_only(Policies policy) {
         return !policy.copy && !policy.update && !policy.create;
     }
 
@@ -83,22 +88,18 @@ class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
     using Context = typename T::Context;
     using Value = typename T::Value;
 
-    std::shared_ptr<LinkObject<T>> link_object;
+    LinkObject<T> *link_object = nullptr;
 
    public:
-    MixedLink() {}
-
-    void set_link_object(std::shared_ptr<LinkObject<T>> link) {
-        link_object = link;
-    }
+    MixedLink(LinkObject<T> *link): link_object{link} {}
 
     Mixed wrap(Context context, Value const& value) {
-        auto realm_object = link_object.create(value); 
+        auto realm_object = link_object->create(value);
         return Mixed(realm_object);
     }
 
     Value unwrap(Context context, Mixed mixed) {
-        return link_object.to_javascript_value(mixed.get_link());
+        return link_object->to_javascript_value(mixed.get_link());
     }
 };
 

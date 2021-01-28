@@ -59,7 +59,7 @@ struct TypeDeductionImpl {
         return realm_typeof[value];
     }
 
-    static types::Type from(DataType data_type) {
+    static types::Type typeof(DataType data_type) {
         int realm_type = static_cast<int>(data_type);
         return static_cast<types::Type>(realm_type);
     }

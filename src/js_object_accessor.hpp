@@ -55,7 +55,7 @@ public:
     using OptionalValue = util::Optional<ValueType>;
 
     NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm, const ObjectSchema& object_schema)
-    : m_ctx(ctx), m_realm(std::move(realm)), link_object(realm, ctx, &object_schema), m_object_schema(&object_schema) { }
+    : m_ctx(ctx), m_realm(std::move(realm)), link_object(realm, ctx), m_object_schema(&object_schema) { }
 
     template<typename Collection>
     NativeAccessor(ContextType ctx, Collection const& collection)
@@ -84,7 +84,6 @@ public:
             m_object_schema = na.m_object_schema;
         }
 
-        link_object.set_schema(m_object_schema);
         register_mixed_plugins();
     }
 
@@ -99,14 +98,12 @@ public:
 			m_object_schema = &*schema;
 		}
 
-        link_object.set_schema(m_object_schema);
         register_mixed_plugins();
 	}
 
     void register_mixed_plugins() {
-        auto mixed_manager = TypeMixed<JSEngine>::get_instance(); 
-        auto *n = new MixedLink<JSEngine>();
-        mixed_manager.register_strategy(types::Object,n);
+        TypeMixed<JSEngine>::get_instance()
+            .register_strategy(types::Object, new MixedLink<JSEngine>{&link_object});
     }
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
@@ -167,7 +164,7 @@ public:
         return RealmObjectClass<JSEngine>::create_instance(m_ctx, std::move(realm_object));
     }
     ValueType box(Obj obj) {
-        return link_object.to_javascript_value(obj);
+        return link_object.to_javascript_value(obj, m_object_schema);
     }
     ValueType box(realm::List list) {
         return ListClass<JSEngine>::create_instance(m_ctx, std::move(list));
@@ -435,17 +432,20 @@ struct Unbox<JSEngine, Timestamp> {
 template<typename JSEngine>
 struct Unbox<JSEngine, Obj> {
     static Obj call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
-
         using Value = js::Value<JSEngine>;
         using ValueType = typename JSEngine::Value;
 
         auto link = native_accessor->link_object;
-        if(link.is_instance(value) && link.not_from_this_realm(policy)){
-            throw std::runtime_error("Realm object is from another Realm");
+        auto is_instance = link.is_instance(value);
+        auto belongs_to_realm = link.belongs_to_realm(value);
+        auto read_only = link.template is_read_only(policy);
+
+        if(is_instance && belongs_to_realm){
+            return link.create(value);
         }
 
-        if(link.is_instance(value)) {
-            return link.create(value); 
+        if(is_instance && !belongs_to_realm && read_only){
+            throw std::runtime_error("Realm object is from another Realm");
         }
 
         if (!policy.create) {

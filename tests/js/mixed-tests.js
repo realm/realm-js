@@ -22,8 +22,10 @@ const Realm = require('realm');
 let TestCase = require('./asserts');
 let {Decimal128, ObjectId} = require('bson')
 
+
+
 const SingleSchema = {
-    name: 'Mixed',
+    name: 'mixed',
     properties: {
         a: 'mixed',
         b: 'mixed',
@@ -81,6 +83,66 @@ module.exports = {
 
         realm.write(()=>  data.a = undefined   )
         TestCase.assertEqual(data.a, null, 'Should be the same null');
+    },
+
+    testMixedRelationalCapabilities() {
+        const VertexSchema = {
+            name: 'Vertex',
+            properties: {
+                a: 'int',
+                b: 'int',
+                c: 'int'
+            }
+        }
+
+        const MixNestedSchema = {
+            name: 'Nested',
+            properties: {
+                a: 'mixed',
+                b: 'mixed',
+                c: 'mixed'
+            }
+        }
+
+
+
+        let realm = new Realm({schema: [SingleSchema, VertexSchema, MixNestedSchema]})
+   
+        realm.write(() => {
+           let r =  realm.create(VertexSchema.name,{a:1, b: 0,  c: 0})
+           let r2 = realm.create(VertexSchema.name,{a:0, b: 1,  c: 0})
+           let r3 = realm.create(VertexSchema.name,{a:0, b: 0,  c: 1})
+
+           realm.create(SingleSchema.name, { a: r, b: r2, c: r3 } ) 
+        })
+
+        let data = realm.objects(SingleSchema.name)[0]
+        TestCase.assertEqual(data.a.a, 1, 'Should be equal 1');
+        TestCase.assertEqual(data.a.b, 0, 'Should be equal 0');
+        TestCase.assertEqual(data.a.c, 0, 'Should be equal 0');
+
+        TestCase.assertEqual(data.b.a, 0, 'Should be equal 0');
+        TestCase.assertEqual(data.b.b, 1, 'Should be equal 1');
+        TestCase.assertEqual(data.b.c, 0, 'Should be equal 0');
+
+        TestCase.assertEqual(data.c.a, 0, 'Should be equal 0');
+        TestCase.assertEqual(data.c.b, 0, 'Should be equal 0');
+        TestCase.assertEqual(data.c.c, 1, 'Should be equal 1');
+
+        realm.write(() => {
+           let r =  realm.create(MixNestedSchema.name,{a:0, b: -1})
+           let r1 = realm.create(MixNestedSchema.name,{a:1, b: 0})
+           realm.create(SingleSchema.name, { a: r, b: r1 } ) 
+        })
+
+        data = realm.objects(SingleSchema.name)[1]
+
+        TestCase.assertEqual(data.a.a,  0, 'Should be equal 0');
+        TestCase.assertEqual(data.a.b, -1, 'Should be equal -1');
+
+        TestCase.assertEqual(data.b.a, 1, 'Should be equal 1');
+        TestCase.assertEqual(data.b.b, 0, 'Should be equal 0');
+        console.log('???')
     },
 
     testMixedWrongType() {

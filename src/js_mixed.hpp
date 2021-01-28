@@ -134,7 +134,7 @@ class TypeMixed {
     using Context = typename JavascriptEngine::Context;
     using Value = typename JavascriptEngine::Value;
     using Utils = js::Value<JavascriptEngine>;
-    using Strategy = MixedWrapper<Context, Value> *;
+    using Strategy = MixedWrapper<Context, Value>;
 
     /*
         This table acts as a global hashmap, 
@@ -142,7 +142,7 @@ class TypeMixed {
 
         All these pointer will be deallocated when the process exits. 
     */
-    std::map<types::Type, Strategy> strategies = {
+    std::map<types::Type, Strategy *> strategies = {
         {types::String, new MixedString<Context, Value, Utils>},
         {types::Integer, new MixedNumber<Context, Value, Utils, Int>},
         {types::Float, new MixedNumber<Context, Value, Utils, Float>},
@@ -154,8 +154,6 @@ class TypeMixed {
         {types::Timestamp, new MixedTimeStamp<Context, Value, Utils>},
     };
 
-    Strategy get_strategy(types::Type type) { return strategies[type]; }
-
     TypeMixed() {}
 
    public:
@@ -165,12 +163,12 @@ class TypeMixed {
     }
 
     void register_strategy(types::Type type, Strategy* strategy) {
-        //strategies.insert( std::pair<types::Type, Strategy*>(type, strategy));
+        strategies.insert( std::pair<types::Type, Strategy*>(type, strategy));
     }
 
     Value wrap(Context context, Mixed mixed) {
-        auto rjs_type = TypeDeduction::from(mixed.get_type());
-        auto strategy = get_strategy(rjs_type);
+        auto rjs_type = TypeDeduction::typeof(mixed.get_type());
+        auto *strategy = strategies[rjs_type];
 
         if (strategy == nullptr) {
             throw std::runtime_error(
@@ -182,7 +180,7 @@ class TypeMixed {
 
     Mixed unwrap(Context context, Value const &js_value) {
         auto type = TypeDeduction::typeof(js_value);
-        auto strategy = get_strategy(type);
+        auto *strategy = strategies[type];
 
         if (strategy == nullptr) {
             throw std::runtime_error(

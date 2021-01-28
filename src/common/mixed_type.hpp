@@ -17,37 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <realm/mixed.hpp>
 
 namespace realm {
 namespace js {
-namespace types {
 
-/*
- * Common idiom that covers Realm and JavaScript.
- */
-
-enum Type {
-    NotImplemented = -100,
-    Object = 16,    // We translate TypedLink -> Object <js>
-    Undefined = -2,
-    Null = -1,
-    Integer = 0,
-    Boolean = 1,
-    String = 2,
-    Binary = 4,
-    Mixed = 6,
-    Timestamp = 8,
-    Float = 9,
-    Double = 10,
-    Decimal = 11,
-    Link = 12,
-    LinkList = 13,
-    ObjectId = 15,
-  //  TypedLink = 16,
-    UUID = 17,
+template <typename Context, typename Value>
+class MixedWrapper {
+   public:
+    virtual Mixed wrap(Context, Value const &) = 0;
+    virtual Value unwrap(Context, Mixed) = 0;
 };
 
-
-} // namespace types
 } // namespace js
 } // namespace realm
