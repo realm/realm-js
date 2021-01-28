@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Adding Mixed types [#3389](https://github.com/realm/realm-js/issues/3389).
+* Adding Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
