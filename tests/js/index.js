@@ -46,6 +46,7 @@ var TESTS = {
     AliasTests: require("./alias-tests"),
     BsonTests: require("./bson-tests"),
     // Garbagecollectiontests: require('./garbage-collection'),
+    ArrayBuffer: require("./array-buffer-tests")
 };
 
 //FIXME: MIXED: fix for JSC

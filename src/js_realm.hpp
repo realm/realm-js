@@ -924,7 +924,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         if (error) {
             try {
                 std::rethrow_exception(error);
-            } catch (const std::system_error& e) {
+            } catch (const std::exception& e) {
                 ObjectType object = Object::create_empty(protected_ctx);
                 Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
                 Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));

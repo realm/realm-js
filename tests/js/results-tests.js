@@ -273,9 +273,9 @@ module.exports = {
         }
 
         realm.write(function() {
-            realm.create('BasicTypesObject', [false, 0, 0, 0, '0', new Date(0), new ArrayBuffer(), decimals[0], oids[0]]);
-            realm.create('BasicTypesObject', [true, 2, 2, 2, '2', new Date(2), new ArrayBuffer(), decimals[2], oids[2]]);
-            realm.create('BasicTypesObject', [false, 1, 1, 1, '1', new Date(1), new ArrayBuffer(), decimals[1], oids[1]]);
+            realm.create('BasicTypesObject', [false, 0, 0, 0, '0', new Date(0), new ArrayBuffer(1), decimals[0], oids[0]]);
+            realm.create('BasicTypesObject', [true, 2, 2, 2, '2', new Date(2), new ArrayBuffer(1), decimals[2], oids[2]]);
+            realm.create('BasicTypesObject', [false, 1, 1, 1, '1', new Date(1), new ArrayBuffer(1), decimals[1], oids[1]]);
         });
 
         var numberProps = ['intCol', 'floatCol', 'doubleCol', 'stringCol'];
