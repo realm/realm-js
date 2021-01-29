@@ -30,6 +30,7 @@ import {
     SENDING_JSON_HEADERS,
     DEFAULT_AUTH_OPTIONS,
 } from "./utils";
+import { INVALID_SESSION_ERROR } from "./utils/errors";
 
 // Since responses from the server uses underscores in field names:
 /* eslint @typescript-eslint/camelcase: "warn" */
@@ -101,13 +102,7 @@ describe("User", () => {
     it("will forget tokens if session delete fails", async () => {
         const app = new MockApp("my-mocked-app", [
             LOCATION_RESPONSE,
-            new MongoDBRealmError(
-                "POST",
-                "http://localhost:1337/some-path",
-                401,
-                "",
-                "invalid session",
-            ),
+            INVALID_SESSION_ERROR,
         ]);
         const user = new User({
             app,
@@ -124,6 +119,30 @@ describe("User", () => {
             expect(err).instanceOf(MongoDBRealmError);
         }
         // Expect the user to forget tokens anyway
+        expect(user.accessToken).equals(null);
+        expect(user.refreshToken).equals(null);
+    });
+
+    it("will forget tokens if access token refresh fails", async () => {
+        const app = new MockApp("my-mocked-app", [
+            LOCATION_RESPONSE,
+            INVALID_SESSION_ERROR,
+        ]);
+        const user = new User({
+            app,
+            id: "some-user-id",
+            accessToken: "deadbeef",
+            refreshToken: "very-refreshing",
+            providerType: "anon-user",
+        });
+        // Refresh the access token
+        try {
+            await user.refreshAccessToken();
+            expect.fail("Log out should fail");
+        } catch (err) {
+            expect(err).instanceOf(MongoDBRealmError);
+        }
+        // Expect the user to forget tokens to prevent a lock
         expect(user.accessToken).equals(null);
         expect(user.refreshToken).equals(null);
     });
@@ -152,6 +171,25 @@ describe("User", () => {
         // Refresh the profile and expect a firstName
         await user.refreshProfile();
         expect(user.profile).deep.equals({ firstName: "John" });
+    });
+
+    it("can refresh access token", async () => {
+        const user = new User({
+            app: new MockApp("my-mocked-app", [
+                LOCATION_RESPONSE,
+                {
+                    user_id: "some-user-id",
+                    access_token: "second-access-token",
+                },
+            ]),
+            id: "some-user-id",
+            accessToken: "first-access-token",
+            refreshToken: "very-refreshing",
+            providerType: "anon-user",
+        });
+        // Refresh the profile and expect a firstName
+        await user.refreshAccessToken();
+        expect(user.accessToken).equals("second-access-token");
     });
 
     it("exposes custom data", async () => {

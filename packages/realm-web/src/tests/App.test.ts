@@ -30,6 +30,7 @@ import {
     MockApp,
     MockNetworkTransport,
 } from "./utils";
+import { INVALID_SESSION_ERROR } from "./utils/errors";
 
 /* eslint-disable @typescript-eslint/camelcase */
 
@@ -437,13 +438,6 @@ describe("App", () => {
     });
 
     it("refresh access token upon an 'invalid session' (401) response", async () => {
-        const invalidSessionError = new MongoDBRealmError(
-            "POST",
-            "http://localhost:1337/some-path",
-            401,
-            "",
-            "invalid session",
-        );
         const app = new MockApp("my-mocked-app", [
             LOCATION_RESPONSE,
             {
@@ -451,7 +445,7 @@ describe("App", () => {
                 access_token: "first-access-token",
                 refresh_token: "very-refreshing",
             },
-            invalidSessionError,
+            INVALID_SESSION_ERROR,
             {
                 user_id: "bobs-id",
                 access_token: "second-access-token",
@@ -511,13 +505,6 @@ describe("App", () => {
     });
 
     it("attempts to refresh access token, retries request exacly once, upon an 'invalid session' (401) response", async () => {
-        const invalidSessionError = new MongoDBRealmError(
-            "POST",
-            "http://localhost:1337/some-path",
-            401,
-            "",
-            "invalid session",
-        );
         const app = new MockApp("my-mocked-app", [
             LOCATION_RESPONSE,
             {
@@ -525,9 +512,8 @@ describe("App", () => {
                 access_token: "first-access-token",
                 refresh_token: "very-refreshing",
             },
-            invalidSessionError,
-            invalidSessionError,
-            invalidSessionError,
+            INVALID_SESSION_ERROR,
+            INVALID_SESSION_ERROR,
         ]);
         // Login with an anonymous user
         const credentials = Credentials.anonymous();
@@ -540,8 +526,7 @@ describe("App", () => {
             expect(err).instanceOf(MongoDBRealmError);
             if (err instanceof MongoDBRealmError) {
                 expect(err.message).equals(
-                    // The last failure is from failing to delete the session at logout
-                    "Request failed (DELETE http://localhost:1337/api/client/v2.0/auth/session): invalid session (status 401)",
+                    "Request failed (POST http://localhost:1337/api/client/v2.0/auth/session): invalid session (status 401)",
                 );
             }
         }
@@ -571,14 +556,6 @@ describe("App", () => {
             },
             {
                 method: "POST",
-                url: "http://localhost:1337/api/client/v2.0/auth/session",
-                headers: {
-                    ...ACCEPT_JSON_HEADERS,
-                    Authorization: "Bearer very-refreshing",
-                },
-            },
-            {
-                method: "DELETE",
                 url: "http://localhost:1337/api/client/v2.0/auth/session",
                 headers: {
                     ...ACCEPT_JSON_HEADERS,

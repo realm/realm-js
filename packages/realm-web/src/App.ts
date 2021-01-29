@@ -173,7 +173,15 @@ export class App<
             () => this.deviceInformation,
         );
         // Hydrate the app state from storage
-        this.hydrate();
+        try {
+            this.hydrate();
+        } catch (err) {
+            // The storage was corrupted
+            this.storage.clear();
+            // A failed hydration shouldn't throw and break the app experience
+            // Since this is "just" persisted state that unfortunately got corrupted or partially lost
+            console.warn("Realm app hydration failed:", err.message);
+        }
     }
 
     /**
@@ -366,13 +374,7 @@ export class App<
      * Restores the state of the app (active and logged-out users) from the storage
      */
     private hydrate() {
-        try {
-            const userIds = this.storage.getUserIds();
-            this.users = userIds.map(id => new User({ app: this, id }));
-        } catch (err) {
-            // The storage was corrupted
-            this.storage.clear();
-            throw err;
-        }
+        const userIds = this.storage.getUserIds();
+        this.users = userIds.map(id => new User({ app: this, id }));
     }
 }
