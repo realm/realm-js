@@ -24,6 +24,9 @@ var schemas = require('./schemas');
 var Decimal128 = require('bson').Decimal128;
 var ObjectId = require('bson').ObjectId;
 
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
+
 module.exports = {
     testResultsConstructor: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
@@ -498,6 +501,11 @@ module.exports = {
     },
 
     testResultsAggregateFunctions: function() {
+        //FIXME: MIXED: fix for JSC
+        if (!isNodeProcess && !isElectronProcess) {
+            return;
+        }
+
         var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
         const N = 50;
         realm.write(() => {
@@ -528,6 +536,11 @@ module.exports = {
     },
 
     testResultsAggregateFunctionsWithNullColumnValues: function() {
+        //FIXME: MIXED: fix for JSC
+        if (!isNodeProcess && !isElectronProcess) {
+            return;
+        }
+
         var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
 
         const N = 50;

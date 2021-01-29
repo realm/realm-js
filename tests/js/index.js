@@ -45,9 +45,13 @@ var TESTS = {
     EncryptionTests: require("./encryption-tests"),
     AliasTests: require("./alias-tests"),
     BsonTests: require("./bson-tests"),
-    MixedTests: require("./mixed-tests"),
     // Garbagecollectiontests: require('./garbage-collection'),
 };
+
+//FIXME: MIXED: fix for JSC
+if (isNodeProcess || isElectronProcess) {
+    TESTS.MixedTests= node_require("./mixed-tests");
+}
 
 //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
 if (isNodeProcess) {
