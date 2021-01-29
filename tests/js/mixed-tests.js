@@ -142,15 +142,18 @@ module.exports = {
 
         TestCase.assertEqual(data.b.a, 1, 'Should be equal 1');
         TestCase.assertEqual(data.b.b, 0, 'Should be equal 0');
-        console.log('???')
     },
 
     testMixedWrongType() {
         let realm = new Realm({schema: [SingleSchema]});
 
         TestCase.assertThrowsException(
-            () => realm.write(()=> realm.create(SingleSchema.name, { a: Object.create({}) }  ) ), 
-            new Error('Mixed conversion not possible for type: Object') )
+            () => realm.write(()=> realm.create(SingleSchema.name, { a: Object.create({}) }  ) ),
+            new Error('Only Realm objects are supported.') )
+
+        TestCase.assertThrowsException(
+            () => realm.write(()=> realm.create(SingleSchema.name, { a: [] }  ) ),
+            new Error('Only Realm objects are supported.') )
     }
 }
 

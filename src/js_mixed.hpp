@@ -162,6 +162,10 @@ class TypeMixed {
         return instance;
     }
 
+    void unregister(types::Type type) {
+        strategies.erase(type);
+    }
+
     void register_strategy(types::Type type, Strategy* strategy) {
         strategies.insert( std::pair<types::Type, Strategy*>(type, strategy));
     }

@@ -55,16 +55,17 @@ public:
     using OptionalValue = util::Optional<ValueType>;
 
     NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm, const ObjectSchema& object_schema)
-    : m_ctx(ctx), m_realm(std::move(realm)), link_object(realm, ctx), m_object_schema(&object_schema) { }
+    : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(&object_schema) {
+        register_plugins();
+    }
 
     template<typename Collection>
     NativeAccessor(ContextType ctx, Collection const& collection)
     : m_ctx(ctx)
     , m_realm(collection.get_realm())
     , m_object_schema(collection.get_type() == realm::PropertyType::Object ? &collection.get_object_schema() : nullptr)
-    , link_object{collection.get_realm(), ctx}
-    { 
-        register_mixed_plugins();
+    {
+        register_plugins();
     }
 
     NativeAccessor(NativeAccessor& na, Obj parent, Property const& prop)
@@ -72,8 +73,7 @@ public:
         , m_realm(na.m_realm)
         , m_parent(std::move(parent))
         , m_property(&prop)
-        , m_object_schema(nullptr)
-        , link_object{na.m_realm, na.m_ctx} {
+        , m_object_schema(nullptr) {
         if (prop.type == realm::PropertyType::Object) {
             auto schema = m_realm->schema().find(prop.object_type);
             if (schema != m_realm->schema().end()) {
@@ -84,26 +84,28 @@ public:
             m_object_schema = na.m_object_schema;
         }
 
-        register_mixed_plugins();
+        register_plugins();
     }
 
     NativeAccessor(NativeAccessor& parent, const Property& prop)
 		: m_ctx(parent.m_ctx)
 		, m_realm(parent.m_realm)
 		, m_object_schema(nullptr)
-        , link_object{parent.m_realm, parent.m_ctx}
 	{
 		auto schema = m_realm->schema().find(prop.object_type);
 		if (schema != m_realm->schema().end()) {
 			m_object_schema = &*schema;
 		}
 
-        register_mixed_plugins();
+        register_plugins();
 	}
 
-    void register_mixed_plugins() {
-        TypeMixed<JSEngine>::get_instance()
-            .register_strategy(types::Object, new MixedLink<JSEngine>{&link_object});
+    void register_plugins() {
+        MixedLink<JSEngine>::add_strategy(m_realm);
+    }
+
+    ~NativeAccessor() {
+        MixedLink<JSEngine>::remove_strategy();
     }
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
@@ -164,7 +166,10 @@ public:
         return RealmObjectClass<JSEngine>::create_instance(m_ctx, std::move(realm_object));
     }
     ValueType box(Obj obj) {
-        return link_object.to_javascript_value(obj, m_object_schema);
+        if (!obj.is_valid()) {
+            return Value::from_null(m_ctx);
+        }
+        return RealmObjectClass<JSEngine>::create_instance(m_ctx, realm::Object(m_realm, *m_object_schema, obj));
     }
     ValueType box(realm::List list) {
         return ListClass<JSEngine>::create_instance(m_ctx, std::move(list));
@@ -255,8 +260,6 @@ public:
     const char *typeof(ValueType const& v) { return Value::typeof(m_ctx, v); }
 
 private:
-    LinkObject<JSEngine> link_object; 
-    MixedLink<JSEngine> *mixed_link_strategy = nullptr; 
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
     Obj m_parent;
@@ -435,21 +438,19 @@ struct Unbox<JSEngine, Obj> {
         using Value = js::Value<JSEngine>;
         using ValueType = typename JSEngine::Value;
 
-        auto link = native_accessor->link_object;
-        auto is_instance = link.is_instance(value);
-        auto belongs_to_realm = link.belongs_to_realm(value);
-        auto read_only = link.template is_read_only(policy);
+        RealmLink<JSEngine> realm_link {native_accessor->m_ctx, value};
+        auto current_realm = native_accessor->m_realm;
 
-        if(is_instance && belongs_to_realm){
-            return link.create(value);
+        if(realm_link.belongs_to_realm(current_realm)){
+            return realm_link.get_realm_object();
         }
 
-        if(is_instance && !belongs_to_realm && read_only){
+        if(!realm_link.belongs_to_realm(current_realm) && realm_link.is_read_only(policy)){
             throw std::runtime_error("Realm object is from another Realm");
         }
 
         if (!policy.create) {
-            return link.create_empty();
+            return Obj();
         }
 
         auto object = Value::validated_to_object(native_accessor->m_ctx, value);
