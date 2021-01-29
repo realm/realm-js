@@ -130,10 +130,7 @@ module.exports = {
         SingleSchema.properties.a = 'data?'
         let realm = new Realm({schema: [SingleSchema]})
 
-        //should not throw.
-        realm.write(()=> realm.create(SingleSchema.name, { a:new ArrayBuffer() } ))
-
-       // TestCase.assertThrowsException(() => realm.write(()=> realm.create(SingleSchema.name, { a:new ArrayBuffer() } )), new Error("A non-empty ArrayBuffer, BufferView or Buffer is expected.") )
+        realm.write(()=> realm.create(SingleSchema.name, { a: new ArrayBuffer() } ));
     },
 
 
