@@ -445,7 +445,7 @@ struct Unbox<JSEngine, Obj> {
             return realm_link.get_realm_object();
         }
 
-        if(!realm_link.belongs_to_realm(current_realm) && realm_link.is_read_only(policy)){
+        if(realm_link.is_instance() && realm_link.is_read_only(policy)){
             throw std::runtime_error("Realm object is from another Realm");
         }
 
