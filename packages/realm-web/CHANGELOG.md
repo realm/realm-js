@@ -1,3 +1,19 @@
+?.?.? Release notes (2020-??-??)
+=============================================================
+
+### Breaking Changes
+* None
+
+### Enhancements
+* None
+
+### Fixed
+* Fixed failures while hydrating an app, such that  ([#3549](https://github.com/realm/realm-js/pull/3549))
+* Fixed a lock happening if refresh access token or custom user data resulted failed. Tokens is now forgotten any request using the refresh token results in a 401 response. ([#3549](https://github.com/realm/realm-js/pull/3549))
+
+### Internal
+* None
+
 1.2.0 Release notes (2021-01-11)
 =============================================================
 
