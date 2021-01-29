@@ -170,7 +170,9 @@ stage('integration tests') {
     'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
 
     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
-    'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
+    
+    //TODO: uncomment when RN iOS build with cmake is ready
+    // 'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
   )
 }
 
