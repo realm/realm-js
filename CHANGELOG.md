@@ -13,7 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Added metrics migration to webhooks.
 
 10.1.4 Release notes (2021-1-27)
 =============================================================
