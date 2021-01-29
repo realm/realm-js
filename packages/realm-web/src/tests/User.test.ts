@@ -29,8 +29,8 @@ import {
     ACCEPT_JSON_HEADERS,
     SENDING_JSON_HEADERS,
     DEFAULT_AUTH_OPTIONS,
+    INVALID_SESSION_ERROR,
 } from "./utils";
-import { INVALID_SESSION_ERROR } from "./utils/errors";
 
 // Since responses from the server uses underscores in field names:
 /* eslint @typescript-eslint/camelcase: "warn" */

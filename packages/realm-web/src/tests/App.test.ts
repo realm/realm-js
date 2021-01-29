@@ -27,10 +27,10 @@ import {
     LOCATION_RESPONSE,
     LOCATION_REQUEST,
     DEFAULT_AUTH_OPTIONS,
+    INVALID_SESSION_ERROR,
     MockApp,
     MockNetworkTransport,
 } from "./utils";
-import { INVALID_SESSION_ERROR } from "./utils/errors";
 
 /* eslint-disable @typescript-eslint/camelcase */
 
