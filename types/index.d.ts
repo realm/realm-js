@@ -121,7 +121,7 @@ declare namespace Realm {
         inMemory?: boolean;
         schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
-        sync?: SyncConfiguration;
+        sync?: true | SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
         disableFormatUpgrade?: boolean;
     }
