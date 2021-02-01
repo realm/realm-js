@@ -44,6 +44,21 @@ module.exports = {
         TestCase.assertEqual(data.c, true, 'should store boolean (true)');
     },
 
+    testMixedQuery() {
+        const N = 100
+        let realm = new Realm({schema: [SingleSchema]})
+        for(let i=0; i < N; i++) {
+            realm.write(() => realm.create(SingleSchema.name, {a: 'xxxxxx', b: 'xxx', c: i}))
+        }
+
+        let data = realm.objects(SingleSchema.name)
+        let section = data.filtered(`a BEGINSWITH "x" AND b BEGINSWITH "x"`)
+        let half = data.filtered(`c < 50`)
+
+        TestCase.assertEqual(section.length, N, 'We expect only 100 items.');
+        TestCase.assertEqual(half.length, N/2, 'We expect only 50 items.');
+    },
+
     testMixedComplexTypes() {
         let realm = new Realm({schema: [SingleSchema]});
         let d128 = Decimal128.fromString('6.022e23');
