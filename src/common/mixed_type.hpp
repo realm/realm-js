@@ -24,7 +24,7 @@ namespace js {
 
 template <typename Context, typename Value>
 class MixedWrapper {
-   public:
+  public:
     virtual Mixed wrap(Context, Value const &) = 0;
     virtual Value unwrap(Context, Mixed) = 0;
 };
