@@ -70,7 +70,7 @@ class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
 
     std::shared_ptr<Realm> realm;
 
-   public:
+  public:
     MixedLink(std::shared_ptr<Realm> _realm): realm{_realm} {}
 
     Mixed wrap(Context context, Value const& value) {
