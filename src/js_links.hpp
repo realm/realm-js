@@ -63,7 +63,7 @@ public:
 
 template <typename T>
 class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
-   private:
+  private:
     using Context = typename T::Context;
     using Value = typename T::Value;
     using RealmClass =  RealmObjectClass<T>;
