@@ -23,8 +23,6 @@
 
 namespace realm {
 namespace js {
-
-
 template <typename T>
 class RealmLink {
 private:
