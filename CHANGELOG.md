@@ -1,5 +1,10 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.5.0-alpha.1 Release notes (2021-2-2)
 =============================================================
+NOTE: This is an internal release and SHOULD NOT be used.
+NOTE: This release WILL NOT work against MongoDB Realm Cloud.
+NOTE: No React Native support.
+NOTE: Realm file format is likely to break and you CAN NOT revert back to the previous file format - DATA WILL BE LOST!!!!
+
 ### Enhancements
 * Adding Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
 
