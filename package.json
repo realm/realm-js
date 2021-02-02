@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "10.5.0-alpha.1",
+  "version": "10.5.0-alpha.2",
   "license": "See the actual license in the file LICENSE",
   "homepage": "https://realm.io",
   "keywords": [
@@ -144,7 +144,7 @@
   "binary": {
     "module_name": "realm",
     "host": "https://static.realm.io",
-    "remote_path": "realm-js-prebuilds/{version}",
+    "remote_path": "realm-js-prebuilds/{version}-napi-v{napi_build_version}",
     "napi_versions": [
       4
     ]
