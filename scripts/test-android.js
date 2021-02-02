@@ -30,13 +30,8 @@ if (process.platform !== "win32") {
     shell.env["PATH"] = "/opt/android-sdk-linux/platform-tools:$PATH"
 }
 
-if (shell.env["REALM_BUILD_ANDROID_PACKAGE"]) {
-    shell.echo("Realm is already installed");
-} else {
-    shell.env["REALM_BUILD_ANDROID_PACKAGE"] = 1;
-    shell.exec("npm install realm");
-    shell.exec("npm install realm-tests");
-}
+shell.exec("npm install realm");
+shell.exec("npm install realm-tests");
 
 shell.cp("../../src/object-store/tests/query.json", "node_modules/realm-tests/query-tests.json");
 

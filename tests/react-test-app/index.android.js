@@ -103,7 +103,7 @@ async function runTests() {
         console.log(`Test results file path ${resultsFile}`);
         console.log("Test Results ==============================================");
         const lines = xmlString.split(/\r?\n/);
-        //lines.forEach(line => console.log(line));
+        // console.log has max string limits so write each line one by one
         lines.forEach(line => split(line).forEach(str => console.log(str)));
     }
     catch (e) {

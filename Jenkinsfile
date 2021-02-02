@@ -163,8 +163,8 @@ stage('prepare integration tests') {
 
 stage('integration tests') {
   parallel(
-    'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
-    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) },
+    'Node.js on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
+    'Node.js on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) },
 
     'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
     'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
@@ -211,7 +211,7 @@ def nodeIntegrationTests(nodeVersion, platform) {
 }
 
 def electronIntegrationTests(electronVersion, platform) {
-  //validate platform argument
+  // Validate platform argument
   assert (platform in platforms)
 
   def nodeVersion = nodeTestVersion
@@ -397,7 +397,7 @@ def inAndroidContainer(workerFunction) {
 
       // Locking prevent concurrent usage of the gradle-cache
       lock("${env.NODE_NAME}-android") {
-        image.inside(          
+        image.inside(
           // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
           "-v ${HOME}/.android/adbkey:/home/jenkins/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:/home/jenkins/.android/adbkey.pub:ro " +
           // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
@@ -420,7 +420,8 @@ def buildAndroid() {
       unstash 'source'
       def image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       image.inside('-e HOME=/tmp') {
-        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts" //using --ignore-scripts to skip building for node
+        // Using --ignore-scripts to skip building for node
+        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts" 
         sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
         sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack ."
         stash includes: 'realm-*.*.*.tgz', name: 'android-package'

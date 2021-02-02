@@ -39,11 +39,6 @@ cd "$SRCROOT"
 # Add node_modules to PATH just in case we weren't called from `npm test`
 PATH="$PWD/node_modules/.bin:$PATH"
 
-if [[ $TARGET = *-android ]]; then
-  # Inform the prepublish script to build Android modules.
-  export REALM_BUILD_ANDROID_PACKAGE=1
-fi
-
 # SERVER_PID=0
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
 LOGCAT_OUT="$SRCROOT/logcat_out.txt"

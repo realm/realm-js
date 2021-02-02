@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ for (const arch of architectures) {
         `-DCMAKE_BUILD_TYPE=${options.buildType}`,
         "-DANDROID_STL=c++_static",
         `-DJSC_ROOT_DIR=${jscDir}`,
-        path.resolve(process.cwd())
+        process.cwd()
     ];
     exec(cmakePath, args, { cwd: archBuildDir, stdio: 'inherit' });
 
@@ -167,8 +167,7 @@ function getCmakePath(sdkPath) {
         return process.env["CMAKE_PATH"];
     }
 
-    const executableName = process.platform === 'win32' ? 'cmake.exe' : 'cmake';
-    return executableName;
+    return process.platform === 'win32' ? 'cmake.exe' : 'cmake';
 }
 
 function validateBuildType(buildTypeOption) {

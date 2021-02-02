@@ -73,7 +73,6 @@ export async function runTest(suiteName, testName) {
     await RealmTests.runTest(suiteName, 'beforeEach');
 
     try {
-        console.log("calling RealmTests.runTest");
         await RealmTests.runTest(suiteName, testName);
         console.warn('+ ' + testName);
     }
