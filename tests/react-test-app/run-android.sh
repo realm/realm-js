@@ -13,6 +13,7 @@ fi
 echo "Running test application"
 npx react-native run-android
 
-# granting permissions after react-native run-android since the package needs to be installed
+# granting permissions after react-native run-android since the package needs to be installed.
+# permissions are needed so we can write the test output to the sdcard
 echo "Granting permission to write to sdcard"
 adb shell pm grant io.realm.react.testapp android.permission.WRITE_EXTERNAL_STORAGE
