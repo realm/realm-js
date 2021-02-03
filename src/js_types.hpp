@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <iostream>
 
 #include <realm/binary_data.hpp>
 #include <realm/string_data.hpp>
@@ -468,6 +469,7 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
         if (is_nullable(type) && (is_null(context, value) || is_undefined(context, value))) {
             return true;
         }
+
         switch (type & ~PropertyType::Flags) {
             case PropertyType::Int:
             case PropertyType::Float:
@@ -503,10 +505,6 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
             && (type != PropertyType::Object || list->get_object_schema().name == object_type);
     };
 
-    if (!realm::is_array(type)) {
-        return check_value(value);
-    }
-
     if (is_object(context, value)) {
         auto object = to_object(context, value);
         if (Object<T>::template is_instance<ResultsClass<T>>(context, object)) {
@@ -515,7 +513,15 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
         if (Object<T>::template is_instance<ListClass<T>>(context, object)) {
             return check_collection_type(get_internal<T, ListClass<T>>(context, object));
         }
+        if(type == PropertyType::Dictionary) {
+            return true; // dictionary place-holder
+        }
+
         //TODO: add checks for sets and dictionaries
+    }
+
+    if (!realm::is_array(type)) {
+        return check_value(value);
     }
 
     if (type == PropertyType::Object) {

@@ -167,8 +167,13 @@ public:
     ValueType box(realm::object_store::Set set) {
         throw std::runtime_error("'Set' type support is not implemented yet");
     }
-    ValueType box(realm::object_store::Dictionary dictionart) {
-        throw std::runtime_error("'Dictionary' type support is not implemented yet");
+    ValueType box(realm::object_store::Dictionary dictionary) {
+        auto empty_object = Object::create_empty(m_ctx);
+        for(auto mix: dictionary){
+            ValueType value = TypeMixed<JSEngine>::get_instance().wrap(m_ctx, mix.second);
+            Object::set_property(m_ctx, empty_object, mix.first.get_string().data(), value, None);
+        }
+        return empty_object;
     }
 
     bool is_null(ValueType const& value) {
@@ -217,9 +222,16 @@ public:
         }
     }
 
+    // called when creating dictionaries.
     template<typename Fn>
     void enumerate_dictionary(ValueType& value, Fn&& func) {
-        throw std::runtime_error("'Dictionary' type support is not implemented yet");
+        auto dict = Value::validated_to_object(m_ctx, value);
+        for (auto key : Object::get_property_names(m_ctx, dict)) {
+            std::string k = key;
+            ValueType val = Object::get_property(m_ctx, dict, key);
+            //auto mix = TypeMixed<JSEngine>::get_instance().unwrap(m_ctx, val);
+            func(k, val);
+        }
     }
 
     bool is_same_list(realm::List const& list, ValueType const& value) const noexcept {
@@ -235,7 +247,7 @@ public:
     }
 
     bool is_same_dictionary(realm::object_store::Dictionary const& dictionary, ValueType const& value) const {
-        throw std::runtime_error("'Dictionary' type support is not implemented yet");
+        return false;
     }
 
     bool allow_missing(ValueType const&) const noexcept { return false; }

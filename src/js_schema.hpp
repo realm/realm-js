@@ -88,6 +88,9 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     if (type == "bool") {
         prop.type |= PropertyType::Bool;
     }
+    else if (type == "{}"){
+        prop.type |= PropertyType::Dictionary | PropertyType::Mixed;
+    }
     else if (type == "mixed") {
         prop.type |= PropertyType::Nullable | PropertyType::Mixed;
     }
