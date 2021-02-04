@@ -424,7 +424,7 @@ module.exports = {
         let app = new Realm.App(appConfig);
         return app.logIn(creds).then(user => {
             return new Promise((resolve, _reject) => {
-                var realm;
+                let realm;
                 const config = getSyncConfiguration(user, partition);
                 config.sync.error = (sender, error) => {
                     try {
