@@ -123,7 +123,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-<<<<<<< HEAD
 * Upgraded to Realm Core from v10.0.0 to v10.1.3
 * Upgraded to Realm Sync from v10.0.0 to v10.1.3
 
@@ -131,10 +130,6 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * None.
-=======
-* Upgraded to Realm Core v10.1.0
-* Upgraded to Realm Sync v10.1.0
->>>>>>> 32df02d60f4348a57f3fece5d357510356fa7ab8
 
 ### Fixed
 * Fixed a bug preventing caching of Realm instances. In certain cases, the Realm file would grow without any new objects added. ([#3322](https://github.com/realm/realm-js/pull/3322), since v6.0.0).
