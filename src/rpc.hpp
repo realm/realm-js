@@ -22,10 +22,10 @@
 #include <future>
 #include <thread>
 
+#include "jsc_init.hpp"
 #include "concurrent_deque.hpp"
 #include "json.hpp"
-#include "jsc/jsc_types.hpp"
-#include "jsc/jsc_protected.hpp"
+#include "js_network_transport.hpp"
 
 namespace realm {
 
@@ -37,6 +37,7 @@ using json = nlohmann::json;
 
 using RPCObjectID = u_int64_t;
 using RPCRequest = std::function<json(const json)>;
+using NetworkTransportFactory = typename js::JavaScriptNetworkTransport<jsc::Types>::NetworkTransportFactory;
 
 class RPCWorker {
   public:
@@ -91,6 +92,8 @@ class RPCServer {
 
     std::mutex m_pending_callbacks_mutex;
     std::map<std::pair<uint64_t, uint64_t>, std::promise<json>> m_pending_callbacks;
+
+    NetworkTransportFactory previous_transport_generator;
 
     static JSValueRef run_callback(JSContextRef, JSObjectRef, JSObjectRef, size_t, const JSValueRef[], JSValueRef *exception);
 

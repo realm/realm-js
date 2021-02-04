@@ -5,18 +5,21 @@ import groovy.json.JsonOutput
 repoName = 'realm-js' // This is a global variable
 
 // These versions must be written in ascending order (lowest version is used when testing)
-def nodeVersions = ['10.22.0', "11.15.0", "12.18.3", "13.14.0", "14.7.0"]
+def nodeVersions = ['10.22.0']
 nodeTestVersion = nodeVersions[0]
+nodePublishVersion = '10.22.0';
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
 //For more see https://www.npmjs.com/package/spectron
-def electronVersions = ['8.4.1', '7.3.2']
+def electronVersions = ['8.4.1']
 electronTestVersion = electronVersions[0]
 
 def gitTag = null
 def formattedVersion = null
 dependencies = null
 objectStoreDependencies = null
+
+def packagesExclusivelyChanged = null
 
 environment {
   GIT_COMMITTER_NAME="ci"
@@ -40,6 +43,15 @@ stage('check') {
       ],
       userRemoteConfigs: scm.userRemoteConfigs
     ])
+
+    // Abort early if only files in "packages/**" changed, since these will migrate to another CI platform
+    packagesExclusivelyChanged = exclusivelyChanged("^packages/.*")
+    if (packagesExclusivelyChanged) {
+      currentBuild.result = 'SUCCESS'
+      echo 'Stopped since there were only changes to "/packages"'
+      return
+    }
+
     dependencies = readProperties file: 'dependencies.list'
     objectStoreDependencies = readProperties file: 'src/object-store/dependencies.list'
     gitTag = readGitTag()
@@ -66,6 +78,11 @@ stage('check') {
       env.DOCKER_PUSH = "1"
     }
   }
+}
+
+// Ensure no other stages are executed
+if (packagesExclusivelyChanged) {
+  return
 }
 
 stage('pretest') {
@@ -100,6 +117,7 @@ stage('build') {
     nodeVersions.each { nodeVersion ->
       parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
       parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
+      parallelExecutors["Linux Rpi Node ${nodeVersion}"] = buildLinuxRpi { buildCommon(nodeVersion, it, '--arch=arm') }
       parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
       parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
     }
@@ -142,6 +160,20 @@ stage('test') {
   parallel parallelExecutors
 }
 
+stage('prepare integration tests') {
+  parallel(
+    'Build integration tests': buildLinux {
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+      dir('integration-tests/tests') {
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack"
+        sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
+        stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
+      }
+    }
+  )
+}
+
 stage('integration tests') {
   parallel(
     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
@@ -153,22 +185,25 @@ stage('integration tests') {
   )
 }
 
+def exclusivelyChanged(regexp) {
+  // Checks if this is a change/pull request and if the files changed exclusively match the provided regular expression
+  return env.CHANGE_TARGET && sh(
+    returnStatus: true,
+    script: "git diff origin/$CHANGE_TARGET --name-only | grep --invert-match '${regexp}'"
+  ) != 0
+}
+
 // == Methods
 def nodeIntegrationTests(nodeVersion, platform) {
   unstash 'source'
   unstash "pre-gyp-${platform}-${nodeVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
-  dir('integration-tests/tests') {
-    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
-  }
-
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-
-    // Package up the integration tests
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
+    // Unstash the integration tests package
+    unstash 'integration-tests-tgz'
   }
 
   dir('integration-tests/environments/node') {
@@ -190,15 +225,11 @@ def electronIntegrationTests(electronVersion, platform) {
   unstash "electron-pre-gyp-${platform}-${electronVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
-  dir('integration-tests/tests') {
-    sh "../../scripts/nvm-wrapper.sh ${nodeVersion} npm ci"
-  }
-
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-    // Package up the integration tests
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
+    // Unstash the integration tests package
+    unstash 'integration-tests-tgz'
   }
 
   // On linux we need to use xvfb to let up open GUI windows on the headless machine
@@ -229,10 +260,6 @@ def reactNativeIntegrationTests(targetPlatform) {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
   }
 
-  dir('integration-tests/tests') {
-    sh "${nvm} npm ci"
-  }
-
   dir('integration-tests') {
     if (targetPlatform == "android") {
       unstash 'android'
@@ -242,8 +269,8 @@ def reactNativeIntegrationTests(targetPlatform) {
     }
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-    // Package up the integration tests
-    sh "${nvm} npm run tests/pack"
+    // Unstash the integration tests package
+    unstash 'integration-tests-tgz'
   }
 
   dir('integration-tests/environments/react-native') {
@@ -296,14 +323,17 @@ def buildDockerEnv(name, extra_args='') {
   return docker.image(name)
 }
 
-def buildCommon(nodeVersion, platform) {
+def buildCommon(nodeVersion, platform, extraFlags='') {
   sshagent(credentials: ['realm-ci-ssh']) {
     sh "mkdir -p ~/.ssh"
     sh "ssh-keyscan github.com >> ~/.ssh/known_hosts"
     sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
-    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package"
+    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
   }
-  dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+
+  dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
+    // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
+    // archiveArtifacts("realm-*")
     stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
   }
 }
@@ -316,7 +346,8 @@ def buildElectronCommon(electronVersion, platform) {
     "npm_config_devdir=${env.HOME}/.electron-gyp"
   ]) {
     sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm run package"
-    dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+
+    dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
       stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
     }
   }
@@ -338,11 +369,25 @@ def buildLinux(workerFunction) {
   }
 }
 
+def buildLinuxRpi(workerFunction) {
+  return {
+    myNode('docker') {
+      unstash 'source'
+      sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+      buildDockerEnv("ci/realm-js:rpi", '-f armhf.Dockerfile').inside('-e HOME=/tmp') {
+        withEnv(['CC=arm-linux-gnueabihf-gcc', 'CXX=arm-linux-gnueabihf-g++']) {
+          workerFunction('linux-armhf')
+        }
+      }
+    }
+  }
+}
+
 def buildMacOS(workerFunction) {
   return {
     myNode('osx_vegas') {
       withEnv([
-        "DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer",
+        "DEVELOPER_DIR=/Applications/Xcode-12.2.app/Contents/Developer",
       ]) {
         unstash 'source'
         sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
@@ -365,7 +410,8 @@ def buildWindows(nodeVersion, arch) {
         }
       }
       bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0 --target_arch=${arch} --target=${nodeVersion}"
-      dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+
+      dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
         stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
       }
     }
@@ -389,7 +435,8 @@ def buildWindowsElectron(electronVersion, arch) {
         }
         bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package'
       }
-      dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+
+      dir("build/stage/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}") {
         stash includes: 'realm-*', name: "electron-pre-gyp-windows-${arch}-${electronVersion}"
       }
     }
@@ -405,7 +452,7 @@ def inAndroidContainer(workerFunction) {
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
         image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       }
-      
+
       // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
       // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
       lock("${env.NODE_NAME}-android") {
@@ -437,17 +484,14 @@ def buildAndroid() {
 
 def publish(nodeVersions, electronVersions, dependencies, tag) {
   myNode('docker') {
+
     for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
-      for (def version in nodeVersions) {
-        unstash "pre-gyp-${platform}-${version}"
-      }
-      for (def version in electronVersions) {
-        unstash "electron-pre-gyp-${platform}-${version}"
-      }
+      unstash "pre-gyp-${platform}-${nodePublishVersion}"
     }
+    unstash "pre-gyp-linux-armhf-${nodePublishVersion}"
 
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
-      sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/${dependencies.VERSION}/'"
+      sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/napi-v${dependencies.NAPI_VERSION}/realm-v${dependencies.VERSION}/'"
     }
   }
 }
@@ -593,7 +637,7 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
 def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
-      withEnv(['DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer',
+      withEnv(['DEVELOPER_DIR=/Applications/Xcode-12.2.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1',
                'REALM_DISABLE_SYNC_TESTS=1']) {
         doInside('./scripts/test.sh', target, postStep)

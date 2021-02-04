@@ -82,10 +82,11 @@ LOCAL_SRC_FILES += src/object-store/src/sync/sync_user.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_file.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_metadata.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/app.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/app_utils.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/app_credentials.cpp
-LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_client.cpp
-LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_collection.cpp
-LOCAL_SRC_FILES += src/object-store/src/sync/remote_mongo_database.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/mongo_client.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/mongo_collection.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/mongo_database.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/generic_network_transport.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/push_client.cpp
 endif

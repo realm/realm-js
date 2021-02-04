@@ -16,11 +16,51 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export const DEFAULT_HEADERS = {
+/**
+ * The headers added by the Fetcher when fetching JSON.
+ */
+export const ACCEPT_JSON_HEADERS = Object.freeze({
     Accept: "application/json",
+});
+
+/**
+ * The headers added by the Fetcher when fetching JSON while sending a JSON body.
+ */
+export const SENDING_JSON_HEADERS = Object.freeze({
+    ...ACCEPT_JSON_HEADERS,
     "Content-Type": "application/json",
+});
+
+/**
+ * A typical location request.
+ */
+export const LOCATION_REQUEST = Object.freeze({
+    method: "GET",
+    url: "http://localhost:1234/api/client/v2.0/app/my-mocked-app/location",
+    headers: ACCEPT_JSON_HEADERS,
+});
+
+/**
+ * A typical location response.
+ */
+export const LOCATION_RESPONSE = Object.freeze({
+    hostname: "http://localhost:1337",
+    location: "US-VA",
+    deployment_model: "GLOBAL", // eslint-disable-line @typescript-eslint/camelcase
+});
+
+/**
+ * Default options sent when authenticating.
+ */
+export const DEFAULT_AUTH_OPTIONS = {
+    device: {
+        platform: "node",
+        platformVersion: process.versions.node,
+        // As defined in /test/env.js
+        sdkVersion: "0.0.0-test",
+    },
 };
 
-export { MockApp } from "./MockApp";
-export { MockNetworkTransport } from "./MockNetworkTransport";
-export { MockTransport } from "./MockTransport";
+export * from "./MockApp";
+export * from "./MockFetcher";
+export * from "./MockNetworkTransport";

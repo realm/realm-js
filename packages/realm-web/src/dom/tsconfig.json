@@ -6,7 +6,8 @@
 			"realm-network-transport",
 			"js-base64",
 			"bson",
-			"simplified-node"
+			"buffer",
+			"detect-browser"
 		],
 		"lib": [
 			"es2019",
@@ -16,7 +17,7 @@
 	"exclude": [
 		"../**/*.test.ts",
 		"../node/",
-		"../test/",
+		"../tests/",
 		"../../types/environment.d.ts"
 	]
 }

@@ -18,11 +18,12 @@
 
 #pragma once
 
+#include <math.h>
+
 #include "js_class.hpp"
 #include "js_collection.hpp"
 #include "js_app.hpp"
 #include "js_user.hpp"
-#include "js_sync_util.hpp"
 
 #include "platform.hpp"
 #include "sync/sync_config.hpp"
@@ -52,6 +53,44 @@ extern jclass ssl_helper_class;
 
 namespace realm {
 namespace js {
+
+// simple utility method
+template<typename T>
+static std::string partition_value_bson_to_string(typename T::Context ctx, typename T::Value partition_value_value) {
+    bson::Bson partition_bson;
+    if (Value<T>::is_string(ctx, partition_value_value)) {
+        std::string pv = Value<T>::validated_to_string(ctx, partition_value_value);
+        if (pv.length() == 0) {
+            throw std::runtime_error("partitionValue of type 'string' may not be an empty string.");
+        }
+        partition_bson = bson::Bson(pv);
+    }
+    else if (Value<T>::is_number(ctx, partition_value_value)) {
+        double pv = Value<T>::validated_to_number(ctx, partition_value_value);
+        double integerPart;
+        double fractionalPart = modf(pv, &integerPart);
+        if (pv > JS_MAX_SAFE_INTEGER  || pv < -JS_MAX_SAFE_INTEGER || fabs(fractionalPart) > 0.0) {
+            throw std::runtime_error("partitionValue of type 'number' must be an integer in the range: Number.MIN_SAFE_INTEGER to Number.MAX_SAFE_INTEGER.");
+        }
+        partition_bson = bson::Bson(static_cast<int64_t>(integerPart));
+    }
+    else if (Value<T>::is_object_id(ctx, partition_value_value)) {
+        auto pv = Value<T>::validated_to_object_id(ctx, partition_value_value);
+        partition_bson = bson::Bson(pv);
+    }
+    else if (Value<T>::is_null(ctx, partition_value_value)) {
+        partition_bson = bson::Bson();
+    }
+    else {
+        throw std::runtime_error("partitionValue must be of type 'string', 'number', 'objectId', or 'null'.");
+    }
+
+    std::ostringstream s;
+    s << partition_bson;
+    std::string partition_value = s.str();
+    return partition_value;
+}
+
 
 using WeakSession = std::weak_ptr<realm::SyncSession>;
 
@@ -287,6 +326,8 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
         // TODO: add app id
+        bson::Bson partition_value_bson = bson::parse(session->config().partition_value);
+        Object::set_property(ctx, config, "partitionValue", Value::from_bson(ctx, partition_value_bson));
         if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());
@@ -592,7 +633,6 @@ public:
 
     static FunctionType create_constructor(ContextType);
 
-    static void initialize_sync_manager(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void set_sync_log_level(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void set_sync_logger(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void set_sync_user_agent(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -601,6 +641,8 @@ public:
     static void has_existing_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void enable_multiplexing(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void deserialize_change_set(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void get_all_sync_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void get_sync_session(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
@@ -612,7 +654,8 @@ public:
         {"setLogLevel", wrap<set_sync_log_level>},
         {"enableSessionMultiplexing", wrap<enable_multiplexing>},
         {"setUserAgent", wrap<set_sync_user_agent>},
-        {"_initializeSyncManager", wrap<initialize_sync_manager>},
+        {"getAllSyncSessions", wrap<get_all_sync_sessions>},
+        {"getSyncSession", wrap<get_sync_session>},
 
 #if REALM_PLATFORM_NODE
         {"setLogger", wrap<set_sync_logger>},
@@ -633,36 +676,54 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
 }
 
 template<typename T>
-void SyncClass<T>::initialize_sync_manager(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
-    args.validate_count(1);
-    std::string user_agent_binding_info = Value::validated_to_string(ctx, args[0]);
-    ensure_directory_exists_for_file(default_realm_file_directory());
+void SyncClass<T>::get_sync_session(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(2);
 
-    SyncClientConfig config;
-    config.base_file_path = default_realm_file_directory();
-    config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
-    config.user_agent_binding_info = user_agent_binding_info;
-    SyncManager::shared().configure(config);
+    auto user_object = Value::validated_to_object(ctx, args[0], "user");
+    auto user = get_internal<T, UserClass<T>>(ctx, user_object);
+
+    auto partition_value_value = args[1];
+    std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
+
+    auto sync_config = SyncConfig(*user, partition_value);
+    auto path = user->m_app->sync_manager()->path_for_realm(sync_config);
+    if (auto session = (*user)->session_for_on_disk_path(path)) {
+        return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+        return;
+    }
+    return_value.set_null();
+}
+
+template<typename T>
+void SyncClass<T>::get_all_sync_sessions(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
+
+    auto user_object = Value::validated_to_object(ctx, args[0], "user");
+    SharedUser user = *get_internal<T, UserClass<T>>(ctx, user_object);
+    auto all_sessions = user->all_sessions();
+    std::vector<ValueType> session_objects;
+    for (auto session : all_sessions) {
+        session_objects.push_back(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+    }
+    return_value.set(Object::create_array(ctx, session_objects));
 }
 
 template<typename T>
 void SyncClass<T>::initiate_client_reset(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
-    args.validate_count(1);
-    std::string path = Value::validated_to_string(ctx, args[0]);
-    if (!SyncManager::shared().immediately_run_file_actions(std::string(path))) {
+    args.validate_count(2);
+    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    std::string path = Value::validated_to_string(ctx, args[1]);
+    if (!app->sync_manager()->immediately_run_file_actions(std::string(path))) {
         throw std::runtime_error(util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
     }
-
-    SyncClientConfig client_config;
-    client_config.base_file_path = default_realm_file_directory();
-    client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
-    SyncManager::shared().configure(client_config);
 }
 
 template<typename T>
 void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_count(1);
-    std::string log_level = Value::validated_to_string(ctx, args[0]);
+    args.validate_count(2);
+
+    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    std::string log_level = Value::validated_to_string(ctx, args[1], "log level");
     std::istringstream in(log_level); // Throws
     in.imbue(std::locale::classic()); // Throws
     in.unsetf(std::ios_base::skipws);
@@ -670,35 +731,40 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
     in >> log_level_2; // Throws
     if (!in || !in.eof())
         throw std::runtime_error("Bad log level");
-    SyncManager::shared().set_log_level(log_level_2);
+    app->sync_manager()->set_log_level(log_level_2);
 }
 
 #if REALM_PLATFORM_NODE
 template<typename T>
 void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_count(1);
-    auto callback_fn = Value::validated_to_function(ctx, args[0], "logger_callback");
-    SyncManager::shared().set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
+    args.validate_count(2);
+
+    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    auto callback_fn = Value::validated_to_function(ctx, args[1], "logger_callback");
+    app->sync_manager()->set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
 }
 #endif
 
 template<typename T>
 void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_count(1);
-    std::string application_user_agent = Value::validated_to_string(ctx, args[0]);
-    syncManagerShared<T>(ctx).set_user_agent(application_user_agent);
+    args.validate_count(2);
+    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    std::string application_user_agent = Value::validated_to_string(ctx, args[1], "user agent");
+    app->sync_manager()->set_user_agent(application_user_agent);
 }
 
 template<typename T>
 void SyncClass<T>::reconnect(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_count(0);
-    syncManagerShared<T>(ctx).reconnect();
+    args.validate_count(1);
+    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    app->sync_manager()->reconnect();
 }
 
 template<typename T>
 void SyncClass<T>::has_existing_sessions(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
-    args.validate_count(0);
-    return_value.set(syncManagerShared<T>(ctx).has_existing_sessions());
+    args.validate_count(1);
+    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    return_value.set(app->sync_manager()->has_existing_sessions());
 }
 
 template<typename T>
@@ -726,31 +792,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
-        std::string partition_value;
-        if (!Value::is_undefined(ctx, partition_value_value)) {
-            bson::Bson partition_bson;
-            if (Value::is_string(ctx, partition_value_value)) {
-                std::string pv = Value::validated_to_string(ctx, partition_value_value);
-                partition_bson = bson::Bson(pv);
-            }
-            else if (Value::is_number(ctx, partition_value_value)) {
-                auto pv = Value::validated_to_number(ctx, partition_value_value);
-                partition_bson = bson::Bson(static_cast<int64_t>(pv));
-            }
-            else if (Value::is_object_id(ctx, partition_value_value)) {
-                auto pv = Value::validated_to_object_id(ctx, partition_value_value);
-                partition_bson = bson::Bson(pv);
-            }
-            else {
-                throw std::runtime_error("partitionValue must be of type 'string', 'number', or 'objectId'.");
-            }
+        std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
 
-            std::ostringstream s;
-            s << partition_bson;
-            partition_value = s.str();
-        }
-
-        config.sync_config = std::make_shared<SyncConfig>(std::move(user), std::move(partition_value));
+        config.sync_config = std::make_shared<SyncConfig>(user, std::move(partition_value));
         config.sync_config->error_handler = std::move(error_handler);
 
         SyncSessionStopPolicy session_stop_policy = SyncSessionStopPolicy::AfterChangesUploaded;
@@ -791,14 +835,15 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
         config.schema_mode = SchemaMode::Additive;
-        config.path = SyncManager::shared().path_for_realm(*(config.sync_config));
+        config.path = user->sync_manager()->path_for_realm(*(config.sync_config));
     }
 }
 
 template<typename T>
-void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue &return_value) {
-    arguments.validate_count(0);
-    SyncManager::shared().enable_session_multiplexing();
+void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(1);
+    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    app->sync_manager()->enable_session_multiplexing();
 }
 
 } // js

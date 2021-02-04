@@ -23,6 +23,7 @@
 
 #import "impl/realm_coordinator.hpp"
 #import "shared_realm.hpp"
+#import "sync/app.hpp"
 
 #import <React/RCTBridge+Private.h>
 #import <React/RCTJavaScriptExecutor.h>
@@ -267,6 +268,10 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 #endif
 
 - (void)invalidate {
+    // Close all cached Realms
+    realm::_impl::RealmCoordinator::clear_all_caches();
+    // Clear the Object Store App cache, to prevent instances from using a context that was released
+    realm::app::App::clear_cached_apps();
 #if DEBUG
     // shutdown rpc if in chrome debug mode
     [self shutdownRPC];
@@ -286,9 +291,6 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
         [NSThread sleepForTimeInterval:0.1];
     }
     s_currentJSThread = [NSThread currentThread];
-
-    // Close all cached Realms from the previous JS thread.
-    realm::_impl::RealmCoordinator::clear_all_caches();
 
     RJSInitializeInContext(jsContextExtractor());
 }

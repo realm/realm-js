@@ -19,8 +19,9 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
-/// <reference path="./bson.d.ts"/>
 /// <reference path="./app.d.ts"/>
+
+type ObjectId = import("bson").ObjectId;
 
 declare namespace Realm {
     interface CollectionChangeSet {
@@ -98,7 +99,7 @@ declare namespace Realm {
 
     interface SyncConfiguration {
         user: User;
-        partitionValue: string|number|ObjectId;
+        partitionValue: string|number|ObjectId|null;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
@@ -198,8 +199,8 @@ declare namespace Realm {
     }
 
     /**
-     * RealmJsonSerializeReplacer solves circular structures when serializing Realm entities
-     * @example JSON.stringify(realm.objects("Person"), Realm.RealmJsonSerializeReplacer)
+     * JsonSerializationReplacer solves circular structures when serializing Realm entities
+     * @example JSON.stringify(realm.objects("Person"), Realm.JsonSerializationReplacer)
      */
     const JsonSerializationReplacer: (key: string, val: any) => any;
 
@@ -342,7 +343,14 @@ declare namespace Realm {
         code: number;
     }
 
-    type ErrorCallback = (session: Sync.Session, error: SyncError) => void;
+    interface ClientResetError {
+        name: "ClientReset";
+        path: string;
+        config: SyncConfiguration;
+        readOnly: true;
+    }
+
+    type ErrorCallback = (session: App.Sync.Session, error: SyncError | ClientResetError) => void;
 
     const enum SessionStopPolicy {
         AfterUpload = "after-upload",
@@ -366,9 +374,6 @@ declare namespace Realm {
         ThrowException = 'throwException'
     }
 
-    let openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
-    let downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
-
     enum ConnectionState {
         Disconnected = "disconnected",
         Connecting = "connecting",
@@ -381,7 +386,7 @@ declare namespace Realm {
 
     type ConnectionNotificationCallback = (newState: ConnectionState, oldState: ConnectionState) => void;
 
-    namespace Sync {
+    namespace App.Sync {
         class Session {
             readonly config: SyncConfiguration;
             readonly state: 'invalid' | 'active' | 'inactive';
@@ -407,7 +412,6 @@ declare namespace Realm {
 
         /**
         * AuthError
-        * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.AuthError.html }
         */
         class AuthError {
             readonly code: number;
@@ -428,14 +432,28 @@ declare namespace Realm {
             Off,
         }
 
-        function setLogLevel(logLevel: LogLevel): void;
-        function setLogger(callback: (level: NumericLogLevel, message: string) => void): void;
-        function setUserAgent(userAgent: string): void;
-        function enableSessionMultiplexing(): void;
-        function initiateClientReset(path: string): void;
-        function _hasExistingSessions(): boolean;
-        function reconnect(): void;
+        function getAllSyncSessions(user: Realm.User): [Realm.App.Sync.Session];
+        function getSyncSession(user: Realm.User, partitionValue: string|number|ObjectId|null) : Realm.App.Sync.Session;
+        function setLogLevel(app: App, logLevel: LogLevel): void;
+        function setLogger(app: App, callback: (level: NumericLogLevel, message: string) => void): void;
+        function setUserAgent(app: App, userAgent: string): void;
+        function enableSessionMultiplexing(app: App): void;
+        function initiateClientReset(app: App, path: string): void;
+        function _hasExistingSessions(app: App): boolean;
+        function reconnect(app: App): void;
+
+        /**
+         * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
+         * If this is the first time you open the Realm, it will be empty while the server data is being downloaded in the background.
+         */
+        const openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
+        /**
+         * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
+         */
+        const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
     }
+
+    const BSON: typeof import("bson");
 }
 
 interface ProgressPromise extends Promise<Realm> {
@@ -452,7 +470,7 @@ type ExtractPropertyNamesOfType<T, PropType> = {
 /**
  * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
  */
-type RealmOptionalParMappedModel<T> = {
+type RealmListsRemappedModelPart<T> = {
     [K in keyof T]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
 }
 
@@ -460,10 +478,9 @@ type RealmOptionalParMappedModel<T> = {
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
  * with only the keys which value extends Realm.List, remapped as Arrays.
  */
-//
 type RealmInsertionModel<T> =
-    Omit<Omit<T, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
-    & RealmOptionalParMappedModel<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
+    Omit<Omit<Omit<T, ExtractPropertyNamesOfType<T, Function>>, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
+    & RealmListsRemappedModelPart<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
 
 declare class Realm {
     static defaultPath: string;
@@ -476,7 +493,7 @@ declare class Realm {
     readonly isInTransaction: boolean;
     readonly isClosed: boolean;
 
-    readonly syncSession: Realm.Sync.Session | null;
+    readonly syncSession: Realm.App.Sync.Session | null;
 
     /**
      * Get the current schema version of the Realm at the given path.
@@ -538,30 +555,11 @@ declare class Realm {
     /**
      * @param  {string} type
      * @param  {T} properties
-     * @param  {boolean} update?
-     * @returns T & Realm.Object
-     *
-     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
-     */
-    create<T>(type: string, properties: RealmInsertionModel<T>, update?: boolean): T & Realm.Object
-
-    /**
-     * @param  {Class} type
-     * @param  {T} properties
-     * @param  {boolean} update?
-     * @returns T
-     *
-     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
-     */
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, update?: boolean): T
-
-    /**
-     * @param  {string} type
-     * @param  {T} properties
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T & Realm.Object
      */
-    create<T>(type: string, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode): T & Realm.Object
+    create<T>(type: string, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode.Never): T & Realm.Object;
+    create<T>(type: string, properties: Partial<T> | Partial<RealmInsertionModel<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T & Realm.Object;
 
     /**
      * @param  {Class} type
@@ -569,7 +567,8 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T
      */
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode): T
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode.Never): T;
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: Partial<T> | Partial<RealmInsertionModel<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
@@ -588,11 +587,18 @@ declare class Realm {
     deleteAll(): void;
 
     /**
-     * @param  {string|Realm.ObjectType|Function} type
+     * @param  {string} type
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string | Realm.ObjectId): T & Realm.Object | undefined;
+    objectForPrimaryKey<T>(type: string, key: number | string | ObjectId): (T & Realm.Object) | undefined;
+
+    /**
+     * @param  {Class} type
+     * @param  {number|string|ObjectId} key
+     * @returns {T | undefined}
+     */
+    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | ObjectId): T | undefined;
 
     /**
      * @param  {string} type

@@ -16,8 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as Realm from "realm";
-import { ObjectId } from 'bson'
+/* tslint:disable max-classes-per-file */
+
+import Realm from "realm";
+import { ObjectId } from "bson";
 
 export interface IPerson {
     _id: ObjectId;
@@ -34,11 +36,11 @@ export const PersonSchema: Realm.ObjectSchema = {
         _id: "objectId",
         age: "int",
         name: "string",
-        friends: "Person[]"
-    }
+        friends: "Person[]",
+    },
 };
 
-export class Person extends Realm.Object {
+export class Person extends Realm.Object implements IPerson {
     _id: ObjectId;
     name: string;
     age: number;
@@ -62,11 +64,11 @@ export const DogSchema: Realm.ObjectSchema = {
         _id: "objectId",
         age: "int",
         name: "string",
-        owner: "Person"
-    }
+        owner: "Person",
+    },
 };
 
-export class Dog extends Realm.Object {
+export class Dog extends Realm.Object implements IDog {
     _id: ObjectId;
     name: string;
     age: number;

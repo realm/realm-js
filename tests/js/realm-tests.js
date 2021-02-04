@@ -18,11 +18,8 @@
 
 'use strict';
 
-/* global navigator, WorkerNavigator */
-
-const require_method = require;
-
 // Prevent React Native packager from seeing modules required with this
+const require_method = require;
 function nodeRequire(module) {
     return require_method(module);
 }
@@ -192,9 +189,9 @@ module.exports = {
             TestCase.assertEqual(car3.make, "Audi");
             TestCase.assertEqual(car3.model, "A4");
             TestCase.assertEqual(car3.kilometers, 24);
+
             //methods from Realm.Objects should be present
             TestCase.assertDefined(car3.addListener);
-
         });
         realm.close();
     },
@@ -276,6 +273,7 @@ module.exports = {
         const realm = new Realm({schema: []});
         realm.close();
         TestCase.assertTrue(realm.isClosed);
+    	realm.close();
         TestCase.assertTrue(realm.isClosed);
     },
 
@@ -448,6 +446,10 @@ module.exports = {
     },
 
     testRealmExists: function() {
+        //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+        if (!isNodeProcess) {
+            return Promise.resolve();
+        }
 
         // Local Realms
         let config = {schema: [schemas.TestObject]};
@@ -457,10 +459,10 @@ module.exports = {
 
         // Sync Realms
         if (!global.enableSyncTests) {
-            return;
+            return Promise.resolve();
         }
 
-        const appConfig = require('./support/testConfig').integrationAppConfig;
+        const appConfig = nodeRequire('./support/testConfig').integrationAppConfig;
 
         let app = new Realm.App(appConfig);
         let credentials = Realm.Credentials.anonymous();
@@ -468,7 +470,7 @@ module.exports = {
         return app.logIn(credentials)
             .then(user => {
                 const config = {
-                    schema: [schemas.TestObject],
+                    schema: [schemas.TestObjectWithPk],
                     sync: {
                         user,
                         partitionValue: "LoLo"
@@ -491,6 +493,19 @@ module.exports = {
             const objects = realm.objects('TestObject');
             TestCase.assertEqual(objects.length, 1);
             TestCase.assertEqual(objects[0].doubleCol, 1.0);
+            realm.close();
+        });
+    },
+
+    testRealmOpenShouldCompactOnLaunch: function() {
+        let called = false;
+        const shouldCompactOnLaunch = (total, used) => {
+            called = true;
+            return true;
+        };
+
+        return Realm.open({schema: [schemas.TestObject], shouldCompactOnLaunch: shouldCompactOnLaunch}).then(realm => {
+            TestCase.assertTrue(called);
             realm.close();
         });
     },
@@ -694,11 +709,14 @@ module.exports = {
 
         let template = Realm.createTemplateObject(schemas.AllPrimaryTypes);
 
+        console.log(JSON.stringify(template))
+
         // First notification -> Object created
         realm.write(() => {
             // Create Initial object
             realm.create('AllPrimaryTypesObject', Object.assign(template, {
                 primaryCol: '35',
+                dataCol: new ArrayBuffer(1), 
                 boolCol: false,
             }));
             realm.create('AllPrimaryTypesObject', Object.assign(template, {
@@ -1537,8 +1555,9 @@ module.exports = {
     testManualCompactMultipleInstances: function() {
         const realm1 = new Realm({schema: [schemas.StringOnly]});
         const realm2 = new Realm({schema: [schemas.StringOnly]});
+        // realm1 and realm2 are wrapping the same Realm instance
         realm2.objects('StringOnlyObject');
-        TestCase.assertFalse(realm1.compact());
+        TestCase.assertTrue(realm1.compact());
     },
 
     testRealmDeleteFileDefaultConfigPath: function() {
@@ -1579,16 +1598,21 @@ module.exports = {
 
     testRealmDeleteFileSyncConfig: function() {
         if (!global.enableSyncTests) {
-            return;
+            return Promise.resolve();
         }
 
-        const appConfig = require('./support/testConfig').integrationAppConfig;
+        //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+        if (!isNodeProcess) {
+            return Promise.resolve();
+        }
+
+        const appConfig = nodeRequire('./support/testConfig').integrationAppConfig;
 
         let app = new Realm.App(appConfig);
         return app.logIn(Realm.Credentials.anonymous())
             .then(user => {
                 const config = {
-                    schema: [schemas.TestObject],
+                    schema: [schemas.TestObjectWithPk],
                     sync: {user, partitionValue: '"Lolo"' },
                 };
 
@@ -1608,6 +1632,28 @@ module.exports = {
                     });
             });
     },
+
+    //TODO: enable when v10 CI is green
+    /*testNoMigrationOnSync: function() {
+        if (!global.enableSyncTests) {
+            return Promise.resolve();
+        }
+
+        const appConfig = require('./support/testConfig').integrationAppConfig;
+        let app = new Realm.App(appConfig);
+        return app.logIn(Realm.Credentials.anonymous())
+        .then(user => {
+            const config = {
+                schema: [schemas.TestObject],
+                sync: {user, partitionValue: '"Lolo"' },
+                deleteRealmIfMigrationNeeded: true,
+            };
+
+            TestCase.assertThrows(function() {
+                new Realm(config);
+            }, "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
+        });
+    },*/
 
     testRealmDeleteRealmIfMigrationNeededVersionChanged: function() {
         const schema = [{
@@ -1808,7 +1854,7 @@ module.exports = {
         // Test all simple data types
         let template = Realm.createTemplateObject(schemas.AllTypes);
         TestCase.assertEqual(Object.keys(template).length, 7);
-        let unmanagedObj = Object.assign(template, { boolCol: true });
+        let unmanagedObj = Object.assign(template, { boolCol: true, dataCol: new ArrayBuffer(1) });
         let managedObj = realm.create(schemas.AllTypes.name, unmanagedObj) ;
         TestCase.assertEqual(managedObj.boolCol, true);
 
@@ -1881,9 +1927,7 @@ module.exports = {
     testObjectWithoutProperties: function() {
         const realm = new Realm({schema: [schemas.ObjectWithoutProperties]});
         realm.write(() => {
-//            TestCase.assertThrows(() => {
-                realm.create(schemas.ObjectWithoutProperties.name, {});
-//            });
+            realm.create(schemas.ObjectWithoutProperties.name, {});
         });
         realm.objects(schemas.ObjectWithoutProperties.name);
         realm.close();

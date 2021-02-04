@@ -6,6 +6,7 @@
 			"realm-network-transport",
 			"js-base64",
 			"bson",
+			"buffer",
 			"node"
 		],
 		"lib": [
@@ -15,7 +16,7 @@
 	"exclude": [
 		"../**/*.test.ts",
 		"../dom/",
-		"../test/",
+		"../tests/",
 		"../../types/environment.d.ts"
 	]
 }

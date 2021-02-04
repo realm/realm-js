@@ -16,11 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+
 #include "node_init.hpp"
 #include "napi.h"
 
 #if !REALM_ENABLE_SYNC
 #pragma comment( lib, "ws2_32.lib")
+#pragma comment (lib, "crypt32");
 #endif
 
 #include "js_realm.hpp"

@@ -23,3 +23,5 @@ const path = require("path");
 const tsConfigPath = path.resolve(__dirname, "../src/tests/tsconfig.json");
 process.env.TS_NODE_PROJECT = tsConfigPath;
 console.log(`Loading TypeScript configuration from ${tsConfigPath}`);
+
+global.__SDK_VERSION__ = "0.0.0-test";

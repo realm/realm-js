@@ -32,7 +32,7 @@ describeIf(typeof window === "object", "IIFE bundle", () => {
 
     function getNewGlobals() {
         const globalsAfter = new Set(Object.keys(window));
-        return new Set([...globalsAfter].filter(x => !globalsBefore.has(x)));
+        return [...globalsAfter].filter(x => !globalsBefore.has(x));
     }
 
     before(async () => {
@@ -55,7 +55,7 @@ describeIf(typeof window === "object", "IIFE bundle", () => {
         // Expect exactly one global to be added when loading the script
         const newGlobals = getNewGlobals();
         console.log(Object.keys(window));
-        expect([...newGlobals.values()]).deep.equals(["Realm"]);
+        expect(newGlobals).deep.equals(["Realm"]);
         expect(typeof Realm).equals("object");
     });
 
@@ -77,9 +77,15 @@ describeIf(typeof window === "object", "IIFE bundle", () => {
         const app = new Realm.App({ id: APP_ID, baseUrl: BASE_URL });
         // Authenticate
         const credentials = Realm.Credentials.anonymous();
-        await app.logIn(credentials);
+        const user = await app.logIn(credentials);
         // Call a function
-        const response = await app.functions.translate("hello", "en_fr");
+        const response = await user.functions.translate("hello", "en_fr");
         expect(response).to.equal("bonjour");
+    });
+
+    it("constructs a BSON.ObjectId", async () => {
+        const objectId = new Realm.BSON.ObjectId();
+        expect(objectId).instanceOf(Realm.BSON.ObjectId);
+        expect(typeof objectId.toHexString()).equals("string");
     });
 });

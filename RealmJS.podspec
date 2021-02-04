@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'json'
 
 package = JSON.parse(File.read(File.expand_path('package.json', __dir__)))
@@ -8,11 +9,16 @@ app_path = File.expand_path('../..', __dir__)
 # The "React" framework is only available and should be used if the Podfile calls use_frameworks!
 # Therefore we make an assumption on the location of the Podfile and check if it contains "use_frameworks!" ...
 podfile_path = File.expand_path('ios/Podfile', app_path)
-begin
-  podfile = File.read(podfile_path)
-  uses_frameworks = podfile.scan(/\n\s*use_frameworks!\n/).any?
-rescue
-  uses_frameworks = false
+
+if !ENV['REALM_USE_FRAMEWORKS'].present?
+  begin
+    podfile = File.read(podfile_path)
+    uses_frameworks = podfile.scan(/\n\s*use_frameworks!\n/).any?
+  rescue
+    uses_frameworks = false
+  end
+else
+  uses_frameworks = ENV['REALM_USE_FRAMEWORKS'] == 'true' ? true : false
 end
 
 if ENV['DEBUG_REALM_JS_PODSPEC'].present?
@@ -75,6 +81,8 @@ Pod::Spec.new do |s|
                                # Setting the current project version and versioning system to get a symbol for analytics
                                'CURRENT_PROJECT_VERSION' => s.version,
                                'VERSIONING_SYSTEM' => 'apple-generic',
+                               # Disable C++17 features for unsupported platforms
+                               'OTHER_CPLUSPLUSFLAGS[arch=armv7]' => '-fno-aligned-new',
                                # Header search paths are prefixes to the path specified in #include macros
                                'HEADER_SEARCH_PATHS' => [
                                  '"$(PODS_TARGET_SRCROOT)/src/"',
@@ -91,9 +99,9 @@ Pod::Spec.new do |s|
                              }
 
   # TODO: Consider providing an option to build with the -dbg binaries instead
-  s.ios.vendored_libraries = 'vendor/realm-ios/librealm-ios.a', 'vendor/realm-ios/librealm-parser-ios.a'
-  # s.watchos.vendored_libraries = 'vendor/realm-ios/librealm-watchos.a', 'vendor/realm-ios/librealm-parser-watchos.a'
-  # s.tvos.vendored_libraries = 'vendor/realm-ios/librealm-tvos.a', 'vendor/realm-ios/librealm-parser-tvos.a'
+  s.ios.vendored_libraries = 'vendor/realm-ios/librealm-sync-ios.a', 'vendor/realm-ios/librealm-parser-ios.a'
+  # s.watchos.vendored_libraries = 'vendor/realm-ios/librealm-sync-watchos.a', 'vendor/realm-ios/librealm-parser-watchos.a'
+  # s.tvos.vendored_libraries = 'vendor/realm-ios/librealm-sync-tvos.a', 'vendor/realm-ios/librealm-parser-tvos.a'
 
   s.dependency 'React'
   # TODO: Ensure the same version of GCDWebServer is used for Android

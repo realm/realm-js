@@ -38,13 +38,13 @@ function createObjects(user) {
             error: err => console.log(err)
         },
         schema: [{
-            name: 'Dog',
-            primaryKey: '_id',
+            name: "Dog",
+            primaryKey: "_id",
             properties: {
-              _id: 'objectId?',
-              breed: 'string?',
-              name: 'string',
-              realm_id: 'string?',
+              _id: "objectId?",
+              breed: "string?",
+              name: "string",
+              realm_id: "string?",
             }
         }]
     };
@@ -52,11 +52,9 @@ function createObjects(user) {
     const realm = new Realm(config);
     realm.write(() => {
         for (let i = 1; i <= 3; i++) {
-            realm.create('Dog', { "_id": new ObjectId(), name: `Lassy ${i}` });
+            realm.create("Dog", { "_id": new ObjectId(), name: `Lassy ${i}` });
         }
     });
-
-    console.log("Dogs count " + realm.objects('Dog').length);
 
     let session = realm.syncSession;
     return new Promise((resolve, reject) => {
@@ -66,7 +64,7 @@ function createObjects(user) {
                 resolve(realm);
             }
         }
-        session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
+        session.addProgressNotification("upload", "forCurrentlyOutstandingWork", callback);
     });
 }
 
@@ -77,7 +75,7 @@ const appConfig = {
     timeout: 1000,
     app: {
         name: "default",
-        version: '0'
+        version: "0"
     },
 };
 

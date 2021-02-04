@@ -285,13 +285,6 @@ struct Unbox<JSEngine, util::Optional<ObjectId>> {
     }
 };
 
-// template<typename JSEngine>
-// struct Unbox<JSEngine, util::Optional<Decimal128>> {
-//     static util::Optional<Decimal128> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-//         return ctx->template unbox_optional<Decimal128>(value);
-//     }
-// };
-
 template<typename JSEngine>
 struct Unbox<JSEngine, StringData> {
     static StringData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
@@ -375,7 +368,10 @@ struct Unbox<JSEngine, Obj> {
             if (!updating && !policy.create) {
                 throw std::runtime_error("Realm object is from another Realm");
             }
+        }
 
+        if (!policy.create) {
+            return Obj();
         }
 
         if (Value::is_array(ctx->m_ctx, object)) {

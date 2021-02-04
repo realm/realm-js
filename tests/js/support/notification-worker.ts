@@ -34,7 +34,7 @@ export function onavailable(path) {
     return logEvent('available', path);
 }
 
-/*Realm.Sync.ChangeEvent*/
+/*Realm.App.Sync.ChangeEvent*/
 export function onchange(changes) {
     const objectToTrack = "IntObject";
     const propertyToTrack = 'int';

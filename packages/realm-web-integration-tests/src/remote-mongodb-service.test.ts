@@ -39,10 +39,14 @@ describe("Remote MongoDB", () => {
         await app.logIn(credentials);
     });
 
-    function getCollection() {
-        const mongodb = app.services.mongodb("local-mongodb");
-        const db = mongodb.db("test-database");
-        return db.collection<TestDocument>("test-collection");
+    function getCollection<T extends Realm.Services.MongoDB.Document>() {
+        if (app.currentUser) {
+            const mongodb = app.currentUser.mongoClient("local-mongodb");
+            const db = mongodb.db("test-database");
+            return db.collection<T>("test-collection");
+        } else {
+            throw new Error("Expected an authenticated user");
+        }
     }
 
     let runId: number;
@@ -50,7 +54,7 @@ describe("Remote MongoDB", () => {
         // Genereate a collection
         runId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
         // Insert a couple of documents
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         await collection.insertMany([
             {
                 runId,
@@ -71,8 +75,11 @@ describe("Remote MongoDB", () => {
     });
 
     it("can find documents", async () => {
-        const collection = getCollection();
-        const result = await collection.find({}, { limit: 10 });
+        const collection = getCollection<TestDocument>();
+        const result = await collection.find(
+            { name: { $exists: true } },
+            { limit: 10 },
+        );
         if (result.length > 0) {
             const [firstDocument] = result;
             expect(typeof firstDocument._id).equal("object");
@@ -81,7 +88,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("returns null when finding no document", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         const result = await collection.findOne({
             whatever: "non-existent",
         });
@@ -89,7 +96,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can find a single documents, with projection", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         const result = await collection.findOne(
             { runId, name: "Bob" },
             { projection: { name: 1 } },
@@ -105,7 +112,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can upsert a document if no one is found", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         const result = await collection.findOneAndUpdate(
             { runId, name: "Nobody" },
             { name: "Dennis", hiddenField: "a hidden value" },
@@ -122,7 +129,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can find and update a document, with projection", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         const result = await collection.findOneAndUpdate(
             { runId, name: "Bob" },
             { name: "Bobby" },
@@ -139,7 +146,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can find and replace a document, with projection", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         const result = await collection.findOneAndReplace(
             { runId, name: "Alice" },
             { runId, name: "Alison" },
@@ -160,7 +167,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can find and delete a document", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         const countBefore = await collection.count({ runId });
         // Delete the document with the last name (Charlie)
         const result = await collection.findOneAndDelete(
@@ -182,7 +189,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can aggregate", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         const result = await collection.aggregate([
             { $match: { runId } },
             { $group: { _id: null, names: { $push: "$name" } } },
@@ -192,7 +199,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can count documents, insert a document and count & retrieve it again", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         // Determine the number of documents before insertion
         const countBefore = await collection.count();
         // Insert a document
@@ -218,7 +225,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can insert many documents", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         // Determine the number of documents before insertion
         const countBefore = await collection.count();
         // Insert a document
@@ -237,7 +244,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can delete a document", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         const countBefore = await collection.count({ runId });
         // Delete the document with the last name (Charlie)
         const result = await collection.deleteOne({ runId });
@@ -250,7 +257,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can delete many documents", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         const countBefore = await collection.count({ runId });
         expect(countBefore).equals(3);
         // Delete all documents in this run
@@ -264,7 +271,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can update a document", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         // Delete the document with the last name (Charlie)
         const result = await collection.updateOne(
             { runId, name: "Alice" },
@@ -278,7 +285,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("upserts a document when updating and the query match nothing", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         // Delete the document with the last name (Charlie)
         const result = await collection.updateOne(
             { runId, name: "Dennis" },
@@ -293,7 +300,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("can update many documents", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         // Delete the document with the last name (Charlie)
         const result = await collection.updateMany(
             { runId },
@@ -306,7 +313,7 @@ describe("Remote MongoDB", () => {
     });
 
     it("upserts when updating many non-existing documents", async () => {
-        const collection = getCollection();
+        const collection = getCollection<TestDocument>();
         // Delete the document with the last name (Charlie)
         const result = await collection.updateMany(
             { runId, name: "Dennis" },
@@ -318,5 +325,101 @@ describe("Remote MongoDB", () => {
         expect(result.matchedCount).equals(0);
         expect(result.modifiedCount).equals(0);
         expect(typeof result.upsertedId).equals("object");
+    });
+
+    it("can watch changes correctly", async function () {
+        this.timeout(10_000);
+        this.slow(2_000);
+
+        const collection = getCollection<any>();
+
+        // Delete all documents in the collection
+        await collection.deleteMany({});
+
+        const sleep = async (time: number) =>
+            new Promise(resolve => setInterval(resolve, time));
+        const str =
+            "use some odd chars to force weird encoding %\n\r\n\\????>>>>";
+        await Promise.all([
+            (async () => {
+                // There is a race with creating the watch() streams, since they won't
+                // see inserts from before they are created.
+                // Wait 500ms (490+10) before first insert to try to avoid it.
+                await sleep(490);
+                for (let i = 0; i < 10; i++) {
+                    await sleep(10);
+                    await collection.insertOne({ _id: i, hello: "world", str });
+                }
+                await collection.insertOne({ _id: "done", done: true }); // break other sides out of loop
+            })(),
+            // Watch any event
+            (async () => {
+                let expected = 0;
+                for await (const event of collection.watch()) {
+                    if (event.operationType === "insert") {
+                        if (event.fullDocument.done) break;
+                        expect(event.fullDocument._id).equals(expected++);
+                    } else {
+                        throw new Error(
+                            `Unexpected ${event.operationType} event`,
+                        );
+                    }
+                }
+                expect(expected).equals(10);
+            })(),
+            // Watch using the filter option
+            (async () => {
+                const filter = {
+                    $or: [
+                        { "fullDocument._id": 3, "fullDocument.str": str },
+                        { "fullDocument.done": true },
+                    ],
+                };
+                let seenIt = false;
+                for await (const event of collection.watch({ filter })) {
+                    if (event.operationType === "insert") {
+                        if (event.fullDocument.done) break;
+                        expect(event.fullDocument._id).equals(3);
+                        seenIt = true;
+                    } else {
+                        throw new Error(
+                            `Unexpected ${event.operationType} event`,
+                        );
+                    }
+                }
+                expect(seenIt, "seenIt for filter");
+            })(),
+            // Watch using the ids option
+            (async () => {
+                let seenIt = false;
+                for await (const event of collection.watch({
+                    ids: [5, "done"],
+                })) {
+                    if (event.operationType === "insert") {
+                        if (event.fullDocument.done) break;
+                        expect(event.fullDocument._id).equal(5);
+                        seenIt = true;
+                    } else {
+                        throw new Error(
+                            `Unexpected ${event.operationType} event`,
+                        );
+                    }
+                }
+                expect(seenIt, "seenIt for ids");
+            })(),
+        ]);
+
+        // TODO XXX I'm not sure how to replicate this test here.
+        /*
+        // Test failure of initial request by logging out.
+        await user.logOut();
+        let err = await TestCase.assertThrowsAsync(async () => {
+            for await (let _ of collection.watch()) {
+                TestCase.assertTrue(false, "This should be unreachable");
+            }
+        });
+        if (err.code != 401)
+            throw err;
+            */
     });
 });

@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as Realm from "realm";
+/* tslint:disable max-classes-per-file */
+
+import Realm from "realm";
 
 export interface IPerson {
     name: string;
@@ -30,8 +32,8 @@ export const PersonSchema: Realm.ObjectSchema = {
     properties: {
         age: "int",
         name: "string",
-        friends: "Person[]"
-    }
+        friends: "Person[]",
+    },
 };
 
 export class Person extends Realm.Object {
@@ -41,10 +43,10 @@ export class Person extends Realm.Object {
     dogs: Realm.Collection<Dog>;
 
     constructor(name: string, age: number) {
-      super();
+        super();
 
-      this.name = name;
-      this.age = age;
+        this.name = name;
+        this.age = age;
     }
 
     static schema: Realm.ObjectSchema = PersonSchema;
@@ -61,8 +63,8 @@ export const DogSchema: Realm.ObjectSchema = {
     properties: {
         age: "int",
         name: "string",
-        owner: "Person"
-    }
+        owner: "Person",
+    },
 };
 
 export class Dog extends Realm.Object {
@@ -71,11 +73,11 @@ export class Dog extends Realm.Object {
     owner: Person;
 
     constructor(name: string, age: number, owner: Person) {
-      super();
+        super();
 
-      this.name = name;
-      this.age = age;
-      this.owner = owner;
+        this.name = name;
+        this.age = age;
+        this.owner = owner;
     }
 
     static schema: Realm.ObjectSchema = DogSchema;

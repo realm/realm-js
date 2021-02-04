@@ -4,46 +4,13 @@
 
 const require_method = require;
 
-// Prevent React Native packager from seeing modules required with this
-function node_require(module) {
-    return require_method(module);
-}
-
 const { ObjectId } = require("bson");
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const AppConfig = require('./support/testConfig')
 const Utils = require('./test-utils');
-
-const tmp = require('tmp');
-const fs = require('fs');
-const execFile = require('child_process').execFile;
-tmp.setGracefulCleanup();
-const path = require("path");
-
-function runOutOfProcess() {
-    const args = Array.prototype.slice.call(arguments);
-    let tmpDir = tmp.dirSync();
-    console.log(`runOutOfProcess : ${args.join(' ')}`);
-    return new Promise((resolve, reject) => {
-        try {
-            execFile(process.execPath, args, { cwd: tmpDir.name }, (error, stdout, stderr) => {
-                if (error) {
-                    console.error("runOutOfProcess failed\n", error, stdout, stderr);
-                    reject(new Error(`Running ${args[0]} failed. error: ${error}`));
-                    return;
-                }
-
-                console.log('runOutOfProcess success\n' + stdout);
-                resolve();
-            });
-        }
-        catch (e) {
-            reject(e);
-        }
-    });
-}
+const schemas = require('./schemas');
 
 const config = AppConfig.integrationAppConfig;
 
@@ -75,7 +42,7 @@ module.exports = {
         );
     },
 
-    async testInvalidServer() {
+    testInvalidServer() {
         const conf = {
             id: 'smurf',
             url: 'http://localhost:9999',
@@ -86,14 +53,16 @@ module.exports = {
             }
         };
 
-        let app = new Realm.App(conf);
+        const app = new Realm.App(conf);
         let credentials = Realm.Credentials.anonymous();
-        let failed = false;
-        let user = await app.logIn(credentials).catch(err => {
-            failed = true;
-            TestCase.assertEqual(err.message, "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED 127.0.0.1:9999");
+        return new Promise((resolve, reject) => {
+            return app.logIn(credentials).then(user => {
+                return reject(`Able to log in with config ${JSON.stringify(conf)}`);
+            }).catch(err => {
+                TestCase.assertEqual(err.message, "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED 127.0.0.1:9999");
+                return resolve();
+            });
         });
-        TestCase.assertEqual(failed, true);
     },
 
     async testNonexistingApp() {
@@ -124,6 +93,8 @@ module.exports = {
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
         TestCase.assertInstanceOf(user, Realm.User);
+        TestCase.assertNotNull(user.deviceId);
+        TestCase.assertEqual(user.providerType, "anon-user");
         await user.logOut();
     },
 
@@ -172,22 +143,19 @@ module.exports = {
     },
 
     async testMongoDBRealmSync() {
+        const dogNames = ["King", "Rex"]; // must be sorted
+        let nCalls = 0;
         let app = new Realm.App(config);
 
         let credentials = Realm.Credentials.anonymous();
         let user = await app.logIn(credentials);
         const partition = Utils.genPartition();
         const realmConfig = {
-            schema: [{
-                name: 'Dog',
-                primaryKey: '_id',
-                properties: {
-                  _id: 'objectId?',
-                  breed: 'string?',
-                  name: 'string',
-                  realm_id: 'string?',
-                }
-              }],
+            schema: [schemas.PersonForSync, schemas.DogForSync],
+            shouldCompactOnLaunch: (t, u) => {
+                nCalls++;
+                return true;
+            },
             sync: {
                 user: user,
                 partitionValue: partition,
@@ -196,9 +164,20 @@ module.exports = {
         };
         Realm.deleteFile(realmConfig);
         let realm = await Realm.open(realmConfig);
+        TestCase.assertEqual(nCalls, 1);
         realm.write(() => {
-            realm.create("Dog", { "_id": new ObjectId(), name: "King" });
-            realm.create("Dog", { "_id": new ObjectId(), name: "King" });
+            let tmpDogs = [];
+            dogNames.forEach(n => {
+                let dog = realm.create("Dog", { "_id": new ObjectId(), name: n });
+                tmpDogs.push(dog);
+            });
+            realm.create("Person", {
+                "_id": new ObjectId(),
+                age: 12,
+                firstName: "John",
+                lastName: "Smith",
+                dogs: tmpDogs
+            });
         });
 
         await realm.syncSession.uploadAllLocalChanges();
@@ -208,9 +187,17 @@ module.exports = {
         Realm.deleteFile(realmConfig);
 
         let realm2 = await Realm.open(realmConfig);
+        TestCase.assertEqual(nCalls, 2);
         await realm2.syncSession.downloadAllServerChanges();
 
-        TestCase.assertEqual(realm2.objects("Dog").length, 2);
+        let dogs = realm2.objects("Dog").sorted("name");
+        TestCase.assertEqual(dogs.length, dogNames.length);
+        for (let i = 0; i < dogNames.length; i++) {
+            TestCase.assertEqual(dogs[i].name, dogNames[i]);
+        }
+        let persons = realm2.objects("Person");
+        TestCase.assertEqual(persons.length, 1);
+        TestCase.assertEqual(persons[0].dogs.length, dogNames.length);
         realm2.close();
         await user.logOut();
     },

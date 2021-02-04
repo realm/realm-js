@@ -1,11 +1,83 @@
-?.?.? Release notes (2020-??-??)
+1.2.0 Release notes (2021-01-11)
 =============================================================
+
+### Breaking Changes
+* None
+
+### Enhancements
+* Adding data from authentication providers, to be included in the `User#profile` object. ([#3268](https://github.com/realm/realm-js/issues/3268) via [#3481](https://github.com/realm/realm-js/pull/3481))
+* Exposing the authentication provider used to authenticate a user as a `providerType` property on a `User` instance. ([#3481](https://github.com/realm/realm-js/pull/3481))
+* Added an export of the `bson` module on the package, making it possible to access the BSON types via `import Realm from "realm";` followed by `Realm.BSON.ObjectId`, `Realm.BSON.Decimal128`, `Realm.BSON.Binary` etc. ([#3363](https://github.com/realm/realm-js/pull/3363))
+
+### Fixed
+* Fixed an error in the types, where elements in the `User#identities` array would have a `userId` which was actually an `id` of the identity. ([#3481](https://github.com/realm/realm-js/pull/3481), since v0.9.0)
+
+### Internal
+* None
+
+1.1.0 Release notes (2020-12-08)
+### Internal
+* None
+
+1.0.0 Release notes (2020-10-16)
+=============================================================
+
+### Breaking Changes
+* Changed the `allUsers` property into an object keyed by user id. Use `Object.values(app.allUsers)` to retrieve a list of all users. ([#3346](https://github.com/realm/realm-js/pull/3346))
 
 ### Enhancements
 * None
 
 ### Fixed
 * None
+
+### Internal
+* None
+
+1.0.0-rc.2 Release notes (2020-10-13)
+=============================================================
+
+### Breaking Changes
+* None
+
+### Enhancements
+* None
+
+### Fixed
+* Fixed a bug where an error (messaged "Only absolute URLs are supported") was thrown when calling the `resetPassword`, `sendResetPasswordEmail` or `callResetPasswordFunction` methods of the `EmailPasswordAuth` client. ([#3330](https://github.com/realm/realm-js/pull/3330), since v0.9.0)
+
+### Internal
+* None
+
+1.0.0-rc.1 Release notes (2020-10-09)
+=============================================================
+
+### Breaking Changes
+* Removed the `functions` and `services` properties from `App`, use the `functions` property and `mongoClient` method on `User` instances instead. ([#3298](https://github.com/realm/realm-js/pull/3298) and [#3322](https://github.com/realm/realm-js/pull/3322))
+
+### Enhancements
+* Changing the behaviour when refreshing an access token fails. With this change, if the refresh token cannot be used to refresh an access token, the user is logged out. ([#3269](https://github.com/realm/realm-js/pull/3269))
+* Moved the `getApp` function exported by the package onto the `App` class as a static method. This can be used to get or create an instance from an app-id. ([#3297](https://github.com/realm/realm-js/pull/3297))
+
+### Fixed
+* Fixed forgetting the user's access and refresh tokens, even if the request to delete the session fails. ([#3269](https://github.com/realm/realm-js/pull/3269))
+* `isLoggedIn` boolean property added to `User`. ([#3294](https://github.com/realm/realm-js/pull/3294))
+
+### Internal
+* Sending device information in request body instead of a query parameter. ([#3295](https://github.com/realm/realm-js/pull/3295))
+
+0.9.0 Release notes (2020-09-24)
+=============================================================
+
+### Enhancements
+* Added support for linking credentials to an existing user. ([#3088](https://github.com/realm/realm-js/pull/3088), [#3239](https://github.com/realm/realm-js/pull/3239) and [#3240](https://github.com/realm/realm-js/pull/3240))
+* Added a better toJSON() implementation on User objects. ([#3221](https://github.com/realm/realm-js/pull/3221))
+* Added `watch` support to MongoDB Collections. ([#3247](https://github.com/realm/realm-js/pull/3247))
+
+### Fixed
+* If the payload for `callFunction` included certain types the request would fail with `"invalid function call request (status 400)"`. All `EJSON` serialization is now done in canonical mode. ([#3157](https://github.com/realm/realm-js/pull/3157))
+* Fixed sending device information when authenticating a user. ([#3220](https://github.com/realm/realm-js/pull/3220))
+* Fixed an issue where logging an `app` instance could result in a MongoDB Realm function being called. ([#3223](https://github.com/realm/realm-js/pull/3223))
 
 ### Internal
 * None
@@ -17,7 +89,7 @@
 * None
 
 ### Fixed
-* Fixed error `"function not found: 'argsTransformation'"` when calling `user.functions.callFunction('functionName', args)` [#3134](https://github.com/realm/realm-js/pull/3134)
+* Fixed error `"function not found: 'argsTransformation'"` when calling `user.functions.callFunction('functionName', args)`. ([#3134](https://github.com/realm/realm-js/pull/3134))
 
 ### Internal
 * None
@@ -37,7 +109,7 @@
 * None
 
 ### Internal
-* None
+* Refactored the concept of base, authenticated, prefixed transports into a single "fetcher" built on-top-of the "realm-network-package". ([#3086](https://github.com/realm/realm-js/pull/3086))
 
 0.7.0 Release notes (2020-07-13)
 =============================================================

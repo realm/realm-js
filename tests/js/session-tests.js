@@ -68,12 +68,12 @@ function getSyncConfiguration(user, partition) {
             name: 'Dog',
             primaryKey: '_id',
             properties: {
-              _id: 'objectId?',
-              breed: 'string?',
-              name: 'string',
-              realm_id: 'string?',
+                _id: 'objectId?',
+                breed: 'string?',
+                name: 'string',
+                realm_id: 'string?',
             }
-          }],
+        }],
         sync: {
             user: user,
             partitionValue: partition
@@ -167,13 +167,38 @@ module.exports = {
                 TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
 
                 const session = realm.syncSession;
-                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                TestCase.assertInstanceOf(session, Realm.App.Sync.Session);
                 TestCase.assertEqual(session.user.id, user.id);
                 TestCase.assertEqual(session.config.url, config.sync.url);
+                TestCase.assertEqual(session.config.partitionValue, config.sync.partitionValue);
                 TestCase.assertEqual(session.config.user.id, config.sync.user.id);
                 TestCase.assertEqual(session.state, 'active');
                 return user.logOut();
             });
+    },
+
+    async testRealmOpenWithDestructiveSchemaUpdate() {
+        if (!isNodeProcess) {
+            return;
+        }
+
+        const partition = Utils.genPartition();
+
+        await runOutOfProcess(__dirname + "/download-api-helper.js", appConfig.id, appConfig.url, partition, REALM_MODULE_PATH);
+
+        const app = new Realm.App(appConfig);
+        const user = await app.logIn(Realm.Credentials.anonymous());
+        const config = getSyncConfiguration(user, partition);
+
+        const realm = await Realm.open(config)
+        realm.close();
+
+        // change the 'breed' property from 'string?' to 'string' to trigger a non-additive-only error.
+        config.schema[0].properties.breed = "string";
+
+        await TestCase.assertThrowsAsyncContaining(
+            async() => await Realm.open(config), // This crashed in bug #3414.
+            "The following changes cannot be made in additive-only schema mode:");
     },
 
     testRealmOpenWithExistingLocalRealm() {
@@ -207,7 +232,7 @@ module.exports = {
                 TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
 
                 const session = realm.syncSession;
-                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                TestCase.assertInstanceOf(session, Realm.App.Sync.Session);
                 TestCase.assertEqual(session.user.id, user.id);
                 TestCase.assertEqual(session.config.url, config.sync.url);
                 TestCase.assertEqual(session.config.user.id, config.sync.user.id);
@@ -377,7 +402,7 @@ module.exports = {
         const credentials = Realm.Credentials.anonymous();
         let app = new Realm.App(appConfig);
         return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
-            .then(() => { return app.logIn(credentials)})
+            .then(() => { return app.logIn(credentials) })
             .then(user => {
                 let config = getSyncConfiguration(user, partition);
 
@@ -387,7 +412,6 @@ module.exports = {
                 ]);
             }).then(() => TestCase.assertTrue(progressCalled));
     },
-
 
     testClientReset() {
         // FIXME: try to enable for React Native
@@ -409,7 +433,7 @@ module.exports = {
                         TestCase.assertNotEqual(error.config.path, '');
                         const path = realm.path;
                         realm.close();
-                        Realm.Sync.initiateClientReset(path);
+                        Realm.App.Sync.initiateClientReset(app, path);
                         // open Realm with error.config, and copy required objects a Realm at `path`
                         resolve();
                     }
@@ -426,86 +450,6 @@ module.exports = {
         });
     },
 
-
-    /*
-    testClientResyncMode() {
-        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Discard, 'discard');
-        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Manual, 'manual');
-        TestCase.assertEqual(Realm.Sync.ClientResyncMode.Recover, 'recover');
-    },
-    */
-
-    /*
-    testClientResyncIncorrectMode() {
-        // FIXME: try to enable for React Native
-        if (!platformSupported) {
-            return;
-        }
-
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-            return new Promise((resolve, reject) => {
-                var realm;
-                const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
-                config.sync.clientResyncMode = 'foobar'; // incorrect mode
-                try {
-                    new Realm(config);
-                    reject('Should have failed if incorrect resync mode.');
-                }
-                catch (e) {
-                    resolve();
-                }
-            });
-        });
-    },
-    */
-
-    /*
-    async testClientResyncDiscard() {
-        // FIXME: try to enable for React Native
-        if (!platformSupported) {
-            return;
-        }
-        const fetch = require('node-fetch');
-
-        const realmUrl = 'realm://127.0.0.1:9080/~/myrealm';
-        let user = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname('admin', true));
-        const config1 = user.createConfiguration({ sync: { url: realmUrl } });
-        config1.schema = [schemas.IntOnly];
-        config1.sync.clientResyncMode = 'discard';
-        config1._cache = false;
-
-        // open, download, create an object, upload and close
-        let realm1 = await Realm.open(config1);
-        await realm1.syncSession.downloadAllServerChanges();
-        realm1.write(() => {
-            realm1.create(schemas.IntOnly.name, { intCol: 1 });
-        });
-        await realm1.syncSession.uploadAllLocalChanges();
-        realm1.close();
-
-        // delete Realm on server
-        let encodedPath = encodeURIComponent(`${user.id}/myrealm`);
-        let url = new URL(`/realms/files/${encodedPath}`, user.server);
-        let options = {
-            headers: {
-                Authorization: `${user.accessToken}`,
-                'Content-Type': 'application/json',
-            },
-            method: 'DELETE',
-        };
-        await fetch(url.toString(), options);
-
-        // open the Realm again without schema and download
-        const config2 = user.createConfiguration({ sync: { url: realmUrl } });
-        config2.sync.clientResyncMode = 'discard';
-        config2._cache = false;
-        let realm2 = await Realm.open(config2);
-        await realm2.syncSession.downloadAllServerChanges();
-        TestCase.assertEqual(realm2.schema.length, 0);
-        realm2.close();
-    },
-    */
-
     testAddConnectionNotification() {
         const partition = Utils.genPartition();
         let app = new Realm.App(appConfig);
@@ -516,7 +460,7 @@ module.exports = {
         }).then(realm => {
             return new Promise((resolve, reject) => {
                 realm.syncSession.addConnectionNotification((newState, oldState) => {
-                    if (oldState === Realm.Sync.ConnectionState.Connected && newState === Realm.Sync.ConnectionState.Disconnected) {
+                    if (oldState === Realm.App.Sync.ConnectionState.Connected && newState === Realm.App.Sync.ConnectionState.Disconnected) {
                         resolve();
                     }
                 });
@@ -538,7 +482,7 @@ module.exports = {
                     reject("Should not be called");
                 };
                 let callback2 = (newState, oldState) => {
-                    if (oldState === Realm.Sync.ConnectionState.Connected && newState === Realm.Sync.ConnectionState.Disconnected) {
+                    if (oldState === Realm.App.Sync.ConnectionState.Connected && newState === Realm.App.Sync.ConnectionState.Disconnected) {
                         resolve();
                     }
                 };
@@ -564,7 +508,7 @@ module.exports = {
         }).then(realm => {
             let session = realm.syncSession;
             session.pause();
-            TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
+            TestCase.assertEqual(session.connectionState, Realm.App.Sync.ConnectionState.Disconnected);
             TestCase.assertFalse(session.isConnected());
 
             return new Promise((resolve, reject) => {
@@ -572,23 +516,23 @@ module.exports = {
                     let state = session.connectionState;
                     let isConnected = session.isConnected();
                     switch (newState) {
-                        case Realm.Sync.ConnectionState.Disconnected:
-                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Disconnected);
+                        case Realm.App.Sync.ConnectionState.Disconnected:
+                            TestCase.assertEqual(state, Realm.App.Sync.ConnectionState.Disconnected);
                             TestCase.assertFalse(isConnected);
                             break;
-                        case Realm.Sync.ConnectionState.Connecting:
-                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Connecting);
+                        case Realm.App.Sync.ConnectionState.Connecting:
+                            TestCase.assertEqual(state, Realm.App.Sync.ConnectionState.Connecting);
                             TestCase.assertFalse(isConnected);
                             break;
-                        case Realm.Sync.ConnectionState.Connected:
-                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Connected);
+                        case Realm.App.Sync.ConnectionState.Connected:
+                            TestCase.assertEqual(state, Realm.App.Sync.ConnectionState.Connected);
                             TestCase.assertTrue(isConnected);
                             break;
                         default:
                             reject(`unknown connection value: ${newState}`);
                     }
 
-                    if (newState === Realm.Sync.ConnectionState.Connected) {
+                    if (newState === Realm.App.Sync.ConnectionState.Connected) {
                         resolve();
                     }
                 });
@@ -607,13 +551,13 @@ module.exports = {
 
         const realm = await Realm.open(config);
         const session = realm.syncSession;
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Connected);
 
         session.pause();
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Disconnected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Disconnected);
 
         session.resume();
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Connected);
     },
 
     async testMultipleResumes() {
@@ -625,13 +569,13 @@ module.exports = {
 
         const realm = await Realm.open(config);
         const session = realm.syncSession;
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Connected);
 
         session.resume();
         session.resume();
         session.resume();
 
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Connected);
         TestCase.assertTrue(session.isConnected());
     },
 
@@ -644,13 +588,13 @@ module.exports = {
 
         const realm = await Realm.open(config);
         const session = realm.syncSession;
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Connected);
 
         session.pause();
         session.pause();
         session.pause();
 
-        await waitForConnectionState(session, Realm.Sync.ConnectionState.Disconnected);
+        await waitForConnectionState(session, Realm.App.Sync.ConnectionState.Disconnected);
         TestCase.assertFalse(session.isConnected());
     },
 
@@ -683,7 +627,7 @@ module.exports = {
                 });
             })
             .then(() => {
-                TestCase.assertEqual(1,  realm2.objects('Dog').length);
+                TestCase.assertEqual(1, realm2.objects('Dog').length);
             });
     },
 
@@ -735,14 +679,15 @@ module.exports = {
 
             // No real way to check if this works automatically.
             // This is just a smoke test, making sure the method doesn't crash outright.
-            Realm.Sync.reconnect();
+            Realm.App.Sync.reconnect(app);
         });
     },
 
     test_hasExistingSessions() {
-        TestCase.assertFalse(Realm.Sync._hasExistingSessions());
-
         let app = new Realm.App(appConfig);
+
+        TestCase.assertFalse(Realm.App.Sync._hasExistingSessions(app));
+
         let credentials = Realm.Credentials.anonymous();
         const realmPartition = Utils.genPartition();
         return app.logIn(credentials).then(user => {
@@ -755,7 +700,7 @@ module.exports = {
                 let intervalId;
                 let it = 50;
                 intervalId = setInterval(function () {
-                    if (!Realm.Sync._hasExistingSessions()) {
+                    if (!Realm.App.Sync._hasExistingSessions(app)) {
                         clearInterval(intervalId);
                         resolve();
                     } else if (it < 0) {
@@ -768,6 +713,39 @@ module.exports = {
             });
         });
     },
+
+    async testGetSyncSession() {
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+        const realmPartition = Utils.genPartition();
+        let user = await app.logIn(credentials);
+        let session1 = Realm.App.Sync.getSyncSession(user, realmPartition);
+        TestCase.assertNull(session1);
+
+        const config = getSyncConfiguration(user, realmPartition);
+        let realm = new Realm(config);
+        let session2 = Realm.App.Sync.getSyncSession(user, realmPartition);
+        TestCase.assertNotNull(session2);
+        realm.close();
+    },
+
+    async testGetAllSyncSessions() {
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+        const realmPartition = Utils.genPartition();
+        let user = await app.logIn(credentials);
+        let sessions1 = Realm.App.Sync.getAllSyncSessions(user);
+        TestCase.assertArrayLength(sessions1, 0);
+
+        const config = getSyncConfiguration(user, realmPartition);
+        let realm = new Realm(config);
+
+        let sessions2 = Realm.App.Sync.getAllSyncSessions(user);
+        TestCase.assertArrayLength(sessions2, 1);
+        TestCase.assertNotNull(sessions2[0]);
+        realm.close();
+    },
+
 
     testSessionStopPolicy() {
         let app = new Realm.App(appConfig);
@@ -794,7 +772,68 @@ module.exports = {
                 const config4 = config1;
                 config4.sync._sessionStopPolicy = "foo";
                 TestCase.assertThrows(() => new Realm(config4));
-        });
+            });
+    },
+
+    async testAcceptedPartitionValueTypes() {
+        const testPartitionValues = [
+            Utils.genPartition(), // string
+            Number.MAX_SAFE_INTEGER,
+            6837697641419457,
+            26123582,
+            0,
+            -12342908,
+            -7482937500235834,
+            -Number.MAX_SAFE_INTEGER,
+            new ObjectId(),
+            null
+        ];
+
+        for (const partitionValue of testPartitionValues) {
+            console.log('>partitionValue', partitionValue)
+            const app = new Realm.App(appConfig);
+
+            const user = await app.logIn(Realm.Credentials.anonymous())
+
+            const config = getSyncConfiguration(user, partitionValue);
+            TestCase.assertEqual(partitionValue, config.sync.partitionValue);
+
+            const realm = new Realm(config);
+            TestCase.assertDefined(realm);
+
+            const spv = realm.syncSession.config.partitionValue;
+
+            // BSON types have their own 'equals' comparer
+            if (spv instanceof ObjectId) {
+                TestCase.assertTrue(spv.equals(partitionValue));
+            } else {
+                TestCase.assertEqual(spv, partitionValue);
+            }
+
+            realm.close();
+        }
+    },
+
+    async testNonAcceptedPartitionValueTypes() {
+        const testPartitionValues = [
+            undefined,
+            "",
+            Number.MAX_SAFE_INTEGER + 1,
+            1.2,
+            0.0000000000000001,
+            -0.0000000000000001,
+            -1.3,
+            -Number.MAX_SAFE_INTEGER - 1
+        ];
+
+        for (const partitionValue of testPartitionValues) {
+            const app = new Realm.App(appConfig);
+
+            const user = await app.logIn(Realm.Credentials.anonymous())
+
+            const config = getSyncConfiguration(user, partitionValue);
+            TestCase.assertThrows(() => new Realm(config));
+        }
     },
 
     testSessionStopPolicyImmediately() {
@@ -809,13 +848,13 @@ module.exports = {
                 config.sync._sessionStopPolicy = "immediately"
 
                 {
-                    TestCase.assertFalse(Realm.Sync._hasExistingSessions());
+                    TestCase.assertFalse(Realm.App.Sync._hasExistingSessions(app));
                     const realm = new Realm(config);
                     const session = realm.syncSession;
-                    TestCase.assertTrue(Realm.Sync._hasExistingSessions());
+                    TestCase.assertTrue(Realm.App.Sync._hasExistingSessions(app));
                     realm.close();
                 }
-                TestCase.assertFalse(Realm.Sync._hasExistingSessions());
+                TestCase.assertFalse(Realm.App.Sync._hasExistingSessions(app));
             });
     },
 
@@ -835,5 +874,23 @@ module.exports = {
             });
             realm.close();
         });
+    },
+
+    async testAnalyticsSubmission() {
+        const context = node_require('realm/package.json');
+        const analytics = node_require('realm/lib/submit-analytics');
+
+        const payload = await analytics.fetchPlatformData(context, 'TestEvent');
+
+        TestCase.assertDefined(payload.webHook);
+        TestCase.assertType(payload.webHook.event, 'string');
+        TestCase.assertDefined(payload.webHook.properties);
+        TestCase.assertType(payload.webHook.properties.Binding, 'string');
+        TestCase.assertDefined(payload.mixPanel);
+        TestCase.assertType(payload.mixPanel.event, 'string');
+        TestCase.assertDefined(payload.mixPanel.properties);
+        TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
+
+        await analytics.submitStageAnalytics('TestEvent');
     }
 };

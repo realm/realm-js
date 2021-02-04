@@ -20,9 +20,44 @@
 
 const Realm = require('realm');
 
+exports.DogForSync = {
+    name: 'Dog',
+    primaryKey: '_id',
+    properties: {
+        _id: 'objectId?', // NOTE: this needs to be changed to non-optional in the docker image.
+        breed: 'string?',
+        name: 'string',
+        realm_id: 'string?',
+    }
+}
+
+exports.PersonForSync = {
+    name: 'Person',
+    primaryKey: '_id',
+    properties: {
+        _id: 'objectId?',
+        age: 'int',
+        dogs: 'Dog[]',
+        firstName: 'string',
+        lastName: 'string',
+        realm_id: 'string?'
+    }
+}
+
+//use for local Realms. Keeping this for legacy non sync tests
 exports.TestObject = {
     name: 'TestObject',
     properties: {
+        doubleCol: 'double',
+    }
+};
+
+//use with sync. Sync requires a primary key with name _id and any type
+exports.TestObjectWithPk = {
+    name: 'TestObject',
+    primaryKey: '_id',
+    properties: {
+        _id: 'int?',
         doubleCol: 'double',
     }
 };
@@ -406,22 +441,13 @@ exports.EmbeddedObjectSchemas = [
         name: 'Person',
         properties: {
             id: 'int',
-            dog: {
-                name: 'Dog',
-                properties: {
-                    'name': 'string',
-                    'color': 'string'
-                }
-            },
+            dog: 'Dog',
             cars: 'Car[]',
             truck: 'Car',
             vans: { type: 'list', objectType: 'Car' },
             cat: {
                 type: 'list',
-                name: 'Cat',
-                properties: {
-                    name: 'string'
-                }
+                objectType: 'Cat'
             }
         }
     },
@@ -433,6 +459,21 @@ exports.EmbeddedObjectSchemas = [
             model: 'string',
             mileage: { type: 'int', optional: true, indexed: true },
             owners: { type: 'linkingObjects', objectType: 'Person', property: 'cars' }
+        }
+    },
+    {
+        name: 'Dog',
+        embedded: true,
+        properties: {
+            'name': 'string',
+            'color': 'string'
+        }
+    },
+    {
+        name: 'Cat',
+        embedded: true,
+        properties: {
+            name: 'string'
         }
     }
 ];
@@ -460,5 +501,31 @@ exports.AddressSchema = {
     properties: {
         street: 'string',
         city: 'string'
+    }
+};
+
+exports.ScoutDivisionSchema = {
+    name: 'ScoutDivision',
+    primaryKey: 'name',
+    properties: {
+        name: 'string',
+        groups: { type: 'list', objectType: 'ScoutGroup' }
+    }
+};
+
+exports.ScoutGroupSchema = {
+    name: 'ScoutGroup',
+    embedded: true,
+    properties: {
+        name: 'string',
+        branches: { type: 'list', objectType: 'ScoutBranch' }
+    }
+};
+
+exports.ScoutBranchSchema = {
+    name: 'ScoutBranch',
+    embedded: true,
+    properties: {
+        name: 'string'
     }
 };

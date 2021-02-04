@@ -63,6 +63,9 @@ enum PropertyAttributes : unsigned {
     DontDelete = 1 << 2
 };
 
+// JS: Number.MAX_SAFE_INTEGER === Math.pow(2, 53)-1;
+constexpr static int64_t JS_MAX_SAFE_INTEGER = (1ll << 53) - 1;
+
 inline PropertyAttributes operator|(PropertyAttributes a, PropertyAttributes b) {
     return PropertyAttributes(static_cast<unsigned>(a) | static_cast<unsigned>(b));
 }
@@ -123,6 +126,7 @@ struct Value {
     static bool is_boolean(ContextType, const ValueType &);
     static bool is_constructor(ContextType, const ValueType &);
     static bool is_date(ContextType, const ValueType &);
+    static bool is_error(ContextType, const ValueType &);
     static bool is_function(ContextType, const ValueType &);
     static bool is_null(ContextType, const ValueType &);
     static bool is_number(ContextType, const ValueType &);
@@ -536,7 +540,7 @@ inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Times
 template<typename T>
 inline typename T::Object Object<T>::create_bson_type(ContextType ctx, StringData type, std::initializer_list<ValueType> args) {
     auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
+    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
     auto ctor = Value<T>::to_constructor(ctx, Object<T>::get_property(ctx, bson, type));
     return Function<T>::construct(ctx, ctor, args);
 }
@@ -582,7 +586,6 @@ inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const uti
         return from_string(ctx, value.get<StringData>().data());
     case type_Binary:
         return from_binary(ctx, value.get<BinaryData>());
-
     case type_Link:
     case type_LinkList:
     case type_OldDateTime:
@@ -616,8 +619,7 @@ inline typename T::Value Value<T>::from_bson(typename T::Context ctx, const bson
         // it to a plain js number if it is in the range where it can be done precisely, otherwise
         // we map to the bson.Long type which preserves the value, but is harder to use.
         const auto i64_val = value.operator int64_t();
-        constexpr static int64_t max_precise_double = 1ll << 52; // 52 bits mantissa + implicit leading 1 bit.
-        if (-max_precise_double <= i64_val && i64_val <= max_precise_double)
+        if (-JS_MAX_SAFE_INTEGER <= i64_val && i64_val <= JS_MAX_SAFE_INTEGER)
             return Value<T>::from_number(ctx, double(i64_val));
 
         return Object<T>::create_bson_type(ctx, "Long", {
@@ -693,7 +695,7 @@ inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value) {
     // For now going through the bson.EJSON.stringify() since it will correctly handle the special JS types.
     // Consider directly converting to Bson if we need more control or there are performance issues.
     auto realm = Value::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
+    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
     auto ejson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, bson, "EJSON"));
     auto call_args_json = Object<T>::call_method(ctx, ejson, "stringify", {
         value,
@@ -725,7 +727,7 @@ auto Function<T>::wrap_callback_error_first(ContextType ctx, const ObjectType& t
         (const util::Optional<app::AppError>& error, auto&& result) {
             HANDLESCOPE(ctx);
             Function::callback(ctx, callback, this_object, {
-                error ? Value<T>::from_undefined(ctx) : converter(ctx, std::forward<decltype(result)>(result)), 
+                error ? Value<T>::from_undefined(ctx) : converter(ctx, std::forward<decltype(result)>(result)),
                 Object<T>::create_from_optional_app_error(ctx, error),
             });
         };

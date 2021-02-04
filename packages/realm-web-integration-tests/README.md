@@ -9,7 +9,7 @@ Ensure you have access to a running instance of MongoDB Realm.
 To run it locally, ensure you have Docker and your Realm AWS credentials installed and run
 
 ```
-docker run --rm -i -t --publish 9090:9090 012067661104.dkr.ecr.eu-west-1.amazonaws.com/ci/mongodb-realm-images:test_server-0ed2349a36352666402d0fb2e8763ac67731768c-race
+docker run --rm -p 9090:9090 -it docker.pkg.github.com/realm/ci/mongodb-realm-test-server:latest
 ```
 
 ## Running the tests from Node.js
@@ -55,6 +55,20 @@ To enable testing credentials that require interaction, run with DEV_TOOLS and T
 ```
 DEV_TOOLS=1 TEST_CREDENTIALS=anonymous,email-password,google npm test
 ```
+
+## Running the Google Sign-In integration test
+
+Run the tests once to import a test app into the MongoDB Realm server you're testing against.
+Take note of the app id that it gets assigned and navigate to the Admin UI of the server to setup the Google Authentication Provider.
+Make sure to toggle on "OpenID Connect".
+
+Start the integration tests dev server with dev tools enabled (to keep the browser opened) and provide both the app id and your Google client id:
+
+```
+GOOGLE_CLIENT_ID=414565162824-bqn7utq2u2hue0qum7eu7lfpmmq8p4qg.apps.googleusercontent.com MDB_REALM_APP_ID=my-test-app-fwoue DEV_TOOLS=1 npm test
+```
+
+After the tests have run, navigate the browser window to http://localhost:8080/google-login, click the button to "Sign in with Google" and complete the authentication flow.
 
 ## Additional environment variables
 

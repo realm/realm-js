@@ -19,9 +19,11 @@
 import {
     NetworkTransport,
     Request,
-    ResponseHandler,
-    MongoDBRealmError,
+    FetchResponse,
+    FetchHeaders,
 } from "realm-network-transport";
+
+import { MongoDBRealmError } from "../..";
 
 /**
  * Perform mocked requests and get pre-recorded responses
@@ -47,22 +49,54 @@ export class MockNetworkTransport implements NetworkTransport {
     }
 
     /** @inheritdoc */
-    fetchAndParse<RequestBody extends any, ResponseBody extends any>(
+    fetch<RequestBody extends any>(
         request: Request<RequestBody>,
-    ): Promise<ResponseBody> {
+    ): Promise<FetchResponse> {
         if (!request.headers || Object.keys(request.headers).length === 0) {
             delete request.headers;
         }
-        if (!request.body) {
+        // Save a parsed body, instead of a string
+        if (typeof request.body === "string") {
+            request.body = JSON.parse(request.body);
+        }
+        // Delete the body if it's missing a value, which makes it easier to expect.deepEquals.
+        if (request.body === undefined) {
             delete request.body;
         }
         this.requests.push(request);
         if (this.responses.length > 0) {
             const [response] = this.responses.splice(0, 1);
             if (response instanceof MongoDBRealmError) {
-                return Promise.reject(response);
+                return Promise.resolve({
+                    ok: false,
+                    status: response.statusCode,
+                    statusText: response.statusText,
+                    url: response.url,
+                    json: async () => ({
+                        error: response.error,
+                        errorCode: response.errorCode,
+                        link: response.link,
+                    }),
+                    headers: {
+                        get(name: string) {
+                            if (name.toLowerCase() === "content-type") {
+                                return "application/json";
+                            }
+                        },
+                    } as FetchHeaders,
+                } as FetchResponse);
             } else {
-                return Promise.resolve(response);
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve(response),
+                    headers: {
+                        get(name: string) {
+                            if (name.toLowerCase() === "content-type") {
+                                return "application/json";
+                            }
+                        },
+                    } as FetchHeaders,
+                } as FetchResponse);
             }
         } else {
             throw new Error(
@@ -74,10 +108,7 @@ export class MockNetworkTransport implements NetworkTransport {
     }
 
     /** @inheritdoc */
-    fetchWithCallbacks<RequestBody extends any>(
-        request: Request<RequestBody>,
-        handler: ResponseHandler,
-    ) {
-        this.fetchAndParse(request).then(handler.onSuccess, handler.onError);
+    fetchWithCallbacks() {
+        throw new Error("Not implemented");
     }
 }

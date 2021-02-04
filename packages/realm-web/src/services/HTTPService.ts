@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Transport } from "../transports";
+import { Fetcher } from "../Fetcher";
 import { FunctionsFactory } from "../FunctionsFactory";
 
 type HTTP = Realm.Services.HTTP;
@@ -30,7 +30,7 @@ type Response = Realm.Services.HTTP.Response;
  *
  * @see https://docs.mongodb.com/stitch/services/http/
  */
-class HTTPService implements HTTP {
+export class HTTPService implements HTTP {
     /**
      * The functions factory interface to use when sending requests.
      */
@@ -39,13 +39,11 @@ class HTTPService implements HTTP {
     /**
      * Construct an HTTP Service.
      *
-     * @param transport The underlying transport.
+     * @param fetcher The underlying fetcher.
      * @param serviceName An optional service name.
      */
-    constructor(transport: Transport, serviceName = "http") {
-        this.functions = FunctionsFactory.create(transport, {
-            serviceName,
-        });
+    constructor(fetcher: Fetcher, serviceName = "http") {
+        this.functions = FunctionsFactory.create(fetcher, { serviceName });
     }
 
     /**
@@ -119,10 +117,10 @@ class HTTPService implements HTTP {
  * Creates an HTTP Service.
  * Note: This method exists to enable function binding.
  *
- * @param transport The underlying transport.
+ * @param fetcher The underlying fetcher.
  * @param serviceName An optional service name.
  * @returns The new HTTP Service.
  */
-export function createService(transport: Transport, serviceName = "http") {
-    return new HTTPService(transport, serviceName);
+export function createService(fetcher: Fetcher, serviceName = "http") {
+    return new HTTPService(fetcher, serviceName);
 }

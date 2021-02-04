@@ -20,7 +20,7 @@ import { expect } from "chai";
 
 import { FunctionsFactory } from "../FunctionsFactory";
 
-import { MockTransport } from "./utils";
+import { MockFetcher } from "./utils";
 
 const DEFAULT_HEADERS = {
     Accept: "application/json",
@@ -44,19 +44,18 @@ describe("FunctionsFactory", () => {
     });
 
     it("calls the network transport correctly through callFunction", async () => {
-        const transport = new MockTransport([
-            { message: `hello friendly world!` },
-        ]);
-        const factory = FunctionsFactory.create(transport, {
+        const fetcher = new MockFetcher([{ message: `hello friendly world!` }]);
+        const factory = FunctionsFactory.create(fetcher, {
             serviceName: "custom-service",
         });
         const response = factory.callFunction("hello", "friendly");
         expect(response).to.be.instanceOf(Promise);
         const { message } = await response;
         expect(message).equals("hello friendly world!");
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
-                url: "http://localhost:1337/functions/call",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 method: "POST",
                 body: {
                     name: "hello",
@@ -69,19 +68,18 @@ describe("FunctionsFactory", () => {
     });
 
     it("calls the network transport correctly via proxy", async () => {
-        const transport = new MockTransport([
-            { message: `hello friendly world!` },
-        ]);
-        const factory = FunctionsFactory.create(transport, {
+        const fetcher = new MockFetcher([{ message: `hello friendly world!` }]);
+        const factory = FunctionsFactory.create(fetcher, {
             serviceName: "custom-service",
         });
         const response = factory.hello("friendly");
         expect(response).to.be.instanceOf(Promise);
         const { message } = await response;
         expect(message).equals("hello friendly world!");
-        expect(transport.requests).deep.equals([
+        expect(fetcher.requests).deep.equals([
             {
-                url: "http://localhost:1337/functions/call",
+                url:
+                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 method: "POST",
                 body: {
                     name: "hello",
@@ -91,5 +89,15 @@ describe("FunctionsFactory", () => {
                 headers: DEFAULT_HEADERS,
             },
         ]);
+    });
+
+    it("does not trap methods defined on the Object.prototype", () => {
+        const fetcher = new MockFetcher([{ message: `hello friendly world!` }]);
+        const factory = FunctionsFactory.create(fetcher, {
+            serviceName: "custom-service",
+        });
+        // eslint-disable-next-line no-prototype-builtins
+        const result = factory.hasOwnProperty("testing");
+        expect(result).not.instanceOf(Promise);
     });
 });

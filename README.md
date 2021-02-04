@@ -1,43 +1,46 @@
 ![Realm](https://github.com/realm/realm-js/raw/master/logo.png)
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
-This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we only support React Native (both iOS & Android) and Node.js (on MacOS and Linux) but we are considering adding support for Cordova/PhoneGap/Ionic as well.
+This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (both iOS & Android), Node.js and Electron (on Windows, MacOS and Linux)
 
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
-* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/javascript/latest/#models) and [queryable by code](https://realm.io/docs/javascript/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues.
+* **Simple:** Data is directly [exposed as objects](https://docs.mongodb.com/realm/node/realms/) and [queryable by code](https://docs.mongodb.com/realm/node/query-engine/), removing the need for ORM's riddled with performance & maintenance issues.
 * **Modern:** Realm supports relationships, generics, and vectorization.
 * **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Realm JavaScript](https://realm.io/docs/javascript/latest/#getting-started). Please notice that currently only node.js version 10 or later are supported.
+Please see the detailed instructions in our docs to use [Realm JavaScript for node.js](https://docs.mongodb.com/realm/node/) and [Realm JavaScript for React Native](https://docs.mongodb.com/realm/react-native/). Please notice that currently only node.js version 10 or later (excluding 11) are supported.
 
 ## Documentation
 
 ### Realm React Native and Node.js
 
-The documentation can be found at [realm.io/docs/javascript/latest/](https://realm.io/docs/javascript/latest/).
-The API reference is located at [realm.io/docs/javascript/latest/api/](https://realm.io/docs/javascript/latest/api/).
+The documentation can be found at [docs.mongodb.com/realm/react-native/](https://docs.mongodb.com/realm/react-native/).
+The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
 ## Getting Help
 
-* **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We actively monitor and answer questions on SO!
+* **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). You can also check out our [Community Forum](https://developer.mongodb.com/community/forums/tags/c/realm/9/realm-sdk) where general questions about how to do something can be discussed.
 * **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
 * **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
+
 
 ## Building Realm
 
 In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
 
 Prerequisites:
-* Xcode 9.4+
-* node.js version 10 or later
-* nvm (on Mac)
+* Xcode 12+
+* node.js version 10.19 or later
+* nvm (on Mac and Linux)
 * cocoapods (on Mac)
 * Android SDK 23+
-* [Android NDK 21](https://developer.android.com/ndk/downloads/index.html)
+* [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
+    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.
+    - From the command-line: ```$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
 
 Clone RealmJS repository:
 
@@ -77,6 +80,7 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 
 ### Building for Android:
 * `cd react-native/android`
+* `export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.0.6113669  #Location for your NDK folder`
 * `./gradlew publishAndroid`
 * The compiled version of the Android module is here: `<project-root>/android`
 

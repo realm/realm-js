@@ -23,6 +23,19 @@
 /// <reference path="auth-providers.d.ts" />
 
 declare namespace Realm {
+    /**
+     * Types of an authentication provider.
+     */
+    type ProviderType =
+        | "anon-user"
+        | "api-key"
+        | "local-userpass"
+        | "custom-function"
+        | "custom-token"
+        | "oauth2-google"
+        | "oauth2-facebook"
+        | "oauth2-apple";
+
     namespace Credentials {
         /**
          * Payload sent when authenticating using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
@@ -83,14 +96,29 @@ declare namespace Realm {
         };
 
         /**
-         * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         * Payload sent when authenticating using the OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
          */
-        type GooglePayload = {
+        type GoogleAuthCodePayload = {
             /**
-             * The auth code returned from Google.
+             * The auth code from Google.
              */
             authCode: string;
         };
+
+        /**
+         * Payload sent when authenticating using the OpenID Connect [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         */
+        type GoogleIdTokenPayload = {
+            /**
+             * The OpenID token from Google.
+             */
+            id_token: string;
+        };
+
+        /**
+         * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         */
+        type GooglePayload = GoogleAuthCodePayload | GoogleIdTokenPayload;
 
         /**
          * Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
@@ -107,7 +135,7 @@ declare namespace Realm {
          */
         type ApplePayload = {
             /**
-             * The ID token from Apple.
+             * The OpenID token from Apple.
              */
             id_token: string;
         };
@@ -127,7 +155,7 @@ declare namespace Realm {
         /**
          * Type of the authentication provider.
          */
-        readonly providerType: string;
+        readonly providerType: ProviderType;
 
         /**
          * A simple object which can be passed to the server as the body of a request to authenticate.
@@ -200,7 +228,35 @@ declare namespace Realm {
          * @param authCode The auth code returned from Google.
          * @returns A `Credentials` object for logging in using `app.logIn`.
          */
-        static google(authCode: string): Credentials<Credentials.GooglePayload>;
+        static google(
+            authCodeOrIdToken: string,
+        ): Credentials<Credentials.GooglePayload>;
+
+        /**
+         * Factory for `Credentials` which authenticate using the Auth Token OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         *
+         * @param payload.authCode The auth code from Google.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
+         */
+        static google(payload: {
+            /**
+             * The auth code from Google.
+             */
+            authCode: string;
+        }): Credentials<Credentials.GoogleAuthCodePayload>;
+
+        /**
+         * Factory for `Credentials` which authenticate using the OpenID Connect OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
+         *
+         * @param payload.idToken The OpenID Connect token from Google.
+         * @returns A `Credentials` object for logging in using `app.logIn`.
+         */
+        static google(payload: {
+            /**
+             *
+             */
+            idToken: string;
+        }): Credentials<Credentials.GoogleIdTokenPayload>;
 
         /**
          * Factory for `Credentials` which authenticate using the [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
@@ -246,16 +302,6 @@ declare namespace Realm {
         readonly id: string;
 
         /**
-         * Use this to call functions defined by the MongoDB Realm app.
-         */
-        readonly functions: FunctionsFactoryType & BaseFunctionsFactory;
-
-        /**
-         * Use this to call services within by the MongoDB Realm app.
-         */
-        services: Realm.Services;
-
-        /**
          * Perform operations related to the email/password auth provider.
          */
         emailPasswordAuth: Realm.Auth.EmailPasswordAuth;
@@ -269,8 +315,17 @@ declare namespace Realm {
          * All authenticated users.
          */
         readonly allUsers: Readonly<
-            User<FunctionsFactoryType, CustomDataType>[]
+            Record<string, User<FunctionsFactoryType, CustomDataType>>
         >;
+
+        /**
+         * Get or create a singleton Realm App from an id.
+         * Calling this function multiple times with the same id will return the same instance.
+         *
+         * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
+         * @returns The Realm App instance.
+         */
+        static getApp(appId: string): App;
 
         /**
          * Log in a user using a specific credential
@@ -309,6 +364,28 @@ declare namespace Realm {
          * An optional URL to use as a prefix when requesting the MongoDB Realm services.
          */
         baseUrl?: string;
+
+        /**
+         * This describes the local app, sent to the server when a user authenticates.
+         * Specifying this will enable the server to respond differently to specific versions of specific apps.
+         */
+        app?: LocalAppConfiguration;
+    }
+
+    /**
+     * This describes the local app, sent to the server when a user authenticates.
+     */
+    interface LocalAppConfiguration {
+        /**
+         * The name / id of the local app.
+         * Note: This should be the name or a bundle id of your app, not the MongoDB Realm app.
+         */
+        name?: string;
+
+        /**
+         * The version of the local app.
+         */
+        version?: string;
     }
 
     /**
@@ -316,7 +393,8 @@ declare namespace Realm {
      */
     class User<
         FunctionsFactoryType extends object = DefaultFunctionsFactory,
-        CustomDataType extends object = any
+        CustomDataType extends object = any,
+        UserProfileDataType = DefaultUserProfileData
     > {
         /**
          * The automatically-generated internal ID of the user.
@@ -324,12 +402,29 @@ declare namespace Realm {
         readonly id: string;
 
         /**
+         * The provider type used when authenticating the user.
+         */
+        readonly providerType: ProviderType;
+
+        /**
+         * The id of the device.
+         */
+        readonly deviceId: string | null;
+
+        /**
          * The state of the user.
          */
         readonly state: UserState;
 
-        // TODO: Populate the list of identities
-        // readonly identities: UserIdentity[];
+        /**
+         * The logged in state of the user.
+         */
+        readonly isLoggedIn: boolean;
+
+        /**
+         * The identities of the user at any of the app's authentication providers.
+         */
+        readonly identities: UserIdentity[];
 
         /**
          * The access token used when requesting a new access token.
@@ -352,7 +447,7 @@ declare namespace Realm {
         /**
          * A profile containing additional information about the user.
          */
-        readonly profile: UserProfile;
+        readonly profile: UserProfileDataType;
 
         /**
          * Use this to call functions defined by the MongoDB Realm app, as this user.
@@ -412,6 +507,17 @@ declare namespace Realm {
          * @returns An service client with methods to register and deregister the device on the user.
          */
         push(serviceName: string): Realm.Services.Push;
+
+        /**
+         * Returns a connection to the MongoDB service.
+         *
+         * @example
+         * let blueWidgets = user.mongoClient('myClusterName')
+         *                       .db('myDb')
+         *                       .collection('widgets')
+         *                       .find({color: 'blue'});
+         */
+        mongoClient(serviceName: string): Realm.Services.MongoDB;
     }
 
     /**
@@ -443,20 +549,20 @@ declare namespace Realm {
      */
     interface UserIdentity {
         /**
-         * The id of the user.
+         * The id of the identity.
          */
-        userId: string;
+        id: string;
 
         /**
          * The type of the provider associated with the identity.
          */
-        providerType: string;
+        providerType: ProviderType;
     }
 
     /**
      * An extended profile with detailed information about the user.
      */
-    interface UserProfile {
+    type DefaultUserProfileData = {
         /**
          * The commonly displayed name of the user.
          */
@@ -501,13 +607,12 @@ declare namespace Realm {
          * The maximal age of the user.
          */
         maxAge?: string;
-
+    } & {
         /**
-         * The type of user
-         * // TODO: Determine the meaning of the different possibilities.
+         * Authentication providers might store other data here.
          */
-        type: UserType;
-    }
+        [key: string]: string;
+    };
 
     /**
      * A function which executes on the MongoDB Realm platform.
@@ -526,6 +631,18 @@ declare namespace Realm {
          * @param args Arguments passed to the function.
          */
         callFunction(name: string, ...args: any[]): Promise<any>;
+
+        /**
+         * Call a remote MongoDB Realm function by its name, in a streaming mode.
+         * Consider using `functions[name]()` instead of calling this method.
+         *
+         * @param name Name of the function.
+         * @param args Arguments passed to the function.
+         */
+        callFunctionStreaming(
+            name: string,
+            ...args: any[]
+        ): Promise<AsyncIterable<Uint8Array>>;
     }
 
     /**

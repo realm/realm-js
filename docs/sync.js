@@ -36,29 +36,29 @@
 
 /**
  * This describes the different options used to create a {@link Realm} instance with Realm Cloud synchronization.
- * @typedef {Object} Realm.Sync~SyncConfiguration
+ * @typedef {Object} Realm.App.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
- * @property {string|number|BSON.ObjectId} partitionValue - The value of the partition key.
- * @property {function} [error] - A callback function which is called in error situations.
- *    The `error` callback can take up to five optional arguments: `name`, `message`, `isFatal`,
- *    `category`, and `code`.
- *
+ * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key.
+ * @property {callback(session, syncError)} [error] - A callback function which is called in error situations.
+ *    The callback is passed two arguments: `session` and `syncError`. If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set
+ *    and `syncError.readOnly` is true. Otherwise, `syncError` can have up to five properties:
+ *    `name`, `message`, `isFatal`, `category`, and `code`.
  * @property {Object} [customHttpHeaders] - A map (string, string) of custom HTTP headers.
- * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
+ * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
        If not set, the Realm will be downloaded before opened.
- * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
+ * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
  *    file to complete and then open. If not set, the Realm will be downloaded before opened.
  */
 
 /**
  * Specify how to open a synced Realm.
  *
- * @typedef {Object} Realm.Sync~OpenRealmBehaviorConfiguration
+ * @typedef {Object} Realm.App.Sync~OpenRealmBehaviorConfiguration
  * @property {string} type - how to open a Realm - 'downloadBeforeOpen' to wait for download to complete or 'openImmediately' to open the local Realm
  * @property {number} [timeOut] - how long to wait for a download (in ms). Default: infinity
  * @property {string} [timeOutBehavior] - what to do when download times out - 'openLocalRealm' to open the local Realm or 'throwException' to throw an exception.
- * @see {@link Realm.Sync~openLocalRealmBehavior}
- * @see {@link Realm.Sync~downloadBeforeOpenBehavior}
+ * @see {@link Realm.App.Sync~openLocalRealmBehavior}
+ * @see {@link Realm.App.Sync~downloadBeforeOpenBehavior}
  */
 
 /**
@@ -66,13 +66,13 @@
  * If this is the first time you open the Realm, it will be empty while the server data is being downloaded
  * in the background.
  *
- * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~openLocalRealmBehavior
+ * @typedef {Realm.App.Sync~OpenRealmBehaviorConfiguration} Realm.App.Sync~openLocalRealmBehavior
  */
 
 /**
  * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
  *
- * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~downloadBeforeOpenBehavior
+ * @typedef {Realm.App.Sync~OpenRealmBehaviorConfiguration} Realm.App.Sync~downloadBeforeOpenBehavior
  */
 
  /**
@@ -145,57 +145,91 @@
      * @type {Realm.Auth.EmailPasswordAuth}
      */
     get emailPasswordAuth() { }
+
+    /**
+     * Returns an instance of an app. If an app with the specified id
+     * hasn't been created, a new app instance will be created.
+     *
+     * @param {string} appId
+     * @returns {Realm.App}
+     * @since v10.0.0
+     */
+    getApp(appId) { }
  }
 
 
 /**
  *
- * Class for interacting with Realm Sync.
+ * Class for interacting with MongoDB Realm Cloud.
  *
- * @memberof Realm
+ * @memberof Realm.App
  */
 
 class Sync {
 
     /**
-     * Calling this method will force Realm to attempt to reconnect to the server immediately.
+     * Calling this method will force Realm to attempt to reconnect the Realm App to the server immediately.
      *
      * Realm will reconnect automatically, but by using exponential backoff. This means that if the device is offline for
      * a long time, restoring the connection after it comes back online can take longer than expected. In situations
      * where it is possible to detect the network condition (e.g. Airplane mode). Manually calling this method can
      * provide a smoother user experience.
+     *
+     * @param {Realm.App} app - The Realm app.
      */
-    static reconnect() { }
+    static reconnect(app) { }
 
     /**
-     * Set the sync log level.
-     * @param {Realm.Sync~LogLevel} level - The new log level.
+     * Set the sync log level. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     *
+     * @param {Realm.App} app - The Realm app.
+     * @param {Realm.App.Sync~LogLevel} level - The new log level.
+     * @example
+     * {
+     * const app = new Realm.App(getAppConfig());
+     * Realm.App.Sync.setLogLevel(app, "all");
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
+     * }
      */
-    static setLogLevel(level) { }
+    static setLogLevel(app, level) { }
 
     /**
-     * Enable multiplexing multiple sync sessions over a single connection.
+     * Enable multiplexing multiple sync sessions over a single connection for a Realm app.
      * When having a lot of synchronized realms open the system might run out of file
      * descriptors because of all the open sockets to the server. Session multiplexing
      * is designed to alleviate that, but it might not work with a server configured with
      * fail-over. Only use if you're seeing errors about reaching the file descriptor limit
      * and you know you are using many sync sessions.
+     * @param {Realm.App} app - The Realm app.
      */
-    static enableSessionMultiplexing() { }
+    static enableSessionMultiplexing(app) { }
 
     /**
-     * A callback passed to `Realm.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
-     * @callback Realm.Sync~logCallback
+     * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the MongoDB Realm Cloud client with a custom logger.
+     * @callback Realm.App.Sync~logCallback
      * @param {number} level The level of the log entry between 0 and 8 inclusively.
      * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
      * @param {string} message The message of the log entry.
      */
 
     /**
-     * Capture the sync client's log.
-     * @param {Realm.Sync~logCallback} logger - The log callback.
+     * Capture the sync client's log. You can only set the log level once, and you must do it after creating an App instance
+     * but before opening any Realms.
+     *
+     * @param {Realm.App} app - the Realm app.
+     * @param {Realm.App.Sync~logCallback} logger - The log callback.
+     * @example
+     * {
+     * const app = new Realm.App(getAppConfig());
+     * Realm.App.Sync.setLogger(app, (level, message) => console.log(`[${level}] ${message}`));
+     * const user = await app.logIn(credentials);
+     * const realm = await Realm.open(getRealmConfig(user));
+     * }
+     * @see {Realm.App.Sync~setLogLevel}
      */
-    static setLogger(logger) { }
+    static setLogger(app, logger) { }
 
     /**
      * Set the application part of the User-Agent string that will be sent to the Realm Object Server when a session
@@ -203,43 +237,87 @@ class Sync {
      *
      * This method can only be called up to the point where the first Realm is opened. After that, the User-Agent
      * can no longer be changed.
+     * @param {Realm.App} the Realm app
      * @param {string} the user agent description
      */
-    static setUserAgent(userAgent) { }
+    static setUserAgent(app, userAgent) { }
 
     /**
      * Initiate a client reset. The Realm must be closed prior to the reset.
      *
+     * A synced Realm may need to be reset if the communications with the MongoDB Realm Server
+     * indicate an unrecoverable error that prevents continuing with normal synchronization. The
+     * most common reason for this is if a client has been disconnected for too long.
+     *
+     * The local copy of the Realm is moved into a recovery directory
+     * for safekeeping.
+     *
+     * Local writes that were not successfully synchronized to the MongoDB Realm server
+     * will be present in the local recovery copy of the Realm file. The re-downloaded Realm will
+     * initially contain only the data present at the time the Realm was synchronized up on the server.
+     *
+     * @param {Realm.App} [app] - The app where the Realm was opened.
      * @param {string} [path] - The path to the Realm to reset.
      * Throws error if reset is not possible.
      * @example
      * {
-     *   const config = { sync: { user, partitionValue } };
-     *   config.sync.error = (sender, error) => {
-     *     if (error.name === 'ClientReset') {
-     *       Realm.Sync.initiateClientReset(original_path);
-     *       // copy required objects from Realm at error.config.path
+     *   const config = {
+     *     // schema, etc.
+     *     sync: {
+     *       user,
+     *       partitionValue,
+     *       error: (session, error) => {
+     *         if (error.name === 'ClientReset') {
+     *           let path = realm.path; // realm.path will no be accessible after realm.close()
+     *           realm.close();
+     *           Realm.App.Sync.initiateClientReset(app, path);
+     *           // - open Realm at `error.config.path` (oldRealm)
+     *           // - open Realm with `config` (newRealm)
+     *           // - copy required objects from oldRealm to newRealm
+     *           // - close both Realms
+     *         }
+     *       }
      *     }
-     *   }
+     *   };
      * }
      */
-    static initiateClientReset(path) { }
+    static initiateClientReset(app, path) { }
 
     /**
      * Returns `true` if Realm still has a reference to any sync sessions regardless of their state.
      * If `false` is returned it means that no sessions currently exist.
+     * @param {Realm.App} [app] - The app where the Realm was opened.
      */
-    static _hasExistingSessions() { }
+    static _hasExistingSessions(app) { }
+
+    /**
+     * Returns all sync sessions for a user.
+     *
+     * @param {Realm.User} user  - the user.
+     * @returns {Array<Realm.App.Sync.Session>} an array of sessions
+     * @since 10.0.0
+     */
+    static getAllSyncSessions(user) { }
+
+    /**
+     * Returns the session associated with a user and partition value.
+     *
+     * @param {Realm.User} user
+     * @param {string|number|ObjectId|null} partitionValue
+     * @returns {Realm.App.Sync.Session} the session
+     * @since 10.0.0
+     */
+    static getSyncSession(user, partitionValue) { }
 }
 
 /**
- * @typedef Realm.Sync~LogLevel
+ * @typedef Realm.App.Sync~LogLevel
  * @type {("all"|"trace"|"debug"|"detail"|"info"|"warn"|"error"|"fatal"|"off")}
  */
 
 /**
  * Class that describes authentication errors in the Realm Object Server
- * @memberof Realm.Sync
+ * @memberof Realm.App.Sync
  */
 class AuthError extends Error {
     /**
@@ -257,7 +335,7 @@ class AuthError extends Error {
 
 /**
  * Describes an error when an incompatible synced Realm is opened. The old version of the Realm can be accessed in readonly mode using the configuration() member
- * @memberof Realm.Sync
+ * @memberof Realm.App.Sync
  */
 class IncompatibleSyncedRealmError {
     /**
@@ -287,17 +365,25 @@ class Credentials {
 
     /**
      * Creates credentials based on a Facebook login.
-     * @param {string} token A Facebook authentication token, obtained by logging into Facebook..
+     * @param {string} token A Facebook authentication token, obtained by logging into Facebook.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
     static facebook(token) { }
 
     /**
      * Creates credentials based on a Google login.
-     * @param {string} token A Google authentication token, obtained by logging into Google.
+     * @param {string} authCode A Google authentication code, obtained by logging into Google.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+     * @deprecated
+     */
+    static google(authCode) { }
+
+    /**
+     * Creates credentials based on a Google login.
+     * @param {object} An object with either an `authCode` or `idToken` property.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static google(token) { }
+    static google(authObject) { }
 
     /**
      * Creates credentials for an anonymous user. These can only be used once - using them a second
@@ -308,18 +394,18 @@ class Credentials {
     static anonymous() { }
 
     /**
-     * Creates credentials with a custom provider and user identifier.
+     * Creates credentials with a JSON Web Token (JWT) provider and user identifier.
      * @param {string} token A string identifying the user. Usually an identity token or a username.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static custom(token) { }
+    static jwt(token) { }
 
     /**
      * Creates credentials with a MongoDB Realm function and user identifier.
-     * @param {string} token A string identifying the user. Usually an identity token or a username.
+     * @param {string} payload A string identifying the user. Usually an identity token or a username.
      * @return {Promise<Credentials>} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
      */
-    static function(token) { }
+    static function(payload) { }
 
     /**
      * Creates credentials from a user API key.
@@ -347,6 +433,11 @@ class Credentials {
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
     get provider() { }
+
+    /**
+     * @returns {object} A simple object which can be passed to the server as the body of a request to authenticate.
+     */
+    get payload() { }
 }
 
 /**
@@ -477,6 +568,31 @@ class ApiKeyAuth {
     disable(id) { }
 }
 
+/**
+ * The type of an authentication provider, used to authenticate a user.
+ * @typedef Realm.App.Sync~ProviderType
+ * @type {("anon-user"|"api-key"|"local-userpass"|"custom-function"|"custom-token"|"oauth2-google"|"oauth2-facebook"|"oauth2-apple")}
+ */
+
+/**
+ * The identity of a user with a specific authentication provider.
+ * NOTE: A particular user might have identities with multiple providers.
+ * @memberof Realm.App.Sync
+ */
+class UserIdentity {
+    /**
+     * The id of a users identity at an authentication provider.
+     * @type {string}
+     */
+    get id() { }
+
+    /**
+     * The type of the authentication provider.
+     * @type {Realm.App.Sync~ProviderType}
+     */
+    get providerType() { }
+}
+
 
 /**
  * Class for managing users.
@@ -484,11 +600,29 @@ class ApiKeyAuth {
  */
 class User {
     /**
-     * Gets the identity of this user on MongoDB Realm Cloud.
-     * The identity is a guaranteed to be unique among all users on MongoDB Realm Cloud .
+     * Gets the id of this user on MongoDB Realm Cloud.
+     * The id is a guaranteed to be unique among all users on MongoDB Realm Cloud .
      * @type {string}
      */
     get id() { }
+
+    /**
+     * Gets an array of identities for this user.
+     * @type {Array<Realm.App.Sync.UserIdentity>}
+     */
+    get identities() { }
+
+    /**
+     * Gets the provider type for the identity.
+     * @type {Realm.App.Sync~ProviderType}
+     */
+    get providerType() { }
+
+    /**
+     * Gets the device id. `null` if no device id.
+     * @type {string}
+     */
+    get deviceId() { }
 
     /**
      * Gets this user's access token. This is the user's credential for accessing the MongoDB
@@ -541,7 +675,7 @@ class User {
      * Links a user to another credentials. This is useful when linking
      * different account togteher.
      * @param {Realm.Credentials} credentials
-     * @returns {Promise<Realm.User>} - updated user object
+     * @returns {Promise<void>} - resolves when the user has been linked with the other credentials.
      */
     linkCredentials(credentials) { }
 
@@ -563,15 +697,16 @@ class User {
      * Calls the named server function as this user.
      * @param {string} name - name of the function to call
      * @param {any[]} args - list of arguments to pass
+     * @return {Promise<any>} - resolves when the function terminates.
      */
     callFunction(name, args) { }
 
     /**
-     * Convenience wrapper around `call_function(name, [args])`
+     * Convenience wrapper around `callFunction(name, [args])`
      *
      * @example
      * // These are all equivalent:
-     * await user.call_function("do_thing", [a1, a2, a3]);
+     * await user.callFunction("do_thing", [a1, a2, a3]);
      * await user.functions.do_thing(a1, a2, a3);
      * await user.functions["do_thing"](a1, a2, a3);
      *
@@ -587,15 +722,15 @@ class User {
      * Returns a connection to the MongoDB service.
      *
      * @example
-     * let blueWidgets = user.remoteMongoClient('myClusterName')
+     * let blueWidgets = user.mongoClient('myClusterName')
      *                       .db('myDb')
      *                       .collection('widgets')
      *                       .find({color: 'blue'});
      *
      * @param {string} serviceName
-     * @returns {Realm~RemoteMongoDB}
+     * @returns {Realm~MongoDB}
      */
-    remoteMongoClient(serviceName) { }
+    mongoClient(serviceName) { }
 
     /**
      * @class Realm.User~Push Access to the operations of the push service.
@@ -630,7 +765,7 @@ class User {
  * client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
  * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions
  * associated with Realms are managed automatically.
- * @memberof Realm.Sync
+ * @memberof Realm.App.Sync
  */
 class Session {
     /**
@@ -707,9 +842,9 @@ class Session {
      * connection. In that case, any connection change is sent to all sessions.
      *
      * Can be either:
-     *  - Realm.Sync.ConnectionState.Disconnected: No connection to the server is available.
-     *  - Realm.Sync.ConnectionState.Connecting: An attempt to connect to the server is in progress.
-     *  - Realm.Sync.ConnectionState.Connected: The connection to the server is active and data can be synchronized.
+     *  - Realm.App.Sync.ConnectionState.Disconnected: No connection to the server is available.
+     *  - Realm.App.Sync.ConnectionState.Connecting: An attempt to connect to the server is in progress.
+     *  - Realm.App.Sync.ConnectionState.Connected: The connection to the server is active and data can be synchronized.
      *
      * Data will only be synchronized with the Realm ObjectServer if this method returns `Connected` and `state()`
      * returns `Active` or `Dying`.
@@ -783,7 +918,7 @@ class Session {
  *    or the listener being added. The virtual path (i.e. the portion of the
  *    URL after the protocol and hostname) is passed as an argument.
  *  * `'change'`: Emitted whenever the data within a Realm matching the filter
- *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
+ *    regex has changed. A [ChangeEvent]{@link Realm.App.Sync.ChangeEvent} argument
  *    is passed containing information about which Realm changed and what
  *    objects within the Realm changed.
  *  * `'delete'`: Emitted whenever a Realm matching the filter regex has been
@@ -812,7 +947,7 @@ class Session {
  * module.exports = {onchange, oncavailable, ondelete};
  *
  * // server script
- * Realm.Sync.addListener(realmServerURL, adminUser, '.*', new Realm.Worker('my-worker'));
+ * Realm.App.Sync.addListener(realmServerURL, adminUser, '.*', new Realm.Worker('my-worker'));
  *
  * @memberof Realm
  */
@@ -834,29 +969,41 @@ class Worker {
 
 
 /**
- * The RemoteMongoDB service can be used to get database and collection objects for interacting with MongoDB data.
- * @alias Realm~RemoteMongoDB
+ * The MongoDB service can be used to get database and collection objects for interacting with MongoDB data.
+ * @alias Realm~MongoDB
  */
-class RemoteMongoDB {
+class MongoDB {
+    /**
+     * Get the service name.
+     * @return {string} The service name.
+     */
+    get serviceName() { }
+
     /**
      * Get the interface to a remote MongoDB database.
      *
      * @param {string} databaseName The name of the database.
-     * @returns {Realm~RemoteMongoDBDatabase} The remote MongoDB database.
+     * @returns {Realm~MongoDBDatabase} The remote MongoDB database.
      */
     db(databaseName) { }
 }
 
 /**
- * The RemoteMongoDB service can be used to get database and collection objects for interacting with MongoDB data.
- * @alias Realm~RemoteMongoDBDatabase
+ * The MongoDB service can be used to get database and collection objects for interacting with MongoDB data.
+ * @alias Realm~MongoDBDatabase
  */
-class RemoteMongoDBDatabase {
+class MongoDBDatabase {
+    /**
+     * Get the database name.
+     * @return {string} The database name.
+     */
+    get name() { }
+
     /**
      * Get the interface to a remote MongoDB collection.
      *
      * @param {string} name The name of the collection.
-     * @returns {Realm.RemoteMongoDBCollection} The remote MongoDB collection.
+     * @returns {Realm.MongoDBCollection} The remote MongoDB collection.
      */
     collection(name) { }
 }
@@ -865,7 +1012,13 @@ class RemoteMongoDBDatabase {
  * A remote collection of documents in a MongoDB database.
  * @memberof Realm
  */
-class RemoteMongoDBCollection {
+class MongoDBCollection {
+    /**
+     * Gets the name of the collection.
+     * @return {string} The name.
+     */
+    get name() { }
+
     /**
      * Finds the documents which match the provided query.
      *
@@ -956,7 +1109,7 @@ class RemoteMongoDBCollection {
     async count(filter, options) { }
 
     /**
-     * @typedef Realm.RemoteMongoDBCollection~InsertOneResult Result of inserting a document
+     * @typedef Realm.MongoDBCollection~InsertOneResult Result of inserting a document
      * @property insertedId The id of the inserted document
      */
 
@@ -965,12 +1118,12 @@ class RemoteMongoDBCollection {
      * Note: If the document is missing an _id, one will be generated for it by the server.
      *
      * @param {object} document The document.
-     * @returns {Promise<Realm.RemoteMongoDBCollection~InsertOneResult>} The _id of the inserted document.
+     * @returns {Promise<Realm.MongoDBCollection~InsertOneResult>} The _id of the inserted document.
      */
     async insertOne(document) { }
 
     /**
-     * @typedef Realm.RemoteMongoDBCollection~InsertManyResult Result of inserting many documents
+     * @typedef Realm.MongoDBCollection~InsertManyResult Result of inserting many documents
      * @property {Array} insertedIds The ids of the inserted documents
      */
 
@@ -979,12 +1132,12 @@ class RemoteMongoDBCollection {
      * If any values are missing identifiers, they will be generated by the server.
      *
      * @param {object[]} documents The array of documents.
-     * @returns {Promise<Realm.RemoteMongoDBCollection~InsertManyResult>} The _ids of the inserted documents.
+     * @returns {Promise<Realm.MongoDBCollection~InsertManyResult>} The _ids of the inserted documents.
      */
     async insertMany(documents) { }
 
     /**
-     * @typedef {object} Realm.RemoteMongoDBCollection~DeleteResult Result of deleting documents
+     * @typedef {object} Realm.MongoDBCollection~DeleteResult Result of deleting documents
      * @property {number} deletedCount The number of documents that were deleted.
      */
 
@@ -992,7 +1145,7 @@ class RemoteMongoDBCollection {
      * Deletes a single matching document from the collection.
      *
      * @param {object} filter A filter applied to narrow down the result.
-     * @returns {Promise<Realm.RemoteMongoDBCollection~DeleteResult>}
+     * @returns {Promise<Realm.MongoDBCollection~DeleteResult>}
      */
     async deleteOne(filter) { }
 
@@ -1000,12 +1153,12 @@ class RemoteMongoDBCollection {
      * Deletes multiple documents.
      *
      * @param {object} filter A filter applied to narrow down the result.
-     * @returns {Promise<Realm.RemoteMongoDBCollection~DeleteResult>}
+     * @returns {Promise<Realm.MongoDBCollection~DeleteResult>}
      */
     async deleteMany(filter) { }
 
     /**
-     * @typedef {object} Realm.RemoteMongoDBCollection~UpdateResult Result of updating documents
+     * @typedef {object} Realm.MongoDBCollection~UpdateResult Result of updating documents
      * @property {number} matchedCount The number of documents that matched the filter.
      * @property {number} modifedCount The number of documents matched by the query.
      * @property [upsertedId] The identifier of the inserted document if an upsert took place.
@@ -1019,7 +1172,7 @@ class RemoteMongoDBCollection {
      * @param {object} [options] Additional options to apply.
      * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
      * query filter when the query does not match any existing documents in the collection.
-     * @returns {Promise<Realm.RemoteMongoDBCollection~UpdateResult>}
+     * @returns {Promise<Realm.MongoDBCollection~UpdateResult>}
      */
     async updateOne(filter, update, options) { }
 
@@ -1031,12 +1184,12 @@ class RemoteMongoDBCollection {
      * @param {object} [options] Additional options to apply.
      * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
      * query filter when the query does not match any existing documents in the collection.
-     * @returns {Promise<Realm.RemoteMongoDBCollection~UpdateResult>}
+     * @returns {Promise<Realm.MongoDBCollection~UpdateResult>}
      */
     async updateMany(filter, update, options) { }
 
     /**
-     * @typedef {object} Realm.RemoteMongoDBCollection~ChangeEvent An event in a change stream.
+     * @typedef {object} Realm.MongoDBCollection~ChangeEvent An event in a change stream.
      *
      * Note that which properties are present will depend on both the
      * `operationType` field, which is itself always present, and the MongoDB
@@ -1070,11 +1223,11 @@ class RemoteMongoDBCollection {
      * By default, yields all change events for this collection. You may specify at most one of
      * the `filter` or `ids` options.
      *
-     * @param {object} [options={}] 
+     * @param {object} [options={}]
      * @param {object} [options.filter] A filter for which change events you are interested in.
      * @param {any[]} [options.ids] A list of ids that you are interested in watching
      *
-     * @yields {Realm.RemoteMongoDBCollection~ChangeEvent} a change event
+     * @yields {Realm.MongoDBCollection~ChangeEvent} a change event
      */
     async* watch(options) {}
 }

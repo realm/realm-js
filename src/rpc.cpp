@@ -28,11 +28,15 @@
 #include "object_accessor.hpp"
 #include "shared_realm.hpp"
 #include "results.hpp"
+#include "jsc_rpc_network_transport.hpp"
+#include "js_app.hpp"
 
 using namespace realm;
 using namespace realm::rpc;
 
+using Value = js::Value<jsc::Types>;
 using Accessor = realm::js::NativeAccessor<jsc::Types>;
+using AppClass = js::AppClass<jsc::Types>;
 
 namespace {
 static const char * const RealmObjectTypesData = "data";
@@ -46,7 +50,13 @@ static const char * const RealmObjectTypesRealm = "realm";
 static const char * const RealmObjectTypesUser = "user";
 static const char * const RealmObjectTypesSession = "session";
 static const char * const RealmObjectTypesAsyncOpenTask = "asyncopentask";
+static const char * const RealmObjectTypesApp = "app";
+static const char * const RealmObjectTypesCredentials = "credentials";
 static const char * const RealmObjectTypesUndefined = "undefined";
+static const char * const RealmObjectTypesError = "error";
+static const char * const RealmObjectTypesFetchResponseHandler = "fetchresponsehandler";
+static const char * const RealmObjectTypesEmailPasswordAuth = "emailpasswordauth";
+static const char * const RealmObjectTypesEJSON = "ejson";
 
 json serialize_object_schema(const realm::ObjectSchema &object_schema) {
     std::vector<std::string> properties;
@@ -72,7 +82,7 @@ json get_type(Container const& c) {
         return serialize_object_schema(c.get_object_schema());
     }
     return {
-        {"type", string_for_property_type(type)},
+        {"type", js::local_string_for_property_type(type)},
         {"optional", is_nullable(type)}
     };
 }
@@ -227,6 +237,18 @@ static json read_object_properties(Object& object) {
                 }
                 break;
             }
+            case PropertyType::Decimal:
+                cache[property.name] = {
+                    {"type", RealmObjectTypesEJSON},
+                    {"value", {"$numberDecimal", obj.get<Decimal>(property.column_key).to_string()}},
+                };
+                break;
+            case PropertyType::ObjectId:
+                cache[property.name] = {
+                    {"type", RealmObjectTypesEJSON},
+                    {"value", {"$oid", obj.get<ObjectId>(property.column_key).to_string()}},
+                };
+                break;
             case PropertyType::Data:
             case PropertyType::Object:
             break;
@@ -240,6 +262,13 @@ RPCServer::RPCServer() {
     m_context = JSGlobalContextCreate(NULL);
     get_rpc_server(m_context) = this;
     m_callback_call_counter = 1;
+    
+    // Make the App use the RPC Network Transport from now on
+    previous_transport_generator = AppClass::transport_generator;
+    AppClass::transport_generator = [] (jsc::Types::Context ctx, auto&& dispatcher) {
+        (void)dispatcher; // We don't need to use the dispatcher because JSC separately guarantees thread-safety.
+        return std::make_unique<RPCNetworkTransport>(ctx);
+    };
 
     // JavaScriptCore crashes when trying to walk up the native stack to print the stacktrace.
     // FIXME: Avoid having to do this!
@@ -248,6 +277,19 @@ RPCServer::RPCServer() {
         setIncludesNativeCallStack(m_context, false);
     }
 
+    m_requests["/create_session"] = [this](const json dict) {
+        RJSInitializeInContext(m_context);
+
+        jsc::String realm_string = "Realm";
+        JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(m_context, JSContextGetGlobalObject(m_context), realm_string);
+
+        // Enable the RCP network transport to issue calls to the remote fetch function
+        jsc::Types::Function fetch_function = Value::validated_to_function(m_context, deserialize_json_value(dict["fetch"]), "fetch");
+        RPCNetworkTransport::fetch_function = js::Protected(m_context, fetch_function);
+         
+        m_session_id = store_object(realm_constructor);
+        return (json){{"result", m_session_id}};
+    };
     m_requests["/create_realm"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
 
@@ -269,6 +311,21 @@ RPCServer::RPCServer() {
         jsc::Function::call(m_context, add_listener_method, realm_object, 2, listener_args);
 
         return (json){{"result", serialize_json_value(realm_object)}};
+    };
+    m_requests["/create_app"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef app_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "App");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef app_object = jsc::Function::construct(m_context, app_constructor, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(app_object)}};
     };
     m_requests["/create_user"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
@@ -408,18 +465,26 @@ RPCServer::RPCServer() {
             m_objects.emplace(m_session_id, realm_constructor);
         }
 
-        // The JS side of things only gives us the refreshAccessToken callback
+        // The JS side of things only gives us the fetch function callback
         // when creating a session so we need to hold onto it.
-        auto refresh_access_token = m_callbacks[0];
+        auto fetch_function = m_callbacks[0];
 
         m_callbacks.clear();
         m_callback_ids.clear();
-        m_callbacks[0] = refresh_access_token;
-        m_callback_ids[refresh_access_token] = 0;
+        m_callbacks[0] = fetch_function;
+        m_callback_ids[fetch_function] = 0;
         ++m_reset_counter;
         JSGarbageCollect(m_context);
         js::clear_test_state();
 
+        return json::object();
+    };
+    m_requests["/set_versions"] = [this](const json dict) {
+        JSObjectRef versions = jsc::Value::validated_to_object(m_context, deserialize_json_value(dict["versions"]), "versions");
+        AppClass::package_version = jsc::Object::validated_get_string(m_context, versions, "packageVersion");
+        AppClass::platform_context = jsc::Object::validated_get_string(m_context, versions, "platformContext");
+        AppClass::platform_os = jsc::Object::validated_get_string(m_context, versions, "platformOs");
+        AppClass::platform_version = jsc::Object::validated_get_string(m_context, versions, "platformVersion");
         return json::object();
     };
     m_requests["/_anonymous"] = [this](const json dict) {
@@ -486,6 +551,38 @@ RPCServer::RPCServer() {
         JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, email_password_method, arg_count, arg_values);
         return (json){{"result", serialize_json_value(credentials_object)}};
     };
+    m_requests["/_function"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef function_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "function");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be one
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, function_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
+    m_requests["/_google"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef google_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "google");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be one
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, google_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
     m_requests["/_userApiKey"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
         JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
@@ -518,6 +615,22 @@ RPCServer::RPCServer() {
         JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, server_api_key_method, arg_count, arg_values);
         return (json){{"result", serialize_json_value(credentials_object)}};
     };
+    m_requests["/_jwt"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef credentials_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Credentials");
+        JSObjectRef jwt_method = (JSObjectRef)jsc::Object::get_property(m_context, credentials_constructor, "jwt");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();  // should be one
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef credentials_object = (JSObjectRef)jsc::Function::call(m_context, jwt_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(credentials_object)}};
+    };
 }
 
 RPCServer::~RPCServer() {
@@ -527,10 +640,16 @@ RPCServer::~RPCServer() {
     m_objects.clear();
     m_callbacks.clear();
 
+    // Restore the previous transport generator
+    AppClass::transport_generator = previous_transport_generator;
+
     get_rpc_server(m_context) = nullptr;
     JSGlobalContextRelease(m_context);
 }
 
+/**
+ * Asks the client to execute a callback and awaits the result.
+ */
 JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
                                    size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
     RPCServer* server = get_rpc_server(JSContextGetGlobalContext(ctx));
@@ -651,7 +770,10 @@ json RPCServer::perform_request(std::string const& name, json&& args) {
             catch (...) {
                 exceptionAsJson = {{"error", "An exception occured while processing the request. Could not serialize the exception as JSON"}};
             }
-            return (json){{"error", exceptionAsJson}, {"message", ex.what()}};
+            return (json){
+                {"error", exceptionAsJson},
+                {"message", ex.what()},
+            };
         }
         catch (std::exception const& exception) {
             return (json){{"error", exception.what()}};
@@ -721,7 +843,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesList},
             {"id", store_object(js_object)},
-            {"dataType", string_for_property_type(list->get_type() & ~realm::PropertyType::Flags)},
+            {"dataType", js::local_string_for_property_type(list->get_type() & ~realm::PropertyType::Flags)},
             {"optional", is_nullable(list->get_type())},
          };
     }
@@ -730,7 +852,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesResults},
             {"id", store_object(js_object)},
-            {"dataType", string_for_property_type(results->get_type() & ~realm::PropertyType::Flags)},
+            {"dataType", js::local_string_for_property_type(results->get_type() & ~realm::PropertyType::Flags)},
             {"optional", is_nullable(results->get_type())},
         };
     }
@@ -752,14 +874,9 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     }
 #if REALM_ENABLE_SYNC
     else if (jsc::Object::is_instance<js::UserClass<jsc::Types>>(m_context, js_object)) {
-        auto user = jsc::Object::get_internal<js::UserClass<jsc::Types>>(m_context, js_object);
-        json user_dict {
-            {"id", user->get()->identity()},
-        };
         return {
             {"type", RealmObjectTypesUser},
             {"id", store_object(js_object)},
-            {"data", user_dict}
         };
     }
     else if (jsc::Object::is_instance<js::SessionClass<jsc::Types>>(m_context, js_object)) {
@@ -776,6 +893,30 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     else if (jsc::Object::is_instance<js::AsyncOpenTaskClass<jsc::Types>>(m_context, js_object)) {
         return {
             {"type", RealmObjectTypesAsyncOpenTask},
+            {"id", store_object(js_object)},
+        };
+    }
+    else if (jsc::Object::is_instance<js::AppClass<jsc::Types>>(m_context, js_object)) {
+        return {
+            {"type", RealmObjectTypesApp},
+            {"id", store_object(js_object)},
+        };
+    }
+    else if (jsc::Object::is_instance<js::CredentialsClass<jsc::Types>>(m_context, js_object)) {
+        return {
+            {"type", RealmObjectTypesCredentials},
+            {"id", store_object(js_object)},
+        };
+    }
+    else if (jsc::Object::is_instance<js::ResponseHandlerClass<jsc::Types>>(m_context, js_object)) {
+        return {
+            {"type", RealmObjectTypesFetchResponseHandler},
+            {"id", store_object(js_object)},
+        };
+    }
+    else if (jsc::Object::is_instance<js::EmailPasswordAuthClass<jsc::Types>>(m_context, js_object)) {
+        return {
+            {"type", RealmObjectTypesEmailPasswordAuth},
             {"id", store_object(js_object)},
         };
     }
@@ -801,6 +942,13 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"value", jsc::Value::to_number(m_context, js_object)},
         };
     }
+    else if (jsc::Value::is_error(m_context, js_object)) {
+        return {
+            {"type", RealmObjectTypesError},
+            {"message", serialize_json_value(jsc::Object::get_property(m_context, js_object, "message"))},
+            {"stack", serialize_json_value(jsc::Object::get_property(m_context, js_object, "stack"))},
+        };
+    }
     else if (jsc::Value::is_function(m_context, js_object)) {
         auto it = m_callback_ids.find(js_object);
         if (it != m_callback_ids.end()) {
@@ -808,18 +956,24 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
                 {"type", RealmObjectTypesFunction},
                 {"value", it->second}
             };
+        } else {
+            return {
+                {"type", RealmObjectTypesFunction},
+                {"value", it->second}
+            };
+            
         }
         return json::object();
     }
     else {
         // Serialize this JS object as a plain object since it doesn't match any known types above.
-        std::vector<jsc::String> js_keys = jsc::Object::get_property_names(m_context, js_object);
         std::vector<std::string> keys;
         std::vector<json> values;
-
+        
+        // Use the enumarable properties
+        std::vector<jsc::String> js_keys = jsc::Object::get_property_names(m_context, js_object);
         for (auto &js_key : js_keys) {
             JSValueRef js_value = jsc::Object::get_property(m_context, js_object, js_key);
-
             keys.push_back(js_key);
             values.push_back(serialize_json_value(js_value));
         }
@@ -882,6 +1036,14 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
         }
         else if (type_string == RealmObjectTypesUndefined) {
             return jsc::Value::from_undefined(m_context);
+        }
+        else if (type_string == RealmObjectTypesEJSON) {
+            JSObjectRef js_object = jsc::Object::create_empty(m_context);
+            for (auto& el : value.items()) {
+                auto el_value = jsc::Value::from_string(m_context, el.value().get<std::string>());
+                jsc::Object::set_property(m_context, js_object, el.key(), el_value);
+            }
+            return js_object;
         }
         assert(0);
     }

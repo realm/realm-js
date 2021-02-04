@@ -20,63 +20,53 @@
 import { Base64 } from "js-base64";
 
 import type { App } from "./App";
-import { AuthenticatedTransport, AppTransport } from "./transports";
+import { Fetcher } from "./Fetcher";
 import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
-import { Credentials } from "./Credentials";
+import { Credentials, ProviderType } from "./Credentials";
 import { ApiKeyAuth } from "./auth-providers";
+import { createService as createMongoDBRemoteService } from "./services/MongoDBService";
+import routes from "./routes";
 
-// Disabling requiring JSDoc for now - as the User class is exported as the Realm.User interface, which is already documented.
-/* eslint-disable jsdoc/require-jsdoc */
+const DEFAULT_DEVICE_ID = "000000000000000000000000";
+
+interface HydratableUserParameters {
+    app: App<any>;
+    id: string;
+}
 
 interface UserParameters {
     app: App<any>;
     id: string;
-    accessToken: string | null;
-    refreshToken: string | null;
+    providerType: ProviderType;
+    accessToken: string;
+    refreshToken: string;
 }
 
 type JWT<CustomDataType extends object = any> = {
     expires: number;
     issuedAt: number;
+    subject: string;
     userData: CustomDataType;
 };
 
+/** The state of a user within the app */
 export enum UserState {
+    /** Active, with both access and refresh tokens */
     Active = "active",
+    /** Logged out, but there might still be data persisted about the user, in the browser. */
     LoggedOut = "logged-out",
+    /** Logged out and all data about the user has been removed. */
     Removed = "removed",
 }
 
+/** The type of a user. */
 export enum UserType {
+    /** Created by the user itself. */
     Normal = "normal",
+    /** Created by an administrator of the app. */
     Server = "server",
-}
-
-export async function performLogIn(app: App<any>, credentials: Credentials) {
-    // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
-    const response = await app.appTransport.fetch<object, any>({
-        method: "POST",
-        path: `/auth/providers/${credentials.providerName}/login`,
-        body: credentials.payload,
-    });
-    // Spread out values from the response and ensure they're valid
-    const {
-        user_id: id,
-        access_token: accessToken,
-        refresh_token: refreshToken,
-    } = response;
-    if (typeof id !== "string") {
-        throw new Error("Expected a user id in the response");
-    }
-    if (typeof accessToken !== "string") {
-        throw new Error("Expected an access token in the response");
-    }
-    if (typeof refreshToken !== "string") {
-        throw new Error("Expected a refresh token in the response");
-    }
-    return { id, accessToken, refreshToken };
 }
 
 /**
@@ -84,75 +74,78 @@ export async function performLogIn(app: App<any>, credentials: Credentials) {
  */
 export class User<
     FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
-    CustomDataType extends object = any
-> implements Realm.User<FunctionsFactoryType, CustomDataType> {
+    CustomDataType extends object = any,
+    UserProfileDataType = Realm.DefaultUserProfileData
+> implements
+        Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType> {
     /**
      * The app that this user is associated with.
      */
     public readonly app: App<FunctionsFactoryType, CustomDataType>;
 
+    /** @inheritdoc */
+    public readonly id: string;
+
+    /** @inheritdoc */
     public readonly functions: FunctionsFactoryType &
         Realm.BaseFunctionsFactory;
 
     /** @inheritdoc */
-    public apiKeys: ApiKeyAuth;
+    public readonly providerType: ProviderType;
 
-    /**
-     * Creates a user from the data stored in the storage of an `App` instance.
-     *
-     * @param app The app that the user was logged into.
-     * @param userId The id of the user to restore.
-     * @returns The user created from values retrieved from storage.
-     */
-    public static hydrate<
-        FunctionsFactoryType extends object,
-        CustomDataType extends object
-    >(app: App<FunctionsFactoryType, CustomDataType>, userId: string) {
-        const user = new User<FunctionsFactoryType, CustomDataType>({
-            app,
-            id: userId,
-            accessToken: null,
-            refreshToken: null,
-        });
-        user.hydrate();
-        return user;
-    }
+    /** @inheritdoc */
+    public readonly apiKeys: ApiKeyAuth;
 
-    private _id: string;
     private _accessToken: string | null;
     private _refreshToken: string | null;
-    private _profile: UserProfile | undefined;
-    private transport: AuthenticatedTransport;
-    private storage: UserStorage;
-
-    public constructor({ app, id, accessToken, refreshToken }: UserParameters) {
-        this.app = app;
-        this._id = id;
-        this._accessToken = accessToken;
-        this._refreshToken = refreshToken;
-        this.transport = new AuthenticatedTransport(app.baseTransport, {
-            currentUser: this,
-        });
-        const appTransport = new AppTransport(this.transport, app.id);
-        this.apiKeys = new ApiKeyAuth(this.transport);
-        this.functions = FunctionsFactory.create(appTransport);
-        this.storage = new UserStorage(app.storage, id);
-        // Store tokens in storage for later hydration
-        if (accessToken) {
-            this.storage.accessToken = accessToken;
-        }
-        if (refreshToken) {
-            this.storage.refreshToken = refreshToken;
-        }
-    }
+    private _profile: UserProfile<UserProfileDataType> | undefined;
+    private fetcher: Fetcher;
+    private storage: UserStorage<UserProfileDataType>;
 
     /**
-     * The automatically-generated internal id of the user.
-     *
-     * @returns The id of the user in the MongoDB Realm database.
+     * @param parameters Parameters of the user.
      */
-    get id() {
-        return this._id;
+    public constructor(parameters: HydratableUserParameters);
+    /**
+     * @param parameters Parameters of the user.
+     */
+    public constructor(parameters: UserParameters);
+    /**
+     * @param parameters Parameters of the user.
+     */
+    public constructor(parameters: HydratableUserParameters | UserParameters) {
+        this.app = parameters.app;
+        this.id = parameters.id;
+        this.storage = new UserStorage(this.app.storage, this.id);
+        if (
+            "accessToken" in parameters &&
+            "refreshToken" in parameters &&
+            "providerType" in parameters
+        ) {
+            this._accessToken = parameters.accessToken;
+            this._refreshToken = parameters.refreshToken;
+            this.providerType = parameters.providerType;
+            // Save the parameters to storage, for future instances to be hydrated from
+            this.storage.accessToken = parameters.accessToken;
+            this.storage.refreshToken = parameters.refreshToken;
+            this.storage.providerType = parameters.providerType;
+        } else {
+            // Hydrate the rest of the parameters from storage
+            this._accessToken = this.storage.accessToken;
+            this._refreshToken = this.storage.refreshToken;
+            const providerType = this.storage.providerType;
+            this._profile = this.storage.profile;
+            if (providerType) {
+                this.providerType = providerType;
+            } else {
+                throw new Error("Storage is missing a provider type");
+            }
+        }
+        this.fetcher = this.app.fetcher.clone({
+            userContext: { currentUser: this },
+        });
+        this.apiKeys = new ApiKeyAuth(this.fetcher);
+        this.functions = FunctionsFactory.create(this.fetcher);
     }
 
     /**
@@ -186,21 +179,23 @@ export class User<
     }
 
     /**
-     * The state of the user is one of:
-     * - "active" The user is logged in and ready.
-     * - "logged-out" The user was logged in, but is no longer logged in.
-     * - "removed" The user was logged in, but removed entirely from the app again.
-     *
      * @returns The current state of the user.
      */
     get state(): UserState {
-        if (this.app.allUsers.indexOf(this) === -1) {
-            return UserState.Removed;
-        } else {
+        if (this.id in this.app.allUsers) {
             return this.refreshToken === null
                 ? UserState.LoggedOut
                 : UserState.Active;
+        } else {
+            return UserState.Removed;
         }
+    }
+
+    /**
+     * @returns The logged in state of the user.
+     */
+    get isLoggedIn(): boolean {
+        return this.state === UserState.Active;
     }
 
     get customData(): CustomDataType {
@@ -215,19 +210,47 @@ export class User<
     /**
      * @returns Profile containing detailed information about the user.
      */
-    get profile(): Realm.UserProfile {
+    get profile(): UserProfileDataType {
         if (this._profile) {
-            return this._profile;
+            return this._profile.data;
         } else {
             throw new Error("A profile was never fetched for this user");
         }
     }
 
+    get identities(): Realm.UserIdentity[] {
+        if (this._profile) {
+            return this._profile.identities;
+        } else {
+            throw new Error("A profile was never fetched for this user");
+        }
+    }
+
+    get deviceId(): string | null {
+        if (this.accessToken) {
+            const payload = this.accessToken.split(".")[1];
+            if (payload) {
+                const parsedPayload = JSON.parse(Base64.decode(payload));
+                const deviceId = parsedPayload["baas_device_id"];
+                if (
+                    typeof deviceId === "string" &&
+                    deviceId !== DEFAULT_DEVICE_ID
+                ) {
+                    return deviceId;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Refresh the users profile data.
+     */
     public async refreshProfile() {
         // Fetch the latest profile
-        const response = await this.transport.fetch({
+        const response = await this.fetcher.fetchJSON({
             method: "GET",
-            path: "/auth/profile",
+            path: routes.api().auth().profile().path,
         });
         // Create a profile instance
         this._profile = new UserProfile(response);
@@ -235,52 +258,51 @@ export class User<
         this.storage.profile = this._profile;
     }
 
+    /**
+     * Log out the user, invalidating the session (and its refresh token).
+     */
     public async logOut() {
         // Invalidate the refresh token
-        if (this._refreshToken !== null) {
-            await this.app.baseTransport.fetch({
-                method: "DELETE",
-                path: "/auth/session",
-                headers: {
-                    Authorization: `Bearer ${this._refreshToken}`,
-                },
-            });
+        try {
+            if (this._refreshToken !== null) {
+                await this.fetcher.fetchJSON({
+                    method: "DELETE",
+                    path: routes.api().auth().session().path,
+                    tokenType: "refresh",
+                });
+            }
+        } finally {
+            // Forget the access and refresh token
+            this.accessToken = null;
+            this.refreshToken = null;
         }
-        // Forget the access and refresh token
-        this.accessToken = null;
-        this.refreshToken = null;
-    }
-
-    /**
-     * Authenticate and retrieve the access and refresh tokens.
-     *
-     * @param credentials Credentials to use when logging in.
-     */
-    public async logIn(credentials: Realm.Credentials) {
-        const { id, accessToken, refreshToken } = await performLogIn(
-            this.app,
-            credentials,
-        );
-        if (id !== this.id) {
-            throw new Error("Logged into a different user");
-        }
-        // Store the access and refresh token
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
     }
 
     /** @inheritdoc */
-    public async linkCredentials(credentials: Realm.Credentials) {
-        throw new Error("Not yet implemented");
+    public async linkCredentials(credentials: Credentials) {
+        const response = await this.app.authenticator.authenticate(
+            credentials,
+            this,
+        );
+        // Sanity check the response
+        if (this.id !== response.userId) {
+            const details = `got user id ${response.userId} expected ${this.id}`;
+            throw new Error(`Link response ment for another user (${details})`);
+        }
+        // Update the access token
+        this.accessToken = response.accessToken;
+        // Refresh the profile to include the new identity
+        await this.refreshProfile();
     }
 
+    /**
+     * Request a new access token, using the refresh token.
+     */
     public async refreshAccessToken() {
-        const response = await this.app.baseTransport.fetch({
+        const response = await this.fetcher.fetchJSON({
             method: "POST",
-            path: "/auth/session",
-            headers: {
-                Authorization: `Bearer ${this.refreshToken}`,
-            },
+            path: routes.api().auth().session().path,
+            tokenType: "refresh",
         });
         const { access_token: accessToken } = response;
         if (typeof accessToken === "string") {
@@ -290,36 +312,39 @@ export class User<
         }
     }
 
+    /** @inheritdoc */
     public async refreshCustomData() {
         await this.refreshAccessToken();
         return this.customData;
     }
 
+    /** @inheritdoc */
     public callFunction(name: string, ...args: any[]) {
         return this.functions.callFunction(name, ...args);
     }
 
     /**
-     * Restore a user from the data stored in the storage of an `App` instance.
+     * @returns A plain ol' JavaScript object representation of the user.
      */
-    public hydrate() {
-        // Hydrate tokens
-        const accessToken = this.storage.accessToken;
-        const refreshToken = this.storage.refreshToken;
-        const profile = this.storage.profile;
-        if (typeof accessToken === "string") {
-            this.accessToken = accessToken;
-        }
-        if (typeof refreshToken === "string") {
-            this.refreshToken = refreshToken;
-        }
-        if (typeof profile === "object") {
-            this._profile = profile;
-        }
+    public toJSON() {
+        return {
+            id: this.id,
+            accessToken: this.accessToken,
+            refreshToken: this.refreshToken,
+            profile: this._profile,
+            state: this.state,
+            customData: this.customData,
+        };
     }
 
+    /** @inheritdoc */
     push(serviceName = ""): Realm.Services.Push {
         throw new Error("Not yet implemented");
+    }
+
+    /** @inheritdoc */
+    public mongoClient(serviceName: string): Realm.Services.MongoDB {
+        return createMongoDBRemoteService(this.fetcher, serviceName);
     }
 
     private decodeAccessToken(): JWT<CustomDataType> {
@@ -327,7 +352,7 @@ export class User<
             // Decode and spread the token
             const parts = this.accessToken.split(".");
             if (parts.length !== 3) {
-                throw new Error("Expected three parts");
+                throw new Error("Expected an access token with three parts");
             }
             // Decode the payload
             const encodedPayload = parts[1];
@@ -336,6 +361,7 @@ export class User<
             const {
                 exp: expires,
                 iat: issuedAt,
+                sub: subject,
                 user_data: userData = {},
             } = parsedPayload;
             // Validate the types
@@ -344,7 +370,7 @@ export class User<
             } else if (typeof issuedAt !== "number") {
                 throw new Error("Failed to decode access token 'iat'");
             }
-            return { expires, issuedAt, userData };
+            return { expires, issuedAt, subject, userData };
         } else {
             throw new Error("Missing an access token");
         }

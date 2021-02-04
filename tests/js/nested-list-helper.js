@@ -63,19 +63,19 @@ function createObjects(user) {
                 { _id: new ObjectId(), family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
             ]
         });
-    });
 
-    console.log("JSON: " + JSON.stringify(realm.objects('ParentObject')));
+        console.log("JSON: " + JSON.stringify(realm.objects('ParentObject')));
 
-    let session = realm.syncSession;
-    return new Promise((resolve, reject) => {
-        let callback = (transferred, total) => {
-            if (transferred === total) {
-                session.removeProgressNotification(callback);
-                resolve(realm);
+        let session = realm.syncSession;
+        return new Promise((resolve, reject) => {
+            let callback = (transferred, total) => {
+                if (transferred === total) {
+                    session.removeProgressNotification(callback);
+                    resolve(realm);
+                }
             }
-        }
-        session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
+            session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
+        });
     });
 }
 
