@@ -261,6 +261,8 @@ class Sync {
      * Throws error if reset is not possible.
      * @example
      * {
+     *   // Once you have opened your Realm, you will have to keep a reference to it.
+     *   // In the error handler, this reference is called `realm`
      *   const config = {
      *     // schema, etc.
      *     sync: {
