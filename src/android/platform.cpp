@@ -74,7 +74,8 @@ namespace realm {
                 char buf[BUFSIZ];
                 int nb_read = 0;
 
-                const char* dest_filename = (s_default_realm_directory + '/' + filename).c_str();
+                std::string dest = s_default_realm_directory + '/' + filename;
+                const char* dest_filename = dest.c_str();
                 if (access(dest_filename, F_OK ) == -1) {
                     // file doesn't exist, copy
                     FILE* out = fopen(dest_filename, "w");
