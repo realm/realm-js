@@ -65,6 +65,7 @@ if (global.enableSyncTests) {
     if (isNodeProcess && !isElectronProcess) {
         // FIXME: Permission tests currently fail in react native
         TESTS.PermissionTests = require('./permission-tests');
+        TESTS.AnalyticsTests = require('./analytics-tests');
         node_require('./adapter-tests');
         node_require('./notifier-tests');
     }
