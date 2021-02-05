@@ -1,3 +1,17 @@
+6.1.6 Release notes (xxxx-xx-xx)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* 
+
+### Compatibility
+* 
+
+### Internal
+* Implemented webhook analytics integration
+
 6.1.5 Release notes (2020-11-4)
 =============================================================
 ### Enhancements
