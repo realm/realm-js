@@ -1450,22 +1450,4 @@ module.exports = {
             realm.close();
         });
     },
-
-    async testAnalyticsSubmission() {
-        const context = node_require('realm/package.json');
-        const analytics = node_require('realm/lib/submit-analytics');
-
-        const payload = await analytics.fetchPlatformData(context, 'TestEvent');
-
-        TestCase.assertDefined(payload.webHook);
-        TestCase.assertType(payload.webHook.event, 'string');
-        TestCase.assertDefined(payload.webHook.properties);
-        TestCase.assertType(payload.webHook.properties.Binding, 'string');
-        TestCase.assertDefined(payload.mixPanel);
-        TestCase.assertType(payload.mixPanel.event, 'string');
-        TestCase.assertDefined(payload.mixPanel.properties);
-        TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
-
-        await analytics.submitStageAnalytics('TestEvent');
-    }
 };
