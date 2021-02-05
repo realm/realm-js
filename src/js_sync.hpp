@@ -24,6 +24,7 @@
 #include "js_collection.hpp"
 #include "js_app.hpp"
 #include "js_user.hpp"
+#include "logger.hpp"
 
 #include "platform.hpp"
 #include "sync/sync_config.hpp"
@@ -37,7 +38,6 @@
 
 #if REALM_PLATFORM_NODE
 #include "impl/realm_coordinator.hpp"
-#include "node/sync_logger.hpp"
 #endif
 
 #if REALM_ANDROID
@@ -656,11 +656,8 @@ public:
         {"setUserAgent", wrap<set_sync_user_agent>},
         {"getAllSyncSessions", wrap<get_all_sync_sessions>},
         {"getSyncSession", wrap<get_sync_session>},
-
-#if REALM_PLATFORM_NODE
         {"setLogger", wrap<set_sync_logger>},
         {"setSyncLogger", wrap<set_sync_logger>},
-#endif
     };
 };
 
@@ -724,26 +721,35 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
 
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     std::string log_level = Value::validated_to_string(ctx, args[1], "log level");
-    std::istringstream in(log_level); // Throws
-    in.imbue(std::locale::classic()); // Throws
-    in.unsetf(std::ios_base::skipws);
-    util::Logger::Level log_level_2 = util::Logger::Level();
-    in >> log_level_2; // Throws
-    if (!in || !in.eof())
-        throw std::runtime_error("Bad log level");
-    app->sync_manager()->set_log_level(log_level_2);
+
+    auto level = common::logger::Logger::get_level(log_level);
+    app->sync_manager()->set_log_level(level);
 }
 
-#if REALM_PLATFORM_NODE
 template<typename T>
 void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(2);
 
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     auto callback_fn = Value::validated_to_function(ctx, args[1], "logger_callback");
-    app->sync_manager()->set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
+    
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<FunctionType> protected_callback(ctx, callback_fn);
+
+    common::logger::Delegated show_logs = [=](int level, std::string message) { 
+        HANDLESCOPE(protected_ctx)
+
+        ValueType arguments[2] = {
+            Value::from_number(protected_ctx, level),
+            Value::from_string(protected_ctx, message)
+        };
+
+        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, arguments); 
+    };
+
+    auto sync_logger = common::logger::Logger::build_sync_logger(show_logs);
+    app->sync_manager()->set_logger_factory( *sync_logger );
 }
-#endif
 
 template<typename T>
 void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {

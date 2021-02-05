@@ -1,12 +1,10 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Adding sync-logging support to Android/iOS. ([#2491](https://github.com/realm/realm-js/issues/2491))
 
 ### Fixed
 * Fixing regression on [Array Buffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) throwing an error when inserting an empty value in an optional binary field. [#3536](https://github.com/realm/realm-js/issues/3536).
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
 
 ### Compatibility
 * MongoDB Realm Cloud.
