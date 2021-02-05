@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.2.0 Release notes (2021-2-5)
 =============================================================
 ### Enhancements
 * Adding sync-logging support to Android/iOS. ([#2491](https://github.com/realm/realm-js/issues/2491))
