@@ -77,16 +77,16 @@ class SyncLoggerDelegator : public realm::util::RootLogger {
    public:
     void delegate(Delegated& delegate) {
         m_scheduler->set_notify_callback([this, delegate] {
+            std::queue<Entry> popped;
+            {
+                std::lock_guard<std::mutex> lock(m_mutex);  // Throws
+                popped.swap(m_log_queue);
+            }
+
             while (!m_log_queue.empty()) {
                 /*
                  *  Extracting and delegating log entries.
                  */
-                std::queue<Entry> popped;
-                {
-                    std::lock_guard<std::mutex> lock(m_mutex);  // Throws
-                    popped.swap(m_log_queue);
-                }
-
                 Entry entry;
                 {
                     if (popped.empty()) return;
