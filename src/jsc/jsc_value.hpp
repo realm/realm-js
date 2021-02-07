@@ -194,6 +194,12 @@ inline bool jsc::Value::is_object_id(JSContextRef ctx, const JSValueRef &value) 
 }
 
 template<>
+inline bool jsc::Value::is_uuid(JSContextRef ctx, const JSValueRef &value) {
+    // TODO: is_ejson_type won't work for binary EJSON
+    return is_bson_type(ctx, value, "UUID") || is_ejson_type(ctx, value, "$uuid");
+}
+
+template<>
 inline JSValueRef jsc::Value::from_boolean(JSContextRef ctx, bool boolean) {
     return JSValueMakeBoolean(ctx, boolean);
 }
