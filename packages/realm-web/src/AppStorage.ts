@@ -39,20 +39,14 @@ export class AppStorage extends PrefixedStorage {
      * @returns A list of user ids.
      */
     public getUserIds() {
-        try {
-            const userIdsString = this.get(USER_IDS_STORAGE_KEY);
-            const userIds = userIdsString ? JSON.parse(userIdsString) : [];
-            if (Array.isArray(userIds)) {
-                // Remove any duplicates that might have been added
-                // The Set preserves insertion order
-                return [...new Set(userIds)];
-            } else {
-                throw new Error("Expected an array");
-            }
-        } catch (err) {
-            // The storage was corrupted
-            this.remove(USER_IDS_STORAGE_KEY);
-            throw err;
+        const userIdsString = this.get(USER_IDS_STORAGE_KEY);
+        const userIds = userIdsString ? JSON.parse(userIdsString) : [];
+        if (Array.isArray(userIds)) {
+            // Remove any duplicates that might have been added
+            // The Set preserves insertion order
+            return [...new Set(userIds)];
+        } else {
+            throw new Error("Expected the user ids to be an array");
         }
     }
 

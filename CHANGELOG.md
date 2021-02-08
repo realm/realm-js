@@ -15,6 +15,22 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * None.
 
+10.2.0 Release notes (2021-2-5)
+=============================================================
+### Enhancements
+* Adding sync-logging support to Android/iOS. ([#2491](https://github.com/realm/realm-js/issues/2491))
+
+### Fixed
+* Fixing regression on [Array Buffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) throwing an error when inserting an empty value in an optional binary field. [#3536](https://github.com/realm/realm-js/issues/3536).
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Added metrics migration to webhooks.
+
 10.1.4 Release notes (2021-1-27)
 =============================================================
 ### Enhancements
