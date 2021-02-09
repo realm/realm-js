@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+const TestCase = require('./asserts');
 
 const require_method = require;
 function node_require(module) {
