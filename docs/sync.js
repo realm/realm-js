@@ -125,7 +125,7 @@
     switchUser(user) { }
 
     /**
-     * Removes the user from MongoDB Realm.
+     * Removes the user from the client.
      *
      * @param {Realm.User} user - The user to remove.
      * @returns {Promise<void>}
