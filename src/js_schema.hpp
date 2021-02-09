@@ -19,7 +19,7 @@
 #pragma once
 
 #include <map>
-
+#incldue "js_dictionary.hpp"
 #include "js_types.hpp"
 #include <realm/object-store/schema.hpp>
 
@@ -85,11 +85,17 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         type = type.substr(0, type.size() - 1);
     }
 
+    DictionarySchema dict_schm {type};
+
+    if(dict_schm.is_dictionary()){
+        prop.type |= dict_schm.schema_definition();
+    }
+
     if (type == "bool") {
         prop.type |= PropertyType::Bool;
     }
     else if (type == "{}"){
-        prop.type |= PropertyType::Dictionary | PropertyType::Mixed;
+        prop.type |= PropertyType::Dictionary | PropertyType::Int;
     }
     else if (type == "mixed") {
         prop.type |= PropertyType::Nullable | PropertyType::Mixed;
