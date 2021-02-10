@@ -25,6 +25,7 @@
 #include <regex>
 
 #include "realm/object-store/property.hpp"
+#include "common/type_deduction.hpp"
 
 namespace realm {
 namespace js {
@@ -37,8 +38,6 @@ private:
     std::smatch matches;
     bool valid_schema;
 public:
-    std::map<std::string, realm::PropertyType> schema_properties = {
-        {"string", realm::PropertyType::String}, {"int", realm::PropertyType::Int}};
 
     DictionarySchema(std::string _schema) {
         std::regex dict_schm_regex{DICT_SCHEMA, std::regex_constants::ECMAScript};
@@ -57,12 +56,12 @@ public:
             return get_schemaless();
         }
 
-        if (schema_properties.find(type) == schema_properties.end()) {
-            throw("Type: " + type + " not supported for Dictionary.");
+        if (TypeDeduction::realm_type_exist(type)) {
+            throw std::runtime_error("Schema type: " + type + " not supported for Dictionary.");
         }
 
-        auto dictionary_type_value = schema_properties[type];
-        return (realm::PropertyType::Dictionary | dictionary_type_value);
+        auto dictionary_type_value = TypeDeduction::realm_type(type);
+        return (realm::PropertyType::Dictionary | static_cast<realm::PropertyType>(dictionary_type_value));
     }
 
     bool is_dictionary() { return valid_schema; }

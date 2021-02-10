@@ -17,6 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+
+#include <algorithm>
+#include <cctype>
+
 #include <common/types.hpp>
 #include "realm/data_type.hpp"
 
@@ -25,8 +29,22 @@
 namespace realm {
 namespace js {
 
-struct TypeDeductionImpl {
+class TypeDeductionImpl {
+private:
     using Value = const Napi::Value;
+    static std::map<types::Type, std::string> realm_types;
+
+    static auto reverse_deduction_types_map(){
+        std::map<std::string, types::Type> ret;
+        for(auto& [type, key] : realm_types ){
+            ret[key] = type;
+            std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c){ return std::tolower(c); });
+            ret[key] = type;
+        }
+        return ret;
+    }
+
+public:
     static bool is_bson_type(Value& value, std::string type)
     {
         if (!value.IsObject()) {
@@ -52,14 +70,19 @@ struct TypeDeductionImpl {
         return TypeDeductionImpl::is_bson_type(value, "ObjectID");
     }
 
-    static std::string to_javascript(types::Type value)
+    static bool realm_type_exist(std::string type){
+        static auto realm_types = reverse_deduction_types_map();
+        return realm_types.find(type) == realm_types.end();
+    }
+
+    static types::Type realm_type(std::string type){
+        static auto realm_types = reverse_deduction_types_map();
+        return realm_types[type];
+    }
+
+    static std::string javascript_type(types::Type value)
     {
-        std::map<types::Type, std::string> realm_typeof = {
-            {types::String, "String"},     {types::Integer, "Int"},        {types::Float, "Float"},
-            {types::Double, "Double"},     {types::Decimal, "Decimal128"}, {types::Boolean, "Boolean"},
-            {types::ObjectId, "ObjectId"}, {types::Object, "Object"},
-        };
-        return realm_typeof[value];
+        return realm_types[value];
     }
 
     static types::Type from(DataType data_type)
@@ -129,6 +152,13 @@ struct TypeDeductionImpl {
         return value.IsUndefined();
     }
 };
+
+std::map<types::Type, std::string> TypeDeductionImpl::realm_types = {
+        {types::String, "String"},     {types::Integer, "Int"},        {types::Float, "Float"},
+        {types::Double, "Double"},     {types::Decimal, "Decimal128"}, {types::Boolean, "Boolean"},
+        {types::ObjectId, "ObjectId"}, {types::Object, "Object"},
+};
+
 
 } // namespace js
 } // namespace realm

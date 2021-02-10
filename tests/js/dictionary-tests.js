@@ -95,8 +95,19 @@ module.exports = {
 
        let err = new Error('Property must be of type \'number\', got (error)')
        TestCase.assertThrowsException(() =>realm.write(() => realm.create(DictIntSchema.name, {a: { c:'error' }})), err)
+   },
+    testDictionaryHandlingSchemaParsingError(){
+        const DictWrongSchema = {
+            name: 'Dictionary',
+            properties: {
+                a: 'wwwww{}'
+            }
+        }
+        let err = new Error('Schema type: wwwww not supported for Dictionary.')
+        let _defer = () => { let r = new Realm({schema: [DictWrongSchema]}) }
+        TestCase.assertThrowsException(_defer, err)
+    }
 
-   }
 
 }
 
