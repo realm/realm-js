@@ -22,7 +22,7 @@ const Realm = require('realm');
 let TestCase = require('./asserts');
 let {Decimal128, ObjectId} = require('bson')
 
-const SingleSchema = {
+const DictSchema = {
     name: 'Dictionary',
     properties: {
         a: '{}'
@@ -32,15 +32,15 @@ const SingleSchema = {
 module.exports = {
     testDictionaryCreate() {
         //Shouldn't throw
-        let realm = new Realm({schema: [SingleSchema]})
+        let realm = new Realm({schema: [DictSchema]})
     },
 
     testDictionaryAddingObject() {
         //Shouldn't throw
-        let realm = new Realm({schema: [SingleSchema]})
-        realm.write(()=> realm.create(SingleSchema.name, { a: {x:1, y:2, z:'hey'} } ))
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(()=> realm.create(DictSchema.name, { a: {x:1, y:2, z:'hey'} } ))
 
-        let data = realm.objects(SingleSchema.name)[0]
+        let data = realm.objects(DictSchema.name)[0]
         TestCase.assertEqual(typeof data.a, 'object', 'Should be an object');
         TestCase.assertEqual(data.a.x, 1, 'Should be an equals to a.x = 1');
         TestCase.assertEqual(data.a.y, 2, 'Should be an equals to a.y = 2');
@@ -54,10 +54,10 @@ module.exports = {
 
     testDictionaryUpdating() {
         //Shouldn't throw
-        let realm = new Realm({schema: [SingleSchema]})
-        realm.write(() => realm.create(SingleSchema.name, {a: {x: 1, y: 2, z: 'hey'}}))
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 'hey'}}))
 
-        let data = realm.objects(SingleSchema.name)[0]
+        let data = realm.objects(DictSchema.name)[0]
         TestCase.assertEqual(typeof data.a, 'object', 'Should be an object');
         TestCase.assertEqual(data.a.x, 1, 'Should be an equals to a.x = 1');
         TestCase.assertEqual(data.a.y, 2, 'Should be an equals to a.y = 2');
@@ -77,6 +77,26 @@ module.exports = {
         TestCase.assertEqual(typeof data.a.z, 'undefined', 'Should be deleted.');
     },
 
+   testDictionaryWithTypedValues(){
+       const DictIntSchema = {
+           name: 'Dictionary',
+           properties: {
+               a: 'int{}'
+           }
+       }
+
+       let realm = new Realm({schema: [DictIntSchema]})
+
+       realm.write(() => realm.create(DictIntSchema.name, {a: {x: 1, y: 2, z: 4}}))
+       let data = realm.objects(DictIntSchema.name)[0]
+       TestCase.assertEqual(data.a.x, 1, 'Should be an equals to a.x = 1');
+       TestCase.assertEqual(data.a.y, 2, 'Should be an equals to a.y = 2');
+       TestCase.assertEqual(data.a.z, 4, 'Should be an equals to a.z = 4');
+
+       let err = new Error('Property must be of type \'number\', got (error)')
+       TestCase.assertThrowsException(() =>realm.write(() => realm.create(DictIntSchema.name, {a: { c:'error' }})), err)
+
+   }
 
 }
 

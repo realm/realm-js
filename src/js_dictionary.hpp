@@ -24,7 +24,7 @@
 #include <map>
 #include <regex>
 
-#include <realm/object-store/property.hpp>
+#include "realm/object-store/property.hpp"
 
 namespace realm {
 namespace js {
@@ -37,22 +37,22 @@ private:
     std::smatch matches;
     bool valid_schema;
 public:
-    std::map<std::string, PropertyType> schema_properties = {
-        {"string", PropertyType::String}, {"int", PropertyType::Int}};
+    std::map<std::string, realm::PropertyType> schema_properties = {
+        {"string", realm::PropertyType::String}, {"int", realm::PropertyType::Int}};
 
     DictionarySchema(std::string _schema) {
         std::regex dict_schm_regex{DICT_SCHEMA, std::regex_constants::ECMAScript};
-        valid_schema = std::regex_search(_schema.begin(), _schema.end(), matches, dict_schm_regex);
+        valid_schema = std::regex_search(_schema, matches, dict_schm_regex);
         if (valid_schema) {
             type = matches[1];
         }
     }
 
-    PropertyType get_schemaless() {
-        return PropertyType::Dictionary | PropertyType::Mixed;
+    realm::PropertyType get_schemaless() {
+        return realm::PropertyType::Dictionary | realm::PropertyType::Mixed;
     }
 
-    PropertyType schema_definition() {
+    realm::PropertyType schema_definition() {
         if (type.empty()) {
             return get_schemaless();
         }
@@ -61,7 +61,8 @@ public:
             throw("Type: " + type + " not supported for Dictionary.");
         }
 
-        return PropertyType::Dictionary | schema_properties[type];
+        auto dictionary_type_value = schema_properties[type];
+        return (realm::PropertyType::Dictionary | dictionary_type_value);
     }
 
     bool is_dictionary() { return valid_schema; }
