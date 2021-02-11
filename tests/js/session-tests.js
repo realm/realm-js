@@ -1449,5 +1449,5 @@ module.exports = {
             });
             realm.close();
         });
-    }
+    },
 };
