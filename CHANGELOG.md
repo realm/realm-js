@@ -1,5 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
-=============================================================
+6.1.6 Release notes (xxxx-xx-xx)
 ### Enhancements
 * None.
 
@@ -14,6 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Upgraded Realm Core from v6.2.0 to v6.2.3.
 * Upgraded Realm Sync from v5.0.30 to v5.0.32.
+* Implemented webhook analytics integration.
 
 6.1.5 Release notes (2020-11-4)
 =============================================================
