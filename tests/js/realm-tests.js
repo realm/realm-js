@@ -1838,7 +1838,7 @@ module.exports = {
             // give some time to let advance_read to complete
             // in real world, a Realm will not be closed just after its
             // schema has been updated
-            setTimeout(() => reject(new Error('Schema change listener was not called')), 1000);
+            setTimeout(() => reject(new Error('Schema change listener was not called')), 15000);
         });
     },
 

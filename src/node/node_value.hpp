@@ -233,7 +233,8 @@ inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value v
     }
 
     if(node_binary->is_empty()) {
-        throw std::runtime_error("A non-empty ArrayBuffer, BufferView or Buffer is expected.");
+        char placeholder;
+        return OwnedBinaryData(&placeholder, 0);
     }
 
     return node_binary->create_binary_blob();

@@ -413,98 +413,42 @@ module.exports = {
             }).then(() => TestCase.assertTrue(progressCalled));
     },
 
-    /*
-    testProgressNotificationsForRealmOpenAsync() {
-        if (!platformSupported) {
-            return;
-        }
-
-        const username = Utils.uuid();
-        const realmName = Utils.uuid();
-
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
-            .then(user => {
-                return new Promise((resolve, reject) => {
-                    let config = {
-                        sync: {
-                            user,
-                            url: `realm://127.0.0.1:9080/~/${realmName}`
-                        },
-                        schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                    };
-
-                    let progressCalled = false;
-
-                    Realm.openAsync(config,
-                        (error, realm) => {
-                            if (error) {
-                                reject(error);
-                                return;
-                            }
-
-                            TestCase.assertTrue(progressCalled);
-                            resolve();
-                        },
-                        (transferred, total) => {
-                            progressCalled = true;
-                        });
-
-                    setTimeout(function() {
-                        reject("Progress Notifications API failed to call progress callback for Realm constructor");
-                    }, 5000);
-                });
-            });
-    },
-*/
-
-    /*
-    async testClientResyncDiscard() {
+    testClientReset() {
         // FIXME: try to enable for React Native
         if (!platformSupported) {
             return;
         }
-        const fetch = require('node-fetch');
 
-        const realmUrl = 'realm://127.0.0.1:9080/~/myrealm';
-        let user = await Realm.App.Sync.User.login('http://127.0.0.1:9080', Realm.App.Sync.Credentials.nickname('admin', true));
-        const config1 = user.createConfiguration({ sync: { url: realmUrl } });
-        config1.schema = [schemas.IntOnly];
-        config1.sync.clientResyncMode = 'discard';
-        config1._cache = false;
+        const partition = Utils.genPartition();
+        let creds = Realm.Credentials.anonymous();
+        let app = new Realm.App(appConfig);
+        return app.logIn(creds).then(user => {
+            return new Promise((resolve, _reject) => {
+                let realm;
+                const config = getSyncConfiguration(user, partition);
+                config.sync.error = (sender, error) => {
+                    try {
+                        TestCase.assertEqual(error.name, 'ClientReset');
+                        TestCase.assertDefined(error.config);
+                        TestCase.assertNotEqual(error.config.path, '');
+                        const path = realm.path;
+                        realm.close();
+                        Realm.App.Sync.initiateClientReset(app, path);
+                        // open Realm with error.config, and copy required objects a Realm at `path`
+                        resolve();
+                    }
+                    catch (e) {
+                        _reject(e);
+                    }
+                };
+                realm = new Realm(config);
+                const session = realm.syncSession;
 
-        // open, download, create an object, upload and close
-        let realm1 = await Realm.open(config1);
-        await realm1.syncSession.downloadAllServerChanges();
-        realm1.write(() => {
-            realm1.create(schemas.IntOnly.name, { intCol: 1 });
+                TestCase.assertEqual(session.config.error, config.sync.error);
+                session._simulateError(211, 'ClientReset'); // 211 -> divering histories
+            });
         });
-        await realm1.syncSession.uploadAllLocalChanges();
-        realm1.close();
-
-        // delete Realm on server
-        let encodedPath = encodeURIComponent(`${user.id}/myrealm`);
-        let url = new URL(`/realms/files/${encodedPath}`, user.server);
-        let options = {
-            headers: {
-                Authorization: `${user.accessToken}`,
-                'Content-Type': 'application/json',
-            },
-            method: 'DELETE',
-        };
-        await fetch(url.toString(), options);
-
-        // open the Realm again without schema and download
-        const config2 = user.createConfiguration({ sync: { url: realmUrl } });
-        config2.sync.clientResyncMode = 'discard';
-        config2._cache = false;
-        let realm2 = await Realm.open(config2);
-        await realm2.syncSession.downloadAllServerChanges();
-        TestCase.assertEqual(realm2.schema.length, 0);
-        realm2.close();
     },
-    */
 
     testAddConnectionNotification() {
         const partition = Utils.genPartition();
@@ -930,5 +874,23 @@ module.exports = {
             });
             realm.close();
         });
+    },
+
+    async testAnalyticsSubmission() {
+        const context = node_require('realm/package.json');
+        const analytics = node_require('realm/lib/submit-analytics');
+
+        const payload = await analytics.fetchPlatformData(context, 'TestEvent');
+
+        TestCase.assertDefined(payload.webHook);
+        TestCase.assertType(payload.webHook.event, 'string');
+        TestCase.assertDefined(payload.webHook.properties);
+        TestCase.assertType(payload.webHook.properties.Binding, 'string');
+        TestCase.assertDefined(payload.mixPanel);
+        TestCase.assertType(payload.mixPanel.event, 'string');
+        TestCase.assertDefined(payload.mixPanel.properties);
+        TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
+
+        await analytics.submitStageAnalytics('TestEvent');
     }
 };

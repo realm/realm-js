@@ -73,3 +73,9 @@ integration-tests/tests/dist/
 /react-native/android/src/main/jni/vendor/
 /react-native/android/src/main/jni/src/
 /build-tmp*/
+/cmakebuild/
+/build-realm-android/
+/react-native/android/src/main/java/io/realm/react/Version.java
+/react-native/android/src/main/jniLibs/
+/realm*.tgz
+/tests/js/realm-tests*.tgz

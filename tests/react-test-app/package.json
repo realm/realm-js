@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.6.3",
+    "graceful-fs": "^4.2.4",
     "react": "16.6.3",
     "react-native": "^0.59.9",
     "react-native-exception-handler": "^2.4.3",
@@ -15,7 +16,8 @@
     "xmlbuilder": "^4.2.1"
   },
   "resolutions": {
-    "moment": "2.19.1"
+    "moment": "2.19.1",
+    "graceful-fs": "4.2.4"
   },
   "devDependencies": {
     "babel-preset-react-native": "4.0.0",
@@ -23,10 +25,15 @@
     "fs-extra": "^4.0.3",
     "install-local": "^1.0.0",
     "invariant": "^2.2.2",
-    "metro-react-native-babel-preset": "^0.45.0"
+    "metro-react-native-babel-preset": "^0.45.0",
+    "cmake-js": "^6.1.0"
   },
   "localDependencies": {
     "realm": "../..",
     "realm-tests": "../js"
+  },
+  "optionalDependencies": {
+    "realm": "file:../../realm.tgz",
+    "realm-tests": "file:../js/realm-tests.tgz"
   }
 }
