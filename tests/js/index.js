@@ -61,6 +61,7 @@ if (global.enableSyncTests) {
         TESTS.OpenBehaviorTests = require("./open-behavior-tests");
         TESTS.UserTests = require("./user-tests");
         TESTS.SessionTests = require("./session-tests");
+        TESTS.AnalyticsTests = require('./analytics-tests');
     }
 }
 
