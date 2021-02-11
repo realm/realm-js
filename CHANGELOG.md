@@ -1,16 +1,19 @@
 6.1.6 Release notes (xxxx-xx-xx)
-=============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* 
+* Fixed an issue where creating an object after file format upgrade may fail with error message `Assertion failed: lo() <= std::numeric_limits<uint32_t>::max()`. ([realm/realm-core#4295](https://github.com/realm/realm-core/issues/4295), since v6.0.0)
 
 ### Compatibility
-* 
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 6.x.y series.
+* File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
 ### Internal
-* Implemented webhook analytics integration
+* Upgraded Realm Core from v6.2.0 to v6.2.3.
+* Upgraded Realm Sync from v5.0.30 to v5.0.32.
+* Implemented webhook analytics integration.
 
 6.1.5 Release notes (2020-11-4)
 =============================================================
