@@ -4,6 +4,7 @@
 
 ### Fixed
 * Fixed an issue where creating an object after file format upgrade may fail with error message `Assertion failed: lo() <= std::numeric_limits<uint32_t>::max()`. ([realm/realm-core#4295](https://github.com/realm/realm-core/issues/4295), since v6.0.0)
+* Due to an upcoming WebKit update (currently accessible through Xcode beta simulators), apps would throw `"Attempting to change configurable attribute of unconfigurable property"` at runtime ([#3557](https://github.com/realm/realm-js/issues/3557))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
