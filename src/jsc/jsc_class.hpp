@@ -325,7 +325,7 @@ inline std::vector<JSStaticFunction> ObjectWrap<ClassType>::get_methods(const Me
     std::vector<JSStaticFunction> functions;
     functions.reserve(methods.size() + 1);
 
-    JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
+    JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum;
     size_t index = 0;
 
     for (auto &pair : methods) {
