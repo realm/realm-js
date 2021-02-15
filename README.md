@@ -1,7 +1,7 @@
 ![Realm](https://github.com/realm/realm-js/raw/master/logo.png)
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
-This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (both iOS & Android), Node.js and Electron (on Windows, MacOS and Linux)
+This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (both iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
 
 ## Features
 
@@ -210,6 +210,10 @@ You can attach a debugger to react-native tests by passing "Debug" to the `test.
 Using Visual Studio Code
 
 You can debug node tests using Visual Studio Code. Just use one of the launch configurations.
+
+## Known issues
+
+* AWS Lambda is not supported.
 
 ## Code of Conduct
 
