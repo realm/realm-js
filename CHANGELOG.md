@@ -1,4 +1,4 @@
-6.1.6 Release notes (xxxx-xx-xx)
+6.1.6 Release notes (2021-2-15)
 ### Enhancements
 * None.
 
