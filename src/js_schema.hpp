@@ -85,10 +85,10 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         type = type.substr(0, type.size() - 1);
     }
 
-    DictionarySchema dict_schm {type};
+    DictionarySchema dictionary {type};
 
-    if(dict_schm.is_dictionary()){
-        prop.type |= dict_schm.schema_definition();
+    if(dictionary.is_dictionary()){
+        prop.type |= dictionary.schema();
         return;
     }
 

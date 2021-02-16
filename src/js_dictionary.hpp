@@ -24,8 +24,11 @@
 #include <map>
 #include <regex>
 
+
 #include "realm/object-store/property.hpp"
+#include "realm/object-store/dictionary.hpp"
 #include "common/type_deduction.hpp"
+#include "js_mixed.hpp"
 
 namespace realm {
 namespace js {
@@ -47,13 +50,13 @@ public:
         }
     }
 
-    realm::PropertyType get_schemaless() {
+    realm::PropertyType make_generic() {
         return realm::PropertyType::Dictionary | realm::PropertyType::Mixed;
     }
 
-    realm::PropertyType schema_definition() {
+    realm::PropertyType schema() {
         if (type.empty()) {
-            return get_schemaless();
+            return make_generic();
         }
 
         if (TypeDeduction::realm_type_exist(type)) {
@@ -66,6 +69,69 @@ public:
 
     bool is_dictionary() { return valid_schema; }
 };
+
+
+template <typename T>
+struct DictionaryAccessController {
+    std::string key_name;
+    realm::object_store::Dictionary dictionary;
+    DictionaryAccessController(std::string name, realm::object_store::Dictionary dict): key_name{name}, dictionary{dict} {}
+
+    void set(realm::Mixed mixed) {
+        dictionary.insert(key_name, mixed);
+    }
+
+    template <typename Context>
+    auto get(const Context context) {
+        auto mixed_value = dictionary.get_any(key_name);
+        return TypeMixed<T>::get_instance().wrap(context, mixed_value);
+    }
+};
+
+template <typename T>
+class DictionaryAdapter {
+private:
+    using Object = js::Object<T>;
+    using ValueType = typename T::Value;
+    using Context = typename T::Context;
+
+    static ValueType getter(const Napi::CallbackInfo& info) {
+        auto* controller = static_cast<DictionaryAccessController<T>*>(info.Data());
+        return controller->get(info.Env());
+    }
+
+    static void setter(const Napi::CallbackInfo& info) {
+        auto* controller = static_cast<DictionaryAccessController<T>*>(info.Data());
+        auto mixed = TypeMixed<T>::get_instance().unwrap(info.Env(), info[0]);
+        controller->set(mixed);
+    }
+
+public:
+    ValueType wrap(Context context, realm::object_store::Dictionary dictionary){
+        auto empty_object = Napi::Object::New(context);
+        std::vector<Napi::PropertyDescriptor> properties;
+
+        for(auto entry_pair: dictionary){
+            auto key = entry_pair.first.get_string().data();
+            auto *access_controller = new DictionaryAccessController<T>(key, dictionary);
+
+            auto prop = Napi::PropertyDescriptor::Accessor(context, empty_object, key, getter, setter, napi_enumerable, static_cast<void*>(access_controller));
+
+            properties.push_back(prop);
+        }
+
+        empty_object.DefineProperties(properties);
+
+        empty_object.AddFinalizer([](Napi::Env /*env*/, void* ref) {
+            std::cout << "deleted ???? " << std::endl;
+           // delete ref;
+        }, new int{5});
+        return empty_object;
+    }
+
+};
+
+
 
 }  // namespace js
 }  // namespace realm

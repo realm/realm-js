@@ -177,7 +177,7 @@ class TypeMixed {
 
         if (strategy == nullptr) {
             throw std::runtime_error(
-                "The " + TypeDeduction::to_javascript(rjs_type) +
+                "The " + TypeDeduction::javascript_type(rjs_type) +
                 " value is not supported for the mixed type.");
         }
         return strategy->unwrap(context, mixed);
@@ -190,7 +190,7 @@ class TypeMixed {
         if (strategy == nullptr) {
             throw std::runtime_error(
                 "Mixed conversion not possible for type: " +
-                TypeDeduction::to_javascript(type));
+                TypeDeduction::javascript_type(type));
         }
         return strategy->wrap(context, js_value);
     }

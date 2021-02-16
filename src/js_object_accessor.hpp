@@ -24,6 +24,7 @@
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
+#include "js_dictionary.hpp"
 
 #if REALM_ENABLE_SYNC
 #include <realm/util/base64.hpp>
@@ -168,12 +169,7 @@ public:
         throw std::runtime_error("'Set' type support is not implemented yet");
     }
     ValueType box(realm::object_store::Dictionary dictionary) {
-        auto empty_object = Object::create_empty(m_ctx);
-        for(auto mix: dictionary){
-            ValueType value = TypeMixed<JSEngine>::get_instance().wrap(m_ctx, mix.second);
-            Object::set_property(m_ctx, empty_object, mix.first.get_string().data(), value, None);
-        }
-        return empty_object;
+        return dictionary_adapter.wrap(m_ctx, dictionary);
     }
 
     bool is_null(ValueType const& value) {
@@ -225,11 +221,10 @@ public:
     // called when creating dictionaries.
     template<typename Fn>
     void enumerate_dictionary(ValueType& value, Fn&& func) {
-        auto dict = Value::validated_to_object(m_ctx, value);
-        for (auto key : Object::get_property_names(m_ctx, dict)) {
+        auto js_object = Value::validated_to_object(m_ctx, value);
+        for (auto key : Object::get_property_names(m_ctx, js_object)) {
             std::string k = key;
-            ValueType val = Object::get_property(m_ctx, dict, key);
-            //auto mix = TypeMixed<JSEngine>::get_instance().unwrap(m_ctx, val);
+            ValueType val = Object::get_property(m_ctx, js_object, key);
             func(k, val);
         }
     }
@@ -261,6 +256,7 @@ public:
 private:
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
+    DictionaryAdapter<JSEngine> dictionary_adapter;
     Obj m_parent;
     const Property* m_property = nullptr;
     const ObjectSchema* m_object_schema;
@@ -400,6 +396,13 @@ template<typename JSEngine>
 struct Unbox<JSEngine, UUID> {
     static UUID call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         throw std::runtime_error("'UUID' type suport is not implemented yet");
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, ObjLink> {
+    static ObjLink call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        throw std::runtime_error("'ObjLink' type support is not implemented yet");
     }
 };
 
