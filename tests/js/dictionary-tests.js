@@ -41,10 +41,13 @@ module.exports = {
         realm.write(()=> realm.create(DictSchema.name, { a: {x:1, y:2, z:'hey'} } ))
 
         let data = realm.objects(DictSchema.name)[0]
+        console.log('?????')
         TestCase.assertEqual(typeof data.a, 'object', 'Should be an object');
         TestCase.assertEqual(data.a.x, 1, 'Should be an equals to a.x = 1');
         TestCase.assertEqual(data.a.y, 2, 'Should be an equals to a.y = 2');
         TestCase.assertEqual(data.a.z, 'hey', 'Should be an equals to a.z = hey');
+
+
 
         let o = Object.keys(data.a)
         o.forEach(k => {
@@ -95,6 +98,7 @@ module.exports = {
 
        let err = new Error('Property must be of type \'number\', got (error)')
        TestCase.assertThrowsException(() =>realm.write(() => realm.create(DictIntSchema.name, {a: { c:'error' }})), err)
+       TestCase.assertThrowsException(() =>realm.write(() => data.a = 'cc'), new Error(`Dictionary.a must be of type 'number', got 'string' ('cc')`))
    },
     testDictionaryHandlingSchemaParsingError(){
         const DictWrongSchema = {
@@ -106,7 +110,51 @@ module.exports = {
         let err = new Error('Schema type: wwwww not supported for Dictionary.')
         let _defer = () => { let r = new Realm({schema: [DictWrongSchema]}) }
         TestCase.assertThrowsException(_defer, err)
-    }
+    },
+
+    testDictionaryMutability(){
+
+        //Shouldn't throw
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}}))
+
+        let data = realm.objects(DictSchema.name)[0].a
+        let mutable = realm.objects(DictSchema.name)[0].a
+
+        TestCase.assertEqual(typeof data, 'object', 'Should be an object');
+        TestCase.assertEqual(data.x, 1, 'Should be an equals to a.x = 1');
+        TestCase.assertEqual(data.y, 2, 'Should be an equals to a.y = 2');
+        TestCase.assertEqual(data.z, 3, 'Should be an equals to a.z = 3');
+
+        TestCase.assertEqual(typeof mutable, 'object', 'Should be an object');
+        TestCase.assertEqual(mutable.x, 1, 'Should be an equals to mutable.x = 1');
+        TestCase.assertEqual(mutable.y, 2, 'Should be an equals to mutable.y = 2');
+        TestCase.assertEqual(mutable.z, 3, 'Should be an equals to mutable.z = 3');
+
+        realm.write(() => { data.x = 3; data.y= 2; data.z= 1 })
+
+        TestCase.assertEqual(typeof data, 'object', 'Should be an object');
+        TestCase.assertEqual(data.x, 3, 'Should be an equals to a.x = 3');
+        TestCase.assertEqual(data.y, 2, 'Should be an equals to a.y = 2');
+        TestCase.assertEqual(data.z, 1, 'Should be an equals to a.z = 1');
+
+        TestCase.assertEqual(typeof mutable, 'object', 'Should be an object');
+        TestCase.assertEqual(mutable.x, 3, 'Should be an equals to mutable.x = 3');
+        TestCase.assertEqual(mutable.y, 2, 'Should be an equals to mutable.y = 2');
+        TestCase.assertEqual(mutable.z, 1, 'Should be an equals to mutable.z = 1');
+    },
+
+
+    /*TODO Comment this until we merge Mixed->Link code.
+    testDictionaryErrorHandling(){
+        let realm = new Realm({schema: [DictSchema]})
+        let err = new Error('Mixed conversion not possible for type: object')
+        //TestCase.assertThrowsException(() => realm.write(() => realm.create(DictSchema.name, {a: {x: {} }})) , err)
+        realm.write(() => realm.create(DictSchema.name, { a: { x: null } }))
+        let data = realm.objects(DictSchema.name)[0].a
+        TestCase.assertEqual(data.x, null, 'Should be an equals to mutable.x = null');
+
+    } */
 
 
 }
