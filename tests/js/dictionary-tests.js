@@ -179,6 +179,11 @@ module.exports = {
         TestCase.assertEqual(JSON.stringify(point), `{"x":1,"z":3,"y":2}`, `Should be an equals to: {"x":1,"z":3,"y":2}`)
         TestCase.assertArraysEqual(Object.values(point), [1,3,2], `Should be an equals to: [1,3,2]`)
         TestCase.assertArraysEqual(Object.keys(point), ['x','z','y'], `Should be an equals to: ['x','z','y']`)
+
+        let {x,y,z} = point 
+        TestCase.assertArraysEqual([x,y,z], [1,2,3], `Should be an equals to: [1,3,2]`)
+
+
     },
 
     /*TODO Comment this until we merge Mixed->Link code.
