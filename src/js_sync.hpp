@@ -19,6 +19,7 @@
 #pragma once
 
 #include <math.h>
+#include <cstdlib>
 
 #include "js_class.hpp"
 #include "js_collection.hpp"
@@ -841,8 +842,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         SyncConfig::ProxyConfig proxy_config;
         std::vector<std::string> env_vars = { "http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY" };
         for (auto env_var : env_vars) {
-            char *http_proxy = getenv(env_var.c_str());
+            char *http_proxy = std::getenv(env_var.c_str());
             if (http_proxy != NULL) {
+                // https://stackoverflow.com/questions/43906956/split-url-into-host-port-and-resource-c
                 std::string url(http_proxy);
 
                 std::size_t index1 = url.find_first_of(":");
@@ -854,15 +856,18 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
                 std::size_t index3 = url_new.find_first_of("/");
                 std::string port = url_new.substr(index2 + 1, index3 - index2 - 1);
-                std::string path = url_new.substr(index3);
+                std::cerr << "HEST: " << protocol << ":" << host << ":" << port << "\n";
 
                 proxy_config.type = (protocol == "http") ? SyncConfig::ProxyConfig::Type::HTTP : SyncConfig::ProxyConfig::Type::HTTPS;
                 proxy_config.address = std::move(host);
                 proxy_config.port = static_cast<std::uint_fast16_t>(atoi(port.c_str()));
+
+                config.sync_config->proxy_config = util::Optional<SyncConfig::ProxyConfig>(std::move(proxy_config));
+                std::cerr << "FISK: " << config.sync_config->proxy_config->address << ":" << config.sync_config->proxy_config->port << "\n";
+                break;
             }
         }
 
-        config.sync_config->proxy_config = util::Optional<SyncConfig::ProxyConfig>(std::move(proxy_config));
 #endif
 
         if (!config.encryption_key.empty()) {
