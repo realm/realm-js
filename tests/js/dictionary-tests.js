@@ -66,15 +66,19 @@ module.exports = {
         realm.write(() => data.a = {x: 0, y: 0, z: -1, m: 'new-field'})
 
         TestCase.assertEqual(typeof data.a, 'object', 'Should be an object');
-        TestCase.assertEqual(data.a.x, 0, 'Should be an equals to a.x = 1');
-        TestCase.assertEqual(data.a.y, 0, 'Should be an equals to a.y = 2');
+        TestCase.assertEqual(data.a.x, 0, 'Should be an equals to a.x = 0');
+        TestCase.assertEqual(data.a.y, 0, 'Should be an equals to a.y = 0');
         TestCase.assertEqual(data.a.z, -1, 'Should be an equals to a.z = -1');
         TestCase.assertEqual(data.a.m, 'new-field', `Should be a new field called m and it should be equals to "new-field"`);
+
+        realm.write(() => {data.a.x = 1})
+        TestCase.assertEqual(data.a.x, 1, 'Should be an equals to a.x = 1');
 
         realm.write(() => data.a = {p: 1})
         TestCase.assertEqual(typeof data.a.x, 'undefined', 'Should be deleted.');
         TestCase.assertEqual(typeof data.a.y, 'undefined', 'Should be deleted.');
         TestCase.assertEqual(typeof data.a.z, 'undefined', 'Should be deleted.');
+
     },
 
    testDictionaryWithTypedValues(){
@@ -165,6 +169,16 @@ module.exports = {
         TestCase.assertEqual(typeof person, 'object', 'Should be an object');
         TestCase.assertEqual(person.name, 'Caesar', 'Should be an equals to Caesar');
         TestCase.assertEqual(person.second, 'August', 'Should be an equals to August');
+    },
+
+    testDictionaryShouldBe_Javascript_Compatible() {
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}}))
+        let point = realm.objects(DictSchema.name)[0].a
+
+        TestCase.assertEqual(JSON.stringify(point), `{"x":1,"z":3,"y":2}`, `Should be an equals to: {"x":1,"z":3,"y":2}`)
+        TestCase.assertArraysEqual(Object.values(point), [1,3,2], `Should be an equals to: [1,3,2]`)
+        TestCase.assertArraysEqual(Object.keys(point), ['x','z','y'], `Should be an equals to: ['x','z','y']`)
     },
 
     /*TODO Comment this until we merge Mixed->Link code.
