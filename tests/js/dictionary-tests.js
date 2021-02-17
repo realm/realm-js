@@ -36,18 +36,15 @@ module.exports = {
     },
 
     testDictionaryAddingObject() {
-        //Shouldn't throw
         let realm = new Realm({schema: [DictSchema]})
         realm.write(()=> realm.create(DictSchema.name, { a: {x:1, y:2, z:'hey'} } ))
 
         let data = realm.objects(DictSchema.name)[0]
-        console.log('?????')
+
         TestCase.assertEqual(typeof data.a, 'object', 'Should be an object');
         TestCase.assertEqual(data.a.x, 1, 'Should be an equals to a.x = 1');
         TestCase.assertEqual(data.a.y, 2, 'Should be an equals to a.y = 2');
         TestCase.assertEqual(data.a.z, 'hey', 'Should be an equals to a.z = hey');
-
-
 
         let o = Object.keys(data.a)
         o.forEach(k => {
@@ -144,6 +141,31 @@ module.exports = {
         TestCase.assertEqual(mutable.z, 1, 'Should be an equals to mutable.z = 1');
     },
 
+    testDictionaryDifferentBackend(){
+        const DictSchema = {
+            name: 'Dictionary',
+            properties: {
+                a: '{}',
+                b: '{}'
+            }
+        }
+
+        //Shouldn't throw
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}, b: {name: 'Caesar', second: 'August'} } ))
+
+        let data = realm.objects(DictSchema.name)[0].a
+        let person = realm.objects(DictSchema.name)[0].b
+
+        TestCase.assertEqual(typeof data, 'object', 'Should be an object');
+        TestCase.assertEqual(data.x, 1, 'Should be an equals to a.x = 1');
+        TestCase.assertEqual(data.y, 2, 'Should be an equals to a.y = 2');
+        TestCase.assertEqual(data.z, 3, 'Should be an equals to a.z = 3');
+
+        TestCase.assertEqual(typeof person, 'object', 'Should be an object');
+        TestCase.assertEqual(person.name, 'Caesar', 'Should be an equals to Caesar');
+        TestCase.assertEqual(person.second, 'August', 'Should be an equals to August');
+    },
 
     /*TODO Comment this until we merge Mixed->Link code.
     testDictionaryErrorHandling(){
