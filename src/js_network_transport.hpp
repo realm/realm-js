@@ -183,39 +183,6 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
 
     JavaScriptNetworkTransport(ContextType ctx, Dispatcher eld) : m_ctx(ctx), m_dispatcher(std::move(eld)) {};
 
-    static find_proxy(ContextType ctx) {
-        ObjectType proxy_object = Object::create_empty(ctx);
-        std::vector<std::string> env_vars = { "http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY" };
-        for (auto env_var : env_vars) {
-            char *http_proxy = std::getenv(env_var.c_str());
-            if (http_proxy != NULL) {
-                // https://stackoverflow.com/questions/43906956/split-url-into-host-port-and-resource-c
-                std::string url(http_proxy);
-
-                std::size_t index1 = url.find_first_of(":");
-                std::string protocol = url.substr(0, index1);
-
-                std::string url_new = url.substr(index1 + 3); // skip http(s)
-                std::size_t index2 = url_new.find_first_of(":");
-                std::string host = url_new.substr(0, index2);
-
-                std::size_t index3 = url_new.find_first_of("/");
-                std::string port = url_new.substr(index2 + 1, index3 - index2 - 1);
-
-                Object::set_property(ctx, proxy_object, );
-                Object::set_property(ctx, proxy_object, );
-                Object::set_property(ctx, proxy_object, );
-
-                return Object::create_obj(ctx, {
-                    {"host", Value::from_string(ctx, host)},
-                    {"port", Value::from_string(ctx, port)},
-                    {"protocol", Value::from_string(ctx, protocol)}
-                });
-            }
-        }
-        return Value::from_undefined(ctx);
-    }
-
     static ObjectType makeRequest(ContextType ctx, const app::Request& request) {
         ObjectType headers_object = Object::create_empty(ctx);
         for (auto header : request.headers) {
@@ -264,6 +231,35 @@ private:
             case app::HttpMethod::patch: return "PATCH";
             default: throw std::runtime_error("Unknown HttpMethod argument");
         }
+    }
+
+        static ObjectType find_proxy(ContextType ctx) {
+        ObjectType proxy_object = Object::create_empty(ctx);
+        std::vector<std::string> env_vars = { "http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY" };
+        for (auto env_var : env_vars) {
+            char *http_proxy = std::getenv(env_var.c_str());
+            if (http_proxy != NULL) {
+                // https://stackoverflow.com/questions/43906956/split-url-into-host-port-and-resource-c
+                std::string url(http_proxy);
+
+                std::size_t index1 = url.find_first_of(":");
+                std::string protocol = url.substr(0, index1);
+
+                std::string url_new = url.substr(index1 + 3); // skip http(s)
+                std::size_t index2 = url_new.find_first_of(":");
+                std::string host = url_new.substr(0, index2);
+
+                std::size_t index3 = url_new.find_first_of("/");
+                std::string port = url_new.substr(index2 + 1, index3 - index2 - 1);
+
+                return Object::create_obj(ctx, {
+                    {"host", Value::from_string(ctx, host)},
+                    {"port", Value::from_string(ctx, port)},
+                    {"protocol", Value::from_string(ctx, protocol)}
+                });
+            }
+        }
+        return Object::create_empty(ctx);
     }
 };
 
