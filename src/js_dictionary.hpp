@@ -43,9 +43,9 @@ class DictionarySchema {
 
    public:
     DictionarySchema(std::string _schema) {
-        std::regex dict_schm_regex{DICT_SCHEMA,
-                                   std::regex_constants::ECMAScript};
-        valid_schema = std::regex_search(_schema, matches, dict_schm_regex);
+        std::regex dict_schema_regex{DICT_SCHEMA,
+                                     std::regex_constants::ECMAScript};
+        valid_schema = std::regex_search(_schema, matches, dict_schema_regex);
         if (valid_schema) {
             type = matches[1];
         }
