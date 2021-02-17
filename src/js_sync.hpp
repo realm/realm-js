@@ -856,14 +856,12 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
                 std::size_t index3 = url_new.find_first_of("/");
                 std::string port = url_new.substr(index2 + 1, index3 - index2 - 1);
-                std::cerr << "HEST: " << protocol << ":" << host << ":" << port << "\n";
 
                 proxy_config.type = (protocol == "http") ? SyncConfig::ProxyConfig::Type::HTTP : SyncConfig::ProxyConfig::Type::HTTPS;
                 proxy_config.address = std::move(host);
                 proxy_config.port = static_cast<std::uint_fast16_t>(atoi(port.c_str()));
 
                 config.sync_config->proxy_config = util::Optional<SyncConfig::ProxyConfig>(std::move(proxy_config));
-                std::cerr << "FISK: " << config.sync_config->proxy_config->address << ":" << config.sync_config->proxy_config->port << "\n";
                 break;
             }
         }
