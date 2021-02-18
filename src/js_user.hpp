@@ -131,6 +131,7 @@ class UserClass : public ClassDefinition<T, User<T>> {
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using StringType = typename T::String;
     using String = js::String<T>;
     using Object = js::Object<T>;
     using Value = js::Value<T>;
@@ -357,18 +358,18 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
 
     auto name = Value::validated_to_string(ctx, args[0], "name");
-    auto call_args_js = Value::validated_to_array(ctx, args[1], "args");
+    StringType stringified_ejson_args = Value::validated_to_string(ctx, args[1], "args");
     auto service = Value::is_undefined(ctx, args[2])
             ? util::none
             : util::Optional<std::string>(Value::validated_to_string(ctx, args[2], "service"));
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
 
-    auto call_args_bson = Value::to_bson(ctx, call_args_js);
+    auto bson_args = String::to_bson(ctx, stringified_ejson_args);
 
     user->m_app->call_function(
         *user,
         name,
-        call_args_bson.operator const bson::BsonArray&(),
+        bson_args.operator const bson::BsonArray&(),
         service,
         Function::wrap_callback_error_first(ctx, this_object, callback,
             [] (ContextType ctx, const util::Optional<bson::Bson>& result) {
@@ -427,13 +428,13 @@ void UserClass<T>::make_streaming_request(ContextType ctx, ObjectType this_objec
 
     auto name = Value::validated_to_string(ctx, args[0], "name");
     auto service = Value::validated_to_string(ctx, args[1], "service");
-    auto call_args_js = Value::validated_to_array(ctx, args[2], "args");
-    auto call_args_bson = Value::to_bson(ctx, call_args_js);
+    StringType stringified_ejson_args = Value::validated_to_string(ctx, args[2], "args");
+    auto bson_args = String::to_bson(ctx, stringified_ejson_args);
 
     auto req = user->m_app->make_streaming_request(
         *user,
         name,
-        call_args_bson.operator const bson::BsonArray &(),
+        bson_args.operator const bson::BsonArray &(),
         std::string(service));
     return return_value.set(JavaScriptNetworkTransport<T>::makeRequest(ctx, req));
 }

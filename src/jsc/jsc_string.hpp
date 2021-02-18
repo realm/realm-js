@@ -30,6 +30,8 @@ class String<jsc::Types> {
     JSStringRef m_str;
 
   public:
+    static bson::Bson to_bson(jsc::Types::Context, jsc::Types::String);
+
     String(const char *s) : m_str(JSStringCreateWithUTF8CString(s)) {}
     String(const JSStringRef &s) : m_str(JSStringRetain(s)) {}
     String(StringData str) : String(str.data()) {}

@@ -72,9 +72,11 @@ inline PropertyAttributes operator|(PropertyAttributes a, PropertyAttributes b) 
 
 template<typename T>
 struct String {
+    using ContextType = typename T::Context;
     using StringType = typename T::String;
 
-  public:
+    static bson::Bson to_bson(ContextType, StringType);
+
     String(const char *);
     String(const StringType &);
     String(StringType &&);
@@ -170,7 +172,6 @@ struct Value {
     static ObjectType to_object(ContextType, const ValueType &);
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, ValueType);
-    static bson::Bson to_bson(ContextType, ValueType);
 
 
 #define VALIDATED(return_t, type) \
@@ -453,6 +454,11 @@ REALM_JS_INLINE void set_internal(typename T::Context ctx, const typename T::Obj
 }
 
 template<typename T>
+bson::Bson String<T>::to_bson(ContextType ctx, StringType stringified_ejson) {
+    return bson::parse(std::string(stringified_ejson));
+}
+
+template<typename T>
 inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType &value, const Property& prop)
 {
     return is_valid_for_property_type(context, value, prop.type, prop.object_type);
@@ -688,20 +694,6 @@ inline typename T::Object Value<T>::from_bson(typename T::Context ctx, const bso
         Object<T>::set_property(ctx, out, k, from_bson(ctx, v));
     }
     return out;
-}
-
-template<typename T>
-inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value) {
-    // For now going through the bson.EJSON.stringify() since it will correctly handle the special JS types.
-    // Consider directly converting to Bson if we need more control or there are performance issues.
-    auto realm = Value::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
-    auto ejson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, bson, "EJSON"));
-    auto call_args_json = Object<T>::call_method(ctx, ejson, "stringify", {
-        value,
-        Object<T>::create_obj(ctx, {{"relaxed", Value::from_boolean(ctx, false)}}),
-    });
-    return bson::parse(std::string(Value::to_string(ctx, call_args_json)));
 }
 
 template <typename T>
