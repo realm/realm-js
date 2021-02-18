@@ -156,7 +156,8 @@ public:
 std::map<types::Type, std::string> TypeDeductionImpl::realm_types = {
         {types::String, "String"},     {types::Integer, "Int"},        {types::Float, "Float"},
         {types::Double, "Double"},     {types::Decimal, "Decimal128"}, {types::Boolean, "Boolean"},
-        {types::ObjectId, "ObjectId"}, {types::Object, "Object"},
+        {types::ObjectId, "ObjectId"}, {types::Object, "Object"},      {types::Undefined, "Undefined"},
+        {types::Null, "Null"}
 };
 
 
