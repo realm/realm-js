@@ -131,8 +131,8 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
     static String prototype_string = "prototype";
 
     auto delegate = get_delegate<T>(realm_object.realm().get());
-    auto schema = realm_object.get_object_schema();
-    auto name = schema.name;
+    auto& schema = realm_object.get_object_schema();
+    auto& name = schema.name;
 
     auto internal = new realm::js::RealmObject<T>(std::move(realm_object));
 
