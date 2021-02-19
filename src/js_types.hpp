@@ -75,7 +75,7 @@ struct String {
     using ContextType = typename T::Context;
     using StringType = typename T::String;
 
-    static bson::Bson to_bson(ContextType, StringType);
+    static bson::Bson to_bson(StringType);
 
     String(const char *);
     String(const StringType &);
@@ -451,11 +451,6 @@ REALM_JS_INLINE typename ClassType::Internal* get_internal(typename T::Context c
 template<typename T, typename ClassType>
 REALM_JS_INLINE void set_internal(typename T::Context ctx, const typename T::Object &object, typename ClassType::Internal* ptr) {
     Object<T>::template set_internal<ClassType>(ctx, object, ptr);
-}
-
-template<typename T>
-bson::Bson String<T>::to_bson(ContextType ctx, StringType stringified_ejson) {
-    return bson::parse(std::string(stringified_ejson));
 }
 
 template<typename T>

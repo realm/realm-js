@@ -358,13 +358,13 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
 
     auto name = Value::validated_to_string(ctx, args[0], "name");
-    StringType stringified_ejson_args = Value::validated_to_string(ctx, args[1], "args");
+    auto stringified_ejson_args = Value::validated_to_string(ctx, args[1], "args");
     auto service = Value::is_undefined(ctx, args[2])
             ? util::none
             : util::Optional<std::string>(Value::validated_to_string(ctx, args[2], "service"));
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
 
-    auto bson_args = String::to_bson(ctx, stringified_ejson_args);
+    auto bson_args = String::to_bson(stringified_ejson_args);
 
     user->m_app->call_function(
         *user,
@@ -429,7 +429,7 @@ void UserClass<T>::make_streaming_request(ContextType ctx, ObjectType this_objec
     auto name = Value::validated_to_string(ctx, args[0], "name");
     auto service = Value::validated_to_string(ctx, args[1], "service");
     StringType stringified_ejson_args = Value::validated_to_string(ctx, args[2], "args");
-    auto bson_args = String::to_bson(ctx, stringified_ejson_args);
+    auto bson_args = String::to_bson(stringified_ejson_args);
 
     auto req = user->m_app->make_streaming_request(
         *user,

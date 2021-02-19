@@ -153,7 +153,7 @@ void EmailPasswordAuthClass<T>::call_reset_password_function(ContextType ctx, Ob
     StringType stringified_ejson_args = Value::validated_to_string(ctx, args[2], "args");
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
     
-    auto bson_args = String::to_bson(ctx, stringified_ejson_args);
+    auto bson_args = String::to_bson(stringified_ejson_args);
 
     client.call_reset_password_function(email, password, bson_args.operator const bson::BsonArray &(), Function::wrap_void_callback(ctx, this_object, callback));
 }
