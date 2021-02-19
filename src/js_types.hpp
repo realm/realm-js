@@ -75,7 +75,7 @@ struct String {
     using ContextType = typename T::Context;
     using StringType = typename T::String;
 
-    static bson::Bson to_bson(StringType);
+    static bson::Bson to_bson(String);
 
     String(const char *);
     String(const StringType &);

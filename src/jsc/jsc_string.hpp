@@ -30,8 +30,8 @@ class String<jsc::Types> {
     JSStringRef m_str;
 
   public:
-    static bson::Bson to_bson(jsc::Types::String stringified_ejson) {
-        return bson::parse(std::string(StringType(stringified_ejson)));
+    static bson::Bson to_bson(StringType stringified_ejson) {
+        return bson::parse(std::string(stringified_ejson));
     }
 
     String(const char *s) : m_str(JSStringCreateWithUTF8CString(s)) {}
