@@ -1601,4 +1601,69 @@ module.exports = {
         });
         realm.close();
     },
+    testNewClassObjectPush: function() {
+        class TodoItem extends Realm.Object {
+            constructor(description) {
+                super()
+                this.id = `${new ObjectId()}`
+                this.description = description;
+                this.done = false;
+            }
+            
+            static schema = {
+                name: "TodoItem",
+                properties: {
+                    id: "string",
+                    description: "string",
+                    done: {type: "bool", default: false},
+                    deadline: "date?"
+                },
+                primaryKey: "id"
+            }
+        }
+        
+        class TodoList extends Realm.Object {
+        
+            constructor(name ) {
+            super()
+            this.id = `${new ObjectId()}`
+            this.name = name;
+            this.items = []
+            }
+            static schema = {
+            name: "TodoList",
+            properties: {
+                id: "string",
+                name: "string",
+                items: "TodoItem[]"
+            },
+            primaryKey: "id"
+            }
+        }
+      
+        const realm = new Realm({schema:[TodoItem, TodoList], deleteRealmIfMigrationNeeded:true})
+        realm.write(() => {
+            // create a list
+            const list = realm.create(TodoList, new TodoList('making a list'))
+
+            // Create the todo item first and then push
+            const item1 = realm.create(TodoItem, new TodoItem('item 1'))
+            list.items.push(item1)
+
+            // Push the "uncreated" item (as Realm.Object) to the list
+            const item2 = new TodoItem('item 2')
+            list.items.push(item2)
+
+            // Push "uncreated" item (as pojo) to the list
+            const item3 = {
+                id: `${new ObjectId()}`,
+                description: 'item 3'
+            }
+            list.items.push(item3)
+
+            const items = realm.objects('TodoItem')
+            TestCase.assertEqual(3, items.length)
+        })
+        realm.close()
+}
 };
