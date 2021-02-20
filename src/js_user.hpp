@@ -108,7 +108,7 @@ template<typename T>
 void WatchStreamClass<T>::next_event(ContextType ctx, ObjectType object, Arguments& args, ReturnValue &return_value) {
     args.validate_count(0);
     WatchStream* ws = get_internal<T, WatchStreamClass<T>>(ctx, object);
-    return return_value.set(Value::from_bson(ctx, ws->next_event()));
+    return return_value.set(Value::from_string(ctx, String::from_bson(ws->next_event())));
 }
 
 template<typename T>
@@ -165,7 +165,7 @@ public:
         {"profile", {wrap<get_profile>, nullptr}},
         {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
         {"state", {wrap<get_state>, nullptr}},
-        {"customData", {wrap<get_custom_data>, nullptr}},
+        {"_customData", {wrap<get_custom_data>, nullptr}},
         {"apiKeys", {wrap<get_api_keys>, nullptr}},
         {"deviceId", {wrap<get_device_id>, nullptr}},
         {"providerType", {wrap<get_provider_type>, nullptr}},
@@ -290,7 +290,7 @@ void UserClass<T>::get_custom_data(ContextType ctx, ObjectType object, ReturnVal
     if (!custom_data)
         return return_value.set_null();
 
-    return_value.set(js::Value<T>::from_bson(ctx, *custom_data));
+    return_value.set(Value::from_string(ctx, String::from_bson(*custom_data)));
 }
 
 template<typename T>
@@ -374,7 +374,7 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
         Function::wrap_callback_error_first(ctx, this_object, callback,
             [] (ContextType ctx, const util::Optional<bson::Bson>& result) {
                 REALM_ASSERT_RELEASE(result);
-                return Value::from_bson(ctx, *result);
+                return Value::from_string(ctx, String::from_bson(*result));
             }));
 }
 

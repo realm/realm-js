@@ -36,6 +36,10 @@ class String<node::Types> {
         return bson::parse(std::string(stringified_ejson));
     }
 
+    static String from_bson(const bson::Bson& bson) {
+        return String(bson.to_string());
+    }
+
     String(const char* s) : m_str(s) {}
     String(const std::string& s) : m_str(s) {}
     String(const Napi::String& s);

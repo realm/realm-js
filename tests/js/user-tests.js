@@ -144,6 +144,16 @@ module.exports = {
     });
   },
 
+  async testCustomData() {
+    let app = new Realm.App(appConfig);
+    await logOutExistingUsers(app);
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+    const customData = user.customData;
+    // TODO: Enable custom user data in the app to test this e2e
+    TestCase.assertType(customData, 'object');
+  },
+
   async testEmailPasswordAuth() {
     let app = new Realm.App(appConfig);
     let provider = app.emailPasswordAuth;

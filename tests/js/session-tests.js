@@ -26,12 +26,16 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
-const { ObjectId } = require("bson");
+
+// Using Realm.BSON instead of require("bson") to ensure the same package is used (which the symlinked "realm" package breaks)
+const { ObjectId } = Realm.BSON;
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
 const AppConfig = require('./support/testConfig');
+
+const REALM_MODULE_PATH = require.resolve("realm");
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;

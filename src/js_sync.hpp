@@ -137,10 +137,10 @@ public:
 
     // TODO: add app or appId property
     PropertyMap<T> const properties = {
-        {"config", {wrap<get_config>, nullptr}},
         {"user", {wrap<get_user>, nullptr}},
         {"state", {wrap<get_state>, nullptr}},
         {"connectionState", {wrap<get_connection_state>, nullptr}},
+        {"_config", {wrap<get_config>, nullptr}},
     };
 
     MethodMap<T> const methods = {
@@ -327,7 +327,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
         // TODO: add app id
         bson::Bson partition_value_bson = bson::parse(session->config().partition_value);
-        Object::set_property(ctx, config, "partitionValue", Value::from_bson(ctx, partition_value_bson));
+        Object::set_property(ctx, config, "partitionValue", Value::from_string(ctx, String::from_bson(partition_value_bson)));
         if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());
