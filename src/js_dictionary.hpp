@@ -80,14 +80,10 @@ class DictionarySchema {
 template <typename T>
 struct AccessorsConfiguration {
     using Dictionary = realm::object_store::Dictionary;
-    template <typename JavascriptPlainObject, typename AccessorsConfiguration>
-    static void make_enumerable_accessors(JavascriptPlainObject& object,
+    template <typename Context, typename JavascriptPlainObject, typename AccessorsConfiguration>
+    static void make_enumerable_accessors(Context context, JavascriptPlainObject& object,
                                           AccessorsConfiguration& accessors) {
-        auto plain_object = object->get_plain_object();
         auto dictionary = object->get_data();
-        auto context= object->get_context();
-
-        std::vector<Napi::PropertyDescriptor> properties;
 
         for (auto entry_pair : dictionary) {
             auto key = entry_pair.first.get_string().data();
@@ -95,12 +91,11 @@ struct AccessorsConfiguration {
             auto _setter = accessors.produce_setter(key);
 
             auto descriptor = Napi::PropertyDescriptor::Accessor(
-                context, plain_object, key, _getter, _setter, napi_enumerable,
+                context, object->get_plain_object(), key, _getter, _setter, napi_enumerable,
                 static_cast<void*>(object));
-            properties.push_back(descriptor);
-        }
 
-        plain_object.DefineProperties(properties);
+            object->register_accessor(descriptor);
+        }
     }
 };
 
@@ -112,10 +107,12 @@ struct JavascriptPlainObject {
     using Object = js::Object<VM>;
     using ObjectType = typename VM::Object;
     using Context = typename VM::Context;
+    using ObjectProperties = std::vector<Napi::PropertyDescriptor>;
 
     Data data;
     ObjectType object;
     Context context;
+    ObjectProperties properties;
 
    public:
     JavascriptPlainObject(Context _context, Data _data)
@@ -135,6 +132,20 @@ struct JavascriptPlainObject {
             [callback](Context /*env*/, void* data_ref) {
                 callback();
             }, this);
+    }
+
+    template <typename Property>
+    void register_accessor(Property property){
+        properties.push_back(property);
+    }
+
+    ObjectType& get_object_with_accessors(){
+        if(properties.size() > 0){
+            object.DefineProperties(properties);
+            return object;
+        }
+
+        return object;
     }
 };
 
@@ -175,19 +186,19 @@ class DictionaryAdapter {
    public:
     ValueType wrap(Context context, Dictionary dictionary) {
         Accessor<VM> accessor;
-        JavascriptObject* plain_object =
+        JavascriptObject* javascript_object =
             new JavascriptObject(context, dictionary);
 
-        AccessorsConfiguration<VM>::make_enumerable_accessors(plain_object, accessor);
+        AccessorsConfiguration<VM>::make_enumerable_accessors(context, javascript_object, accessor);
 
-        plain_object->template configure_object_destructor([=]() {
-            /* Capture and free when the C++ object only when the
-             * VM dispose the JS Object.
+        javascript_object->template configure_object_destructor([=]() {
+            /* Capture and free when the C++ object...
+             * ...when GC deallocate the JS Object.
              */
-            delete plain_object;
+            delete javascript_object;
         });
 
-        return plain_object->get_plain_object();
+        return javascript_object->get_object_with_accessors();
     }
 };
 
