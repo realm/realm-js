@@ -428,13 +428,16 @@ struct Unbox<JSEngine, Obj> {
         auto object = Value::validated_to_object(ctx->m_ctx, value);
         if (js::Object<JSEngine>::template is_instance<RealmObjectClass<JSEngine>>(ctx->m_ctx, object)) {
             auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(ctx->m_ctx, object);
-            if (realm_object->realm() == ctx->m_realm) {
-                return realm_object->obj();
-            }
-
-            bool updating = policy.copy && policy.update;
-            if (!updating && !policy.create) {
-                throw std::runtime_error("Realm object is from another Realm");
+            if (realm_object){
+                if (realm_object->realm() == ctx->m_realm) {
+                    return realm_object->obj();
+                }
+                else{
+                    bool updating = policy.copy && policy.update;
+                    if (!updating && !policy.create) {
+                        throw std::runtime_error("Realm object is from another Realm");
+                    }
+                }
             }
         }
 

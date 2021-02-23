@@ -1619,4 +1619,54 @@ module.exports = {
         });
         realm.close();
     },
+
+    testObjectCreatingOnPush: function() {
+        class TodoItem extends Realm.Object {
+            constructor(description) {
+                super()
+                this.id = `${new ObjectId()}`
+                this.description = description;
+                this.done = false;
+            }
+
+            static schema = {
+                name: "TodoItem",
+                properties: {
+                    id: "string",
+                    description: "string",
+                    done: {type: "bool", default: false},
+                    deadline: "date?"
+                },
+                primaryKey: "id"
+            }
+        }
+
+        class TodoList extends Realm.Object {
+
+            constructor(name ) {
+                super()
+                this.id = `${new ObjectId()}`
+                this.name = name;
+                this.items = []
+            }
+
+            static schema = {
+                name: "TodoList",
+                properties: {
+                    id: "string",
+                    name: "string",
+                    items: "TodoItem[]"
+                },
+                primaryKey: "id"
+            }
+        }
+
+        const realm = new Realm({schema: [TodoList, TodoItem]});
+        realm.write(() => {
+            const list = realm.create(TodoList, new TodoList('My Todo List'))
+            list.items.push(new TodoItem("Fix that bug"))
+
+            TestCase.assertEqual(1, list.items.length)
+        })
+    }
 };
