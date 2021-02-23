@@ -29,6 +29,7 @@
 #include "js_mixed.hpp"
 #include "realm/object-store/dictionary.hpp"
 #include "realm/object-store/property.hpp"
+#include "../react-native/android/src/main/jni/src/js_api_key_auth.hpp"
 
 namespace realm {
 namespace js {
@@ -150,7 +151,7 @@ struct JavascriptPlainObject {
 };
 
 template <typename VM>
-struct Accessor {
+struct AccessorsForDictionary {
     using Dictionary = realm::object_store::Dictionary;
     using JavascriptObject = JavascriptPlainObject<VM, Dictionary>;
 
@@ -176,6 +177,36 @@ struct Accessor {
 };
 
 template <typename VM>
+class ListenersForDictionary {
+private:
+    using ValueType = typename VM::Value;
+    using Context = typename VM::Context;
+    using ObjectType = typename VM::Object;
+
+    ObjectType object;
+public:
+    static void append(Context context, ObjectType& js_ret_object){
+        js::Object<VM>::set_property(context, js_ret_object,  "addListener", Napi::Function::New(context, add_listener), PropertyAttributes::DontEnum);
+        js::Object<VM>::set_property(context, js_ret_object,"removeAllListeners", Napi::Function::New(context, remove_listener), PropertyAttributes::DontEnum);
+        js::Object<VM>::set_property(context, js_ret_object, "removeListener", Napi::Function::New(context, remove_all_listeners), PropertyAttributes::DontEnum);
+    }
+
+    static ValueType add_listener(const Napi::CallbackInfo& info) {
+        Context env = info.Env();
+        return Napi::String::New(env, "Hello World");
+    }
+    static ValueType remove_listener(const Napi::CallbackInfo& info){
+        Context env = info.Env();
+        return Napi::String::New(env, "Hello World");
+    }
+    static ValueType remove_all_listeners(const Napi::CallbackInfo& info){
+        Context env = info.Env();
+        return Napi::String::New(env, "Hello World");
+    }
+};
+
+
+template <typename VM>
 class DictionaryAdapter {
    private:
     using ValueType = typename VM::Value;
@@ -185,7 +216,7 @@ class DictionaryAdapter {
 
    public:
     ValueType wrap(Context context, Dictionary dictionary) {
-        Accessor<VM> accessor;
+        AccessorsForDictionary<VM> accessor;
         JavascriptObject* javascript_object =
             new JavascriptObject(context, dictionary);
 
@@ -198,7 +229,13 @@ class DictionaryAdapter {
             delete javascript_object;
         });
 
-        return javascript_object->get_object_with_accessors();
+
+
+        auto js_ret_object = javascript_object->get_object_with_accessors();
+
+        ListenersForDictionary<VM>::append(context, js_ret_object);
+
+        return js_ret_object;
     }
 };
 

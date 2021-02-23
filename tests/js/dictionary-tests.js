@@ -184,6 +184,16 @@ module.exports = {
         TestCase.assertArraysEqual([x,y,z], [1,2,3], `Should be an equals to: [1,3,2]`)
     },
 
+    testDictionaryEventListener() {
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}}))
+        let point = realm.objects(DictSchema.name)[0].a
+        TestCase.assertDefined(point.addListener, "addListener should be a member of Dictionary.")
+        TestCase.assertDefined(point.removeAllListeners, "removeAllListeners should be a member of Dictionary.")
+        TestCase.assertDefined(point.removeListener, "removeListener should be a member of Dictionary.")
+
+    },
+
     /*TODO Comment this until we merge Mixed->Link code.
     testDictionaryErrorHandling(){
         let realm = new Realm({schema: [DictSchema]})
