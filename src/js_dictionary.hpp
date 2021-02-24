@@ -100,21 +100,6 @@ struct AccessorsConfiguration {
     }
 };
 
-template<typename Function>
-class A{
-    using X =  std::vector<std::pair<Protected<Function>, NotificationToken>>;
-public:
-    A(){}
-    A(A&& xx){
-       m_notification_tokens.swap(xx.m_notification_tokens);
-    }
-
-    X& operator=(const X&& xx) {
-        return m_notification_tokens;
-    }
-    X m_notification_tokens;
-};
-
 template<typename Collection, typename Function>
 class CollectionAdapter {
 private:
@@ -170,6 +155,12 @@ struct JavascriptPlainObject {
             }, this);
     }
 
+    template <typename Feature>
+    void add_feature(){
+        Feature feature {context};
+        feature.apply(this);
+    }
+
     template <typename Property>
     void register_accessor(Property property){
         properties.push_back(property);
@@ -216,45 +207,50 @@ struct AccessorsForDictionary {
 template <typename VM>
 class ListenersForDictionary {
 private:
-    using ValueType = typename VM::Value;
     using Context = typename VM::Context;
-    using ObjectType = typename VM::Object;
     using Function = typename VM::Function;
-    using Collection = CollectionAdapter<realm::object_store::Dictionary, Function>;
-    using JavascriptObject = JavascriptPlainObject<VM, Collection>;
-    using Arguments = js::Arguments<VM>;
+    using Value = js::Value<VM>;
+    Context context;
 
-    ObjectType object;
-public:
-    template <typename JavascriptPlainObject>
-    static void append(Context context, JavascriptPlainObject& object){
-        auto listener_fn = Napi::Function::New(context, add_listener, "addListener", static_cast<void*>(object));
-        auto remove_listener_fn = Napi::Function::New(context, remove_listener,"removeAllListeners", static_cast<void*>(object));
-        auto remove_all_listener_fn = Napi::Function::New(context, remove_all_listeners, "removeListener", static_cast<void*>(object));
+    template <typename Fn, typename JavascriptPlainObject>
+    auto add_javascript_function(std::string&& name, Fn&& function, JavascriptPlainObject* object){
         auto plain_object = object->get_plain_object();
 
-        js::Object<VM>::set_property(context, plain_object,  "addListener", listener_fn, PropertyAttributes::DontEnum);
-        js::Object<VM>::set_property(context, plain_object,"removeAllListeners", remove_listener_fn, PropertyAttributes::DontEnum);
-        js::Object<VM>::set_property(context, plain_object, "removeListener", remove_all_listener_fn, PropertyAttributes::DontEnum);
+        auto fn = Napi::Function::New(context, function, name, static_cast<void*>(object));
+        js::Object<VM>::set_property(context, plain_object,  name, fn, PropertyAttributes::DontEnum);
     }
 
-    static ValueType add_listener(const Napi::CallbackInfo& info) {
-        Context context = info.Env();
-        auto* js_object = static_cast<JavascriptObject*>(info.Data());
-        auto collection = &js_object->get_data();
-        auto plain_object = js_object->get_plain_object();
-        std::cout << "Subscribed !!!" << std::endl;
-        ResultsClass<VM>::add_listener_v2(context, collection, plain_object, info);
+public:
+    ListenersForDictionary(Context _context): context{_context}{}
 
-        return Napi::String::New(context, "Hello World");;
+    template <typename JavascriptPlainObject>
+    void apply(JavascriptPlainObject* object){
+        add_javascript_function("addListener", add_listener(object), object);
+        add_javascript_function("removeListener", remove_listener(), object);
+        add_javascript_function("removeAllListeners", remove_all_listeners(), object);
     }
-    static ValueType remove_listener(const Napi::CallbackInfo& info){
-        Context env = info.Env();
-        return Napi::String::New(env, "Hello World");
+    template <typename JavascriptPlainObject>
+    auto add_listener(JavascriptPlainObject* object){
+        return [=](const Napi::CallbackInfo& info) {
+            Context context = info.Env();
+            auto collection = &object->get_data();
+            auto plain_object = object->get_plain_object();
+
+            ResultsClass<VM>::add_listener_v2(context, collection, plain_object, info);
+            return Value::from_boolean(context, true);
+        };
     }
-    static ValueType remove_all_listeners(const Napi::CallbackInfo& info){
-        Context env = info.Env();
-        return Napi::String::New(env, "Hello World");
+    auto remove_listener(){
+        return [](const Napi::CallbackInfo& info){
+            Context env = info.Env();
+            return Value::from_boolean(env, true);
+        };
+    }
+    auto remove_all_listeners(){
+        return [](const Napi::CallbackInfo& info){
+            Context env = info.Env();
+            return Value::from_boolean(env, true);
+        };
     }
 };
 
@@ -286,12 +282,9 @@ class DictionaryAdapter {
         });
 
 
+        javascript_object->template add_feature<ListenersForDictionary<VM>>();
 
-        auto js_ret_object = javascript_object->get_object_with_accessors();
-
-        ListenersForDictionary<VM>::append(context, javascript_object);
-
-        return js_ret_object;
+        return javascript_object->get_object_with_accessors();
     }
 };
 

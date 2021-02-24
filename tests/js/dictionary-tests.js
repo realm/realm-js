@@ -207,14 +207,16 @@ module.exports = {
         TestCase.assertDefined(point.removeAllListeners, "removeAllListeners should be a member of Dictionary.")
         TestCase.assertDefined(point.removeListener, "removeListener should be a member of Dictionary.")
 
-        point.addListener(fn => {
-            console.log('something has change', fn)
+        point.addListener((fn, changeset ) => {
+            console.log('something has change', fn, ' changeset: ', changeset)
         })
 
         realm.write(() => point.x=10 )
 
-        setTimeout(() => realm.write(() => point.x=10 ),4000)
+        setTimeout(() => realm.write(() => point.x=10 ),10000)
+       // point.addListener({});
     },
+
 
     /*TODO Comment this until we merge Mixed->Link code.
     testDictionaryErrorHandling(){
