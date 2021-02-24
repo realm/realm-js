@@ -217,6 +217,29 @@ module.exports = {
        // point.addListener({});
     },
 
+    testDictionaryRemoveAllEventListener() {
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}}))
+        let point = realm.objects(DictSchema.name)[0].a
+        TestCase.assertDefined(point.addListener, "addListener should be a member of Dictionary.")
+        TestCase.assertDefined(point.removeAllListeners, "removeAllListeners should be a member of Dictionary.")
+        TestCase.assertDefined(point.removeListener, "removeListener should be a member of Dictionary.")
+
+        for(let i=0; i<10; i++) {
+            point.addListener((fn, changeset) => {
+                TestCase.assertEqual(0, 1, "This function should never be call")
+                console.log('something has change', fn, ' changeset: ', changeset)
+            })
+        }
+
+        point.removeAllListeners();
+
+        realm.write(() => point.x=10 )
+
+        //setTimeout(() => realm.write(() => point.x=10 ),10000)
+        // point.addListener({});
+    },
+
 
     /*TODO Comment this until we merge Mixed->Link code.
     testDictionaryErrorHandling(){

@@ -29,7 +29,6 @@
 #include "js_mixed.hpp"
 #include "realm/object-store/dictionary.hpp"
 #include "realm/object-store/property.hpp"
-#include "../react-native/android/src/main/jni/src/js_api_key_auth.hpp"
 
 namespace realm {
 namespace js {
@@ -76,7 +75,8 @@ class DictionarySchema {
 
 /*
  *  Specific NodeJS code to make object descriptors.
- *
+ *  When working with the JSC version, we just need to extract the NodeJS
+ * feature and create a reusable component.
  */
 template <typename VM, typename GetterSetterComponent>
 struct AccessorsConfiguration {
@@ -84,7 +84,7 @@ struct AccessorsConfiguration {
     using Context = typename VM::Context;
     Context context;
     GetterSetterComponent accessor;
-    AccessorsConfiguration(Context _context): context{_context}{}
+    AccessorsConfiguration(Context _context) : context{_context} {}
 
     template <typename JavascriptPlainObject>
     void apply(JavascriptPlainObject* object) {
@@ -92,8 +92,8 @@ struct AccessorsConfiguration {
         auto plain_object = object->get_plain_object();
         for (auto entry_pair : dictionary) {
             auto key = entry_pair.first.get_string().data();
-            auto _getter = accessor.make_getter(key,object);
-            auto _setter = accessor.make_setter(key,object);
+            auto _getter = accessor.make_getter(key, object);
+            auto _setter = accessor.make_setter(key, object);
 
             auto descriptor = Napi::PropertyDescriptor::Accessor(
                 context, plain_object, key, _getter, _setter, napi_enumerable,
@@ -104,24 +104,29 @@ struct AccessorsConfiguration {
     }
 };
 
-template<typename Collection, typename Function>
+template <typename Collection, typename Function>
 class CollectionAdapter {
-private:
+   private:
     Collection collection;
-    using TokensMap =  std::vector<std::pair<Protected<Function>, NotificationToken>>;
-public:
+    using TokensMap =
+        std::vector<std::pair<Protected<Function>, NotificationToken>>;
+
+   public:
     CollectionAdapter(Collection _collection) : collection{_collection} {}
     CollectionAdapter(CollectionAdapter&& collection_adapter) {
         m_notification_tokens.swap(collection_adapter.m_notification_tokens);
         collection = collection_adapter.get_collection();
     }
 
-    template <typename ...Arguments>
-    auto add_notification_callback(Arguments... arguments){
-       return collection.add_notification_callback(arguments...);
+    template <typename... Arguments>
+    auto add_notification_callback(Arguments... arguments) {
+        return collection.add_notification_callback(arguments...);
     }
 
     Collection& get_collection() { return collection; }
+    void remove_all_listeners(){
+        m_notification_tokens.clear();
+    }
     TokensMap m_notification_tokens;
 };
 
@@ -145,32 +150,30 @@ struct JavascriptPlainObject {
     }
 
     ObjectType& get_plain_object() { return object; }
-    Context& get_context() {return context; }
+    Context& get_context() { return context; }
     Data& get_data() { return data; }
 
-    ~JavascriptPlainObject(){}
+    ~JavascriptPlainObject() {}
 
     template <typename Callback>
     void configure_object_destructor(Callback&& callback) {
-        object.AddFinalizer(
-            [callback](Context, void* data_ref) {
-                callback();
-            }, this);
+        object.AddFinalizer([callback](Context, void* data_ref) { callback(); },
+                            this);
     }
 
     template <typename Feature>
-    void add_feature(){
-        Feature feature {context};
+    void add_feature() {
+        Feature feature{context};
         feature.apply(this);
     }
 
     template <typename Property>
-    void register_accessor(Property property){
+    void register_accessor(Property property) {
         properties.push_back(property);
     }
 
-    ObjectType& get_object_with_accessors(){
-        if(properties.size() > 0){
+    ObjectType& get_object_with_accessors() {
+        if (properties.size() > 0) {
             object.DefineProperties(properties);
             return object;
         }
@@ -196,7 +199,8 @@ struct AccessorsForDictionary {
     auto make_setter(std::string key_name, JavascriptObject* object) {
         return [=](const Napi::CallbackInfo& info) {
             Dictionary realm_dictionary = object->get_data().get_collection();
-            auto mixed = TypeMixed<VM>::get_instance().unwrap(info.Env(), info[0]);
+            auto mixed =
+                TypeMixed<VM>::get_instance().unwrap(info.Env(), info[0]);
 
             realm_dictionary.insert(key_name, mixed);
         };
@@ -205,65 +209,75 @@ struct AccessorsForDictionary {
 
 template <typename VM>
 class ListenersForDictionary {
-private:
+   private:
     using Context = typename VM::Context;
     using Value = js::Value<VM>;
     Context context;
 
     template <typename Fn, typename JavascriptPlainObject>
-    auto add_javascript_function(std::string&& name, Fn&& function, JavascriptPlainObject* object){
+    auto add_javascript_function(std::string&& name, Fn&& function,
+                                 JavascriptPlainObject* object) {
         auto plain_object = object->get_plain_object();
 
-        auto fn = Napi::Function::New(context, function, name, static_cast<void*>(object));
-        js::Object<VM>::set_property(context, plain_object,  name, fn, PropertyAttributes::DontEnum);
+        auto fn = Napi::Function::New(context, function, name,
+                                      static_cast<void*>(object));
+        js::Object<VM>::set_property(context, plain_object, name, fn,
+                                     PropertyAttributes::DontEnum);
     }
 
-public:
-    ListenersForDictionary(Context _context): context{_context}{}
+   public:
+    ListenersForDictionary(Context _context) : context{_context} {}
 
     template <typename JavascriptPlainObject>
-    void apply(JavascriptPlainObject* object){
+    void apply(JavascriptPlainObject* object) {
         add_javascript_function("addListener", add_listener(object), object);
         add_javascript_function("removeListener", remove_listener(), object);
-        add_javascript_function("removeAllListeners", remove_all_listeners(), object);
+        add_javascript_function("removeAllListeners", remove_all_listeners(object),
+                                object);
     }
     template <typename JavascriptPlainObject>
-    auto add_listener(JavascriptPlainObject* object){
+    auto add_listener(JavascriptPlainObject* object) {
         return [=](const Napi::CallbackInfo& info) {
             Context context = info.Env();
             auto collection = &object->get_data();
             auto plain_object = object->get_plain_object();
 
-            ResultsClass<VM>::add_listener_v2(context, collection, plain_object, info);
+            ResultsClass<VM>::add_listener_v2(context, collection, plain_object,
+                                              info);
             return Value::from_boolean(context, true);
         };
     }
-    auto remove_listener(){
-        return [](const Napi::CallbackInfo& info){
+    auto remove_listener() {
+        return [](const Napi::CallbackInfo& info) {
             Context env = info.Env();
             return Value::from_boolean(env, true);
         };
     }
-    auto remove_all_listeners(){
-        return [](const Napi::CallbackInfo& info){
+    template <typename JavascriptPlainObject>
+    auto remove_all_listeners(JavascriptPlainObject* object) {
+        return [=](const Napi::CallbackInfo& info) {
             Context env = info.Env();
-            return Value::from_boolean(env, true);
+            auto collection = &object->get_data();
+            collection->remove_all_listeners();
+            return Value::from_undefined(env);
         };
     }
 };
-
 
 template <typename VM>
 class DictionaryAdapter {
    private:
     using ValueType = typename VM::Value;
     using Context = typename VM::Context;
-    using Function = typename VM::Function;
-    using Collection = CollectionAdapter<realm::object_store::Dictionary, Function>;
+    using Collection = CollectionAdapter<realm::object_store::Dictionary,
+                                         typename VM::Function>;
     using JavascriptObject = JavascriptPlainObject<VM, Collection>;
-    using DictionaryGetterSetter = AccessorsConfiguration<VM, AccessorsForDictionary<VM>>;
+    using DictionaryGetterSetter =
+        AccessorsConfiguration<VM, AccessorsForDictionary<VM>>;
+
    public:
-    ValueType wrap(Context context, realm::object_store::Dictionary dictionary) {
+    ValueType wrap(Context context,
+                   realm::object_store::Dictionary dictionary) {
         Collection collection{dictionary};
         JavascriptObject* javascript_object =
             new JavascriptObject(context, std::move(collection));
