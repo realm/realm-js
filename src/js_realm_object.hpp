@@ -24,8 +24,8 @@ namespace js {
 }
 }
 
-#include "object_accessor.hpp"
-#include "object_store.hpp"
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/object_store.hpp>
 
 #include "js_class.hpp"
 #include "js_types.hpp"
@@ -138,7 +138,7 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 
     try {
         if (!delegate || !delegate->m_constructors.count(name)) {
-            #ifdef REALM_PLATFORM_NODE 
+            #ifdef REALM_PLATFORM_NODE
                 FunctionType constructor;
             #else
                 FunctionType constructor = nullptr;
@@ -417,7 +417,7 @@ void RealmObjectClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_
     if (!realm_object) {
         throw std::runtime_error("Invalid 'this' object");
     }
-    
+
     realm_object->m_notification_tokens.clear();
 }
 

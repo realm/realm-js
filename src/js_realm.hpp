@@ -35,19 +35,19 @@
 #include "js_app_credentials.hpp"
 #include "js_email_password_auth.hpp"
 #include "js_api_key_auth.hpp"
-#include "sync/async_open_task.hpp"
-#include "sync/sync_config.hpp"
-#include "sync/sync_manager.hpp"
+#include <realm/object-store/sync/async_open_task.hpp>
+#include <realm/object-store/sync/sync_config.hpp>
+#include <realm/object-store/sync/sync_manager.hpp>
 #endif
 
-#include "util/scheduler.hpp"
+#include <realm/object-store/util/scheduler.hpp>
 
-#include "binding_context.hpp"
-#include "object_accessor.hpp"
-#include "results.hpp"
-#include "shared_realm.hpp"
-#include "thread_safe_reference.hpp"
-#include "util/scheduler.hpp"
+#include <realm/object-store/binding_context.hpp>
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/results.hpp>
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/thread_safe_reference.hpp>
+#include <realm/object-store/util/scheduler.hpp>
 
 #include <realm/disable_sync_to_disk.hpp>
 #include <realm/global_key.hpp>

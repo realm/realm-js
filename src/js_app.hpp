@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include "sync/generic_network_transport.hpp"
-#include "sync/sync_user.hpp"
-#include "sync/app.hpp"
-#include "sync/app_credentials.hpp"
+#include <realm/object-store/sync/generic_network_transport.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
+#include <realm/object-store/sync/app.hpp>
+#include <realm/object-store/sync/app_credentials.hpp>
 
-#include "util/event_loop_dispatcher.hpp"
+#include <realm/object-store/util/event_loop_dispatcher.hpp>
 
 #include "js_user.hpp"
 #include "js_app_credentials.hpp"
@@ -54,7 +54,7 @@ class AppClass : public ClassDefinition<T, SharedApp> {
 
 public:
     const std::string name = "App";
-    
+
     /**
      * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network requests.
      * Exposed to allow other components (ex the RPCServer) to override the underlying implementation.
@@ -180,7 +180,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     else {
         throw std::runtime_error("Expected either a configuration object or an app id string.");
     }
-    
+
     config.transport_generator = [ctx = Protected(Context::get_global_context(ctx)), eld=NetworkTransport::make_dispatcher()] {
         return AppClass<T>::transport_generator(ctx, eld);
     };
@@ -188,7 +188,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     config.platform = platform_os;
     config.platform_version = platform_version;
     config.sdk_version = "RealmJS/" + package_version;
-    
+
     auto realm_file_directory = default_realm_file_directory();
     ensure_directory_exists_for_file(realm_file_directory);
 
@@ -223,7 +223,7 @@ void AppClass<T>::log_in(ContextType ctx, ObjectType this_object, Arguments &arg
     auto callback_function = Value::validated_to_function(ctx, args[1]);
 
     app::AppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(ctx, credentials_object);
-    
+
     app->log_in_with_credentials(app_credentials, Function::wrap_callback_result_first(ctx, this_object, callback_function,
         [app] (ContextType ctx, SharedUser user) {
             REALM_ASSERT_RELEASE(user);

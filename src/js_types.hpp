@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "property.hpp"
-
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -32,9 +30,10 @@
 #include <realm/util/base64.hpp>
 #include <realm/mixed.hpp>
 
-#include "object-store/src/util/bson/bson.hpp"
-#include "object-store/src/util/event_loop_dispatcher.hpp"
-#include "object-store/src/sync/generic_network_transport.hpp"
+#include <realm/object-store/property.hpp>
+#include <realm/object-store/util/bson/bson.hpp>
+#include <realm/object-store/util/event_loop_dispatcher.hpp>
+#include <realm/object-store/sync/generic_network_transport.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
@@ -155,7 +154,10 @@ struct Value {
     static ValueType from_nonnull_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
     static ValueType from_timestamp(ContextType, Timestamp);
-    static ValueType from_mixed(ContextType, const util::Optional<Mixed> &);
+    static ValueType from_mixed(ContextType, Mixed &);
+    static ValueType from_uuid(ContextType, const UUID&);
+    static ValueType from_objkey(ContextType, const ObjKey&);
+    static ValueType from_objlink(ContextType, const ObjLink&);
     static ValueType from_bson(ContextType, const bson::Bson &);
     static ObjectType from_bson(ContextType, const bson::BsonDocument &);
 
@@ -485,8 +487,10 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
                 return is_date(context, value) || is_string(context, value);
             case PropertyType::Object:
                 return true;
-            case PropertyType::Any:
-                return false;
+            case PropertyType::Mixed:
+                throw std::runtime_error("'Mixed' type support is not implemented yet");
+            case PropertyType::UUID:
+                throw std::runtime_error("'UUID' type support is not implemented yet");
             default:
                 REALM_UNREACHABLE();
         }
@@ -561,39 +565,53 @@ inline typename T::Value Object<T>::create_from_optional_app_error(ContextType c
 }
 
 template<typename T>
-inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const util::Optional<Mixed>& mixed) {
-    if (!mixed) {
+inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, Mixed& mixed) {
+    if (mixed.is_null()) {
         return from_undefined(ctx);
     }
 
-    Mixed value = *mixed;
-    switch (value.get_type()) {
+    switch (mixed.get_type()) {
     case type_Bool:
-        return from_boolean(ctx, value.get<bool>());
+        return from_boolean(ctx, mixed.get<bool>());
     case type_Int:
-        return from_number(ctx, static_cast<double>(value.get<int64_t>()));
+        return from_number(ctx, static_cast<double>(mixed.get<int64_t>()));
     case type_Float:
-        return from_number(ctx, value.get<float>());
+        return from_number(ctx, mixed.get<float>());
     case type_Double:
-        return from_number(ctx, value.get<double>());
+        return from_number(ctx, mixed.get<double>());
     case type_Decimal:
-        return from_decimal128(ctx, value.get<Decimal128>());
+        return from_decimal128(ctx, mixed.get<Decimal128>());
     case type_ObjectId:
-        return from_object_id(ctx, value.get<ObjectId>());
+        return from_object_id(ctx, mixed.get<ObjectId>());
     case type_Timestamp:
-        return from_timestamp(ctx, value.get<Timestamp>());
+        return from_timestamp(ctx, mixed.get<Timestamp>());
     case type_String:
-        return from_string(ctx, value.get<StringData>().data());
+        return from_string(ctx, mixed.get<StringData>().data());
     case type_Binary:
-        return from_binary(ctx, value.get<BinaryData>());
+        return from_binary(ctx, mixed.get<BinaryData>());
     case type_Link:
     case type_LinkList:
     case type_OldDateTime:
     case type_OldTable:
-    case type_OldMixed:
+    case type_Mixed:
         break;
     }
     throw std::invalid_argument("Value not convertible.");
+}
+
+template<typename T>
+inline typename T::Value Value<T>::from_uuid(typename T::Context ctx, const UUID& value) {
+    throw std::runtime_error("'UUID' type support is not implemented yet");
+}
+
+template<typename T>
+inline typename T::Value Value<T>::from_objkey(typename T::Context ctx, const ObjKey& value) {
+    throw std::runtime_error("'Mixed' type support is not implemented yet");
+}
+
+template<typename T>
+inline typename T::Value Value<T>::from_objlink(typename T::Context ctx, const ObjLink& value) {
+    throw std::runtime_error("'Mixed' type support is not implemented yet");
 }
 
 template<typename T>

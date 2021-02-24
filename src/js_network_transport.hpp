@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "sync/generic_network_transport.hpp"
+#include <realm/object-store/sync/generic_network_transport.hpp>
 #include "js_types.hpp"
 #include <string>
 
@@ -143,7 +143,7 @@ void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, 
     if (!Value::is_undefined(ctx, status_code_object) && !Value::is_undefined(ctx, message_code_object)) {
         http_status_code = static_cast<int>(Value::validated_to_number(ctx, Object::get_property(ctx, error_object, status_code), "statusCode"));
         body = Value::validated_to_string(ctx, Object::get_property(ctx, error_object, error_message), "errorMessage");
-    } 
+    }
     else if (!Value::is_undefined(ctx, network_message_code_object)) {
         custom_status_code = -1;
         body = Value::validated_to_string(ctx, Object::get_property(ctx, error_object, network_message), "message");

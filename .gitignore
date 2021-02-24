@@ -15,8 +15,6 @@
 *.realm.lock
 *.management/
 
-vendor/realm-*
-
 # jsdoc
 /docs/output
 
