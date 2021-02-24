@@ -78,21 +78,25 @@ class DictionarySchema {
  *  Specific NodeJS code to make object descriptors.
  *
  */
-template <typename T>
+template <typename VM, typename GetterSetterComponent>
 struct AccessorsConfiguration {
     using Dictionary = realm::object_store::Dictionary;
-    template <typename Context, typename JavascriptPlainObject, typename AccessorsConfiguration>
-    static void make_enumerable_accessors(Context context, JavascriptPlainObject& object,
-                                          AccessorsConfiguration& accessors) {
-        auto dictionary = object->get_data().get_collection();
+    using Context = typename VM::Context;
+    Context context;
+    GetterSetterComponent accessor;
+    AccessorsConfiguration(Context _context): context{_context}{}
 
+    template <typename JavascriptPlainObject>
+    void apply(JavascriptPlainObject* object) {
+        auto dictionary = object->get_data().get_collection();
+        auto plain_object = object->get_plain_object();
         for (auto entry_pair : dictionary) {
             auto key = entry_pair.first.get_string().data();
-            auto _getter = accessors.produce_getter(key);
-            auto _setter = accessors.produce_setter(key);
+            auto _getter = accessor.make_getter(key,object);
+            auto _setter = accessor.make_setter(key,object);
 
             auto descriptor = Napi::PropertyDescriptor::Accessor(
-                context, object->get_plain_object(), key, _getter, _setter, napi_enumerable,
+                context, plain_object, key, _getter, _setter, napi_enumerable,
                 static_cast<void*>(object));
 
             object->register_accessor(descriptor);
@@ -120,7 +124,6 @@ public:
     Collection& get_collection() { return collection; }
     TokensMap m_notification_tokens;
 };
-
 
 template <typename VM, typename Data>
 struct JavascriptPlainObject {
@@ -179,27 +182,23 @@ struct JavascriptPlainObject {
 template <typename VM>
 struct AccessorsForDictionary {
     using Dictionary = realm::object_store::Dictionary;
-    using Function = typename VM::Function;
-    using Collection = CollectionAdapter<Dictionary, Function>;
-    using JavascriptObject = JavascriptPlainObject<VM, Collection>;
 
-    auto produce_getter(std::string key_name) {
+    template <typename JavascriptObject>
+    auto make_getter(std::string key_name, JavascriptObject* object) {
         return [=](const Napi::CallbackInfo& info) {
-            auto* plain_object = static_cast<JavascriptObject*>(info.Data());
-            Dictionary dictionary = plain_object->get_data().get_collection();
+            Dictionary realm_dictionary = object->get_data().get_collection();
+            auto mixed_value = realm_dictionary.get_any(key_name);
 
-            auto mixed_value = dictionary.get_any(key_name);
             return TypeMixed<VM>::get_instance().wrap(info.Env(), mixed_value);
         };
     }
-
-    auto produce_setter(std::string key_name) {
+    template <typename JavascriptObject>
+    auto make_setter(std::string key_name, JavascriptObject* object) {
         return [=](const Napi::CallbackInfo& info) {
-            auto* js_object = static_cast<JavascriptObject*>(info.Data());
-            Dictionary dictionary = js_object->get_data().get_collection();
-
+            Dictionary realm_dictionary = object->get_data().get_collection();
             auto mixed = TypeMixed<VM>::get_instance().unwrap(info.Env(), info[0]);
-            dictionary.insert(key_name, mixed);
+
+            realm_dictionary.insert(key_name, mixed);
         };
     }
 };
@@ -208,7 +207,6 @@ template <typename VM>
 class ListenersForDictionary {
 private:
     using Context = typename VM::Context;
-    using Function = typename VM::Function;
     using Value = js::Value<VM>;
     Context context;
 
@@ -263,16 +261,12 @@ class DictionaryAdapter {
     using Function = typename VM::Function;
     using Collection = CollectionAdapter<realm::object_store::Dictionary, Function>;
     using JavascriptObject = JavascriptPlainObject<VM, Collection>;
-
+    using DictionaryGetterSetter = AccessorsConfiguration<VM, AccessorsForDictionary<VM>>;
    public:
     ValueType wrap(Context context, realm::object_store::Dictionary dictionary) {
-        AccessorsForDictionary<VM> accessor;
         Collection collection{dictionary};
-
         JavascriptObject* javascript_object =
             new JavascriptObject(context, std::move(collection));
-
-        AccessorsConfiguration<VM>::make_enumerable_accessors(context, javascript_object, accessor);
 
         javascript_object->template configure_object_destructor([=]() {
             /* GC will trigger this function, signaling that...
@@ -281,7 +275,7 @@ class DictionaryAdapter {
             delete javascript_object;
         });
 
-
+        javascript_object->template add_feature<DictionaryGetterSetter>();
         javascript_object->template add_feature<ListenersForDictionary<VM>>();
 
         return javascript_object->get_object_with_accessors();
