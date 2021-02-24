@@ -776,7 +776,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     if (Value::is_boolean(ctx, sync_config_value)) {
         config.force_sync_history = Value::to_boolean(ctx, sync_config_value);
         if (config.force_sync_history) {
-            config.schema_mode = SchemaMode::Additive;
+            config.schema_mode = SchemaMode::AdditiveExplicit;
         }
     } else if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
@@ -836,7 +836,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
-        config.schema_mode = SchemaMode::Additive;
+        config.schema_mode = SchemaMode::AdditiveExplicit;
         config.path = user->sync_manager()->path_for_realm(*(config.sync_config));
     }
 }
