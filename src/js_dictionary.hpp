@@ -192,8 +192,8 @@ class DictionaryAdapter {
         AccessorsConfiguration<VM>::make_enumerable_accessors(context, javascript_object, accessor);
 
         javascript_object->template configure_object_destructor([=]() {
-            /* Capture and free when the C++ object...
-             * ...when GC deallocate the JS Object.
+            /* GC will trigger this function, signaling that...
+             * ...we can deallocate the attached C++ object.
              */
             delete javascript_object;
         });

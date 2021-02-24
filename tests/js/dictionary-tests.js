@@ -181,8 +181,23 @@ module.exports = {
         TestCase.assertArraysEqual(Object.keys(point), ['x','z','y'], `Should be an equals to: ['x','z','y']`)
 
         let {x,y,z} = point
-        TestCase.assertArraysEqual([x,y,z], [1,2,3], `Should be an equals to: [1,3,2]`)
+        TestCase.assertArraysEqual([x,y,z], [1,2,3], "Should be an equals to: [1,3,2]")
     },
+
+    testDictionaryQuery(){
+        let realm = new Realm({schema: [DictSchema]})
+        const N = 100
+        for(let i=0; i<N; i++) {
+            realm.write(() => realm.create(DictSchema.name, {a: {x: i, y: 2, z: 3}}))
+        }
+
+        let data = realm.objects(DictSchema.name)
+        let half = data.filtered("a.x >= 50")
+        let seventy = data.filtered("a.x >= $0", 70)
+        TestCase.assertEqual(half.length, N/2, "We expect only 50 items, matching for field x.");
+        TestCase.assertEqual(seventy.length, 30, "We expect only 30 items, matching for field x >= 70.");
+
+    }
 
     /*TODO Comment this until we merge Mixed->Link code.
     testDictionaryErrorHandling(){
