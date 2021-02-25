@@ -19,7 +19,7 @@
 #pragma once
 
 #include <map>
-#include "js_dictionary.hpp"
+#include "dictionary/dictionary_schema.hpp"
 #include "js_types.hpp"
 #include <realm/object-store/schema.hpp>
 
