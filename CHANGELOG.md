@@ -1,5 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+NOTE: Sync protocol version 3: CANNOT SYNC WITH MONGODB REALM CLOUD.
+NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
+
 ### Enhancements
 * Adding Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
 
@@ -10,10 +13,11 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Compatibility
 * MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
-* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+* File format: generates Realms with format 21.
 
 ### Internal
-* None.
+* Bump the Realm Sync protocol version to 3.
+* Bump Realm File Format version to 21.
 
 10.2.0 Release notes (2021-2-5)
 =============================================================
