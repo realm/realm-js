@@ -32,7 +32,9 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
-const { Decimal128, ObjectId } = require("bson");
+
+// Using Realm.BSON instead of require("bson") to ensure the same package is used (which the symlinked "realm" package breaks)
+const { Decimal128, ObjectId } = Realm.BSON;
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -2005,7 +2007,7 @@ module.exports = {
 
         for (let i = 0; i < values.length; i++) {
             let oid2 = objects[i]["id"];
-            TestCase.assertTrue(oid2 instanceof ObjectId, "instaceof");
+            TestCase.assertTrue(oid2 instanceof ObjectId, "instanceof");
             TestCase.assertTrue(oids[i].equals(oid2), "equal");
             TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
         }

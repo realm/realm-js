@@ -44,7 +44,6 @@ var TESTS = {
     MigrationTests: require("./migration-tests"),
     EncryptionTests: require("./encryption-tests"),
     AliasTests: require("./alias-tests"),
-    BsonTests: require("./bson-tests"),
     ArrayBuffer: require("./array-buffer-tests")
 };
 
