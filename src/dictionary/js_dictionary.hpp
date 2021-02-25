@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,80 +29,10 @@
 #include "js_mixed.hpp"
 #include "realm/object-store/dictionary.hpp"
 #include "realm/object-store/property.hpp"
+#include "common/plain_object.hpp"
 
 namespace realm {
 namespace js {
-
-class DictionarySchema {
-   private:
-    const std::string DICT_SCHEMA = R"((\w+)?(\{\}))";
-
-    std::string type;
-    std::smatch matches;
-    bool valid_schema;
-
-   public:
-    DictionarySchema(std::string _schema) {
-        std::regex dict_schema_regex{DICT_SCHEMA,
-                                     std::regex_constants::ECMAScript};
-        valid_schema = std::regex_search(_schema, matches, dict_schema_regex);
-        if (valid_schema) {
-            type = matches[1];
-        }
-    }
-
-    realm::PropertyType make_generic() {
-        return realm::PropertyType::Dictionary | realm::PropertyType::Mixed;
-    }
-
-    realm::PropertyType schema() {
-        if (type.empty()) {
-            return make_generic();
-        }
-
-        if (TypeDeduction::realm_type_exist(type)) {
-            throw std::runtime_error("Schema type: " + type +
-                                     " not supported for Dictionary.");
-        }
-
-        auto dictionary_type_value = TypeDeduction::realm_type(type);
-        return (realm::PropertyType::Dictionary |
-                static_cast<realm::PropertyType>(dictionary_type_value));
-    }
-
-    bool is_dictionary() { return valid_schema; }
-};
-
-/*
- *  Specific NodeJS code to make object descriptors.
- *  When working with the JSC version, we just need to extract the NodeJS
- * feature and create a reusable component.
- */
-template <typename VM, typename GetterSetterComponent>
-struct AccessorsConfiguration {
-    using Dictionary = realm::object_store::Dictionary;
-    using Context = typename VM::Context;
-    Context context;
-    GetterSetterComponent accessor;
-    AccessorsConfiguration(Context _context) : context{_context} {}
-
-    template <typename JavascriptPlainObject>
-    void apply(JavascriptPlainObject* object) {
-        auto dictionary = object->get_data().get_collection();
-        auto plain_object = object->get_plain_object();
-        for (auto entry_pair : dictionary) {
-            auto key = entry_pair.first.get_string().data();
-            auto _getter = accessor.make_getter(key, object);
-            auto _setter = accessor.make_setter(key, object);
-
-            auto descriptor = Napi::PropertyDescriptor::Accessor(
-                context, plain_object, key, _getter, _setter, napi_enumerable,
-                static_cast<void*>(object));
-
-            object->register_accessor(descriptor);
-        }
-    }
-};
 
 template <typename Collection, typename Function>
 class CollectionAdapter {
@@ -128,58 +58,6 @@ class CollectionAdapter {
         m_notification_tokens.clear();
     }
     TokensMap m_notification_tokens;
-};
-
-template <typename VM, typename Data>
-struct JavascriptPlainObject {
-   private:
-    using Object = js::Object<VM>;
-    using ObjectType = typename VM::Object;
-    using Context = typename VM::Context;
-    using ObjectProperties = std::vector<Napi::PropertyDescriptor>;
-
-    Data data;
-    ObjectType object;
-    Context context;
-    ObjectProperties properties;
-
-   public:
-    JavascriptPlainObject(Context _context, Data _data)
-        : data{std::move(_data)}, context{_context} {
-        object = Object::create_empty(context);
-    }
-
-    ObjectType& get_plain_object() { return object; }
-    Context& get_context() { return context; }
-    Data& get_data() { return data; }
-
-    ~JavascriptPlainObject() {}
-
-    template <typename Callback>
-    void configure_object_destructor(Callback&& callback) {
-        object.AddFinalizer([callback](Context, void* data_ref) { callback(); },
-                            this);
-    }
-
-    template <typename Feature>
-    void add_feature() {
-        Feature feature{context};
-        feature.apply(this);
-    }
-
-    template <typename Property>
-    void register_accessor(Property property) {
-        properties.push_back(property);
-    }
-
-    ObjectType& get_object_with_accessors() {
-        if (properties.size() > 0) {
-            object.DefineProperties(properties);
-            return object;
-        }
-
-        return object;
-    }
 };
 
 template <typename VM>

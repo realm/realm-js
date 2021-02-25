@@ -214,7 +214,6 @@ module.exports = {
         realm.write(() => point.x=10 )
 
         setTimeout(() => realm.write(() => point.x=10 ),10000)
-       // point.addListener({});
     },
 
     testDictionaryRemoveAllEventListener() {
@@ -232,12 +231,9 @@ module.exports = {
             })
         }
 
-        point.removeAllListeners();
+        point.removeAllListeners()
 
         realm.write(() => point.x=10 )
-
-        //setTimeout(() => realm.write(() => point.x=10 ),10000)
-        // point.addListener({});
     },
 
 
