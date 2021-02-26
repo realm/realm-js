@@ -372,7 +372,6 @@ def buildWindows(nodeVersion, arch) {
 
       withEnv([
         "_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}",
-        "CMAKE_BUILD_TYPE=Debug",
         "PATH+CMAKE=${tool 'cmake'}\\.."
         ]) {
         bat "npm run package -- --arch=${arch}"

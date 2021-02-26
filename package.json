@@ -49,7 +49,7 @@
     "set-version": "scripts/set-version.sh",
     "lint": "eslint",
     "test": "scripts/test.sh",
-    "package": "npm ci --ignore-scripts && prebuild",
+    "package": "npm ci --ignore-scripts && prebuild --debug",
     "install": "prebuild-install || cmake-js rebuild",
     "rebuild": "npm run rebuild-changes",
     "build": "npm run build-changes",
