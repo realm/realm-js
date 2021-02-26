@@ -25,11 +25,11 @@
 #include <map>
 #include <regex>
 
+#include "common/js_plain_object.hpp"
 #include "common/type_deduction.hpp"
 #include "js_mixed.hpp"
 #include "realm/object-store/dictionary.hpp"
 #include "realm/object-store/property.hpp"
-#include "common/plain_object.hpp"
 
 namespace realm {
 namespace js {
@@ -54,13 +54,11 @@ class CollectionAdapter {
     }
 
     Collection& get_collection() { return collection; }
-    void remove_all_listeners(){
-        m_notification_tokens.clear();
-    }
+    void remove_all_listeners() { m_notification_tokens.clear(); }
     TokensMap m_notification_tokens;
 };
 
-template <typename VM>
+template <typename MixedAPI>
 struct AccessorsForDictionary {
     using Dictionary = realm::object_store::Dictionary;
 
@@ -70,15 +68,14 @@ struct AccessorsForDictionary {
             Dictionary realm_dictionary = object->get_data().get_collection();
             auto mixed_value = realm_dictionary.get_any(key_name);
 
-            return TypeMixed<VM>::get_instance().wrap(info.Env(), mixed_value);
+            return MixedAPI::get_instance().wrap(info.Env(), mixed_value);
         };
     }
     template <typename JavascriptObject>
     auto make_setter(std::string key_name, JavascriptObject* object) {
         return [=](const Napi::CallbackInfo& info) {
             Dictionary realm_dictionary = object->get_data().get_collection();
-            auto mixed =
-                TypeMixed<VM>::get_instance().unwrap(info.Env(), info[0]);
+            auto mixed = MixedAPI::get_instance().unwrap(info.Env(), info[0]);
 
             realm_dictionary.insert(key_name, mixed);
         };
@@ -86,7 +83,7 @@ struct AccessorsForDictionary {
 };
 
 template <typename VM>
-class ListenersForDictionary {
+class ListenersMethodsForDictionary {
    private:
     using Context = typename VM::Context;
     using Value = js::Value<VM>;
@@ -104,15 +101,16 @@ class ListenersForDictionary {
     }
 
    public:
-    ListenersForDictionary(Context _context) : context{_context} {}
+    ListenersMethodsForDictionary(Context _context) : context{_context} {}
 
     template <typename JavascriptPlainObject>
     void apply(JavascriptPlainObject* object) {
         add_javascript_function("addListener", add_listener(object), object);
         add_javascript_function("removeListener", remove_listener(), object);
-        add_javascript_function("removeAllListeners", remove_all_listeners(object),
-                                object);
+        add_javascript_function("removeAllListeners",
+                                remove_all_listeners(object), object);
     }
+
     template <typename JavascriptPlainObject>
     auto add_listener(JavascriptPlainObject* object) {
         return [=](const Napi::CallbackInfo& info) {
@@ -149,28 +147,29 @@ class DictionaryAdapter {
     using Context = typename VM::Context;
     using Collection = CollectionAdapter<realm::object_store::Dictionary,
                                          typename VM::Function>;
-    using JavascriptObject = JavascriptPlainObject<VM, Collection>;
+    using JSObjectBuilder = JSObjectBuilder<VM, Collection>;
+    using MixedAPI = TypeMixed<VM>;
     using DictionaryGetterSetter =
-        AccessorsConfiguration<VM, AccessorsForDictionary<VM>>;
+        AccessorsConfiguration<Context, AccessorsForDictionary<MixedAPI>>;
 
    public:
     ValueType wrap(Context context,
                    realm::object_store::Dictionary dictionary) {
         Collection collection{dictionary};
-        JavascriptObject* javascript_object =
-            new JavascriptObject(context, std::move(collection));
+        JSObjectBuilder* js_builder =
+            new JSObjectBuilder(context, std::move(collection));
 
-        javascript_object->template configure_object_destructor([=]() {
+        js_builder->template configure_object_destructor([=]() {
             /* GC will trigger this function, signaling that...
              * ...we can deallocate the attached C++ object.
              */
-            delete javascript_object;
+            delete js_builder;
         });
 
-        javascript_object->template add_feature<DictionaryGetterSetter>();
-        javascript_object->template add_feature<ListenersForDictionary<VM>>();
+        js_builder->template add_feature<DictionaryGetterSetter>();
+        js_builder->template add_feature<ListenersMethodsForDictionary<VM>>();
 
-        return javascript_object->get_object_with_accessors();
+        return js_builder->build();
     }
 };
 

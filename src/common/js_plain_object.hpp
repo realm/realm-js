@@ -26,34 +26,36 @@ namespace js {
  *  When working with the JSC version, we just need to extract the NodeJS
  * feature and create a reusable component.
  */
-template <typename VM, typename GetterSetterComponent>
+template <typename Context, typename Accessors>
 struct AccessorsConfiguration {
-    using Dictionary = realm::object_store::Dictionary;
-    using Context = typename VM::Context;
     Context context;
-    GetterSetterComponent accessor;
+    Accessors accessor;
     AccessorsConfiguration(Context _context) : context{_context} {}
+
+    template <class JSObject>
+    void register_new_accessor(const char *key, JSObject* object){
+        auto _getter = accessor.make_getter(key, object);
+        auto _setter = accessor.make_setter(key, object);
+
+        auto descriptor = Napi::PropertyDescriptor::Accessor(
+                context, object->get_plain_object(), key, _getter, _setter, napi_enumerable);
+
+        object->register_accessor(descriptor);
+    }
 
     template <typename JavascriptPlainObject>
     void apply(JavascriptPlainObject* object) {
         auto dictionary = object->get_data().get_collection();
-        auto plain_object = object->get_plain_object();
+
         for (auto entry_pair : dictionary) {
             auto key = entry_pair.first.get_string().data();
-            auto _getter = accessor.make_getter(key, object);
-            auto _setter = accessor.make_setter(key, object);
-
-            auto descriptor = Napi::PropertyDescriptor::Accessor(
-                context, plain_object, key, _getter, _setter, napi_enumerable,
-                static_cast<void*>(object));
-
-            object->register_accessor(descriptor);
+            register_new_accessor(key, object);
         }
     }
 };
 
 template <typename VM, typename Data>
-struct JavascriptPlainObject {
+struct JSObjectBuilder {
    private:
     using Object = js::Object<VM>;
     using ObjectType = typename VM::Object;
@@ -66,7 +68,7 @@ struct JavascriptPlainObject {
     ObjectProperties properties;
 
    public:
-    JavascriptPlainObject(Context _context, Data _data)
+    JSObjectBuilder(Context _context, Data _data)
         : data{std::move(_data)}, context{_context} {
         object = Object::create_empty(context);
     }
@@ -75,7 +77,7 @@ struct JavascriptPlainObject {
     Context& get_context() { return context; }
     Data& get_data() { return data; }
 
-    ~JavascriptPlainObject() {}
+    ~JSObjectBuilder() {}
 
     template <typename Callback>
     void configure_object_destructor(Callback&& callback) {
@@ -94,7 +96,7 @@ struct JavascriptPlainObject {
         properties.push_back(property);
     }
 
-    ObjectType& get_object_with_accessors() {
+    ObjectType& build() {
         if (properties.size() > 0) {
             object.DefineProperties(properties);
             return object;
