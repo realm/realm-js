@@ -109,7 +109,7 @@ To install an environment on CI we simply ensure that a `realm-*.tgz` package is
 
 ```bash
 # Build the Android module
-cd react-native/android && ./gradlew publishAndroid && cd -
+cd react-native/android && ./gradlew buildAndroidPackage && cd -
 # Archive the package
 cd integration-tests
 npm pack ..

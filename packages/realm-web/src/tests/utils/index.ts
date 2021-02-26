@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { MongoDBRealmError } from "../..";
+
 /**
  * The headers added by the Fetcher when fetching JSON.
  */
@@ -60,6 +62,17 @@ export const DEFAULT_AUTH_OPTIONS = {
         sdkVersion: "0.0.0-test",
     },
 };
+
+/**
+ * The refresh token was invalid or expired
+ */
+export const INVALID_SESSION_ERROR = new MongoDBRealmError(
+    "POST",
+    "http://localhost:1337/some-path",
+    401,
+    "",
+    "invalid session",
+);
 
 export * from "./MockApp";
 export * from "./MockFetcher";

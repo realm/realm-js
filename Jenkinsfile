@@ -2,17 +2,14 @@
 import groovy.json.JsonOutput
 
 @Library('realm-ci') _
-repoName = 'realm-js' // This is a global variable
+repoName = 'realm-js'
 
-// These versions must be written in ascending order (lowest version is used when testing)
-def nodeVersions = ['10.22.0']
-nodeTestVersion = nodeVersions[0]
-nodePublishVersion = '10.22.0';
+platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'linux-x64', 'linux-arm']
+nodeTestVersion = '12.20.0'
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
 //For more see https://www.npmjs.com/package/spectron
-def electronVersions = ['8.4.1']
-electronTestVersion = electronVersions[0]
+electronTestVersion = '8.4.1'
 
 def gitTag = null
 def formattedVersion = null
@@ -114,20 +111,20 @@ stage('pretest') {
 
 stage('build') {
     parallelExecutors = [:]
-    nodeVersions.each { nodeVersion ->
-      parallelExecutors["macOS x86_64 NAPI ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
-      parallelExecutors["Linux x86_64 NAPI ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-      parallelExecutors["Linux armhf NAPI ${nodeVersion}"] = buildLinuxRpi { buildCommon(nodeVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
-      parallelExecutors["Windows ia32 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'ia32')
-      parallelExecutors["Windows x64 NAPI ${nodeVersion}"] = buildWindows(nodeVersion, 'x64')
-    }
-    //parallelExecutors["Android React Native"] = buildAndroid()
+    parallelExecutors["macOS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
+    parallelExecutors["Linux x86_64 NAPI ${nodeTestVersion}"] = buildLinux { buildCommon(nodeTestVersion, it) }
+    parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
+    parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
+    parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
+
+    parallelExecutors["Android RN"] = buildAndroid()
+
     parallel parallelExecutors
 }
 
 if (gitTag) {
   stage('publish') {
-    publish(nodeVersions, electronVersions, dependencies, gitTag)
+    publish(dependencies, gitTag)
   }
 }
 
@@ -141,43 +138,43 @@ stage('test') {
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
-
-  //parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
+  parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
   // parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  //parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
   // parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
-  //parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-  //parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
-  //android_react_tests: testAndroid('react-tests-android', {
-  //  junit 'tests/react-test-app/tests.xml'
-  //}),
+
+  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
+  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
   parallel parallelExecutors
 }
 
-// stage('prepare integration tests') {
-//   parallel(
-//     'Build integration tests': buildLinux {
-//       sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
-//       dir('integration-tests/tests') {
-//         sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
-//         sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack"
-//         sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
-//         stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
-//       }
-//     }
-//   )
-// }
+stage('prepare integration tests') {
+  parallel(
+    'Build integration tests': buildLinux {
+      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+      dir('integration-tests/tests') {
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack"
+        sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
+        stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
+      }
+    }
+  )
+}
 
-// stage('integration tests') {
-//   parallel(
-//     //'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
-//     //'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
-//     'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
-//     'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
-//     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
-//     'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) }
-//   )
-// }
+stage('integration tests') {
+  parallel(
+    'Node.js on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
+    'Node.js on Linux':     buildLinux { nodeIntegrationTests(nodeTestVersion, it) },
+
+    'Electron on Mac':          buildMacOS { electronIntegrationTests(electronTestVersion, it) },
+    'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
+
+    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
+
+    //TODO: uncomment when RN iOS build with cmake is ready
+    // 'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
+  )
+}
 
 def exclusivelyChanged(regexp) {
   // Checks if this is a change/pull request and if the files changed exclusively match the provided regular expression
@@ -214,6 +211,9 @@ def nodeIntegrationTests(nodeVersion, platform) {
 }
 
 def electronIntegrationTests(electronVersion, platform) {
+  // Validate platform argument
+  assert (platform in platforms)
+
   def nodeVersion = nodeTestVersion
   unstash 'source'
   unstash "prebuild-${platform}"
@@ -227,7 +227,7 @@ def electronIntegrationTests(electronVersion, platform) {
   }
 
   // On linux we need to use xvfb to let up open GUI windows on the headless machine
-  def commandPrefix = platform == 'linux' ? 'xvfb-run ' : ''
+  def commandPrefix = platform == 'linux-x64' ? 'xvfb-run ' : ''
 
   dir('integration-tests/environments/electron') {
     sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
@@ -256,7 +256,7 @@ def reactNativeIntegrationTests(targetPlatform) {
 
   dir('integration-tests') {
     if (targetPlatform == "android") {
-      unstash 'android'
+      unstash 'android-package'
     } else {
       // Pack up Realm JS into a .tar
       sh "${nvm} npm pack .."
@@ -271,9 +271,8 @@ def reactNativeIntegrationTests(targetPlatform) {
     sh "${nvm} npm install"
 
     if (targetPlatform == "android") {
+      runEmulator();
       // In case the tests fail, it's nice to have an idea on the devices attached to the machine
-      sh 'adb devices'
-      sh 'adb wait-for-device'
       // Uninstall any other installations of this package before trying to install it again
       sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
     } else if (targetPlatform == "ios") {
@@ -345,7 +344,7 @@ def buildLinuxRpi(workerFunction) {
     myNode('docker') {
       unstash 'source'
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-      buildDockerEnv("ci/realm-js:rpi", '-f armhf.Dockerfile').inside('-e HOME=/tmp') {
+      buildDockerEnv("realm-js:rpi", '-f armhf.Dockerfile').inside('-e HOME=/tmp') {
         workerFunction('linux-arm')
       }
     }
@@ -389,15 +388,14 @@ def buildWindows(nodeVersion, arch) {
 
 def inAndroidContainer(workerFunction) {
   return {
-    myNode('android') {
+    myNode('docker-cph-03') {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
         image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       }
 
-      // Locking on the "android" lock to prevent concurrent usage of the gradle-cache
-      // @see https://github.com/realm/realm-java/blob/00698d1/Jenkinsfile#L65
+      // Locking prevent concurrent usage of the gradle-cache
       lock("${env.NODE_NAME}-android") {
         image.inside(
           // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
@@ -417,21 +415,27 @@ def inAndroidContainer(workerFunction) {
 }
 
 def buildAndroid() {
-  inAndroidContainer {
-    sh 'npm ci --ignore-scripts'
-    sh 'cd react-native/android && ./gradlew publishAndroid'
-    sh 'npm pack'
-    stash includes: 'realm-*.tgz', name: 'android'
+  return {
+    myNode('docker') {
+      unstash 'source'
+      def image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
+      image.inside('-e HOME=/tmp') {
+        // Using --ignore-scripts to skip building for node
+        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
+        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
+        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack ."
+        stash includes: 'realm-*.*.*.tgz', name: 'android-package'
+      }
+    }
   }
 }
 
-def publish(nodeVersions, electronVersions, dependencies, tag) {
+def publish(dependencies, tag) {
   myNode('docker') {
 
-    for (def platform in ['darwin-x64', 'linux-x64', 'win32-ia32', 'win32-x64']) {
+    for (def platform in platforms) {
       unstash "prebuild-${platform}"
     }
-    unstash 'prebuild-linux-arm'
 
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
       sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/realm-js-prebuilds/${dependencies.VERSION}/'"
@@ -517,12 +521,26 @@ def doDockerInside(script, target, postStep = null) {
   }
 }
 
+def runEmulator() {
+  sh """yes '\n' | avdmanager create avd -n CIRJSEmulator -k 'system-images;android-29;default;x86' --force"""
+  sh "adb start-server" // https://stackoverflow.com/questions/56198290/problems-with-adb-exe
+  // Need to go to ANDROID_HOME due to https://askubuntu.com/questions/1005944/emulator-avd-does-not-launch-the-virtual-device
+  sh "cd \$ANDROID_HOME/tools && emulator -avd CIRJSEmulator -no-boot-anim -no-window -wipe-data -noaudio -partition-size 4098 -gpu swiftshader_indirect &"
+  echo "Waiting for the emulator to be available"
+  sh 'adb wait-for-device'
+  sh 'adb devices'
+}
+
 def testAndroid(target, postStep = null) {
-  return {
-    node('android') {
-        timeout(time: 1, unit: 'HOURS') {
-            doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
-        }
+  timeout(30) {
+    runEmulator();
+    try {
+      sh "./scripts/test.sh ${target}"
+    } finally {
+      sh "adb emu kill"
+      if (postStep) {
+        postStep.call()
+      }
     }
   }
 }
@@ -560,7 +578,7 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
               // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
               // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
               // if there's really a new feature you need from the latest stitch, upgrade this manually
-            withRealmCloud(version: coreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/vendor/realm-core/test/object-store/mongodb"]) { networkName ->
+            withRealmCloud(version: dependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/tests/mongodb"]) { networkName ->
                 buildSteps("-e MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\" --network=${networkName}")
             }
           } else {
