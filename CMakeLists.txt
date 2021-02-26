@@ -42,4 +42,8 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
     add_subdirectory(vendor/realm-core EXCLUDE_FROM_ALL)
 endif()
 
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
 add_subdirectory(src)
