@@ -116,9 +116,9 @@ stage('build') {
     parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
     parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
     parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
-    
+
     parallelExecutors["Android RN"] = buildAndroid()
-    
+
     parallel parallelExecutors
 }
 
@@ -170,7 +170,7 @@ stage('integration tests') {
     'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
 
     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
-    
+
     //TODO: uncomment when RN iOS build with cmake is ready
     // 'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
   )
@@ -421,7 +421,7 @@ def buildAndroid() {
       def image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       image.inside('-e HOME=/tmp') {
         // Using --ignore-scripts to skip building for node
-        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts" 
+        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
         sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
         sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack ."
         stash includes: 'realm-*.*.*.tgz', name: 'android-package'
@@ -578,7 +578,7 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
               // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
               // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
               // if there's really a new feature you need from the latest stitch, upgrade this manually
-            withRealmCloud(version: coreDependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/vendor/realm-core/test/object-store/mongodb"]) { networkName ->
+            withRealmCloud(version: dependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/tests/mongodb"]) { networkName ->
                 buildSteps("-e MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\" --network=${networkName}")
             }
           } else {
