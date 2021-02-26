@@ -42,8 +42,4 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
     add_subdirectory(vendor/realm-core EXCLUDE_FROM_ALL)
 endif()
 
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " --build_v8_with_gn=false --v8_enable_pointer_compression=0 --v8_enable_31bit_smis_on_64bit_arch=0")
-endif()
-
 add_subdirectory(src)
