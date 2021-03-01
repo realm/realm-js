@@ -1601,4 +1601,61 @@ module.exports = {
         });
         realm.close();
     },
+
+    testClassObjectCreation: function() {
+        class TodoItem extends Realm.Object {
+            constructor(description) {
+                super()
+                this.id = new ObjectId()
+                this.description = description;
+                this.done = false;
+            }
+        }
+
+        TodoItem.schema =  {
+            name: "TodoItem",
+            properties: {
+                id: "objectId",
+                description: "string",
+                done: {type: "bool", default: false},
+                deadline: "date?"
+            },
+            primaryKey: "id"
+        }
+
+        class TodoList extends Realm.Object {
+            constructor(name) {
+                super()
+                this.id = new ObjectId()
+                this.name = name;
+                this.items = []
+            }
+        }
+
+        TodoList.schema = {
+            name: "TodoList",
+            properties: {
+                id: "objectId",
+                name: "string",
+                items: "TodoItem[]"
+            },
+            primaryKey: "id"
+        }
+
+        const realm = new Realm({schema: [TodoList, TodoItem]});
+        realm.write(() => {
+            const list = realm.create(TodoList, {
+                id: new ObjectId(),
+                name: 'MyTodoList'
+            })
+
+            TestCase.assertThrows(() => {
+                list.items.push(new TodoItem("Fix that bug"))
+            }, "Cannot reference a detached instance of Realm.Object")
+
+            TestCase.assertThrows(() => {
+                realm.create(TodoItem, new TodoItem("Fix that bug"))
+            }, "Cannot create an object from a detached Realm.Object instance")
+        })
+    }
 };
