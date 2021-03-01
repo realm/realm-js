@@ -27,11 +27,14 @@
         "conditions": [
           ["use_realm_debug", {
             "defines": [ "REALM_DEBUG=1" ]
+          }],
+          ["realm_enable_sync", {
+            "defines" : [ "REALM_ENABLE_SYNC=1"]
           }]
         ]
       },
       "link_settings": {
-        "libraries": [ "-lrealm-parser<(debug_library_suffix)", "-lrealm<(debug_library_suffix)" ],
+        "libraries": [ "-lrealm-parser-macosx<(debug_library_suffix)", "-lrealm-monorepo-macosx<(debug_library_suffix)" ],
       },
       "variables": {
         "prefix": "<!(node -p \"process.env.REALM_CORE_PREFIX || String()\")"
@@ -94,11 +97,7 @@
       "type": "none",
       "all_dependent_settings": {
         "include_dirs": [ "<(vendor_dir)/include", "<(vendor_dir)/include/realm" ],
-        "library_dirs": [
-          "<(vendor_dir)/lib",
-          "<(vendor_dir)/lib64",
-          "<(vendor_dir)/osx"
-        ]
+        "library_dirs": [ "<(vendor_dir)" ],
       },
       "conditions": [
         ["use_realm_debug", {

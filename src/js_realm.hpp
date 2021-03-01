@@ -36,18 +36,16 @@
 #include "js_email_password_auth.hpp"
 #include "js_api_key_auth.hpp"
 #include <realm/object-store/sync/async_open_task.hpp>
-#include <realm/object-store/sync/sync_config.hpp>
+#include <realm/sync/config.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
 #endif
 
 #include <realm/object-store/util/scheduler.hpp>
-
 #include <realm/object-store/binding_context.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/results.hpp>
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
-#include <realm/object-store/util/scheduler.hpp>
 
 #include <realm/disable_sync_to_disk.hpp>
 #include <realm/global_key.hpp>
@@ -788,7 +786,7 @@ void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Argume
     SharedRealm& realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
 
     auto& config = realm->config();
-    if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::Additive || config.schema_mode == SchemaMode::ReadOnlyAlternative) {
+    if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::AdditiveDiscovered || config.schema_mode == SchemaMode::ReadOnlyAlternative) {
         throw std::runtime_error("Cannot delete model for a read-only or a synced Realm.");
     }
 

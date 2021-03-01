@@ -1,0 +1,17 @@
+{
+    "id": "603cf540cb4165230ca646da",
+    "name": "local-userpass",
+    "type": "local-userpass",
+    "config": {
+        "autoConfirm": false,
+        "confirmEmailSubject": "",
+        "confirmationFunctionName": "confirmFunc",
+        "emailConfirmationUrl": "http://localhost/confirmEmail",
+        "resetFunctionName": "resetFunc",
+        "resetPasswordSubject": "",
+        "resetPasswordUrl": "http://localhost/resetPassword",
+        "runConfirmationFunction": true,
+        "runResetFunction": true
+    },
+    "disabled": false
+}

@@ -24,6 +24,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const buffer = require('buffer');
+const { registerAllowable } = require('mockery');
 
 const RANDOM_DATA = new Uint8Array([
     0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15, 0x77, 0x30, 0xac, 0x77, 0x96, 0xd9,
@@ -302,7 +303,7 @@ module.exports = {
         realm.write(function() {
             object.dataCol = RANDOM_DATA.buffer;
         });
-        
+
         TestCase.assertArraysEqual(new Uint8Array(object.dataCol), RANDOM_DATA);
 
         if (Realm.App.Sync) {
@@ -341,7 +342,7 @@ module.exports = {
             });
 
             if(array.length > 0){
-                TestCase.assertArraysEqual(new Uint8Array(object.dataCol), array, range.join('...')); 
+                TestCase.assertArraysEqual(new Uint8Array(object.dataCol), array, range.join('...'));
             }
 
         });
@@ -567,6 +568,7 @@ module.exports = {
 
         obj.addListener((obj, changes) => {
             calls++;
+            console.log(`FISK ${calls}: ${JSON.stringify(changes)}`);
             switch (calls) {
                 case 1:
                     break;
@@ -580,20 +582,23 @@ module.exports = {
                     TestCase.assertTrue(changes.deleted);
                     TestCase.assertEqual(changes.changedProperties.length, 0);
                     realm.close();
+                    break;
             }
-            resolve();
         });
-        await new Promise(r => resolve = r);
-
         realm.write(() => {
             obj['stringCol'] = 'bar';
         });
-        await new Promise(r => resolve = r);
 
         realm.write(() => {
             realm.delete(obj);
         });
-        await new Promise(r => resolve = r);
+
+        return new Promise((resolve, _) => {
+            setTimeout(() => {
+                TestCase.assertEqual(calls, 3);
+                resolve();
+            }, 5000);
+        });
     },
 
     testAddAndRemoveListener: async function() {

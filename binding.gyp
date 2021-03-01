@@ -13,6 +13,7 @@
   "targets": [
     {
       "target_name": "realm",
+      "defines": [ "REALM_PLATFORM_NODE=1" ],
       "conditions": [
         [ "OS!='mac'", {
           "dependencies": [ "realm-core", "OpenSSL",  "<!(node -p \"require('node-addon-api').gyp\")"],

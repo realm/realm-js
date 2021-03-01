@@ -449,6 +449,13 @@ struct Unbox<JSEngine, Obj> {
     }
 };
 
+template<typename JSEngine>
+struct Unbox<JSEngine, ObjLink> {
+    static ObjLink call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
+        throw std::runtime_error("ObjLink not implemented");
+    }
+};
+
 // FIXME: Why do we need this? It is required in order to compile and seems to be used by the query builder
 template<typename JSEngine>
 struct Unbox<JSEngine, ObjKey> {
