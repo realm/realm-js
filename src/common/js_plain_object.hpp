@@ -59,29 +59,36 @@ struct JSObjectBuilder {
    private:
     using Object = js::Object<VM>;
     using ObjectType = typename VM::Object;
-    using Context = typename VM::Context;
+    using ContextType = typename VM::Context;
     using ObjectProperties = std::vector<Napi::PropertyDescriptor>;
+    using ProtectedObject =  Protected<ObjectType>;
 
     Data data;
     ObjectType object;
-    Context context;
+    ContextType context;
     ObjectProperties properties;
 
    public:
-    JSObjectBuilder(Context _context, Data _data)
+    JSObjectBuilder(ContextType _context, Data _data)
         : data{std::move(_data)}, context{_context} {
         object = Object::create_empty(context);
     }
 
     ObjectType& get_plain_object() { return object; }
-    Context& get_context() { return context; }
+    ContextType& get_context() { return context; }
     Data& get_data() { return data; }
+    ProtectedObject&& get_protected_object() {
+        Protected<typename VM::GlobalContext> protected_ctx(Context<VM>::get_global_context(context));
+        HANDLESCOPE(protected_ctx)
+        return std::move( Protected<ObjectType>(protected_ctx, object) );
+    }
 
     ~JSObjectBuilder() {}
 
+
     template <typename Callback>
     void configure_object_destructor(Callback&& callback) {
-        object.AddFinalizer([callback](Context, void* data_ref) { callback(); },
+        object.AddFinalizer([callback](ContextType, void* data_ref) { callback(); },
                             this);
     }
 

@@ -200,34 +200,37 @@ module.exports = {
     },
 
     testDictionaryEventListener() {
-        let realm = new Realm({schema: [DictSchema]})
-        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}}))
-        let point = realm.objects(DictSchema.name)[0].a
-        TestCase.assertDefined(point.addListener, "addListener should be a member of Dictionary.")
-        TestCase.assertDefined(point.removeAllListeners, "removeAllListeners should be a member of Dictionary.")
-        TestCase.assertDefined(point.removeListener, "removeListener should be a member of Dictionary.")
+        const DictSchema = {
+            name: 'Dictionary',
+            properties: {
+                fields: '{}'
+            }
+        }
 
-        point.addListener((fn, changeset ) => {
-            console.log('something has change', fn, ' changeset: ', changeset)
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 1, filed2: 2, field3: 3}}))
+        let fields = realm.objects(DictSchema.name)[0].fields
+        //let D = realm.objects(DictSchema.name)[0]
+
+        fields.addListener((obj, changeset ) => {
+            console.log('EventListener: something has change', obj, ' changeset: ', changeset)
+            console.log(obj.field1,'!==' ,fields.field1)
+          //  TestCase.assertEqual(obj.field1, 5, "We field1 to be updated.");
+
         })
 
-        realm.write(() => point.x=10 )
-
-        setTimeout(() => realm.write(() => point.x=10 ),10000)
+        realm.write(() => { fields.field1=5 } )
+        console.log('field1 ->', fields.field1)
     },
 
-    testDictionaryRemoveAllEventListener() {
+    testDictionaryEventListenerRemoveAll() {
         let realm = new Realm({schema: [DictSchema]})
         realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}}))
         let point = realm.objects(DictSchema.name)[0].a
-        TestCase.assertDefined(point.addListener, "addListener should be a member of Dictionary.")
-        TestCase.assertDefined(point.removeAllListeners, "removeAllListeners should be a member of Dictionary.")
-        TestCase.assertDefined(point.removeListener, "removeListener should be a member of Dictionary.")
 
         for(let i=0; i<10; i++) {
             point.addListener((fn, changeset) => {
                 TestCase.assertEqual(0, 1, "This function should never be call")
-                console.log('something has change', fn, ' changeset: ', changeset)
             })
         }
 

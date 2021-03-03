@@ -38,13 +38,32 @@ template <typename Collection, typename Function>
 class CollectionAdapter {
    private:
     Collection collection;
-    using TokensMap =
-        std::vector<std::pair<Protected<Function>, NotificationToken>>;
+    NotificationToken token;
+    std::vector<std::function<void(DictionaryChangeSet)>> listeners;
+    bool listening = false;
+
+    void listen_for_collection_changes() {
+        if (listening) {
+            return;
+        }
+
+        token = collection.add_key_based_notification_callback(
+            [=](DictionaryChangeSet change_set, std::exception_ptr error) {
+                if (error) {
+                    std::rethrow_exception(error);
+                }
+
+                for (auto listen : listeners) {
+                    listen(change_set);
+                }
+            });
+        listening = true;
+    }
 
    public:
     CollectionAdapter(Collection _collection) : collection{_collection} {}
     CollectionAdapter(CollectionAdapter&& collection_adapter) {
-        m_notification_tokens.swap(collection_adapter.m_notification_tokens);
+        token = std::move(collection_adapter.token);
         collection = collection_adapter.get_collection();
     }
 
@@ -53,9 +72,14 @@ class CollectionAdapter {
         return collection.add_notification_callback(arguments...);
     }
 
+    template <class Delegate>
+    void register_for_notifications(Delegate delegate) {
+        listeners.push_back(delegate);
+        listen_for_collection_changes();
+    }
+
     Collection& get_collection() { return collection; }
-    void remove_all_listeners() { m_notification_tokens.clear(); }
-    TokensMap m_notification_tokens;
+    void remove_all_listeners() { listeners.clear(); }
 };
 
 template <typename MixedAPI>
@@ -68,6 +92,7 @@ struct AccessorsForDictionary {
             Dictionary realm_dictionary = object->get_data().get_collection();
             auto mixed_value = realm_dictionary.get_any(key_name);
 
+            std::cout << "= get =" << '\n';
             return MixedAPI::get_instance().wrap(info.Env(), mixed_value);
         };
     }
@@ -78,16 +103,65 @@ struct AccessorsForDictionary {
             auto mixed = MixedAPI::get_instance().unwrap(info.Env(), info[0]);
 
             realm_dictionary.insert(key_name, mixed);
+            std::cout << "= insert =" << '\n';
         };
+    }
+};
+
+struct Hook {
+    std::string n;
+
+    Hook(std::string _n) : n{_n} {}
+
+    void operator()(DictionaryChangeSet change_set) const {
+        std::cout << n << '\n';
+        std::cout << "deletions" << change_set.deletions.size() << '\n';
+        std::cout << "insertions" << change_set.insertions.size() << '\n';
+        std::cout << "modifications" << change_set.modifications.size() << '\n';
+    }
+};
+
+template <typename T>
+struct JSPersistentCallback {
+    using Fn = Protected<typename T::Function>;
+    using PObject = Protected<typename T::Object>;
+    using GlobalContext = Protected<typename T::GlobalContext>;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+
+    Fn fn;
+    PObject plain_object;
+    GlobalContext context;
+
+    JSPersistentCallback(Fn&& _fn, PObject& obj, GlobalContext&& _context)
+        : fn{std::move(_fn)},
+          plain_object{obj},
+          context{std::move(_context)} {}
+
+    void operator()(DictionaryChangeSet change_set) const {
+        HANDLESCOPE(context)
+        ValueType arguments[] {
+                static_cast<ObjectType>(plain_object),
+        };
+
+        std::cout << "modifications: " << change_set.modifications.size() << std::endl;
+        std::cout << "insertions: " << change_set.insertions.size() << std::endl;
+        std::cout << "deletions: " << change_set.deletions.size() << std::endl;
+
+        Function<T>::callback(context, fn, plain_object, 1, arguments);
+        std::cout << "= callback =" << '\n';
     }
 };
 
 template <typename VM>
 class ListenersMethodsForDictionary {
    private:
-    using Context = typename VM::Context;
+    using ContextType = typename VM::Context;
     using Value = js::Value<VM>;
-    Context context;
+    using ObjectType = typename VM::Object;
+    using FunctionType = typename VM::Function;
+
+    ContextType context;
 
     template <typename Fn, typename JavascriptPlainObject>
     auto add_javascript_function(std::string&& name, Fn&& function,
@@ -101,7 +175,7 @@ class ListenersMethodsForDictionary {
     }
 
    public:
-    ListenersMethodsForDictionary(Context _context) : context{_context} {}
+    ListenersMethodsForDictionary(ContextType _context) : context{_context} {}
 
     template <typename JavascriptPlainObject>
     void apply(JavascriptPlainObject* object) {
@@ -114,25 +188,34 @@ class ListenersMethodsForDictionary {
     template <typename JavascriptPlainObject>
     auto add_listener(JavascriptPlainObject* object) {
         return [=](const Napi::CallbackInfo& info) {
-            Context context = info.Env();
+            ContextType context = info.Env();
+            auto callback = Value::validated_to_function(context, info[0]);
             auto collection = &object->get_data();
             auto plain_object = object->get_plain_object();
 
-            ResultsClass<VM>::add_listener_v2(context, collection, plain_object,
-                                              info);
+            Protected<FunctionType> protected_callback(context, callback);
+            Protected<ObjectType> protected_this(context, plain_object);
+            Protected<typename VM::GlobalContext> protected_ctx(Context<VM>::get_global_context(context));
+
+            JSPersistentCallback<VM> p_callback{std::move(protected_callback),
+                                                protected_this,
+                                                std::move(protected_ctx)};
+
+            collection->register_for_notifications(p_callback);
+            std::cout << "= register =" << '\n';
             return Value::from_boolean(context, true);
         };
     }
     auto remove_listener() {
         return [](const Napi::CallbackInfo& info) {
-            Context env = info.Env();
+            ContextType env = info.Env();
             return Value::from_boolean(env, true);
         };
     }
     template <typename JavascriptPlainObject>
     auto remove_all_listeners(JavascriptPlainObject* object) {
         return [=](const Napi::CallbackInfo& info) {
-            Context env = info.Env();
+            ContextType env = info.Env();
             auto collection = &object->get_data();
             collection->remove_all_listeners();
             return Value::from_undefined(env);
