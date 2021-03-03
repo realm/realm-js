@@ -212,11 +212,18 @@ module.exports = {
         let fields = realm.objects(DictSchema.name)[0].fields
         let cnt=0
         fields.addListener((obj, changeset ) => {
+            //console.log('object: ', obj , ' changeset: ', changeset)
+
             TestCase.assertEqual(fields.field1, cnt,`fields.field1: ${fields.field1} should be equals to: cnt -> ${cnt}`)
+            // We ignore the first as it just reflect the creation above.
+            if(cnt > 0) {
+                TestCase.assertEqual(changeset.modifications[0], 'field1', `The changeset should reflect an update on field1 but it shows -> ${changeset.modifications[0]}`)
+            }
             cnt++
         })
 
         for(let i=1; i<=5; i++){
+
             realm.write(() => { fields.field1=i } )
         }
 
@@ -229,6 +236,7 @@ module.exports = {
 
         for(let i=0; i<10; i++) {
             point.addListener((fn, changeset) => {
+            //    console.log('object: ', fn , ' changeset: ', changeset)
                 TestCase.assertEqual(0, 1, "This function should never be call")
             })
         }

@@ -112,6 +112,7 @@ struct JSPersistentCallback {
     using GlobalContext = Protected<typename T::GlobalContext>;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using Object = js::Object<T>;
 
     Fn fn;
     PObject plain_object;
@@ -122,17 +123,30 @@ struct JSPersistentCallback {
           plain_object{obj},
           context{std::move(_context)} {}
 
+    template <typename Collection>
+    auto build_array(Collection& collection) const{
+
+        std::vector<ValueType> values;
+        for(auto mixed_item: collection){
+            values.push_back(TypeMixed<T>::get_instance().wrap(context, mixed_item));
+        }
+
+        return Object::create_array(context, values);
+    }
+
     void operator()(DictionaryChangeSet change_set) const {
         HANDLESCOPE(context)
+
+        ObjectType object = Object::create_empty(context);
+        Object::set_property(context, object, "insertions", build_array(change_set.insertions));
+        Object::set_property(context, object, "modifications", build_array(change_set.modifications));
+
         ValueType arguments[] {
                 static_cast<ObjectType>(plain_object),
+                object
         };
 
-//        std::cout << "modifications: " << change_set.modifications.size() << std::endl;
-//        std::cout << "insertions: " << change_set.insertions.size() << std::endl;
-//        std::cout << "deletions: " << change_set.deletions.size() << std::endl;
-
-        Function<T>::callback(context, fn, plain_object, 1, arguments);
+        Function<T>::callback(context, fn, plain_object, 2, arguments);
        // std::cout << "= callback =" << '\n';
     }
 };
