@@ -91,8 +91,6 @@ struct AccessorsForDictionary {
         return [=](const Napi::CallbackInfo& info) {
             Dictionary realm_dictionary = object->get_data().get_collection();
             auto mixed_value = realm_dictionary.get_any(key_name);
-
-            std::cout << "= get =" << '\n';
             return MixedAPI::get_instance().wrap(info.Env(), mixed_value);
         };
     }
@@ -103,21 +101,7 @@ struct AccessorsForDictionary {
             auto mixed = MixedAPI::get_instance().unwrap(info.Env(), info[0]);
 
             realm_dictionary.insert(key_name, mixed);
-            std::cout << "= insert =" << '\n';
         };
-    }
-};
-
-struct Hook {
-    std::string n;
-
-    Hook(std::string _n) : n{_n} {}
-
-    void operator()(DictionaryChangeSet change_set) const {
-        std::cout << n << '\n';
-        std::cout << "deletions" << change_set.deletions.size() << '\n';
-        std::cout << "insertions" << change_set.insertions.size() << '\n';
-        std::cout << "modifications" << change_set.modifications.size() << '\n';
     }
 };
 
@@ -144,12 +128,12 @@ struct JSPersistentCallback {
                 static_cast<ObjectType>(plain_object),
         };
 
-        std::cout << "modifications: " << change_set.modifications.size() << std::endl;
-        std::cout << "insertions: " << change_set.insertions.size() << std::endl;
-        std::cout << "deletions: " << change_set.deletions.size() << std::endl;
+//        std::cout << "modifications: " << change_set.modifications.size() << std::endl;
+//        std::cout << "insertions: " << change_set.insertions.size() << std::endl;
+//        std::cout << "deletions: " << change_set.deletions.size() << std::endl;
 
         Function<T>::callback(context, fn, plain_object, 1, arguments);
-        std::cout << "= callback =" << '\n';
+       // std::cout << "= callback =" << '\n';
     }
 };
 
@@ -202,7 +186,6 @@ class ListenersMethodsForDictionary {
                                                 std::move(protected_ctx)};
 
             collection->register_for_notifications(p_callback);
-            std::cout << "= register =" << '\n';
             return Value::from_boolean(context, true);
         };
     }

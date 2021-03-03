@@ -199,7 +199,7 @@ module.exports = {
 
     },
 
-    testDictionaryEventListener() {
+    testDictionaryNotificationObjectFieldUpdate() {
         const DictSchema = {
             name: 'Dictionary',
             properties: {
@@ -208,19 +208,18 @@ module.exports = {
         }
 
         let realm = new Realm({schema: [DictSchema]})
-        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 1, filed2: 2, field3: 3}}))
+        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
         let fields = realm.objects(DictSchema.name)[0].fields
-        //let D = realm.objects(DictSchema.name)[0]
-
+        let cnt=0
         fields.addListener((obj, changeset ) => {
-            console.log('EventListener: something has change', obj, ' changeset: ', changeset)
-            console.log(obj.field1,'!==' ,fields.field1)
-          //  TestCase.assertEqual(obj.field1, 5, "We field1 to be updated.");
-
+            TestCase.assertEqual(fields.field1, cnt,`fields.field1: ${fields.field1} should be equals to: cnt -> ${cnt}`)
+            cnt++
         })
 
-        realm.write(() => { fields.field1=5 } )
-        console.log('field1 ->', fields.field1)
+        for(let i=1; i<=5; i++){
+            realm.write(() => { fields.field1=i } )
+        }
+
     },
 
     testDictionaryEventListenerRemoveAll() {

@@ -37,8 +37,9 @@ struct AccessorsConfiguration {
         auto _getter = accessor.make_getter(key, object);
         auto _setter = accessor.make_setter(key, object);
 
+        auto rules = static_cast<napi_property_attributes>(napi_enumerable);
         auto descriptor = Napi::PropertyDescriptor::Accessor(
-                context, object->get_plain_object(), key, _getter, _setter, napi_enumerable);
+                context, object->get_plain_object(), key, _getter, _setter, rules);
 
         object->register_accessor(descriptor);
     }
