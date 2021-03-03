@@ -254,5 +254,49 @@ module.exports = {
         TestCase.assertEqual(realm.objects(schemas.Decimal128Object.name).filtered("decimal128Col != 10002").length, 2);
 
         realm.close();
+    },
+
+    testUuidAsPrimaryKeyQueries: function() {
+        const testStringUuids = [
+            "01b1a58a-bb92-47a2-a3aa-d9c735e6fd42",
+            "ab01fec2-55d5-4fac-9e04-980bff6a521d",
+            "6683f348-d441-4846-81aa-cc375b771032"
+        ];
+        const nonExistingStringUuid = "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa";
+
+        const primUuidSchema = {
+            name: "PrimUuidObject",
+            primaryKey: "_id",
+            properties: {
+                _id: "uuid",
+                text: "string"
+            }
+        };
+
+        const realm = new Realm({ schema: [primUuidSchema] });
+        realm.write(() => {
+            testStringUuids.forEach(uuidStr => {
+                realm.create(primUuidSchema.name, { _id: new UUID(uuidStr), text: uuidStr });
+            });
+        });
+
+        // objectForPrimaryKey tests
+        const nonExisting = realm.objectForPrimaryKey(primUuidSchema.name, new UUID(nonExistingStringUuid));
+        TestCase.assertUndefined(nonExisting, `objectForPrimaryKey should return undefined for new UUID("${nonExistingStringUuid}")`);
+
+        testStringUuids.forEach(uuidStr => {
+            const obj = realm.objectForPrimaryKey(primUuidSchema.name, new UUID(uuidStr));
+            TestCase.assertDefined(obj, `objectForPrimaryKey should return a Realm.Object for new UUID("${uuidStr}")`);
+            TestCase.assertEqual(obj._id.toString(), uuidStr);
+        });
+
+        // results.filtered tests
+        const emptyFiltered = realm.objects(primUuidSchema.name).filtered("_id == $0", new UUID(nonExistingStringUuid));
+        TestCase.assertEqual(emptyFiltered.length, 0, `filtered objects should contain 0 elements when filtered by new UUID("${nonExistingStringUuid}")`);
+
+        testStringUuids.forEach(uuidStr => {
+            const filtered = realm.objects(primUuidSchema.name).filtered("_id == $0", new UUID(uuidStr));
+            TestCase.assertEqual(filtered.length, 1, `filtered objects should contain exactly 1 of new UUID("${uuidStr}")`);
+        });
     }
 };
