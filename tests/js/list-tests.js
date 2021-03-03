@@ -18,10 +18,8 @@
 
 'use strict';
 
-const Decimal128 = require('bson').Decimal128;
-const ObjectId = require('bson').ObjectId;
-
 const Realm = require('realm');
+const {Decimal128, ObjectId, UUID} = Realm.BSON;
 let TestCase = require('./asserts');
 let schemas = require('./schemas');
 
@@ -69,6 +67,7 @@ module.exports = {
         TestCase.assertEqual(prim.date.type, 'date');
         TestCase.assertEqual(prim.decimal128.type, 'decimal128');
         TestCase.assertEqual(prim.objectId.type, 'objectId');
+        TestCase.assertEqual(prim.uuid.type, "uuid");
 
         TestCase.assertEqual(prim.optBool.type, 'bool');
         TestCase.assertEqual(prim.optInt.type, 'int');
@@ -77,7 +76,7 @@ module.exports = {
         TestCase.assertEqual(prim.optString.type, 'string');
         TestCase.assertEqual(prim.optDate.type, 'date');
         TestCase.assertEqual(prim.optDecimal128.type, 'decimal128');
-        TestCase.assertEqual(prim.optObjectId.type, 'objectId');
+        TestCase.assertEqual(prim.optUuid.type, "uuid");
 
         // Check schema objectType
         const pa = realm.schema.find((s) => s.name === schemas.PrimitiveArrays.name);
@@ -90,6 +89,7 @@ module.exports = {
         TestCase.assertEqual(pa.properties.date.objectType, "date");
         TestCase.assertEqual(pa.properties.decimal128.objectType, "decimal128");
         TestCase.assertEqual(pa.properties.objectId.objectType, "objectId");
+        TestCase.assertEqual(pa.properties.uuid.objectType, "uuid");
 
         TestCase.assertEqual(pa.properties.optBool.objectType, "bool");
         TestCase.assertEqual(pa.properties.optInt.objectType, "int");
@@ -99,6 +99,7 @@ module.exports = {
         TestCase.assertEqual(pa.properties.optDate.objectType, "date");
         TestCase.assertEqual(pa.properties.optDecimal128.objectType, "decimal128");
         TestCase.assertEqual(pa.properties.optObjectId.objectType, "objectId");
+        TestCase.assertEqual(pa.properties.optUuid.objectType, "uuid");
 
         // Check optional
         TestCase.assertFalse(prim.bool.optional);
@@ -109,6 +110,7 @@ module.exports = {
         TestCase.assertFalse(prim.date.optional);
         TestCase.assertFalse(prim.decimal128.optional);
         TestCase.assertFalse(prim.objectId.optional);
+        TestCase.assertFalse(prim.uuid.optional);
 
         TestCase.assertTrue(prim.optBool.optional);
         TestCase.assertTrue(prim.optInt.optional);
@@ -118,6 +120,7 @@ module.exports = {
         TestCase.assertTrue(prim.optDate.optional);
         TestCase.assertTrue(prim.optDecimal128.optional);
         TestCase.assertTrue(prim.optObjectId.optional);
+        TestCase.assertTrue(prim.optUuid.optional);
     },
 
     testListLength: function() {
@@ -168,6 +171,7 @@ module.exports = {
                 data:   [DATA1, DATA2],
                 decimal128: [Decimal128.fromString('1'), Decimal128.fromString('2')],
                 objectId:    [new ObjectId('0000002a9a7969d24bea4cf2'), new ObjectId('0000002a9a7969d24bea4cf3')],
+                uuid: [new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"), new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4")],
 
                 optBool:   [true, null],
                 optInt:    [1, null],
@@ -177,7 +181,8 @@ module.exports = {
                 optDate:   [new Date(1), null],
                 optData:   [DATA1, null],
                 optDecimal128: [Decimal128.fromString('1'), null],
-                optObjectId:    [new ObjectId('0000002a9a7969d24bea4cf2'), null]
+                optObjectId:    [new ObjectId('0000002a9a7969d24bea4cf2'), null],
+                optUuid: [new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"), null]
             });
         });
 
@@ -220,6 +225,8 @@ module.exports = {
         TestCase.assertSimilar('decimal128', prim.decimal128[1], Decimal128.fromString('2'));
         TestCase.assertSimilar('objectId', prim.objectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
         TestCase.assertSimilar('objectId', prim.objectId[1], new ObjectId('0000002a9a7969d24bea4cf3'));
+        TestCase.assertSimilar("uuid", prim.uuid[0], new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"));
+        TestCase.assertSimilar("uuid", prim.uuid[1], new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"));
 
         TestCase.assertSimilar('bool', prim.optBool[0], true);
         TestCase.assertSimilar('int', prim.optInt[0], 1);
@@ -231,6 +238,9 @@ module.exports = {
         TestCase.assertSimilar('decimal128', prim.optDecimal128[0], Decimal128.fromString('1'));
         TestCase.assertNull(prim.optDecimal128[1]);
         TestCase.assertSimilar('objectId', prim.optObjectId[0], new ObjectId('0000002a9a7969d24bea4cf2'));
+        TestCase.assertNull(prim.optObjectId[1]);
+        TestCase.assertSimilar("uuid", prim.optUuid[0], new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"));
+        TestCase.assertNull(prim.optUuid[1]);
     },
 
     testListSubscriptSetters: function() {
@@ -813,6 +823,8 @@ module.exports = {
                 string: ['c', 'a', 'b'],
                 data: [DATA3, DATA1, DATA2],
                 date: [DATE3, DATE1, DATE2],
+                objectId: [new ObjectId("0000002a9a7969d24bea4cf2"), new ObjectId("0000002a9a7969d24bea4cf3"), new ObjectId("0000002a9a7969d24bea4cf4")],
+                uuid: [new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"), new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"), new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4")],
                 optBool: [true, false, null],
                 optInt: [3, 1, 2, null],
                 optFloat: [3, 1, 2, null],
@@ -820,6 +832,8 @@ module.exports = {
                 optString: ['c', 'a', 'b', null],
                 optData: [DATA3, DATA1, DATA2, null],
                 optDate: [DATE3, DATE1, DATE2, null],
+                optObjectId: [new ObjectId("0000002a9a7969d24bea4cf2"), new ObjectId("0000002a9a7969d24bea4cf4"), new ObjectId("0000002a9a7969d24bea4cf3"), null],
+                optUuid: [new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"), new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"), new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"), null],
             });
         });
 
@@ -874,6 +888,54 @@ module.exports = {
         TestCase.assertArraysEqual(prim.optString.sorted(), [null, 'a', 'b', 'c']);
         TestCase.assertArraysEqual(prim.optData.sorted(), [null, DATA1, DATA2, DATA3]);
         TestCase.assertArraysEqual(prim.optDate.sorted(), [null, DATE1, DATE2, DATE3]);
+
+        TestCase.assertArraysEqual(prim.objectId.sorted(), [
+            new ObjectId("0000002a9a7969d24bea4cf2"),
+            new ObjectId("0000002a9a7969d24bea4cf3"),
+            new ObjectId("0000002a9a7969d24bea4cf4")
+        ]);
+        TestCase.assertArraysEqual(prim.objectId.sorted(true), [
+            new ObjectId("0000002a9a7969d24bea4cf4"),
+            new ObjectId("0000002a9a7969d24bea4cf3"),
+            new ObjectId("0000002a9a7969d24bea4cf2"),
+        ]);
+
+        TestCase.assertArraysEqual(prim.uuid.sorted(), [
+            new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+            new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+            new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
+        ]);
+        TestCase.assertArraysEqual(prim.uuid.sorted(true), [
+            new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
+            new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+            new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+        ]);
+
+        TestCase.assertArraysEqual(prim.optObjectId.sorted(), [
+            null,
+            new ObjectId("0000002a9a7969d24bea4cf2"),
+            new ObjectId("0000002a9a7969d24bea4cf3"),
+            new ObjectId("0000002a9a7969d24bea4cf4")
+        ]);
+        TestCase.assertArraysEqual(prim.optObjectId.sorted(true), [
+            new ObjectId("0000002a9a7969d24bea4cf4"),
+            new ObjectId("0000002a9a7969d24bea4cf3"),
+            new ObjectId("0000002a9a7969d24bea4cf2"),
+            null,
+        ]);
+
+        TestCase.assertArraysEqual(prim.optUuid.sorted(), [
+            null,
+            new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+            new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+            new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
+        ]);
+        TestCase.assertArraysEqual(prim.optUuid.sorted(true), [
+            new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
+            new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+            new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+            null,
+        ]);
     },
 
     testArrayMethods: function() {
