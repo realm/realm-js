@@ -236,6 +236,7 @@ exports.PrimitiveArrays = {
         data:   'data[]',
         decimal128: 'decimal128[]',
         objectId:    'objectId[]',
+        uuid: "uuid[]",
 
         optBool:   'bool?[]',
         optInt:    'int?[]',
@@ -245,7 +246,8 @@ exports.PrimitiveArrays = {
         optDate:   'date?[]',
         optData:   'data?[]',
         optDecimal128: 'decimal128?[]',
-        optObjectId:    'objectId?[]'
+        optObjectId:    'objectId?[]',
+        optUuid: "uuid?[]"
     }
 };
 
