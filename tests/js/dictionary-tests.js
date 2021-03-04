@@ -249,17 +249,20 @@ module.exports = {
         }
         let called = false
         let c = (obj, chg) => {
-
             called = true
+        }
+        let d = (obj, chg) => {
+            TestCase.assertTrue(false,`Function d should be unsubscribed.`)
         }
 
         fields.addListener(a)
         fields.addListener(b)
         fields.addListener(c)
+        fields.addListener(d)
 
         fields.removeListener(a)
         fields.removeListener(b)
-
+        fields.removeListener(d)
 
         realm.write(() => { fields.field1=1 } )
         TestCase.assertTrue(called,`Function c should be called`)
