@@ -69,8 +69,6 @@
       ],
       "include_dirs": [
         "src",
-        "src/object-store/src",
-        "src/object-store/external/json",
         "<!@(node -p \"require('node-addon-api').include\")"
       ],
     },

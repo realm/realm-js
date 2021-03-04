@@ -22,7 +22,7 @@
       "<@(warning-flags)"
     ],
     "include_dirs": [
-      
+
     ],
     "conditions": [
       ["OS=='win'", {
@@ -32,7 +32,7 @@
           "WIN32=1",
           "_HAS_EXCEPTIONS=1",
           "WIN32_LEAN_AND_MEAN",
-          "_WIN32_WINNT=0x603", # Build with Windows 8.1 as the minimum supoorted API level
+          "_WIN32_WINNT=0x603", # Build with Windows 8.1 as the minimum supported API level
           "_ENABLE_EXTENDED_ALIGNED_STORAGE"
         ]
       }],

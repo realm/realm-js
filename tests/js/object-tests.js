@@ -555,49 +555,52 @@ module.exports = {
         });
     },
 
-    async testNotification() {
+    testNotification() {
         const realm = new Realm({schema: [schemas.StringOnly]});
+
+        let calls = 0;
 
         let obj;
         realm.write(() => {
-            obj = realm.create(schemas.StringOnly.name, { stringCol: 'foo' });
+            obj = realm.create(schemas.StringOnly.name, { stringCol: "foo" });
         });
 
-        let calls = 0;
-        let resolve;
-
-        obj.addListener((obj, changes) => {
+        let listener = (_obj, changes) => {
             calls++;
-            console.log(`FISK ${calls}: ${JSON.stringify(changes)}`);
             switch (calls) {
                 case 1:
+                    TestCase.assertFalse(changes.deleted);
                     break;
                 case 2:
                     TestCase.assertFalse(changes.deleted);
                     TestCase.assertEqual(changes.changedProperties.length, 1);
-                    TestCase.assertEqual(changes.changedProperties[0], 'stringCol');
-                    TestCase.assertEqual(obj['stringCol'], 'bar');
+                    TestCase.assertEqual(changes.changedProperties[0], "stringCol");
+                    TestCase.assertEqual(_obj["stringCol"], "bar");
                     break;
                 case 3:
                     TestCase.assertTrue(changes.deleted);
                     TestCase.assertEqual(changes.changedProperties.length, 0);
-                    realm.close();
+                    TestCase.assertFalse(_obj.isValid());
                     break;
             }
-        });
+        };
+        obj.addListener(listener);
         realm.write(() => {
-            obj['stringCol'] = 'bar';
+            obj["stringCol"] = "bar";
         });
 
         realm.write(() => {
             realm.delete(obj);
         });
 
-        return new Promise((resolve, _) => {
+        return new Promise((resolve, reject) => {
             setTimeout(() => {
+                TestCase.assertFalse(obj.isValid());
                 TestCase.assertEqual(calls, 3);
+                obj.removeListener(listener);
+                realm.close();
                 resolve();
-            }, 5000);
+            }, 10000);
         });
     },
 
