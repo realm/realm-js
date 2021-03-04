@@ -215,7 +215,6 @@ module.exports = {
         fields.addListener((obj, changeset ) => {
             TestCase.assertEqual(fields.field1, cnt,`fields.field1: ${fields.field1} should be equals to: cnt -> ${cnt}`)
 
-
             // We ignore the first as it just reflect the creation above.
             if(cnt > 0) {
                 TestCase.assertEqual(changeset.modifications[0], 'field1', `The changeset should reflect an update on field1 but it shows -> ${changeset.modifications[0]}`)
@@ -239,7 +238,6 @@ module.exports = {
         let realm = new Realm({schema: [DictSchema]})
         realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
         let fields = realm.objects(DictSchema.name)[0].fields
-
 
         let a = (obj, chg) => {
             TestCase.assertTrue(false,`Function a should be unsubscribed.`)
@@ -283,6 +281,83 @@ module.exports = {
         realm.write(() => point.x=10 )
     },
 
+    testDictionaryRemoveCallback() {
+        const DictSchema = {
+            name: 'Dictionary',
+            properties: {
+                fields: '{}'
+            }
+        }
+
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
+        let fields = realm.objects(DictSchema.name)[0].fields
+
+        let a = (obj, chg) => {
+            TestCase.assertTrue(false,`Function a should be unsubscribed.`)
+        }
+        let b = (obj, chg) => {
+            TestCase.assertTrue(false,`Function b should be unsubscribed.`)
+        }
+        let called = false
+        let c = (obj, chg) => {
+            called = true
+        }
+        let d = (obj, chg) => {
+            TestCase.assertTrue(false,`Function d should be unsubscribed.`)
+        }
+
+        fields.addListener(a)
+        fields.addListener(b)
+        fields.addListener(c)
+        fields.addListener(d)
+
+        fields.removeListener(a)
+        fields.removeListener(b)
+        fields.removeListener(d)
+
+        realm.write(() => { fields.field1=1 } )
+        TestCase.assertTrue(called,`Function c should be called`)
+    },
+
+    testDictionaryUnsubscribingOnEmptyListener() {
+        const DictSchema = {
+            name: 'Dictionary',
+            properties: {
+                fields: '{}'
+            }
+        }
+
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
+        let fields = realm.objects(DictSchema.name)[0].fields
+
+        let a = (obj, chg) => {
+            TestCase.assertTrue(false,`Function a should be unsubscribed.`)
+        }
+        let b = (obj, chg) => {
+            TestCase.assertTrue(false,`Function b should be unsubscribed.`)
+        }
+
+        /*
+            We try to remove listeners that doesn't exist in order to provoke to test out-of-bounds and stability.
+         */
+
+        fields.removeListener(a)
+        fields.removeListener(a)
+        fields.removeListener(b)
+        fields.removeListener(b)
+
+        realm.write(() => { fields.field1=1 } )
+
+        let correct = false;
+        fields.addListener(() => {
+            correct = true
+        })
+        realm.write(() => { fields.field1=1 } )
+        TestCase.assertTrue(correct,`This is expected to work.`)
+    },
+
 
     /*TODO Comment this until we merge Mixed->Link code.
     testDictionaryErrorHandling(){
@@ -294,8 +369,6 @@ module.exports = {
         TestCase.assertEqual(data.x, null, 'Should be an equals to mutable.x = null');
 
     } */
-
-
 }
 
  
