@@ -38,7 +38,7 @@ First lets take a look at `.vscode/launch.json`.  This contains various ways to 
 }
 ```
 
-A quick read through this code shows that the launch type is `lldb` and it is using the `node` command to invoke the `jasmine` test framework with our `spec/unit_tests.js`.  The filter option is currently running all tests.  To make things easier, lets modify that param to take a single test (`testListPush` from `tests/list-tests.js`).
+A quick read through this code shows that the launch type is `lldb` provided by the CodeLLDB extension, and it is using the `node` command to invoke the `jasmine` test framework with our `spec/unit_tests.js`.  The filter option is currently running all tests.  To make things easier, let's modify that parameter to take a single test (`testListPush` from `tests/list-tests.js`).
 
 ```json
 {
