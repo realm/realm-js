@@ -34,12 +34,12 @@
 namespace realm {
 namespace js {
 
-template <typename Collection, typename Function>
-class CollectionAdapter {
-   private:
-    Collection collection;
+template <typename Listener>
+class DictionaryNotifications {
+private:
     NotificationToken token;
-    std::vector<std::function<void(DictionaryChangeSet)>> listeners;
+    std::vector<Listener> listeners;
+    object_store::Dictionary dictionary;
     bool listening = false;
 
     void listen_for_collection_changes() {
@@ -47,79 +47,109 @@ class CollectionAdapter {
             return;
         }
 
-        token = collection.add_key_based_notification_callback(
-            [=](DictionaryChangeSet change_set, std::exception_ptr error) {
-                if (error) {
-                    std::rethrow_exception(error);
-                }
+        token = dictionary.add_key_based_notification_callback(
+                [=](DictionaryChangeSet change_set, std::exception_ptr error) {
+                    if (error) {
+                        std::rethrow_exception(error);
+                    }
 
-                for (auto listen : listeners) {
-                    listen(change_set);
-                }
-            });
+                    for (auto listen : listeners) {
+                        listen(change_set);
+                    }
+                });
         listening = true;
     }
+public:
+    DictionaryNotifications(object_store::Dictionary& _dictionary): dictionary{_dictionary} {}
+    DictionaryNotifications(DictionaryNotifications&& dictionary)  = default;
 
-   public:
-    CollectionAdapter(Collection _collection) : collection{_collection} {}
-    CollectionAdapter(CollectionAdapter&& collection_adapter) {
-        token = std::move(collection_adapter.token);
-        collection = collection_adapter.get_collection();
+    void remove_listener(Listener listener){
+        int index = -1;
+        for(auto const& candidate: listeners){
+           index++;
+           if(listener == candidate){
+               listeners.erase(listeners.begin() + index);
+               break;
+           }
+        }
     }
-
-    template <typename... Arguments>
-    auto add_notification_callback(Arguments... arguments) {
-        return collection.add_notification_callback(arguments...);
-    }
+    void remove_all_listeners() { listeners.clear(); }
 
     template <class Delegate>
     void register_for_notifications(Delegate delegate) {
         listeners.push_back(delegate);
         listen_for_collection_changes();
     }
+};
 
+template <typename Collection, typename Notifications>
+class CollectionAdapter: public Notifications {
+   private:
+    Collection collection;
+
+   public:
+    CollectionAdapter(Collection _collection) : collection{_collection}, Notifications{_collection} {}
+    CollectionAdapter(CollectionAdapter&& collection_adapter)  = default;
+
+    /*
+     * Makes the contents of this collection compatible with the existing mechanism.
+     */
+    template <typename... Arguments>
+    auto add_notification_callback(Arguments... arguments) {
+        return collection.add_notification_callback(arguments...);
+    }
     Collection& get_collection() { return collection; }
-    void remove_all_listeners() { listeners.clear(); }
 };
 
 template <typename MixedAPI>
 struct AccessorsForDictionary {
-    using Dictionary = realm::object_store::Dictionary;
+    using Dictionary = object_store::Dictionary;
 
     template <typename JavascriptObject>
     auto make_getter(std::string key_name, JavascriptObject* object) {
         return [=](const Napi::CallbackInfo& info) {
-            Dictionary realm_dictionary = object->get_data().get_collection();
-            auto mixed_value = realm_dictionary.get_any(key_name);
+            Dictionary *realm_dictionary = &object->get_data().get_collection();
+            auto mixed_value = realm_dictionary->get_any(key_name);
             return MixedAPI::get_instance().wrap(info.Env(), mixed_value);
         };
     }
     template <typename JavascriptObject>
     auto make_setter(std::string key_name, JavascriptObject* object) {
         return [=](const Napi::CallbackInfo& info) {
-            Dictionary realm_dictionary = object->get_data().get_collection();
+            Dictionary *realm_dictionary = &object->get_data().get_collection();
             auto mixed = MixedAPI::get_instance().unwrap(info.Env(), info[0]);
 
-            realm_dictionary.insert(key_name, mixed);
+            realm_dictionary->insert(key_name, mixed);
         };
     }
 };
 
 template <typename T>
 struct JSPersistentCallback {
-    using Fn = Protected<typename T::Function>;
-    using PObject = Protected<typename T::Object>;
-    using GlobalContext = Protected<typename T::GlobalContext>;
     using ObjectType = typename T::Object;
+    using FunctionType = typename T::Function;
     using ValueType = typename T::Value;
+    using ContextType = typename T::Context ;
+
+    using PFunction = Protected<FunctionType>;
+    using PObject = Protected<ObjectType>;
+    using PGlobalContext = Protected<typename T::GlobalContext>;
+
     using Object = js::Object<T>;
 
-    Fn fn;
+    PFunction fn;
     PObject plain_object;
-    GlobalContext context;
+    PGlobalContext context;
 
-    JSPersistentCallback(Fn& _fn, PObject& obj, GlobalContext& _context)
-        : fn{_fn}, plain_object{obj}, context{_context} {}
+    JSPersistentCallback(ContextType& _context, FunctionType& _fn)
+    : fn{_context, _fn},
+      plain_object{_context, Object::create_empty(_context)},
+      context{Context<T>::get_global_context(_context)} {}
+
+    JSPersistentCallback(FunctionType& _fn, ObjectType& obj, ContextType& _context)
+        :   fn{_context, _fn},
+            plain_object{_context, obj},
+            context{Context<T>::get_global_context(_context)} {}
 
     template <typename Collection>
     auto build_array(Collection& collection) const {
@@ -130,6 +160,10 @@ struct JSPersistentCallback {
         }
 
         return Object::create_array(context, values);
+    }
+
+    bool operator==(const JSPersistentCallback<T>& candidate){
+        return static_cast<FunctionType>(fn) == static_cast<FunctionType>(candidate.fn);
     }
 
     void operator()(DictionaryChangeSet change_set) const {
@@ -151,9 +185,9 @@ template <typename VM>
 class ListenersMethodsForDictionary {
    private:
     using ContextType = typename VM::Context;
-    using Value = js::Value<VM>;
     using ObjectType = typename VM::Object;
     using FunctionType = typename VM::Function;
+    using Value = js::Value<VM>;
 
     ContextType context;
 
@@ -174,7 +208,7 @@ class ListenersMethodsForDictionary {
     template <typename JavascriptPlainObject>
     void apply(JavascriptPlainObject* object) {
         add_javascript_function("addListener", add_listener(object), object);
-        add_javascript_function("removeListener", remove_listener(), object);
+        add_javascript_function("removeListener", remove_listener(object), object);
         add_javascript_function("removeAllListeners",
                                 remove_all_listeners(object), object);
     }
@@ -187,23 +221,23 @@ class ListenersMethodsForDictionary {
             auto collection = &object->get_data();
             auto plain_object = object->get_plain_object();
 
-            Protected<FunctionType> protected_callback(context, callback);
-            Protected<ObjectType> protected_this(context, plain_object);
-            Protected<typename VM::GlobalContext> protected_ctx(
-                Context<VM>::get_global_context(context));
+            JSPersistentCallback<VM> js_callback {callback,
+                                                plain_object,
+                                                context};
 
-            JSPersistentCallback<VM> p_callback{protected_callback,
-                                                protected_this,
-                                                protected_ctx};
-
-            collection->register_for_notifications(p_callback);
-            return Value::from_boolean(context, true);
+            collection->register_for_notifications(js_callback);
         };
     }
-    auto remove_listener() {
-        return [](const Napi::CallbackInfo& info) {
-            ContextType env = info.Env();
-            return Value::from_boolean(env, true);
+
+    template <typename JavascriptPlainObject>
+    auto remove_listener(JavascriptPlainObject* object) {
+        return [=](const Napi::CallbackInfo& info) {
+            ContextType context = info.Env();
+            auto callback = Value::validated_to_function(context, info[0]);
+            JSPersistentCallback<VM> js_callback { context, callback};
+            auto collection = &object->get_data();
+            collection->remove_listener(js_callback);
+
         };
     }
     template <typename JavascriptPlainObject>
@@ -212,7 +246,6 @@ class ListenersMethodsForDictionary {
             ContextType env = info.Env();
             auto collection = &object->get_data();
             collection->remove_all_listeners();
-            return Value::from_undefined(env);
         };
     }
 };
@@ -222,8 +255,8 @@ class DictionaryAdapter {
    private:
     using ValueType = typename VM::Value;
     using Context = typename VM::Context;
-    using Collection = CollectionAdapter<object_store::Dictionary,
-                                         typename VM::Function>;
+    using Callbacks = JSPersistentCallback<VM>;
+    using Collection = CollectionAdapter<object_store::Dictionary, DictionaryNotifications<Callbacks>>;
     using JSObjectBuilder = JSObjectBuilder<VM, Collection>;
     using MixedAPI = TypeMixed<VM>;
     using DictionaryGetterSetter =
@@ -232,7 +265,7 @@ class DictionaryAdapter {
    public:
     ValueType wrap(Context context,
                    realm::object_store::Dictionary dictionary) {
-        Collection collection{dictionary};
+        Collection collection{std::move(dictionary)};
         JSObjectBuilder* js_builder =
             new JSObjectBuilder(context, std::move(collection));
 

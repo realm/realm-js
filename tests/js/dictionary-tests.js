@@ -211,10 +211,11 @@ module.exports = {
         realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
         let fields = realm.objects(DictSchema.name)[0].fields
         let cnt=0
-        fields.addListener((obj, changeset ) => {
-            //console.log('object: ', obj , ' changeset: ', changeset)
 
+        fields.addListener((obj, changeset ) => {
             TestCase.assertEqual(fields.field1, cnt,`fields.field1: ${fields.field1} should be equals to: cnt -> ${cnt}`)
+
+
             // We ignore the first as it just reflect the creation above.
             if(cnt > 0) {
                 TestCase.assertEqual(changeset.modifications[0], 'field1', `The changeset should reflect an update on field1 but it shows -> ${changeset.modifications[0]}`)
@@ -223,10 +224,45 @@ module.exports = {
         })
 
         for(let i=1; i<=5; i++){
-
             realm.write(() => { fields.field1=i } )
         }
+    },
 
+    testDictionaryRemoveCallback() {
+        const DictSchema = {
+            name: 'Dictionary',
+            properties: {
+                fields: '{}'
+            }
+        }
+
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
+        let fields = realm.objects(DictSchema.name)[0].fields
+
+
+        let a = (obj, chg) => {
+            TestCase.assertTrue(false,`Function a should be unsubscribed.`)
+        }
+        let b = (obj, chg) => {
+            TestCase.assertTrue(false,`Function b should be unsubscribed.`)
+        }
+        let called = false
+        let c = (obj, chg) => {
+
+            called = true
+        }
+
+        fields.addListener(a)
+        fields.addListener(b)
+        fields.addListener(c)
+
+        fields.removeListener(a)
+        fields.removeListener(b)
+
+
+        realm.write(() => { fields.field1=1 } )
+        TestCase.assertTrue(called,`Function c should be called`)
     },
 
     testDictionaryEventListenerRemoveAll() {
@@ -241,7 +277,6 @@ module.exports = {
         }
 
         point.removeAllListeners()
-
         realm.write(() => point.x=10 )
     },
 
