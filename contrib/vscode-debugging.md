@@ -48,7 +48,7 @@ A quick read through this code shows that the launch type is `lldb` provided by 
     "program": "node",
     "args": [
         "--expose_gc",
-        "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+        "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
         "spec/unit_tests.js",
         "--filter=testListPush"
     ],
