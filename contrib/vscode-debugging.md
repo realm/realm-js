@@ -30,7 +30,7 @@ First lets take a look at `.vscode/launch.json`.  This contains various ways to 
     "program": "node",
     "args": [
         "--expose_gc",
-        "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+        "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
         "spec/unit_tests.js",
         "--filter=."
     ],
