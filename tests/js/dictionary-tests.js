@@ -236,7 +236,6 @@ module.exports = {
 
         for(let i=0; i<10; i++) {
             point.addListener((fn, changeset) => {
-            //    console.log('object: ', fn , ' changeset: ', changeset)
                 TestCase.assertEqual(0, 1, "This function should never be call")
             })
         }

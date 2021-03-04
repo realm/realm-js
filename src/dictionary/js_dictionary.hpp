@@ -118,17 +118,15 @@ struct JSPersistentCallback {
     PObject plain_object;
     GlobalContext context;
 
-    JSPersistentCallback(Fn&& _fn, PObject& obj, GlobalContext&& _context)
-        : fn{std::move(_fn)},
-          plain_object{obj},
-          context{std::move(_context)} {}
+    JSPersistentCallback(Fn& _fn, PObject& obj, GlobalContext& _context)
+        : fn{_fn}, plain_object{obj}, context{_context} {}
 
     template <typename Collection>
-    auto build_array(Collection& collection) const{
-
+    auto build_array(Collection& collection) const {
         std::vector<ValueType> values;
-        for(auto mixed_item: collection){
-            values.push_back(TypeMixed<T>::get_instance().wrap(context, mixed_item));
+        for (auto mixed_item : collection) {
+            values.push_back(
+                TypeMixed<T>::get_instance().wrap(context, mixed_item));
         }
 
         return Object::create_array(context, values);
@@ -138,16 +136,14 @@ struct JSPersistentCallback {
         HANDLESCOPE(context)
 
         ObjectType object = Object::create_empty(context);
-        Object::set_property(context, object, "insertions", build_array(change_set.insertions));
-        Object::set_property(context, object, "modifications", build_array(change_set.modifications));
+        Object::set_property(context, object, "insertions",
+                             build_array(change_set.insertions));
+        Object::set_property(context, object, "modifications",
+                             build_array(change_set.modifications));
 
-        ValueType arguments[] {
-                static_cast<ObjectType>(plain_object),
-                object
-        };
+        ValueType arguments[]{static_cast<ObjectType>(plain_object), object};
 
         Function<T>::callback(context, fn, plain_object, 2, arguments);
-       // std::cout << "= callback =" << '\n';
     }
 };
 
@@ -193,11 +189,12 @@ class ListenersMethodsForDictionary {
 
             Protected<FunctionType> protected_callback(context, callback);
             Protected<ObjectType> protected_this(context, plain_object);
-            Protected<typename VM::GlobalContext> protected_ctx(Context<VM>::get_global_context(context));
+            Protected<typename VM::GlobalContext> protected_ctx(
+                Context<VM>::get_global_context(context));
 
-            JSPersistentCallback<VM> p_callback{std::move(protected_callback),
+            JSPersistentCallback<VM> p_callback{protected_callback,
                                                 protected_this,
-                                                std::move(protected_ctx)};
+                                                protected_ctx};
 
             collection->register_for_notifications(p_callback);
             return Value::from_boolean(context, true);
@@ -225,7 +222,7 @@ class DictionaryAdapter {
    private:
     using ValueType = typename VM::Value;
     using Context = typename VM::Context;
-    using Collection = CollectionAdapter<realm::object_store::Dictionary,
+    using Collection = CollectionAdapter<object_store::Dictionary,
                                          typename VM::Function>;
     using JSObjectBuilder = JSObjectBuilder<VM, Collection>;
     using MixedAPI = TypeMixed<VM>;
