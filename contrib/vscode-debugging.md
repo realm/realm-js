@@ -32,31 +32,15 @@ First lets take a look at `.vscode/launch.json`.  This contains various ways to 
         "--expose_gc",
         "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
         "spec/unit_tests.js",
-        "--filter=."
+        "--filter=${input:testFilter}"
     ],
     "cwd": "${workspaceFolder}/tests"
 }
 ```
 
-A quick read through this code shows that the launch type is `lldb` provided by the CodeLLDB extension, and it is using the `node` command to invoke the `jasmine` test framework with our `spec/unit_tests.js`.  The filter option is currently running all tests.  To make things easier, let's modify that parameter to take a single test (`testListPush` from `tests/list-tests.js`).
+A quick read through this code shows that the launch type is `lldb` provided by the CodeLLDB extension, and it is using the `node` command to invoke the `jasmine` test framework with our `spec/unit_tests.js`. The `${input:testFilter}` will prompt us for a string to use as filter to avoid running all tests every time.
 
-```json
-{
-    "type": "lldb",
-    "request": "launch",
-    "name": "LLDB Launch Unit Tests",
-    "program": "node",
-    "args": [
-        "--expose_gc",
-        "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
-        "spec/unit_tests.js",
-        "--filter=testListPush"
-    ],
-    "cwd": "${workspaceFolder}/tests"
-}
-```
-
-As we are fairly certain this will perform a `push` command on a realm list, we can place a breakpoint in the push function in `src/js_list.hpp` by locating the push function and clicking next to the desired line number (see example below)
+When prompted for a filter, try using "testListPush" as the input. As we are fairly certain this will perform a `push` command on a realm list, we can place a breakpoint in the push function in `src/js_list.hpp` by locating the push function and clicking next to the desired line number (see example below)
 
 ![Breakpoint in Code](./assets/pushBreakpoint.png)
 
@@ -68,7 +52,12 @@ Select the `LLDB Launch Unit Tests` from the run tab:
 
 ![Debug Run Tab](./assets/debugRunTab.png)
 
-Now press play and we should arrive at our new breakpoint.
+Now press play, type "testListPush" as filter and hit <kbd>Enter</kbd>
 
+![Enter test filter](./assets/debug-enter-test-filter.png)
+
+We should now arrive at our new breakpoint.
 
 ![Met Breakpoint](./assets/metBreakpoint.png)
+
+To run all tests, simply leave the filter at the default (`.`).
