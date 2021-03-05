@@ -126,7 +126,7 @@ public:
         return is_null(value) ? util::none : util::make_optional(unbox<T>(value));
     }
 
-    
+
 
 
     template<typename T>
@@ -457,6 +457,13 @@ template<typename JSEngine>
 struct Unbox<JSEngine, ObjKey> {
     static ObjKey call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
         return Unbox<JSEngine, Obj>::call(ctx, value, policy, current_row).get_key();
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, ObjLink> {
+    static ObjLink call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
+        throw std::runtime_error("ObjLink not implemented");
     }
 };
 

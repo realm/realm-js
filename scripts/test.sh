@@ -65,13 +65,13 @@ start_server() {
     echo "found existing stitch running, not attempting to start another"
   else
     echo "no existing stitch instance running in docker, attempting to start one"
-    . "${SRCROOT}/vendor/realm-core/dependencies.list"
+    . "${SRCROOT}/dependencies.list"
     echo "using object-store stitch dependency: ${MDBREALM_TEST_SERVER_TAG}"
     if [[ -n "$RUN_STITCH_IN_FORGROUND" ]]; then
       # we don't worry about tracking the STITCH_DOCKER_ID because without the -d flag, this docker is tied to the shell
-      docker run -v "${SRCROOT}/vendor/realm-core/test/object-store/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}"
+      docker run -v "${SRCROOT}/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}"
     else
-      STITCH_DOCKER_ID=$(docker run -d $BACKGROUND_FLAG -v "${SRCROOT}/vendor/realm-core/test/object-store/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}")
+      STITCH_DOCKER_ID=$(docker run -d $BACKGROUND_FLAG -v "${SRCROOT}/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}")
       echo "starting docker image $STITCH_DOCKER_ID"
       # wait for stitch to import apps and start serving before continuing
       docker logs --follow "$STITCH_DOCKER_ID" | grep -m 1 "Serving on.*9090" || true
@@ -352,9 +352,9 @@ case "$TARGET" in
   pushd tests/react-test-app
   echo "installing react-test-app dependencies"
   npm ci --no-optional
-  
+
   echo "installing manually packed realm package"
-  npm install --save-optional  --ignore-scripts ../../realm.tgz 
+  npm install --save-optional  --ignore-scripts ../../realm.tgz
 
   echo "installing manually packed realm tests package"
   npm install --save-optional ../js/realm-tests.tgz
@@ -388,7 +388,7 @@ case "$TARGET" in
   # Stop running child processes before printing results.
   cleanup
   echo "********* TESTS COMPLETED *********";
-  
+
   if $TESTS_FAILED; then
     exit 20
   fi

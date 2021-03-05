@@ -10,6 +10,7 @@
 ### Fixed
 * Fixed app hydration to be more robust: Errors are now logged instead of thrown. ([#3549](https://github.com/realm/realm-js/pull/3549))
 * Fixed a potential lock, when refreshing an access token or fetching custom user data, failed due to 401/unauthorized. An unauthorized response, during token-refresh, will now clear all the users' tokens. ([#3549](https://github.com/realm/realm-js/pull/3549))
+* Fixed user profile type, making less assumptions on the value type of custom profile data (changing from string to unknown). ([#3576](https://github.com/realm/realm-js/pull/3576), since 1.2.0)
 
 ### Internal
 * None
