@@ -1,4 +1,4 @@
-10.5.0-alpha.11 Release notes (2021-2-26)
+10.5.0-alpha.12 Release notes (2021-3-5)
 =============================================================
 NOTE: This is an internal release and SHOULD NOT be used.
 NOTE: No React Native support.
@@ -7,7 +7,8 @@ NOTE: Sync protocol version 3: CANNOT SYNC WITH MONGODB REALM CLOUD.
 NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Enhancements
-* Adding Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
+* Added Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
+* Added support for HTTP proxy.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
