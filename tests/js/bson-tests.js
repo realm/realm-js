@@ -1,7 +1,7 @@
 'use strict';
 
 const Realm = require('realm');
-const bson = require('bson');
+const bson = Realm.BSON;
 const {assertEqual, assertNotEqual} = require('./asserts');
 
 function bson_parse(json) {
@@ -24,7 +24,9 @@ function assert_fancy_eq(a, b) {
 
 function check([t, val, serialized_if_special]) {
     const json = JSON.stringify({val});
+    console.log('JSON', json)
     const parsed = realm_parse(json);
+    console.log('PARSED', parsed)
 
     if (typeof(t) == 'string') {
         assertEqual(typeof(parsed.val), t)

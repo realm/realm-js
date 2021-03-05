@@ -32,7 +32,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
-const { Decimal128, ObjectId, UUID } = require("bson");
+const { Decimal128, ObjectId, UUID } = Realm.BSON;
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
