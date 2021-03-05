@@ -75,7 +75,20 @@
             "protocol": "inspector",
             "address": "localhost",
             "port": 5858
-        }
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB Launch Unit Tests",
+            "program": "node",
+            "args": [
+                "--expose_gc",
+                "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
+                "spec/unit_tests.js",
+                "--filter=."
+            ],
+            "cwd": "${workspaceFolder}/tests"
+        },
     ],
     "compounds": [
         {
