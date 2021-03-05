@@ -85,7 +85,7 @@
                 "--expose_gc",
                 "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
                 "spec/unit_tests.js",
-                "--filter=."
+                "--filter=${input:testFilter}"
             ],
             "cwd": "${workspaceFolder}/tests"
         },
@@ -104,6 +104,14 @@
                 "(gdb) Launch",
                 "Attach to Port"
             ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "testFilter",
+            "type": "promptString",
+            "default": ".",
+            "description": "Filtering used to limit what tests are run"
         }
     ]
 }
