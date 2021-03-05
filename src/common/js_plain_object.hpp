@@ -78,15 +78,9 @@ struct JSObjectBuilder {
     ObjectType& get_plain_object() { return object; }
     ContextType& get_context() { return context; }
     Data& get_data() { return data; }
-    ProtectedObject&& get_protected_object() {
-        Protected<typename VM::GlobalContext> protected_ctx(Context<VM>::get_global_context(context));
-        HANDLESCOPE(protected_ctx)
-        return std::move( Protected<ObjectType>(protected_ctx, object) );
-    }
 
     ~JSObjectBuilder() {}
-
-
+    
     template <typename Callback>
     void configure_object_destructor(Callback&& callback) {
         object.AddFinalizer([callback](ContextType, void* data_ref) { callback(); },

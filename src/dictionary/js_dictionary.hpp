@@ -181,6 +181,30 @@ struct JSPersistentCallback {
     }
 };
 
+template <typename VM, typename Collection>
+class CollectionPersistence {
+private:
+    using ContextType = typename VM::Context;
+    using ObjectType = typename VM::Object;
+    using FunctionType = typename VM::Function;
+    using Value = js::Value<VM>;
+
+    ContextType context;
+public:
+    CollectionPersistence(ContextType _context) : context{_context} {}
+
+    template <typename JavascriptPlainObject>
+    void apply(JavascriptPlainObject* object) {
+        auto collection = &object->get_data();
+        auto plain_object = object->get_plain_object();
+        auto external_value = Napi::External<Collection>::New(context, &object->get_data());
+
+        auto access_descriptor = Napi::PropertyDescriptor::Value("__internal", external_value, napi_default);
+        object->register_accessor(access_descriptor);
+    }
+};
+
+
 template <typename VM>
 class ListenersMethodsForDictionary {
    private:
@@ -265,9 +289,12 @@ class DictionaryAdapter {
    public:
     ValueType wrap(Context context,
                    realm::object_store::Dictionary dictionary) {
+        std::cout << "I'm just getting the same dict? -> " << dictionary.size() << '\n';
+
         Collection collection{std::move(dictionary)};
         JSObjectBuilder* js_builder =
             new JSObjectBuilder(context, std::move(collection));
+
 
         js_builder->template configure_object_destructor([=]() {
             /* GC will trigger this function, signaling that...
@@ -278,6 +305,7 @@ class DictionaryAdapter {
 
         js_builder->template add_feature<DictionaryGetterSetter>();
         js_builder->template add_feature<ListenersMethodsForDictionary<VM>>();
+        js_builder->template add_feature<CollectionPersistence<VM, Collection>>();
 
         return js_builder->build();
     }
