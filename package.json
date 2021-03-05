@@ -50,7 +50,7 @@
     "lint": "eslint",
     "test": "scripts/test.sh",
     "package": "npm ci --ignore-scripts && prebuild",
-    "install": "prebuild-install",
+    "install": "prebuild-install || cmake-js build",
     "rebuild": "npm run rebuild-changes",
     "build": "npm run build-changes",
     "build-changes": "cmake-js build --debug",
