@@ -26,7 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
-const { ObjectId } = require("bson");
+const { ObjectId } = Realm.BSON;
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
