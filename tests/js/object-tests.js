@@ -567,6 +567,7 @@ module.exports = {
 
         let listener = (_obj, changes) => {
             calls++;
+            console.log(`FISK ${calls} - ${JSON.stringify(changes)}`)
             switch (calls) {
                 case 1:
                     TestCase.assertFalse(changes.deleted);
@@ -631,7 +632,7 @@ module.exports = {
 
         const initialNotification = new Promise(r => resolve = r);
         obj.addListener(listener);
-        await initialNotification;
+        // await initialNotification;
 
         const firstChange = new Promise(r => resolve = r);
         realm.write(function() {
