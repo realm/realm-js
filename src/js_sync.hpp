@@ -840,7 +840,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         // HTTP proxy: only node is supported
 #ifdef REALM_PLATFORM_NODE
         SyncConfig::ProxyConfig proxy_config;
-        std::vector<std::string> env_vars = { "http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY" };
+        std::vector<std::string> env_vars = { "http_proxy", "HTTP_PROXY" };
         for (auto env_var : env_vars) {
             char *http_proxy = std::getenv(env_var.c_str());
             if (http_proxy != NULL) {
