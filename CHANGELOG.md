@@ -18,6 +18,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 ### Internal
 * Bump the Realm Sync protocol version to 3.
 * Bump Realm File Format version to 21.
+* Cleaned up the package's NPM scripts.
 
 10.2.0 Release notes (2021-2-5)
 =============================================================
