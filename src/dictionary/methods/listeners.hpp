@@ -5,8 +5,8 @@
 #ifndef REALMJS_LISTENERS_HPP
 #define REALMJS_LISTENERS_HPP
 
-#include "napi.h"
 #include "dictionary/methods/callbacks.hpp"
+#include "napi.h"
 namespace realm {
 namespace js {
 
@@ -51,8 +51,8 @@ class ListenersMethodsForDictionary {
             auto collection = &object->get_data();
             auto plain_object = object->get_plain_object();
 
-            JSPersistentCallback<VM> js_callback{callback, plain_object,
-                                                 context};
+            NotificationsCallback<VM> js_callback{callback, plain_object,
+                                                  context};
 
             collection->register_for_notifications(js_callback);
         };
@@ -63,7 +63,7 @@ class ListenersMethodsForDictionary {
         return [=](const Napi::CallbackInfo& info) {
             ContextType context = info.Env();
             auto callback = Value::validated_to_function(context, info[0]);
-            JSPersistentCallback<VM> js_callback{context, callback};
+            NotificationsCallback<VM> js_callback{context, callback};
             auto collection = &object->get_data();
             collection->remove_listener(js_callback);
         };

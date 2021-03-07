@@ -32,7 +32,7 @@
 #include "realm/object-store/property.hpp"
 #include "collection/collection.hpp"
 #include "collection/notification.hpp"
-#include "methods/mixed_accessors.hpp"
+#include "methods/accessors.hpp"
 #include "methods/listeners.hpp"
 #include "methods/callbacks.hpp"
 
@@ -44,7 +44,7 @@ class DictionaryAdapter {
    private:
     using ValueType = typename VM::Value;
     using Context = typename VM::Context;
-    using Callbacks = JSPersistentCallback<VM>;
+    using Callbacks = NotificationsCallback<VM>;
     using Collection = CollectionAdapter<object_store::Dictionary,
                                          DictionaryNotifications<Callbacks>>;
     using JSObjectBuilder = JSObjectBuilder<VM, Collection>;

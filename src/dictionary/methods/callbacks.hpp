@@ -9,7 +9,7 @@ namespace realm {
 namespace js {
 
 template <typename T>
-struct JSPersistentCallback {
+struct NotificationsCallback {
     using ObjectType = typename T::Object;
     using FunctionType = typename T::Function;
     using ValueType = typename T::Value;
@@ -25,12 +25,12 @@ struct JSPersistentCallback {
     PObject plain_object;
     PGlobalContext context;
 
-    JSPersistentCallback(ContextType &_context, FunctionType &_fn)
+    NotificationsCallback(ContextType &_context, FunctionType &_fn)
         : fn{_context, _fn},
           plain_object{_context, Object::create_empty(_context)},
           context{Context<T>::get_global_context(_context)} {}
 
-    JSPersistentCallback(FunctionType &_fn, ObjectType &obj,
+    NotificationsCallback(FunctionType &_fn, ObjectType &obj,
                          ContextType &_context)
         : fn{_context, _fn},
           plain_object{_context, obj},
@@ -47,7 +47,7 @@ struct JSPersistentCallback {
         return Object::create_array(context, values);
     }
 
-    bool operator==(const JSPersistentCallback<T> &candidate) {
+    bool operator==(const NotificationsCallback<T> &candidate) {
         return static_cast<FunctionType>(fn) ==
                static_cast<FunctionType>(candidate.fn);
     }
