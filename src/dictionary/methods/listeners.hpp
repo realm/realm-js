@@ -13,17 +13,13 @@ namespace js {
 template <typename VM>
 class ListenersMethodsForDictionary {
    private:
-    using ContextType = typename VM::Context;
-    using ObjectType = typename VM::Object;
-    using FunctionType = typename VM::Function;
     using Value = js::Value<VM>;
-
-    ContextType context;
 
     template <typename Fn, typename JavascriptPlainObject>
     auto add_javascript_function(std::string&& name, Fn&& function,
                                  JavascriptPlainObject* object) {
         auto plain_object = object->get_plain_object();
+        auto context = object->get_context();
 
         auto fn = Napi::Function::New(context, function, name,
                                       static_cast<void*>(object));
@@ -32,8 +28,6 @@ class ListenersMethodsForDictionary {
     }
 
    public:
-    ListenersMethodsForDictionary(ContextType _context) : context{_context} {}
-
     template <typename JavascriptPlainObject>
     void apply(JavascriptPlainObject* object) {
         add_javascript_function("addListener", add_listener(object), object);
@@ -46,7 +40,7 @@ class ListenersMethodsForDictionary {
     template <typename JavascriptPlainObject>
     auto add_listener(JavascriptPlainObject* object) {
         return [=](const Napi::CallbackInfo& info) {
-            ContextType context = info.Env();
+            auto context = info.Env();
             auto callback = Value::validated_to_function(context, info[0]);
             auto collection = &object->get_data();
             auto plain_object = object->get_plain_object();
@@ -61,7 +55,7 @@ class ListenersMethodsForDictionary {
     template <typename JavascriptPlainObject>
     auto remove_listener(JavascriptPlainObject* object) {
         return [=](const Napi::CallbackInfo& info) {
-            ContextType context = info.Env();
+            auto context = info.Env();
             auto callback = Value::validated_to_function(context, info[0]);
             NotificationsCallback<VM> js_callback{context, callback};
             auto collection = &object->get_data();
@@ -71,7 +65,6 @@ class ListenersMethodsForDictionary {
     template <typename JavascriptPlainObject>
     auto remove_all_listeners(JavascriptPlainObject* object) {
         return [=](const Napi::CallbackInfo& info) {
-            ContextType env = info.Env();
             auto collection = &object->get_data();
             collection->remove_all_listeners();
         };

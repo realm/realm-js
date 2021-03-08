@@ -45,11 +45,10 @@ class DictionaryAdapter {
     using ValueType = typename VM::Value;
     using Context = typename VM::Context;
     using Callbacks = NotificationsCallback<VM>;
-    using Collection = CollectionAdapter<object_store::Dictionary,
-                                         DictionaryNotifications<Callbacks>>;
+    using Notifications = DictionaryNotifications<Callbacks>;
+    using Collection = CollectionAdapter<object_store::Dictionary,Notifications>;
     using JSObjectBuilder = JSObjectBuilder<VM, Collection>;
-    using DictionaryGetterSetter =
-        AccessorsConfiguration<Context, AccessorsForDictionary<VM>>;
+    using DictionaryGetterSetter = AccessorsConfiguration<AccessorsForDictionary<VM>>;
 
    public:
     ValueType wrap(Context context, object_store::Dictionary dictionary) {

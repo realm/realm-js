@@ -42,7 +42,7 @@ class DictionaryNotifications {
                 }
 
                 for (auto listen : listeners) {
-                    listen(change_set);
+                    listen(dictionary, change_set);
                 }
             });
         listening = true;
