@@ -19,6 +19,8 @@
 #ifndef REALMJS_COLLECTION_HPP
 #define REALMJS_COLLECTION_HPP
 
+#include "dictionary/collection/notification.hpp"
+
 namespace realm {
 namespace js {
 
