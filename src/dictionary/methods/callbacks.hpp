@@ -4,7 +4,6 @@
 
 #ifndef REALMJS_CALLBACKS_HPP
 #define REALMJS_CALLBACKS_HPP
-#include "dictionary/methods/dict.hpp"
 
 namespace realm {
 namespace js {
@@ -24,7 +23,6 @@ struct NotificationsCallback {
     PFunction fn;
     PObject plain_object;
     PGlobalContext context;
-
 
     NotificationsCallback(ContextType &_context, FunctionType &_fn)
         : fn{_context, _fn},
@@ -63,24 +61,12 @@ struct NotificationsCallback {
         return object;
     }
 
-    void operator()(object_store::Dictionary& dict, DictionaryChangeSet change_set) const {
+    void operator()(DictionaryChangeSet change_set) const {
         HANDLESCOPE(context)
+        ValueType arguments[]{static_cast<ObjectType>(plain_object),
+                              build_changeset_object(change_set)};
 
-        if(change_set.insertions.size()>0){
-            Dict<T> dictionary;
-            auto object = dictionary.wrap(context, dict);
-
-            ValueType arguments[]{object,
-                                  build_changeset_object(change_set)};
-
-            Function<T>::callback(context, fn, plain_object, 2, arguments);
-        }else {
-
-            ValueType arguments[]{static_cast<ObjectType>(plain_object),
-                                  build_changeset_object(change_set)};
-
-            Function<T>::callback(context, fn, plain_object, 2, arguments);
-        }
+        Function<T>::callback(context, fn, plain_object, 2, arguments);
     }
 };
 

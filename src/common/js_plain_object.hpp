@@ -26,11 +26,9 @@ namespace js {
  *  When working with the JSC version, we just need to extract the NodeJS
  * feature and create a reusable component.
  */
-template <typename Context, typename Accessors>
+template <typename Accessors>
 struct AccessorsConfiguration {
-    Context context;
     Accessors accessor;
-    AccessorsConfiguration(Context _context) : context{_context} {}
 
     template <class JSObject>
     void register_new_accessor(const char *key, JSObject* object){
@@ -39,7 +37,7 @@ struct AccessorsConfiguration {
 
         auto rules = static_cast<napi_property_attributes>(napi_enumerable);
         auto descriptor = Napi::PropertyDescriptor::Accessor(
-                context, object->get_plain_object(), key, _getter, _setter, rules);
+                object->get_context(), object->get_plain_object(), key, _getter, _setter, rules);
 
         object->register_accessor(descriptor);
     }
@@ -89,7 +87,7 @@ struct JSObjectBuilder {
 
     template <typename Feature>
     void add_feature() {
-        Feature feature{context};
+        Feature feature;
         feature.apply(this);
     }
 
