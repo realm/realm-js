@@ -38,7 +38,7 @@ private:
         std::map<std::string, types::Type> ret;
         for(auto& [type, key] : realm_types ){
             ret[key] = type;
-            std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c){ return std::tolower(c); });
+            std::transform(key.begin(), key.end(), key.begin(), [](auto c){ return std::tolower(c); });
             ret[key] = type;
         }
         return ret;
@@ -70,12 +70,12 @@ public:
         return TypeDeductionImpl::is_bson_type(value, "ObjectID");
     }
 
-    static bool realm_type_exist(std::string type){
+    static bool realm_type_exist(std::string const& type){
         static auto realm_types = reverse_deduction_types_map();
         return realm_types.find(type) == realm_types.end();
     }
 
-    static types::Type realm_type(std::string type){
+    static types::Type realm_type(std::string const& type){
         static auto realm_types = reverse_deduction_types_map();
         return realm_types[type];
     }
