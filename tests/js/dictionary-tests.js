@@ -185,6 +185,12 @@ module.exports = {
     },
 
     testDictionaryQuery(){
+        const DictSchema = {
+            name: 'Dictionary',
+            properties: {
+                a: '{}'
+            }
+        }
         let realm = new Realm({schema: [DictSchema]})
         const N = 100
         for(let i=0; i<N; i++) {
@@ -192,14 +198,16 @@ module.exports = {
         }
 
         let data = realm.objects(DictSchema.name)
+        //console.log("Fields -> " , Object.keys(data[0].a))
+
         let half = data.filtered("a.x >= 50")
         let seventy = data.filtered("a.x >= $0", 70)
         TestCase.assertEqual(half.length, N/2, "We expect only 50 items, matching for field x.");
         TestCase.assertEqual(seventy.length, 30, "We expect only 30 items, matching for field x >= 70.");
-
     },
 
     testDictionaryNotificationObjectFieldUpdate() {
+        const UPDATES = 5;
         const DictSchema = {
             name: 'Dictionary',
             properties: {
@@ -222,12 +230,14 @@ module.exports = {
             cnt++
         })
 
-        for(let i=1; i<=5; i++){
+        for(let i=1; i<=UPDATES; i++){
             realm.write(() => { fields.field1=i } )
         }
+
+        TestCase.assertEqual(cnt,UPDATES,`We expect ${UPDATES} updates.`)
     },
 
-    testDictionaryRemoveCallback() {
+    testDictionaryNotificationObjectFieldInsertion() {
         const DictSchema = {
             name: 'Dictionary',
             properties: {
@@ -237,33 +247,39 @@ module.exports = {
 
         let realm = new Realm({schema: [DictSchema]})
         realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
-        let fields = realm.objects(DictSchema.name)[0].fields
+        let ff = realm.objects(DictSchema.name)[0]
+        let cnt=0
 
-        let a = (obj, chg) => {
-            TestCase.assertTrue(false,`Function a should be unsubscribed.`)
-        }
-        let b = (obj, chg) => {
-            TestCase.assertTrue(false,`Function b should be unsubscribed.`)
-        }
-        let called = false
-        let c = (obj, chg) => {
-            called = true
-        }
-        let d = (obj, chg) => {
-            TestCase.assertTrue(false,`Function d should be unsubscribed.`)
+
+        ff.fields.addListener((obj, changeset ) => {
+            if(cnt>0){
+                let keys = Object.keys(obj)
+                TestCase.assertEqual(keys[0], "x2", "First field should be equal x2")
+                TestCase.assertEqual(keys[1], "x1", "First field should be equal x1")
+            }
+            cnt++
+        })
+
+        realm.write(() => { ff.fields = {x1: 1, x2: 2} } )
+    },
+
+    testDictionaryUserShouldNotDeleteFields() {
+        const DictSchema = {
+            name: 'Dictionary',
+            properties: {
+                fields: '{}'
+            }
         }
 
-        fields.addListener(a)
-        fields.addListener(b)
-        fields.addListener(c)
-        fields.addListener(d)
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {fields: {x1: 0, x2: 2}}))
+        let ff = realm.objects(DictSchema.name)[0]
 
-        fields.removeListener(a)
-        fields.removeListener(b)
-        fields.removeListener(d)
+        delete ff.fields.x1
+        delete ff.fields.x2
 
-        realm.write(() => { fields.field1=1 } )
-        TestCase.assertTrue(called,`Function c should be called`)
+        TestCase.assertEqual(Object.keys(ff.fields)[0], "x2", "Should contain x2 field")
+        TestCase.assertEqual(Object.keys(ff.fields)[1], "x1", "Should contain x1 field")
     },
 
     testDictionaryEventListenerRemoveAll() {
@@ -355,9 +371,8 @@ module.exports = {
             correct = true
         })
         realm.write(() => { fields.field1=1 } )
-        TestCase.assertTrue(correct,`This is expected to work.`)
+        TestCase.assertTrue(correct,"This is expected to work.")
     },
-
 
     /*TODO Comment this until we merge Mixed->Link code.
     testDictionaryErrorHandling(){
