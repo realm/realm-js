@@ -20,7 +20,6 @@
 
 #include <realm/keys.hpp>
 
-#include "js_mixed.hpp"
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
@@ -126,12 +125,8 @@ public:
         return is_null(value) ? util::none : util::make_optional(unbox<T>(value));
     }
 
-
-
-
     template<typename T>
     ValueType box(util::Optional<T> v) { return v ? box(*v) : null_value(); }
-
     ValueType box(bool boolean)      { return Value::from_boolean(m_ctx, boolean); }
     ValueType box(int64_t number)    { return Value::from_number(m_ctx, number); }
     ValueType box(float number)      { return Value::from_number(m_ctx, number); }
@@ -140,7 +135,7 @@ public:
     ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
     ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
     ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
-    ValueType box(Mixed mixed)       { return TypeMixed<JSEngine>::get_instance().wrap(m_ctx, mixed); }
+    ValueType box(Mixed)             { throw std::runtime_error("'Mixed' type support is not implemented yet"); }
     ValueType box(UUID)              { throw std::runtime_error("'UUID' type support is not implemented yet"); }
 
     ValueType box(Timestamp ts) {
@@ -379,8 +374,8 @@ struct Unbox<JSEngine, BinaryData> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
-    static Mixed call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        return TypeMixed<JSEngine>::get_instance().unwrap(native_accessor->m_ctx, value);
+    static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        throw std::runtime_error("'Mixed' type support is not implemented yet");
     }
 };
 

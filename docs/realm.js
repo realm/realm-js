@@ -472,7 +472,6 @@ class Realm {
  * @typedef Realm~PropertyType
  * @type {("bool"|"int"|"float"|"double"|"string"|"decimal128"|"objectId"|"date"|"data"|"list"|"linkingObjects"|"<ObjectType>")}
  *
- * @property {Mixed} "mixed" - Property value that allow any of the following types (`"bool","int","float","double","string","decimal128","objectId","date","data"`), this type is nullable by default.
  * @property {boolean} "bool" - Property value may either be `true` or `false`.
  * @property {number} "int" - Property may be assigned any number, but will be stored as a
  *   round integer, meaning anything after the decimal will be truncated.
