@@ -350,6 +350,10 @@ module.exports = {
         fields.removeListener(a)
         fields.removeListener(b)
         fields.removeListener(d)
+        fields.removeListener(d)
+        fields.removeListener(d)
+        fields.removeListener(d)
+        fields.removeListener(d)
 
         realm.write(() => { fields.field1=1 } )
         TestCase.assertTrue(called,"Function c should be called")
