@@ -250,17 +250,36 @@ module.exports = {
         let ff = realm.objects(DictSchema.name)[0]
         let cnt=0
 
-
-        ff.fields.addListener((obj, changeset ) => {
-            if(cnt>0){
+        let a = (obj, changeset ) => {
+            if(cnt === 1){
                 let keys = Object.keys(obj)
                 TestCase.assertEqual(keys[0], "x2", "First field should be equal x2")
                 TestCase.assertEqual(keys[1], "x1", "First field should be equal x1")
             }
-            cnt++
-        })
 
+            if(cnt === 2){
+                let keys = Object.keys(obj)
+                TestCase.assertEqual(keys[0], "x1", "First field should be equal x2")
+                TestCase.assertEqual(keys[1], "x5", "First field should be equal x5")
+                TestCase.assertEqual(keys[2], "x3", "First field should be equal x3")
+            }
+            if(cnt === 3){
+                let keys = Object.keys(obj)
+                TestCase.assertEqual(keys[0], "x1", "First field should be equal x1")
+                TestCase.assertEqual(obj.x1, "hello", "x1 should be equals to \"hello\"")
+            }
+            cnt++
+        }
+        ff.fields.addListener(a)
+
+        // total object mutation.
         realm.write(() => { ff.fields = {x1: 1, x2: 2} } )
+
+        // partial object mutation.
+        realm.write(() => { ff.fields = {x1: 1, x3: 2, x5: 5} } )
+
+        // deleting all but one field.
+        realm.write(() => { ff.fields = {x1: "hello"} } )
     },
 
     testDictionaryUserShouldNotDeleteFields() {
