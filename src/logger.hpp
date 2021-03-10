@@ -21,8 +21,8 @@
 #include <memory>
 #include <queue>
 
-#include "sync/sync_manager.hpp"  // SyncLoggerFactory
-#include "util/scheduler.hpp"     // realm::util::Scheduler
+#include <realm/object-store/sync/sync_manager.hpp>  // SyncLoggerFactory
+#include <realm/object-store/util/scheduler.hpp>     // realm::util::Scheduler
 
 #if REALM_ANDROID
 #include <android/log.h>

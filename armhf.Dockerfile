@@ -27,3 +27,10 @@ RUN mkdir -p $NVM_DIR \
  && nvm install 13 \
  && nvm install 14 \
  && chmod a+rwX -R $NVM_DIR
+
+# Ensure a new enough version of CMake is available.
+RUN cd /opt \
+    && curl -O -J https://cmake.org/files/v3.15/cmake-3.15.2-Linux-x86_64.tar.gz \
+    && tar zxf cmake-3.15.2-Linux-x86_64.tar.gz
+
+ENV PATH "/opt/cmake-3.15.2-Linux-x86_64/bin:$PATH"

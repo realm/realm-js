@@ -24,12 +24,10 @@
 #include "rpc.hpp"
 #include "jsc_init.hpp"
 
-#include "base64.hpp"
-#include "object_accessor.hpp"
-#include "shared_realm.hpp"
-#include "results.hpp"
-#include "jsc_rpc_network_transport.hpp"
-#include "js_app.hpp"
+#include <realm/util/base64.hpp>
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/results.hpp>
 
 using namespace realm;
 using namespace realm::rpc;
@@ -262,7 +260,7 @@ RPCServer::RPCServer() {
     m_context = JSGlobalContextCreate(NULL);
     get_rpc_server(m_context) = this;
     m_callback_call_counter = 1;
-    
+
     // Make the App use the RPC Network Transport from now on
     previous_transport_generator = AppClass::transport_generator;
     AppClass::transport_generator = [] (jsc::Types::Context ctx, auto&& dispatcher) {
@@ -286,7 +284,7 @@ RPCServer::RPCServer() {
         // Enable the RCP network transport to issue calls to the remote fetch function
         jsc::Types::Function fetch_function = Value::validated_to_function(m_context, deserialize_json_value(dict["fetch"]), "fetch");
         RPCNetworkTransport::fetch_function = js::Protected(m_context, fetch_function);
-         
+
         m_session_id = store_object(realm_constructor);
         return (json){{"result", m_session_id}};
     };
@@ -931,9 +929,14 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     }
     else if (jsc::Value::is_binary(m_context, js_object)) {
         auto data = jsc::Value::to_binary(m_context, js_object);
+
+        std::string encoded;
+        encoded.reserve(realm::util::base64_encoded_size(data.size()));
+        encoded.resize(realm::util::base64_encode(data.data(), data.size(), encoded.data(), encoded.capacity()));
+
         return {
             {"type", RealmObjectTypesData},
-            {"value", base64_encode((unsigned char *)data.data(), data.size())},
+            {"value", encoded},
         };
     }
     else if (jsc::Value::is_date(m_context, js_object)) {
@@ -961,7 +964,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
                 {"type", RealmObjectTypesFunction},
                 {"value", it->second}
             };
-            
+
         }
         return json::object();
     }
@@ -969,7 +972,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         // Serialize this JS object as a plain object since it doesn't match any known types above.
         std::vector<std::string> keys;
         std::vector<json> values;
-        
+
         // Use the enumarable properties
         std::vector<jsc::String> js_keys = jsc::Object::get_property_names(m_context, js_object);
         for (auto &js_key : js_keys) {
@@ -1025,11 +1028,11 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
             return js_object;
         }
         else if (type_string == RealmObjectTypesData) {
-            std::string bytes;
-            if (!base64_decode(value.get<std::string>(), &bytes)) {
+            auto bytes = realm::util::base64_decode_to_vector(value.get<std::string>());
+            if (!bytes) {
                 throw std::runtime_error("Failed to decode base64 encoded data");
             }
-            return jsc::Value::from_binary(m_context, realm::BinaryData(bytes.data(), bytes.size()));
+            return jsc::Value::from_binary(m_context, realm::BinaryData(bytes->data(), bytes->size()));
         }
         else if (type_string == RealmObjectTypesDate) {
             return jsc::Object::create_date(m_context, value.get<double>());

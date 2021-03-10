@@ -22,9 +22,9 @@
 #include "js_types.hpp"
 #include "js_observable.hpp"
 
-#include "collection_notifications.hpp"
-#include "object.hpp"
-#include "object_changeset.hpp"
+#include <realm/object-store/collection_notifications.hpp>
+#include <realm/object-store/object.hpp>
+#include <realm/object-store/object_changeset.hpp>
 
 namespace realm {
 namespace js {
@@ -80,13 +80,7 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
         return Object::create_array(ctx, scratch);
     };
 
-    if (change_set.clear_did_occur()) {
-        Object::set_property(ctx, object, "deletions", Object::create_array(ctx, {Value::from_null(ctx)}));
-    }
-    else {
-        Object::set_property(ctx, object, "deletions", make_object_array(change_set.get_deletions(), old_realm));
-    }
-
+    Object::set_property(ctx, object, "deletions", make_object_array(change_set.get_deletions(), old_realm));
     Object::set_property(ctx, object, "insertions", make_object_array(change_set.get_insertions(), new_realm));
 
     auto old_modifications = make_object_array_from_modifications(change_set.get_modifications(), old_realm);

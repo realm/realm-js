@@ -136,7 +136,8 @@ public:
     ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
     ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
     ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
-    ValueType box(Mixed)             { throw std::runtime_error("'Any' type is unsupported"); }
+    ValueType box(Mixed)             { throw std::runtime_error("'Mixed' type support is not implemented yet"); }
+    ValueType box(UUID)              { throw std::runtime_error("'UUID' type support is not implemented yet"); }
 
     ValueType box(Timestamp ts) {
         if (ts.is_null()) {
@@ -159,21 +160,62 @@ public:
     ValueType box(realm::Results results) {
         return ResultsClass<JSEngine>::create_instance(m_ctx, std::move(results));
     }
+    ValueType box(realm::object_store::Set set) {
+        throw std::runtime_error("'Set' type support is not implemented yet");
+    }
+    ValueType box(realm::object_store::Dictionary dictionart) {
+        throw std::runtime_error("'Dictionary' type support is not implemented yet");
+    }
 
     bool is_null(ValueType const& value) {
         return Value::is_null(m_ctx, value) || Value::is_undefined(m_ctx, value);
     }
+
+    DataType get_type_of(ValueType const& value) {
+        if (Value::is_number(m_ctx, value)) {
+            return type_Double;
+        }
+        if (Value::is_string(m_ctx, value)) {
+            return type_String;
+        }
+        if (Value::is_date(m_ctx, value)) {
+            return type_Timestamp;
+        }
+        if (Value::is_boolean(m_ctx, value)) {
+            return type_Bool;
+        }
+        if (Value::is_binary(m_ctx, value)) {
+            return type_Binary;
+        }
+        if (Value::is_object_id(m_ctx, value)) {
+            return type_ObjectId;
+        }
+        if (Value::is_decimal128(m_ctx, value)) {
+            return type_Decimal;
+        }
+        if (Value::is_object(m_ctx, value)) {
+            return type_Link;
+        }
+        return DataType(-1);
+    }
+
     ValueType null_value() {
         return Value::from_null(m_ctx);
     }
 
+    // called when creating lists and sets
     template<typename Fn>
-    void enumerate_list(ValueType& value, Fn&& func) {
+    void enumerate_collection(ValueType& value, Fn&& func) {
         auto obj = Value::validated_to_object(m_ctx, value);
         uint32_t size = Object::validated_get_length(m_ctx, obj);
         for (uint32_t i = 0; i < size; ++i) {
             func(Object::get_property(m_ctx, obj, i));
         }
+    }
+
+    template<typename Fn>
+    void enumerate_dictionary(ValueType& value, Fn&& func) {
+        throw std::runtime_error("'Dictionary' type support is not implemented yet");
     }
 
     bool is_same_list(realm::List const& list, ValueType const& value) const noexcept {
@@ -182,6 +224,14 @@ public:
             return list == *get_internal<JSEngine, ListClass<JSEngine>>(m_ctx, object);
         }
         return false;
+    }
+
+    bool is_same_set(realm::object_store::Set const& set, ValueType const& value) const {
+        throw std::runtime_error("'Set' type support is not implemented yet");
+    }
+
+    bool is_same_dictionary(realm::object_store::Dictionary const& dictionary, ValueType const& value) const {
+        throw std::runtime_error("'Dictionary' type support is not implemented yet");
     }
 
     bool allow_missing(ValueType const&) const noexcept { return false; }
@@ -326,7 +376,21 @@ struct Unbox<JSEngine, BinaryData> {
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
     static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        throw std::runtime_error("'Any' type is unsupported");
+        throw std::runtime_error("'Mixed' type support is not implemented yet");
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, UUID> {
+    static UUID call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        throw std::runtime_error("'UUID' type suport is not implemented yet");
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, util::Optional<UUID>> {
+    static util::Optional<UUID> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        throw std::runtime_error("'UUID' type suport is not implemented yet");
     }
 };
 
@@ -389,6 +453,13 @@ template<typename JSEngine>
 struct Unbox<JSEngine, ObjKey> {
     static ObjKey call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
         return Unbox<JSEngine, Obj>::call(ctx, value, policy, current_row).get_key();
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, ObjLink> {
+    static ObjLink call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
+        throw std::runtime_error("ObjLink not implemented");
     }
 };
 

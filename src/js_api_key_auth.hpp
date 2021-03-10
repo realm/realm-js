@@ -20,7 +20,7 @@
 
 #include "js_class.hpp"
 
-#include "sync/app.hpp"
+#include <realm/object-store/sync/app.hpp>
 
 namespace realm {
 namespace js {
