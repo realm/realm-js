@@ -15,7 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Throwing a more meaningful error when librealmreact.so loading fails from being loaded in an app using Hermes. ([#3633](https://github.com/realm/realm-js/pull/3633))
 
 10.2.0 Release notes (2021-2-5)
 =============================================================
