@@ -73,7 +73,7 @@ rm -rf react-native/android/build
 # Publish to npm, informing the prepublish script to build Android modules.
 echo "Publishing $VERSION to npm..."
 PRERELEASE=$(grep -Eio '[a-z]+' <<< "$VERSION" || true)
-REALM_BUILD_ANDROID=1 npm publish ${PRERELEASE:+--tag $PRERELEASE}
+npm publish ${PRERELEASE:+--tag $PRERELEASE}
 
 # Only push the tag to GitHub if the publish was successful.
 echo "Pushing v$VERSION tag to GitHub..."

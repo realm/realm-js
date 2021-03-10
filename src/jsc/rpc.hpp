@@ -24,7 +24,9 @@
 
 #include "jsc_init.hpp"
 #include "concurrent_deque.hpp"
-#include "json.hpp"
+#include <external/json/json.hpp>
+#include "jsc_types.hpp"
+#include "jsc_protected.hpp"
 #include "js_network_transport.hpp"
 
 namespace realm {

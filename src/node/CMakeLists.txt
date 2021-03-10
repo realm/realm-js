@@ -1,7 +1,4 @@
-
-
 add_library(realm-js SHARED
-    $<TARGET_OBJECTS:realm-js-shared>
     node_init.cpp
     platform.cpp
     ${CMAKE_JS_SRC}
