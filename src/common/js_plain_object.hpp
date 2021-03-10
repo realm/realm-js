@@ -45,8 +45,10 @@ struct AccessorsConfiguration {
 
         /*
          * NAPI_enumerable: Enables JSON.stringify(object) and all the good
-         * stuff for free... NAPI_configurable: Allow us to modify accessors,
-         * IE: Delete fields.
+         * stuff for free... 
+         * 
+         * NAPI_configurable: Allow us to modify accessors, for example: Delete fields, very
+         * handy to reflect object-dictionary mutations. 
          *
          */
         auto rules = static_cast<napi_property_attributes>(napi_enumerable |
