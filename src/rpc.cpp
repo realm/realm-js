@@ -28,6 +28,8 @@
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/results.hpp>
+#include "jsc_rpc_network_transport.hpp"
+#include "js_app.hpp"
 
 using namespace realm;
 using namespace realm::rpc;

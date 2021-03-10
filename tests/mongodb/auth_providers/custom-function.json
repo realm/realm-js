@@ -1,0 +1,9 @@
+{
+    "id": "6048d0789ad675d667847134",
+    "name": "custom-function",
+    "type": "custom-function",
+    "config": {
+        "authFunctionName": "authFunc"
+    },
+    "disabled": false
+}

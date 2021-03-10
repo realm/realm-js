@@ -45,6 +45,7 @@ var TESTS = {
     EncryptionTests: require("./encryption-tests"),
     AliasTests: require("./alias-tests"),
     ArrayBuffer: require("./array-buffer-tests")
+    // Garbagecollectiontests: require('./garbage-collection'),
 };
 
 //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists

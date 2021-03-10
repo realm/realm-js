@@ -53,8 +53,10 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Added an export of the `bson` module on the package, making it possible to access the BSON types via `import Realm from "realm";` followed by `Realm.BSON.ObjectId`, `Realm.BSON.Decimal128`, `Realm.BSON.Binary` etc. ([#3363](https://github.com/realm/realm-js/pull/3363))
+* Adding Mixed types [#3389](https://github.com/realm/realm-js/issues/3389).
 
 ### Fixed
+* None.
 * Fixed a bug where elements in the `User#identities` array would have a `userId` which was actually an `id` of the identity. ([#3481](https://github.com/realm/realm-js/pull/3481), since v10.0.0-beta.13)
 * Fixed a crash after getting a 401 error inside sync. ([#3503](https://github.com/realm/realm-js/issues/3206), since v10.0.0)
 * Fixed a bug which could lead to a `BadChangeset Error` (`ProtocolErrorCode=212`).

@@ -62,6 +62,7 @@ tests/react-test-app/ios/Pods/
 tests/react-test-app/ios/ReactTests.xcworkspace/
 examples/ReactExample/ios/Pods/
 examples/ReactExample/ios/ReactExample.xcworkspace/
+tests/mongodb-realm
 
 # Integration tests
 integration-tests/**/*.tgz

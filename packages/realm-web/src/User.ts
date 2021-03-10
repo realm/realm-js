@@ -76,7 +76,8 @@ export class User<
     FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
     CustomDataType extends object = any,
     UserProfileDataType = Realm.DefaultUserProfileData
-> implements
+>
+    implements
         Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType> {
     /**
      * The app that this user is associated with.

@@ -1,0 +1,12 @@
+{
+    "id": "6048d0789ad675d66784712d",
+    "name": "gcm",
+    "type": "gcm",
+    "config": {
+        "senderId": "gcm"
+    },
+    "secret_config": {
+        "apiKey": "gcm"
+    },
+    "version": 1
+}

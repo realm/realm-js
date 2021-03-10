@@ -1,0 +1,35 @@
+{
+    "collection": "Dog",
+    "database": "test_data",
+    "id": "6048d0789ad675d66784712a",
+    "roles": [
+        {
+            "name": "default",
+            "apply_when": {},
+            "write": true,
+            "insert": true,
+            "delete": true,
+            "additional_fields": {}
+        }
+    ],
+    "schema": {
+        "properties": {
+            "_id": {
+                "bsonType": "objectId"
+            },
+            "breed": {
+                "bsonType": "string"
+            },
+            "name": {
+                "bsonType": "string"
+            },
+            "realm_id": {
+                "bsonType": "string"
+            }
+        },
+        "required": [
+            "name"
+        ],
+        "title": "Dog"
+    }
+}
