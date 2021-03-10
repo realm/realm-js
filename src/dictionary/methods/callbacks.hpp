@@ -43,22 +43,23 @@ struct NotificationsCallback {
     static const std::string INSERTIONS;
     static const std::string MODIFICATIONS;
 
-
     NotificationsCallback(ContextType &_context, FunctionType &_fn)
-            : fn{_context, _fn},
-              plain_object{_context, Object::create_empty(_context)},
-              context{Context<T>::get_global_context(_context)} {}
+        : fn{_context, _fn},
+          plain_object{_context, Object::create_empty(_context)},
+          context{Context<T>::get_global_context(_context)} {}
 
-    NotificationsCallback(ContextType &_context, FunctionType &_fn, const ObjectType &obj)
-            : fn{_context, _fn},
-              plain_object{_context, obj},
-              context{Context<T>::get_global_context(_context)} {}
+    NotificationsCallback(ContextType &_context, FunctionType &_fn,
+                          const ObjectType &obj)
+        : fn{_context, _fn},
+          plain_object{_context, obj},
+          context{Context<T>::get_global_context(_context)} {}
 
     template <typename Collection>
     auto build_array(Collection &collection) const {
         std::vector<ValueType> values;
         for (auto mixed_item : collection) {
-            values.push_back(TypeMixed<T>::get_instance().wrap(context, mixed_item));
+            values.push_back(
+                TypeMixed<T>::get_instance().wrap(context, mixed_item));
         }
 
         return Object::create_array(context, values);
@@ -82,27 +83,27 @@ struct NotificationsCallback {
         return object;
     }
 
-    void update_object_with_new_dictionary(object_store::Dictionary *dict, ObjectType& object) const{
-        JSDictionaryUpdate dictionary_update {context, object};
+    void update_object_with_new_dictionary(object_store::Dictionary *dict,
+                                           ObjectType &object) const {
+        JSDictionaryUpdate dictionary_update{context, object};
         dictionary_update.update_accessors(dict);
         object = dictionary_update.get_plain_object();
     }
 
-    void operator()(object_store::Dictionary *dict, DictionaryChangeSet change_set, bool has_change) const {
+    void operator()(object_store::Dictionary *dict,
+                    DictionaryChangeSet change_set, bool has_change) const {
         HANDLESCOPE(context)
         auto object = static_cast<ObjectType>(plain_object);
 
-        if(has_change) {
+        if (has_change) {
             update_object_with_new_dictionary(dict, object);
         }
 
-        ValueType arguments[]{object,
-                              build_changeset_object(change_set)};
+        ValueType arguments[]{object, build_changeset_object(change_set)};
 
         Function<T>::callback(context, fn, plain_object, 2, arguments);
     }
 };
-
 
 template <typename T>
 const std::string NotificationsCallback<T>::DELETIONS = "deletions";

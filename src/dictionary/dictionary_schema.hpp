@@ -20,50 +20,51 @@
 #define REALMJS_DICTIONARY_SCHEMA_HPP
 
 #include <regex>
+
 #include "common/type_deduction.hpp"
 
-namespace realm{
-    namespace js{
-        class DictionarySchema {
-        private:
-            const std::string DICT_SCHEMA = R"((\w+)?(\{\}))";
+namespace realm {
+namespace js {
+class DictionarySchema {
+   private:
+    const std::string DICT_SCHEMA = R"((\w+)?(\{\}))";
 
-            std::string type;
-            std::smatch matches;
-            bool valid_schema;
+    std::string type;
+    std::smatch matches;
+    bool valid_schema;
 
-        public:
-            DictionarySchema(std::string _schema) {
-                std::regex dict_schema_regex{DICT_SCHEMA,
-                                             std::regex_constants::ECMAScript};
-                valid_schema = std::regex_search(_schema, matches, dict_schema_regex);
-                if (valid_schema) {
-                    type = matches[1];
-                }
-            }
-
-            realm::PropertyType make_generic() {
-                return realm::PropertyType::Dictionary | realm::PropertyType::Mixed;
-            }
-
-            realm::PropertyType schema() {
-                if (type.empty()) {
-                    return make_generic();
-                }
-
-                if (TypeDeduction::realm_type_exist(type)) {
-                    throw std::runtime_error("Schema type: " + type +
-                                             " not supported for Dictionary.");
-                }
-
-                auto dictionary_type_value = TypeDeduction::realm_type(type);
-                return (realm::PropertyType::Dictionary |
-                        static_cast<realm::PropertyType>(dictionary_type_value));
-            }
-
-            bool is_dictionary() { return valid_schema; }
-        };
+   public:
+    DictionarySchema(std::string _schema) {
+        std::regex dict_schema_regex{DICT_SCHEMA,
+                                     std::regex_constants::ECMAScript};
+        valid_schema = std::regex_search(_schema, matches, dict_schema_regex);
+        if (valid_schema) {
+            type = matches[1];
+        }
     }
-}
 
-#endif //REALMJS_DICTIONARY_SCHEMA_HPP
+    realm::PropertyType make_generic() {
+        return realm::PropertyType::Dictionary | realm::PropertyType::Mixed;
+    }
+
+    realm::PropertyType schema() {
+        if (type.empty()) {
+            return make_generic();
+        }
+
+        if (TypeDeduction::realm_type_exist(type)) {
+            throw std::runtime_error("Schema type: " + type +
+                                     " not supported for Dictionary.");
+        }
+
+        auto dictionary_type_value = TypeDeduction::realm_type(type);
+        return (realm::PropertyType::Dictionary |
+                static_cast<realm::PropertyType>(dictionary_type_value));
+    }
+
+    bool is_dictionary() { return valid_schema; }
+};
+}  // namespace js
+}  // namespace realm
+
+#endif  // REALMJS_DICTIONARY_SCHEMA_HPP

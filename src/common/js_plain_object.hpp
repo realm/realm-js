@@ -35,26 +35,29 @@ struct AccessorsConfiguration {
     ContextType context;
     Accessor accessor;
 
-    AccessorsConfiguration(ContextType _context): context{_context} {}
+    AccessorsConfiguration(ContextType _context) : context{_context} {}
 
-    template<class Dictionary>
-    void register_new_accessor(const char *key, ObjectType object, Dictionary* dictionary){
+    template <class Dictionary>
+    void register_new_accessor(const char* key, ObjectType object,
+                               Dictionary* dictionary) {
         auto _getter = accessor.make_getter(key, dictionary);
         auto _setter = accessor.make_setter(key, dictionary);
 
         /*
-         * NAPI_enumerable: Enables JSON.stringify(object) and all the good stuff for free...
-         * NAPI_configurable: Allow us to modify accessors, IE: Delete fields.
+         * NAPI_enumerable: Enables JSON.stringify(object) and all the good
+         * stuff for free... NAPI_configurable: Allow us to modify accessors,
+         * IE: Delete fields.
          *
          */
-        auto rules = static_cast<napi_property_attributes>(napi_enumerable | napi_configurable);
+        auto rules = static_cast<napi_property_attributes>(napi_enumerable |
+                                                           napi_configurable);
         auto descriptor = Napi::PropertyDescriptor::Accessor(
-                context, object, key, _getter, _setter, rules);
+            context, object, key, _getter, _setter, rules);
 
         object.DefineProperty(descriptor);
     }
 
-    template<class Dictionary>
+    template <class Dictionary>
     void apply(ObjectType& object, Dictionary* dictionary) {
         for (auto entry_pair : *dictionary) {
             auto key = entry_pair.first.get_string().data();
@@ -62,21 +65,21 @@ struct AccessorsConfiguration {
         }
     }
 
-    void update(ObjectType& object, realm::object_store::Dictionary* dictionary) {
+    void update(ObjectType& object,
+                realm::object_store::Dictionary* dictionary) {
         auto keys = object.GetPropertyNames();
         auto size = keys.Length();
 
-        for(auto index=0; index<size; index++) {
+        for (auto index = 0; index < size; index++) {
             std::string key = Value::to_string(context, keys[index]);
 
-            if( !dictionary->contains(key) ){
+            if (!dictionary->contains(key)) {
                 object.Delete(key);
             }
         }
 
         apply(object, dictionary);
     }
-
 };
 
 template <typename VM>
@@ -84,10 +87,11 @@ struct IdentityMethods {
     using ContextType = typename VM::Context;
     ContextType context;
 
-    IdentityMethods(ContextType _context): context{_context} {};
+    IdentityMethods(ContextType _context) : context{_context} {};
 };
 
-template <typename VM, typename GetterSetters, typename Methods = IdentityMethods<VM>>
+template <typename VM, typename GetterSetters,
+          typename Methods = IdentityMethods<VM>>
 struct JSObject {
    private:
     using Object = js::Object<VM>;
@@ -105,7 +109,8 @@ struct JSObject {
         methods = std::make_unique<Methods>(context);
     }
 
-    JSObject(ContextType _context, ObjectType _object): context{_context}, object{_object} {
+    JSObject(ContextType _context, ObjectType _object)
+        : context{_context}, object{_object} {
         getters_setters = std::make_unique<GetterSetters>(context);
         methods = std::make_unique<Methods>(context);
     }
@@ -115,8 +120,8 @@ struct JSObject {
 
     template <typename Callback>
     void configure_object_destructor(Callback&& callback) {
-        object.AddFinalizer([callback](ContextType, void* data_ref)
-        { callback(); }, this);
+        object.AddFinalizer(
+            [callback](ContextType, void* data_ref) { callback(); }, this);
     }
 
     template <typename Data>

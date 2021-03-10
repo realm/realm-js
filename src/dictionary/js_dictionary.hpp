@@ -25,11 +25,10 @@
 #include <map>
 #include <regex>
 
-#include "realm/object-store/dictionary.hpp"
-
 #include "common/js_plain_object.hpp"
 #include "methods/accessors.hpp"
 #include "methods/listeners.hpp"
+#include "realm/object-store/dictionary.hpp"
 
 namespace realm {
 namespace js {
@@ -46,8 +45,9 @@ class DictionaryAdapter {
 
    public:
     ValueType wrap(Context context, object_store::Dictionary dictionary) {
-        JSDictionary *js_dictionary = new JSDictionary {context};
-        object_store::Dictionary *_dictionary = new object_store::Dictionary{dictionary};
+        JSDictionary *js_dictionary = new JSDictionary{context};
+        object_store::Dictionary *_dictionary =
+            new object_store::Dictionary{dictionary};
 
         js_dictionary->template configure_object_destructor([=]() {
             /* GC will trigger this function, signaling that...

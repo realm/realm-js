@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-
 #ifndef REALMJS_LISTENERS_HPP
 #define REALMJS_LISTENERS_HPP
 #include "dictionary/collection/notification.hpp"
@@ -42,7 +41,7 @@ class ListenersMethodsForDictionary {
     auto add_js_fn(std::string&& name, ObjectType object, Fn&& function) {
         auto fn = Napi::Function::New(context, function, name);
         js::Object<T>::set_property(context, object, name, fn,
-                                     PropertyAttributes::DontEnum);
+                                    PropertyAttributes::DontEnum);
     }
 
    public:

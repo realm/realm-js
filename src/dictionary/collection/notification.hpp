@@ -30,8 +30,9 @@ class DictionaryNotifications {
     object_store::Dictionary *dictionary;
     bool listening = false;
 
-    bool the_shape_has_change(DictionaryChangeSet& change_set){
-        return (change_set.insertions.size() > 0 || change_set.deletions.size() > 0);
+    bool the_shape_has_change(DictionaryChangeSet &change_set) {
+        return (change_set.insertions.size() > 0 ||
+                change_set.deletions.size() > 0);
     }
 
     void listen_for_collection_changes() {
@@ -54,13 +55,12 @@ class DictionaryNotifications {
     }
 
    public:
-
     DictionaryNotifications(object_store::Dictionary *_dictionary)
         : dictionary{_dictionary} {}
 
     DictionaryNotifications(DictionaryNotifications &&dictionary) = default;
 
-    void remove_listener(const Listener&& subscriber) {
+    void remove_listener(const Listener &&subscriber) {
         int index = -1;
         for (auto const &candidate : subscribers) {
             index++;
@@ -73,7 +73,7 @@ class DictionaryNotifications {
 
     void remove_all_listeners() { subscribers.clear(); }
 
-    void register_for_notifications(Listener&& delegate) {
+    void register_for_notifications(Listener &&delegate) {
         subscribers.push_back(std::move(delegate));
         listen_for_collection_changes();
     }
