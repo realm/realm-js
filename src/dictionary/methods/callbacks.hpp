@@ -25,6 +25,10 @@ struct NotificationsCallback {
     PFunction fn;
     PObject plain_object;
     PGlobalContext context;
+    static const std::string DELETIONS;
+    static const std::string INSERTIONS;
+    static const std::string MODIFICATIONS;
+
 
     NotificationsCallback(ContextType &_context, FunctionType &_fn)
             : fn{_context, _fn},
@@ -40,8 +44,7 @@ struct NotificationsCallback {
     auto build_array(Collection &collection) const {
         std::vector<ValueType> values;
         for (auto mixed_item : collection) {
-            values.push_back(
-                    TypeMixed<T>::get_instance().wrap(context, mixed_item));
+            values.push_back(TypeMixed<T>::get_instance().wrap(context, mixed_item));
         }
 
         return Object::create_array(context, values);
@@ -55,23 +58,28 @@ struct NotificationsCallback {
     ObjectType build_changeset_object(DictionaryChangeSet &change_set) const {
         ObjectType object = Object::create_empty(context);
         int deleted_fields_size = change_set.deletions.size();
-        Object::set_property(context, object, "deletions",
+        Object::set_property(context, object, DELETIONS,
                              Value::from_number(context, deleted_fields_size));
-        Object::set_property(context, object, "insertions",
+        Object::set_property(context, object, INSERTIONS,
                              build_array(change_set.insertions));
-        Object::set_property(context, object, "modifications",
+        Object::set_property(context, object, NotificationsCallback::MODIFICATIONS,
                              build_array(change_set.modifications));
 
         return object;
     }
 
+    void update_object_with_new_dictionary(object_store::Dictionary *dict, ObjectType& object) const{
+        JSDictionaryUpdate dictionary_update {context, object};
+        dictionary_update.update_accessors(dict);
+        object = dictionary_update.get_plain_object();
+    }
+
     void operator()(object_store::Dictionary *dict, DictionaryChangeSet change_set, bool has_change) const {
         HANDLESCOPE(context)
         auto object = static_cast<ObjectType>(plain_object);
+
         if(has_change) {
-            JSDictionaryUpdate dictionary_update {context, object};
-            dictionary_update.update_accessors(dict);
-            object = dictionary_update.get_plain_object();
+            update_object_with_new_dictionary(dict, object);
         }
 
         ValueType arguments[]{object,
@@ -80,6 +88,14 @@ struct NotificationsCallback {
         Function<T>::callback(context, fn, plain_object, 2, arguments);
     }
 };
+
+
+template <typename T>
+const std::string NotificationsCallback<T>::DELETIONS = "deletions";
+template <typename T>
+const std::string NotificationsCallback<T>::INSERTIONS = "insertions";
+template <typename T>
+const std::string NotificationsCallback<T>::MODIFICATIONS = "modifications";
 
 }  // namespace js
 }  // namespace realm

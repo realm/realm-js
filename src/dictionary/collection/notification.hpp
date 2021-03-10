@@ -54,6 +54,7 @@ class DictionaryNotifications {
     }
 
    public:
+
     DictionaryNotifications(object_store::Dictionary *_dictionary)
         : dictionary{_dictionary} {}
 

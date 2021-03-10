@@ -11,14 +11,14 @@
 namespace realm {
 namespace js {
 
-template <typename VM>
+template <typename T>
 class ListenersMethodsForDictionary {
    private:
-    using ObjectType = typename VM::Object;
-    using ContextType = typename VM::Context;
+    using ObjectType = typename T::Object;
+    using ContextType = typename T::Context;
+    using Notifications = DictionaryNotifications<NotificationsCallback<T>>;
+    using Value = js::Value<T>;
     using Dictionary = object_store::Dictionary;
-    using Value = js::Value<VM>;
-    using Notifications = DictionaryNotifications<NotificationsCallback<VM>>;
 
     std::unique_ptr<Notifications> notifications;
     ContextType context;
@@ -26,7 +26,7 @@ class ListenersMethodsForDictionary {
     template <class Fn>
     auto add_js_fn(std::string&& name, ObjectType object, Fn&& function) {
         auto fn = Napi::Function::New(context, function, name);
-        js::Object<VM>::set_property(context, object, name, fn,
+        js::Object<T>::set_property(context, object, name, fn,
                                      PropertyAttributes::DontEnum);
     }
 
@@ -48,7 +48,7 @@ class ListenersMethodsForDictionary {
         return [=](const Napi::CallbackInfo& info) {
             auto ctx = info.Env();
             auto callback = Value::validated_to_function(ctx, info[0]);
-            NotificationsCallback<VM> subscriber{ctx, callback, object};
+            NotificationsCallback<T> subscriber{ctx, callback, object};
             notifications->register_for_notifications(std::move(subscriber));
         };
     }
@@ -57,7 +57,7 @@ class ListenersMethodsForDictionary {
         return [=](const Napi::CallbackInfo& info) {
             auto ctx = info.Env();
             auto callback = Value::validated_to_function(ctx, info[0]);
-            NotificationsCallback<VM> subscriber{ctx, callback};
+            NotificationsCallback<T> subscriber{ctx, callback};
             notifications->remove_listener(std::move(subscriber));
         };
     }

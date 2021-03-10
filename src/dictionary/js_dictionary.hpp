@@ -34,15 +34,15 @@
 namespace realm {
 namespace js {
 
-template <typename VM>
+template <typename T>
 class DictionaryAdapter {
    private:
-    using ValueType = typename VM::Value;
-    using Context = typename VM::Context;
+    using ValueType = typename T::Value;
+    using Context = typename T::Context;
 
-    using GetterSetters = AccessorsConfiguration<VM, AccessorsForDictionary<VM>>;
-    using Methods = ListenersMethodsForDictionary<VM>;
-    using JSDictionary = JSObject<VM, GetterSetters, Methods>;
+    using GetterSetters = AccessorsConfiguration<T, AccessorsForDictionary<T>>;
+    using Methods = ListenersMethodsForDictionary<T>;
+    using JSDictionary = JSObject<T, GetterSetters, Methods>;
 
    public:
     ValueType wrap(Context context, object_store::Dictionary dictionary) {

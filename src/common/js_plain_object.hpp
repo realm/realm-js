@@ -31,6 +31,7 @@ struct AccessorsConfiguration {
     using ObjectType = typename T::Object;
     using ContextType = typename T::Context;
     using Value = js::Value<T>;
+
     ContextType context;
     Accessor accessor;
 
