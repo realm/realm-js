@@ -76,7 +76,7 @@ struct NotificationsCallback {
                              Value::from_number(context, deleted_fields_size));
         Object::set_property(context, object, INSERTIONS,
                              build_array(change_set.insertions));
-        Object::set_property(context, object, NotificationsCallback::MODIFICATIONS,
+        Object::set_property(context, object, MODIFICATIONS,
                              build_array(change_set.modifications));
 
         return object;
