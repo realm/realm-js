@@ -4,69 +4,67 @@
 
 #ifndef REALMJS_LISTENERS_HPP
 #define REALMJS_LISTENERS_HPP
-
+#include "dictionary/collection/notification.hpp"
 #include "dictionary/methods/callbacks.hpp"
 #include "napi.h"
+
 namespace realm {
 namespace js {
 
 template <typename VM>
 class ListenersMethodsForDictionary {
    private:
+    using ObjectType = typename VM::Object;
+    using ContextType = typename VM::Context;
+    using Dictionary = object_store::Dictionary;
     using Value = js::Value<VM>;
+    using Notifications = DictionaryNotifications<NotificationsCallback<VM>>;
 
-    template <typename Fn, typename JavascriptPlainObject>
-    auto add_javascript_function(std::string&& name, Fn&& function,
-                                 JavascriptPlainObject* object) {
-        auto plain_object = object->get_plain_object();
-        auto context = object->get_context();
+    std::unique_ptr<Notifications> notifications;
+    ContextType context;
 
-        auto fn = Napi::Function::New(context, function, name,
-                                      static_cast<void*>(object));
-        js::Object<VM>::set_property(context, plain_object, name, fn,
+    template <class Fn>
+    auto add_js_fn(std::string&& name, ObjectType object, Fn&& function) {
+        auto fn = Napi::Function::New(context, function, name);
+        js::Object<VM>::set_property(context, object, name, fn,
                                      PropertyAttributes::DontEnum);
     }
 
    public:
-    template <typename JavascriptPlainObject>
-    void apply(JavascriptPlainObject* object) {
-        add_javascript_function("addListener", add_listener(object), object);
-        add_javascript_function("removeListener", remove_listener(object),
-                                object);
-        add_javascript_function("removeAllListeners",
-                                remove_all_listeners(object), object);
+    ListenersMethodsForDictionary(ContextType _context) : context{_context} {}
+
+    template <class Dictionary>
+    void apply(ObjectType& object, Dictionary* dictionary) {
+        add_js_fn("addListener", object, add_listener(object, dictionary));
+        add_js_fn("removeListener", object,
+                  remove_listener(object, dictionary));
+        add_js_fn("removeAllListeners", object,
+                  remove_all_listeners(object, dictionary));
+
+        notifications = std::make_unique<Notifications>(dictionary);
     }
 
-    template <typename JavascriptPlainObject>
-    auto add_listener(JavascriptPlainObject* object) {
+    auto add_listener(ObjectType& object, Dictionary* dictionary) {
         return [=](const Napi::CallbackInfo& info) {
-            auto context = info.Env();
-            auto callback = Value::validated_to_function(context, info[0]);
-            auto collection = &object->get_data();
-            auto plain_object = object->get_plain_object();
-
-            NotificationsCallback<VM> js_callback{callback, plain_object,
-                                                  context};
-
-            collection->register_for_notifications(js_callback);
+            auto ctx = info.Env();
+            auto callback = Value::validated_to_function(ctx, info[0]);
+            NotificationsCallback<VM> subscriber{ctx, callback, object};
+            notifications->register_for_notifications(std::move(subscriber));
         };
     }
 
-    template <typename JavascriptPlainObject>
-    auto remove_listener(JavascriptPlainObject* object) {
+    auto remove_listener(ObjectType& object, Dictionary* dictionary) {
         return [=](const Napi::CallbackInfo& info) {
-            auto context = info.Env();
-            auto callback = Value::validated_to_function(context, info[0]);
-            NotificationsCallback<VM> js_callback{context, callback};
-            auto collection = &object->get_data();
-            collection->remove_listener(js_callback);
+            auto ctx = info.Env();
+            auto callback = Value::validated_to_function(ctx, info[0]);
+            NotificationsCallback<VM> subscriber{ctx, callback};
+            notifications->remove_listener(std::move(subscriber));
         };
     }
-    template <typename JavascriptPlainObject>
-    auto remove_all_listeners(JavascriptPlainObject* object) {
+
+    auto remove_all_listeners(ObjectType& object, Dictionary* dictionary) {
         return [=](const Napi::CallbackInfo& info) {
-            auto collection = &object->get_data();
-            collection->remove_all_listeners();
+            notifications->remove_all_listeners();
         };
     }
 };

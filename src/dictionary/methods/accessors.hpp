@@ -19,29 +19,27 @@
 #ifndef REALMJS_MIXED_ACCESSORS_HPP
 #define REALMJS_MIXED_ACCESSORS_HPP
 
+#include "realm/dictionary.hpp"
+
 namespace realm {
 namespace js {
 
 template <typename T>
 struct AccessorsForDictionary {
-    using Dictionary = object_store::Dictionary;
     using MixedAPI = TypeMixed<T>;
 
-    template <typename JavascriptObject>
-    auto make_getter(std::string key_name, JavascriptObject* object) {
-        return [=](const Napi::CallbackInfo& info) {
-            Dictionary* realm_dictionary = &object->get_data().get_collection();
-            auto mixed_value = realm_dictionary->get_any(key_name);
+    template<typename Dictionary>
+    auto make_getter(std::string key_name, Dictionary* dictionary) {
+        return [=](const Napi::CallbackInfo& info) mutable {
+            auto mixed_value = dictionary->get_any(key_name);
             return MixedAPI::get_instance().wrap(info.Env(), mixed_value);
         };
     }
-    template <typename JavascriptObject>
-    auto make_setter(std::string key_name, JavascriptObject* object) {
-        return [=](const Napi::CallbackInfo& info) {
-            Dictionary* realm_dictionary = &object->get_data().get_collection();
+    template<typename Dictionary>
+    auto make_setter(std::string key_name, Dictionary* dictionary) {
+        return [=](const Napi::CallbackInfo& info) mutable {
             auto mixed = MixedAPI::get_instance().unwrap(info.Env(), info[0]);
-
-            realm_dictionary->insert(key_name, mixed);
+            dictionary->insert(key_name, mixed);
         };
     }
 };

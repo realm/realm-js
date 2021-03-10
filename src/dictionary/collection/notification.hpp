@@ -26,50 +26,54 @@ template <typename Listener>
 class DictionaryNotifications {
    private:
     NotificationToken token;
-    std::vector<Listener> listeners;
-    object_store::Dictionary dictionary;
+    std::vector<Listener> subscribers;
+    object_store::Dictionary *dictionary;
     bool listening = false;
+
+    bool the_shape_has_change(DictionaryChangeSet& change_set){
+        return (change_set.insertions.size() > 0 || change_set.deletions.size() > 0);
+    }
 
     void listen_for_collection_changes() {
         if (listening) {
             return;
         }
 
-        token = dictionary.add_key_based_notification_callback(
+        token = dictionary->add_key_based_notification_callback(
             [=](DictionaryChangeSet change_set, std::exception_ptr error) {
                 if (error) {
                     std::rethrow_exception(error);
                 }
 
-                for (auto listen : listeners) {
-                    listen(change_set);
+                for (auto &subscriber : subscribers) {
+                    bool has_change = the_shape_has_change(change_set);
+                    subscriber(dictionary, change_set, has_change);
                 }
             });
         listening = true;
     }
 
    public:
-    DictionaryNotifications(object_store::Dictionary &_dictionary)
+    DictionaryNotifications(object_store::Dictionary *_dictionary)
         : dictionary{_dictionary} {}
 
     DictionaryNotifications(DictionaryNotifications &&dictionary) = default;
 
-    void remove_listener(Listener listener) {
+    void remove_listener(const Listener&& subscriber) {
         int index = -1;
-        for (auto const &candidate : listeners) {
+        for (auto const &candidate : subscribers) {
             index++;
-            if (listener == candidate) {
-                listeners.erase(listeners.begin() + index);
+            if (candidate == subscriber) {
+                subscribers.erase(subscribers.begin() + index);
                 break;
             }
         }
     }
 
-    void remove_all_listeners() { listeners.clear(); }
+    void remove_all_listeners() { subscribers.clear(); }
 
-    template <class Delegate>
-    void register_for_notifications(Delegate delegate) {
-        listeners.push_back(delegate);
+    void register_for_notifications(Listener&& delegate) {
+        subscribers.push_back(std::move(delegate));
         listen_for_collection_changes();
     }
 };

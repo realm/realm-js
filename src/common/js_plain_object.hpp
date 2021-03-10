@@ -26,84 +26,114 @@ namespace js {
  *  When working with the JSC version, we just need to extract the NodeJS
  * feature and create a reusable component.
  */
-template <typename Accessors>
+template <typename T, typename Accessor>
 struct AccessorsConfiguration {
-    Accessors accessor;
+    using ObjectType = typename T::Object;
+    using ContextType = typename T::Context;
+    using Value = js::Value<T>;
+    ContextType context;
+    Accessor accessor;
 
-    template <class JSObject>
-    void register_new_accessor(const char *key, JSObject* object){
-        auto _getter = accessor.make_getter(key, object);
-        auto _setter = accessor.make_setter(key, object);
+    AccessorsConfiguration(ContextType _context): context{_context} {}
 
-        auto rules = static_cast<napi_property_attributes>(napi_enumerable);
+    template<class Dictionary>
+    void register_new_accessor(const char *key, ObjectType object, Dictionary* dictionary){
+        auto _getter = accessor.make_getter(key, dictionary);
+        auto _setter = accessor.make_setter(key, dictionary);
+
+        /*
+         * NAPI_enumerable: Enables JSON.stringify(object) and all the good stuff for free...
+         * NAPI_configurable: Allow us to modify accessors, IE: Delete fields.
+         *
+         */
+        auto rules = static_cast<napi_property_attributes>(napi_enumerable | napi_configurable);
         auto descriptor = Napi::PropertyDescriptor::Accessor(
-                object->get_context(), object->get_plain_object(), key, _getter, _setter, rules);
+                context, object, key, _getter, _setter, rules);
 
-        object->register_accessor(descriptor);
+        object.DefineProperty(descriptor);
     }
 
-    template <typename JavascriptPlainObject>
-    void apply(JavascriptPlainObject* object) {
-        auto dictionary = object->get_data().get_collection();
-
-        for (auto entry_pair : dictionary) {
+    template<class Dictionary>
+    void apply(ObjectType& object, Dictionary* dictionary) {
+        for (auto entry_pair : *dictionary) {
             auto key = entry_pair.first.get_string().data();
-            register_new_accessor(key, object);
+            register_new_accessor(key, object, dictionary);
         }
     }
+
+    void update(ObjectType& object, realm::object_store::Dictionary* dictionary) {
+        auto keys = object.GetPropertyNames();
+        auto size = keys.Length();
+
+        for(auto index=0; index<size; index++) {
+            std::string key = Value::to_string(context, keys[index]);
+
+            if( !dictionary->contains(key) ){
+                object.Delete(key);
+            }
+        }
+
+        apply(object, dictionary);
+    }
+
 };
 
-template <typename VM, typename Data>
-struct JSObjectBuilder {
+template <typename VM>
+struct IdentityMethods {
+    using ContextType = typename VM::Context;
+    ContextType context;
+
+    IdentityMethods(ContextType _context): context{_context} {};
+};
+
+template <typename VM, typename GetterSetters, typename Methods = IdentityMethods<VM>>
+struct JSObject {
    private:
     using Object = js::Object<VM>;
     using ObjectType = typename VM::Object;
     using ContextType = typename VM::Context;
-    using ObjectProperties = std::vector<Napi::PropertyDescriptor>;
-    using ProtectedObject =  Protected<ObjectType>;
-
-    Data data;
-    ObjectType object;
+    std::unique_ptr<Methods> methods;
+    std::unique_ptr<GetterSetters> getters_setters;
     ContextType context;
-    ObjectProperties properties;
+    ObjectType object;
 
    public:
-    JSObjectBuilder(ContextType _context, Data _data)
-        : data{std::move(_data)}, context{_context} {
-        object = Object::create_empty(context);
+    JSObject(ContextType _context)
+        : context{_context}, object{Object::create_empty(_context)} {
+        getters_setters = std::make_unique<GetterSetters>(context);
+        methods = std::make_unique<Methods>(context);
     }
 
-    ObjectType& get_plain_object() { return object; }
-    ContextType& get_context() { return context; }
-    Data& get_data() { return data; }
+    JSObject(ContextType _context, ObjectType _object): context{_context}, object{_object} {
+        getters_setters = std::make_unique<GetterSetters>(context);
+        methods = std::make_unique<Methods>(context);
+    }
 
-    ~JSObjectBuilder() {}
-    
+    ObjectType get_plain_object() { return object; }
+    ContextType& get_context() { return context; }
+
     template <typename Callback>
     void configure_object_destructor(Callback&& callback) {
-        object.AddFinalizer([callback](ContextType, void* data_ref) { callback(); },
-                            this);
+        object.AddFinalizer([callback](ContextType, void* data_ref)
+        { callback(); }, this);
     }
 
-    template <typename Feature>
-    void add_feature() {
-        Feature feature;
-        feature.apply(this);
+    template <typename Data>
+    void set_methods(Data* data) {
+        methods->apply(object, data);
     }
 
-    template <typename Property>
-    void register_accessor(Property property) {
-        properties.push_back(property);
+    template <typename Data>
+    void set_getter_setters(Data* data) {
+        getters_setters->apply(object, data);
     }
 
-    ObjectType& build() {
-        if (properties.size() > 0) {
-            object.DefineProperties(properties);
-            return object;
-        }
-
-        return object;
+    template <typename Data>
+    void update_accessors(Data* data) {
+        getters_setters->update(object, data);
     }
+
+    ~JSObject() = default;
 };
 }  // namespace js
 }  // namespace realm

@@ -25,16 +25,11 @@
 #include <map>
 #include <regex>
 
-#include "common/js_plain_object.hpp"
-#include "common/type_deduction.hpp"
-#include "js_mixed.hpp"
 #include "realm/object-store/dictionary.hpp"
-#include "realm/object-store/property.hpp"
-#include "collection/collection.hpp"
-#include "collection/notification.hpp"
+
+#include "common/js_plain_object.hpp"
 #include "methods/accessors.hpp"
 #include "methods/listeners.hpp"
-#include "methods/callbacks.hpp"
 
 namespace realm {
 namespace js {
@@ -44,29 +39,28 @@ class DictionaryAdapter {
    private:
     using ValueType = typename VM::Value;
     using Context = typename VM::Context;
-    using Callbacks = NotificationsCallback<VM>;
-    using Notifications = DictionaryNotifications<Callbacks>;
-    using Collection = CollectionAdapter<object_store::Dictionary,Notifications>;
-    using JSObjectBuilder = JSObjectBuilder<VM, Collection>;
-    using DictionaryGetterSetter = AccessorsConfiguration<AccessorsForDictionary<VM>>;
+
+    using GetterSetters = AccessorsConfiguration<VM, AccessorsForDictionary<VM>>;
+    using Methods = ListenersMethodsForDictionary<VM>;
+    using JSDictionary = JSObject<VM, GetterSetters, Methods>;
 
    public:
     ValueType wrap(Context context, object_store::Dictionary dictionary) {
-        Collection collection{std::move(dictionary)};
-        JSObjectBuilder* js_builder =
-            new JSObjectBuilder(context, std::move(collection));
+        JSDictionary *js_dictionary = new JSDictionary {context};
+        object_store::Dictionary *_dictionary = new object_store::Dictionary{dictionary};
 
-        js_builder->template configure_object_destructor([=]() {
+        js_dictionary->template configure_object_destructor([=]() {
             /* GC will trigger this function, signaling that...
              * ...we can deallocate the attached C++ object.
              */
-            delete js_builder;
+            delete js_dictionary;
+            delete _dictionary;
         });
 
-        js_builder->template add_feature<DictionaryGetterSetter>();
-        js_builder->template add_feature<ListenersMethodsForDictionary<VM>>();
+        js_dictionary->set_getter_setters(_dictionary);
+        js_dictionary->set_methods(_dictionary);
 
-        return js_builder->build();
+        return js_dictionary->get_plain_object();
     }
 };
 
