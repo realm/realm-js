@@ -16,16 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
     
-'use strict';
+"use strict";
 
-const Realm = require('realm');
-let TestCase = require('./asserts');
-let {Decimal128, ObjectId} = require('bson')
+const Realm = require("realm");
+let TestCase = require("./asserts");
+let {Decimal128, ObjectId} = require("bson")
 
 const DictSchema = {
-    name: 'Dictionary',
+    name: "Dictionary",
     properties: {
-        a: '{}'
+        a: "{}"
     }
 }
 
@@ -37,55 +37,55 @@ module.exports = {
 
     testDictionaryAddingObject() {
         let realm = new Realm({schema: [DictSchema]})
-        realm.write(()=> realm.create(DictSchema.name, { a: {x:1, y:2, z:'hey'} } ))
+        realm.write(()=> realm.create(DictSchema.name, { a: {x:1, y:2, z:"hey"} } ))
 
         let data = realm.objects(DictSchema.name)[0]
 
-        TestCase.assertEqual(typeof data.a, 'object', 'Should be an object');
-        TestCase.assertEqual(data.a.x, 1, 'Should be an equals to a.x = 1');
-        TestCase.assertEqual(data.a.y, 2, 'Should be an equals to a.y = 2');
-        TestCase.assertEqual(data.a.z, 'hey', 'Should be an equals to a.z = hey');
+        TestCase.assertEqual(typeof data.a, "object", "Should be an object");
+        TestCase.assertEqual(data.a.x, 1, "Should be an equals to a.x = 1");
+        TestCase.assertEqual(data.a.y, 2, "Should be an equals to a.y = 2");
+        TestCase.assertEqual(data.a.z, "hey", "Should be an equals to a.z = hey");
 
         let o = Object.keys(data.a)
         o.forEach(k => {
-            TestCase.assertNotEqual(['x', 'y', 'z'].indexOf(k), -1, 'Should contain all the keys');
+            TestCase.assertNotEqual(["x", "y", "z"].indexOf(k), -1, "Should contain all the keys");
         })
     },
 
     testDictionaryUpdating() {
         //Shouldn't throw
         let realm = new Realm({schema: [DictSchema]})
-        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 'hey'}}))
+        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: "hey"}}))
 
         let data = realm.objects(DictSchema.name)[0]
-        TestCase.assertEqual(typeof data.a, 'object', 'Should be an object');
-        TestCase.assertEqual(data.a.x, 1, 'Should be an equals to a.x = 1');
-        TestCase.assertEqual(data.a.y, 2, 'Should be an equals to a.y = 2');
-        TestCase.assertEqual(data.a.z, 'hey', 'Should be an equals to a.z = hey');
+        TestCase.assertEqual(typeof data.a, "object", "Should be an object");
+        TestCase.assertEqual(data.a.x, 1, "Should be an equals to a.x = 1");
+        TestCase.assertEqual(data.a.y, 2, "Should be an equals to a.y = 2");
+        TestCase.assertEqual(data.a.z, "hey", "Should be an equals to a.z = hey");
 
-        realm.write(() => data.a = {x: 0, y: 0, z: -1, m: 'new-field'})
+        realm.write(() => data.a = {x: 0, y: 0, z: -1, m: "new-field"})
 
-        TestCase.assertEqual(typeof data.a, 'object', 'Should be an object');
-        TestCase.assertEqual(data.a.x, 0, 'Should be an equals to a.x = 0');
-        TestCase.assertEqual(data.a.y, 0, 'Should be an equals to a.y = 0');
-        TestCase.assertEqual(data.a.z, -1, 'Should be an equals to a.z = -1');
-        TestCase.assertEqual(data.a.m, 'new-field', `Should be a new field called m and it should be equals to "new-field"`);
+        TestCase.assertEqual(typeof data.a, "object", "Should be an object");
+        TestCase.assertEqual(data.a.x, 0, "Should be an equals to a.x = 0");
+        TestCase.assertEqual(data.a.y, 0, "Should be an equals to a.y = 0");
+        TestCase.assertEqual(data.a.z, -1, "Should be an equals to a.z = -1");
+        TestCase.assertEqual(data.a.m, "new-field", "Should be a new field called m and it should be equals to \"new-field\"");
 
         realm.write(() => {data.a.x = 1})
-        TestCase.assertEqual(data.a.x, 1, 'Should be an equals to a.x = 1');
+        TestCase.assertEqual(data.a.x, 1, "Should be an equals to a.x = 1");
 
         realm.write(() => data.a = {p: 1})
-        TestCase.assertEqual(typeof data.a.x, 'undefined', 'Should be deleted.');
-        TestCase.assertEqual(typeof data.a.y, 'undefined', 'Should be deleted.');
-        TestCase.assertEqual(typeof data.a.z, 'undefined', 'Should be deleted.');
+        TestCase.assertEqual(typeof data.a.x, "undefined", "Should be deleted.");
+        TestCase.assertEqual(typeof data.a.y, "undefined", "Should be deleted.");
+        TestCase.assertEqual(typeof data.a.z, "undefined", "Should be deleted.");
 
     },
 
    testDictionaryWithTypedValues(){
        const DictIntSchema = {
-           name: 'Dictionary',
+           name: "Dictionary",
            properties: {
-               a: 'int{}'
+               a: "int{}"
            }
        }
 
@@ -93,22 +93,22 @@ module.exports = {
 
        realm.write(() => realm.create(DictIntSchema.name, {a: {x: 1, y: 2, z: 4}}))
        let data = realm.objects(DictIntSchema.name)[0]
-       TestCase.assertEqual(data.a.x, 1, 'Should be an equals to a.x = 1');
-       TestCase.assertEqual(data.a.y, 2, 'Should be an equals to a.y = 2');
-       TestCase.assertEqual(data.a.z, 4, 'Should be an equals to a.z = 4');
+       TestCase.assertEqual(data.a.x, 1, "Should be an equals to a.x = 1");
+       TestCase.assertEqual(data.a.y, 2, "Should be an equals to a.y = 2");
+       TestCase.assertEqual(data.a.z, 4, "Should be an equals to a.z = 4");
 
-       let err = new Error('Property must be of type \'number\', got (error)')
-       TestCase.assertThrowsException(() =>realm.write(() => realm.create(DictIntSchema.name, {a: { c:'error' }})), err)
-       TestCase.assertThrowsException(() =>realm.write(() => data.a = 'cc'), new Error(`Dictionary.a must be of type 'number', got 'string' ('cc')`))
+       let err = new Error("Property must be of type 'number', got (error)")
+       TestCase.assertThrowsException(() =>realm.write(() => realm.create(DictIntSchema.name, {a: { c:"error" }})), err)
+       TestCase.assertThrowsException(() =>realm.write(() => data.a = "cc"), new Error("Dictionary.a must be of type 'number', got 'string' ('cc')"))
    },
     testDictionaryHandlingSchemaParsingError(){
         const DictWrongSchema = {
-            name: 'Dictionary',
+            name: "Dictionary",
             properties: {
-                a: 'wwwww{}'
+                a: "wwwww{}"
             }
         }
-        let err = new Error('Schema type: wwwww not supported for Dictionary.')
+        let err = new Error("Schema type: wwwww not supported for Dictionary.")
         let _defer = () => { let r = new Realm({schema: [DictWrongSchema]}) }
         TestCase.assertThrowsException(_defer, err)
     },
@@ -122,53 +122,53 @@ module.exports = {
         let data = realm.objects(DictSchema.name)[0].a
         let mutable = realm.objects(DictSchema.name)[0].a
 
-        TestCase.assertEqual(typeof data, 'object', 'Should be an object');
-        TestCase.assertEqual(data.x, 1, 'Should be an equals to a.x = 1');
-        TestCase.assertEqual(data.y, 2, 'Should be an equals to a.y = 2');
-        TestCase.assertEqual(data.z, 3, 'Should be an equals to a.z = 3');
+        TestCase.assertEqual(typeof data, "object", "Should be an object");
+        TestCase.assertEqual(data.x, 1, "Should be an equals to a.x = 1");
+        TestCase.assertEqual(data.y, 2, "Should be an equals to a.y = 2");
+        TestCase.assertEqual(data.z, 3, "Should be an equals to a.z = 3");
 
-        TestCase.assertEqual(typeof mutable, 'object', 'Should be an object');
-        TestCase.assertEqual(mutable.x, 1, 'Should be an equals to mutable.x = 1');
-        TestCase.assertEqual(mutable.y, 2, 'Should be an equals to mutable.y = 2');
-        TestCase.assertEqual(mutable.z, 3, 'Should be an equals to mutable.z = 3');
+        TestCase.assertEqual(typeof mutable, "object", "Should be an object");
+        TestCase.assertEqual(mutable.x, 1, "Should be an equals to mutable.x = 1");
+        TestCase.assertEqual(mutable.y, 2, "Should be an equals to mutable.y = 2");
+        TestCase.assertEqual(mutable.z, 3, "Should be an equals to mutable.z = 3");
 
         realm.write(() => { data.x = 3; data.y= 2; data.z= 1 })
 
-        TestCase.assertEqual(typeof data, 'object', 'Should be an object');
-        TestCase.assertEqual(data.x, 3, 'Should be an equals to a.x = 3');
-        TestCase.assertEqual(data.y, 2, 'Should be an equals to a.y = 2');
-        TestCase.assertEqual(data.z, 1, 'Should be an equals to a.z = 1');
+        TestCase.assertEqual(typeof data, "object", "Should be an object");
+        TestCase.assertEqual(data.x, 3, "Should be an equals to a.x = 3");
+        TestCase.assertEqual(data.y, 2, "Should be an equals to a.y = 2");
+        TestCase.assertEqual(data.z, 1, "Should be an equals to a.z = 1");
 
-        TestCase.assertEqual(typeof mutable, 'object', 'Should be an object');
-        TestCase.assertEqual(mutable.x, 3, 'Should be an equals to mutable.x = 3');
-        TestCase.assertEqual(mutable.y, 2, 'Should be an equals to mutable.y = 2');
-        TestCase.assertEqual(mutable.z, 1, 'Should be an equals to mutable.z = 1');
+        TestCase.assertEqual(typeof mutable, "object", "Should be an object");
+        TestCase.assertEqual(mutable.x, 3, "Should be an equals to mutable.x = 3");
+        TestCase.assertEqual(mutable.y, 2, "Should be an equals to mutable.y = 2");
+        TestCase.assertEqual(mutable.z, 1, "Should be an equals to mutable.z = 1");
     },
 
     testDictionaryDifferentBackend(){
-        const DictSchema = {
-            name: 'Dictionary',
+        const DictSchemaRef = {
+            name: "Dictionary",
             properties: {
-                a: '{}',
-                b: '{}'
+                a: "{}",
+                b: "{}"
             }
         }
 
         //Shouldn't throw
-        let realm = new Realm({schema: [DictSchema]})
-        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}, b: {name: 'Caesar', second: 'August'} } ))
+        let realm = new Realm({schema: [DictSchemaRef]})
+        realm.write(() => realm.create(DictSchemaRef.name, {a: {x: 1, y: 2, z: 3}, b: {name: "Caesar", second: "August"} } ))
 
-        let data = realm.objects(DictSchema.name)[0].a
-        let person = realm.objects(DictSchema.name)[0].b
+        let data = realm.objects(DictSchemaRef.name)[0].a
+        let person = realm.objects(DictSchemaRef.name)[0].b
 
-        TestCase.assertEqual(typeof data, 'object', 'Should be an object');
-        TestCase.assertEqual(data.x, 1, 'Should be an equals to a.x = 1');
-        TestCase.assertEqual(data.y, 2, 'Should be an equals to a.y = 2');
-        TestCase.assertEqual(data.z, 3, 'Should be an equals to a.z = 3');
+        TestCase.assertEqual(typeof data, "object", "Should be an object");
+        TestCase.assertEqual(data.x, 1, "Should be an equals to a.x = 1");
+        TestCase.assertEqual(data.y, 2, "Should be an equals to a.y = 2");
+        TestCase.assertEqual(data.z, 3, "Should be an equals to a.z = 3");
 
-        TestCase.assertEqual(typeof person, 'object', 'Should be an object');
-        TestCase.assertEqual(person.name, 'Caesar', 'Should be an equals to Caesar');
-        TestCase.assertEqual(person.second, 'August', 'Should be an equals to August');
+        TestCase.assertEqual(typeof person, "object", "Should also being an object");
+        TestCase.assertEqual(person.name, "Caesar", "Should be an equals to Caesar");
+        TestCase.assertEqual(person.second, "August", "Should be an equals to August");
     },
 
     testDictionary_Javascript_Object_Features() {
@@ -176,9 +176,9 @@ module.exports = {
         realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}}))
         let point = realm.objects(DictSchema.name)[0].a
 
-        TestCase.assertEqual(JSON.stringify(point), `{"x":1,"z":3,"y":2}`, `Should be an equals to: {"x":1,"z":3,"y":2}`)
-        TestCase.assertArraysEqual(Object.values(point), [1,3,2], `Should be an equals to: [1,3,2]`)
-        TestCase.assertArraysEqual(Object.keys(point), ['x','z','y'], `Should be an equals to: ['x','z','y']`)
+        TestCase.assertEqual(JSON.stringify(point), "{\"x\":1,\"z\":3,\"y\":2}", "Should be an equals to: {\"x\":1,\"z\":3,\"y\":2}")
+        TestCase.assertArraysEqual(Object.values(point), [1,3,2], "Should be an equals to: [1,3,2]")
+        TestCase.assertArraysEqual(Object.keys(point), ["x","z","y"], "Should be an equals to: ['x','z','y']")
 
         let {x,y,z} = point
         TestCase.assertArraysEqual([x,y,z], [1,2,3], "Should be an equals to: [1,3,2]")
@@ -186,9 +186,9 @@ module.exports = {
 
     testDictionaryQuery(){
         const DictSchema = {
-            name: 'Dictionary',
+            name: "Dictionary",
             properties: {
-                a: '{}'
+                a: "{}"
             }
         }
         let realm = new Realm({schema: [DictSchema]})
@@ -209,9 +209,9 @@ module.exports = {
     testDictionaryNotificationObjectFieldUpdate() {
         const UPDATES = 5;
         const DictSchema = {
-            name: 'Dictionary',
+            name: "Dictionary",
             properties: {
-                fields: '{}'
+                fields: "{}"
             }
         }
 
@@ -223,9 +223,9 @@ module.exports = {
         fields.addListener((obj, changeset ) => {
             TestCase.assertEqual(fields.field1, cnt,`fields.field1: ${fields.field1} should be equals to: cnt -> ${cnt}`)
 
-            // We ignore the first as it just reflect the creation above.
+            // We ignore the first as it just reflect the creation in the line above.
             if(cnt > 0) {
-                TestCase.assertEqual(changeset.modifications[0], 'field1', `The changeset should reflect an update on field1 but it shows -> ${changeset.modifications[0]}`)
+                TestCase.assertEqual(changeset.modifications[0], "field1", `The changeset should reflect an update on field1 but it shows -> ${changeset.modifications[0]}`)
             }
             cnt++
         })
@@ -239,9 +239,9 @@ module.exports = {
 
     testDictionaryNotificationObjectFieldInsertion() {
         const DictSchema = {
-            name: 'Dictionary',
+            name: "Dictionary",
             properties: {
-                fields: '{}'
+                fields: "{}"
             }
         }
 
@@ -265,9 +265,9 @@ module.exports = {
 
     testDictionaryUserShouldNotDeleteFields() {
         const DictSchema = {
-            name: 'Dictionary',
+            name: "Dictionary",
             properties: {
-                fields: '{}'
+                fields: "{}"
             }
         }
 
@@ -298,29 +298,29 @@ module.exports = {
     },
 
     testDictionaryRemoveCallback() {
-        const DictSchema = {
-            name: 'Dictionary',
+        const DictSchemaFields = {
+            name: "Dictionary",
             properties: {
-                fields: '{}'
+                fields: "{}"
             }
         }
 
-        let realm = new Realm({schema: [DictSchema]})
-        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
-        let fields = realm.objects(DictSchema.name)[0].fields
+        let realm = new Realm({schema: [DictSchemaFields]})
+        realm.write(() => realm.create(DictSchemaFields.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
+        let fields = realm.objects(DictSchemaFields.name)[0].fields
 
         let a = (obj, chg) => {
-            TestCase.assertTrue(false,`Function a should be unsubscribed.`)
+            TestCase.assertTrue(false,"Function a should be unsubscribed.")
         }
         let b = (obj, chg) => {
-            TestCase.assertTrue(false,`Function b should be unsubscribed.`)
+            TestCase.assertTrue(false,"Function b should be unsubscribed.")
         }
         let called = false
         let c = (obj, chg) => {
             called = true
         }
         let d = (obj, chg) => {
-            TestCase.assertTrue(false,`Function d should be unsubscribed.`)
+            TestCase.assertTrue(false,"Function d should be unsubscribed.")
         }
 
         fields.addListener(a)
@@ -333,14 +333,14 @@ module.exports = {
         fields.removeListener(d)
 
         realm.write(() => { fields.field1=1 } )
-        TestCase.assertTrue(called,`Function c should be called`)
+        TestCase.assertTrue(called,"Function c should be called")
     },
 
     testDictionaryUnsubscribingOnEmptyListener() {
         const DictSchema = {
-            name: 'Dictionary',
+            name: "Dictionary",
             properties: {
-                fields: '{}'
+                fields: "{}"
             }
         }
 
@@ -349,10 +349,10 @@ module.exports = {
         let fields = realm.objects(DictSchema.name)[0].fields
 
         let a = (obj, chg) => {
-            TestCase.assertTrue(false,`Function a should be unsubscribed.`)
+            TestCase.assertTrue(false,"Function a should be unsubscribed.")
         }
         let b = (obj, chg) => {
-            TestCase.assertTrue(false,`Function b should be unsubscribed.`)
+            TestCase.assertTrue(false,"Function b should be unsubscribed.")
         }
 
         /*
