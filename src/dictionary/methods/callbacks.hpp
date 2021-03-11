@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALMJS_CALLBACKS_HPP
-#define REALMJS_CALLBACKS_HPP
+#pragma once
 
 namespace realm {
 namespace js {
@@ -115,4 +114,3 @@ const std::string NotificationsCallback<T>::MODIFICATIONS = "modifications";
 }  // namespace js
 }  // namespace realm
 
-#endif  // REALMJS_CALLBACKS_HPP

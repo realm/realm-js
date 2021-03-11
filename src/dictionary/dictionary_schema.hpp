@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALMJS_DICTIONARY_SCHEMA_HPP
-#define REALMJS_DICTIONARY_SCHEMA_HPP
+#pragma once
 
 #include <regex>
 
@@ -67,4 +66,3 @@ class DictionarySchema {
 }  // namespace js
 }  // namespace realm
 
-#endif  // REALMJS_DICTIONARY_SCHEMA_HPP

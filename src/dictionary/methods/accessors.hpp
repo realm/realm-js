@@ -16,9 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALMJS_MIXED_ACCESSORS_HPP
-#define REALMJS_MIXED_ACCESSORS_HPP
-
+#pragma once
 #include "realm/dictionary.hpp"
 
 namespace realm {
@@ -45,4 +43,3 @@ struct AccessorsForDictionary {
 };
 }  // namespace js
 }  // namespace realm
-#endif  // REALMJS_MIXED_ACCESSORS_HPP

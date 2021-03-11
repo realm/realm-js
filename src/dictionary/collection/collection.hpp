@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALMJS_COLLECTION_HPP
-#define REALMJS_COLLECTION_HPP
+#pragma once
 
 #include "dictionary/collection/notification.hpp"
 
@@ -47,4 +46,4 @@ class CollectionAdapter : public Notifications {
 
 }  // namespace js
 }  // namespace realm
-#endif  // REALMJS_COLLECTION_HPP
+

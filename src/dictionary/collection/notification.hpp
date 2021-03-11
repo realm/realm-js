@@ -16,9 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALMJS_NOTIFICATION_HPP
-#define REALMJS_NOTIFICATION_HPP
-
+#pragma once
 namespace realm {
 namespace js {
 
@@ -82,4 +80,4 @@ class DictionaryNotifications {
 }  // namespace js
 }  // namespace realm
 
-#endif  // REALMJS_NOTIFICATION_HPP
+

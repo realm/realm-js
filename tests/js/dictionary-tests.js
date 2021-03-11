@@ -222,7 +222,6 @@ module.exports = {
 
         fields.addListener((obj, changeset ) => {
             TestCase.assertEqual(fields.field1, cnt,`fields.field1: ${fields.field1} should be equals to: cnt -> ${cnt}`)
-
             // We ignore the first as it just reflect the creation in the line above.
             if(cnt > 0) {
                 TestCase.assertEqual(changeset.modifications[0], "field1", `The changeset should reflect an update on field1 but it shows -> ${changeset.modifications[0]}`)
@@ -280,6 +279,13 @@ module.exports = {
 
         // deleting all but one field.
         realm.write(() => { ff.fields = {x1: "hello"} } )
+
+        return new Promise((resolve, reject) => {
+            setTimeout(() =>{
+                TestCase.assertEqual(cnt, 4, "Counter should be four")
+                resolve()
+            }, 1000)
+        })
     },
 
     testDictionaryUserShouldNotDeleteFields() {
@@ -296,7 +302,7 @@ module.exports = {
 
         delete ff.fields.x1
         delete ff.fields.x2
-
+        
         TestCase.assertEqual(Object.keys(ff.fields)[0], "x2", "Should contain x2 field")
         TestCase.assertEqual(Object.keys(ff.fields)[1], "x1", "Should contain x1 field")
     },

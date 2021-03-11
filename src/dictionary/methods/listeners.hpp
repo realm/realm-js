@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALMJS_LISTENERS_HPP
-#define REALMJS_LISTENERS_HPP
+#pragma once
 #include "dictionary/collection/notification.hpp"
 #include "dictionary/methods/callbacks.hpp"
 #include "napi.h"
@@ -86,4 +85,3 @@ class ListenersMethodsForDictionary {
 }  // namespace js
 }  // namespace realm
 
-#endif  // REALMJS_LISTENERS_HPP
