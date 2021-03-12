@@ -4,10 +4,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * There seems to be a few issues regarding class support in realm-js. We are currently coming up with strategies to better support this in the future.  In the meantime, the following fixes have been applied to help avoid crashes and failures.
   * When creating a class that extends Realm.Object and pushing the instantiated object to a list, a segmentation fault would occur.  This has been fixed by a null check and throwing an exception.
   * Creating an object from an instance of Realm.Object that was manually constructed (detached from Realm) would fail the second time.  Now we throw an meaningful exception the first time.
+* Removed a delay when running in node.js. It could make testing using Jest to fail. ([#3608](https://github.com/realm/realm-js/issues/3608), since v2.0.0) 
 
 ### Compatibility
 * MongoDB Realm Cloud.
