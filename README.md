@@ -211,6 +211,32 @@ Using Visual Studio Code
 
 You can debug node tests using Visual Studio Code. Just use one of the launch configurations.
 
+## Analytics
+
+Asynchronously submits install information to Realm.
+
+Why are we doing this? In short, because it helps us build a better product
+for you. None of the data personally identifies you, your employer or your
+app, but it *will* help us understand what language you use, what Node.js
+versions you target, etc. Having this info will help prioritizing our time,
+adding new features and deprecating old features. Collecting an anonymized
+application path & anonymized machine identifier is the only way for us to
+count actual usage of the other metrics accurately. If we don’t have a way to
+deduplicate the info reported, it will be useless, as a single developer
+`npm install`-ing the same app 10 times would report 10 times more than another
+developer that only installs once, making the data all but useless.
+No one likes sharing data unless it’s necessary, we get it, and we’ve
+debated adding this for a long long time. If you truly, absolutely
+feel compelled to not send this data back to Realm, then you can set an env
+variable named `REALM_DISABLE_ANALYTICS`.
+
+Currently the following information is reported:
+
+ * What version of Realm is being installed.
+ * The OS platform and version which is being used.
+ * Node.js, v8, libuv, OpenSSL version numbers.
+ * An anonymous machine identifier and hashed application path to aggregate the other information on.
+
 ## Code of Conduct
 
 This project adheres to the Contributor Covenant [code of conduct](https://realm.io/conduct/).
