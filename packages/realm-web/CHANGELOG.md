@@ -1,4 +1,4 @@
-?.?.? Release notes (2020-??-??)
+1.2.1 Release notes (2021-02-17)
 =============================================================
 
 ### Breaking Changes
@@ -33,6 +33,17 @@
 * None
 
 1.1.0 Release notes (2020-12-08)
+=============================================================	
+
+### Breaking Changes	
+* None	
+
+### Enhancements	
+* Added support of OpenID Connect credential for the Google authentication provider. ([#3383](https://github.com/realm/realm-js/issues/3383))	
+
+### Fixed	
+* Fixed the type returned by `getApp` and `App.getApp`, such that an `app.currentUser` will match the `User` exported by the package. ([#3420](https://github.com/realm/realm-js/pull/3420), since v1.0.0-rc.1)	
+
 ### Internal
 * None
 

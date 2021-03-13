@@ -108,7 +108,7 @@ template<typename T>
 void WatchStreamClass<T>::next_event(ContextType ctx, ObjectType object, Arguments& args, ReturnValue &return_value) {
     args.validate_count(0);
     WatchStream* ws = get_internal<T, WatchStreamClass<T>>(ctx, object);
-    return return_value.set(Value::from_bson(ctx, ws->next_event()));
+    return return_value.set(Value::from_string(ctx, String::from_bson(ws->next_event())));
 }
 
 template<typename T>
@@ -131,6 +131,7 @@ class UserClass : public ClassDefinition<T, User<T>> {
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using StringType = typename T::String;
     using String = js::String<T>;
     using Object = js::Object<T>;
     using Value = js::Value<T>;
@@ -164,7 +165,7 @@ public:
         {"profile", {wrap<get_profile>, nullptr}},
         {"isLoggedIn", {wrap<is_logged_in>, nullptr}},
         {"state", {wrap<get_state>, nullptr}},
-        {"customData", {wrap<get_custom_data>, nullptr}},
+        {"_customData", {wrap<get_custom_data>, nullptr}},
         {"apiKeys", {wrap<get_api_keys>, nullptr}},
         {"deviceId", {wrap<get_device_id>, nullptr}},
         {"providerType", {wrap<get_provider_type>, nullptr}},
@@ -289,7 +290,7 @@ void UserClass<T>::get_custom_data(ContextType ctx, ObjectType object, ReturnVal
     if (!custom_data)
         return return_value.set_null();
 
-    return_value.set(js::Value<T>::from_bson(ctx, *custom_data));
+    return_value.set(Value::from_string(ctx, String::from_bson(*custom_data)));
 }
 
 template<typename T>
@@ -357,23 +358,23 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
 
     auto name = Value::validated_to_string(ctx, args[0], "name");
-    auto call_args_js = Value::validated_to_array(ctx, args[1], "args");
+    auto stringified_ejson_args = Value::validated_to_string(ctx, args[1], "args");
     auto service = Value::is_undefined(ctx, args[2])
             ? util::none
             : util::Optional<std::string>(Value::validated_to_string(ctx, args[2], "service"));
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
 
-    auto call_args_bson = Value::to_bson(ctx, call_args_js);
+    auto bson_args = String::to_bson(stringified_ejson_args);
 
     user->m_app->call_function(
         *user,
         name,
-        call_args_bson.operator const bson::BsonArray&(),
+        bson_args.operator const bson::BsonArray&(),
         service,
         Function::wrap_callback_error_first(ctx, this_object, callback,
             [] (ContextType ctx, const util::Optional<bson::Bson>& result) {
                 REALM_ASSERT_RELEASE(result);
-                return Value::from_bson(ctx, *result);
+                return Value::from_string(ctx, String::from_bson(*result));
             }));
 }
 
@@ -427,13 +428,13 @@ void UserClass<T>::make_streaming_request(ContextType ctx, ObjectType this_objec
 
     auto name = Value::validated_to_string(ctx, args[0], "name");
     auto service = Value::validated_to_string(ctx, args[1], "service");
-    auto call_args_js = Value::validated_to_array(ctx, args[2], "args");
-    auto call_args_bson = Value::to_bson(ctx, call_args_js);
+    auto stringified_ejson_args = Value::validated_to_string(ctx, args[2], "args");
+    auto bson_args = String::to_bson(stringified_ejson_args);
 
     auto req = user->m_app->make_streaming_request(
         *user,
         name,
-        call_args_bson.operator const bson::BsonArray &(),
+        bson_args.operator const bson::BsonArray &(),
         std::string(service));
     return return_value.set(JavaScriptNetworkTransport<T>::makeRequest(ctx, req));
 }

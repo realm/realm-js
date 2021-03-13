@@ -360,6 +360,9 @@ struct Unbox<JSEngine, Obj> {
         auto object = Value::validated_to_object(ctx->m_ctx, value);
         if (js::Object<JSEngine>::template is_instance<RealmObjectClass<JSEngine>>(ctx->m_ctx, object)) {
             auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(ctx->m_ctx, object);
+            if (!realm_object) {
+                throw std::runtime_error("Cannot reference a detached instance of Realm.Object");
+            }
             if (realm_object->realm() == ctx->m_realm) {
                 return realm_object->obj();
             }

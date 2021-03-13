@@ -342,8 +342,6 @@ public:
     static void delete_file(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void realm_file_exists(ContextType, ObjectType, Arguments &, ReturnValue &);
 
-    static void bson_parse_json(ContextType, ObjectType, Arguments &, ReturnValue &);
-
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
     static void set_default_path(ContextType, ObjectType, ValueType value);
@@ -356,7 +354,6 @@ public:
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
         {"deleteFile", wrap<delete_file>},
         {"exists", wrap<realm_file_exists>},
-        {"_bsonParseJsonForTest", wrap<bson_parse_json>},
 #if REALM_ENABLE_SYNC
         {"_asyncOpen", wrap<async_open_realm>},
 #endif
@@ -1029,6 +1026,13 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
         object = Schema<T>::dict_for_property_array(ctx, object_schema, object);
     }
 
+    if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
+        auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+        if (!realm_object) {
+            throw std::runtime_error("Cannot create an object from a detached Realm.Object instance");
+        }
+    }
+
     NativeAccessor accessor(ctx, realm, object_schema);
     auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, policy);
     return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
@@ -1336,14 +1340,6 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
         nullptr,
         true
     );
-}
-
-template<typename T>
-void RealmClass<T>::bson_parse_json(ContextType ctx, ObjectType, Arguments& args, ReturnValue &return_value) {
-    args.validate_count(1);
-    auto json = std::string(Value::validated_to_string(ctx, args[0]));
-    auto parsed = bson::parse(json);
-    return_value.set(Value::from_bson(ctx, parsed));
 }
 
 #if REALM_ENABLE_SYNC
