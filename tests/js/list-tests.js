@@ -1388,10 +1388,15 @@ module.exports = {
     },
 
     testClassObjectCreation: function() {
+        const autoInc = (() => {
+            let counter = 0;
+            return () => counter++;
+        })();
+
         class TodoItem extends Realm.Object {
             constructor(description) {
                 super()
-                this.id = new ObjectId()
+                this.id = autoInc();
                 this.description = description;
                 this.done = false;
             }
@@ -1400,7 +1405,7 @@ module.exports = {
         TodoItem.schema =  {
             name: "TodoItem",
             properties: {
-                id: "objectId",
+                id: "int",
                 description: "string",
                 done: {type: "bool", default: false},
                 deadline: "date?"
@@ -1411,7 +1416,7 @@ module.exports = {
         class TodoList extends Realm.Object {
             constructor(name) {
                 super()
-                this.id = new ObjectId()
+                this.id = autoInc();
                 this.name = name;
                 this.items = []
             }
@@ -1420,7 +1425,7 @@ module.exports = {
         TodoList.schema = {
             name: "TodoList",
             properties: {
-                id: "objectId",
+                id: "int",
                 name: "string",
                 items: "TodoItem[]"
             },
@@ -1430,7 +1435,7 @@ module.exports = {
         const realm = new Realm({schema: [TodoList, TodoItem]});
         realm.write(() => {
             const list = realm.create(TodoList, {
-                id: new ObjectId(),
+                id: autoInc(),
                 name: 'MyTodoList'
             })
 
