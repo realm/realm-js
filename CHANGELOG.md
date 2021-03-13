@@ -30,7 +30,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed queries for constant null across links to an indexed property not returning matches when the link was null. ([#4460]https://github.com/realm/realm-core/pull/4460), since v3.5.0).
 
 ### Compatibility
-* MongoDB Realm Cloud.
+* Realm Object Server: 3.23.1 or later
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 6.x.y series.
 * File format: generates Realms with format v11 (reads and upgrades file format v5).
 
