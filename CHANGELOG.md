@@ -8,14 +8,18 @@ x.x.x Release notes (yyyy-MM-dd)
   * When creating a class that extends Realm.Object and pushing the instantiated object to a list, a segmentation fault would occur.  This has been fixed by a null check and throwing an exception.
   * Creating an object from an instance of Realm.Object that was manually constructed (detached from Realm) would fail the second time.  Now we throw an meaningful exception the first time.
 * Removed a delay when running in node.js. It could make testing using Jest to fail. ([#3608](https://github.com/realm/realm-js/issues/3608), since v2.0.0) 
+* Support upgrading from file format 5. ([realm/realm-cocoa#7089](https://github.com/realm/realm-cocoa/issues/7089), since v6.0.0)
+* During integration of a large amount of data from the server, you may get `Assertion failed: !fields.has_missing_parent_update()`. ([realm/realm-core#4497](https://github.com/realm/realm-core/issues/4497), since v6.0.0)
+* Fixed queries for constant null across links to an indexed property not returning matches when the link was null. ([#4460]https://github.com/realm/realm-core/pull/4460), since v3.5.0).
 
 ### Compatibility
 * MongoDB Realm Cloud.
-* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
-* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 6.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5).
 
 ### Internal
-* None.
+* Upgraded Realm Core from v6.2.3 to v6.2.4.
+* Upgraded Realm Sync from v5.0.32 to v5.0.33.
 
 6.1.6 Release notes (2021-2-15)
 =============================================================
