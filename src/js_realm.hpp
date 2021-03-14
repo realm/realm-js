@@ -786,7 +786,7 @@ void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Argume
     SharedRealm& realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
 
     auto& config = realm->config();
-    if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::AdditiveDiscovered || config.schema_mode == SchemaMode::ReadOnlyAlternative) {
+    if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::AdditiveExplicit || config.schema_mode == SchemaMode::ReadOnlyAlternative) {
         throw std::runtime_error("Cannot delete model for a read-only or a synced Realm.");
     }
 
