@@ -72,6 +72,7 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE AND TARGET ObjectStore)
     )
 endif()
 
+target_include_directories(realm-js-jsc PUBLIC "../jsc/include")
 target_include_directories(realm-js-android PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_directories(realm-js-android PUBLIC "${JSC_LIB_DIR}")

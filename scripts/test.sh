@@ -292,13 +292,17 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "react-tests")
+  npm ci --ignore-scripts
   npm run check-environment
+
+  echo "building iOS binaries"
+  ./scripts/build-ios.sh -s -c $CONFIGURATION
+
   set_nvm_default
-  npm ci
   start_server
 
   pushd tests/react-test-app
-  npm ci
+  npm ci --no-optional
   ./node_modules/.bin/install-local
   open_chrome
   start_packager
@@ -309,9 +313,13 @@ case "$TARGET" in
   stop_server
   ;;
 "react-example")
+  npm ci --ignore-scripts
   npm run check-environment
+
+  echo "building iOS binaries"
+  ./scripts/build-ios.sh -s -c $CONFIGURATION
+
   set_nvm_default
-  npm ci
 
   pushd examples/ReactExample
   npm ci

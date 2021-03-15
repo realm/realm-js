@@ -118,6 +118,7 @@ stage('build') {
     parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
 
     parallelExecutors["Android RN"] = buildAndroid()
+    parallelExecutors["iOS RN"] = buildiOS()
 
     parallel parallelExecutors
 }
@@ -139,8 +140,8 @@ stage('test') {
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
   parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
-  // parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  // parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
+  parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
+  parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
 
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
@@ -170,9 +171,7 @@ stage('integration tests') {
     'Electron on Linux':        buildLinux { electronIntegrationTests(electronTestVersion, it) },
 
     'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
-
-    //TODO: uncomment when RN iOS build with cmake is ready
-    // 'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
+    'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
   )
 }
 
@@ -254,15 +253,22 @@ def reactNativeIntegrationTests(targetPlatform) {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
   }
 
-  dir('integration-tests') {
-    if (targetPlatform == "android") {
-      unstash 'android-package'
-    } else {
-      // Pack up Realm JS into a .tar
-      sh "${nvm} npm pack .."
+  if (targetPlatform == "android") {
+    dir('react-native/android/src/main') {
+      unstash 'android-jnilibs'
     }
+  } else {
+    dir('react-native/ios') {
+      unstash 'realm-js-ios.xcframework'
+    }
+  }
+
+  // Pack up Realm JS into a .tar
+  sh "${nvm} npm pack"
+
+  dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
-    sh 'mv realm-*.tgz realm.tgz'
+    sh 'mv ../realm-*.tgz realm.tgz'
     // Unstash the integration tests package
     unstash 'integration-tests-tgz'
   }
@@ -386,6 +392,17 @@ def buildWindows(nodeVersion, arch) {
   }
 }
 
+def buildiOS() {
+  return buildMacOS {
+    sh './scripts/build-iOS.sh -c Release'
+      dir('react-native/ios') {
+      // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
+      // archiveArtifacts('realm-js-ios.xcframework/**')
+      stash includes: 'realm-js-ios.xcframework/**', name: 'realm-js-ios.xcframework'
+    }
+  }
+}
+
 def inAndroidContainer(workerFunction) {
   return {
     myNode('docker-cph-03') {
@@ -423,8 +440,11 @@ def buildAndroid() {
         // Using --ignore-scripts to skip building for node
         sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
         sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
-        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack ."
-        stash includes: 'realm-*.*.*.tgz', name: 'android-package'
+      }
+      dir('react-native/android/src/main') {
+        // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
+        // archiveArtifacts('jniLibs/**')
+        stash includes: 'jniLibs/**', name: 'android-jnilibs'
       }
     }
   }

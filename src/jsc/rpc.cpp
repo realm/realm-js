@@ -19,7 +19,9 @@
 #include <cassert>
 #include <dlfcn.h>
 #include <map>
-#include <string>
+#include <functional>
+#include <future>
+#include <thread>
 
 #include "rpc.hpp"
 #include "jsc_init.hpp"
@@ -31,12 +33,92 @@
 #include "jsc_rpc_network_transport.hpp"
 #include "js_app.hpp"
 
+#include "concurrent_deque.hpp"
+#include <external/json/json.hpp>
+#include "jsc_types.hpp"
+#include "jsc_protected.hpp"
+#include "js_network_transport.hpp"
+
 using namespace realm;
 using namespace realm::rpc;
+
+using json = nlohmann::json;
+
+using RPCObjectID = u_int64_t;
+using RPCRequest = std::function<json(const json)>;
+using NetworkTransportFactory = typename js::JavaScriptNetworkTransport<jsc::Types>::NetworkTransportFactory;
 
 using Value = js::Value<jsc::Types>;
 using Accessor = realm::js::NativeAccessor<jsc::Types>;
 using AppClass = js::AppClass<jsc::Types>;
+
+namespace realm::rpc {
+
+class RPCWorker {
+  public:
+    RPCWorker();
+    ~RPCWorker();
+
+    template<typename Fn>
+    json add_task(Fn&&);
+    void invoke_callback(json);
+    json resolve_callback(json args);
+    std::future<json> add_promise();
+
+    bool try_run_task();
+    void stop();
+    json try_pop_callback();
+    bool should_stop();
+
+  private:
+    bool m_stop = false;
+    int m_depth = 0;
+#if __APPLE__
+    std::thread m_thread;
+    CFRunLoopRef m_loop;
+#endif
+    ConcurrentDeque<std::function<void()>> m_tasks;
+    ConcurrentDeque<std::promise<json>> m_promises;
+    ConcurrentDeque<json> m_callbacks;
+};
+
+class RPCServerImpl {
+public:
+    RPCServerImpl();
+    ~RPCServerImpl();
+    json perform_request(std::string const& name, json&& args);
+    bool try_run_task();
+private:
+    JSGlobalContextRef m_context;
+    std::mutex m_request_mutex;
+    std::map<std::string, RPCRequest> m_requests;
+    std::map<RPCObjectID, js::Protected<JSObjectRef>> m_objects;
+    std::map<RPCObjectID, js::Protected<JSObjectRef>> m_callbacks;
+    // The key here is the same as the value in m_callbacks. We use the raw pointer as a key here,
+    // because protecting the value in m_callbacks pins the function object and prevents it from being moved
+    // by the garbage collector upon compaction.
+    std::map<JSObjectRef, RPCObjectID> m_callback_ids;
+    RPCObjectID m_session_id;
+    RPCWorker m_worker;
+    u_int64_t m_callback_call_counter;
+    uint64_t m_reset_counter = 0;
+
+    std::mutex m_pending_callbacks_mutex;
+    std::map<std::pair<uint64_t, uint64_t>, std::promise<json>> m_pending_callbacks;
+
+    NetworkTransportFactory previous_transport_generator;
+
+    static JSValueRef run_callback(JSContextRef, JSObjectRef, JSObjectRef, size_t, const JSValueRef[], JSValueRef *exception);
+
+    RPCObjectID store_object(JSObjectRef object);
+    JSObjectRef get_object(RPCObjectID) const;
+    JSObjectRef get_realm_constructor() const;
+
+    json serialize_json_value(JSValueRef value);
+    JSValueRef deserialize_json_value(const json dict);
+};
+
+}
 
 namespace {
 static const char * const RealmObjectTypesData = "data";
@@ -87,8 +169,8 @@ json get_type(Container const& c) {
     };
 }
 
-RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
-    static std::map<JSGlobalContextRef, RPCServer*> s_map;
+RPCServerImpl*& get_rpc_server(JSGlobalContextRef ctx) {
+    static std::map<JSGlobalContextRef, RPCServerImpl*> s_map;
     return s_map[ctx];
 }
 }
@@ -258,7 +340,7 @@ static json read_object_properties(Object& object) {
     return cache;
 }
 
-RPCServer::RPCServer() {
+RPCServerImpl::RPCServerImpl() {
     m_context = JSGlobalContextCreate(NULL);
     get_rpc_server(m_context) = this;
     m_callback_call_counter = 1;
@@ -633,7 +715,7 @@ RPCServer::RPCServer() {
     };
 }
 
-RPCServer::~RPCServer() {
+RPCServerImpl::~RPCServerImpl() {
     m_worker.stop();
 
     // The protected values should be unprotected before releasing the context.
@@ -650,9 +732,9 @@ RPCServer::~RPCServer() {
 /**
  * Asks the client to execute a callback and awaits the result.
  */
-JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
+JSValueRef RPCServerImpl::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
                                    size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
-    RPCServer* server = get_rpc_server(JSContextGetGlobalContext(ctx));
+    RPCServerImpl* server = get_rpc_server(JSContextGetGlobalContext(ctx));
     if (!server) {
         return JSValueMakeUndefined(ctx);
     }
@@ -722,7 +804,7 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
     return server->deserialize_json_value(results["result"]);
 }
 
-json RPCServer::perform_request(std::string const& name, json&& args) {
+json RPCServerImpl::perform_request(std::string const& name, json&& args) {
     std::lock_guard<std::mutex> lock(m_request_mutex);
 
     // Only create_session is allowed without the correct session id (since it creates the session id).
@@ -781,11 +863,11 @@ json RPCServer::perform_request(std::string const& name, json&& args) {
     });
 }
 
-bool RPCServer::try_run_task() {
+bool RPCServerImpl::try_run_task() {
     return m_worker.try_run_task();
 }
 
-RPCObjectID RPCServer::store_object(JSObjectRef object) {
+RPCObjectID RPCServerImpl::store_object(JSObjectRef object) {
     static RPCObjectID s_next_id = 1;
 
     RPCObjectID next_id = s_next_id++;
@@ -793,12 +875,12 @@ RPCObjectID RPCServer::store_object(JSObjectRef object) {
     return next_id;
 }
 
-JSObjectRef RPCServer::get_object(RPCObjectID oid) const {
+JSObjectRef RPCServerImpl::get_object(RPCObjectID oid) const {
     auto it = m_objects.find(oid);
     return it == m_objects.end() ? nullptr : static_cast<JSObjectRef>(it->second);
 }
 
-JSObjectRef RPCServer::get_realm_constructor() const {
+JSObjectRef RPCServerImpl::get_realm_constructor() const {
     JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
     if (!realm_constructor) {
         throw std::runtime_error("Realm constructor not found!");
@@ -806,7 +888,7 @@ JSObjectRef RPCServer::get_realm_constructor() const {
     return realm_constructor;
 }
 
-json RPCServer::serialize_json_value(JSValueRef js_value) {
+json RPCServerImpl::serialize_json_value(JSValueRef js_value) {
     switch (JSValueGetType(m_context, js_value)) {
         case kJSTypeUndefined:
             return json::object();
@@ -992,7 +1074,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     assert(0);
 }
 
-JSValueRef RPCServer::deserialize_json_value(const json dict) {
+JSValueRef RPCServerImpl::deserialize_json_value(const json dict) {
     json oid = dict.value("id", json());
     if (oid.is_number()) {
         return m_objects[oid.get<RPCObjectID>()];
@@ -1080,4 +1162,18 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
     }
 
     assert(0);
+}
+
+RPCServer::RPCServer() : m_impl(new RPCServerImpl()) {
+
+}
+
+RPCServer::~RPCServer() = default;
+
+std::string RPCServer::perform_request(std::string const& name, std::string const& json_args) {
+    return m_impl->perform_request(name, json::parse(json_args)).dump();
+}
+
+bool RPCServer::try_run_task() {
+    return m_impl->try_run_task();
 }
