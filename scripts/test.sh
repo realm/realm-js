@@ -8,7 +8,7 @@ export NPM_CONFIG_PROGRESS=false
 
 TARGET=$1
 CONFIGURATION=${2:-Release}
-NODE_VERSION=${3:-v10.19.0}
+NODE_VERSION=${3:-v12.20.0}
 
 if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
@@ -39,11 +39,6 @@ cd "$SRCROOT"
 # Add node_modules to PATH just in case we weren't called from `npm test`
 PATH="$PWD/node_modules/.bin:$PATH"
 
-if [[ $TARGET = *-android ]]; then
-  # Inform the prepublish script to build Android modules.
-  export REALM_BUILD_ANDROID=1
-fi
-
 # SERVER_PID=0
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
 LOGCAT_OUT="$SRCROOT/logcat_out.txt"
@@ -70,13 +65,13 @@ start_server() {
     echo "found existing stitch running, not attempting to start another"
   else
     echo "no existing stitch instance running in docker, attempting to start one"
-    . "${SRCROOT}/vendor/realm-core/dependencies.list"
+    . "${SRCROOT}/dependencies.list"
     echo "using object-store stitch dependency: ${MDBREALM_TEST_SERVER_TAG}"
     if [[ -n "$RUN_STITCH_IN_FORGROUND" ]]; then
       # we don't worry about tracking the STITCH_DOCKER_ID because without the -d flag, this docker is tied to the shell
-      docker run -v "${SRCROOT}/vendor/realm-core/test/object-store/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}"
+      docker run -v "${SRCROOT}/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}"
     else
-      STITCH_DOCKER_ID=$(docker run -d $BACKGROUND_FLAG -v "${SRCROOT}/vendor/realm-core/test/object-store/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}")
+      STITCH_DOCKER_ID=$(docker run -d $BACKGROUND_FLAG -v "${SRCROOT}/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}")
       echo "starting docker image $STITCH_DOCKER_ID"
       # wait for stitch to import apps and start serving before continuing
       docker logs --follow "$STITCH_DOCKER_ID" | grep -m 1 "Serving on.*9090" || true
@@ -333,49 +328,70 @@ case "$TARGET" in
   RUN_STITCH_IN_FORGROUND=true
   start_server
   ;;
-"react-tests-android")
+"test-android")
+  npm ci --ignore-scripts
   npm run check-environment
 
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  XCPRETTY=''
+  # building only for x86 emulator to speed CI
+  echo "building android binaries"
+  node scripts/build-android.js --arch=x86
 
-  pushd react-native/android
-  $(pwd)/gradlew publishAndroid
+  # pack realm package manually since install-local does not allow passing --ignore-scripts
+  echo "manually packing realm package"
+  npm pack .
+  rm -rf realm.tgz
+  mv realm-*.*.*.tgz realm.tgz
+
+  echo "manually packing realm tests package"
+  pushd tests/js
+  npm pack .
+  rm -rf realm-tests.tgz
+  mv realm-tests-*.*.*.tgz realm-tests.tgz
   popd
 
   pushd tests/react-test-app
-  npm ci
-  ./node_modules/.bin/install-local
+  echo "installing react-test-app dependencies"
+  npm ci --no-optional
 
+  echo "installing manually packed realm package"
+  npm install --save-optional  --ignore-scripts ../../realm.tgz
+
+  echo "installing manually packed realm tests package"
+  npm install --save-optional ../js/realm-tests.tgz
+
+  echo "Adb devices"
+  adb devices
   echo "Resetting logcat"
+  adb logcat -c || true
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
-  mkdir -p $(pwd)/build || true
-  adb logcat -c
   adb logcat -T 1 | tee "$LOGCAT_OUT" | tee $(pwd)/build/out.txt &
 
+  start_packager
   ./run-android.sh
 
   echo "Start listening for Test completion"
 
+  TESTS_FAILED=TRUE
   while :; do
-    if grep -q "__REALM_JS_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
+    if grep -q "__REALM_JS_TESTS_SUCCEEDED__" "$LOGCAT_OUT"; then
+      TESTS_FAILED=FALSE
+      break
+    elif grep -q "__REALM_JS_TESTS_FAILED__" "$LOGCAT_OUT"; then
+      echo "*** REALM JS TESTS FAILED. See tests results above ***"
       break
     else
       echo "Waiting for tests."
-      sleep 2
+      sleep 10
     fi
   done
-
-  rm -f tests.xml
-  adb pull /sdcard/tests.xml .
 
   # Stop running child processes before printing results.
   cleanup
   echo "********* TESTS COMPLETED *********";
-  echo "********* File location: $(pwd)/tests.xml *********";
-  cat tests.xml
 
-  check_test_results ReactTests
+  if $TESTS_FAILED; then
+    exit 20
+  fi
   ;;
 
 "node")

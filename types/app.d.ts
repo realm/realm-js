@@ -609,9 +609,9 @@ declare namespace Realm {
         maxAge?: string;
     } & {
         /**
-         * Authentication providers might store other data here.
+         * Authentication providers might store additional data here.
          */
-        [key: string]: string;
+        [key: string]: unknown;
     };
 
     /**

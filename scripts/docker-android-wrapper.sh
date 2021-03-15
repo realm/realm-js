@@ -3,7 +3,7 @@
 # be used locally if you have your ~/.android directory setup and access to 
 # /dev/bus/usb.
 # 
-# ./scripts/docker-android-wrapper.sh ./scripts/test.sh react-tests-android
+# ./scripts/docker-android-wrapper.sh ./scripts/test.sh tests-android
 #
 
 set -e

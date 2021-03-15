@@ -8,6 +8,7 @@
     "test": "electron --js-flags=\"--expose-gc\" --no-sandbox --enable-logging ./app/main.js"
   },
   "devDependencies": {
+    "cmake-js": "^6.1.0",
     "electron": "^9.3.2",
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0"

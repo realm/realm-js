@@ -15,12 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-    
+
 'use strict';
 
 const Realm = require('realm');
 let TestCase = require('./asserts');
 let {Decimal128, ObjectId} = require('bson')
+const AppConfig = require('./support/testConfig');
 
 const SingleSchema = {
     name: 'Mixed',
@@ -56,8 +57,8 @@ module.exports = {
 
         TestCase.assertEqual(data.b.toString(), d128.toString(), 'Should be the same Decimal128');
         TestCase.assertEqual(data.c.toString(), date.toString(), 'Should be the same Date');
-    }, 
-    
+    },
+
     testMixedMutability() {
         let realm = new Realm({schema: [SingleSchema]});
         let d128 = Decimal128.fromString('6.022e23');
@@ -87,9 +88,63 @@ module.exports = {
         let realm = new Realm({schema: [SingleSchema]});
 
         TestCase.assertThrowsException(
-            () => realm.write(()=> realm.create(SingleSchema.name, { a: Object.create({}) }  ) ), 
+            () => realm.write(()=> realm.create(SingleSchema.name, { a: Object.create({}) }  ) ),
             new Error('Mixed conversion not possible for type: Object') )
+    },
+
+    async testMixedSync() {
+        if (!global.enableSyncTests) {
+            return Promise.resolve();
+        }
+        const appConfig = AppConfig.integrationAppConfig;
+        let app = new Realm.App(appConfig);
+        let credentials = Realm.Credentials.anonymous();
+
+        let user = await app.logIn(credentials);
+        const config = {
+            sync: {
+                user,
+                partitionValue: "LoLo",
+                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+            },
+            schema: [{
+                name: "MixedObject",
+                primaryKey: "_id",
+                properties: {
+                    _id: "objectId?",
+                    key: "string",
+                    value: "mixed"
+                }
+            }]
+        };
+        let realm = await Realm.open(config);
+        realm.write(() => {
+            realm.deleteAll();
+        });
+
+        realm.write(() => {
+            realm.create("MixedObject", { _id: new ObjectId(), key: "one", value: 1 });
+            realm.create("MixedObject", { _id: new ObjectId(), key: "two", value: "2" });
+            realm.create("MixedObject", { _id: new ObjectId(), key: "three", value: 3.0 });
+        });
+
+        await realm.syncSession.uploadAllLocalChanges();
+        TestCase.assertEqual(realm.objects("MixedObject").length, 3);
+        realm.close();
+
+        Realm.deleteFile(config);
+
+        let realm2 = await Realm.open(config);
+        await realm2.syncSession.downloadAllServerChanges();
+
+        let objects = realm2.objects("MixedObject");
+        TestCase.assertEqual(objects.length, 3);
+        TestCase.assertTrue(typeof objects[0].value, "number");
+        TestCase.assertTrue(typeof objects[1].value, "string");
+        TestCase.assertTrue(typeof objects[2].value, "number");
+
+        realm2.close();
     }
 }
 
- 
+

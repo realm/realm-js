@@ -48,7 +48,13 @@ var TESTS = {
     MixedTests: require("./mixed-tests"),
     ArrayBuffer: require("./array-buffer-tests"),
     DictionaryTest: require("./dictionary-tests")
+    // Garbagecollectiontests: require('./garbage-collection'),
 };
+
+//FIXME: MIXED: fix for JSC
+if (isNodeProcess || isElectronProcess) {
+    TESTS.MixedTests= node_require("./mixed-tests");
+}
 
 //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
 if (isNodeProcess) {
@@ -106,7 +112,7 @@ exports.runTest = function(suiteName, testName) {
 
     if (testMethod) {
         Realm.clearTestState();
-        console.warn("Starting test " + testName);
+        console.log("Starting test " + testName);
         var result = testMethod.call(testSuite);
 
         //make sure v8 GC can collect garbage after each test and does not fail

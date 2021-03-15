@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Build Realm Android",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/scripts/build-android.js",
+            "args": ["--arch=x86"],
+            "request": "launch",
+            "type": "node"
+        },
+        {
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
@@ -67,7 +75,20 @@
             "protocol": "inspector",
             "address": "localhost",
             "port": 5858
-        }
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB Launch Unit Tests",
+            "program": "node",
+            "args": [
+                "--expose_gc",
+                "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
+                "spec/unit_tests.js",
+                "--filter=."
+            ],
+            "cwd": "${workspaceFolder}/tests"
+        },
     ],
     "compounds": [
         {

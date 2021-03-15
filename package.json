@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "10.1.4",
+  "version": "10.2.0",
   "license": "See the actual license in the file LICENSE",
   "homepage": "https://realm.io",
   "keywords": [
@@ -32,7 +32,6 @@
   "types": "types/index.d.ts",
   "main": "lib/index.js",
   "files": [
-    "android",
     "cmake",
     "lib",
     "types",
@@ -56,28 +55,17 @@
     "build": "npm run build-changes",
     "build-changes": "cmake-js build --debug",
     "rebuild-changes": "cmake-js rebuild --debug && cd tests && npm install",
-    "prepublish": "echo prepublishing && node scripts/prepublish.js",
     "eslint": "npm install --ignore-scripts && npm run lint .",
     "license-check": "npm install && license-checker --exclude \"MIT,ISC,BSD,Apache-2.0,BSD-2-Clause,BSD-3-Clause,WTFPL,Unlicense,(MIT AND CC-BY-3.0)\" | node scripts/handle-license-check.js",
     "jsdoc:clean": "rimraf ./docs/output",
     "jsdoc": "npm install --ignore-scripts && npm run jsdoc:clean && jsdoc -u docs/tutorials -p package.json -c docs/conf.json",
-    "start-ros": "./scripts/download-object-server.sh && node ./scripts/test-ros-server.js",
-    "prenode-tests": "npm install --build-from-source=realm && cd tests && npm install",
+    "prenode-tests": "npm install --build-from-source && cd tests && npm install",
     "node-tests": "cd tests && npm run test && cd ..",
     "test-runner:ava": "cd tests/test-runners/ava && npm install --build-from-source=realm && npm test",
     "test-runner:mocha": "cd tests/test-runners/mocha && npm install --build-from-source=realm && npm test",
     "test-runner:jest": "cd tests/test-runners/jest && npm install --build-from-source=realm && npm test",
     "test-runners": "npm run test-runner:ava && npm run test-runner:mocha && npm run test-runner:jest",
     "isWin": "node -p \"if (process.platform == 'win32') { process.exit(0); } else { process.exit(-1); }\"",
-    "prealias:win:apply": "git config alias.apply-win-symlink-aliases \"!f() { $(scripts/git-win-symlink-aliases); }; f\"",
-    "alias:win:apply": "git apply-win-symlink-aliases",
-    "postalias:win:apply": "git config --unset alias.apply-win-symlink-aliases",
-    "alias:win:revert": "git config alias.rm-symlink \"\" && git config alias.rm-symlinks \"\" && git config alias.checkout-symlinks \"\"",
-    "win-fix-symlinks": "npm run isWin -s && npm run alias:win:apply && git checkout-symlinks && git rm-symlinks || echo . ",
-    "win-revert-symlinks": "npm run isWin -s &&  npm run alias:win:apply && git checkout-symlinks && npm run alias:win:revert || echo .",
-    "prereact-tests-android": "npm run isWin -s && npm run win-fix-symlinks || echo . ",
-    "react-tests-android": "node scripts/react-tests-android.js || npm run postreact-tests-android",
-    "postreact-tests-android": "npm run win-revert-symlinks",
     "check-environment": "node scripts/check-environment.js"
   },
   "dependencies": {
@@ -107,7 +95,6 @@
     "@typescript-eslint/eslint-plugin": "^2.28.0",
     "@typescript-eslint/parser": "^2.28.0",
     "babel-eslint": "^8.2.6",
-    "cmake-js": "^6.1.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-flowtype": "^4.7.0",
@@ -136,7 +123,8 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-eslint-rules": "^5.4.0",
     "tslint-plugin-prettier": "^2.1.0",
-    "typescript": "^3.8.2"
+    "typescript": "^3.8.2",
+    "cmake-js": "^6.1.0"
   },
   "engines": {
     "node": ">=10"

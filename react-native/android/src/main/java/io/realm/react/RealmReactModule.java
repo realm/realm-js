@@ -53,7 +53,7 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     private final AssetManager assetManager;
 
     static {
-        SoLoader.loadLibrary("realmreact");
+        SoLoader.loadLibrary("realm");
     }
 
     private Handler worker;

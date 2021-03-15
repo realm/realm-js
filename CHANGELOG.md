@@ -1,8 +1,12 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+NOTE: Sync protocol version 3: CANNOT SYNC WITH MONGODB REALM CLOUD.
+NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
+
 ### Enhancements
 * Adding Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
 * Adding Dictionaries types. ([#3392](https://github.com/realm/realm-js/issues/3392))
+* Array of primitive listed will not be `snapshot()`'ed.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -11,10 +15,27 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Compatibility
 * MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format 21.
+
+### Internal
+* Bump the Realm Sync protocol version to 3.
+* Bump Realm File Format version to 21.
+
+10.2.0 Release notes (2021-2-5)
+=============================================================
+### Enhancements
+* Adding sync-logging support to Android/iOS. ([#2491](https://github.com/realm/realm-js/issues/2491))
+
+### Fixed
+* Fixing regression on [Array Buffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) throwing an error when inserting an empty value in an optional binary field. [#3536](https://github.com/realm/realm-js/issues/3536).
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Added metrics migration to webhooks.
 
 10.1.4 Release notes (2021-1-27)
 =============================================================
