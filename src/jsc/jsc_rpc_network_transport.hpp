@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include "realm/object-store/sync/generic_network_transport.hpp"
+#include <string>
+#include <realm/object-store/sync/generic_network_transport.hpp>
 #include "js_types.hpp"
 #include "js_network_transport.hpp"
-#include <string>
 
 namespace realm {
 namespace rpc {
