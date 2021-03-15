@@ -207,7 +207,7 @@ module.exports = {
         let seventy = data.filtered("a.x >= $0", 70)
         TestCase.assertEqual(half.length, N/2, "We expect only 50 items, matching for field x.");
         TestCase.assertEqual(seventy.length, 30, "We expect only 30 items, matching for field x >= 70.");
-    },
+    },*/
 
     testDictionaryNotificationObjectFieldUpdate() {
         const UPDATES = 5;
@@ -217,7 +217,7 @@ module.exports = {
                 fields: "{}"
             }
         }
-*/
+
         let realm = new Realm({schema: [DictSchema]})
         realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
         let fields = realm.objects(DictSchema.name)[0].fields
