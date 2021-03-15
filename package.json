@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "bindings": "^1.5.0",
-    "bson": "github:steffenagger/js-bson#23bccbdabd07a5ca04aab59a3ad3997ac903121c",
+    "bson": "github:steffenagger/js-bson#ea627544be4434129ff5f0c9f1101d5370a27151",
     "command-line-args": "^4.0.6",
     "deepmerge": "2.1.0",
     "deprecated-react-native-listview": "0.0.6",
