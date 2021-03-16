@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "platform.hpp"
+#include "../platform.hpp"
 
 #include <realm/util/to_string.hpp>
 

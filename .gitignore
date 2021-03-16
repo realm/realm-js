@@ -79,3 +79,4 @@ integration-tests/tests/dist/
 /react-native/android/src/main/jniLibs/
 /realm*.tgz
 /tests/js/realm-tests*.tgz
+/react-native/ios/realm-js-ios.xcframework/

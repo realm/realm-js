@@ -41,67 +41,29 @@ Pod::Spec.new do |s|
   # @see https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#platform-ios
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
-  # We run the download-realm.js script both:
-  # 1) As "prepare_command" (executed when running `pod install`), to have the files available when  to modify the XCode project correctly.
-  # 2) As "script_phase" (executed by XCode when building), to allow developers to commit their `ios/Pods` directory to their repository (and not run `pod install` after cloning it).
-  # Note: It leaves a lock file, ensuring it will only download the archive once.
-  s.prepare_command        = './scripts/xcode-download-realm.sh ./scripts'
-  s.script_phase           = { :name => 'Download Realm Core & Sync',
-                               :script => '${PODS_TARGET_SRCROOT}/scripts/xcode-download-realm.sh ${PODS_TARGET_SRCROOT}/scripts',
-                               :execution_position => :before_compile }
-
-  s.source_files           = 'src/*.cpp',
-                             'src/jsc/*.cpp',
-                             'src/ios/*.mm',
-                             'src/object-store/src/*.cpp',
-                             'src/object-store/src/sync/*.cpp',
-                             'src/object-store/src/sync/impl/*.cpp',
-                             'src/object-store/src/sync/impl/apple/*.cpp',
-                             'src/object-store/src/impl/*.cpp',
-                             'src/object-store/src/impl/apple/*.cpp',
-                             'src/object-store/src/util/*.cpp',
-                             'src/object-store/src/util/apple/*.cpp',
-                             'src/object-store/src/util/bson/*.cpp',
-                             'react-native/ios/RealmReact/*.mm',
-                             'vendor/*.cpp'
+  s.source_files           = 'react-native/ios/RealmReact/*.mm'
 
   s.frameworks             = uses_frameworks ? ['JavaScriptCore', 'React'] : ['JavaScriptCore']
 
   s.library                = 'c++', 'z'
-  s.compiler_flags         = '-DREALM_HAVE_CONFIG -DREALM_ENABLE_SYNC'
-  s.pod_target_xcconfig    = { # Ensures ccache is used if installed on the users machine
-                               'CC' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang.sh',
-                               'CXX' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang++.sh',
-                               # Setting up clang
-                               'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
-                               'CLANG_CXX_LIBRARY' => 'libc++',
-                               # Disabling warnings that object store, core and sync has a lot of
-                               'CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF' => 'NO',
-                               'CLANG_WARN_DOCUMENTATION_COMMENTS' => 'NO',
-                               # Setting the current project version and versioning system to get a symbol for analytics
-                               'CURRENT_PROJECT_VERSION' => s.version,
-                               'VERSIONING_SYSTEM' => 'apple-generic',
-                               # Disable C++17 features for unsupported platforms
-                               'OTHER_CPLUSPLUSFLAGS[arch=armv7]' => '-fno-aligned-new',
-                               # Header search paths are prefixes to the path specified in #include macros
-                               'HEADER_SEARCH_PATHS' => [
-                                 '"$(PODS_TARGET_SRCROOT)/src/"',
-                                 '"$(PODS_TARGET_SRCROOT)/src/jsc/"',
-                                 '"$(PODS_TARGET_SRCROOT)/src/object-store/src/"',
-                                 '"$(PODS_TARGET_SRCROOT)/src/object-store/external/json/"',
-                                 '"$(PODS_TARGET_SRCROOT)/vendor/"',
-                                 '"$(PODS_TARGET_SRCROOT)/vendor/realm-ios/include/"',
-                                 '"$(PODS_TARGET_SRCROOT)/vendor/realm-ios/include/realm/"',
-                                 '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
-                                 '"$(PODS_ROOT)/Headers/Public/React-Core/"'
-                                 # "'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting
-                               ].join(' ')
-                             }
+
+  s.pod_target_xcconfig    = {
+                                # Setting up clang
+                                'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
+                                'CLANG_CXX_LIBRARY' => 'libc++',
+                                # Setting the current project version and versioning system to get a symbol for analytics
+                                'CURRENT_PROJECT_VERSION' => s.version,
+                                'VERSIONING_SYSTEM' => 'apple-generic',
+                                # Header search paths are prefixes to the path specified in #include macros
+                                'HEADER_SEARCH_PATHS' => [
+                                  '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
+                                  '"$(PODS_ROOT)/Headers/Public/React-Core/"'
+                                  #"'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting
+                                ].join(' ')
+                              }
 
   # TODO: Consider providing an option to build with the -dbg binaries instead
-  s.ios.vendored_libraries = 'vendor/realm-ios/librealm-sync-ios.a', 'vendor/realm-ios/librealm-parser-ios.a'
-  # s.watchos.vendored_libraries = 'vendor/realm-ios/librealm-sync-watchos.a', 'vendor/realm-ios/librealm-parser-watchos.a'
-  # s.tvos.vendored_libraries = 'vendor/realm-ios/librealm-sync-tvos.a', 'vendor/realm-ios/librealm-parser-tvos.a'
+  s.ios.vendored_frameworks = 'react-native/ios/realm-js-ios.xcframework'
 
   s.dependency 'React'
   # TODO: Ensure the same version of GCDWebServer is used for Android
