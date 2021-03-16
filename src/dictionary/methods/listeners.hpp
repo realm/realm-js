@@ -19,7 +19,6 @@
 #pragma once
 #include "dictionary/collection/notification.hpp"
 #include "dictionary/methods/callbacks.hpp"
-#include "napi.h"
 
 namespace realm {
 namespace js {
