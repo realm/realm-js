@@ -61,7 +61,7 @@ yargs
                     type: "string",
                     default: "http://localhost:9090",
                     description:
-                        "Base url of the stitch server to import the app into",
+                        "Base url of the MongoDB Realm server to import the app into",
                 })
                 .option("username", {
                     type: "string",
@@ -76,9 +76,9 @@ yargs
                 .option("config", {
                     type: "string",
                     description:
-                        "Path for the stitch-cli configuration to temporarily store credentials",
+                        "Path for the realm-cli configuration to temporarily store credentials",
                     coerce: path.resolve,
-                    default: "stitch-config.json",
+                    default: "realm-config",
                 })
                 .option("apps-directory-path", {
                     type: "string",
@@ -96,23 +96,31 @@ yargs
                     type: "number",
                     description:
                         "Starts up an HTTP server and serves the app id",
+                })
+                .option("clean-up", {
+                    type: "boolean",
+                    description:
+                        "Should the tool delete temporary files when exiting?",
+                    default: true,
                 }),
         ({
             "template-path": templatePath,
             "base-url": baseUrl,
             username,
             password,
-            config: stitchConfigPath,
+            config: realmConfigPath,
             "apps-directory-path": appsDirectoryPath,
             "app-id-path": appIdPath,
             "app-id-port": appIdPort,
+            "clean-up": cleanUp,
         }) => {
             const importer = new RealmAppImporter({
                 baseUrl,
                 username,
                 password,
-                stitchConfigPath,
+                realmConfigPath,
                 appsDirectoryPath,
+                cleanUp,
             });
             // Perform the import
             importer.importApp(templatePath).then(
