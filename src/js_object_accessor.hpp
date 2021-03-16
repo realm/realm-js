@@ -475,12 +475,6 @@ struct Unbox<JSEngine, ObjKey> {
     }
 };
 
-template<typename JSEngine>
-struct Unbox<JSEngine, ObjLink> {
-    static ObjLink call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
-        throw std::runtime_error("ObjLink not implemented");
-    }
-};
 
 } // namespace _impl
 
