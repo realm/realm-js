@@ -19,6 +19,7 @@
 #pragma once
 
 #include <math.h>
+#include <cstdlib>
 
 #include "js_class.hpp"
 #include "js_collection.hpp"
@@ -835,6 +836,43 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             }
             config.sync_config->custom_http_headers = std::move(http_headers);
         }
+
+        // HTTP proxy: only node is supported
+#ifdef REALM_PLATFORM_NODE
+        SyncConfig::ProxyConfig proxy_config;
+        std::vector<std::string> env_vars = { "https_proxy", "HTTPS_PROXY" };
+        for (auto env_var : env_vars) {
+            char *http_proxy = std::getenv(env_var.c_str());
+            if (http_proxy != NULL) {
+                // https://stackoverflow.com/questions/43906956/split-url-into-host-port-and-resource-c
+                std::string url(http_proxy);
+
+                std::size_t index1 = url.find_first_of(":");
+                std::string protocol = url.substr(0, index1);
+
+                std::string url_new = url.substr(index1 + 3); // skip http(s)
+                std::size_t index2 = url_new.find_first_of(":");
+                std::string host = url_new.substr(0, index2);
+
+                std::size_t index3 = url_new.find_first_of("/");
+                std::string port = url_new.substr(index2 + 1, index3 - index2 - 1);
+
+                if (protocol == "http") {
+                    proxy_config.type = SyncConfig::ProxyConfig::Type::HTTP;
+                } else if (protocol == "https") {
+                    proxy_config.type = SyncConfig::ProxyConfig::Type::HTTPS;
+                } else {
+                    throw std::runtime_error("Expected either 'http' or 'https' as protocol for " + env_var + " (got " + protocol + ")");
+                }
+                proxy_config.address = std::move(host);
+                proxy_config.port = static_cast<std::uint_fast16_t>(atoi(port.c_str()));
+
+                config.sync_config->proxy_config = util::Optional<SyncConfig::ProxyConfig>(std::move(proxy_config));
+                break;
+            }
+        }
+
+#endif
 
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();
