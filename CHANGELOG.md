@@ -18,8 +18,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgraded to Realm Core v10.5.4.
 
 10.2.0 Release notes (2021-2-5)
+
+10.2.0 Release notes (2021-2-5)
 =============================================================
 ### Enhancements
+>>>>>>> dec88548b45fcb2c0484ef5fc7b02aa8e3e13127
 * Adding sync-logging support to Android/iOS. ([#2491](https://github.com/realm/realm-js/issues/2491))
 
 ### Fixed

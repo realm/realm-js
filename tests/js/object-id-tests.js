@@ -45,7 +45,7 @@ module.exports = {
                 },
                 schema: [
                     { name: 'IntegerPrimaryKey', properties: { _id: 'int?' }, primaryKey: '_id' },
-                    { name: 'StringPrimaryKey', properties: { _id: 'string?' }, primaryKey: '_id' }
+                    { name: 'StringPrimaryKey', properties: { _id: 'string?' }, primaryKey: '_id' },
                 ]
             }
             return Realm.open(config).then(realm => {
@@ -63,13 +63,12 @@ module.exports = {
                 let nullIntegerId = nullInteger._objectId();
                 let stringId = string._objectId();
                 let nullStringId = nullString._objectId();
-                
+
                 TestCase.assertTrue(integer._isSameObject(realm._objectForObjectId('IntegerPrimaryKey', integerId)));
                 TestCase.assertTrue(nullInteger._isSameObject(realm._objectForObjectId('IntegerPrimaryKey', nullIntegerId)));
                 TestCase.assertTrue(string._isSameObject(realm._objectForObjectId('StringPrimaryKey', stringId)));
                 TestCase.assertTrue(nullString._isSameObject(realm._objectForObjectId('StringPrimaryKey', nullStringId)));
             });
         });
-
     }
 };

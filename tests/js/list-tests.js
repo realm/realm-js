@@ -895,12 +895,7 @@ module.exports = {
             TestCase.assertEqual(list.slice(-1)[0].age, 12);
             TestCase.assertEqual(list.slice(1, 3).length, 2);
             TestCase.assertEqual(list.slice(1, 3)[1].age, 12);
-
-            // A Node 6 regression in v8 causes an error when converting our objects to strings:
-            // TypeError: Cannot convert a Symbol value to a string
-            if (!TestCase.isNode6()) {
-                TestCase.assertEqual(list.join(' '), 'Ari Tim Bjarne');
-            }
+            TestCase.assertEqual(list.join(' '), 'Ari Tim Bjarne');
 
             let count = 0;
             list.forEach((p, i) => {

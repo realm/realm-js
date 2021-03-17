@@ -1,7 +1,7 @@
 {
-    "collection": "Dog",
+    "collection": "MixedObject",
     "database": "test_data",
-    "id": "6037be866c917b9bd04fb54c",
+    "id": "6037be866c917b9bd04fb54d",
     "roles": [
         {
             "name": "default",
@@ -17,19 +17,19 @@
             "_id": {
                 "bsonType": "objectId"
             },
-            "breed": {
-                "bsonType": "string"
-            },
-            "name": {
+            "key": {
                 "bsonType": "string"
             },
             "realm_id": {
                 "bsonType": "string"
+            },
+            "value": {
+                "bsonType": "mixed"
             }
         },
         "required": [
-            "name"
+            "key"
         ],
-        "title": "Dog"
+        "title": "MixedObject"
     }
 }
