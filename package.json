@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "bindings": "^1.5.0",
-    "bson": "github:steffenagger/js-bson#b4684857e6132943c8f47274ee8c3a6abef40194",
+    "bson": "github:steffenagger/js-bson#uuid-realm",
     "command-line-args": "^4.0.6",
     "deepmerge": "2.1.0",
     "deprecated-react-native-listview": "0.0.6",
