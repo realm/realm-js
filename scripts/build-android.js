@@ -21,6 +21,7 @@ const fs = require('fs');
 const { arch } = require('os');
 const path = require('path');
 const exec = require('child_process').execFileSync;
+const compareVersions = require('compare-versions');
 
 //simple validation of current directory.
 const rnDir = path.resolve(process.cwd(), "react-native");
@@ -177,7 +178,7 @@ function getCmakeVersion(sdkPath) {
     if (dirs.length === 0) {
         throw new Error(`No CMake installation found in ${cmakePath}`);
     }
-    const version = dirs.sort()[dirs.length - 1];
+    const version = dirs.sort(compareVersions)[dirs.length - 1];
     console.log(`Found CMake ${version} in ${cmakePath}`);
 
     return version;
