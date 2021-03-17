@@ -19,9 +19,9 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
+
 /// <reference path="./app.d.ts"/>
 
-type ObjectId = import("bson").ObjectId;
 
 declare namespace Realm {
     interface CollectionChangeSet {
@@ -114,7 +114,7 @@ declare namespace Realm {
 
     interface SyncConfiguration {
         user: User;
-        partitionValue: string|number|ObjectId|null;
+        partitionValue: string|number|Realm.BSON.ObjectId|null;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
@@ -449,7 +449,7 @@ declare namespace Realm {
         }
 
         function getAllSyncSessions(user: Realm.User): [Realm.App.Sync.Session];
-        function getSyncSession(user: Realm.User, partitionValue: string|number|ObjectId|null) : Realm.App.Sync.Session;
+        function getSyncSession(user: Realm.User, partitionValue: string|number|Realm.BSON.ObjectId|null) : Realm.App.Sync.Session;
         function setLogLevel(app: App, logLevel: LogLevel): void;
         function setLogger(app: App, callback: (level: NumericLogLevel, message: string) => void): void;
         function setUserAgent(app: App, userAgent: string): void;
@@ -467,6 +467,12 @@ declare namespace Realm {
          * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
          */
         const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
+    }
+
+    namespace BSON {
+        type Decimal128 = import("bson").Decimal128;
+        type ObjectId = import("bson").ObjectId;
+        type UUID = import("bson").UUID;
     }
 
     const BSON: typeof import("bson");
@@ -607,14 +613,14 @@ declare class Realm {
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string, key: number | string | ObjectId): (T & Realm.Object) | undefined;
+    objectForPrimaryKey<T>(type: string, key: number | string | Realm.BSON.ObjectId): (T & Realm.Object) | undefined;
 
     /**
      * @param  {Class} type
      * @param  {number|string|ObjectId} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | ObjectId): T | undefined;
+    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | Realm.BSON.ObjectId): T | undefined;
 
     /**
      * @param  {string} type
