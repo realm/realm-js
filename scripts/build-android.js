@@ -172,11 +172,15 @@ function getCmakePath(sdkPath) {
 }
 
 function getCmakeVersion(sdkPath) {
-    let dirs = fs.readdirSync(`${sdkPath}/cmake`);
+    const cmakePath = `${sdkPath}/cmake`;
+    let dirs = fs.readdirSync(cmakePath);
     if (dirs.length === 0) {
-        throw new Error(`No CMake installation found in ${sdkPath}/cmake`);
+        throw new Error(`No CMake installation found in ${cmakePath}`);
     }
-    return dirs.sort()[dirs.length - 1];
+    const version = dirs.sort()[dirs.length - 1];
+    console.log(`Found CMake ${version} in ${cmakePath}`);
+
+    return version;
 }
 
 function validateBuildType(buildTypeOption) {
