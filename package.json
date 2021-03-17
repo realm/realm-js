@@ -95,6 +95,8 @@
     "@typescript-eslint/eslint-plugin": "^2.28.0",
     "@typescript-eslint/parser": "^2.28.0",
     "babel-eslint": "^8.2.6",
+    "cmake-js": "^6.1.0",
+    "compare-versions": "^3.6.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-flowtype": "^4.7.0",
@@ -123,8 +125,7 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-eslint-rules": "^5.4.0",
     "tslint-plugin-prettier": "^2.1.0",
-    "typescript": "^3.8.2",
-    "cmake-js": "^6.1.0"
+    "typescript": "^3.8.2"
   },
   "engines": {
     "node": ">=10"

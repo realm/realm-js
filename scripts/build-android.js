@@ -21,6 +21,7 @@ const fs = require('fs');
 const { arch } = require('os');
 const path = require('path');
 const exec = require('child_process').execFileSync;
+const compareVersions = require('compare-versions');
 
 //simple validation of current directory.
 const rnDir = path.resolve(process.cwd(), "react-native");
@@ -50,6 +51,7 @@ const ndkPath = process.env["ANDROID_NDK"];
 
 const sdkPath = getAndroidSdkPath();
 const cmakePath = getCmakePath(sdkPath);
+const cmakeVersion = getCmakeVersion(sdkPath);
 
 const buildPath = path.resolve(process.cwd(), 'build-realm-android');
 if (!options.changes) {
@@ -76,7 +78,7 @@ for (const arch of architectures) {
         "-GNinja",
         `-DANDROID_NDK=${ndkPath}`,
         `-DANDROID_ABI=${arch}`,
-        `-DCMAKE_MAKE_PROGRAM=${sdkPath}/cmake/3.10.2.4988404/bin/ninja`,
+        `-DCMAKE_MAKE_PROGRAM=${sdkPath}/cmake/${cmakeVersion}/bin/ninja`,
         `-DCMAKE_TOOLCHAIN_FILE=${ndkPath}/build/cmake/android.toolchain.cmake`,
         "-DANDROID_TOOLCHAIN=clang",
         "-DANDROID_NATIVE_API_LEVEL=16",
@@ -168,6 +170,18 @@ function getCmakePath(sdkPath) {
     }
 
     return process.platform === 'win32' ? 'cmake.exe' : 'cmake';
+}
+
+function getCmakeVersion(sdkPath) {
+    const cmakePath = `${sdkPath}/cmake`;
+    let dirs = fs.readdirSync(cmakePath);
+    if (dirs.length === 0) {
+        throw new Error(`No CMake installation found in ${cmakePath}`);
+    }
+    const version = dirs.sort(compareVersions)[dirs.length - 1];
+    console.log(`Found CMake ${version} in ${cmakePath}`);
+
+    return version;
 }
 
 function validateBuildType(buildTypeOption) {
