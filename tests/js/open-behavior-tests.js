@@ -21,11 +21,12 @@
 /* global navigator, WorkerNavigator */
 
 const Realm = require("realm");
-const { ObjectId } = require("bson");
 const TestCase = require("./asserts");
 const schemas = require("./schemas");
 const Utils = require("./test-utils");
 const AppConfig = require("./support/testConfig");
+
+const { ObjectId } = Realm.BSON;
 
 const APP_CONFIG = AppConfig.integrationAppConfig;
 

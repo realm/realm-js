@@ -76,6 +76,7 @@ module.exports = {
         TestCase.assertEqual(prim.optString.type, 'string');
         TestCase.assertEqual(prim.optDate.type, 'date');
         TestCase.assertEqual(prim.optDecimal128.type, 'decimal128');
+        TestCase.assertEqual(prim.optObjectId.type, 'objectId');
         TestCase.assertEqual(prim.optUuid.type, "uuid");
 
         // Check schema objectType

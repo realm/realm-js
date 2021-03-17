@@ -569,13 +569,6 @@ inline typename T::Value Object<T>::create_from_optional_app_error(ContextType c
     return create_from_app_error(ctx, *error);
 }
 
-
-
-/*template<typename T>
-inline typename T::Value Value<T>::from_uuid(typename T::Context ctx, const UUID& value) {
-    throw std::runtime_error("'UUID' type support is not implemented yet");
-}
-*/
 template<typename T>
 inline typename T::Value Value<T>::from_objkey(typename T::Context ctx, const ObjKey& value) {
     throw std::runtime_error("'Mixed' type support is not implemented yet");

@@ -10,7 +10,7 @@ const realmName = process.argv[4];
 const realmModule = process.argv[5];
 
 const Realm = require(realmModule);
-const { ObjectId, serialize } = require("bson");
+const { ObjectId, serialize } = Realm.BSON;
 
 let schemas = {};
 schemas.ParentObject = {
