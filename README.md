@@ -41,6 +41,9 @@ Prerequisites:
 * [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
     - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.
     - From the command-line: ```$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
+* [Android CMake](https://developer.android.com/ndk/guides/cmake)
+    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**
+    - From the command-line  ```$ANDROID_HOME/tools/bin/sdkmanager --install "cmake;3.18.1"````
 
 Clone RealmJS repository:
 
