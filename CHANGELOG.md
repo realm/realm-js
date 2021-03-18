@@ -8,6 +8,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Restore support for upgrading files from file format 5 (Realm JavaScript 1.x). ([realm/realm-cocoa#7089](https://github.com/realm/realm-cocoa/issues/7089), since v6.0.0)
 * Fixed a bug that prevented an object type with incoming links from being marked as embedded during migrations. ([realm/realm-core#4414](https://github.com/realm/realm-core#4414))
 * During synchronization you might experience crash with `Assertion failed: ref + size <= next->first`. ([realm/realm-core#4388](https://github.com/realm/realm-core#4388))
+
 ### Compatibility
 * MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
@@ -18,11 +19,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgraded to Realm Core v10.5.4.
 
 10.2.0 Release notes (2021-2-5)
-
-10.2.0 Release notes (2021-2-5)
 =============================================================
 ### Enhancements
->>>>>>> dec88548b45fcb2c0484ef5fc7b02aa8e3e13127
 * Adding sync-logging support to Android/iOS. ([#2491](https://github.com/realm/realm-js/issues/2491))
 
 ### Fixed
