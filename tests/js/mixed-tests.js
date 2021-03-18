@@ -19,9 +19,10 @@
 'use strict';
 
 const Realm = require('realm');
-let TestCase = require('./asserts');
-let {Decimal128, ObjectId} = require('bson')
+const TestCase = require('./asserts');
 const AppConfig = require('./support/testConfig');
+
+const {Decimal128, ObjectId} = Realm.BSON;
 
 const SingleSchema = {
     name: 'Mixed',
