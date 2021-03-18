@@ -1,0 +1,36 @@
+{
+    "collection": "UUIDObject",
+    "database": "test_data",
+    "id": "60535c85d8d11d7427b75171",
+    "roles": [
+        {
+            "name": "default",
+            "apply_when": {},
+            "write": true,
+            "insert": true,
+            "delete": true,
+            "additional_fields": {}
+        }
+    ],
+    "schema": {
+        "properties": {
+            "_id": {
+                "bsonType": "uuid"
+            },
+            "mandatory": {
+                "bsonType": "uuid"
+            },
+            "optional": {
+                "bsonType": "uuid"
+            },
+            "realm_id": {
+                "bsonType": "string"
+            }
+        },
+        "required": [
+            "_id",
+            "mandatory"
+        ],
+        "title": "UUIDObject"
+    }
+}
