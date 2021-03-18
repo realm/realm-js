@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 
-"use strict";
+'use strict';
 
 var Realm = require("realm");
 var TestCase = require("./asserts");
@@ -174,7 +174,7 @@ module.exports = {
     testMalformedQueries: function() {
         var realm = new Realm({ schema: [schemas.StringOnly] });
         TestCase.assertThrowsContaining(function() {
-            realm.objects(schemas.StringOnly.name).filtered("stringCol = $0");
+            realm.objects(schemas.StringOnly.name).filtered('stringCol = $0');
         }, "Request for argument at index 0 but no arguments are provided");
     },
     testOrQueries_Float: function() {
@@ -184,13 +184,13 @@ module.exports = {
             realm.create(schemas.FloatOnly.name, { floatCol: 2.0 });
         });
 
-        var objects_1 = realm.objects(schemas.FloatOnly.name).filtered("floatCol = 1.0 || floatCol = 2.0");
+        var objects_1 = realm.objects(schemas.FloatOnly.name).filtered('floatCol = 1.0 || floatCol = 2.0');
         TestCase.assertEqual(objects_1.length, 2);
 
-        var objects_2 = realm.objects(schemas.FloatOnly.name).filtered("floatCol = 1.0 || floatCol = 3.0");
+        var objects_2 = realm.objects(schemas.FloatOnly.name).filtered('floatCol = 1.0 || floatCol = 3.0');
         TestCase.assertEqual(objects_2.length, 1);
 
-        var objects_3 = realm.objects(schemas.FloatOnly.name).filtered("floatCol = 0.0 || floatCol = 3.0");
+        var objects_3 = realm.objects(schemas.FloatOnly.name).filtered('floatCol = 0.0 || floatCol = 3.0');
         TestCase.assertEqual(objects_3.length, 0);
 
         realm.close();
@@ -204,16 +204,16 @@ module.exports = {
             realm.create(schemas.DoubleOnly.name, {});
         });
 
-        var objects_1 = realm.objects(schemas.DoubleOnly.name).filtered("doubleCol = 1.0 || doubleCol = 2.0");
+        var objects_1 = realm.objects(schemas.DoubleOnly.name).filtered('doubleCol = 1.0 || doubleCol = 2.0');
         TestCase.assertEqual(objects_1.length, 2);
 
-        var objects_2 = realm.objects(schemas.DoubleOnly.name).filtered("doubleCol = 1.0 || doubleCol = 3.0");
+        var objects_2 = realm.objects(schemas.DoubleOnly.name).filtered('doubleCol = 1.0 || doubleCol = 3.0');
         TestCase.assertEqual(objects_2.length, 1);
 
-        var objects_3 = realm.objects(schemas.DoubleOnly.name).filtered("doubleCol = 0.0 || doubleCol = 3.0");
+        var objects_3 = realm.objects(schemas.DoubleOnly.name).filtered('doubleCol = 0.0 || doubleCol = 3.0');
         TestCase.assertEqual(objects_3.length, 0);
 
-        var objects_4 = realm.objects(schemas.DoubleOnly.name).filtered("doubleCol = null || doubleCol = 3.0");
+        var objects_4 = realm.objects(schemas.DoubleOnly.name).filtered('doubleCol = null || doubleCol = 3.0');
         TestCase.assertEqual(objects_4.length, 1);
 
         realm.close();
@@ -228,14 +228,14 @@ module.exports = {
             });
         });
 
-        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).filtered([2, 3, 8].map(v => `intCol == ${v}`).join(" OR ")).length, 3);
-        TestCase.assertEqual(realm.objects(schemas.StringOnly.name).filtered([2, 3, 8].map(v => `stringCol == '${v}'`).join(" OR ")).length, 3);
+        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).filtered([2, 3, 8].map(v => `intCol == ${v}`).join(' OR ')).length, 3);
+        TestCase.assertEqual(realm.objects(schemas.StringOnly.name).filtered([2, 3, 8].map(v => `stringCol == '${v}'`).join(' OR ')).length, 3);
 
-        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).filtered([3, 7, 8].map(v => `intCol == ${v}`).join(" OR ")).length, 2);
-        TestCase.assertEqual(realm.objects(schemas.StringOnly.name).filtered([3, 7, 8].map(v => `stringCol == '${v}'`).join(" OR ")).length, 2);
+        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).filtered([3, 7, 8].map(v => `intCol == ${v}`).join(' OR ')).length, 2);
+        TestCase.assertEqual(realm.objects(schemas.StringOnly.name).filtered([3, 7, 8].map(v => `stringCol == '${v}'`).join(' OR ')).length, 2);
 
-        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).filtered([0, 14].map(v => `intCol == ${v}`).join(" OR ")).length, 0);
-        TestCase.assertEqual(realm.objects(schemas.StringOnly.name).filtered([0, 14].map(v => `stringCol == '${v}'`).join(" OR ")).length, 0);
+        TestCase.assertEqual(realm.objects(schemas.IntOnly.name).filtered([0, 14].map(v => `intCol == ${v}`).join(' OR ')).length, 0);
+        TestCase.assertEqual(realm.objects(schemas.StringOnly.name).filtered([0, 14].map(v => `stringCol == '${v}'`).join(' OR ')).length, 0);
     },
 
     testQueryDecimal: function() {
