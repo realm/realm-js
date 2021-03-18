@@ -2058,7 +2058,7 @@ module.exports = {
 
         TestCase.assertTrue(obj.id instanceof UUID, "Roundtrip data is instance of UUID.");
         TestCase.assertTrue(obj.id.equals(uuid), "Roundtrip data UUID instance 'equal' compare.");
-        TestCase.assertTrue(UUID.isValid(obj.toString), "Stringified format conforms to required format.");
+        TestCase.assertTrue(UUID.isValid(obj.id.toString()), "Stringified format conforms to required format.");
 
         // "cleanup"
         realm.close();
@@ -2088,28 +2088,6 @@ module.exports = {
         realm.close();
     },
 
-    testUUIDQuery: function() {
-        const realm = new Realm({schema: [schemas.UUIDObject]});
-
-        const uuidStr = "7c203d29-3f00-4395-86de-2b7f9b78d8e9";
-        const uuid = new UUID(uuidStr);
-        realm.write(() => {
-            realm.create(schemas.UUIDObject.name, { id: new UUID }); // padded extra data
-            realm.create(schemas.UUIDObject.name, { id: uuid });     // actual test data
-            realm.create(schemas.UUIDObject.name, { id: new UUID }); // padded extra data
-        });
-        const allResults = realm.objects(schemas.UUIDObject.name);
-        const filtered = allResults.filtered("id == $0", uuid);
-        const obj = filtered[0];
-        TestCase.assertTrue(allResults.length > 1, "Realm contains more than targeted result.");
-        TestCase.assertEqual(filtered.length, 1, "Found ONE result filtered on id.");
-        TestCase.assertTrue(obj.id instanceof UUID, "Object id from query is instance of UUID.");
-        TestCase.assertEqual(obj.id.toString(), uuidStr, "Roundtrip string representation equals predefined input string.");
-
-        // "cleanup"
-        realm.close();
-    },
-
     testUUIDPkSingleQuery: function() {
         const realm = new Realm({schema: [schemas.UUIDPkObject]});
 
@@ -2119,7 +2097,7 @@ module.exports = {
             realm.create(schemas.UUIDObject.name, { _id: uuid });
         });
         const obj = realm.objectForPrimaryKey(schemas.UUIDPkObject.name, uuid);
-        TestCase.assertDefined(obj, "Object for PK is defined.");
+        TestCase.assertDefined(obj, `Object not found for PK "${uuidStr}".`);
         TestCase.assertTrue(obj._id instanceof UUID, "Objects PK is instance of UUID.");
         TestCase.assertEqual(obj._id.toString(), uuidStr, "Roundtrip string representation equals predefined input string.");
 
