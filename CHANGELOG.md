@@ -20,6 +20,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 ### Internal
 * Bump the Realm Sync protocol version to 3.
 * Bump Realm File Format version to 21.
+* Prebuild the React Native iOS variant and bundle it in the npm tarball. ([#3649](https://github.com/realm/realm-js/pull/3649))
 
 10.2.0 Release notes (2021-2-5)
 =============================================================

@@ -21,6 +21,7 @@
   "devDependencies": {
     "eslint": "^4.18.2",
     "fs-extra": "^4.0.3",
+    "graceful-fs": "^4.2.6",
     "install-local": "^1.0.0",
     "invariant": "^2.2.2",
     "metro-react-native-babel-preset": "^0.45.0"

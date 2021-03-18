@@ -106,10 +106,10 @@ JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebu
 {
     const char* cmd = env->GetStringUTFChars(chrome_cmd, NULL);
     const char* args = env->GetStringUTFChars(chrome_args, NULL);
-    json response = s_rpc_server->perform_request(cmd, json::parse(args));
+    std::string response = s_rpc_server->perform_request(cmd, args);
     env->ReleaseStringUTFChars(chrome_cmd, cmd);
     env->ReleaseStringUTFChars(chrome_args, args);
-    return env->NewStringUTF(response.dump().c_str());
+    return env->NewStringUTF(response.c_str());
 }
 
 JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_tryRunTask
