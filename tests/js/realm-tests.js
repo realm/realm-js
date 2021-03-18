@@ -2055,10 +2055,10 @@ module.exports = {
 
         TestCase.assertEqual(realm.objects(schemas.UUIDObject.name).length, 1);
         const obj = realm.objects(schemas.UUIDObject.name)[0];
-        const UUID_RX = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/i;
+
         TestCase.assertTrue(obj.id instanceof UUID, "Roundtrip data is instance of UUID.");
         TestCase.assertTrue(obj.id.equals(uuid), "Roundtrip data UUID instance 'equal' compare.");
-        TestCase.assertTrue(UUID_RX.test(obj.id.toString()), "Stringified format conforms to required format.")
+        TestCase.assertTrue(UUID.isValid(obj.toString), "Stringified format conforms to required format.");
 
         // "cleanup"
         realm.close();
