@@ -23,8 +23,32 @@
 namespace realm {
 namespace js {
 
+
+//FIXME: MIXED: when mixed is fixed
+#if REALM_PLATFORM_NODE
 template <typename T>
-class ListenersMethodsForDictionary {
+struct Method {
+    using ContextType = typename T::Context;
+    using Object = js::Object<T>;
+    using ObjectType = typename T::Object;
+    ContextType context;
+
+
+    Method(ContextType _context) : context{_context} {}
+
+    template <class Fn>
+    auto define(std::string&& name, ObjectType object, Fn&& function) {
+        auto fn = Napi::Function::New(context, function, name);
+        Object::set_property(context, object, name, fn,
+                                    PropertyAttributes::DontEnum);
+    }
+};
+#endif
+
+
+
+template <typename T>
+class ListenersMethodsForDictionary: public Method<T> {
    private:
     using ObjectType = typename T::Object;
     using ContextType = typename T::Context;
@@ -35,29 +59,22 @@ class ListenersMethodsForDictionary {
     std::unique_ptr<Notifications> notifications;
     ContextType context;
 
-    template <class Fn>
-    auto add_js_fn(std::string&& name, ObjectType object, Fn&& function) {
-        auto fn = Napi::Function::New(context, function, name);
-        js::Object<T>::set_property(context, object, name, fn,
-                                    PropertyAttributes::DontEnum);
-    }
-
    public:
-    ListenersMethodsForDictionary(ContextType _context) : context{_context} {}
+    ListenersMethodsForDictionary(ContextType _context) : context{_context}, Method<T>{_context} {}
 
     template <class Dictionary>
     void apply(ObjectType& object, Dictionary* dictionary) {
-        add_js_fn("addListener", object, add_listener(object, dictionary));
-        add_js_fn("removeListener", object,
+        Method<T>::define("addListener", object, add_listener(object, dictionary));
+        Method<T>::define("removeListener", object,
                   remove_listener(object, dictionary));
-        add_js_fn("removeAllListeners", object,
+        Method<T>::define("removeAllListeners", object,
                   remove_all_listeners(object, dictionary));
 
         notifications = std::make_unique<Notifications>(dictionary);
     }
 
     auto add_listener(ObjectType& object, Dictionary* dictionary) {
-        return [=](const Napi::CallbackInfo& info) {
+        return [=](const auto& info) {
             auto ctx = info.Env();
             auto callback = Value::validated_to_function(ctx, info[0]);
             NotificationsCallback<T> subscriber{ctx, callback, object};
@@ -66,7 +83,7 @@ class ListenersMethodsForDictionary {
     }
 
     auto remove_listener(ObjectType& object, Dictionary* dictionary) {
-        return [=](const Napi::CallbackInfo& info) {
+        return [=](const auto& info) {
             auto ctx = info.Env();
             auto callback = Value::validated_to_function(ctx, info[0]);
             NotificationsCallback<T> subscriber{ctx, callback};
@@ -75,7 +92,7 @@ class ListenersMethodsForDictionary {
     }
 
     auto remove_all_listeners(ObjectType& object, Dictionary* dictionary) {
-        return [=](const Napi::CallbackInfo& info) {
+        return [=](const auto& info) {
             notifications->remove_all_listeners();
         };
     }

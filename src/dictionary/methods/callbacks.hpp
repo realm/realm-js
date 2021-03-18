@@ -85,7 +85,7 @@ struct NotificationsCallback {
     void update_object_with_new_dictionary(object_store::Dictionary *dict,
                                            ObjectType &object) const {
         JSDictionaryUpdate dictionary_update{context, object};
-        dictionary_update.update_accessors(dict);
+        dictionary_update.refresh_fields(dict);
         object = dictionary_update.get_plain_object();
     }
 

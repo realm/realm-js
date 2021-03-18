@@ -21,6 +21,33 @@
 
 namespace realm {
 namespace js {
+
+#if REALM_PLATFORM_NODE
+template <typename JSObject, typename Callback, typename Self>
+void add_finalizer(JSObject& object, Callback&& callback, Self* self){
+        object.AddFinalizer(
+            [callback](auto, void* data_ref) { callback(); }, self);
+}
+
+template <typename JSObject>
+void delete_key(JSObject& object, std::string& key) {
+        object.Delete(key);
+}
+
+template <typename JSObject, typename Callback>
+void keys(JSObject& object, Callback&& callback) {
+  auto keys = object.GetPropertyNames();
+  auto size = keys.Length();
+
+    for (auto index = 0; index < size; index++) {
+        callback(keys[index]);
+    }
+
+}
+#endif
+
+
+
 /*
  *  Specific NodeJS code to make object descriptors.
  *  When working with the JSC version, we just need to extract the NodeJS
@@ -69,18 +96,12 @@ struct AccessorsConfiguration {
 
     void update(ObjectType& object,
                 realm::object_store::Dictionary* dictionary) {
-        auto keys = object.GetPropertyNames();
-        auto size = keys.Length();
-
-        for (auto index = 0; index < size; index++) {
-            std::string key = Value::to_string(context, keys[index]);
-
+         keys(object, [=](auto _key) mutable{
+             std::string key = Value::to_string(context, _key);
             if (!dictionary->contains(key)) {
-                object.Delete(key);
+                delete_key(object, key);
             }
-        }
-
-        apply(object, dictionary);
+        });
     }
 };
 
@@ -92,7 +113,8 @@ struct IdentityMethods {
     IdentityMethods(ContextType _context) : context{_context} {};
 };
 
-template <typename VM, typename GetterSetters,
+template <typename VM,
+          typename GetterSetters,
           typename Methods = IdentityMethods<VM>>
 struct JSObject {
    private:
@@ -106,7 +128,8 @@ struct JSObject {
 
    public:
     JSObject(ContextType _context)
-        : context{_context}, object{Object::create_empty(_context)} {
+        : context{_context},
+        object{Object::create_empty(_context)} {
         getters_setters = std::make_unique<GetterSetters>(context);
         methods = std::make_unique<Methods>(context);
     }
@@ -120,15 +143,14 @@ struct JSObject {
     ObjectType get_plain_object() { return object; }
     ContextType& get_context() { return context; }
 
-    template <typename Callback>
-    void configure_object_destructor(Callback&& callback) {
-        object.AddFinalizer(
-            [callback](ContextType, void* data_ref) { callback(); }, this);
-    }
-
     template <typename Data>
     void set_methods(Data* data) {
         methods->apply(object, data);
+    }
+
+    template <typename Callback>
+    void configure_object_destructor(Callback&& callback) {
+        add_finalizer(object, std::move( callback), this);
     }
 
     template <typename Data>
@@ -137,8 +159,9 @@ struct JSObject {
     }
 
     template <typename Data>
-    void update_accessors(Data* data) {
+    void refresh_fields(Data* data) {
         getters_setters->update(object, data);
+        getters_setters->apply(object, data);
     }
 
     ~JSObject() = default;
