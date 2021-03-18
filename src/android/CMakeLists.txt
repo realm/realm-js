@@ -7,9 +7,9 @@ add_library(realm-js-android SHARED
     jsc_override.cpp
 )
 
-set_target_properties(realm-js-android PROPERTIES
+set_target_properties(realm-js-android PROPERTIES 
     OUTPUT_NAME "realm"
-    PREFIX "lib"
+    PREFIX "lib" 
     SUFFIX ".so"
 )
 
@@ -42,7 +42,7 @@ if(NOT EXISTS ${JSC_LIB_FILE})
     if (NOT "${status_code}" STREQUAL "0")
         message(FATAL_ERROR "Downloading ${url}... Failed. Status: ${download_status}")
     endif()
-
+    
     message(STATUS "Uncompressing ${JSC_ROOT_DIR}/jsc-android-241213.1.0.tgz")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E tar xfz "jsc-android-241213.1.0.tgz"
@@ -64,11 +64,6 @@ else()
 endif()
 
 target_link_options(realm-js-android PUBLIC  -fvisibility=hidden)
-
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O2")
-# Work-around for gold linker issue when enabling LTO: https://github.com/android/ndk/issues/1444
-# Make the build choose whatever default linker chosen by the NDK.
-STRING(REGEX REPLACE "-fuse-ld=gold" "" CMAKE_CXX_LINK_OPTIONS_IPO ${CMAKE_CXX_LINK_OPTIONS_IPO})
 
 if(REALM_JS_BUILD_CORE_FROM_SOURCE AND TARGET ObjectStore)
     target_compile_definitions(ObjectStore PUBLIC

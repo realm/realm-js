@@ -80,7 +80,6 @@ for (const arch of architectures) {
         `-DANDROID_ABI=${arch}`,
         `-DCMAKE_MAKE_PROGRAM=${sdkPath}/cmake/${cmakeVersion}/bin/ninja`,
         `-DCMAKE_TOOLCHAIN_FILE=${ndkPath}/build/cmake/android.toolchain.cmake`,
-        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
         "-DANDROID_TOOLCHAIN=clang",
         "-DANDROID_NATIVE_API_LEVEL=16",
         `-DCMAKE_BUILD_TYPE=${options.buildType}`,
