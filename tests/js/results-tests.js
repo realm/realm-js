@@ -18,11 +18,11 @@
 
 'use strict';
 
-var Realm = require('realm');
-var TestCase = require('./asserts');
-var schemas = require('./schemas');
-var Decimal128 = require('bson').Decimal128;
-var ObjectId = require('bson').ObjectId;
+const Realm = require('realm');
+const TestCase = require('./asserts');
+const schemas = require('./schemas');
+
+const { Decimal128, ObjectId, UUID } = Realm.BSON;
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
@@ -267,15 +267,17 @@ module.exports = {
 
         var decimals = [];
         var oids = [];
+        const uuids = [];
         for (var i = 0; i < 3; i++) {
             decimals.push(Decimal128.fromString(`${i}`));
             oids.push(new ObjectId(`0000002a9a7969d24bea4cf${i}`));
+            uuids.push(new UUID(`f7adc509-49be-466f-b3d5-449696d9a60${i}`));
         }
 
         realm.write(function() {
-            realm.create('BasicTypesObject', [false, 0, 0, 0, '0', new Date(0), new ArrayBuffer(1), decimals[0], oids[0]]);
-            realm.create('BasicTypesObject', [true, 2, 2, 2, '2', new Date(2), new ArrayBuffer(1), decimals[2], oids[2]]);
-            realm.create('BasicTypesObject', [false, 1, 1, 1, '1', new Date(1), new ArrayBuffer(1), decimals[1], oids[1]]);
+            realm.create('BasicTypesObject', [false, 0, 0, 0, '0', new Date(0), new ArrayBuffer(1), decimals[0], oids[0], uuids[0]]);
+            realm.create('BasicTypesObject', [true, 2, 2, 2, '2', new Date(2), new ArrayBuffer(1), decimals[2], oids[2], uuids[2]]);
+            realm.create('BasicTypesObject', [false, 1, 1, 1, '1', new Date(1), new ArrayBuffer(1), decimals[1], oids[1], uuids[1]]);
         });
 
         var numberProps = ['intCol', 'floatCol', 'doubleCol', 'stringCol'];
@@ -309,15 +311,23 @@ module.exports = {
         TestCase.assertEqual(objects[1].boolCol, false, 'second element descending for boolCol');
         TestCase.assertEqual(objects[2].boolCol, false, 'third element descending for boolCol');
 
-        objects = objects.sorted('decimal128Col', false);
-        for (var i = 0; i < 3; i++) {
-            TestCase.assertEqual(objects[i].decimal128Col.toString(), decimals[i].toString(), `element ${i} ascending for decimal128`);
+        const testSortingWithToStringEquals = (propKey, compareArray) => {
+            const max = compareArray.length - 1;
+
+            const ascending = objects.sorted(propKey, false);
+            for (let i = 0; i <= max; i++) {
+                TestCase.assertEqual(ascending[i][propKey].toString(), compareArray[i].toString(), `element ${i} ascending for ${propKey}`);
+            }
+
+            const descending = objects.sorted(propKey, true);
+            for (let i = 0; i <= max; i++) {
+                TestCase.assertEqual(descending[i][propKey].toString(), compareArray[max-i].toString(), `element ${i} descending for ${propKey}`);
+            }
         }
 
-        objects = objects.sorted('decimal128Col', true);
-        for (var i = 0; i < 3; i++) {
-            TestCase.assertEqual(objects[i].decimal128Col.toString(), decimals[2-i].toString(), `element ${i} descending for decimal128`);
-        }
+        testSortingWithToStringEquals("decimal128Col", decimals);
+        testSortingWithToStringEquals("objectIdCol", oids);
+        testSortingWithToStringEquals("uuidCol", uuids);
     },
 
     testResultsInvalidation: function() {

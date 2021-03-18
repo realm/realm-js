@@ -131,6 +131,7 @@ exports.BasicTypes = {
         dataCol:     'data',
         decimal128Col:  'decimal128',
         objectIdCol: 'objectId',
+        uuidCol: 'uuid',
     }
 };
 
