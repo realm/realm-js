@@ -24,8 +24,6 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const AppConfig = require('./support/testConfig');
 
-const { ObjectId } = Realm.BSON;
-
 const isNodeProcess = (typeof process === 'object' && process + '' === '[object process]');
 
 module.exports = {
