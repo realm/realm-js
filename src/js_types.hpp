@@ -330,7 +330,7 @@ struct Object {
     }
     static ValueType call_method(ContextType ctx, const ObjectType &object, const String<T> &name, const std::initializer_list<ValueType> &arguments) {
         return call_method(ctx, object, name, (uint32_t)arguments.size(), arguments.begin());
-        }
+    }
 
     static ObjectType create_empty(ContextType);
     static ObjectType create_obj(ContextType ctx, std::initializer_list<std::pair<String<T>, ValueType>> values) {
