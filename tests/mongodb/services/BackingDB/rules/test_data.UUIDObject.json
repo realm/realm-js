@@ -1,7 +1,7 @@
 {
     "collection": "UUIDObject",
     "database": "test_data",
-    "id": "60535c85d8d11d7427b75171",
+    "id": "60536197a0056650894bf233",
     "roles": [
         {
             "name": "default",
@@ -16,6 +16,12 @@
         "properties": {
             "_id": {
                 "bsonType": "uuid"
+            },
+            "list": {
+                "bsonType": "array",
+                "items": {
+                    "bsonType": "uuid"
+                }
             },
             "mandatory": {
                 "bsonType": "uuid"
