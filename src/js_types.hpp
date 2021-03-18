@@ -592,8 +592,6 @@ inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const Mix
     case type_TypedLink:
         return from_objlink(ctx, mixed.get<ObjLink>());
     case type_LinkList:
-    case type_OldDateTime:
-    case type_OldTable:
     case type_Mixed:
         break;
     }
