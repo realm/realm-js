@@ -585,7 +585,7 @@ inline typename T::Value Value<T>::from_bson(typename T::Context ctx, const bson
 
     switch (value.type()) {
     case Type::Uuid:
-         throw std::runtime_error("'UUID' type support is not implemented yet");
+        return from_uuid(ctx, value.operator UUID());
     case Type::MinKey:
         return Object<T>::create_bson_type(ctx, "MinKey", {});
     case Type::MaxKey:
