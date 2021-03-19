@@ -15,11 +15,15 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-#include "types.hpp"
 
 #ifndef TYPE_DEDUCTION_GUARD
 #define TYPE_DEDUCTION_GUARD
 
+#include <iostream>
+#include <map>
+
+#include "js_types.hpp"
+#include "types.hpp"
 
 #pragma once
 
@@ -100,13 +104,6 @@ class GenericTypeDeductionImpl {
         return types::NotImplemented;
     }
 };
-
-std::map<types::Type, std::string> GenericTypeDeductionImpl::realm_types = {
-    {types::String, "String"},       {types::Integer, "Int"},
-    {types::Float, "Float"},         {types::Double, "Double"},
-    {types::Decimal, "Decimal128"},  {types::Boolean, "Boolean"},
-    {types::ObjectId, "ObjectId"},   {types::Object, "Object"},
-    {types::Undefined, "Undefined"}, {types::Null, "Null"}};
 
 /*
  * Here we encapsulate some type deduction capabilities for all supported
