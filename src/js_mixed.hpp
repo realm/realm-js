@@ -172,10 +172,6 @@ class TypeMixed {
     }
 
     Value wrap(Context context, Mixed mixed) {
-        #if !REALM_PLATFORM_NODE
-            //FIXME: MIXED: fix for JSC
-            throw std::runtime_error("Not implemented");
-        #else
         auto rjs_type = TypeDeduction::from(mixed.get_type());
         auto strategy = get_strategy(rjs_type);
 
@@ -185,15 +181,10 @@ class TypeMixed {
                 " value is not supported for the mixed type.");
         }
         return strategy->unwrap(context, mixed);
-        #endif
     }
 
     Mixed unwrap(Context context, Value const &js_value) {
-        #if !REALM_PLATFORM_NODE
-            //FIXME: MIXED: fix for JSC
-            throw std::runtime_error("Not implemented");
-        #else
-        auto type = TypeDeduction::typeof(js_value);
+        auto type = TypeDeduction::typeof<JavascriptEngine>(context, js_value);
         auto strategy = get_strategy(type);
 
         if (strategy == nullptr) {
@@ -202,7 +193,6 @@ class TypeMixed {
                 TypeDeduction::javascript_type(type));
         }
         return strategy->wrap(context, js_value);
-        #endif
     }
 };
 
