@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef TYPE_DEDUCTION_GUARD
-#define TYPE_DEDUCTION_GUARD
 
 #include <iostream>
 #include <map>
@@ -131,4 +129,4 @@ struct TypeDeduction : GenericTypeDeductionImpl {};
 }  // namespace js
 }  // namespace realm
 
-#endif
+
