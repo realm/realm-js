@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.3.0-rc.1 Release notes (2021-3-19)
 =============================================================
 ### Enhancements
 * Added support for comparing numbers to boolean values in queries.
