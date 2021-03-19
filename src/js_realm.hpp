@@ -1026,6 +1026,13 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
         object = Schema<T>::dict_for_property_array(ctx, object_schema, object);
     }
 
+    if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
+        auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+        if (!realm_object) {
+            throw std::runtime_error("Cannot create an object from a detached Realm.Object instance");
+        }
+    }
+
     NativeAccessor accessor(ctx, realm, object_schema);
     auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, policy);
     return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));

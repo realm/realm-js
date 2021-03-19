@@ -52,6 +52,7 @@ local.properties
 object-server-for-testing/
 realm-object-server-data/
 tests/realm-object-server/
+tests/mongodb-realm/
 packager_out.txt
 build.log.*
 realm-object-server/
