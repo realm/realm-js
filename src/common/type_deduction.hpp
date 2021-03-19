@@ -36,12 +36,7 @@ class GenericTypeDeductionImpl {
     auto reverse_deduction_types_map() {
         std::map<std::string, types::Type> ret;
         for (auto& [type, key] : realm_to_js_map) {
-            ret[key] = type;  // camelCase version.
-
-            std::transform(key.begin(), key.end(), key.begin(),
-                           [](auto c) { return std::tolower(c); });
-
-            ret[key] = type;  // lower_case version.
+            ret[key] = type;  // camel_case version.
         }
         return ret;
     }
