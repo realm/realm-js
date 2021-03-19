@@ -32,41 +32,58 @@ namespace js {
 
 class GenericTypeDeductionImpl {
    private:
-    static std::map<types::Type, std::string> realm_types;
+    std::map<types::Type, std::string> realm_to_js_map;
+    std::map<std::string, types::Type> js_to_realm_map;
 
-    static auto reverse_deduction_types_map() {
+    auto reverse_deduction_types_map() {
         std::map<std::string, types::Type> ret;
-        for (auto& [type, key] : realm_types) {
+        for (auto& [type, key] : realm_to_js_map) {
             ret[key] = type;  // camelCase version.
+
             std::transform(key.begin(), key.end(), key.begin(),
                            [](auto c) { return std::tolower(c); });
+
             ret[key] = type;  // lower_case version.
         }
         return ret;
     }
 
    public:
-    static bool realm_type_exist(std::string const& type) {
-        static auto realm_types = reverse_deduction_types_map();
-        return realm_types.find(type) == realm_types.end();
+    GenericTypeDeductionImpl(){
+        realm_to_js_map = {
+                {types::String, "String"},       {types::Integer, "Int"},
+                {types::Float, "Float"},         {types::Double, "Double"},
+                {types::Decimal, "Decimal128"},  {types::Boolean, "Boolean"},
+                {types::ObjectId, "ObjectId"},   {types::Object, "Object"},
+                {types::Undefined, "Undefined"}, {types::Null, "Null"}
+        };
+        js_to_realm_map = reverse_deduction_types_map();
     }
 
-    static types::Type realm_type(std::string const& type) {
-        static auto realm_types = reverse_deduction_types_map();
-        return realm_types[type];
+    static GenericTypeDeductionImpl &get_instance() {
+        static GenericTypeDeductionImpl instance;
+        return instance;
     }
 
-    static std::string javascript_type(types::Type value) {
-        return realm_types[value];
+    bool realm_type_exist(std::string const& type) {
+        return js_to_realm_map.find(type) != js_to_realm_map.end();
     }
 
-    static types::Type from(DataType data_type) {
+    types::Type realm_type(std::string const& type) {
+        return js_to_realm_map[type];
+    }
+
+    std::string javascript_type(types::Type value) {
+        return realm_to_js_map[value];
+    }
+
+    types::Type from(DataType data_type) {
         int realm_type = static_cast<int>(data_type);
         return static_cast<types::Type>(realm_type);
     }
 
     template <typename T, typename Ctx, typename Val>
-    static types::Type typeof(Ctx context, Val& value) {
+    types::Type typeof(Ctx context, Val& value) {
         using JS = js::Value<T>;
 
         if (JS::is_null(context, value)) {

@@ -174,13 +174,13 @@ class TypeMixed {
     }
 
     Value wrap(Context context, Mixed mixed) {
-
-        auto rjs_type = TypeDeduction::from(mixed.get_type());
+        auto type_deduction = TypeDeduction::get_instance();
+        auto rjs_type = type_deduction.from(mixed.get_type());
         auto strategy = get_strategy(rjs_type);
 
         if (strategy == nullptr) {
             throw std::runtime_error(
-                "The " + TypeDeduction::javascript_type(rjs_type) +
+                "The " + type_deduction.javascript_type(rjs_type) +
                 " value is not supported for the mixed type.");
         }
         return strategy->unwrap(context, mixed);
@@ -188,17 +188,16 @@ class TypeMixed {
     }
 
     Mixed unwrap(Context context, Value const &js_value) {
-
-        auto type = TypeDeduction::typeof<JavascriptEngine>(context, js_value);
+        auto type_deduction = TypeDeduction::get_instance();
+        auto type = type_deduction.typeof<JavascriptEngine>(context, js_value);
         auto strategy = get_strategy(type);
 
         if (strategy == nullptr) {
             throw std::runtime_error(
                 "Mixed conversion not possible for type: " +
-                TypeDeduction::javascript_type(type));
+                        type_deduction.javascript_type(type));
         }
         return strategy->wrap(context, js_value);
-
     }
 };
 
