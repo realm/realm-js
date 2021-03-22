@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@types/jasmine": "^3.6.2",
+    "bson": "github:steffenagger/js-bson#uuid-realm",
     "debug": "^4.3.1",
     "es6-promise": "^3.2.1",
     "http-proxy": "^1.18.1",
