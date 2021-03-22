@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-
 #include <iostream>
 #include <map>
 
@@ -42,18 +41,17 @@ class GenericTypeDeductionImpl {
     }
 
    public:
-    GenericTypeDeductionImpl(){
+    GenericTypeDeductionImpl() {
         realm_to_js_map = {
-                {types::String, "String"},       {types::Integer, "Int"},
-                {types::Float, "Float"},         {types::Double, "Double"},
-                {types::Decimal, "Decimal128"},  {types::Boolean, "Boolean"},
-                {types::ObjectId, "ObjectId"},   {types::Object, "Object"},
-                {types::Undefined, "Undefined"}, {types::Null, "Null"}
-        };
+            {types::String, "String"},       {types::Integer, "Int"},
+            {types::Float, "Float"},         {types::Double, "Double"},
+            {types::Decimal, "Decimal128"},  {types::Boolean, "Boolean"},
+            {types::ObjectId, "ObjectId"},   {types::Object, "Object"},
+            {types::Undefined, "Undefined"}, {types::Null, "Null"}};
         js_to_realm_map = reverse_deduction_types_map();
     }
 
-    static GenericTypeDeductionImpl &get_instance() {
+    static GenericTypeDeductionImpl& get_instance() {
         static GenericTypeDeductionImpl instance;
         return instance;
     }
@@ -77,37 +75,37 @@ class GenericTypeDeductionImpl {
 
     template <typename T, typename Ctx, typename Val>
     types::Type typeof(Ctx context, Val& value) {
-        using JS = js::Value<T>;
+        using Value = js::Value<T>;
 
-        if (JS::is_null(context, value)) {
+        if (Value::is_null(context, value)) {
             return types::Null;
         }
-        if (JS::is_number(context, value)) {
+        if (Value::is_number(context, value)) {
             return types::Double;
         }
-        if (JS::is_string(context, value)) {
+        if (Value::is_string(context, value)) {
             return types::String;
         }
-        if (JS::is_boolean(context, value)) {
+        if (Value::is_boolean(context, value)) {
             return types::Boolean;
         }
-        if (JS::is_date(context, value)) {
+        if (Value::is_date(context, value)) {
             return types::Timestamp;
         }
-        if (JS::is_undefined(context, value)) {
+        if (Value::is_undefined(context, value)) {
             return types::Undefined;
         }
-        if (JS::is_array_buffer(context, value) ||
-            JS::is_array_buffer(context, value)) {
+        if (Value::is_array_buffer(context, value) ||
+            Value::is_array_buffer(context, value)) {
             return types::Binary;
         }
-        if (JS::is_decimal128(context, value)) {
+        if (Value::is_decimal128(context, value)) {
             return types::Decimal;
         }
-        if (JS::is_object_id(context, value)) {
+        if (Value::is_object_id(context, value)) {
             return types::ObjectId;
         }
-        if (JS::is_object(context, value)) {
+        if (Value::is_object(context, value)) {
             return types::Object;
         }
 
@@ -123,5 +121,4 @@ struct TypeDeduction : GenericTypeDeductionImpl {};
 
 }  // namespace js
 }  // namespace realm
-
 
