@@ -15,12 +15,103 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-#include "types.hpp"
-#pragma once
 
+#include <iostream>
+#include <map>
+
+#include "js_types.hpp"
+#include "types.hpp"
+
+#pragma once
 
 namespace realm {
 namespace js {
+
+class GenericTypeDeductionImpl {
+   private:
+    std::map<types::Type, std::string> realm_to_js_map;
+    std::map<std::string, types::Type> js_to_realm_map;
+
+    auto reverse_deduction_types_map() {
+        std::map<std::string, types::Type> ret;
+        for (auto& [type, key] : realm_to_js_map) {
+            ret[key] = type;  // camel_case version.
+        }
+        return ret;
+    }
+
+   public:
+    GenericTypeDeductionImpl() {
+        realm_to_js_map = {
+            {types::String, "String"},       {types::Integer, "Int"},
+            {types::Float, "Float"},         {types::Double, "Double"},
+            {types::Decimal, "Decimal128"},  {types::Boolean, "Boolean"},
+            {types::ObjectId, "ObjectId"},   {types::Object, "Object"},
+            {types::Undefined, "Undefined"}, {types::Null, "Null"}};
+        js_to_realm_map = reverse_deduction_types_map();
+    }
+
+    static GenericTypeDeductionImpl& get_instance() {
+        static GenericTypeDeductionImpl instance;
+        return instance;
+    }
+
+    bool realm_type_exist(std::string const& type) {
+        return js_to_realm_map.find(type) != js_to_realm_map.end();
+    }
+
+    types::Type realm_type(std::string const& type) {
+        return js_to_realm_map[type];
+    }
+
+    std::string javascript_type(types::Type value) {
+        return realm_to_js_map[value];
+    }
+
+    types::Type from(DataType data_type) {
+        int realm_type = static_cast<int>(data_type);
+        return static_cast<types::Type>(realm_type);
+    }
+
+    template <typename T, typename Ctx, typename Val>
+    types::Type typeof(Ctx context, Val& value) {
+        using Value = js::Value<T>;
+
+        if (Value::is_null(context, value)) {
+            return types::Null;
+        }
+        if (Value::is_number(context, value)) {
+            return types::Double;
+        }
+        if (Value::is_string(context, value)) {
+            return types::String;
+        }
+        if (Value::is_boolean(context, value)) {
+            return types::Boolean;
+        }
+        if (Value::is_date(context, value)) {
+            return types::Timestamp;
+        }
+        if (Value::is_undefined(context, value)) {
+            return types::Undefined;
+        }
+        if (Value::is_array_buffer(context, value) ||
+            Value::is_array_buffer(context, value)) {
+            return types::Binary;
+        }
+        if (Value::is_decimal128(context, value)) {
+            return types::Decimal;
+        }
+        if (Value::is_object_id(context, value)) {
+            return types::ObjectId;
+        }
+        if (Value::is_object(context, value)) {
+            return types::Object;
+        }
+
+        return types::NotImplemented;
+    }
+};
 
 
 class GenericTypeDeductionImpl {
@@ -108,7 +199,8 @@ std::map<types::Type, std::string> GenericTypeDeductionImpl::realm_types = {
  * Here we encapsulate some type deduction capabilities for all supported
  * Javascript environments.
  */
-    struct TypeDeduction : GenericTypeDeductionImpl {};
+struct TypeDeduction : GenericTypeDeductionImpl {};
 
 }  // namespace js
 }  // namespace realm
+
