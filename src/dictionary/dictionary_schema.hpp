@@ -47,16 +47,17 @@ class DictionarySchema {
     }
 
     realm::PropertyType schema() {
+        auto type_deduction = TypeDeduction::get_instance();
         if (type.empty()) {
             return make_generic();
         }
 
-        if (TypeDeduction::realm_type_exist(type)) {
+        if (!type_deduction.realm_type_exist(type)) {
             throw std::runtime_error("Schema type: " + type +
                                      " not supported for Dictionary.");
         }
 
-        auto dictionary_type_value = TypeDeduction::realm_type(type);
+        auto dictionary_type_value = type_deduction.realm_type(type);
         return (realm::PropertyType::Dictionary |
                 static_cast<realm::PropertyType>(dictionary_type_value));
     }
