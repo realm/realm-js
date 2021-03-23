@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+"use strict";
+
 const { MochaRemoteClient } = require("mocha-remote-client");
 const { platform } = require("os");
 
@@ -23,7 +25,7 @@ module.exports = (serverURL, processType) => {
     return new MochaRemoteClient({
         id: processType,
         url: serverURL,
-        whenInstrumented: mocha => {
+        onInstrumented: mocha => {
             // Set the Realm global for the tests to use
             global.Realm = require("realm");
             global.fs = require("fs-extra");

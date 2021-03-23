@@ -58,7 +58,7 @@ function runElectron(processType, serverUrl) {
     // Spawn the Electron app
     const env = Object.create(process.env);
     env.ELECTRON_DISABLE_SANDBOX = 1;
-    const appProcess = spawn(command, args, { stdio: "inherit", env : env });
+    const appProcess = spawn(command, args, { stdio: "inherit", env });
     // If the runner closes, we should kill the Electron app
     process.on("exit", () => {
         appProcess.kill("SIGHUP");
@@ -89,6 +89,8 @@ async function run() {
         // Listing on all interfaces
         host: "0.0.0.0",
         port: 0,
+        // We want to manually start to ensure we can get to the URL
+        autoStart: false,
     });
     await server.start();
 
