@@ -16,16 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-
+#include <common/type_deduction.hpp>
+#include <common/types.hpp>
 #include <map>
 #include <realm/mixed.hpp>
 #include <type_traits>
 
-#include <common/type_deduction.hpp>
-#include <common/types.hpp>
-
 #pragma once
-
 
 namespace realm {
 namespace js {
@@ -40,6 +37,7 @@ class MixedWrapper {
 template <typename Context, typename Value, typename Utils>
 class MixedString : public MixedWrapper<Context, Value> {
    private:
+
     // we need this <cache> to keep the value alive long enough to get into the
     // DB, we do this because the realm::Mixed type is just a reference
     // container.
@@ -104,11 +102,12 @@ class MixedObjectID : public MixedWrapper<Context, Value> {
 
 template <typename Context, typename Value, typename Utils>
 class MixedBinary : public MixedWrapper<Context, Value> {
-    private: 
-    // Same as with string, we need to keep this data stored on memory until the data is commited.
-    OwnedBinaryData cache; 
+   private:
+    // Same as with string, we need to keep this data stored on memory until the
+    // data is commited.
+    OwnedBinaryData cache;
 
-    public: 
+   public:
     Mixed wrap(Context context, Value const &value) {
         cache = Utils::to_binary(context, value);
         return Mixed(cache.get());
@@ -146,10 +145,10 @@ class TypeMixed {
     using Strategy = MixedWrapper<Context, Value> *;
 
     /*
-        This table acts as a global hashmap, 
-        attached to the lifecycle of the process. 
+        This table acts as a global hashmap,
+        attached to the lifecycle of the process.
 
-        All these pointer will be deallocated when the process exits. 
+        All these pointer will be deallocated when the process exits.
     */
     std::map<types::Type, Strategy> strategies = {
         {types::String, new MixedString<Context, Value, Utils>},
@@ -184,7 +183,6 @@ class TypeMixed {
                 " value is not supported for the mixed type.");
         }
         return strategy->unwrap(context, mixed);
-
     }
 
     Mixed unwrap(Context context, Value const &js_value) {
@@ -195,7 +193,7 @@ class TypeMixed {
         if (strategy == nullptr) {
             throw std::runtime_error(
                 "Mixed conversion not possible for type: " +
-                        type_deduction.javascript_type(type));
+                type_deduction.javascript_type(type));
         }
         return strategy->wrap(context, js_value);
     }
