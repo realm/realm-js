@@ -39,26 +39,13 @@ class DictionaryAdapter {
 
     using GetterSetters = AccessorsConfiguration<T, AccessorsForDictionary<T>>;
     using Methods = ListenersMethodsForDictionary<T>;
-    using JSDictionary = JSObject<T, GetterSetters, Methods>;
+    using JSDictionary = JSObject<T, GetterSetters, Methods, object_store::Dictionary>;
 
    public:
     ValueType wrap(Context context, object_store::Dictionary dictionary) {
-        JSDictionary *js_dictionary = new JSDictionary{context};
-        object_store::Dictionary *_dictionary =
-            new object_store::Dictionary{dictionary};
+        JSDictionary *js_dictionary = new JSDictionary{dictionary};
 
-        js_dictionary->template configure_object_destructor([=]() {
-            /* GC will trigger this function, signaling that...
-             * ...we can deallocate the attached C++ object.
-             */
-            delete js_dictionary;
-            delete _dictionary;
-        });
-
-        js_dictionary->set_getter_setters(_dictionary);
-        js_dictionary->set_methods(_dictionary);
-
-        return js_dictionary->get_plain_object();
+        return js_dictionary->build(context);
     }
 };
 

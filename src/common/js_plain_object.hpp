@@ -29,7 +29,6 @@ public:
     static void finalize(ObjectType object, Callback&& callback, Self *self) {
       object.AddFinalizer(
             [callback](auto, void* data_ref) {
-                std::cout << "removing object!!" << '\n';
                 callback();
             }, self);
     }
@@ -101,14 +100,11 @@ struct AccessorsConfiguration {
     using ContextType = typename T::Context;
     using Value = js::Value<T>;
 
-    ContextType context;
     Accessor accessor;
 
-    AccessorsConfiguration(ContextType _context) : context{_context} {}
-
-    template <class Dictionary>
-    void register_new_accessor(const char* key, ObjectType object,
-                               Dictionary* dictionary) {
+    template <typename Data>
+    void register_new_accessor(ContextType context, const char* key, ObjectType object,
+                               Data dictionary) {
         auto _getter = accessor.make_getter(key, dictionary);
         auto _setter = accessor.make_setter(key, dictionary);
 
@@ -128,23 +124,24 @@ struct AccessorsConfiguration {
         object.DefineProperty(descriptor);
     }
 
-    template <class Dictionary>
-    void apply(ObjectType& object, Dictionary* dictionary) {
+    template <class JSObject>
+    void apply(ContextType context, ObjectType object, JSObject *_o) {
+        auto dictionary = _o->get_data();
         for (auto entry_pair : *dictionary) {
             auto key = entry_pair.first.get_string().data();
-            register_new_accessor(key, object, dictionary);
+            register_new_accessor(context, key, object, dictionary);
         }
     }
 
-    void update(ObjectType& object,
-                realm::object_store::Dictionary* dictionary) {
-         keys(object, [=](auto _key) mutable{
-             std::string key = Value::to_string(context, _key);
-            if (!dictionary->contains(key)) {
-                delete_key(object, key);
-            }
-        });
-    }
+//    void update(ObjectType& object,
+//                realm::object_store::Dictionary* dictionary) {
+//         keys(object, [=](auto _key) mutable{
+//             std::string key = Value::to_string(context, _key);
+//            if (!dictionary->contains(key)) {
+//                delete_key(object, key);
+//            }
+//        });
+//    }
 };
 
 template <typename VM>
@@ -157,57 +154,46 @@ struct IdentityMethods {
 
 template <typename VM,
           typename GetterSetters,
-          typename Methods = IdentityMethods<VM>>
+          typename Methods = IdentityMethods<VM>,
+          typename Data = object_store::Dictionary>
 struct JSObject {
    private:
     using Object = js::Object<VM>;
     using ObjectType = typename VM::Object;
     using ContextType = typename VM::Context;
+
     std::unique_ptr<Methods> methods;
     std::unique_ptr<GetterSetters> getters_setters;
-    ContextType context;
-    ObjectType object;
+    std::shared_ptr<Data> data;
+
+    void setup_finalizer(ObjectType object){
+        JSLifeCycle::finalize(object, [this](){
+            // This method gets called when GC dispose the JS Object.
+            //https://isocpp.org/wiki/faq/freestore-mgmt#delete-this
+            delete this;
+        }, this);
+    }
 
    public:
-    JSObject(ContextType _context)
-        : context{_context},
-        object{Object::create_empty(_context)} {
-        getters_setters = std::make_unique<GetterSetters>(context);
-        methods = std::make_unique<Methods>(context);
+    JSObject(Data _data) {
+        data = std::make_shared<Data>(_data);
+        getters_setters = std::make_unique<GetterSetters>();
+        methods = std::make_unique<Methods>();
     };
 
-    JSObject(ContextType _context, ObjectType _object)
-        : context{_context}, object{_object} {
-        getters_setters = std::make_unique<GetterSetters>(context);
-        methods = std::make_unique<Methods>(context);
-    }
+    std::shared_ptr<Data> get_data() { return data; }
 
-    ObjectType get_plain_object() { return object; }
-    ContextType& get_context() { return context; }
+    template <typename ContextType>
+    ObjectType build(ContextType context){
+        auto obj = Object::create_empty(context);
+        methods->apply(context, obj, this);
+        getters_setters->apply(context, obj, this);
+        setup_finalizer(obj);
 
-    template <typename Data>
-    void set_methods(Data* data) {
-        methods->apply(object, data);
-    }
-
-    template <typename Data>
-    void set_getter_setters(Data* data) {
-        getters_setters->apply(object, data);
-    }
-
-    template <typename Data>
-    void refresh_fields(Data* data) {
-        getters_setters->update(object, data);
-        getters_setters->apply(object, data);
-    }
-
-    template <typename Callback>
-    void configure_object_destructor(Callback&& callback){
-        JSLifeCycle::finalize(object, callback, this);
+        return obj;
     }
 
     ~JSObject() = default;
 };
 }  // namespace js
 }  // namespace realm
-#endif  // REALMJS_JS_PLAIN_OBJECT_HPP

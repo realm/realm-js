@@ -25,7 +25,7 @@ class DictionaryNotifications {
    private:
     NotificationToken token;
     std::vector<Listener> subscribers;
-    object_store::Dictionary *dictionary;
+    std::shared_ptr<object_store::Dictionary> dictionary;
     bool listening = false;
 
     bool the_shape_has_change(DictionaryChangeSet &change_set) {
@@ -53,7 +53,7 @@ class DictionaryNotifications {
     }
 
    public:
-    DictionaryNotifications(object_store::Dictionary *_dictionary)
+    DictionaryNotifications(std::shared_ptr<object_store::Dictionary> _dictionary)
         : dictionary{_dictionary} {}
 
     DictionaryNotifications(DictionaryNotifications &&dictionary) = default;

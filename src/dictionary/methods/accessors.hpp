@@ -25,16 +25,16 @@ namespace js {
 template <typename T>
 struct AccessorsForDictionary {
     using MixedAPI = TypeMixed<T>;
+    using Dictionary = std::shared_ptr<object_store::Dictionary>;
 
-    template <typename Dictionary>
-    auto make_getter(std::string key_name, Dictionary* dictionary) {
+    auto make_getter(std::string key_name, Dictionary dictionary) {
         return [=](const auto& info) mutable {
             auto mixed_value = dictionary->get_any(key_name);
             return MixedAPI::get_instance().wrap(info.Env(), mixed_value);
         };
     }
-    template <typename Dictionary>
-    auto make_setter(std::string key_name, Dictionary* dictionary) {
+
+    auto make_setter(std::string key_name, Dictionary dictionary) {
         return [=](const auto& info) mutable {
             auto mixed = MixedAPI::get_instance().unwrap(info.Env(), info[0]);
             dictionary->insert(key_name, mixed);

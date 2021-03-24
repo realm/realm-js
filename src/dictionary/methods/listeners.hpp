@@ -29,26 +29,22 @@ namespace js {
 template <typename T>
 struct Method {
     using ContextType = typename T::Context;
-    using Object = js::Object<T>;
     using ObjectType = typename T::Object;
+    using Object = js::Object<T>;
+
     ContextType context;
-
-
     Method(ContextType _context) : context{_context} {}
 
     template <class Fn>
-    auto define(std::string&& name, ObjectType object, Fn&& function) {
+    auto define(std::string&& name, ObjectType& object, Fn&& function) {
         auto fn = Napi::Function::New(context, function, name);
-        Object::set_property(context, object, name, fn,
-                                    PropertyAttributes::DontEnum);
+        Object::set_property(context, object, name, fn, PropertyAttributes::DontEnum);
     }
 };
 #endif
 
-
-
 template <typename T>
-class ListenersMethodsForDictionary: public Method<T> {
+class ListenersMethodsForDictionary {
    private:
     using ObjectType = typename T::Object;
     using ContextType = typename T::Context;
@@ -57,32 +53,29 @@ class ListenersMethodsForDictionary: public Method<T> {
     using Dictionary = object_store::Dictionary;
 
     std::unique_ptr<Notifications> notifications;
-    ContextType context;
 
    public:
-    ListenersMethodsForDictionary(ContextType _context) : context{_context}, Method<T>{_context} {}
+    template <class JSObject>
+    void apply(ContextType context, ObjectType object, JSObject *_o) {
+        Method<T> methods {context};
+        methods.define("addListener", object, add_listener(_o));
+        methods.define("removeListener", object, remove_listener(_o));
+        methods.define("removeAllListeners", object, remove_all_listeners(_o));
 
-    template <class Dictionary>
-    void apply(ObjectType& object, Dictionary* dictionary) {
-        Method<T>::define("addListener", object, add_listener(object, dictionary));
-        Method<T>::define("removeListener", object,
-                  remove_listener(object, dictionary));
-        Method<T>::define("removeAllListeners", object,
-                  remove_all_listeners(object, dictionary));
-
-        notifications = std::make_unique<Notifications>(dictionary);
+        notifications = std::make_unique<Notifications>(_o->get_data());
     }
 
-    auto add_listener(ObjectType& object, Dictionary* dictionary) {
+    template <typename JSObject>
+    auto add_listener(JSObject *object) {
         return [=](const auto& info) {
             auto ctx = info.Env();
             auto callback = Value::validated_to_function(ctx, info[0]);
-            NotificationsCallback<T> subscriber{ctx, callback, object};
+            NotificationsCallback<T> subscriber{ctx, callback};
             notifications->register_for_notifications(std::move(subscriber));
         };
     }
-
-    auto remove_listener(ObjectType& object, Dictionary* dictionary) {
+    template <typename JSObject>
+    auto remove_listener(JSObject *object) {
         return [=](const auto& info) {
             auto ctx = info.Env();
             auto callback = Value::validated_to_function(ctx, info[0]);
@@ -90,8 +83,8 @@ class ListenersMethodsForDictionary: public Method<T> {
             notifications->remove_listener(std::move(subscriber));
         };
     }
-
-    auto remove_all_listeners(ObjectType& object, Dictionary* dictionary) {
+    template <typename JSObject>
+    auto remove_all_listeners(JSObject *object) {
         return [=](const auto& info) {
             notifications->remove_all_listeners();
         };
