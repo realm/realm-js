@@ -1,0 +1,669 @@
+name: pr-realm-js
+on:
+    push:
+        branches:
+            - github-actions-migration
+jobs:
+    build-darwin-prebuild:
+        runs-on: macos-latest
+        steps:
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                  submodules: "recursive"
+
+            # This sets node up, and can also pick the version if necessary
+            - name: Setup node version
+              uses: actions/setup-node@v1
+
+            - name: Cache prebuild
+              id: cache-prebuild
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-prebuild-artifacts
+              with:
+                  path: prebuilds
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}
+
+            # Install node dependencies and build the c++ library
+            - name: Build darwin
+              if: steps.cache-prebuild.outputs.cache-hit != 'true'
+              run: |
+                  npm run package
+
+            - name: Upload prebuild artifact
+              uses: actions/upload-artifact@v2
+              with:
+                  name: prebuild-macos
+                  path: prebuilds
+
+    build-macos-xcframework:
+        needs: build-darwin-prebuild
+        runs-on: macos-latest
+        steps:
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                  submodules: "recursive"
+
+            # This sets node up, and can also pick the version if necessary
+            - name: Setup node version
+              uses: actions/setup-node@v1
+
+            - name: Download prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-macos
+                  path: prebuilds
+
+            - name: Install prebuild
+              run: |
+                  npm ci
+
+            - name: Cache derived data
+              id: cache-derirved-data
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-derived-data
+              with:
+                  path: ~/Library/Developer/Xcode/DerivedData
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}-v3
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}-v3
+
+            - name: Cache xcframework
+              id: cache-xcframework
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-xcframework
+              with:
+                  path: react-native/ios/realm-js-ios.xcframework
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}-v1
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}
+
+            - name: Build xcframework
+              #if: steps.cache-xcframework.outputs.cache-hit != 'true'
+              run: |
+                  ./scripts/build-ios.sh
+
+            - name: Upload xcframework artifact
+              uses: actions/upload-artifact@v2
+              with:
+                  name: xcframework-macos
+                  path: react-native/ios/realm-js-ios.xcframework
+
+    build-android:
+        runs-on: macos-latest
+        steps:
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                  submodules: "recursive"
+
+            # This sets node up, and can also pick the version if necessary
+            - name: Setup node version
+              uses: actions/setup-node@v1
+
+            - name: Cache android build
+              id: cache-android-build
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-android-build
+              with:
+                  path: react-native/android/src/main/jniLibs
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}
+
+            - name: Build Android
+              if: steps.cache-android-build.outputs.cache-hit != 'true'
+              env:
+                  ANDROID_NDK: /usr/local/lib/android/sdk/ndk/21.4.7075529
+              run: |
+                  npm ci --ignore-scripts
+                  node scripts/build-android.js
+
+            - name: Upload android artifact
+              uses: actions/upload-artifact@v2
+              with:
+                  name: android-artifact
+                  path: react-native/android/src/main/jniLibs
+
+    build-linux-prebuild:
+        runs-on: ubuntu-latest
+        steps:
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                  submodules: "recursive"
+
+            - name: Setup Environment
+              run: sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+
+            # This sets node up, and can also pick the version if necessary
+            - name: Setup node version
+              uses: actions/setup-node@v1
+
+            - name: Cache prebuild
+              id: cache-prebuild
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-prebuild-artifacts
+              with:
+                  path: prebuilds
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}
+
+            # Install node dependencies and build the c++ library
+            - name: Build Linux
+              if: steps.cache-prebuild.outputs.cache-hit != 'true'
+              run: |
+                  npm run package
+
+            - name: upload artifact
+              uses: actions/upload-artifact@v2
+              with:
+                  name: prebuild-linux
+                  path: prebuilds
+
+    build-windows-prebuild:
+        runs-on: windows-latest
+        steps:
+            - uses: ilammy/msvc-dev-cmd@v1
+
+            - name: echo some envs
+              run: |
+                  echo $OSTYPE
+
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                  submodules: "recursive"
+
+            # This sets node up, and can also pick the version if necessary
+            - name: Setup node version
+              uses: actions/setup-node@v1
+
+            # As Windows works differently than linux, this is a trick to write
+            # the npm-cache directory path to a string.
+            - name: Get npm cache directory
+              id: npm-cache
+              run: |
+                  echo "::set-output name=dir::$(npm config get cache)"
+
+            - name: Cache prebuild
+              id: cache-prebuild
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-prebuild-artifacts
+              with:
+                  path: prebuilds
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}
+
+            - name: Environment setup
+              if: steps.cache-prebuild.outputs.cache-hit != 'true'
+              run: |
+                  Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+                  Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+              shell: powershell
+
+              #export PATH=/usr/local/opt/ccache/libexec:$PATH
+            # Install node dependencies and build the c++ library
+            - name: Build
+              if: steps.cache-prebuild.outputs.cache-hit != 'true'
+              run: |
+                  npm run package -- --arch=x64 
+                  npm run package -- --arch=ia32
+
+            - name: upload artifact
+              uses: actions/upload-artifact@v2
+              with:
+                  name: prebuild-windows
+                  path: prebuilds
+
+    test-node-windows:
+        runs-on: windows-latest
+        needs: build-windows-prebuild
+        env:
+            npm_config_target: 4
+            npm_config_runtime: napi
+            npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
+            REALM_DISABLE_SYNC_TESTS: true
+        steps:
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Download prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-windows
+                  path: prebuilds
+
+            - name: Install project dependencies
+              run: |
+                  npm ci
+
+            # Install the node dependencies in the test folder
+            - name: Install test dependencies
+              working-directory: ./tests
+              run: |
+                  npm ci
+
+            # Run the node test scripts (without sync)
+            - name: Run tests
+              working-directory: ./tests
+              run: npm test
+
+    test-electron-windows:
+        runs-on: windows-latest
+        needs: build-windows-prebuild
+        env:
+            npm_config_target: 4
+            npm_config_runtime: napi
+            npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
+            REALM_DISABLE_SYNC_TESTS: true
+        steps:
+            - name: Download prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-windows
+                  path: prebuilds
+
+            - name: Install electron test dependencies
+              working-directory: ./tests/electron
+              env:
+                  npm_config_target: 8.1.1
+                  npm_config_runtime: electron
+                  npm_config_disturl: https://atom.io/download/electron
+              run: |
+                  npm install
+
+            - name: Run electron tests
+              working-directory: ./tests/electron
+              run: |
+                  npx install-local
+                  npm test -- --process=main
+                  npm test -- --process=render
+
+    test-node-macos:
+        runs-on: macos-latest
+        needs: build-darwin-prebuild
+        env:
+            npm_config_target: 4
+            npm_config_runtime: napi
+            npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
+            REALM_DISABLE_SYNC_TESTS: true
+        steps:
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                  submodules: "recursive"
+
+            - name: Download prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-macos
+                  path: prebuilds
+
+            - name: Download xcframework artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: xcframework-macos
+                  path: react-native/ios/realm-js-ios.xcframework
+
+            - name: RN test ios build artifacts
+              uses: actions/cache@v2
+              env:
+                  cache-name: rn-test-ios-build-artifacts
+              with:
+                  # npm cache files are stored in `~/.npm` on Linux/macOS
+                  path: test/react-test-app/ios/build
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}-
+
+            - name: Cache derived data
+              id: cache-derived-data
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-derived-data
+              with:
+                  path: react-native/ios/build/derivedData
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}
+
+            - name: Setup environment
+              run: |
+                  brew install watchman
+
+            - name: Install project dependencies
+              run: |
+                  npm ci
+            # Install the node dependencies in the test folder
+            - name: Install test dependencies
+              working-directory: ./tests
+              run: |
+                  npm ci
+            # Install the node dependencies in the test folder
+            - name: Run react native tests
+              run: |
+                  bash ./scripts/ci-scripts/react-tests.sh
+
+            - name: Run react native example
+              run: |
+                  bash ./scripts/ci-scripts/react-example.sh
+            - name: Setup tmate session
+              uses: mxschmitt/action-tmate@v3
+              if: ${{ failure() }}
+              with:
+                  limit-access-to-actor: true
+              timeout-minutes: 30
+
+            # Run the node test scripts (without sync)
+            - name: Run tests
+              working-directory: ./tests
+              run: npm test
+            - name: Install electron test dependencies
+              working-directory: ./tests/electron
+              env:
+                  npm_config_target: 8.1.1
+                  npm_config_runtime: electron
+                  npm_config_disturl: https://atom.io/download/electron
+              run: |
+                  npm install
+            - name: Run electron tests
+              working-directory: ./tests/electron
+              run: |
+                  npx install-local
+                  npm test -- --process=main
+                  npm test -- --process=render
+    test-electron-macos:
+        runs-on: macos-latest
+        needs: build-darwin-prebuild
+        env:
+            npm_config_target: 4
+            npm_config_runtime: napi
+            npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
+            REALM_DISABLE_SYNC_TESTS: true
+        steps:
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                  submodules: "recursive"
+
+            - name: Download prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-macos
+                  path: prebuilds
+
+            - name: Download xcframework artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: xcframework-macos
+                  path: react-native/ios/realm-js-ios.xcframework
+
+            - name: Install project dependencies
+              run: |
+                  npm ci
+            # Install the node dependencies in the test folder
+            - name: Install test dependencies
+              working-directory: ./tests
+              run: |
+                  npm ci
+
+            - name: Install electron test dependencies
+              working-directory: ./tests/electron
+              env:
+                  npm_config_target: 8.1.1
+                  npm_config_runtime: electron
+                  npm_config_disturl: https://atom.io/download/electron
+              run: |
+                  npm install
+
+            - name: Run electron tests
+              working-directory: ./tests/electron
+              run: |
+                  npx install-local
+                  npm test -- --process=main
+                  npm test -- --process=render
+    test-react-native-ios:
+        runs-on: macos-latest
+        needs: build-macos-xcframework
+        env:
+            npm_config_target: 4
+            npm_config_runtime: napi
+            npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
+            REALM_DISABLE_SYNC_TESTS: true
+        steps:
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                  submodules: "recursive"
+
+            - name: Download prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-macos
+                  path: prebuilds
+
+            - name: Download xcframework artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: xcframework-macos
+                  path: react-native/ios/realm-js-ios.xcframework
+
+            - name: Cache derived data
+              id: cache-derived-data
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-derived-data
+              with:
+                  path: react-native/ios/build/derivedData
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}
+
+            - name: Setup environment
+              run: |
+                  brew install watchman
+
+            - name: Install project dependencies
+              run: |
+                  npm ci
+            # Install the node dependencies in the test folder
+            - name: Install test dependencies
+              working-directory: ./tests
+              run: |
+                  npm ci
+            # Install the node dependencies in the test folder
+            - name: Run react native tests
+              run: |
+                  bash ./scripts/ci-scripts/react-tests.sh
+
+    test-react-native-example:
+        runs-on: macos-latest
+        needs: build-macos-xcframework
+        env:
+            npm_config_target: 4
+            npm_config_runtime: napi
+            npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
+            REALM_DISABLE_SYNC_TESTS: true
+        steps:
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                  submodules: "recursive"
+
+            - name: Download prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-macos
+                  path: prebuilds
+
+            - name: Download xcframework artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: xcframework-macos
+                  path: react-native/ios/realm-js-ios.xcframework
+
+            - name: Cache derived data
+              id: cache-derived-data
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-derived-data
+              with:
+                  path: react-native/ios/build/derivedData
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}
+
+            - name: Setup environment
+              run: |
+                  brew install watchman
+
+            - name: Install project dependencies
+              run: |
+                  npm ci
+            # Install the node dependencies in the test folder
+            - name: Install test dependencies
+              working-directory: ./tests
+              run: |
+                  npm ci
+            - name: Run react native example
+              run: |
+                  bash ./scripts/ci-scripts/realm-example.sh
+    test-node-linux:
+        runs-on: ubuntu-latest
+        needs: build-linux-prebuild
+        env:
+            REALM_DISABLE_SYNC_TESTS: true
+            npm_config_target: 4
+            npm_config_runtime: napi
+            npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
+        steps:
+            # This will retrieve the realm-js github repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                  submodules: "recursive"
+
+            - name: Download prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-linux
+                  path: prebuilds
+
+            - name: Install project dependencies
+              run: |
+                  npm ci
+
+            # Install the node dependencies in the test folder
+            - name: Install test dependencies
+              working-directory: ./tests
+              run: |
+                  npm ci
+
+            # - name: Setup tmate session
+            #   uses: mxschmitt/action-tmate@v3
+            #   with:
+            #     limit-access-to-actor: true
+            #   timeout-minutes: 30
+
+            # Run the node test scripts (without sync)
+            - name: Start stitch server
+              run: bash scripts/ci-scripts/start-server.sh
+
+            - name: Run tests
+              working-directory: ./tests
+              run: npm test
+
+            # This sets up the environment for electron tests.  In linux, electron requires a
+            # connected display.  We fake this by giving it a headless environment using xvfb
+            # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
+            - name: Install electron test dependencies
+              working-directory: ./tests/electron
+              env:
+                  npm_config_target: 8.1.1
+                  npm_config_runtime: electron
+                  npm_config_disturl: https://atom.io/download/electron
+              run: |
+                  sudo apt-get install xvfb
+                  npm install
+            # - name: Setup tmate session
+            #   uses: mxschmitt/action-tmate@v3
+            #   with:
+            #     limit-access-to-actor: true
+            #   timeout-minutes: 30
+            - name: Run electron tests
+              working-directory: ./tests/electron
+              run: |
+                  npx install-local
+                  xvfb-run --auto-servernum npm test -- --process=main
+                  xvfb-run --auto-servernum npm test -- --process=render
+    publish:
+        runs-on: ubuntu-latest
+        if: ${{false}}
+        needs:
+            [
+                test-node-linux,
+                test-node-macos,
+                test-node-windows,
+                test-react-native-ios,
+                test-react-native-example,
+            ]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Cache js build artifacts
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-js-build-artifacts
+              with:
+                  # npm cache files are stored in `~/.npm` on Linux/macOS
+                  path: ~/.npm
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}-${{hashFiles('**/package-lock.json')}}
+                  restore-keys: |
+                      ${{ runner.os }}-build-${{ env.cache-name }}-
+
+            - name: Install node modules
+              run: npm ci --ignore-scripts
+
+            - name: Download linux prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-linux
+                  path: prebuilds
+
+            - name: Download macos prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-macos
+                  path: prebuilds
+
+            - name: Download windows prebuild artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: prebuild-windows
+                  path: prebuilds
+
+            - name: Publish to Github
+              run: npx prebuild --upload-all ${{ secrets.GITHUB_TOKEN }}

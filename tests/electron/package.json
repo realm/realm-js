@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "electron ./app/main.js",
-    "test": "electron --js-flags=\"--expose-gc\" --no-sandbox --enable-logging ./app/main.js"
+    "test": "electron --js-flags=\"--expose-gc\" --no-sandbox --enable-logging ./app/main.js",
+    "install-local": "install-local"
   },
   "devDependencies": {
     "cmake-js": "^6.1.0",
@@ -14,7 +15,8 @@
     "jasmine-console-reporter": "^3.1.0"
   },
   "dependencies": {
-    "install-local": "^1.0.0"
+    "electron-rebuild": "^2.3.5",
+    "install-local": "^3.0.1"
   },
   "localDependencies": {
     "realm": "../..",

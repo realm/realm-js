@@ -50,7 +50,7 @@
     "lint": "eslint .",
     "test": "scripts/test.sh",
     "package": "npm ci --ignore-scripts && prebuild",
-    "install": "prebuild-install || cmake-js rebuild",
+    "install": "prebuild-install --verbose || cmake-js rebuild",
     "rebuild": "npm run rebuild-changes",
     "build": "npm run build-changes",
     "build-changes": "cmake-js build --debug",
@@ -66,7 +66,8 @@
     "test-runner:jest": "cd tests/test-runners/jest && npm install --build-from-source=realm && npm test",
     "test-runners": "npm run test-runner:ava && npm run test-runner:mocha && npm run test-runner:jest",
     "isWin": "node -p \"if (process.platform == 'win32') { process.exit(0); } else { process.exit(-1); }\"",
-    "check-environment": "node scripts/check-environment.js"
+    "check-environment": "node scripts/check-environment.js",
+    "test-node": "bash ./scripts/ci-scripts/test-node.sh"
   },
   "dependencies": {
     "bindings": "^1.5.0",
@@ -146,6 +147,7 @@
   "binary": {
     "module_name": "realm",
     "host": "https://static.realm.io",
+    "package_name": "realm-v{version}-napi-v4-{platform}-{arch}.tar.gz",
     "remote_path": "realm-js-prebuilds/{version}",
     "napi_versions": [
       4

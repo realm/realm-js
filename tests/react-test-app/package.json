@@ -21,12 +21,12 @@
   },
   "devDependencies": {
     "babel-preset-react-native": "4.0.0",
+    "cmake-js": "^6.1.0",
     "eslint": "^4.18.2",
     "fs-extra": "^4.0.3",
     "install-local": "^1.0.0",
     "invariant": "^2.2.2",
-    "metro-react-native-babel-preset": "^0.45.0",
-    "cmake-js": "^6.1.0"
+    "metro-react-native-babel-preset": "^0.45.0"
   },
   "localDependencies": {
     "realm": "../..",

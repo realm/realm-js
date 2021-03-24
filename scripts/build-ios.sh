@@ -46,6 +46,7 @@ xcodebuild build \
     -scheme realm-js-ios \
     "${destinations[@]}" \
     -configuration $CONFIGURATION \
+    -derivedDataPath ./derivedData
     ONLY_ACTIVE_ARCH=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 

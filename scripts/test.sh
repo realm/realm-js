@@ -281,67 +281,6 @@ set_nvm_default() {
 rm -rf ~/.yarn-cache/npm-realm-*
 
 case "$TARGET" in
-"check-environment")
-  npm run check-environment
-  ;;
-"eslint")
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm run eslint
-  ;;
-"eslint-ci")
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm ci --ignore-scripts
-  ./node_modules/.bin/eslint -f checkstyle . > eslint.xml || true
-  ;;
-"license-check")
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm run license-check
-  ;;
-"jsdoc")
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm run jsdoc
-  ;;
-"react-tests")
-  npm ci --ignore-scripts
-  npm run check-environment
-
-  echo "building iOS binaries"
-  ./scripts/build-ios.sh -s -c $CONFIGURATION
-
-  set_nvm_default
-  start_server
-
-  pushd tests/react-test-app
-  npm ci --no-optional
-  ./node_modules/.bin/install-local
-  open_chrome
-  start_packager
-
-  pushd ios
-  pod install
-  xctest ReactTests
-  stop_server
-  ;;
-"react-example")
-  npm ci --ignore-scripts
-  npm run check-environment
-
-  echo "building iOS binaries"
-  ./scripts/build-ios.sh -s -c $CONFIGURATION
-
-  set_nvm_default
-
-  pushd examples/ReactExample
-  npm ci
-  ./node_modules/.bin/install-local
-  open_chrome
-  start_packager
-
-  pushd ios
-  pod install
-  xctest ReactExample
-  popd
-  ;;
 "start-server")
   RUN_STITCH_IN_FORGROUND=true
   start_server
