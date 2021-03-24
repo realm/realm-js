@@ -23,11 +23,18 @@ namespace realm {
 namespace js {
 
 #if REALM_PLATFORM_NODE
-template <typename JSObject, typename Callback, typename Self>
-void add_finalizer(JSObject& object, Callback&& callback, Self* self){
-        object.AddFinalizer(
-            [callback](auto, void* data_ref) { callback(); }, self);
-}
+
+class JSLifeCycle {
+public:
+    template <typename ObjectType, typename Callback, typename Self>
+    static void finalize(ObjectType object, Callback&& callback, Self *self) {
+      object.AddFinalizer(
+            [callback](auto, void* data_ref) {
+                std::cout << "removing object!!" << '\n';
+                callback();
+            }, self);
+    }
+};
 
 template <typename JSObject>
 void delete_key(JSObject& object, std::string& key) {
@@ -44,6 +51,42 @@ void keys(JSObject& object, Callback&& callback) {
     }
 
 }
+
+#else
+
+class JSCDealloc {
+private:
+    std::function<void()> _delegated = NULL;
+public:
+    JSCDealloc(std::function<void()>&& _d): _delegated{_d} {}
+    void delegated() {
+        if(_delegated != nullptr){
+            _delegated();
+        }else{
+            cout << "Warning: RemovalCallback not configured."
+        }
+    }
+};
+
+class JSLifeCycle {
+public:
+    static void gc_finalizer(OpaqueJSValue* object){
+        JSCDealloc *remove_action = static_cast<JSCDealloc*>(JSObjectGetPrivate(object));
+        if(remove_action != nullptr) {
+            remove_action->delegated();
+        }
+    }
+
+    template <typename ObjectType, typename Callback, typename Self>
+    static void finalize(ObjectType object, Callback&& callback, Self*) {
+        bool success = JSObjectSetPrivate(object, new JSCDealloc{callback});
+
+        if(!success){
+            cout << "Cannot save private data" << '\n';
+        }
+    }
+};
+
 #endif
 
 
@@ -132,7 +175,7 @@ struct JSObject {
         object{Object::create_empty(_context)} {
         getters_setters = std::make_unique<GetterSetters>(context);
         methods = std::make_unique<Methods>(context);
-    }
+    };
 
     JSObject(ContextType _context, ObjectType _object)
         : context{_context}, object{_object} {
@@ -148,11 +191,6 @@ struct JSObject {
         methods->apply(object, data);
     }
 
-    template <typename Callback>
-    void configure_object_destructor(Callback&& callback) {
-        add_finalizer(object, std::move( callback), this);
-    }
-
     template <typename Data>
     void set_getter_setters(Data* data) {
         getters_setters->apply(object, data);
@@ -162,6 +200,11 @@ struct JSObject {
     void refresh_fields(Data* data) {
         getters_setters->update(object, data);
         getters_setters->apply(object, data);
+    }
+
+    template <typename Callback>
+    void configure_object_destructor(Callback&& callback){
+        JSLifeCycle::finalize(object, callback, this);
     }
 
     ~JSObject() = default;
