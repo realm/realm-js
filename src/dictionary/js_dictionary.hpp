@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALMJS_JS_DICTIONARY_HPP
-#define REALMJS_JS_DICTIONARY_HPP
 
 #pragma once
 
@@ -67,4 +65,3 @@ class DictionaryAdapter {
 }  // namespace js
 }  // namespace realm
 
-#endif  // REALMJS_JS_DICTIONARY_HPP

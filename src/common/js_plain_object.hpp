@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALMJS_JS_PLAIN_OBJECT_HPP
-#define REALMJS_JS_PLAIN_OBJECT_HPP
+#pragma once
 
 namespace realm {
 namespace js {
