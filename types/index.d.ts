@@ -97,12 +97,28 @@ declare namespace Realm {
     type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
 
+    interface SSLVerifyObject {
+        serverAddress: string;
+        serverPort: number;
+        pemCertificate: string;
+        acceptedByOpenSSL: boolean;
+        depth: number;
+    }
+
+    type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
+    interface SSLConfiguration {
+        validate?: boolean;
+        certificatePath?: string;
+        validateCallback?: SSLVerifyCallback;
+    }
+
     interface SyncConfiguration {
         user: User;
         partitionValue: string|number|ObjectId|null;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        ssl?: SSLConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
         error?: ErrorCallback;
     }

@@ -119,6 +119,10 @@ module.exports = {
         };
         let realm = await Realm.open(config);
         realm.write(() => {
+            realm.deleteAll();
+        });
+
+        realm.write(() => {
             realm.create("MixedObject", { _id: new ObjectId(), key: "one", value: 1 });
             realm.create("MixedObject", { _id: new ObjectId(), key: "two", value: "2" });
             realm.create("MixedObject", { _id: new ObjectId(), key: "three", value: 3.0 });

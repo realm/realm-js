@@ -4,6 +4,6 @@ add_library(realm-js-jsc OBJECT
     rpc.cpp
 )
 
-target_include_directories(realm-js-jsc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(realm-js-jsc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})    
 
-target_link_libraries(realm-js-jsc realm-js-shared)
+target_link_libraries(realm-js-jsc PUBLIC realm-js-shared)
