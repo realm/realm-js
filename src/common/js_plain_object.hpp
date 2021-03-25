@@ -29,7 +29,6 @@ public:
     static void finalize(ObjectType object, Callback&& callback, Self *self) {
       object.AddFinalizer(
             [callback](auto, void* data_ref) {
-                std::cout << "removing object!!" << '\n';
                 callback();
             }, self);
     }
