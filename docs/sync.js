@@ -35,7 +35,7 @@
  */
 
 /**
- * This describes the different options used to create a {@link Realm} instance with Realm Cloud synchronization.
+ * This describes the different options used to create a {@link Realm} instance with MongoDB Realm synchronization.
  * @typedef {Object} Realm.App.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
  * @property {Realm.App.Sync~SSLConfiguration} [ssl] - SSL configuration.
@@ -52,7 +52,7 @@
  */
 
  /**
- * This describes the different options used to create a {@link Realm} instance with Realm Platform synchronization.
+ * This describes the different options used to create a {@link Realm} instance with MongoDB Realm synchronization.
  * @typedef {Object} Realm.App.Sync~SSLConfiguration
  * @property {boolean} validate - Indicating if SSL certificates must be validated. Default is `true`.
  * @property {string} certificatePath - A path where to find trusted SSL certificates.
