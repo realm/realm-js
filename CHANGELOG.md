@@ -5,7 +5,8 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Enhancements
 * Adding Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
-* Array of primitive listed will not be `snapshot()`'ed.
+* Array of primitive lists will not be `snapshot()`'ed.
+* Added `ssl` option to `Realm.App.Sync` configuration.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
