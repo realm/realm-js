@@ -210,4 +210,3 @@ struct JSObject {
 };
 }  // namespace js
 }  // namespace realm
-#endif  // REALMJS_JS_PLAIN_OBJECT_HPP
