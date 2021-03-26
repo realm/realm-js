@@ -22,14 +22,15 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const AppConfig = require('./support/testConfig');
 
-const {Decimal128, ObjectId} = Realm.BSON;
+const {Decimal128, ObjectId, UUID} = Realm.BSON;
 
 const SingleSchema = {
     name: 'Mixed',
     properties: {
         a: 'mixed',
         b: 'mixed',
-        c: 'mixed'
+        c: 'mixed',
+        d: 'mixed'
     }
 }
 
@@ -47,30 +48,36 @@ module.exports = {
     testMixedComplexTypes() {
         let realm = new Realm({schema: [SingleSchema]});
         let d128 = Decimal128.fromString('6.022e23');
-        let id = new ObjectId();
+        let oid = new ObjectId();
+        let uuid = new UUID();
         let date = new Date();
 
-        realm.write(()=> realm.create(SingleSchema.name, { a: id, b:d128, c: date }  ))
+        realm.write(()=> realm.create(SingleSchema.name, { a: oid, b: uuid, c: d128, d: date }  ))
 
         let data = realm.objects(SingleSchema.name)[0]
-        TestCase.assertTrue(typeof data.a === typeof id , 'should be the same type ObjectId');
-        TestCase.assertEqual(data.a.toString(), id.toString(), 'should have the same content');
-
-        TestCase.assertEqual(data.b.toString(), d128.toString(), 'Should be the same Decimal128');
-        TestCase.assertEqual(data.c.toString(), date.toString(), 'Should be the same Date');
+        TestCase.assertTrue(typeof data.a === typeof oid , 'should be the same type ObjectId');
+        TestCase.assertEqual(data.a.toString(), oid.toString(), 'should be the same ObjectId');
+        TestCase.assertEqual(data.b.toString(), uuid.toString(), 'Should be the same UUID');
+        TestCase.assertEqual(data.c.toString(), d128.toString(), 'Should be the same Decimal128');
+        TestCase.assertEqual(data.d.toString(), date.toString(), 'Should be the same Date');
     },
 
     testMixedMutability() {
         let realm = new Realm({schema: [SingleSchema]});
         let d128 = Decimal128.fromString('6.022e23');
-        let id = new ObjectId();
+        let oid = new ObjectId();
+        let uuid = new UUID();
         let date = new Date();
 
-        realm.write(()=> realm.create(SingleSchema.name, { a: id }  ))
+        realm.write(()=> realm.create(SingleSchema.name, { a: oid }))
         let data = realm.objects(SingleSchema.name)[0]
 
-        TestCase.assertTrue(typeof data.a === typeof id , 'should be the same type ObjectId');
-        TestCase.assertEqual(data.a.toString(), id.toString(), 'should have the same content');
+        TestCase.assertTrue(typeof data.a === typeof oid , 'should be the same type ObjectId');
+        TestCase.assertEqual(data.a.toString(), oid.toString(), 'should have the same content');
+
+        realm.write(()=>  data.a = uuid);
+        TestCase.assertTrue(typeof data.a === typeof uuid , 'should be the same type UUID');
+        TestCase.assertEqual(data.a.toString(), uuid.toString(), 'should have the same content UUID');
 
         realm.write(()=>  data.a = d128   )
         TestCase.assertEqual(data.a.toString(), d128.toString(), 'Should be the same Decimal128');
@@ -124,13 +131,14 @@ module.exports = {
         });
 
         realm.write(() => {
-            realm.create("MixedObject", { _id: new ObjectId(), key: "one", value: 1 });
-            realm.create("MixedObject", { _id: new ObjectId(), key: "two", value: "2" });
-            realm.create("MixedObject", { _id: new ObjectId(), key: "three", value: 3.0 });
+            realm.create("MixedObject", { _id: new ObjectId(), key: "1", value: 1 });
+            realm.create("MixedObject", { _id: new ObjectId(), key: "2", value: "2" });
+            realm.create("MixedObject", { _id: new ObjectId(), key: "3", value: 3.0 });
+            realm.create("MixedObject", { _id: new ObjectId(), key: "4", value: new UUID() });
         });
 
         await realm.syncSession.uploadAllLocalChanges();
-        TestCase.assertEqual(realm.objects("MixedObject").length, 3);
+        TestCase.assertEqual(realm.objects("MixedObject").length, 4);
         realm.close();
 
         Realm.deleteFile(config);
@@ -138,11 +146,12 @@ module.exports = {
         let realm2 = await Realm.open(config);
         await realm2.syncSession.downloadAllServerChanges();
 
-        let objects = realm2.objects("MixedObject");
-        TestCase.assertEqual(objects.length, 3);
+        let objects = realm2.objects("MixedObject").sorted("key");
+        TestCase.assertEqual(objects.length, 4);
         TestCase.assertTrue(typeof objects[0].value, "number");
         TestCase.assertTrue(typeof objects[1].value, "string");
         TestCase.assertTrue(typeof objects[2].value, "number");
+        TestCase.assertTrue(objects[3].value instanceof UUID, "UUID");
 
         realm2.close();
     }

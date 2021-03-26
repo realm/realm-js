@@ -101,6 +101,17 @@ class MixedObjectID : public MixedWrapper<Context, Value> {
 };
 
 template <typename Context, typename Value, typename Utils>
+class MixedUUID : public MixedWrapper<Context, Value> {
+    Mixed wrap(Context context, Value const &value) {
+        return Mixed(Utils::to_uuid(context, value));
+    }
+
+    Value unwrap(Context context, Mixed mixed) {
+        return Utils::from_uuid(context, mixed.get<UUID>());
+    }
+};
+
+template <typename Context, typename Value, typename Utils>
 class MixedBinary : public MixedWrapper<Context, Value> {
    private:
     // Same as with string, we need to keep this data stored on memory until the
@@ -158,6 +169,7 @@ class TypeMixed {
         {types::Boolean, new MixedBoolean<Context, Value, Utils>},
         {types::Decimal, new MixedDecimal128<Context, Value, Utils>},
         {types::ObjectId, new MixedObjectID<Context, Value, Utils>},
+        {types::UUID, new MixedUUID<Context, Value, Utils>},
         {types::Binary, new MixedBinary<Context, Value, Utils>},
         {types::Timestamp, new MixedTimeStamp<Context, Value, Utils>},
     };
