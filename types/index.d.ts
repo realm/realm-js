@@ -22,7 +22,6 @@
 
 /// <reference path="./app.d.ts"/>
 
-
 declare namespace Realm {
     interface CollectionChangeSet {
         insertions: number[];
@@ -83,6 +82,8 @@ declare namespace Realm {
         schema: ObjectSchema;
     }
 
+    type PrimaryKey = number | string | Realm.BSON.ObjectId | Realm.BSON.UUID;
+
     /**
      * ObjectType
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectType }
@@ -114,7 +115,7 @@ declare namespace Realm {
 
     interface SyncConfiguration {
         user: User;
-        partitionValue: string|number|Realm.BSON.ObjectId|null;
+        partitionValue: Realm.App.Sync.PartitionValue;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
@@ -448,8 +449,10 @@ declare namespace Realm {
             Off,
         }
 
+        type PartitionValue = string|number|Realm.BSON.ObjectId|Realm.BSON.UUID|null;
+
         function getAllSyncSessions(user: Realm.User): [Realm.App.Sync.Session];
-        function getSyncSession(user: Realm.User, partitionValue: string|number|Realm.BSON.ObjectId|null) : Realm.App.Sync.Session;
+        function getSyncSession(user: Realm.User, partitionValue: Realm.App.Sync.PartitionValue) : Realm.App.Sync.Session;
         function setLogLevel(app: App, logLevel: LogLevel): void;
         function setLogger(app: App, callback: (level: NumericLogLevel, message: string) => void): void;
         function setUserAgent(app: App, userAgent: string): void;
@@ -610,17 +613,17 @@ declare class Realm {
 
     /**
      * @param  {string} type
-     * @param  {number|string|ObjectId} key
+     * @param  {number|string|ObjectId|UUID} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string, key: number | string | Realm.BSON.ObjectId): (T & Realm.Object) | undefined;
+    objectForPrimaryKey<T>(type: string, key: Realm.PrimaryKey): (T & Realm.Object) | undefined;
 
     /**
      * @param  {Class} type
-     * @param  {number|string|ObjectId} key
+     * @param  {number|string|ObjectId|UUID} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | Realm.BSON.ObjectId): T | undefined;
+    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: Realm.PrimaryKey): T | undefined;
 
     /**
      * @param  {string} type
