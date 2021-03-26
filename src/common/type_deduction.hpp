@@ -47,6 +47,7 @@ class GenericTypeDeductionImpl {
             {types::Float, "Float"},         {types::Double, "Double"},
             {types::Decimal, "Decimal128"},  {types::Boolean, "Boolean"},
             {types::ObjectId, "ObjectId"},   {types::Object, "Object"},
+            {types::UUID, "UUID"},       {types::Object, "Object"},
             {types::Undefined, "Undefined"}, {types::Null, "Null"}};
         js_to_realm_map = reverse_deduction_types_map();
     }
@@ -104,6 +105,9 @@ class GenericTypeDeductionImpl {
         }
         if (Value::is_object_id(context, value)) {
             return types::ObjectId;
+        }
+        if (Value::is_uuid(context, value)) {
+            return types::UUID;
         }
         if (Value::is_object(context, value)) {
             return types::Object;

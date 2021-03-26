@@ -67,6 +67,7 @@ if (global.enableSyncTests) {
         TESTS.OpenBehaviorTests = require("./open-behavior-tests");
         TESTS.UserTests = require("./user-tests");
         TESTS.SessionTests = require("./session-tests");
+        TESTS.UUIDSyncTests= node_require("./uuid-sync-tests");
     }
 }
 

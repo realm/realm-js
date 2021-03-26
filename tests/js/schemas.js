@@ -76,6 +76,21 @@ exports.ObjectIdObject = {
     }
 };
 
+exports.UUIDObject = {
+    name: "uuid",
+    properties: {
+        id: "uuid"
+    }
+};
+
+exports.UUIDPkObject = {
+    name: "uuid",
+    primaryKey: "_id",
+    properties: {
+        _id: "uuid"
+    }
+};
+
 function PersonObject() {}
 PersonObject.schema = {
     name: 'PersonObject',
@@ -116,6 +131,7 @@ exports.BasicTypes = {
         dataCol:     'data',
         decimal128Col:  'decimal128',
         objectIdCol: 'objectId',
+        uuidCol: 'uuid',
     }
 };
 
@@ -221,6 +237,7 @@ exports.PrimitiveArrays = {
         data:   'data[]',
         decimal128: 'decimal128[]',
         objectId:    'objectId[]',
+        uuid: "uuid[]",
 
         optBool:   'bool?[]',
         optInt:    'int?[]',
@@ -230,7 +247,8 @@ exports.PrimitiveArrays = {
         optDate:   'date?[]',
         optData:   'data?[]',
         optDecimal128: 'decimal128?[]',
-        optObjectId:    'objectId?[]'
+        optObjectId:    'objectId?[]',
+        optUuid: "uuid?[]"
     }
 };
 
