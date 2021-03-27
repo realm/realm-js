@@ -137,16 +137,16 @@ struct AccessorsConfiguration {
 };
 
 template <typename VM>
-struct IdentityMethods {
+struct NoMethods {
     using ContextType = typename VM::Context;
     ContextType context;
-
-    IdentityMethods(ContextType _context) : context{_context} {};
+    NoMethods(ContextType _context) : context{_context} {};
 };
 
-template <typename VM, typename GetterSetters,
+template <typename VM,
+          typename GetterSetters,
           typename T,
-          typename Methods = IdentityMethods<VM>,
+          typename Methods = NoMethods<VM>,
           typename Data = object_store::Dictionary>
 struct JSObject {
    private:
@@ -173,10 +173,9 @@ struct JSObject {
 
     Data& get_data() { return data; }
 
-    template <typename D, typename Chg>
-    void update(D _data, Chg& change_set) {
+    template <typename Realm_ChangeSet>
+    void update(Realm_ChangeSet& change_set) {
         HANDLESCOPE(context)
-
         auto obj_value = build();
 
         for (Subscriber* subs : subscribers) {
@@ -191,8 +190,9 @@ struct JSObject {
 
         t->on_change(
                 [=](auto dict, auto change_set) {
-                    update(dict, change_set);
+                    update(change_set);
                 });
+
         waiting_for_notifications = true;
     }
 
@@ -225,12 +225,10 @@ struct JSObject {
 
     template <typename CB>
     void setup_finalizer(ObjectType object, CB&& cb) {
+        // This method gets called when GC dispose the JS Object.
         JSLifeCycle::finalize(
             object,
             [=]() {
-                // This method gets called when GC dispose the JS Object.
-                // https://isocpp.org/wiki/faq/freestore-mgmt#delete-this
-                // delete this;
                 delete t;
                 cb();
             },

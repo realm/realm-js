@@ -22,6 +22,7 @@
 #include <map>
 #include <regex>
 
+#include "dictionary/collection/collection.hpp"
 #include "common/js_plain_object.hpp"
 #include "methods/accessors.hpp"
 #include "methods/listeners.hpp"
@@ -35,11 +36,11 @@ class DictionaryAdapter {
    private:
     using ValueType = typename T::Value;
     using Context = typename T::Context;
-
-    using GetterSetters = AccessorsConfiguration<T, AccessorsForDictionary<T>>;
+    using Dictionary = CollectionAdapter<TypeMixed<T>, object_store::Dictionary>;
+    using GetterSetters = AccessorsConfiguration<T, AccessorsForDictionary>;
     using Methods = ListenersMethodsForDictionary<T>;
     using JSDictionary =
-        JSObject<T, GetterSetters, DictionaryNotifications, Methods, object_store::Dictionary>;
+        JSObject<T, GetterSetters, DictionaryNotifications, Methods, Dictionary>;
 
    public:
     ValueType wrap(Context context, object_store::Dictionary dictionary) {

@@ -48,9 +48,7 @@ class DictionaryNotifications {
 
    public:
     DictionaryNotifications(object_store::Dictionary _dictionary): dictionary{_dictionary}{}
-
     DictionaryNotifications(DictionaryNotifications &&dictionary) = default;
-
 
     void on_change(Update&& _update){
         update = _update;

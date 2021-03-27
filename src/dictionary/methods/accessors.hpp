@@ -18,26 +18,23 @@
 
 #pragma once
 #include "realm/dictionary.hpp"
+#include "dictionary/collection/collection.hpp"
 
 namespace realm {
 namespace js {
 
-template <typename T>
 struct AccessorsForDictionary {
-    using MixedAPI = TypeMixed<T>;
-    using Dictionary = object_store::Dictionary;
-
-    auto make_getter(std::string key_name, Dictionary dictionary) {
+    template <typename Collection>
+    auto make_getter(std::string key_name, Collection dictionary) {
         return [=](const auto& info) mutable {
-            auto mixed_value = dictionary.get_any(key_name);
-            return MixedAPI::get_instance().wrap(info.Env(), mixed_value);
+            return dictionary.get(info.Env(), key_name);
         };
     }
 
-    auto make_setter(std::string key_name, Dictionary dictionary) {
+    template <typename Collection>
+    auto make_setter(std::string key_name, Collection dictionary) {
         return [=](const auto& info) mutable {
-            auto mixed = MixedAPI::get_instance().unwrap(info.Env(), info[0]);
-            dictionary.insert(key_name, mixed);
+            dictionary.set(info.Env(), key_name, info[0]);
         };
     }
 };

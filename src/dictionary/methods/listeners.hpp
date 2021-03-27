@@ -86,10 +86,8 @@ class ListenersMethodsForDictionary {
 
             for (auto index = 0; index < size; index++) {
                 std::string key = Value::to_string(ctx, keys[index]);
-
                 auto value = Object::get_property(ctx, obj, key);
-                auto mixed = MixedAPI::get_instance().unwrap(info.Env(), value);
-                dictionary.insert(key, mixed);
+                dictionary.set(ctx, key, value);
             }
         };
     }

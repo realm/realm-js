@@ -23,15 +23,14 @@
 namespace realm {
 namespace js {
 
-template <typename Collection, typename Notifications>
-class CollectionAdapter : public Notifications {
+template <typename MixedAPI, typename Collection>
+class CollectionAdapter {
    private:
     Collection collection;
 
    public:
     CollectionAdapter(Collection _collection)
-        : collection{_collection}, Notifications{_collection} {}
-    CollectionAdapter(CollectionAdapter&& collection_adapter) = default;
+        : collection{_collection} {}
 
     /*
      * Makes the contents of this collection compatible with the existing
@@ -41,7 +40,28 @@ class CollectionAdapter : public Notifications {
     auto add_notification_callback(Arguments... arguments) {
         return collection.add_notification_callback(arguments...);
     }
-    Collection& get_collection() { return collection; }
+
+    auto begin() {
+        return collection.begin();
+    }
+
+    auto end() {
+        return collection.end();
+    }
+
+    template<class Context, class Value>
+    void set(Context context, std::string key, Value value){
+        auto mixed = MixedAPI::get_instance().unwrap(context, value);
+        collection.insert(key, mixed);
+    }
+
+    template<class Context>
+    auto get(Context context, std::string key) {
+        auto mixed_value = collection.get_any(key);
+        return MixedAPI::get_instance().wrap(context, mixed_value);
+    }
+
+    operator Collection() { return collection; }
 };
 
 }  // namespace js
