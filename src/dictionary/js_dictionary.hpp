@@ -44,7 +44,6 @@ class DictionaryAdapter {
    public:
     ValueType wrap(Context context, object_store::Dictionary dictionary) {
         auto *js_dictionary = new JSDictionary{context, dictionary};
-
         auto value = js_dictionary->build();
 
         js_dictionary->setup_finalizer(value, [=]() {

@@ -28,9 +28,12 @@ namespace js {
 class JSLifeCycle {
    public:
     template <typename ObjectType, typename Callback, typename Self>
-    static void finalize(ObjectType object, Callback&& callback, Self* self) {
-        object.AddFinalizer([callback](auto, void* data_ref) { callback(); },
-                            self);
+
+    static void finalize(ObjectType object, Callback&& callback, Self *self) {
+      object.AddFinalizer(
+            [callback](auto, void* data_ref) {
+                callback();
+            }, self);
     }
 };
 
@@ -151,14 +154,14 @@ struct JSObject {
     using Object = js::Object<VM>;
     using ObjectType = typename VM::Object;
     using ContextType = typename VM::Context;
-    T *t{nullptr};
+
     bool waiting_for_notifications{false};
     std::unique_ptr<Methods> methods;
     std::unique_ptr<GetterSetters> getters_setters;
     Data data;
+    T *t{nullptr};
 
     std::vector<Subscriber*> subscribers;
-
     ContextType context;
 
    public:
@@ -230,7 +233,6 @@ struct JSObject {
                 // delete this;
                 delete t;
                 cb();
-                std::cout << "bye! \n";
             },
             this);
     }

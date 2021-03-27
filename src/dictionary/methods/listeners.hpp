@@ -31,6 +31,7 @@ class ListenersMethodsForDictionary {
     using Object = js::Object<T>;
     using Value = js::Value<T>;
     using Dictionary = object_store::Dictionary;
+    using MixedAPI = TypeMixed<T>;
 
     template <class Fn>
     void define(ContextType context, std::string&& name, ObjectType& object, Fn&& function) {
@@ -39,12 +40,13 @@ class ListenersMethodsForDictionary {
     }
 
    public:
-    template <class JSObject>
-    void apply(ContextType context, ObjectType object, JSObject *_o) {
 
+    template<typename JSObject>
+    void apply(ContextType context, ObjectType object, JSObject *_o) {
         define(context,"addListener", object, add_listener(_o));
         define(context,"removeListener", object, remove_listener(_o));
         define(context,"removeAllListeners", object, remove_all_listeners(_o));
+        define(context,"put", object, put(_o));
     }
 
     template <typename JSObject>
@@ -65,10 +67,30 @@ class ListenersMethodsForDictionary {
             object->remove_subscription(subscriber);
         };
     }
+
     template <typename JSObject>
     auto remove_all_listeners(JSObject *object) {
         return [=](const auto& info) {
             object->unsubscribe_all();
+        };
+    }
+
+    template <typename JSObject>
+    auto put(JSObject *object) {
+        return [=](const auto& info) {
+            auto ctx = info.Env();
+            auto dictionary = object->get_data();
+            auto obj = Value::validated_to_object(ctx, info[0]);
+            auto keys = obj.GetPropertyNames();
+            auto size = keys.Length();
+
+            for (auto index = 0; index < size; index++) {
+                std::string key = Value::to_string(ctx, keys[index]);
+
+                auto value = Object::get_property(ctx, obj, key);
+                auto mixed = MixedAPI::get_instance().unwrap(info.Env(), value);
+                dictionary.insert(key, mixed);
+            }
         };
     }
 };

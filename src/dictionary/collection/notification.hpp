@@ -26,13 +26,7 @@ class DictionaryNotifications {
     object_store::Dictionary dictionary;
     using Update = std::function<void(object_store::Dictionary, DictionaryChangeSet&)>;
     Update update;
-
     bool listening = false;
-
-    bool the_shape_has_change(DictionaryChangeSet &change_set) {
-        return (change_set.insertions.size() > 0 ||
-                change_set.deletions.size() > 0);
-    }
 
     void listen_for_collection_changes() {
         if (listening) {
@@ -50,7 +44,6 @@ class DictionaryNotifications {
                 }
             });
         listening = true;
-        std::cout << "listen_for_collection_changes" << '\n';
     }
 
    public:
