@@ -15,14 +15,14 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
+#include "common/object/IObject.hpp"
 #pragma once
 
 namespace realm {
 namespace js {
 
 template <typename T>
-struct NotificationsCallback {
+struct NotificationsCallback : public Subscriber {
     using ObjectType = typename T::Object;
     using FunctionType = typename T::Function;
     using ValueType = typename T::Value;
@@ -35,11 +35,9 @@ struct NotificationsCallback {
     PFunction fn;
     PGlobalContext context;
 
-
     NotificationsCallback(ContextType &_context, FunctionType &_fn)
         : fn{_context, _fn},
           context{Context<T>::get_global_context(_context)} {}
-
 
     template <typename Collection>
     auto build_array(Collection &collection) const {
@@ -70,21 +68,18 @@ struct NotificationsCallback {
         return object;
     }
 
-    void update_object_with_new_dictionary(object_store::Dictionary *dict) const {
-
+    FunctionType callback() const{
+        return static_cast<FunctionType>(fn);
     }
 
-    void operator()(std::shared_ptr<object_store::Dictionary> dict,
-                    DictionaryChangeSet change_set, bool has_change) const {
-        HANDLESCOPE(context)
-/*
-        if (has_change) {
-            update_object_with_new_dictionary(dict);
-        } */
+    bool equals(const Subscriber *rhs) const{
+        return (callback() == rhs->callback());
+    }
 
-        ValueType arguments[]{Object::create_empty(context), build_changeset_object(change_set)};
-
-        Function<T>::callback(context, fn, Object::create_empty(context), 2, arguments);
+    void notify(Napi::Object &object, DictionaryChangeSet& change_set) {
+        ValueType arguments[]{object, build_changeset_object(change_set)};
+        Function<T>::callback(context, fn, object, 2,
+                              arguments);
     }
 };
 

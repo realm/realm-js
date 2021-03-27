@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
 
 #include <functional>
@@ -39,13 +38,20 @@ class DictionaryAdapter {
 
     using GetterSetters = AccessorsConfiguration<T, AccessorsForDictionary<T>>;
     using Methods = ListenersMethodsForDictionary<T>;
-    using JSDictionary = JSObject<T, GetterSetters, Methods, object_store::Dictionary>;
+    using JSDictionary =
+        JSObject<T, GetterSetters, DictionaryNotifications, Methods, object_store::Dictionary>;
 
    public:
     ValueType wrap(Context context, object_store::Dictionary dictionary) {
-        JSDictionary *js_dictionary = new JSDictionary{dictionary};
+        auto *js_dictionary = new JSDictionary{context, dictionary};
 
-        return js_dictionary->build(context);
+        auto value = js_dictionary->build();
+
+        js_dictionary->setup_finalizer(value, [=]() {
+            delete js_dictionary;
+        });
+
+        return value;
     }
 };
 

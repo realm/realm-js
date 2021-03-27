@@ -255,15 +255,15 @@ module.exports = {
         let a = (obj, changeset ) => {
             if(cnt === 1){
                 let keys = Object.keys(obj)
-                TestCase.assertEqual(keys[0], "x2", "First field should be equal x2")
-                TestCase.assertEqual(keys[1], "x1", "First field should be equal x1")
+                TestCase.assertTrue(obj.x2 !== undefined,"This field should be equal x2")
+                TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1")
             }
 
             if(cnt === 2){
                 let keys = Object.keys(obj)
-                TestCase.assertEqual(keys[0], "x1", "First field should be equal x2")
-                TestCase.assertEqual(keys[1], "x5", "First field should be equal x5")
-                TestCase.assertEqual(keys[2], "x3", "First field should be equal x3")
+                TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1")
+                TestCase.assertTrue(obj.x5 !== undefined,"This field should be equal x5")
+                TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1")
             }
             if(cnt === 3){
                 let keys = Object.keys(obj)

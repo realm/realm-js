@@ -20,12 +20,13 @@
 namespace realm {
 namespace js {
 
-template <typename Listener>
 class DictionaryNotifications {
    private:
     NotificationToken token;
-    std::vector<Listener> subscribers;
-    std::shared_ptr<object_store::Dictionary> dictionary;
+    object_store::Dictionary dictionary;
+    using Update = std::function<void(object_store::Dictionary, DictionaryChangeSet&)>;
+    Update update;
+
     bool listening = false;
 
     bool the_shape_has_change(DictionaryChangeSet &change_set) {
@@ -38,41 +39,28 @@ class DictionaryNotifications {
             return;
         }
 
-        token = dictionary->add_key_based_notification_callback(
+        token = dictionary.add_key_based_notification_callback(
             [=](DictionaryChangeSet change_set, std::exception_ptr error) {
                 if (error) {
                     std::rethrow_exception(error);
                 }
 
-                for (auto &subscriber : subscribers) {
-                    bool has_change = the_shape_has_change(change_set);
-                    subscriber(dictionary, change_set, has_change);
+                if(update) {
+                    update(dictionary, change_set);
                 }
             });
         listening = true;
+        std::cout << "listen_for_collection_changes" << '\n';
     }
 
    public:
-    DictionaryNotifications(std::shared_ptr<object_store::Dictionary> _dictionary)
-        : dictionary{_dictionary} {}
+    DictionaryNotifications(object_store::Dictionary _dictionary): dictionary{_dictionary}{}
 
     DictionaryNotifications(DictionaryNotifications &&dictionary) = default;
 
-    void remove_listener(const Listener &&subscriber) {
-        int index = -1;
-        for (auto const &candidate : subscribers) {
-            index++;
-            if (candidate == subscriber) {
-                subscribers.erase(subscribers.begin() + index);
-                break;
-            }
-        }
-    }
 
-    void remove_all_listeners() { subscribers.clear(); }
-
-    void register_for_notifications(Listener &&delegate) {
-        subscribers.push_back(std::move(delegate));
+    void on_change(Update&& _update){
+        update = _update;
         listen_for_collection_changes();
     }
 };

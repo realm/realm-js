@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#include "common/object/IObject.hpp"
+
 #pragma once
 
 namespace realm {
@@ -24,53 +26,52 @@ namespace js {
 #if REALM_PLATFORM_NODE
 
 class JSLifeCycle {
-public:
+   public:
     template <typename ObjectType, typename Callback, typename Self>
-    static void finalize(ObjectType object, Callback&& callback, Self *self) {
-      object.AddFinalizer(
-            [callback](auto, void* data_ref) {
-                callback();
-            }, self);
+    static void finalize(ObjectType object, Callback&& callback, Self* self) {
+        object.AddFinalizer([callback](auto, void* data_ref) { callback(); },
+                            self);
     }
 };
 
 template <typename JSObject>
 void delete_key(JSObject& object, std::string& key) {
-        object.Delete(key);
+    object.Delete(key);
 }
 
 template <typename JSObject, typename Callback>
 void keys(JSObject& object, Callback&& callback) {
-  auto keys = object.GetPropertyNames();
-  auto size = keys.Length();
+    auto keys = object.GetPropertyNames();
+    auto size = keys.Length();
 
     for (auto index = 0; index < size; index++) {
         callback(keys[index]);
     }
-
 }
 
 #else
 
 class JSCDealloc {
-private:
+   private:
     std::function<void()> _delegated = NULL;
-public:
-    JSCDealloc(std::function<void()>&& _d): _delegated{_d} {}
+
+   public:
+    JSCDealloc(std::function<void()>&& _d) : _delegated{_d} {}
     void delegated() {
-        if(_delegated != nullptr){
+        if (_delegated != nullptr) {
             _delegated();
-        }else{
+        } else {
             cout << "Warning: RemovalCallback not configured."
         }
     }
 };
 
 class JSLifeCycle {
-public:
-    static void gc_finalizer(OpaqueJSValue* object){
-        JSCDealloc *remove_action = static_cast<JSCDealloc*>(JSObjectGetPrivate(object));
-        if(remove_action != nullptr) {
+   public:
+    static void gc_finalizer(OpaqueJSValue* object) {
+        JSCDealloc* remove_action =
+            static_cast<JSCDealloc*>(JSObjectGetPrivate(object));
+        if (remove_action != nullptr) {
             remove_action->delegated();
         }
     }
@@ -79,15 +80,13 @@ public:
     static void finalize(ObjectType object, Callback&& callback, Self*) {
         bool success = JSObjectSetPrivate(object, new JSCDealloc{callback});
 
-        if(!success){
+        if (!success) {
             cout << "Cannot save private data" << '\n';
         }
     }
 };
 
 #endif
-
-
 
 /*
  *  Specific NodeJS code to make object descriptors.
@@ -103,17 +102,17 @@ struct AccessorsConfiguration {
     Accessor accessor;
 
     template <typename Data>
-    void register_new_accessor(ContextType context, const char* key, ObjectType object,
-                               Data dictionary) {
+    void register_new_accessor(ContextType context, const char* key,
+                               ObjectType object, Data dictionary) {
         auto _getter = accessor.make_getter(key, dictionary);
         auto _setter = accessor.make_setter(key, dictionary);
 
         /*
          * NAPI_enumerable: Enables JSON.stringify(object) and all the good
-         * stuff for free... 
-         * 
-         * NAPI_configurable: Allow us to modify accessors, for example: Delete fields, very
-         * handy to reflect object-dictionary mutations. 
+         * stuff for free...
+         *
+         * NAPI_configurable: Allow us to modify accessors, for example: Delete
+         * fields, very handy to reflect object-dictionary mutations.
          *
          */
         auto rules = static_cast<napi_property_attributes>(napi_enumerable |
@@ -125,23 +124,13 @@ struct AccessorsConfiguration {
     }
 
     template <class JSObject>
-    void apply(ContextType context, ObjectType object, JSObject *_o) {
+    void apply(ContextType context, ObjectType object, JSObject* _o) {
         auto dictionary = _o->get_data();
-        for (auto entry_pair : *dictionary) {
+        for (auto entry_pair : dictionary) {
             auto key = entry_pair.first.get_string().data();
             register_new_accessor(context, key, object, dictionary);
         }
     }
-
-//    void update(ObjectType& object,
-//                realm::object_store::Dictionary* dictionary) {
-//         keys(object, [=](auto _key) mutable{
-//             std::string key = Value::to_string(context, _key);
-//            if (!dictionary->contains(key)) {
-//                delete_key(object, key);
-//            }
-//        });
-//    }
 };
 
 template <typename VM>
@@ -152,45 +141,98 @@ struct IdentityMethods {
     IdentityMethods(ContextType _context) : context{_context} {};
 };
 
-template <typename VM,
-          typename GetterSetters,
+template <typename VM, typename GetterSetters,
+          typename T,
           typename Methods = IdentityMethods<VM>,
           typename Data = object_store::Dictionary>
 struct JSObject {
    private:
+    using Value = js::Value<VM>;
     using Object = js::Object<VM>;
     using ObjectType = typename VM::Object;
     using ContextType = typename VM::Context;
-
+    T *t{nullptr};
+    bool waiting_for_notifications{false};
     std::unique_ptr<Methods> methods;
     std::unique_ptr<GetterSetters> getters_setters;
-    std::shared_ptr<Data> data;
+    Data data;
 
-    void setup_finalizer(ObjectType object){
-        JSLifeCycle::finalize(object, [this](){
-            // This method gets called when GC dispose the JS Object.
-            //https://isocpp.org/wiki/faq/freestore-mgmt#delete-this
-            delete this;
-        }, this);
-    }
+    std::vector<Subscriber*> subscribers;
+
+    ContextType context;
 
    public:
-    JSObject(Data _data) {
-        data = std::make_shared<Data>(_data);
+    JSObject(ContextType _context, Data _data) : context{_context}, data{_data} {
         getters_setters = std::make_unique<GetterSetters>();
         methods = std::make_unique<Methods>();
+        t = new T{data};
     };
 
-    std::shared_ptr<Data> get_data() { return data; }
+    Data& get_data() { return data; }
 
-    template <typename ContextType>
-    ObjectType build(ContextType context){
+    template <typename D, typename Chg>
+    void update(D _data, Chg& change_set) {
+        HANDLESCOPE(context)
+
+        auto obj_value = build();
+
+        for (Subscriber* subs : subscribers) {
+            subs->notify(obj_value, change_set);
+        }
+    }
+
+    void activate_on_change() {
+        if(waiting_for_notifications){
+            return;
+        }
+
+        t->on_change(
+                [=](auto dict, auto change_set) {
+                    update(dict, change_set);
+                });
+        waiting_for_notifications = true;
+    }
+
+    void subscribe(Subscriber* subscriber) {
+        subscribers.push_back(subscriber);
+        activate_on_change();
+    }
+
+    void remove_subscription(const Subscriber *subscriber) {
+        int index = -1;
+        for (auto const &candidate : subscribers) {
+            index++;
+            if (candidate->equals(subscriber)) {
+                subscribers.erase(subscribers.begin() + index);
+                break;
+            }
+        }
+    }
+
+    void unsubscribe_all(){
+        subscribers.clear();
+    }
+
+    ObjectType build() {
         auto obj = Object::create_empty(context);
         methods->apply(context, obj, this);
         getters_setters->apply(context, obj, this);
-        setup_finalizer(obj);
-
         return obj;
+    }
+
+    template <typename CB>
+    void setup_finalizer(ObjectType object, CB&& cb) {
+        JSLifeCycle::finalize(
+            object,
+            [=]() {
+                // This method gets called when GC dispose the JS Object.
+                // https://isocpp.org/wiki/faq/freestore-mgmt#delete-this
+                // delete this;
+                delete t;
+                cb();
+                std::cout << "bye! \n";
+            },
+            this);
     }
 
     ~JSObject() = default;
