@@ -143,11 +143,13 @@ struct NoMethods {
     NoMethods(ContextType _context) : context{_context} {};
 };
 
+class NoData{};
+
 template <typename VM,
           typename GetterSetters,
           typename T,
           typename Methods = NoMethods<VM>,
-          typename Data = object_store::Dictionary>
+          typename Data = NoData>
 struct JSObject {
    private:
     using Value = js::Value<VM>;
