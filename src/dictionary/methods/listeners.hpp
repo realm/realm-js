@@ -55,6 +55,8 @@ class ListenersMethodsForDictionary: public Method<T> {
     using Notifications = DictionaryNotifications<NotificationsCallback<T>>;
     using Value = js::Value<T>;
     using Dictionary = object_store::Dictionary;
+    using Object = js::Object<T>;
+    using MixedAPI = TypeMixed<T>;
 
     std::unique_ptr<Notifications> notifications;
     ContextType context;
@@ -69,6 +71,8 @@ class ListenersMethodsForDictionary: public Method<T> {
                   remove_listener(object, dictionary));
         Method<T>::define("removeAllListeners", object,
                   remove_all_listeners(object, dictionary));
+        Method<T>::define("put", object,
+                          put(object, dictionary));
 
         notifications = std::make_unique<Notifications>(dictionary);
     }
@@ -88,6 +92,23 @@ class ListenersMethodsForDictionary: public Method<T> {
             auto callback = Value::validated_to_function(ctx, info[0]);
             NotificationsCallback<T> subscriber{ctx, callback};
             notifications->remove_listener(std::move(subscriber));
+        };
+    }
+
+    auto put(ObjectType& object, Dictionary* dictionary) {
+        return [=](const auto& info) {
+            auto ctx = info.Env();
+            auto obj = Value::validated_to_object(ctx, info[0]);
+            auto keys = obj.GetPropertyNames();
+            auto size = keys.Length();
+
+            for (auto index = 0; index < size; index++) {
+                std::string key = Value::to_string(context, keys[index]);
+
+                auto value = Object::get_property(ctx, obj, key);
+                auto mixed = MixedAPI::get_instance().unwrap(info.Env(), value);
+                dictionary->insert(key, mixed);
+            }
         };
     }
 

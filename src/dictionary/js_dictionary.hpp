@@ -46,7 +46,7 @@ class DictionaryAdapter {
         JSDictionary *js_dictionary = new JSDictionary{context};
         object_store::Dictionary *_dictionary =
             new object_store::Dictionary{dictionary};
-
+        
         js_dictionary->template configure_object_destructor([=]() {
             /* GC will trigger this function, signaling that...
              * ...we can deallocate the attached C++ object.
