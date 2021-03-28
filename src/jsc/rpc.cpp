@@ -347,7 +347,7 @@ RPCServerImpl::RPCServerImpl() {
 
     // Make the App use the RPC Network Transport from now on
     previous_transport_generator = AppClass::transport_generator;
-    AppClass::transport_generator = +[] (jsc::Types::Context ctx, auto&& dispatcher) -> std::unique_ptr<app::GenericNetworkTransport> {
+    AppClass::transport_generator = [] (jsc::Types::Context ctx, auto&& dispatcher) -> std::unique_ptr<app::GenericNetworkTransport> {
         (void)dispatcher; // We don't need to use the dispatcher because JSC separately guarantees thread-safety.
         return std::make_unique<RPCNetworkTransport>(ctx);
     };
