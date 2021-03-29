@@ -1,14 +1,20 @@
-#pragma once 
+#pragma once
 #include <JavaScriptCore/JavaScriptCore.h>
 
-template <typename Context>
 class JavascriptObject {
-private:
+   private:
     JSClassDefinition _class;
+    JSClassRef class_instance;
+    JSContextRef context;
 
-public:
-    JavascriptObject(std::string name = "js_object"){
+   public:
+    JavascriptObject(JSContextRef _ctx, std::string name = "js_object")
+        : context{_ctx} {
         _class = kJSClassDefinitionEmpty;
-        _class.className = "js_object";
+        _class.className = name.c_str();
+
+        class_instance = JSClassCreate(&_class);
     }
+
+    JSObjectRef create() { return JSObjectMake(context, class_instance, NULL); }
 };
