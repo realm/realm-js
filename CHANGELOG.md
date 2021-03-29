@@ -7,7 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Classes names `class_class_...` were not handled correctly in queries. ([realm/realm-core#4480](https://github.com/realm/realm-core/issues/4480))
 * Syncing large Decimal128 values will cause `Assertion failed: cx.w[1] == 0`. ([realm/realm-core#4519](https://github.com/realm/realm-core/issues/4519), since v10.0.0)
 * Avoid race condition leading to possible hangs on Windows. ([realm/realm-dotnet#2245](https://github.com/realm/realm-dotnet/issues/2245))
-* During integration of a large amount of data from the server, you may get `Assertion failed: !fields.has_missing_parent_update()`. ([realm/realm-core#4497](https://github.com/realm/realm-core/issues/4497), since v6.0.0)
+* During integration of a large amount of data from the MongoDB Realm, you may get `Assertion failed: !fields.has_missing_parent_update()`. ([realm/realm-core#4497](https://github.com/realm/realm-core/issues/4497), since v6.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
