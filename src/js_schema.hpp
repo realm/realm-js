@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 #pragma once
 
 #include <map>
-
 #include "js_types.hpp"
 #include <realm/object-store/schema.hpp>
 
@@ -77,6 +76,11 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     }
     if (type.ends_with("[]")) {
         prop.type |= PropertyType::Array;
+        type = type.substr(0, type.size() - 2);
+    }
+
+    if (type.ends_with("<>")) {
+        prop.type |= PropertyType::Set;
         type = type.substr(0, type.size() - 2);
     }
 
@@ -159,6 +163,7 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
             prop.type |= PropertyType::UUID | PropertyType::Array;
             prop.object_type = "";
         }
+
         else {
             if (is_nullable(prop.type)) {
                 throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
@@ -167,6 +172,53 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
                 throw std::logic_error(util::format("List property '%1.%2' must have a non-list value type", object_name, prop.name));
             }
             prop.type |= PropertyType::Object | PropertyType::Array;
+        }
+    }
+    else if (type == "set") {
+        if (prop.object_type == "bool") {
+            prop.type |= PropertyType::Bool | PropertyType::Set;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "int") {
+            prop.type |= PropertyType::Int | PropertyType::Set;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "float") {
+            prop.type |= PropertyType::Float | PropertyType::Set;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "double") {
+            prop.type |= PropertyType::Double | PropertyType::Set;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "string") {
+            prop.type |= PropertyType::String | PropertyType::Set;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "date") {
+            prop.type |= PropertyType::Date | PropertyType::Set;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "data") {
+            prop.type |= PropertyType::Data | PropertyType::Set;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "decimal128") {
+            prop.type |= PropertyType::Decimal | PropertyType::Set;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "objectId") {
+            prop.type |= PropertyType::ObjectId | PropertyType::Set;
+            prop.object_type = "";
+        }
+        else {
+            if (is_nullable(prop.type)) {
+                throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
+            }
+            if (is_array(prop.type)) {
+                throw std::logic_error(util::format("List property '%1.%2' must have a non-list value type", object_name, prop.name));
+            }
+            prop.type |= PropertyType::Object | PropertyType::Set;
         }
     }
     else if (type == "linkingObjects") {
@@ -182,7 +234,7 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     }
 
     // Object properties are implicitly optional
-    if (prop.type == PropertyType::Object && !is_array(prop.type)) {
+    if (prop.type == PropertyType::Object && !is_array(prop.type) && !is_set(prop.type)) {
         prop.type |= PropertyType::Nullable;
     }
 }
