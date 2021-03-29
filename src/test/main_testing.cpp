@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "catch.hpp"
+#include "catch_amalgamated.hpp"
 #include "common/object/jsc_object.hpp"
 
 using Catch::Matchers::Contains;
@@ -15,9 +15,8 @@ TEST_CASE("Testing Logger#get_level") {
     REQUIRE(realm::common::logger::Logger::get_level("debug") ==
             realm::common::logger::LoggerLevel::debug);
     REQUIRE_THROWS_WITH(realm::common::logger::Logger::get_level("coffeebabe"),
-                        Contains("Bad log level"));
+                       "Bad log level");
 }
-
 JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
                 size_t argumentCount, const JSValueRef arguments[],
                 JSValueRef* exception) {
@@ -43,7 +42,6 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
 
     /*
      *  JavascriptObject Instantiation and configuration into JSC.
-     *
      */
 
     string NAME = "dictionary";
