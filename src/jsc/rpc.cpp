@@ -47,7 +47,7 @@ using json = nlohmann::json;
 using RPCObjectID = u_int64_t;
 using RPCRequest = std::function<json(const json)>;
 using NetworkTransport = js::JavaScriptNetworkTransport<jsc::Types>;
-using NetworkTransportFactory = typename NetworkTransport::NetworkTransportFactory
+using NetworkTransportFactory = typename NetworkTransport::NetworkTransportFactory;
 
 using Value = js::Value<jsc::Types>;
 using Accessor = realm::js::NativeAccessor<jsc::Types>;
