@@ -180,7 +180,9 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
 
     using SendRequestHandler = void(ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback);
 
+    // Work around of https://developercommunity.visualstudio.com/t/const-init-of-function-pointers-from-lambdas/1383098
     // This needs to be a plain function pointer to ensure that AppClass::transport_factory is correctly initialized on MSVC builds.
+    // Otherwise you will get a `bad_function_call` exception.
     using NetworkTransportFactory = std::unique_ptr<app::GenericNetworkTransport>(*)(ContextType, Dispatcher);
 
     JavaScriptNetworkTransport(ContextType ctx, Dispatcher eld) : m_ctx(ctx), m_dispatcher(std::move(eld)) {};
