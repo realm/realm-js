@@ -179,6 +179,8 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
     }
 
     using SendRequestHandler = void(ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback);
+
+    // This needs to be a plain function pointer to ensure that AppClass::transport_factory is correctly initialized on MSVC builds.
     using NetworkTransportFactory = std::unique_ptr<app::GenericNetworkTransport>(*)(ContextType, Dispatcher);
 
     JavaScriptNetworkTransport(ContextType ctx, Dispatcher eld) : m_ctx(ctx), m_dispatcher(std::move(eld)) {};
