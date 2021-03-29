@@ -1,7 +1,6 @@
-10.5.0-alpha.13 Release notes (2021-3-25)
+10.5.0-alpha.14 Release notes (2021-3-29)
 =============================================================
 NOTE: This is an internal release and SHOULD NOT be used.
-NOTE: No React Native support.
 NOTE: Realm file format is likely to break and you CAN NOT revert back to the previous file format - DATA WILL BE LOST!!!!
 NOTE: Sync protocol version 3: CANNOT SYNC WITH MONGODB REALM CLOUD.
 NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
@@ -11,6 +10,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * Added support for HTTP proxy.
 * Array of primitive lists will not be `snapshot()`'ed.
 * Added `ssl` option to `Realm.App.Sync` configuration.
+* Added UUID types. ([#3244](https://github.com/realm/realm-js/issues/3244))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

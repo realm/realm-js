@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "10.5.0-alpha.13",
+  "version": "10.5.0-alpha.14",
   "license": "See the actual license in the file LICENSE",
   "homepage": "https://realm.io",
   "keywords": [
@@ -49,7 +49,7 @@
     "set-version": "scripts/set-version.sh",
     "lint": "eslint",
     "test": "scripts/test.sh",
-    "package": "npm ci --ignore-scripts && prebuild --debug",
+    "package": "npm ci --ignore-scripts && prebuild",
     "install": "prebuild-install || cmake-js rebuild",
     "rebuild": "npm run rebuild-changes",
     "build": "npm run build-changes",
