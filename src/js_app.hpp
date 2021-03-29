@@ -59,7 +59,7 @@ public:
      * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network requests.
      * Exposed to allow other components (ex the RPCServer) to override the underlying implementation.
      */
-    static inline NetworkTransportFactory transport_generator = [] (ContextType ctx, typename NetworkTransport::Dispatcher eld) {
+    static inline NetworkTransportFactory transport_generator = +[] (ContextType ctx, typename NetworkTransport::Dispatcher eld) -> std::unique_ptr<app::GenericNetworkTransport> {
         return std::make_unique<NetworkTransport>(ctx, std::move(eld));
     };
 
