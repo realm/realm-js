@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 #include "common/object/IObject.hpp"
+#include "common/object/jsc_object.hpp"
 
 #pragma once
 
@@ -64,7 +66,7 @@ class JSCDealloc {
         if (_delegated != nullptr) {
             _delegated();
         } else {
-            cout << "Warning: RemovalCallback not configured."
+            std::cout << "Warning: RemovalCallback not configured."
         }
     }
 };
@@ -84,7 +86,7 @@ class JSLifeCycle {
         bool success = JSObjectSetPrivate(object, new JSCDealloc{callback});
 
         if (!success) {
-            cout << "Cannot save private data" << '\n';
+            std::cout << "Cannot save private data" << '\n';
         }
     }
 };
@@ -145,9 +147,15 @@ struct NoMethods {
 
 class NoData{};
 
+struct NoNotificationsStrategy{
+    int empty{0};
+
+    void on_change(){}
+};
+
 template <typename VM,
           typename GetterSetters,
-          typename T,
+          typename NotificationStrategy = NoNotificationsStrategy,
           typename Methods = NoMethods<VM>,
           typename Data = NoData>
 struct JSObject {
@@ -156,21 +164,23 @@ struct JSObject {
     using Object = js::Object<VM>;
     using ObjectType = typename VM::Object;
     using ContextType = typename VM::Context;
+    NotificationStrategy notifications;
 
     bool waiting_for_notifications{false};
     std::unique_ptr<Methods> methods;
     std::unique_ptr<GetterSetters> getters_setters;
     Data data;
-    T *t{nullptr};
+
 
     std::vector<Subscriber*> subscribers;
     ContextType context;
 
    public:
-    JSObject(ContextType _context, Data _data) : context{_context}, data{_data} {
+    JSObject(ContextType _context, Data _data) : context{_context},
+    data{_data},
+    notifications{_data} {
         getters_setters = std::make_unique<GetterSetters>();
         methods = std::make_unique<Methods>();
-        t = new T{data};
     };
 
     Data& get_data() { return data; }
@@ -190,7 +200,7 @@ struct JSObject {
             return;
         }
 
-        t->on_change(
+        notifications.on_change(
                 [=](auto dict, auto change_set) {
                     update(change_set);
                 });
@@ -231,7 +241,6 @@ struct JSObject {
         JSLifeCycle::finalize(
             object,
             [=]() {
-                delete t;
                 cb();
             },
             this);

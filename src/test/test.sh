@@ -1,10 +1,11 @@
-g++ -std=c++17 -Wall -I catch.hpp -I ../ -I ../object-store/src/ \
-    -I ../../vendor/realm-mac-x64/include/ \
+g++ -std=c++17 -Wall -I catch.hpp -I ../ \
+    -I ../../vendor/realm-core/src/ \
+    -I ../..//cmake-build-debug/vendor/realm-core/src/ \
     -I ../object-store/external/json \
-    -o testing logger.cpp \
-    ../../vendor/realm-mac-x64/osx/librealm-dbg.a \
-    ../../vendor/realm-mac-x64/osx/librealm-server-dbg.a \
-    ../../vendor/realm-mac-x64/osx/librealm-sync-dbg.a \
+    -framework Foundation -framework JavaScriptCore -o testing logger.cpp \
+    $(find ../../ -name "librealm-dbg.a") \
+    $(find ../../cmake-build-debug -name "librealm-sync-dbg.a") \
+    $(find ../../cmake-build-debug -name "librealm-object-store-dbg.a") \
     && 
 
 ./testing  
