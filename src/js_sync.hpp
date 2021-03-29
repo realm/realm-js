@@ -81,6 +81,10 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
         auto pv = Value<T>::validated_to_object_id(ctx, partition_value_value);
         partition_bson = bson::Bson(pv);
     }
+    else if (Value<T>::is_uuid(ctx, partition_value_value)) {
+        auto pv = Value<T>::validated_to_uuid(ctx, partition_value_value);
+        partition_bson = bson::Bson(pv);
+    }
     else if (Value<T>::is_null(ctx, partition_value_value)) {
         partition_bson = bson::Bson();
     }

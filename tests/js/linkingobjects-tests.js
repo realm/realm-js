@@ -18,10 +18,11 @@
 
 'use strict';
 
-var Realm = require('realm');
-var TestCase = require('./asserts');
-var schemas = require('./schemas');
-var ObjectId = require('bson').ObjectId;
+const Realm = require('realm');
+const TestCase = require('./asserts');
+const schemas = require('./schemas');
+
+const { ObjectId } = Realm.BSON;
 
 function names(results) {
     return results.map(function(object) {
