@@ -32,21 +32,14 @@ class ListenersMethodsForDictionary {
     using Value = js::Value<T>;
     using Dictionary = object_store::Dictionary;
     using MixedAPI = TypeMixed<T>;
-
-    template <class Fn>
-    void define(ContextType context, std::string&& name, ObjectType& object, Fn&& function) {
-        auto fn = Napi::Function::New(context, function, name);
-        Object::set_property(context, object, name, fn, PropertyAttributes::DontEnum);
-    }
-
    public:
 
-    template<typename JSObject>
-    void apply(ContextType context, ObjectType object, JSObject *_o) {
-        define(context,"addListener", object, add_listener(_o));
-        define(context,"removeListener", object, remove_listener(_o));
-        define(context,"removeAllListeners", object, remove_all_listeners(_o));
-        define(context,"put", object, put(_o));
+    template<typename JavascriptObject, typename JSObject>
+    void apply(ContextType context, JavascriptObject object, JSObject *_o) {
+        object.template add_method<T>("addListener", add_listener(_o));
+        object.template add_method<T>("removeListener", remove_listener(_o));
+        object.template add_method<T>("removeAllListeners", remove_all_listeners(_o));
+        object.template add_method<T>("put", put(_o));
     }
 
     template <typename JSObject>

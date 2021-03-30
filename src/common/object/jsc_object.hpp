@@ -16,5 +16,6 @@ class JavascriptObject {
         class_instance = JSClassCreate(&_class);
     }
 
+
     JSObjectRef create() { return JSObjectMake(context, class_instance, NULL); }
 };

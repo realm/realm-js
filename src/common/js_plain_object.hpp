@@ -18,7 +18,8 @@
 
 #include <iostream>
 #include "common/object/IObject.hpp"
-#include "common/object/jsc_object.hpp"
+
+
 
 #pragma once
 
@@ -26,36 +27,9 @@ namespace realm {
 namespace js {
 
 #if REALM_PLATFORM_NODE
-
-class JSLifeCycle {
-   public:
-    template <typename ObjectType, typename Callback, typename Self>
-
-    static void finalize(ObjectType object, Callback&& callback, Self *self) {
-      object.AddFinalizer(
-            [callback](auto, void* data_ref) {
-                callback();
-            }, self);
-    }
-};
-
-template <typename JSObject>
-void delete_key(JSObject& object, std::string& key) {
-    object.Delete(key);
-}
-
-template <typename JSObject, typename Callback>
-void keys(JSObject& object, Callback&& callback) {
-    auto keys = object.GetPropertyNames();
-    auto size = keys.Length();
-
-    for (auto index = 0; index < size; index++) {
-        callback(keys[index]);
-    }
-}
-
+#include "common/object/node_object.hpp"
 #else
-
+#include "common/object/jsc_object.hpp"
 class JSCDealloc {
    private:
     std::function<void()> _delegated = NULL;
@@ -94,9 +68,7 @@ class JSLifeCycle {
 #endif
 
 /*
- *  Specific NodeJS code to make object descriptors.
- *  When working with the JSC version, we just need to extract the NodeJS
- * feature and create a reusable component.
+ *  Dictionary accessors for JS Objects.
  */
 template <typename T, typename Accessor>
 struct AccessorsConfiguration {
@@ -106,34 +78,12 @@ struct AccessorsConfiguration {
 
     Accessor accessor;
 
-    template <typename Data>
-    void register_new_accessor(ContextType context, const char* key,
-                               ObjectType object, Data dictionary) {
-        auto _getter = accessor.make_getter(key, dictionary);
-        auto _setter = accessor.make_setter(key, dictionary);
-
-        /*
-         * NAPI_enumerable: Enables JSON.stringify(object) and all the good
-         * stuff for free...
-         *
-         * NAPI_configurable: Allow us to modify accessors, for example: Delete
-         * fields, very handy to reflect object-dictionary mutations.
-         *
-         */
-        auto rules = static_cast<napi_property_attributes>(napi_enumerable |
-                                                           napi_configurable);
-        auto descriptor = Napi::PropertyDescriptor::Accessor(
-            context, object, key, _getter, _setter, rules);
-
-        object.DefineProperty(descriptor);
-    }
-
-    template <class JSObject>
-    void apply(ContextType context, ObjectType object, JSObject* _o) {
+    template <class JavascriptObject, class JSObject>
+    void apply(ContextType context, JavascriptObject& js_object, JSObject* _o) {
         auto dictionary = _o->get_data();
         for (auto entry_pair : dictionary) {
             auto key = entry_pair.first.get_string().data();
-            register_new_accessor(context, key, object, dictionary);
+            js_object.template add_accessor<Accessor>(key, dictionary);
         }
     }
 };
@@ -185,15 +135,7 @@ struct JSObject {
 
     Data& get_data() { return data; }
 
-    template <typename Realm_ChangeSet>
-    void update(Realm_ChangeSet& change_set) {
-        HANDLESCOPE(context)
-        auto obj_value = build();
 
-        for (Subscriber* subs : subscribers) {
-            subs->notify(obj_value, change_set);
-        }
-    }
 
     void activate_on_change() {
         if(waiting_for_notifications){
@@ -228,17 +170,29 @@ struct JSObject {
         subscribers.clear();
     }
 
+    template <typename Realm_ChangeSet>
+    void update(Realm_ChangeSet& change_set) {
+        /* This is necessary for NodeJS. */
+        HANDLESCOPE(context)
+
+        auto obj_value = build();
+
+        for (Subscriber* subs : subscribers) {
+            subs->notify(obj_value, change_set);
+        }
+    }
+
     ObjectType build() {
-        auto obj = Object::create_empty(context);
-        methods->apply(context, obj, this);
-        getters_setters->apply(context, obj, this);
-        return obj;
+        T::common::JavascriptObject js_object{context};
+        methods->apply(context, js_object, this);
+        getters_setters->apply(context, js_object, this);
+        return js_object.get_object();
     }
 
     template <typename CB>
     void setup_finalizer(ObjectType object, CB&& cb) {
         // This method gets called when GC dispose the JS Object.
-        JSLifeCycle::finalize(
+        T::common::JavascriptObject::finalize(
             object,
             [=]() {
                 cb();
