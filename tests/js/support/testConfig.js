@@ -28,13 +28,13 @@ function nodeRequire(module) {
     return require_method(module);
 }
 
-let pathToStitchJson = "../../mongodb/stitch.json";
+let pathToStitchJson = "../../mongodb/config.json";
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 
 if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
     const path = nodeRequire("path");
     console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
-    pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, '../../../mongodb/stitch.json')
+    pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, '../../../mongodb/config.json')
 }
 console.log("pathToStitchJson " + pathToStitchJson);
 

@@ -131,7 +131,7 @@ export class RealmAppImporter {
     }
 
     private loadStichJson(appTemplatePath: string) {
-        const stitchJsonPath = path.resolve(appTemplatePath, "stitch.json");
+        const stitchJsonPath = path.resolve(appTemplatePath, "config.json");
         return this.loadJson(stitchJsonPath);
     }
 
