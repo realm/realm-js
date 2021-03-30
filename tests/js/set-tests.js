@@ -33,7 +33,7 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
 const { Decimal128, ObjectId } = require("bson");
-const { Test } = require('tslint');
+//const { Test } = require('tslint');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
