@@ -29,6 +29,15 @@ class JavascriptObject {
 private:
 Napi::Env context;
 Napi::Object object;
+using Notify = std::function<void(Napi::Env, Napi::Value, ObjectMutationObserver*)>;
+
+
+template <typename Callback, typename Data>
+static auto make_callback_method(Callback&& callback, Data *data){
+    return [=](const auto& info) mutable {
+        callback(info.Env(), info[0], data, data->get_data());
+    };
+}
 
 public:
     JavascriptObject(Napi::Env _ctx, std::string name = "js_object")
@@ -36,10 +45,11 @@ public:
         object = Napi::Object::New(context);
     }
 
-    template <class VM, class Function>
-    void add_method(std::string name, Function&& function){
-        auto _function = Napi::Function::New(context, function, name);
-        js::Object<VM>::set_property(context, object, name, _function, PropertyAttributes::DontEnum);
+    template <class VM, typename Function, class Data>
+    void add_method(std::string&& name, Function&& function, Data *data){
+        auto _callback = make_callback_method(function, data);
+        auto js_function = Napi::Function::New(context, _callback, name);
+        js::Object<VM>::set_property(context, object, name, js_function, PropertyAttributes::DontEnum);
     }
 
     template <typename Accessor, typename Data>

@@ -72,14 +72,8 @@ class JSLifeCycle {
  */
 template <typename T, typename Accessor>
 struct AccessorsConfiguration {
-    using ObjectType = typename T::Object;
-    using ContextType = typename T::Context;
-    using Value = js::Value<T>;
-
-    Accessor accessor;
-
     template <class JavascriptObject, class JSObject>
-    void apply(ContextType context, JavascriptObject& js_object, JSObject* _o) {
+    void apply(JavascriptObject& js_object, JSObject* _o) {
         auto dictionary = _o->get_data();
         for (auto entry_pair : dictionary) {
             auto key = entry_pair.first.get_string().data();
@@ -103,12 +97,13 @@ struct NoNotificationsStrategy{
     void on_change(){}
 };
 
+
 template <typename VM,
           typename GetterSetters,
           typename NotificationStrategy = NoNotificationsStrategy,
           typename Methods = NoMethods<VM>,
           typename Data = NoData>
-struct JSObject {
+struct JSObject: public ObjectMutationObserver {
    private:
     using Value = js::Value<VM>;
     using Object = js::Object<VM>;
@@ -134,8 +129,6 @@ struct JSObject {
     };
 
     Data& get_data() { return data; }
-
-
 
     void activate_on_change() {
         if(waiting_for_notifications){
@@ -184,8 +177,8 @@ struct JSObject {
 
     ObjectType build() {
         T::common::JavascriptObject js_object{context};
-        methods->apply(context, js_object, this);
-        getters_setters->apply(context, js_object, this);
+        methods->apply(js_object, this);
+        getters_setters->apply(js_object, this);
         return js_object.get_object();
     }
 
@@ -193,8 +186,7 @@ struct JSObject {
     void setup_finalizer(ObjectType object, CB&& cb) {
         // This method gets called when GC dispose the JS Object.
         T::common::JavascriptObject::finalize(
-            object,
-            [=]() {
+            object, [=]() {
                 cb();
             },
             this);

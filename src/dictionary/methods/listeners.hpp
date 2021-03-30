@@ -28,61 +28,47 @@ class ListenersMethodsForDictionary {
    private:
     using ObjectType = typename T::Object;
     using ContextType = typename T::Context;
+    using ValueType = typename T::Value;
     using Object = js::Object<T>;
     using Value = js::Value<T>;
-    using Dictionary = object_store::Dictionary;
-    using MixedAPI = TypeMixed<T>;
+    using Dictionary = CollectionAdapter<TypeMixed<T>, object_store::Dictionary>;
    public:
 
-    template<typename JavascriptObject, typename JSObject>
-    void apply(ContextType context, JavascriptObject object, JSObject *_o) {
-        object.template add_method<T>("addListener", add_listener(_o));
-        object.template add_method<T>("removeListener", remove_listener(_o));
-        object.template add_method<T>("removeAllListeners", remove_all_listeners(_o));
-        object.template add_method<T>("put", put(_o));
+
+    static auto add_listener(ContextType context, ValueType value, ObjectMutationObserver* observer,Dictionary& dictionary) {
+        auto fn = Value::validated_to_function(context, value);
+        auto *subscriber = new NotificationsCallback<T>{context, fn};
+        observer->subscribe(subscriber);
     }
 
-    template <typename JSObject>
-    auto add_listener(JSObject *object) {
-        return [=](const auto& info) {
-            auto ctx = info.Env();
-            auto fn = Value::validated_to_function(ctx, info[0]);
-            auto *subscriber = new NotificationsCallback<T>{ctx, fn};
-            object->subscribe(subscriber);
-        };
-    }
-    template <typename JSObject>
-    auto remove_listener(JSObject *object) {
-        return [=](const auto& info) {
-            auto ctx = info.Env();
-            auto callback = Value::validated_to_function(ctx, info[0]);
-            auto *subscriber = new NotificationsCallback<T>{ctx, callback};
-            object->remove_subscription(subscriber);
-        };
+    static auto remove_listener(ContextType context, ValueType value, ObjectMutationObserver* observer,Dictionary& dictionary) {
+        auto callback = Value::validated_to_function(context, value);
+        auto *subscriber = new NotificationsCallback<T>{context, callback};
+        observer->remove_subscription(subscriber);
     }
 
-    template <typename JSObject>
-    auto remove_all_listeners(JSObject *object) {
-        return [=](const auto& info) {
-            object->unsubscribe_all();
-        };
+    static auto remove_all_listeners(ContextType, ValueType, ObjectMutationObserver* observer,Dictionary& dictionary) {
+        observer->unsubscribe_all();
     }
 
-    template <typename JSObject>
-    auto put(JSObject *object) {
-        return [=](const auto& info) {
-            auto ctx = info.Env();
-            auto dictionary = object->get_data();
-            auto obj = Value::validated_to_object(ctx, info[0]);
-            auto keys = obj.GetPropertyNames();
-            auto size = keys.Length();
+    static auto put(ContextType&& context, ValueType value, ObjectMutationObserver* observer, Dictionary& dictionary) {
+        auto obj = Value::validated_to_object(context, value);
+        auto keys = obj.GetPropertyNames();
+        auto size = keys.Length();
 
-            for (auto index = 0; index < size; index++) {
-                std::string key = Value::to_string(ctx, keys[index]);
-                auto value = Object::get_property(ctx, obj, key);
-                dictionary.set(ctx, key, value);
-            }
-        };
+        for (auto index = 0; index < size; index++) {
+            std::string key = Value::to_string(context, keys[index]);
+            auto value = Object::get_property(context, obj, key);
+            dictionary.set(context, key, value);
+        }
+    }
+
+    template<typename JavascriptObject, typename Data>
+    void apply(JavascriptObject object, Data *_o) {
+        object.template add_method<T>("addListener", add_listener, _o);
+        object.template add_method<T>("removeListener", remove_listener, _o);
+        object.template add_method<T>("removeAllListeners", remove_all_listeners, _o);
+        object.template add_method<T>("put", put, _o);
     }
 };
 

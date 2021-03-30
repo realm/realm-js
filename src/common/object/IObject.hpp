@@ -23,5 +23,13 @@ struct Subscriber {
     virtual bool equals(const Subscriber *) const = 0;
     virtual Napi::Function callback() const = 0;
 
+    //TODO
     //virtual ~Subscriber() = 0;
+};
+
+
+struct ObjectMutationObserver {
+    virtual void subscribe(Subscriber*) = 0;
+    virtual void remove_subscription(const Subscriber *) = 0;
+    virtual void unsubscribe_all() = 0;
 };
