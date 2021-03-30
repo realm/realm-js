@@ -405,7 +405,7 @@ def buildiOS() {
 
 def inAndroidContainer(workerFunction) {
   return {
-    myNode('android') {
+    myNode('docker-cph-03') {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {

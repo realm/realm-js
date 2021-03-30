@@ -1,5 +1,7 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.3.0 Release notes (2021-3-30)
 =============================================================
+NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complete changelog, please see v10.3.0-rc.1.
+
 ### Enhancements
 * None.
 
