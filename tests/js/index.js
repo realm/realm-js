@@ -45,6 +45,7 @@ var TESTS = {
     EncryptionTests: require("./encryption-tests"),
     AliasTests: require("./alias-tests"),
     ArrayBuffer: require("./array-buffer-tests")
+    // Garbagecollectiontests: require('./garbage-collection'),
 };
 
 //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
@@ -104,7 +105,7 @@ exports.runTest = function(suiteName, testName) {
 
     if (testMethod) {
         Realm.clearTestState();
-        console.warn("Starting test " + testName);
+        console.log("Starting test " + testName);
         var result = testMethod.call(testSuite);
 
         //make sure v8 GC can collect garbage after each test and does not fail

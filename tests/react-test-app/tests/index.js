@@ -54,7 +54,7 @@ export async function runTests() {
     let passed = true;
 
     for (let suiteName in testNames) {
-        console.warn('Starting ' + suiteName);
+        console.log('Starting ' + suiteName);
 
         for (let testName of testNames[suiteName]) {
             try {

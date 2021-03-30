@@ -19,11 +19,11 @@
 #include "platform.hpp"
 #include "js_types.hpp"
 
-#include "impl/realm_coordinator.hpp"
+#include <realm/object-store/impl/realm_coordinator.hpp>
 
 #if REALM_ENABLE_SYNC
-#include "sync/sync_manager.hpp"
-#include "sync/sync_user.hpp"
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
 #endif
 
 namespace realm {
@@ -108,8 +108,8 @@ std::string TypeErrorException::type_string(Property const& prop)
         case PropertyType::Object:
             ret = prop.object_type;
             break;
-        case PropertyType::Any:
-            throw std::runtime_error("'Any' type is not supported");
+        case PropertyType::Mixed:
+            throw std::runtime_error("'Mixed' type support is not implemented yet");
         default:
             REALM_UNREACHABLE();
     }

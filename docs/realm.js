@@ -343,6 +343,9 @@ class Realm {
 }
 /**
  * This describes the different options used to create a {@link Realm} instance.
+ * 
+ * See {@tutorial http-proxy} for details on how use an HTTP forward proxy with this library.
+ * 
  * @typedef Realm~Configuration
  * @type {Object}
  * @property {ArrayBuffer|ArrayBufferView} [encryptionKey] - The 512-bit (64-byte) encryption

@@ -19,6 +19,7 @@
 #pragma once
 
 #include <math.h>
+#include <cstdlib>
 
 #include "js_class.hpp"
 #include "js_collection.hpp"
@@ -27,17 +28,19 @@
 #include "logger.hpp"
 
 #include "platform.hpp"
-#include "sync/sync_config.hpp"
-#include "sync/sync_manager.hpp"
-#include "sync/sync_session.hpp"
-#include "sync/sync_user.hpp"
-#include "util/event_loop_dispatcher.hpp"
+#include <realm/sync/config.hpp>
+#include <realm/sync/protocol.hpp>
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/sync_session.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
+#include <realm/object-store/util/event_loop_dispatcher.hpp>
 
 #include <realm/util/logger.hpp>
 #include <realm/util/uri.hpp>
+#include <realm/util/network.hpp>
 
 #if REALM_PLATFORM_NODE
-#include "impl/realm_coordinator.hpp"
+#include <realm/object-store/impl/realm_coordinator.hpp>
 #endif
 
 #if REALM_ANDROID
@@ -227,7 +230,7 @@ public:
     }
 
     // This function is called on the sync client's event loop thread.
-    bool operator ()(const std::string& server_address, sync::Session::port_type server_port, const char* pem_data, size_t pem_size, int preverify_ok, int depth)
+    bool operator ()(const std::string& server_address, util::network::Endpoint::port_type server_port, const char* pem_data, size_t pem_size, int preverify_ok, int depth)
     {
         const std::string pem_certificate {pem_data, pem_size};
         {
@@ -255,7 +258,7 @@ public:
     // back to the sync client's event loop thread through a condition variable.
     static void main_loop_handler(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
                                   const std::string& server_address,
-                                  sync::Session::port_type server_port,
+                                  util::network::Endpoint::port_type server_port,
                                   const std::string& pem_certificate,
                                   int preverify_ok,
                                   int depth)
@@ -291,7 +294,7 @@ private:
     const Protected<typename T::Function> m_func;
     util::EventLoopDispatcher<void(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
                                    const std::string& server_address,
-                                   sync::Session::port_type server_port,
+                                   util::network::Endpoint::port_type server_port,
                                    const std::string& pem_certificate,
                                    int preverify_ok,
                                    int depth)> m_event_loop_dispatcher;
@@ -732,11 +735,11 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
 
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     auto callback_fn = Value::validated_to_function(ctx, args[1], "logger_callback");
-    
+
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<FunctionType> protected_callback(ctx, callback_fn);
 
-    common::logger::Delegated show_logs = [=](int level, std::string message) { 
+    common::logger::Delegated show_logs = [=](int level, std::string message) {
         HANDLESCOPE(protected_ctx)
 
         ValueType arguments[2] = {
@@ -744,7 +747,7 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
             Value::from_string(protected_ctx, message)
         };
 
-        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, arguments); 
+        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, arguments);
     };
 
     auto sync_logger = common::logger::Logger::build_sync_logger(show_logs);
@@ -780,7 +783,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     if (Value::is_boolean(ctx, sync_config_value)) {
         config.force_sync_history = Value::to_boolean(ctx, sync_config_value);
         if (config.force_sync_history) {
-            config.schema_mode = SchemaMode::Additive;
+            config.schema_mode = SchemaMode::AdditiveExplicit;
         }
     } else if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
@@ -834,13 +837,50 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             config.sync_config->custom_http_headers = std::move(http_headers);
         }
 
+        // HTTP proxy: only node is supported
+#ifdef REALM_PLATFORM_NODE
+        SyncConfig::ProxyConfig proxy_config;
+        std::vector<std::string> env_vars = { "https_proxy", "HTTPS_PROXY" };
+        for (auto env_var : env_vars) {
+            char *http_proxy = std::getenv(env_var.c_str());
+            if (http_proxy != NULL) {
+                // https://stackoverflow.com/questions/43906956/split-url-into-host-port-and-resource-c
+                std::string url(http_proxy);
+
+                std::size_t index1 = url.find_first_of(":");
+                std::string protocol = url.substr(0, index1);
+
+                std::string url_new = url.substr(index1 + 3); // skip http(s)
+                std::size_t index2 = url_new.find_first_of(":");
+                std::string host = url_new.substr(0, index2);
+
+                std::size_t index3 = url_new.find_first_of("/");
+                std::string port = url_new.substr(index2 + 1, index3 - index2 - 1);
+
+                if (protocol == "http") {
+                    proxy_config.type = SyncConfig::ProxyConfig::Type::HTTP;
+                } else if (protocol == "https") {
+                    proxy_config.type = SyncConfig::ProxyConfig::Type::HTTPS;
+                } else {
+                    throw std::runtime_error("Expected either 'http' or 'https' as protocol for " + env_var + " (got " + protocol + ")");
+                }
+                proxy_config.address = std::move(host);
+                proxy_config.port = static_cast<std::uint_fast16_t>(atoi(port.c_str()));
+
+                config.sync_config->proxy_config = util::Optional<SyncConfig::ProxyConfig>(std::move(proxy_config));
+                break;
+            }
+        }
+
+#endif
+
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();
             std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
         }
 
         config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
-        config.schema_mode = SchemaMode::Additive;
+        config.schema_mode = SchemaMode::AdditiveExplicit;
         config.path = user->sync_manager()->path_for_realm(*(config.sync_config));
     }
 }

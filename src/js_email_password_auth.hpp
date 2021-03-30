@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "sync/app.hpp"
+#include <realm/object-store/sync/app.hpp>
 
 #include "js_class.hpp"
 

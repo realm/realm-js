@@ -4,6 +4,29 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
+* Classes names `class_class_...` were not handled correctly in queries. ([realm/realm-core#4480](https://github.com/realm/realm-core/issues/4480))
+* Syncing large Decimal128 values will cause `Assertion failed: cx.w[1] == 0`. ([realm/realm-core#4519](https://github.com/realm/realm-core/issues/4519), since v10.0.0)
+* Avoid race condition leading to possible hangs on Windows. ([realm/realm-dotnet#2245](https://github.com/realm/realm-dotnet/issues/2245))
+* During integration of a large amount of data from the MongoDB Realm, you may get `Assertion failed: !fields.has_missing_parent_update()`. ([realm/realm-core#4497](https://github.com/realm/realm-core/issues/4497), since v6.0.0)
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Upgraded Realm Core from v10.5.4 to v10.5.6. 
+
+10.3.0-rc.1 Release notes (2021-3-19)
+=============================================================
+### Enhancements
+* Added support for comparing numbers to boolean values in queries.
+
+### Fixed
+* On 32 bit devices you may get exception with `No such object` when upgrading from v6.x to v10.x ([realm/realm-java#7314](https://github.com/realm/realm-java#7314), since v10.0.0)
+* Restore support for upgrading files from file format 5 (Realm JavaScript 1.x). ([realm/realm-cocoa#7089](https://github.com/realm/realm-cocoa/issues/7089), since v6.0.0)
+* Fixed a bug that prevented an object type with incoming links from being marked as embedded during migrations. ([realm/realm-core#4414](https://github.com/realm/realm-core#4414))
+* During synchronization you might experience crash with `Assertion failed: ref + size <= next->first`. ([realm/realm-core#4388](https://github.com/realm/realm-core#4388))
 * There seems to be a few issues regarding class support in realm-js. We are currently coming up with strategies to better support this in the future.  In the meantime, the following fixes have been applied to help avoid crashes and failures.
   * When creating a class that extends Realm.Object and pushing the instantiated object to a list, a segmentation fault would occur.  This has been fixed by a null check and throwing an exception.
   * Creating an object from an instance of Realm.Object that was manually constructed (detached from Realm) would fail the second time.  Now we throw an meaningful exception the first time.
@@ -15,7 +38,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Switch to unified releases of Realm Core, Realm Sync and Realm Object Store.
+* Upgraded to Realm Core v10.5.4.
 
 10.2.0 Release notes (2021-2-5)
 =============================================================
@@ -35,6 +59,9 @@ x.x.x Release notes (yyyy-MM-dd)
 
 10.1.4 Release notes (2021-1-27)
 =============================================================
+### Enhancements
+* None.
+
 ### Fixed
 * App crashed if a native error was thrown during `Realm.open(...)` ([#3414](https://github.com/realm/realm-js/issues/3414), since v10.0.0)
 * Fixed an issue in Node.js, where utilizing an ArrayBuffer for setting a binary property, would mangle the data. ([#3518](https://github.com/realm/realm-js/issues/3518))

@@ -22,13 +22,12 @@
 #include "js_realm_object.hpp"
 #include "js_util.hpp"
 
-#include "keypath_helpers.hpp"
-#include "list.hpp"
-#include "object_store.hpp"
-#include "results.hpp"
+#include <realm/object-store/keypath_helpers.hpp>
+#include <realm/object-store/list.hpp>
+#include <realm/object-store/object_store.hpp>
+#include <realm/object-store/results.hpp>
 
-#include <realm/parser/parser.hpp>
-#include <realm/parser/query_builder.hpp>
+#include <realm/parser/query_parser.hpp>
 #include <realm/util/optional.hpp>
 #ifdef REALM_ENABLE_SYNC
 #include "js_sync.hpp"
@@ -158,20 +157,22 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     }
 
     auto query_string = Value::validated_to_string(ctx, args[0], "predicate");
-    auto query = collection.get_query();
+
     auto const &realm = collection.get_realm();
     auto const &object_schema = collection.get_object_schema();
-    DescriptorOrdering ordering;
-    parser::KeyPathMapping mapping;
+
+    query_parser::KeyPathMapping mapping;
     realm::populate_keypath_mapping(mapping, *realm);
-
-    parser::ParserResult result = parser::parse(query_string);
     NativeAccessor<T> accessor(ctx, realm, object_schema);
-    query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
-    query_builder::apply_predicate(query, result.predicate, converter, mapping);
-    query_builder::apply_ordering(ordering, query.get_table(), result.ordering, mapping);
+    query_parser::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
 
-    return create_instance(ctx, collection.filter(std::move(query)).apply_ordering(std::move(ordering)));
+    auto table = realm->read_group().get_table(object_schema.table_key);
+    auto query = table->query(query_string, converter, mapping);
+    auto ordering = query.get_ordering();
+    if (ordering)
+        return create_instance(ctx, collection.filter(std::move(query)).apply_ordering(std::move(*ordering)));
+    else
+        return create_instance(ctx, collection.filter(std::move(query)));
 }
 
 template<typename T>

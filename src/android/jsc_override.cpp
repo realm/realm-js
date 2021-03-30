@@ -24,8 +24,8 @@
 #include <JavaScriptCore/JSContextRef.h>
 
 #include "jsc_init.h"
-#include "shared_realm.hpp"
-#include "impl/realm_coordinator.hpp"
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/impl/realm_coordinator.hpp>
 
 /**
 `__attribute__((constructor))` will trigger a first call to swap_function() which will install the function hook.

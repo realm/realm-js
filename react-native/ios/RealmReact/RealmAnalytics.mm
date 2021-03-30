@@ -66,7 +66,14 @@
 
 // This symbol is defined by the Apple Generic versioning system when building this project.
 // It confusingly looks like this: @(#)PROGRAM:RealmJS  PROJECT:RealmJS-0.0.1
+#if defined(COCOAPODS) && COCOAPODS
+// Compiled as part of RealmJS.podspec, the project name is RealmJS
 extern "C" const char RealmJSVersionString[];
+#else
+// Compiled as part of RealmReact.xcodeproj, the project name is RealmReact
+extern "C" const char RealmReactVersionString[];
+#define RealmJSVersionString RealmReactVersionString
+#endif
 
 // Wrapper for sysctl() that handles the memory management stuff
 static auto RLMSysCtl(int *mib, u_int mibSize, size_t *bufferSize) {

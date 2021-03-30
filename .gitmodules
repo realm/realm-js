@@ -4,7 +4,6 @@
 [submodule "docs/jsdoc-template"]
 	path = docs/jsdoc-template
 	url = https://github.com/realm/realm-jsdoc.git
-[submodule "src/object-store"]
-	path = src/object-store
-	url = https://github.com/realm/realm-object-store.git
-	branch = master
+[submodule "vendor/realm-core"]
+	path = vendor/realm-core
+	url = https://github.com/realm/realm-core.git

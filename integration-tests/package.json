@@ -12,8 +12,7 @@
     "tests/lint": "npm run lint --prefix tests",
     "tests/pack": "npm pack ./tests && mv realm-integration-tests-*.tgz realm-integration-tests.tgz",
     "realm/pack-internal": "npm pack .. && mv realm-*.*.*.tgz realm.tgz",
-    "realm/pack": "npm run isWin -s && SET REALM_BUILD_ANDROID=1 && npm run realm/pack-internal || REALM_BUILD_ANDROID=1 && npm run realm/pack-internal",
-    "isWin": "node -p \"if (process.platform == 'win32') { process.exit(0); } else { process.exit(-1); }\"",
+    "realm/pack": "npm run realm/pack-internal",
     "environments/install": "node environments 'npm install'",
     "environments/lint": "node environments 'eslint **/*.js'",
     "environments/test": "node environments 'npm test'"

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "sync/generic_network_transport.hpp"
+#include <realm/object-store/sync/generic_network_transport.hpp>
 #include "js_types.hpp"
 #include <string>
 
@@ -143,7 +143,7 @@ void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, 
     if (!Value::is_undefined(ctx, status_code_object) && !Value::is_undefined(ctx, message_code_object)) {
         http_status_code = static_cast<int>(Value::validated_to_number(ctx, Object::get_property(ctx, error_object, status_code), "statusCode"));
         body = Value::validated_to_string(ctx, Object::get_property(ctx, error_object, error_message), "errorMessage");
-    } 
+    }
     else if (!Value::is_undefined(ctx, network_message_code_object)) {
         custom_status_code = -1;
         body = Value::validated_to_string(ctx, Object::get_property(ctx, error_object, network_message), "message");
@@ -179,7 +179,9 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
     }
 
     using SendRequestHandler = void(ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback);
-    using NetworkTransportFactory = std::function<std::unique_ptr<app::GenericNetworkTransport>(ContextType, Dispatcher)>;
+
+    // This needs to be a plain function pointer to ensure that AppClass::transport_factory is correctly initialized on MSVC builds.
+    using NetworkTransportFactory = std::unique_ptr<app::GenericNetworkTransport>(*)(ContextType, Dispatcher);
 
     JavaScriptNetworkTransport(ContextType ctx, Dispatcher eld) : m_ctx(ctx), m_dispatcher(std::move(eld)) {};
 
@@ -192,7 +194,7 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
             {"method", Value::from_string(ctx, fromHttpMethod(request.method))},
             {"url", Value::from_string(ctx, request.url)},
             {"timeoutMs", Value::from_number(ctx, request.timeout_ms)},
-            {"headers", headers_object},
+            {"headers", headers_object}
         });
         if (!request.body.empty()) {
             Object::set_property(ctx, request_object, "body", Value::from_string(ctx, request.body));

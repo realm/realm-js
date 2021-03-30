@@ -1,0 +1,35 @@
+{
+    "collection": "MixedObject",
+    "database": "test_data",
+    "id": "6037be866c917b9bd04fb54d",
+    "roles": [
+        {
+            "name": "default",
+            "apply_when": {},
+            "write": true,
+            "insert": true,
+            "delete": true,
+            "additional_fields": {}
+        }
+    ],
+    "schema": {
+        "properties": {
+            "_id": {
+                "bsonType": "objectId"
+            },
+            "key": {
+                "bsonType": "string"
+            },
+            "realm_id": {
+                "bsonType": "string"
+            },
+            "value": {
+                "bsonType": "mixed"
+            }
+        },
+        "required": [
+            "key"
+        ],
+        "title": "MixedObject"
+    }
+}

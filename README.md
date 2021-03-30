@@ -40,7 +40,10 @@ Prerequisites:
 * Android SDK 23+
 * [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
     - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.
-    - From the command-line: ```$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
+    - From the command-line: ```$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
+* [Android CMake](https://developer.android.com/ndk/guides/cmake)
+    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**
+    - From the command-line  ```$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "cmake;3.18.1"````
 
 Clone RealmJS repository:
 
@@ -252,9 +255,7 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING
 
 ## License
 
-Realm JS is published under a mix of the Apache License 2.0 and the Realm Platform Extensions License.
-Realm Core is published under the Apache 2.0 license and is available
-[here](https://github.com/realm/realm-core).
+Realm JS and [Realm Core](https://github.com/realm/realm-core) are published under the Apache License 2.0.
 
 **This product is not being made available to any person located in Cuba, Iran,
 North Korea, Sudan, Syria or the Crimea region, or to any other person that is

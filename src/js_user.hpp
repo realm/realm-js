@@ -24,12 +24,12 @@
 #include "js_api_key_auth.hpp"
 #include "js_network_transport.hpp"
 
-#include "sync/mongo_collection.hpp"
-#include "sync/sync_config.hpp"
-#include "sync/sync_manager.hpp"
-#include "sync/sync_session.hpp"
-#include "sync/sync_user.hpp"
-#include "sync/app.hpp"
+#include <realm/sync/config.hpp>
+#include <realm/object-store/sync/mongo_collection.hpp>
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/sync_session.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
+#include <realm/object-store/sync/app.hpp>
 #include "platform.hpp"
 
 namespace realm {

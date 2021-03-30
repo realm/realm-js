@@ -6,10 +6,13 @@ FROM debian:stretch-slim
 ARG ANDROID_SDK_VERSION=4333796
 ARG ANDROID_NDK_VERSION=r21
 ARG ANDROID_BUILD_TOOLS_VERSION=28.0.3
-ARG NODE_VERSION=10.x
+ARG NODE_VERSION=12.x
 
 # Locales
 ENV LANG C.UTF-8
+
+ENV NPM_CONFIG_UNSAFE_PERM true
+ENV NVM_DIR /tmp/.nvm
 
 # Because we're using the slim variant of Debian some directories (expected when installing openjdk) are missing
 RUN mkdir /usr/share/man/man1
@@ -26,6 +29,8 @@ RUN dpkg --add-architecture i386 && \
       gnupg \
       unzip \
       git \
+      qemu-kvm \
+      libglu1 \
       # Tools ndeed when building Android module
       build-essential \
     && \
@@ -37,12 +42,12 @@ RUN dpkg --add-architecture i386 && \
 
 # Jenkins will run this image as user 1001, let's ensure that user exists and has a home directory
 RUN adduser --uid 1001 --disabled-password --gecos "" jenkins
-# Install the SDK and NDK as jenkins
+# Install the SDK and NDK
 USER jenkins
 
 # Install the Android SDK and NDK
 ENV ANDROID_HOME /home/jenkins/android-sdk
-ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
+ENV PATH ${PATH}:${ANDROID_HOME}/emulator:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
 ENV ANDROID_NDK /home/jenkins/android-ndk
 
 RUN echo 'Installing Android SDK' && \
@@ -51,7 +56,13 @@ RUN echo 'Installing Android SDK' && \
     unzip -q sdk-tools-linux-*.zip && \
     rm sdk-tools-linux-*.zip && \
     sdkmanager --update && \
-    yes | sdkmanager "tools" "platform-tools" "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" "platforms;android-26" && \
+    yes | sdkmanager --licenses && \
+    yes | sdkmanager "tools" \
+                     "platform-tools" \
+                     "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+                     "platforms;android-26" \
+                     "cmake;3.10.2.4988404"\
+                     "system-images;android-29;default;x86" && \
     \
     echo 'Installing Android NDK' && \
     cd ${ANDROID_NDK}/.. && \
@@ -59,3 +70,16 @@ RUN echo 'Installing Android SDK' && \
     unzip -q android-ndk-*-linux-x86_64.zip && \
     rm android-ndk-*-linux-x86_64.zip && \
     mv android-ndk-* android-ndk
+
+RUN mkdir -p $NVM_DIR \
+ && curl -s https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash \
+ && . $NVM_DIR/nvm.sh \
+ && nvm install 12 \
+ && chmod a+rwX -R $NVM_DIR
+
+# Ensure a new enough version of CMake is available.
+RUN mkdir -p /home/jenkins/cmake && \
+    cd /home/jenkins/cmake && \
+    curl -O -J https://cmake.org/files/v3.17/cmake-3.17.5-Linux-x86_64.tar.gz &&\
+    tar zxf cmake-3.17.5-Linux-x86_64.tar.gz
+ENV PATH "/home/jenkins/cmake/cmake-3.17.5-Linux-x86_64/bin:$PATH"

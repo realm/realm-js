@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include "sync/generic_network_transport.hpp"
-#include "sync/sync_user.hpp"
-#include "sync/app.hpp"
-#include "sync/app_credentials.hpp"
+#include <realm/object-store/sync/generic_network_transport.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
+#include <realm/object-store/sync/app.hpp>
+#include <realm/object-store/sync/app_credentials.hpp>
 
-#include "util/event_loop_dispatcher.hpp"
+#include <realm/object-store/util/event_loop_dispatcher.hpp>
 
 #include "js_user.hpp"
 #include "js_app_credentials.hpp"
@@ -59,7 +59,7 @@ public:
      * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network requests.
      * Exposed to allow other components (ex the RPCServer) to override the underlying implementation.
      */
-    static inline NetworkTransportFactory transport_generator = [] (ContextType ctx, typename NetworkTransport::Dispatcher eld) {
+    static inline NetworkTransportFactory transport_generator = +[] (ContextType ctx, typename NetworkTransport::Dispatcher eld) -> std::unique_ptr<app::GenericNetworkTransport> {
         return std::make_unique<NetworkTransport>(ctx, std::move(eld));
     };
 

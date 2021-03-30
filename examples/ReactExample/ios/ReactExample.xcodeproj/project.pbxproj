@@ -42,6 +42,13 @@
 			remoteGlobalIDString = F60690131CA2766F0003FB26;
 			remoteInfo = RealmReact;
 		};
+		85B3590C25FF85EE003A02D4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 73AD103601A44EB291AC2117 /* RealmReact.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 85B358BB25FF8070003A02D4;
+			remoteInfo = GCDWebServer;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -194,6 +201,7 @@
 			isa = PBXGroup;
 			children = (
 				859609611E23C0AB009C7E43 /* libRealmReact.a */,
+				85B3590D25FF85EE003A02D4 /* libGCDWebServer.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -287,6 +295,13 @@
 			fileType = archive.ar;
 			path = libRealmReact.a;
 			remoteRef = 859609601E23C0AB009C7E43 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		85B3590D25FF85EE003A02D4 /* libGCDWebServer.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libGCDWebServer.a;
+			remoteRef = 85B3590C25FF85EE003A02D4 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
