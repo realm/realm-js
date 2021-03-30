@@ -35,19 +35,19 @@ class ListenersMethodsForDictionary {
    public:
 
 
-    static auto add_listener(ContextType context, ValueType value, ObjectMutationObserver* observer,Dictionary& dictionary) {
+    static auto add_listener(ContextType context, ValueType value, ObjectMutationObserver* observer, Dictionary& dictionary) {
         auto fn = Value::validated_to_function(context, value);
         auto *subscriber = new NotificationsCallback<T>{context, fn};
         observer->subscribe(subscriber);
     }
 
-    static auto remove_listener(ContextType context, ValueType value, ObjectMutationObserver* observer,Dictionary& dictionary) {
+    static auto remove_listener(ContextType context, ValueType value, ObjectMutationObserver* observer, Dictionary& dictionary) {
         auto callback = Value::validated_to_function(context, value);
         auto *subscriber = new NotificationsCallback<T>{context, callback};
         observer->remove_subscription(subscriber);
     }
 
-    static auto remove_all_listeners(ContextType, ValueType, ObjectMutationObserver* observer,Dictionary& dictionary) {
+    static auto remove_all_listeners(ContextType, ValueType, ObjectMutationObserver* observer, Dictionary& dictionary) {
         observer->unsubscribe_all();
     }
 
