@@ -1,6 +1,6 @@
 {
-    "app_id": "auth-integration-tests-denli",
-    "config_version": 20180301,
+    "app_id": "auth-integration-tests-bhnql",
+    "config_version": 20200603,
     "name": "auth-integration-tests",
     "location": "US-VA",
     "deployment_model": "GLOBAL",
