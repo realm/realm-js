@@ -1,17 +1,50 @@
 #pragma once
 #include <JavaScriptCore/JavaScriptCore.h>
 
+#include <iostream>
+#include <vector>
+
 class JavascriptObject {
    private:
+    using Method = std::function<void(JSContextRef &context, JSValueRef value)>;
     JSClassDefinition _class;
-    JSClassRef class_instance;
     JSContextRef context;
+    std::vector<JSStaticFunction> methods;
+    std::vector<JSStaticValue> accessors;
+    void *accessors_data = nullptr;
 
-    template <typename Callback, typename Data>
-    static auto make_callback_method(Callback&& callback, Data *data){
-        return [=](const auto& info) mutable {
-            callback(info.Env(), info[0], data, data->get_data());
-        };
+    template <void cb(JSContextRef &context, JSValueRef value)>
+    static JSValueRef function_call(JSContextRef ctx, JSObjectRef function,
+                                    JSObjectRef thisObject,
+                                    size_t argumentCount,
+                                    const JSValueRef arguments[],
+                                    JSValueRef *exception) {
+        std::cout << "hello!!!" << '\n';
+        if (argumentCount > 0) {
+            cb(ctx, arguments[0]);
+        }
+        return JSValueMakeNumber(ctx, 1);
+    }
+
+    static JSValueRef _get(JSContextRef ctx, JSObjectRef object,
+                           JSStringRef propertyName, JSValueRef *exception) {
+        return JSValueMakeNumber(ctx, 1);
+    }
+
+    static bool _set(JSContextRef ctx, JSObjectRef object,
+                     JSStringRef propertyName, JSValueRef value,
+                     JSValueRef *exception) {
+        return true;
+    }
+
+    JSClassRef make_class() {
+        methods.push_back({0});
+        accessors.push_back({0});
+
+        _class.staticValues = accessors.data();
+        _class.staticFunctions = methods.data();
+
+        return JSClassCreate(&_class);
     }
 
    public:
@@ -19,16 +52,34 @@ class JavascriptObject {
         : context{_ctx} {
         _class = kJSClassDefinitionEmpty;
         _class.className = name.c_str();
-
-       // class_instance = JSClassCreate(&_class);
     }
 
-    template <class VM, typename Function, class Data>
-    void add_method(std::string&& name, Function&& function, Data *data){
-        auto _callback = make_callback_method(function, data);
-        auto js_function = Napi::Function::New(context, _callback, name);
-        js::Object<VM>::set_property(context, object, name, js_function, PropertyAttributes::DontEnum);
+    void dbg() {
+        std::cout << "methods size: " << methods.size() << " \n";
+        std::cout << "accessors size: " << accessors.size() << " \n";
     }
 
-    JSObjectRef create() { return JSObjectMake(context, class_instance, NULL); }
+    template <class VM, void cb(JSContextRef &context, JSValueRef value),
+              class Data>
+    void add_method(std::string name, Data *data) {
+        JSStaticFunction tmp{name.c_str(), function_call<cb>,
+                             kJSPropertyAttributeDontEnum};
+        methods.push_back(tmp);
+    }
+
+    template <typename Accessor, typename Data>
+    void add_accessor(std::string key, Data) {
+        JSStaticValue tmp{key.c_str(), _get, _set, kJSPropertyAttributeNone};
+        accessors.push_back(tmp);
+    }
+
+    template <typename Data>
+    void add_data(Data data) {
+        accessors_data = static_cast<void *>(new Data{data});
+    }
+
+    JSObjectRef get_object() {
+        auto class_instance = make_class();
+        return JSObjectMake(context, class_instance, accessors_data);
+    }
 };

@@ -15,27 +15,39 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
+#include "common/object/jsc_object.hpp"
+#include <iostream>
 #pragma once
-#include "realm/dictionary.hpp"
-#include "dictionary/collection/collection.hpp"
-
-namespace realm {
-namespace js {
+using namespace std;
 
 template <typename Collection>
-struct AccessorsForDictionary {
-    Collection dictionary;
+struct AccessorsTest {
+    Collection N = 50;
 
     template <typename ContextType>
     auto get(ContextType context, std::string key_name) {
-        return dictionary.get(context, key_name);
+        return N;
     }
 
     template <typename ContextType, typename ValueType>
     auto set(ContextType context, std::string key_name, ValueType value) {
-        dictionary.set(context, key_name, value);
+        JSValueRef exception = nullptr;
+        N = JSValueToNumber(context, value, &exception);
     }
 };
-}  // namespace js
-}  // namespace realm
+
+template <typename T>
+struct MethodTest{
+    static void method(JSContextRef& context, JSValueRef value) {
+        cout << "test! \n";
+    }
+
+    template<class JSObject>
+    auto apply(JSObject* object){
+        object->template add_accessor<AccessorsTest<int>>("X", 666);
+        object->template add_method<T, method>("hello", new T{5});
+        return object->get_object();
+    }
+};
+
+

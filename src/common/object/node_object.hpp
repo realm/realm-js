@@ -29,13 +29,25 @@ class JavascriptObject {
 private:
 Napi::Env context;
 Napi::Object object;
-using Notify = std::function<void(Napi::Env, Napi::Value, ObjectMutationObserver*)>;
-
 
 template <typename Callback, typename Data>
 static auto make_callback_method(Callback&& callback, Data *data){
     return [=](const auto& info) mutable {
         callback(info.Env(), info[0], data, data->get_data());
+    };
+}
+
+template <typename Accessor>
+static auto _get(std::string key_name, Accessor accessor){
+    return [=](const auto& info) mutable {
+        return accessor.get(info.Env(), key_name);
+    };
+}
+
+template <typename Accessor>
+static auto _set(std::string key_name, Accessor accessor){
+    return [=](const auto& info) mutable {
+        accessor.set(info.Env(), key_name, info[0]);
     };
 }
 
@@ -54,9 +66,7 @@ public:
 
     template <typename Accessor, typename Data>
     void add_accessor(std::string key, Data data){
-        Accessor accessor;
-        auto _getter = accessor.make_getter(key, data);
-        auto _setter = accessor.make_setter(key, data);
+        Accessor accessor {data};
 
         /*
          * NAPI_enumerable: Enables JSON.stringify(object) and all the good
@@ -70,7 +80,7 @@ public:
                                                            napi_configurable);
 
         auto descriptor = Napi::PropertyDescriptor::Accessor(
-                context, object, key, _getter, _setter, rules);
+                context, object, key, _get(key, accessor), _set(key, accessor), rules);
 
         object.DefineProperty(descriptor);
     }

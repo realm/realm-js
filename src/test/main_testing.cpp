@@ -1,10 +1,10 @@
 #define CATCH_CONFIG_MAIN
-#include "logger.hpp"
-
 #include <vector>
 
 #include "catch_amalgamated.hpp"
 #include "common/object/jsc_object.hpp"
+#include "logger.hpp"
+#include "test_bed.hpp"
 
 using Catch::Matchers::Contains;
 using namespace std;
@@ -15,15 +15,24 @@ TEST_CASE("Testing Logger#get_level") {
     REQUIRE(realm::common::logger::Logger::get_level("debug") ==
             realm::common::logger::LoggerLevel::debug);
     REQUIRE_THROWS_WITH(realm::common::logger::Logger::get_level("coffeebabe"),
-                       "Bad log level");
+                        "Bad log level");
 }
 JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
                 size_t argumentCount, const JSValueRef arguments[],
                 JSValueRef* exception) {
-    SECTION("An object should be created.") {
-        bool is_boolean = JSValueIsObject(ctx, arguments[0]);
+    SECTION("An object should be created, should have a method hello.") {
+        auto accessor_name = JSStringCreateWithUTF8CString("X");
+        auto method_name = JSStringCreateWithUTF8CString("hello");
 
-        REQUIRE(is_boolean == true);
+        bool is_obj = JSValueIsObject(ctx, arguments[0]);
+        bool has_method =
+            JSObjectHasProperty(ctx, (JSObjectRef)arguments[0], method_name);
+        bool has_accessor =
+            JSObjectHasProperty(ctx, (JSObjectRef)arguments[0], accessor_name);
+
+        REQUIRE(is_obj == true);
+        REQUIRE(has_accessor == true);
+        REQUIRE(has_method == true);
     }
     return JSValueMakeUndefined(ctx);
 }
@@ -47,7 +56,14 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     string NAME = "dictionary";
     JSStringRef test_object = JSStringCreateWithUTF8CString(NAME.c_str());
     JavascriptObject js_object{globalContext, NAME};
-    auto dictionary_object = js_object.create();
+
+    MethodTest<int> test;
+
+    // js_object.add_accessor<AccessorsTest<int>>("X", 666);
+    //js_object.template add_method<int, MethodTest<int>::method>("hello",
+     //                                                           new int{5});
+
+    auto dictionary_object = test.apply(&js_object);
 
     // set property of global object
     JSObjectSetProperty(globalContext, globalObject, test_object,
@@ -57,7 +73,8 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
      *  Testing that an object was created.
      */
 
-    JSStringRef script = JSStringCreateWithUTF8CString("test(dictionary)");
+    JSStringRef script = JSStringCreateWithUTF8CString(
+        "test(dictionary); dictionary.hello(true)");
 
     /*
      *

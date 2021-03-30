@@ -25,7 +25,7 @@
 #include "dictionary/collection/collection.hpp"
 #include "common/js_plain_object.hpp"
 #include "methods/accessors.hpp"
-#include "methods/listeners.hpp"
+#include "methods/static_functions.hpp"
 #include "realm/object-store/dictionary.hpp"
 
 namespace realm {
@@ -37,7 +37,7 @@ class DictionaryAdapter {
     using ValueType = typename T::Value;
     using Context = typename T::Context;
     using Dictionary = CollectionAdapter<TypeMixed<T>, object_store::Dictionary>;
-    using GetterSetters = AccessorsConfiguration<T, AccessorsForDictionary>;
+    using GetterSetters = AccessorsConfiguration<T, AccessorsForDictionary<Dictionary>>;
     using Methods = ListenersMethodsForDictionary<T>;
     using JSDictionary =
         JSObject<T, GetterSetters, DictionaryNotifications, Methods, Dictionary>;

@@ -30,41 +30,6 @@ namespace js {
 #include "common/object/node_object.hpp"
 #else
 #include "common/object/jsc_object.hpp"
-class JSCDealloc {
-   private:
-    std::function<void()> _delegated = NULL;
-
-   public:
-    JSCDealloc(std::function<void()>&& _d) : _delegated{_d} {}
-    void delegated() {
-        if (_delegated != nullptr) {
-            _delegated();
-        } else {
-            std::cout << "Warning: RemovalCallback not configured."
-        }
-    }
-};
-
-class JSLifeCycle {
-   public:
-    static void gc_finalizer(OpaqueJSValue* object) {
-        JSCDealloc* remove_action =
-            static_cast<JSCDealloc*>(JSObjectGetPrivate(object));
-        if (remove_action != nullptr) {
-            remove_action->delegated();
-        }
-    }
-
-    template <typename ObjectType, typename Callback, typename Self>
-    static void finalize(ObjectType object, Callback&& callback, Self*) {
-        bool success = JSObjectSetPrivate(object, new JSCDealloc{callback});
-
-        if (!success) {
-            std::cout << "Cannot save private data" << '\n';
-        }
-    }
-};
-
 #endif
 
 /*
