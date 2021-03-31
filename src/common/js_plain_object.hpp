@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include "common/object/interfaces.hpp"
+#include "object/strategies.hpp"
 
 #pragma once
 
@@ -37,36 +38,20 @@ template <typename T, typename Accessor>
 struct AccessorsConfiguration {
     template <class JavascriptObject, class JSObject>
     void apply(JavascriptObject& js_object, JSObject* _o) {
-        auto dictionary = _o->get_data();
-        for (auto entry_pair : dictionary) {
+        auto dictionary = _o->get_collection();
+        for (auto entry_pair : *dictionary) {
             auto key = entry_pair.first.get_string().data();
             js_object.template add_accessor<Accessor>(key, dictionary);
         }
     }
 };
 
-template <typename VM>
-struct NoMethods {
-    using ContextType = typename VM::Context;
-    ContextType context;
-    NoMethods(ContextType _context) : context{_context} {};
-};
-
-class NoData{};
-
-struct NoNotificationsStrategy{
-    int empty{0};
-
-    void on_change(){}
-};
-
-
 template <typename VM,
           typename GetterSetters,
           typename NotificationStrategy = NoNotificationsStrategy,
           typename Methods = NoMethods<VM>,
-          typename Data = NoData>
-struct JSObject: public ObjectMutationObserver {
+          typename Collection = NoData>
+struct JSObject: public ObjectObserver {
    private:
     using Value = js::Value<VM>;
     using Object = js::Object<VM>;
@@ -77,21 +62,21 @@ struct JSObject: public ObjectMutationObserver {
     bool waiting_for_notifications{false};
     std::unique_ptr<Methods> methods;
     std::unique_ptr<GetterSetters> getters_setters;
-    Data data;
+    std::unique_ptr<Collection> collection;
 
 
     std::vector<Subscriber*> subscribers;
     ContextType context;
 
    public:
-    JSObject(ContextType _context, Data _data) : context{_context},
-    data{_data},
-    notifications{_data} {
+    template <typename RealmData>
+    JSObject(ContextType _context, RealmData _data) : context{_context}, notifications{_data} {
         getters_setters = std::make_unique<GetterSetters>();
         methods = std::make_unique<Methods>();
+        collection = std::make_unique<Collection>(_data);
     };
 
-    Data& get_data() { return data; }
+    Collection* get_collection() { return collection.get(); }
 
     void activate_on_change() {
         if(waiting_for_notifications){

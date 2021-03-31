@@ -36,8 +36,8 @@ class DictionaryAdapter {
    private:
     using ValueType = typename T::Value;
     using Context = typename T::Context;
-    using Dictionary = CollectionAdapter<TypeMixed<T>, object_store::Dictionary>;
-    using GetterSetters = AccessorsConfiguration<T, AccessorsForDictionary<Dictionary>>;
+    using Dictionary = CollectionAdapter<T, object_store::Dictionary>;
+    using GetterSetters = AccessorsConfiguration<T, IOCollectionAccessor>;
     using Methods = ListenersMethodsForDictionary<T>;
     using JSDictionary =
         JSObject<T, GetterSetters, DictionaryNotifications, Methods, Dictionary>;

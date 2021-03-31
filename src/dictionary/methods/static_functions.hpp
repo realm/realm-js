@@ -35,23 +35,23 @@ class ListenersMethodsForDictionary {
    public:
 
 
-    static void add_listener(ContextType context, ValueType value, ObjectMutationObserver* observer, Dictionary& dictionary) {
+    static void add_listener(ContextType context, ValueType value, ObjectObserver* observer, IOCollection*) {
         auto fn = Value::validated_to_function(context, value);
         auto *subscriber = new NotificationsCallback<T>{context, fn};
         observer->subscribe(subscriber);
     }
 
-    static void remove_listener(ContextType context, ValueType value, ObjectMutationObserver* observer, Dictionary& dictionary) {
+    static void remove_listener(ContextType context, ValueType value, ObjectObserver* observer, IOCollection*) {
         auto callback = Value::validated_to_function(context, value);
         auto *subscriber = new NotificationsCallback<T>{context, callback};
         observer->remove_subscription(subscriber);
     }
 
-    static void remove_all_listeners(ContextType, ValueType, ObjectMutationObserver* observer, Dictionary& dictionary) {
+    static void remove_all_listeners(ContextType, ValueType, ObjectObserver* observer, IOCollection*) {
         observer->unsubscribe_all();
     }
 
-    static void put(ContextType context, ValueType value, ObjectMutationObserver* observer, Dictionary& dictionary) {
+    static void put(ContextType context, ValueType value, ObjectObserver*, IOCollection* dictionary) {
         auto obj = Value::validated_to_object(context, value);
         auto keys = obj.GetPropertyNames();
         auto size = keys.Length();
@@ -59,16 +59,16 @@ class ListenersMethodsForDictionary {
         for (auto index = 0; index < size; index++) {
             std::string key = Value::to_string(context, keys[index]);
             auto value = Object::get_property(context, obj, key);
-            dictionary.set(context, key, value);
+            dictionary->set(context, key, value);
         }
     }
 
     template<typename JavascriptObject, typename Data>
     void apply(JavascriptObject object, Data *_o) {
-        object.template add_method<T>("addListener", add_listener, _o);
-        object.template add_method<T>("removeListener", remove_listener, _o);
-        object.template add_method<T>("removeAllListeners", remove_all_listeners, _o);
-        object.template add_method<T>("put", put, _o);
+        object.template add_method<T, add_listener>("addListener", _o);
+        object.template add_method<T, remove_listener>("removeListener", _o);
+        object.template add_method<T, remove_all_listeners>("removeAllListeners", _o);
+        object.template add_method<T, put>("put", _o);
     }
 };
 

@@ -15,9 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-#include "common/object/jsc_object.hpp"
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
+
+#include "common/object/jsc_object.hpp"
+
 #pragma once
 using namespace std;
 
@@ -27,39 +31,50 @@ struct JSC_VM {
     JSObjectRef globalObject;
     vector<JSStringRef> strings;
 
-    JSC_VM(){
+    JSC_VM() {
         group = JSContextGroupCreate();
-        globalContext =
-                JSGlobalContextCreateInGroup(group, nullptr);
+        globalContext = JSGlobalContextCreateInGroup(group, nullptr);
         globalObject = JSContextGetGlobalObject(globalContext);
     }
 
-    template <typename JStr, typename FN >
-    void set_obj_prop(JStr str, FN fn){
-        JSObjectSetProperty(globalContext, globalObject, str,
-                            fn, kJSPropertyAttributeNone, nullptr);
+    void set_obj_prop(JSStringRef str, JSObjectRef fn) {
+        JSObjectSetProperty(globalContext, globalObject, str, fn,
+                            kJSPropertyAttributeNone, nullptr);
     }
 
-    JSStringRef str(std::string str){
+    JSStringRef str(std::string str) {
         auto _str = JSStringCreateWithUTF8CString(str.c_str());
         strings.push_back(_str);
         return _str;
     }
 
-    void vm(std::string&& script){
+    void load_into_vm(std::string file_name) {
+        std::ifstream t(file_name);
+        std::stringstream buffer;
+        buffer << t.rdbuf();
+
+        vm(buffer.str());
+    }
+    void vm(std::string&& script) {
         auto _script = str(script);
-        JSEvaluateScript(globalContext, _script, nullptr, nullptr, 1,
-                         nullptr);
+        JSEvaluateScript(globalContext, _script, nullptr, nullptr, 1, nullptr);
     }
 
-    static JSStringRef s(std::string str){
+    static JSStringRef s(std::string str) {
         return JSStringCreateWithUTF8CString(str.c_str());
     }
 
-    //make
+    template <typename FN>
+    JSObjectRef make_gbl_fn(std::string&& fn_name, FN* fn) {
+        JSStringRef _fn_name = str(fn_name);
+        JSObjectRef _fn =
+            JSObjectMakeFunctionWithCallback(globalContext, _fn_name, fn);
+        set_obj_prop(_fn_name, _fn);
+        return _fn;
+    }
 
-    ~JSC_VM(){
-        for(auto str: strings){
+    ~JSC_VM() {
+        for (auto str : strings) {
             JSStringRelease(str);
         }
         JSGlobalContextRelease(globalContext);
@@ -67,26 +82,19 @@ struct JSC_VM {
     }
 };
 
-
 template <typename Collection>
 struct AccessorsTest {
     Collection N = 50;
 
     template <typename ContextType>
     auto get(ContextType context, std::string key_name) {
-        return N;
+        return JSValueMakeNumber(context, N);
     }
 
     template <typename ContextType, typename ValueType>
     auto set(ContextType context, std::string key_name, ValueType value) {
         JSValueRef exception = nullptr;
         N = JSValueToNumber(context, value, &exception);
-    }
-};
-
-struct Mth{
-    static void method(JSContextRef& context, JSValueRef value) {
-        cout << "test! \n";
     }
 };
 

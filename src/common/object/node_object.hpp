@@ -19,21 +19,23 @@
 #pragma once
 
 #include "napi.h"
-
+#include "common/object/interfaces.hpp"
 
 namespace T {
 namespace common {
-
 
 class JavascriptObject {
 private:
 Napi::Env context;
 Napi::Object object;
 
-template <typename Callback, typename Data>
-static auto make_callback_method(Callback&& callback, Data *data){
+template <void cb(Napi::Env context,
+                  Napi::Value value,
+                  ObjectObserver *observer,
+                  IOCollection *collection), typename Data>
+static auto make_callback_method(Data *data){
     return [=](const auto& info) mutable {
-        callback(info.Env(), info[0], data, data->get_data());
+        cb(info.Env(), info[0], data, data->get_collection());
     };
 }
 
@@ -57,15 +59,21 @@ public:
         object = Napi::Object::New(context);
     }
 
-    template <class VM, typename Function, class Data>
-    void add_method(std::string&& name, Function&& function, Data *data){
-        auto _callback = make_callback_method(function, data);
+    template <  class VM,
+                void cb(Napi::Env context,
+                        Napi::Value value,
+                        ObjectObserver *observe,
+                        IOCollection *collection),
+                class Data>
+    void add_method(std::string&& name, Data *data){
+        auto _callback = make_callback_method<cb>(data);
         auto js_function = Napi::Function::New(context, _callback, name);
+
         js::Object<VM>::set_property(context, object, name, js_function, PropertyAttributes::DontEnum);
     }
 
-    template <typename Accessor, typename Data>
-    void add_accessor(std::string key, Data data){
+    template <typename Accessor>
+    void add_accessor(std::string key, IOCollection* data){
         Accessor accessor {data};
 
         /*

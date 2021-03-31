@@ -9,6 +9,15 @@
 using Catch::Matchers::Contains;
 using namespace std;
 
+struct T1 {
+    static void method(JSContextRef& context, JSValueRef value,
+                       ObjectObserver* observer) {
+        SECTION("Method should receive a boolean") {
+            REQUIRE(true == JSValueIsBoolean(context, value));
+        }
+    }
+};
+
 TEST_CASE("Testing Logger#get_level") {
     REQUIRE(realm::common::logger::Logger::get_level("all") ==
             realm::common::logger::LoggerLevel::all);
@@ -17,15 +26,6 @@ TEST_CASE("Testing Logger#get_level") {
     REQUIRE_THROWS_WITH(realm::common::logger::Logger::get_level("coffeebabe"),
                         "Bad log level");
 }
-
-struct T1{
-    static void method(JSContextRef& context, JSValueRef value, ObjectMutationObserver* observer) {
-        SECTION("Method should receive a boolean") {
-            REQUIRE(true == JSValueIsBoolean(context, value));
-        }
-    }
-};
-
 
 JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
                 size_t argumentCount, const JSValueRef arguments[],
@@ -48,14 +48,38 @@ JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
     return JSValueMakeUndefined(ctx);
 }
 
+/*
+    test_accessor(obj, key, number)
+    example:
+
+    test_accessor(dictionary, 'X', 666)  // Will look for the field X and 666.
+ */
+JSValueRef GetterSetter(JSContextRef ctx, JSObjectRef function,
+                        JSObjectRef thisObject, size_t argumentCount,
+                        const JSValueRef arguments[], JSValueRef* exception) {
+    SECTION("Testing object accessors for X value..") {
+        auto accessor_name = JSC_VM::s("X");
+        REQUIRE(true == JSValueIsObject(ctx, arguments[0]));
+
+        auto obj = (JSObjectRef)arguments[0];
+        REQUIRE(true ==
+                JSObjectHasProperty(ctx, obj, (JSStringRef)arguments[1]));
+
+        JSValueRef v = JSObjectGetProperty(ctx, obj, accessor_name, NULL);
+        REQUIRE(true == JSValueIsNumber(ctx, v));
+        double _v = JSValueToNumber(ctx, v, NULL);
+        double _match = JSValueToNumber(ctx, arguments[2], NULL);
+        REQUIRE(_match == _v);
+    }
+
+    return JSValueMakeUndefined(ctx);
+}
+
 TEST_CASE("Testing Object creation on JavascriptCore.") {
     JSC_VM jsc_vm;
 
-    auto _test_name = jsc_vm.str("test");
-    auto _test = JSObjectMakeFunctionWithCallback(jsc_vm.globalContext,
-                                                  _test_name, &Test);
-
-    jsc_vm.set_obj_prop(_test_name, _test);
+    jsc_vm.make_gbl_fn("test", &Test);
+    jsc_vm.make_gbl_fn("test_accessor", &GetterSetter);
 
     /*
      *  JavascriptObject Instantiation and configuration into JSC.
@@ -68,7 +92,6 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     _dict.template add_accessor<AccessorsTest<int>>("X", 666);
     _dict.template add_method<int, T1::method>("hello", new int{5});
     _dict.template add_method<int, T1::method>("alo", new int{5});
-
 
     // set property of global object
     jsc_vm.set_obj_prop(str_dict, _dict.get_object());
@@ -87,5 +110,5 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
      *  dictionary.hello(true)
      *
      */
-    jsc_vm.vm("test(dictionary); dictionary.hello(true); dictionary.alo(true); ");
+    jsc_vm.load_into_vm("./jsc_object.js");
 }

@@ -19,22 +19,26 @@
 #pragma once
 
 #include "dictionary/collection/notification.hpp"
-
+#include "common/object/interfaces.hpp"
+#include "js_mixed.hpp"
 namespace realm {
 namespace js {
 
-template <typename MixedAPI, typename Collection>
-class CollectionAdapter {
+template <typename T, typename Collection>
+class CollectionAdapter: public IOCollection {
    private:
     Collection collection;
+    using Mixed = TypeMixed<T>;
+    using ValueType = typename T::Value;
+    using ContextType = typename T::Context;
 
-   public:
+public:
     CollectionAdapter(Collection _collection)
         : collection{_collection} {}
 
     /*
      * Makes the contents of this collection compatible with the existing
-     * mechanism.
+     * mechanisms.
      */
     template <typename... Arguments>
     auto add_notification_callback(Arguments... arguments) {
@@ -49,16 +53,14 @@ class CollectionAdapter {
         return collection.end();
     }
 
-    template<class Context, class Value>
-    void set(Context context, std::string key, Value value){
-        auto mixed = MixedAPI::get_instance().unwrap(context, value);
+    void set(ContextType context, std::string key, ValueType value){
+        auto mixed = Mixed::get_instance().unwrap(context, value);
         collection.insert(key, mixed);
     }
 
-    template<class Context>
-    auto get(Context context, std::string key) {
+    ValueType get(ContextType context, std::string key) {
         auto mixed_value = collection.get_any(key);
-        return MixedAPI::get_instance().wrap(context, mixed_value);
+        return Mixed::get_instance().wrap(context, mixed_value);
     }
 
     operator Collection() { return collection; }

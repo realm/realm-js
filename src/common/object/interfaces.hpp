@@ -21,6 +21,7 @@
 #include "realm/object-store/dictionary.hpp"
 
 #if REALM_PLATFORM_NODE
+
 struct Subscriber {
     virtual void notify(Napi::Object&, realm::DictionaryChangeSet&) = 0;
     virtual bool equals(const Subscriber *) const = 0;
@@ -30,7 +31,13 @@ struct Subscriber {
     //virtual ~Subscriber() = 0;
 };
 
+struct IOCollection {
+    virtual void set(Napi::Env, std::string, Napi::Value) = 0;
+    virtual Napi::Value get(Napi::Env, std::string) = 0;
+};
+
 #else
+
 struct Subscriber {
     virtual void notify(JSObjectRef&, realm::DictionaryChangeSet&) = 0;
     virtual bool equals(const Subscriber *) const = 0;
@@ -39,9 +46,15 @@ struct Subscriber {
     //TODO
     //virtual ~Subscriber() = 0;
 };
+
+struct IOCollection {
+    virtual void set(JSContextRef, std::string, JSValueRef) = 0;
+    virtual JSValueRef get(JSContextRef, std::string) = 0;
+};
+
 #endif
 
-struct ObjectMutationObserver {
+struct ObjectObserver {
     virtual void subscribe(Subscriber*) = 0;
     virtual void remove_subscription(const Subscriber *) = 0;
     virtual void unsubscribe_all() = 0;

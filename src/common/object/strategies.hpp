@@ -16,26 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include "common/object/interfaces.hpp"
+
 #pragma once
-#include "realm/dictionary.hpp"
-#include "dictionary/collection/collection.hpp"
 
-namespace realm {
-namespace js {
-
-
-struct IOCollectionAccessor {
-    IOCollection* dictionary;
-
-    template <typename ContextType>
-    auto get(ContextType context, std::string key_name) {
-        return dictionary->get(context, key_name);
-    }
-
-    template <typename ContextType, typename ValueType>
-    auto set(ContextType context, std::string key_name, ValueType value) {
-        dictionary->set(context, key_name, value);
-    }
+template <typename VM>
+struct NoMethods {
+    using ContextType = typename VM::Context;
+    ContextType context;
+    NoMethods(ContextType _context) : context{_context} {};
 };
-}  // namespace js
-}  // namespace realm
+
+class NoData{};
+
+struct NoNotificationsStrategy{
+    int empty{0};
+
+    void on_change(){}
+};
