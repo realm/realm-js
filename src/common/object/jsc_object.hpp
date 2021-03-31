@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include "common/object/IObject.hpp"
+#include "common/object/interfaces.hpp"
 
 namespace realm {
 namespace common {

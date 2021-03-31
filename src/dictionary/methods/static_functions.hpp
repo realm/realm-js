@@ -51,7 +51,7 @@ class ListenersMethodsForDictionary {
         observer->unsubscribe_all();
     }
 
-    static void put(ContextType& context, ValueType value, ObjectMutationObserver* observer, Dictionary& dictionary) {
+    static void put(ContextType context, ValueType value, ObjectMutationObserver* observer, Dictionary& dictionary) {
         auto obj = Value::validated_to_object(context, value);
         auto keys = obj.GetPropertyNames();
         auto size = keys.Length();

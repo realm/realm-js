@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
-#include "common/object/IObject.hpp"
+#include "common/object/interfaces.hpp"
 
 #pragma once
 

@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-#include "common/object/IObject.hpp"
+#include "common/object/interfaces.hpp"
 #pragma once
 
 namespace realm {
