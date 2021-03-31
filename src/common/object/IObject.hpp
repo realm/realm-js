@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include "realm/object-store/dictionary.hpp"
+
+#if REALM_PLATFORM_NODE
 struct Subscriber {
     virtual void notify(Napi::Object&, realm::DictionaryChangeSet&) = 0;
     virtual bool equals(const Subscriber *) const = 0;
@@ -27,6 +30,16 @@ struct Subscriber {
     //virtual ~Subscriber() = 0;
 };
 
+#else
+struct Subscriber {
+    virtual void notify(JSObjectRef&, realm::DictionaryChangeSet&) = 0;
+    virtual bool equals(const Subscriber *) const = 0;
+    virtual JSValueRef callback() const = 0;
+
+    //TODO
+    //virtual ~Subscriber() = 0;
+};
+#endif
 
 struct ObjectMutationObserver {
     virtual void subscribe(Subscriber*) = 0;

@@ -3,6 +3,10 @@
 
 #include <iostream>
 #include <vector>
+#include "common/object/IObject.hpp"
+
+namespace realm {
+namespace common {
 
 class JavascriptObject {
    private:
@@ -13,15 +17,16 @@ class JavascriptObject {
     std::vector<JSStaticValue> accessors;
     void *accessors_data = nullptr;
 
-    template <void cb(JSContextRef &context, JSValueRef value)>
+
+    template <void cb(JSContextRef &context, JSValueRef value,
+                      ObjectMutationObserver *observer)>
     static JSValueRef function_call(JSContextRef ctx, JSObjectRef function,
                                     JSObjectRef thisObject,
                                     size_t argumentCount,
                                     const JSValueRef arguments[],
                                     JSValueRef *exception) {
-        std::cout << "hello!!!" << '\n';
         if (argumentCount > 0) {
-            cb(ctx, arguments[0]);
+            cb(ctx, arguments[0], nullptr);
         }
         return JSValueMakeNumber(ctx, 1);
     }
@@ -59,7 +64,9 @@ class JavascriptObject {
         std::cout << "accessors size: " << accessors.size() << " \n";
     }
 
-    template <class VM, void cb(JSContextRef &context, JSValueRef value),
+    template <class VM,
+              void cb(JSContextRef &context, JSValueRef value,
+                      ObjectMutationObserver *observer),
               class Data>
     void add_method(std::string name, Data *data) {
         JSStaticFunction tmp{name.c_str(), function_call<cb>,
@@ -83,3 +90,6 @@ class JavascriptObject {
         return JSObjectMake(context, class_instance, accessors_data);
     }
 };
+
+}  // namespace common
+}  // namespace realm

@@ -17,6 +17,16 @@ TEST_CASE("Testing Logger#get_level") {
     REQUIRE_THROWS_WITH(realm::common::logger::Logger::get_level("coffeebabe"),
                         "Bad log level");
 }
+
+struct T1{
+    static void method(JSContextRef& context, JSValueRef value, ObjectMutationObserver* observer) {
+        SECTION("Method should receive a boolean") {
+            REQUIRE(true == JSValueIsBoolean(context, value));
+        }
+    }
+};
+
+
 JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
                 size_t argumentCount, const JSValueRef arguments[],
                 JSValueRef* exception) {
@@ -53,23 +63,29 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
 
     string NAME = "dictionary";
     JSStringRef str_dict = jsc_vm.str("dictionary");
-    JavascriptObject _dict{jsc_vm.globalContext, NAME};
+    realm::common::JavascriptObject _dict{jsc_vm.globalContext, NAME};
 
     _dict.template add_accessor<AccessorsTest<int>>("X", 666);
-    _dict.template add_method<int, Mth::method>("hello", new int{5});
+    _dict.template add_method<int, T1::method>("hello", new int{5});
+    _dict.template add_method<int, T1::method>("alo", new int{5});
+
 
     // set property of global object
     jsc_vm.set_obj_prop(str_dict, _dict.get_object());
 
     /*
-     *  Testing that an object was created.
-     */
-    auto script = jsc_vm.str("test(dictionary); dictionary.hello(true)");
-
-    /*
      *
-     *  End
+     *  Running a script on the VM.
+     *
+     *  First we check the object with properties and methods are constructed
+     *
+     *   test(dictionary)
+     *
+     *  To test that we added hello method we send a boolean and we check it
+     *  above using T1 struct.
+     *
+     *  dictionary.hello(true)
+     *
      */
-    JSEvaluateScript(jsc_vm.globalContext, script, nullptr, nullptr, 1,
-                     nullptr);
+    jsc_vm.vm("test(dictionary); dictionary.hello(true); dictionary.alo(true); ");
 }

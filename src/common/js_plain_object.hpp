@@ -19,8 +19,6 @@
 #include <iostream>
 #include "common/object/IObject.hpp"
 
-
-
 #pragma once
 
 namespace realm {

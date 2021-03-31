@@ -46,6 +46,12 @@ struct JSC_VM {
         return _str;
     }
 
+    void vm(std::string&& script){
+        auto _script = str(script);
+        JSEvaluateScript(globalContext, _script, nullptr, nullptr, 1,
+                         nullptr);
+    }
+
     static JSStringRef s(std::string str){
         return JSStringCreateWithUTF8CString(str.c_str());
     }
