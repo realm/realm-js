@@ -1,0 +1,14 @@
+{
+    "app_id": "pv-uuid-tests-axhms",
+    "config_version": 20200603,
+    "name": "pv-uuid-tests",
+    "location": "US-VA",
+    "deployment_model": "GLOBAL",
+    "security": {},
+    "custom_user_data_config": {
+        "enabled": false
+    },
+    "sync": {
+        "development_mode_enabled": false
+    }
+}

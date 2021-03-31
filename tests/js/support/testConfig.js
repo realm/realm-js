@@ -17,7 +17,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+"use strict";
 
 // If the docker instance has imported this stitch config, it will have written the app id
 // back into the config file, so we can read it out again here.
@@ -28,31 +28,55 @@ function nodeRequire(module) {
     return require_method(module);
 }
 
-let pathToStitchJson = "../../mongodb/stitch.json";
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+function makeAppConfig(appId) {
+    const appUrl = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/"/g,"") : "http://localhost";
+    const appPort = process.env.MONGODB_REALM_PORT || "9090";
 
-if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
-    const path = nodeRequire("path");
-    console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
-    pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, '../../../mongodb/stitch.json')
+    console.log(`tests are using integration tests app id: ${appId} on ${appUrl}:${appPort}`);
+
+    return {
+        id: appId,
+        url: `${appUrl}:${appPort}`,
+        timeout: 1000,
+        app: {
+            name: "default",
+            version: "0"
+        }
+    };
 }
-console.log("pathToStitchJson " + pathToStitchJson);
 
+function getConfigPath(testName) {
+    let pathToJson = `../../mongodb/${testName}/config.json`;
+    const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
+
+    if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
+        const path = nodeRequire("path");
+        console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
+        pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, `../${pathToJson}`);
+    }
+    return pathToJson;
+}
+
+let pathToStitchJson = getConfigPath("common-tests");
 const integrationTestsAppId = `${nodeRequire(pathToStitchJson).app_id}`;
-const appUrl = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/\"/g,'') : "http://localhost";
-const appPort = process.env.MONGODB_REALM_PORT || "9090";
-console.log(`tests are using integration tests app id: ${integrationTestsAppId} on ${appUrl}:${appPort}`);
+const integrationAppConfig = makeAppConfig(integrationTestsAppId);
 
-const integrationAppConfig = {
-    id: integrationTestsAppId,
-    url: `${appUrl}:${appPort}`,
-    timeout: 1000,
-    app: {
-        name: "default",
-        version: '0'
-    },
-};
+let pathToPvIntJSON = getConfigPath("pv-int-tests");
+const pvIntTestsAppId = `${nodeRequire(pathToPvIntJSON).app_id}`;
+const pvIntAppConfig = makeAppConfig(pvIntTestsAppId);
+
+let pathToPvStringJSON = getConfigPath("pv-string-tests");
+const pvStringTestsAppId = `${nodeRequire(pathToPvStringJSON).app_id}`;
+const pvStringAppConfig = makeAppConfig(pvStringTestsAppId);
+
+let pathToPvUuidJSON = getConfigPath("pv-uuid-tests");
+const pvUuidTestsAppId = `${nodeRequire(pathToPvUuidJSON).app_id}`;
+const pvUuidAppConfig = makeAppConfig(pvUuidTestsAppId);
+
+let pathToPvObjectidJSON = getConfigPath("pv-objectid-tests");
+const pvObjectidTestsAppId = `${nodeRequire(pathToPvObjectidJSON).app_id}`;
+const pvObjectidAppConfig = makeAppConfig(pvObjectidTestsAppId);
 
 module.exports = {
-    integrationAppConfig
+    integrationAppConfig, pvIntAppConfig, pvStringAppConfig, pvUuidAppConfig, pvObjectidAppConfig
 }

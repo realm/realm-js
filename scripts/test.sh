@@ -66,12 +66,16 @@ start_server() {
   else
     echo "no existing stitch instance running in docker, attempting to start one"
     . "${SRCROOT}/dependencies.list"
+    DOCKER_VOLUMES=""
+    for app in common-tests pv-int-tests pv-string-tests pv-uuid-tests pv-objectid-tests; do
+      DOCKER_VOLUMES="$DOCKER_VOLUMES -v ${SRCROOT}/tests/mongodb/${app}:/apps/${app}"
+    done
     echo "using object-store stitch dependency: ${MDBREALM_TEST_SERVER_TAG}"
     if [[ -n "$RUN_STITCH_IN_FORGROUND" ]]; then
       # we don't worry about tracking the STITCH_DOCKER_ID because without the -d flag, this docker is tied to the shell
-      docker run -v "${SRCROOT}/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}"
+      docker run $DOCKER_VOLUMES -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}"
     else
-      STITCH_DOCKER_ID=$(docker run -d $BACKGROUND_FLAG -v "${SRCROOT}/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}")
+      STITCH_DOCKER_ID=$(docker run -d $BACKGROUND_FLAG $DOCKER_VOLUMES -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}")
       echo "starting docker image $STITCH_DOCKER_ID"
       # wait for stitch to import apps and start serving before continuing
       docker logs --follow "$STITCH_DOCKER_ID" | grep -m 1 "Serving on.*9090" || true

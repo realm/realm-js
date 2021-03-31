@@ -1,0 +1,23 @@
+{
+    "id": "606453c03d297b2d11f1d0e0",
+    "name": "BackingDB",
+    "type": "mongodb",
+    "config": {
+        "sync": {
+            "state": "enabled",
+            "database_name": "pv-int-test_data",
+            "partition": {
+                "key": "realm_id",
+                "type": "long",
+                "permissions": {
+                    "read": true,
+                    "write": true
+                }
+            }
+        }
+    },
+    "secret_config": {
+        "uri": "BackingDB_uri"
+    },
+    "version": 1
+}
