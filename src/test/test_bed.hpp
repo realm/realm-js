@@ -17,8 +17,50 @@
 ////////////////////////////////////////////////////////////////////////////
 #include "common/object/jsc_object.hpp"
 #include <iostream>
+#include <vector>
 #pragma once
 using namespace std;
+
+struct JSC_VM {
+    JSGlobalContextRef globalContext;
+    JSContextGroupRef group;
+    JSObjectRef globalObject;
+    vector<JSStringRef> strings;
+
+    JSC_VM(){
+        group = JSContextGroupCreate();
+        globalContext =
+                JSGlobalContextCreateInGroup(group, nullptr);
+        globalObject = JSContextGetGlobalObject(globalContext);
+    }
+
+    template <typename JStr, typename FN >
+    void set_obj_prop(JStr str, FN fn){
+        JSObjectSetProperty(globalContext, globalObject, str,
+                            fn, kJSPropertyAttributeNone, nullptr);
+    }
+
+    JSStringRef str(std::string str){
+        auto _str = JSStringCreateWithUTF8CString(str.c_str());
+        strings.push_back(_str);
+        return _str;
+    }
+
+    static JSStringRef s(std::string str){
+        return JSStringCreateWithUTF8CString(str.c_str());
+    }
+
+    //make
+
+    ~JSC_VM(){
+        for(auto str: strings){
+            JSStringRelease(str);
+        }
+        JSGlobalContextRelease(globalContext);
+        JSContextGroupRelease(group);
+    }
+};
+
 
 template <typename Collection>
 struct AccessorsTest {
@@ -36,17 +78,9 @@ struct AccessorsTest {
     }
 };
 
-template <typename T>
-struct MethodTest{
+struct Mth{
     static void method(JSContextRef& context, JSValueRef value) {
         cout << "test! \n";
-    }
-
-    template<class JSObject>
-    auto apply(JSObject* object){
-        object->template add_accessor<AccessorsTest<int>>("X", 666);
-        object->template add_method<T, method>("hello", new T{5});
-        return object->get_object();
     }
 };
 

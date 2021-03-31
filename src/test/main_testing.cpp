@@ -21,71 +21,55 @@ JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
                 size_t argumentCount, const JSValueRef arguments[],
                 JSValueRef* exception) {
     SECTION("An object should be created, should have a method hello.") {
-        auto accessor_name = JSStringCreateWithUTF8CString("X");
-        auto method_name = JSStringCreateWithUTF8CString("hello");
+        auto accessor_name = JSC_VM::s("X");
+        auto method_name = JSC_VM::s("hello");
+
+        auto obj = (JSObjectRef)arguments[0];
 
         bool is_obj = JSValueIsObject(ctx, arguments[0]);
-        bool has_method =
-            JSObjectHasProperty(ctx, (JSObjectRef)arguments[0], method_name);
-        bool has_accessor =
-            JSObjectHasProperty(ctx, (JSObjectRef)arguments[0], accessor_name);
+        bool has_method = JSObjectHasProperty(ctx, obj, method_name);
+        bool has_accessor = JSObjectHasProperty(ctx, obj, accessor_name);
 
         REQUIRE(is_obj == true);
         REQUIRE(has_accessor == true);
         REQUIRE(has_method == true);
     }
+
     return JSValueMakeUndefined(ctx);
 }
 
 TEST_CASE("Testing Object creation on JavascriptCore.") {
-    JSContextGroupRef group = JSContextGroupCreate();
-    JSGlobalContextRef globalContext =
-        JSGlobalContextCreateInGroup(group, nullptr);
-    JSObjectRef globalObject = JSContextGetGlobalObject(globalContext);
-    JSStringRef test_function = JSStringCreateWithUTF8CString("test");
-    JSObjectRef functionObject =
-        JSObjectMakeFunctionWithCallback(globalContext, test_function, &Test);
+    JSC_VM jsc_vm;
 
-    JSObjectSetProperty(globalContext, globalObject, test_function,
-                        functionObject, kJSPropertyAttributeNone, nullptr);
+    auto _test_name = jsc_vm.str("test");
+    auto _test = JSObjectMakeFunctionWithCallback(jsc_vm.globalContext,
+                                                  _test_name, &Test);
+
+    jsc_vm.set_obj_prop(_test_name, _test);
 
     /*
      *  JavascriptObject Instantiation and configuration into JSC.
      */
 
     string NAME = "dictionary";
-    JSStringRef test_object = JSStringCreateWithUTF8CString(NAME.c_str());
-    JavascriptObject js_object{globalContext, NAME};
+    JSStringRef str_dict = jsc_vm.str("dictionary");
+    JavascriptObject _dict{jsc_vm.globalContext, NAME};
 
-    MethodTest<int> test;
-
-    // js_object.add_accessor<AccessorsTest<int>>("X", 666);
-    //js_object.template add_method<int, MethodTest<int>::method>("hello",
-     //                                                           new int{5});
-
-    auto dictionary_object = test.apply(&js_object);
+    _dict.template add_accessor<AccessorsTest<int>>("X", 666);
+    _dict.template add_method<int, Mth::method>("hello", new int{5});
 
     // set property of global object
-    JSObjectSetProperty(globalContext, globalObject, test_object,
-                        dictionary_object, kJSPropertyAttributeNone, nullptr);
+    jsc_vm.set_obj_prop(str_dict, _dict.get_object());
 
     /*
      *  Testing that an object was created.
      */
-
-    JSStringRef script = JSStringCreateWithUTF8CString(
-        "test(dictionary); dictionary.hello(true)");
+    auto script = jsc_vm.str("test(dictionary); dictionary.hello(true)");
 
     /*
      *
      *  End
      */
-
-    JSEvaluateScript(globalContext, script, nullptr, nullptr, 1, nullptr);
-
-    JSGlobalContextRelease(globalContext);
-    JSContextGroupRelease(group);
-    JSStringRelease(test_object);
-    JSStringRelease(test_function);
-    JSStringRelease(script);
+    JSEvaluateScript(jsc_vm.globalContext, script, nullptr, nullptr, 1,
+                     nullptr);
 }
