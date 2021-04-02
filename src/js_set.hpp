@@ -221,9 +221,7 @@ void SetClass<T>::get(ContextType ctx, ObjectType this_object, Arguments &args, 
             using element_type = std::remove_pointer_t<decltype(type_indicator)>;
             int requested_index = Value::validated_to_number(ctx, args[0]);
             realm::Mixed element_value = set->template get<std::remove_pointer_t<decltype(type_indicator)>>(requested_index);
-//            int oijio = element_value.template export_to_type<std::remove_pointer_t<decltype(type_indicator)>>();
-//            auto mixed_value = retval = MixedAPI::get_instance().wrap(ctx, element_value);
-            return_value.set((uint32_t)element_value.get_int());
+            return_value.set(element_value);
         } catch (...) {
             // TODO:  propagate exception to JS
         }

@@ -162,25 +162,30 @@ module.exports = {
         });
 
         people = realm.objects(people_schema.name);
-        let onfe = people[0].Persons.get(0);
         TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
         TestCase.assertEqual(3, people[0].Persons.length, "Persons Set length should be 3");
 //        console.log("Joe's name:  " + people.Persons[0].FirstName);
+        let onfe = people[0].Persons.get(0);
 
         let filteredsues = people[0].Persons.filtered('FirstName = "Sue"');
 
         console.log("Sue's age:  " + filteredsues[0].Age);
 
-        let one = people[0].Persons.get(0);
 
-        realm.write(() => {
-            people = realm.objects(people_schema.name);
-            people[0].Persons.delete({FirstName: "Sue",  Age: 53});
-        });
-        people = realm.objects(people_schema.name);
+        // TODO:  The tests below are waiting for LinkedObj support in Mixed
 
-        TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
-        TestCase.assertEqual(2, people[0].Persons.length, "Persons Set length should be 2");
+//         let one = people[0].Persons.get(0);
+//         let oij = people[0].Persons.has({FirstName: "Sue",  Age: 53});
+
+//         realm.write(() => {
+//             people = realm.objects(people_schema.name);
+//             people[0].Persons.delete(one);
+// //            people[0].Persons.delete({FirstName: "Sue",  Age: 53});
+//         });
+//         people = realm.objects(people_schema.name);
+
+//         TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
+//         TestCase.assertEqual(2, people[0].Persons.length, "Persons Set length should be 2");
 
         // TODO: add another 'People'
     },
