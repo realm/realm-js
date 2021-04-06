@@ -43,7 +43,7 @@ class JavascriptObject {
         return store;
     }
 
-    template <void cb(JSContextRef &context, JSValueRef value,
+    template <void cb(JSContextRef context, JSValueRef value,
                       ObjectObserver *observer, IOCollection *collection)>
     static JSValueRef function_call(JSContextRef ctx, JSObjectRef function,
                                     JSObjectRef thisObject,
@@ -110,7 +110,7 @@ class JavascriptObject {
     }
 
     template <class VM,
-              void callback(JSContextRef &context, JSValueRef value,
+              void callback(JSContextRef context, JSValueRef value,
                             ObjectObserver *observer, IOCollection *collection),
               class Data>
     void add_method(std::string name, Data *data) {

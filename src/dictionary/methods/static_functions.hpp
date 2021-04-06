@@ -53,11 +53,11 @@ class ListenersMethodsForDictionary {
 
     static void put(ContextType context, ValueType value, ObjectObserver*, IOCollection* dictionary) {
         auto obj = Value::validated_to_object(context, value);
-        auto keys = obj.GetPropertyNames();
-        auto size = keys.Length();
+        auto keys = Object::get_property_names(context, obj);
+        auto size = keys.size();
 
         for (auto index = 0; index < size; index++) {
-            std::string key = Value::to_string(context, keys[index]);
+            std::string key = keys[index];
             auto value = Object::get_property(context, obj, key);
             dictionary->set(context, key, value);
         }

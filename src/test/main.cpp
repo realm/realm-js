@@ -36,7 +36,7 @@ struct T1 : public ObjectObserver {
     }
     void unsubscribe_all() { call_count++; }
 
-    static void test_for_null_data_method(JSContextRef& context,
+    static void test_for_null_data_method(JSContextRef context,
                                           JSValueRef value,
                                           ObjectObserver* observer,
                                           IOCollection* collection) {
@@ -49,7 +49,7 @@ struct T1 : public ObjectObserver {
         }
     }
 
-    static void methods(JSContextRef& context, JSValueRef value,
+    static void methods(JSContextRef context, JSValueRef value,
                         ObjectObserver* observer, IOCollection* collection) {
         SECTION(
             "This callback should have non-null values for observer and "
