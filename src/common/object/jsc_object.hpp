@@ -3,13 +3,16 @@
 
 #include <iostream>
 #include <vector>
+
 #include "common/object/interfaces.hpp"
 
 namespace realm {
 namespace common {
 
-struct PrivateObject{
-    void* data;
+struct PrivateStore {
+    void* accessor_data = nullptr;
+    ObjectObserver* observer = nullptr;
+    IOCollection* collection = nullptr;
 };
 
 class JavascriptObject {
@@ -18,9 +21,9 @@ class JavascriptObject {
     JSContextRef context;
     std::vector<JSStaticFunction> methods;
     std::vector<JSStaticValue> accessors;
-    std::unique_ptr<PrivateObject> private_object;
+    PrivateStore *private_object;
 
-    static std::string to_string(JSContextRef context, JSStringRef value){
+    static std::string to_string(JSContextRef context, JSStringRef value) {
         std::string str;
         size_t sizeUTF8 = JSStringGetMaximumUTF8CStringSize(value);
         str.reserve(sizeUTF8);
@@ -28,41 +31,49 @@ class JavascriptObject {
         return str;
     }
 
-    template <typename T>
-    static auto get_accessor(JSObjectRef object){
-        PrivateObject *private_object = (PrivateObject*) JSObjectGetPrivate(object);
-        T *accessor = (T*) private_object->data;
-        return accessor;
+    static PrivateStore* get_private(JSObjectRef object) {
+        PrivateStore *store = (PrivateStore *)JSObjectGetPrivate(object);
+        if(store == nullptr) {
+            std::cout << "Store is empty!! \n";
+        }
+        return store;
     }
 
-    template <void cb(JSContextRef &context,
-                      JSValueRef value,
-                      ObjectObserver *observer)>
+    template <void cb(
+            JSContextRef &context,
+            JSValueRef value,
+            ObjectObserver *observer,
+            IOCollection *collection)>
     static JSValueRef function_call(JSContextRef ctx,
                                     JSObjectRef function,
                                     JSObjectRef thisObject,
                                     size_t argumentCount,
                                     const JSValueRef arguments[],
                                     JSValueRef *exception) {
+
         if (argumentCount > 0) {
-            cb(ctx, arguments[0], nullptr);
+            PrivateStore *_private = get_private(thisObject);
+            ObjectObserver *observer =_private->observer;
+            IOCollection *collection = _private->collection;
+            cb(ctx, arguments[0], observer, collection);
         }
 
         return JSValueMakeUndefined(ctx);
     }
 
-    template<class Accessor>
+    template <class Accessor>
     static JSValueRef _get(JSContextRef ctx, JSObjectRef object,
                            JSStringRef propertyName, JSValueRef *exception) {
-
-        return get_accessor<Accessor>(object)->get(ctx, to_string(ctx, propertyName));
+        Accessor *accessor = (Accessor *)get_private(object)->accessor_data;
+        return accessor->get(ctx, to_string(ctx, propertyName));
     }
 
-    template<class Accessor>
+    template <class Accessor>
     static bool _set(JSContextRef ctx, JSObjectRef object,
                      JSStringRef propertyName, JSValueRef value,
                      JSValueRef *exception) {
-        get_accessor<Accessor>(object)->set(ctx, to_string(ctx, propertyName), value);
+        Accessor *accessor = (Accessor *)get_private(object)->accessor_data;
+        accessor->set(ctx, to_string(ctx, propertyName), value);
         return true;
     }
 
@@ -81,7 +92,7 @@ class JavascriptObject {
         : context{_ctx} {
         _class = kJSClassDefinitionEmpty;
         _class.className = name.c_str();
-        private_object = std::make_unique<PrivateObject>();
+        private_object = new PrivateStore{nullptr, nullptr, nullptr};
     }
 
     void dbg() {
@@ -91,28 +102,35 @@ class JavascriptObject {
 
     template <class VM,
               void callback(JSContextRef &context,
-                      JSValueRef value,
-                      ObjectObserver *observer),
+                            JSValueRef value,
+                            ObjectObserver *observer,
+                            IOCollection *collection),
               class Data>
     void add_method(std::string name, Data *data) {
-        JSStaticFunction tmp{ name.c_str(),
-                              function_call<callback>,
-                              kJSPropertyAttributeDontEnum };
+        JSStaticFunction tmp{name.c_str(), function_call<callback>,
+                             kJSPropertyAttributeDontEnum};
         methods.push_back(tmp);
+
+        if (private_object->observer == nullptr &&
+            private_object->collection == nullptr) {
+            private_object->observer = data;
+            private_object->collection = data->get_collection();
+        }
     }
 
     template <typename Accessor, typename Data>
     void add_accessor(std::string key, Data data) {
-        JSStaticValue tmp{key.c_str(), _get<Accessor>, _set<Accessor>, kJSPropertyAttributeNone};
+        JSStaticValue tmp{key.c_str(), _get<Accessor>, _set<Accessor>,
+                          kJSPropertyAttributeNone};
         accessors.push_back(tmp);
-        if(private_object->data == nullptr) {
-            private_object->data = new Accessor{data};
+        if (private_object->accessor_data == nullptr) {
+            private_object->accessor_data = new Accessor{data};
         }
     }
 
     JSObjectRef get_object() {
         auto class_instance = make_class();
-        return JSObjectMake(context, class_instance, &private_object);
+        return JSObjectMake(context, class_instance, private_object);
     }
 };
 

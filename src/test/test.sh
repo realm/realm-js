@@ -1,5 +1,5 @@
 clear &&
-g++ -std=c++17 -Wall -I catch.hpp -I test_bed.hpp -I ../ \
+g++ -g -std=c++17 -Wall -I catch.hpp -I test_bed.hpp -I ../ \
     -I ../../vendor/realm-core/src/ \
     -I ../..//cmake-build-debug/vendor/realm-core/src/ \
     -I ../object-store/external/json \

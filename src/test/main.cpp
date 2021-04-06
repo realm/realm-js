@@ -9,12 +9,75 @@
 using Catch::Matchers::Contains;
 using namespace std;
 
-struct T1 {
-    static void method(JSContextRef& context, JSValueRef value,
-                       ObjectObserver* observer) {
-        SECTION("Method should receive a boolean") {
+
+struct MockedCollection : public IOCollection{
+    double N = 1000;
+    void set(JSContextRef ctx, std::string _key, JSValueRef value){
+        N = JSValueToNumber(ctx, value, nullptr);
+    }
+
+    JSValueRef get(JSContextRef ctx, std::string _key){
+        return JSValueMakeNumber(ctx, N);
+    }
+};
+
+struct TNull: public ObjectObserver{
+    IOCollection* get_collection(){
+        return nullptr;
+    }
+};
+
+struct T1: public ObjectObserver {
+    int call_count = 0;
+    void subscribe(Subscriber*){
+        cout << "subscribe \n";
+        call_count++;
+    }
+
+    void remove_subscription(const Subscriber *){
+        call_count++;
+        // Making Sure that unsubscribe_all & subscribe has been successfully invoked.
+        REQUIRE(call_count == 3);
+    }
+    void unsubscribe_all(){
+        call_count++;
+    }
+
+    static void test_for_null_data_method(JSContextRef& context, JSValueRef value,
+                       ObjectObserver* observer, IOCollection* collection) {
+        SECTION("This callback should have null values for observer and collection.") {
             REQUIRE(true == JSValueIsBoolean(context, value));
+            REQUIRE(collection == nullptr);
+            REQUIRE(observer == nullptr);
         }
+    }
+
+    static void methods(JSContextRef& context, JSValueRef value,
+                        ObjectObserver* observer, IOCollection* collection) {
+        SECTION("This callback should have non-null values for observer and collection.") {
+            REQUIRE(collection != nullptr);
+            REQUIRE(observer != nullptr);
+
+            observer->subscribe(nullptr);
+            observer->unsubscribe_all();
+            observer->remove_subscription(nullptr);
+
+            collection->set(context, "test", value);
+            JSValueRef _num = collection->get(context, "test");
+            double num = JSValueToNumber(context, _num, nullptr);
+            /*
+             * jsc_object line 11
+             * dictionary.doSomething(28850);
+             * we test here that we successfully read the argument.
+             *
+             */
+            REQUIRE(num == 28850);
+
+        }
+    }
+
+    IOCollection* get_collection(){
+        return new MockedCollection();
     }
 };
 
@@ -32,7 +95,7 @@ JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
                 JSValueRef* exception) {
     SECTION("An object should be created, should have a method hello.") {
         auto accessor_name = JSC_VM::s("X");
-        auto method_name = JSC_VM::s("hello");
+        auto method_name = JSC_VM::s("doSomething");
 
         auto obj = (JSObjectRef)arguments[0];
 
@@ -83,18 +146,33 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
 
     /*
      *  JavascriptObject Instantiation and configuration into JSC.
+     *  With null_dictionary is just a Javascript object without a private C++ object.
      */
+    realm::common::JavascriptObject null_dict{jsc_vm.globalContext, "null_dictionary"};
 
-    string NAME = "dictionary";
-    JSStringRef str_dict = jsc_vm.str("dictionary");
-    realm::common::JavascriptObject _dict{jsc_vm.globalContext, NAME};
+    TNull* tnull = nullptr;
+    null_dict.template add_method<int, T1::test_for_null_data_method>("hello", tnull );
+    null_dict.template add_method<int, T1::test_for_null_data_method>("alo", tnull);
 
+    // Adds object to the JS global scope. This way we can call the functions from the VM like this
+    // null_dictionary.hello()
+    // null_dictionary.alo()
+    // for more information look at the jsc_object.js
+    jsc_vm.set_obj_prop("null_dictionary", null_dict.get_object());
+
+
+    /*
+     *  Javascript object with private C++ object.
+     *  To provide a private object we just need to pass a C++ object that has a IOCollection* get_collection() method and/or ObjectSubscriber.
+     */
+    realm::common::JavascriptObject _dict{jsc_vm.globalContext, "dictionary"};
+    _dict.template add_method<int, T1::methods>("doSomething", new T1);
     _dict.template add_accessor<AccessorsTest<int>>("X", 666);
-    _dict.template add_method<int, T1::method>("hello", new int{5});
-    _dict.template add_method<int, T1::method>("alo", new int{5});
 
-    // set property of global object
-    jsc_vm.set_obj_prop(str_dict, _dict.get_object());
+    // Adds object to the JS global scope.
+    jsc_vm.set_obj_prop("dictionary", _dict.get_object());
+
+
 
     /*
      *

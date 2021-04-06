@@ -2,10 +2,13 @@
 test(dictionary);  // Testing successful object creation.
 
 // eslint-disable-next-line no-undef
-dictionary.hello(true);  // Testing method call from object.
+null_dictionary.hello(true);  // Testing method call from object.
 
 // eslint-disable-next-line no-undef
-dictionary.alo(true); // Testing method call from object <again>.
+null_dictionary.alo(true); // Testing method call from object <again>.
+
+// eslint-disable-next-line no-undef
+dictionary.doSomething(28850);
 
 /* Testing accessors. */
 // eslint-disable-next-line no-undef

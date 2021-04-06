@@ -37,8 +37,9 @@ struct JSC_VM {
         globalObject = JSContextGetGlobalObject(globalContext);
     }
 
-    void set_obj_prop(JSStringRef str, JSObjectRef fn) {
-        JSObjectSetProperty(globalContext, globalObject, str, fn,
+    void set_obj_prop(std::string name, JSObjectRef fn) {
+        JSStringRef _name = str(name);
+        JSObjectSetProperty(globalContext, globalObject, _name, fn,
                             kJSPropertyAttributeNone, nullptr);
     }
 
@@ -69,7 +70,7 @@ struct JSC_VM {
         JSStringRef _fn_name = str(fn_name);
         JSObjectRef _fn =
             JSObjectMakeFunctionWithCallback(globalContext, _fn_name, fn);
-        set_obj_prop(_fn_name, _fn);
+        set_obj_prop(fn_name, _fn);
         return _fn;
     }
 
