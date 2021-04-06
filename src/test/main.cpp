@@ -30,7 +30,6 @@ struct TNull: public ObjectObserver{
 struct T1: public ObjectObserver {
     int call_count = 0;
     void subscribe(Subscriber*){
-        cout << "subscribe \n";
         call_count++;
     }
 
@@ -148,29 +147,48 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
      *  JavascriptObject Instantiation and configuration into JSC.
      *  With null_dictionary is just a Javascript object without a private C++ object.
      */
-    realm::common::JavascriptObject null_dict{jsc_vm.globalContext, "null_dictionary"};
+    realm::common::JavascriptObject *null_dict = new realm::common::JavascriptObject {jsc_vm.globalContext, "null_dictionary"};
 
     TNull* tnull = nullptr;
-    null_dict.template add_method<int, T1::test_for_null_data_method>("hello", tnull );
-    null_dict.template add_method<int, T1::test_for_null_data_method>("alo", tnull);
+    null_dict->template add_method<int, T1::test_for_null_data_method>("hello", tnull );
+    null_dict->template add_method<int, T1::test_for_null_data_method>("alo", tnull);
+    JSObjectRef null_dict_js_object = null_dict->get_object();
+
+    realm::common::JavascriptObject::finalize(null_dict_js_object, [=]() {
+        /*
+         *  Private object should be deallocated just once.
+         */
+
+        REQUIRE(null_dict != nullptr);
+        delete null_dict;
+    });
 
     // Adds object to the JS global scope. This way we can call the functions from the VM like this
     // null_dictionary.hello()
     // null_dictionary.alo()
     // for more information look at the jsc_object.js
-    jsc_vm.set_obj_prop("null_dictionary", null_dict.get_object());
+    jsc_vm.set_obj_prop("null_dictionary", null_dict_js_object);
 
 
     /*
      *  Javascript object with private C++ object.
      *  To provide a private object we just need to pass a C++ object that has a IOCollection* get_collection() method and/or ObjectSubscriber.
      */
-    realm::common::JavascriptObject _dict{jsc_vm.globalContext, "dictionary"};
-    _dict.template add_method<int, T1::methods>("doSomething", new T1);
-    _dict.template add_accessor<AccessorsTest<int>>("X", 666);
+    realm::common::JavascriptObject *_dict = new realm::common::JavascriptObject{jsc_vm.globalContext, "dictionary"};
+    _dict->template add_method<int, T1::methods>("doSomething", new T1);
+    _dict->template add_accessor<AccessorsTest<int>>("X", 666);
+    auto dict_js_object = _dict->get_object();
+
+    realm::common::JavascriptObject::finalize(dict_js_object, [=]() {
+        /*
+         *  Private object should be deallocated just once.
+         */
+        REQUIRE(_dict != nullptr);
+        delete _dict;
+    });
 
     // Adds object to the JS global scope.
-    jsc_vm.set_obj_prop("dictionary", _dict.get_object());
+    jsc_vm.set_obj_prop("dictionary", dict_js_object);
 
 
 

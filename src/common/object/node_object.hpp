@@ -21,7 +21,7 @@
 #include "napi.h"
 #include "common/object/interfaces.hpp"
 
-namespace T {
+namespace realm {
 namespace common {
 
 class JavascriptObject {

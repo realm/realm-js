@@ -124,7 +124,7 @@ struct JSObject: public ObjectObserver {
     }
 
     ObjectType build() {
-        T::common::JavascriptObject js_object{context};
+        realm::common::JavascriptObject js_object{context};
         methods->apply(js_object, this);
         getters_setters->apply(js_object, this);
         return js_object.get_object();
@@ -133,7 +133,7 @@ struct JSObject: public ObjectObserver {
     template <typename CB>
     void setup_finalizer(ObjectType object, CB&& cb) {
         // This method gets called when GC dispose the JS Object.
-        T::common::JavascriptObject::finalize(
+        realm::common::JavascriptObject::finalize(
             object, [=]() {
                 cb();
             },

@@ -1,5 +1,9 @@
 #pragma once
-#include <JavaScriptCore/JavaScriptCore.h>
+
+// This allow us to run the JSC tests on our Mac's locally.
+#if __APPLE__
+    #include <JavaScriptCore/JavaScriptCore.h>
+#endif
 
 #include <iostream>
 #include <vector>
@@ -13,6 +17,7 @@ struct PrivateStore {
     void* accessor_data = nullptr;
     ObjectObserver* observer = nullptr;
     IOCollection* collection = nullptr;
+    std::function<void()> finalizer = nullptr;
 };
 
 class JavascriptObject {
@@ -77,6 +82,15 @@ class JavascriptObject {
         return true;
     }
 
+    static void dispose(JSObjectRef object){
+        PrivateStore *_private = get_private(object);
+        if(_private->finalizer != nullptr) {
+            _private->finalizer();
+        }else{
+            std::cout << "Warning: No finalizer was specified.";
+        }
+    }
+
     JSClassRef make_class() {
         methods.push_back({0});
         accessors.push_back({0});
@@ -92,7 +106,9 @@ class JavascriptObject {
         : context{_ctx} {
         _class = kJSClassDefinitionEmpty;
         _class.className = name.c_str();
+        _class.finalize = dispose;
         private_object = new PrivateStore{nullptr, nullptr, nullptr};
+
     }
 
     void dbg() {
@@ -131,6 +147,16 @@ class JavascriptObject {
     JSObjectRef get_object() {
         auto class_instance = make_class();
         return JSObjectMake(context, class_instance, private_object);
+    }
+
+    template <typename RemovalCallback>
+    static void finalize(JSObjectRef object, RemovalCallback&& callback, void *_unused = nullptr) {
+        /*
+         *  JSObject and Self only apply for NodeJS.
+         */
+        PrivateStore* store = get_private(object);
+        store->finalizer = std::move(callback);
+        JSObjectSetPrivate(object, store);
     }
 };
 
