@@ -47,6 +47,6 @@ enum Type {
     UUID = 17,
 };
 
-} // namespace types
-} // namespace js
-} // namespace realm
+}  // namespace types
+}  // namespace js
+}  // namespace realm

@@ -23,12 +23,12 @@
 #if REALM_PLATFORM_NODE
 
 struct Subscriber {
-    virtual void notify(Napi::Object&, realm::DictionaryChangeSet&) = 0;
+    virtual void notify(Napi::Object &, realm::DictionaryChangeSet &) = 0;
     virtual bool equals(const Subscriber *) const = 0;
     virtual Napi::Function callback() const = 0;
 
-    //TODO
-    //virtual ~Subscriber() = 0;
+    // TODO
+    // virtual ~Subscriber() = 0;
 };
 
 struct IOCollection {
@@ -39,12 +39,12 @@ struct IOCollection {
 #else
 
 struct Subscriber {
-    virtual void notify(JSObjectRef&, realm::DictionaryChangeSet&) = 0;
+    virtual void notify(JSObjectRef &, realm::DictionaryChangeSet &) = 0;
     virtual bool equals(const Subscriber *) const = 0;
     virtual JSValueRef callback() const = 0;
 
-    //TODO
-    //virtual ~Subscriber() = 0;
+    // TODO
+    // virtual ~Subscriber() = 0;
 };
 
 struct IOCollection {
@@ -55,7 +55,7 @@ struct IOCollection {
 #endif
 
 struct ObjectObserver {
-    virtual void subscribe(Subscriber*) = 0;
+    virtual void subscribe(Subscriber *) = 0;
     virtual void remove_subscription(const Subscriber *) = 0;
     virtual void unsubscribe_all() = 0;
 };

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
+
 #include "common/object/interfaces.hpp"
 
 #pragma once
@@ -28,10 +29,10 @@ struct NoMethods {
     NoMethods(ContextType _context) : context{_context} {};
 };
 
-class NoData{};
+class NoData {};
 
-struct NoNotificationsStrategy{
+struct NoNotificationsStrategy {
     int empty{0};
 
-    void on_change(){}
+    void on_change() {}
 };

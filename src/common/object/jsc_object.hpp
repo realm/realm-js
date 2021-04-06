@@ -2,7 +2,7 @@
 
 // This allow us to run the JSC tests on our Mac's locally.
 #if __APPLE__
-    #include <JavaScriptCore/JavaScriptCore.h>
+#include <JavaScriptCore/JavaScriptCore.h>
 #endif
 
 #include <iostream>
@@ -10,13 +10,12 @@
 
 #include "common/object/interfaces.hpp"
 
-namespace realm {
 namespace common {
 
 struct PrivateStore {
-    void* accessor_data = nullptr;
-    ObjectObserver* observer = nullptr;
-    IOCollection* collection = nullptr;
+    void *accessor_data = nullptr;
+    ObjectObserver *observer = nullptr;
+    IOCollection *collection = nullptr;
     std::function<void()> finalizer = nullptr;
 };
 
@@ -36,29 +35,24 @@ class JavascriptObject {
         return str;
     }
 
-    static PrivateStore* get_private(JSObjectRef object) {
+    static PrivateStore *get_private(JSObjectRef object) {
         PrivateStore *store = (PrivateStore *)JSObjectGetPrivate(object);
-        if(store == nullptr) {
+        if (store == nullptr) {
             std::cout << "Store is empty!! \n";
         }
         return store;
     }
 
-    template <void cb(
-            JSContextRef &context,
-            JSValueRef value,
-            ObjectObserver *observer,
-            IOCollection *collection)>
-    static JSValueRef function_call(JSContextRef ctx,
-                                    JSObjectRef function,
+    template <void cb(JSContextRef &context, JSValueRef value,
+                      ObjectObserver *observer, IOCollection *collection)>
+    static JSValueRef function_call(JSContextRef ctx, JSObjectRef function,
                                     JSObjectRef thisObject,
                                     size_t argumentCount,
                                     const JSValueRef arguments[],
                                     JSValueRef *exception) {
-
         if (argumentCount > 0) {
             PrivateStore *_private = get_private(thisObject);
-            ObjectObserver *observer =_private->observer;
+            ObjectObserver *observer = _private->observer;
             IOCollection *collection = _private->collection;
             cb(ctx, arguments[0], observer, collection);
         }
@@ -82,11 +76,11 @@ class JavascriptObject {
         return true;
     }
 
-    static void dispose(JSObjectRef object){
+    static void dispose(JSObjectRef object) {
         PrivateStore *_private = get_private(object);
-        if(_private->finalizer != nullptr) {
+        if (_private->finalizer != nullptr) {
             _private->finalizer();
-        }else{
+        } else {
             std::cout << "Warning: No finalizer was specified.";
         }
     }
@@ -108,7 +102,6 @@ class JavascriptObject {
         _class.className = name.c_str();
         _class.finalize = dispose;
         private_object = new PrivateStore{nullptr, nullptr, nullptr};
-
     }
 
     void dbg() {
@@ -117,10 +110,8 @@ class JavascriptObject {
     }
 
     template <class VM,
-              void callback(JSContextRef &context,
-                            JSValueRef value,
-                            ObjectObserver *observer,
-                            IOCollection *collection),
+              void callback(JSContextRef &context, JSValueRef value,
+                            ObjectObserver *observer, IOCollection *collection),
               class Data>
     void add_method(std::string name, Data *data) {
         JSStaticFunction tmp{name.c_str(), function_call<callback>,
@@ -150,15 +141,15 @@ class JavascriptObject {
     }
 
     template <typename RemovalCallback>
-    static void finalize(JSObjectRef object, RemovalCallback&& callback, void *_unused = nullptr) {
+    static void finalize(JSObjectRef object, RemovalCallback &&callback,
+                         void *_unused = nullptr) {
         /*
          *  JSObject and Self only apply for NodeJS.
          */
-        PrivateStore* store = get_private(object);
+        PrivateStore *store = get_private(object);
         store->finalizer = std::move(callback);
         JSObjectSetPrivate(object, store);
     }
 };
 
 }  // namespace common
-}  // namespace realm

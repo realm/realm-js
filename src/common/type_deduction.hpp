@@ -37,8 +37,10 @@ class GenericTypeDeductionImpl {
         for (auto& [type, key] : realm_to_js_map) {
             ret[key] = type;  // camel_case version.
             std::string lower_case_key;
-            // in-place lower case, we want to support multiple variation of the types written names. 
-            std::transform(key.begin(), key.end(), key.begin(), [](unsigned char chr) {return std::tolower(chr); });
+            // in-place lower case, we want to support multiple variation of the
+            // types written names.
+            std::transform(key.begin(), key.end(), key.begin(),
+                           [](unsigned char chr) { return std::tolower(chr); });
             ret[key] = type;
         }
         return ret;

@@ -9,42 +9,40 @@
 using Catch::Matchers::Contains;
 using namespace std;
 
-
-struct MockedCollection : public IOCollection{
+struct MockedCollection : public IOCollection {
     double N = 1000;
-    void set(JSContextRef ctx, std::string _key, JSValueRef value){
+    void set(JSContextRef ctx, std::string _key, JSValueRef value) {
         N = JSValueToNumber(ctx, value, nullptr);
     }
 
-    JSValueRef get(JSContextRef ctx, std::string _key){
+    JSValueRef get(JSContextRef ctx, std::string _key) {
         return JSValueMakeNumber(ctx, N);
     }
 };
 
-struct TNull: public ObjectObserver{
-    IOCollection* get_collection(){
-        return nullptr;
-    }
+struct TNull : public ObjectObserver {
+    IOCollection* get_collection() { return nullptr; }
 };
 
-struct T1: public ObjectObserver {
+struct T1 : public ObjectObserver {
     int call_count = 0;
-    void subscribe(Subscriber*){
-        call_count++;
-    }
+    void subscribe(Subscriber*) { call_count++; }
 
-    void remove_subscription(const Subscriber *){
+    void remove_subscription(const Subscriber*) {
         call_count++;
-        // Making Sure that unsubscribe_all & subscribe has been successfully invoked.
+        // Making Sure that unsubscribe_all & subscribe has been successfully
+        // invoked.
         REQUIRE(call_count == 3);
     }
-    void unsubscribe_all(){
-        call_count++;
-    }
+    void unsubscribe_all() { call_count++; }
 
-    static void test_for_null_data_method(JSContextRef& context, JSValueRef value,
-                       ObjectObserver* observer, IOCollection* collection) {
-        SECTION("This callback should have null values for observer and collection.") {
+    static void test_for_null_data_method(JSContextRef& context,
+                                          JSValueRef value,
+                                          ObjectObserver* observer,
+                                          IOCollection* collection) {
+        SECTION(
+            "This callback should have null values for observer and "
+            "collection.") {
             REQUIRE(true == JSValueIsBoolean(context, value));
             REQUIRE(collection == nullptr);
             REQUIRE(observer == nullptr);
@@ -53,7 +51,9 @@ struct T1: public ObjectObserver {
 
     static void methods(JSContextRef& context, JSValueRef value,
                         ObjectObserver* observer, IOCollection* collection) {
-        SECTION("This callback should have non-null values for observer and collection.") {
+        SECTION(
+            "This callback should have non-null values for observer and "
+            "collection.") {
             REQUIRE(collection != nullptr);
             REQUIRE(observer != nullptr);
 
@@ -71,13 +71,10 @@ struct T1: public ObjectObserver {
              *
              */
             REQUIRE(num == 28850);
-
         }
     }
 
-    IOCollection* get_collection(){
-        return new MockedCollection();
-    }
+    IOCollection* get_collection() { return new MockedCollection(); }
 };
 
 TEST_CASE("Testing Logger#get_level") {
@@ -145,16 +142,18 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
 
     /*
      *  JavascriptObject Instantiation and configuration into JSC.
-     *  With null_dictionary is just a Javascript object without a private C++ object.
+     *  With null_dictionary is just a Javascript object without a private C++
+     * object.
      */
-    realm::common::JavascriptObject *null_dict = new realm::common::JavascriptObject {jsc_vm.globalContext, "null_dictionary"};
+    common::JavascriptObject* null_dict =
+        new common::JavascriptObject{jsc_vm.globalContext, "null_dictionary"};
 
     TNull* tnull = nullptr;
-    null_dict->template add_method<int, T1::test_for_null_data_method>("hello", tnull );
+    null_dict->template add_method<int, T1::test_for_null_data_method>("hello", tnull);
     null_dict->template add_method<int, T1::test_for_null_data_method>("alo", tnull);
     JSObjectRef null_dict_js_object = null_dict->get_object();
 
-    realm::common::JavascriptObject::finalize(null_dict_js_object, [=]() {
+    common::JavascriptObject::finalize(null_dict_js_object, [=]() {
         /*
          *  Private object should be deallocated just once.
          */
@@ -163,23 +162,23 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
         delete null_dict;
     });
 
-    // Adds object to the JS global scope. This way we can call the functions from the VM like this
-    // null_dictionary.hello()
-    // null_dictionary.alo()
-    // for more information look at the jsc_object.js
+    // Adds object to the JS global scope. This way we can call the functions
+    // from the VM like this null_dictionary.hello() null_dictionary.alo() for
+    // more information look at the jsc_object.js
     jsc_vm.set_obj_prop("null_dictionary", null_dict_js_object);
-
 
     /*
      *  Javascript object with private C++ object.
-     *  To provide a private object we just need to pass a C++ object that has a IOCollection* get_collection() method and/or ObjectSubscriber.
+     *  To provide a private object we just need to pass a C++ object that has a
+     * IOCollection* get_collection() method and/or ObjectSubscriber.
      */
-    realm::common::JavascriptObject *_dict = new realm::common::JavascriptObject{jsc_vm.globalContext, "dictionary"};
+    common::JavascriptObject* _dict =
+        new common::JavascriptObject{jsc_vm.globalContext, "dictionary"};
     _dict->template add_method<int, T1::methods>("doSomething", new T1);
     _dict->template add_accessor<AccessorsTest<int>>("X", 666);
     auto dict_js_object = _dict->get_object();
 
-    realm::common::JavascriptObject::finalize(dict_js_object, [=]() {
+    common::JavascriptObject::finalize(dict_js_object, [=]() {
         /*
          *  Private object should be deallocated just once.
          */
@@ -189,8 +188,6 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
 
     // Adds object to the JS global scope.
     jsc_vm.set_obj_prop("dictionary", dict_js_object);
-
-
 
     /*
      *
