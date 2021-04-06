@@ -211,6 +211,10 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
             prop.type |= PropertyType::ObjectId | PropertyType::Set;
             prop.object_type = "";
         }
+        else if (prop.object_type == "uuid") {
+            prop.type |= PropertyType::UUID | PropertyType::Set;
+            prop.object_type = "";
+        }
         else {
             if (is_nullable(prop.type)) {
                 throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
