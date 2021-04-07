@@ -390,7 +390,6 @@ module.exports = {
         // .. but the object's Set should have two elements
         TestCase.assertEqual(0, objects[0].intSet.length, "Length of Set should be 0");
 
-
         realm.close();
     }
 }
