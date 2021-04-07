@@ -45,6 +45,7 @@
             }
         },
         "required": [
+            "_id",
             "firstName",
             "lastName",
             "age"

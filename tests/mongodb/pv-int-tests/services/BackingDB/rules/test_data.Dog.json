@@ -28,6 +28,7 @@
             }
         },
         "required": [
+            "_id",
             "name"
         ],
         "title": "Dog"

@@ -28,6 +28,7 @@
             }
         },
         "required": [
+            "_id",
             "key"
         ],
         "title": "MixedObject"
