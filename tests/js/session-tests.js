@@ -68,7 +68,7 @@ function getSyncConfiguration(user, partition) {
             name: 'Dog',
             primaryKey: '_id',
             properties: {
-                _id: 'objectId?',
+                _id: 'objectId',
                 breed: 'string?',
                 name: 'string',
                 realm_id: 'string?',

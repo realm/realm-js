@@ -31,7 +31,7 @@ const PvIntDog = {
     name: "Dog",
     primaryKey: "_id",
     properties: {
-        _id: "objectId?", // NOTE: this needs to be changed to non-optional in the docker image.
+        _id: "objectId",
         breed: "string?",
         name: "string",
         realm_id: "int?"
@@ -42,7 +42,7 @@ const PvStringDog = {
     name: "Dog",
     primaryKey: "_id",
     properties: {
-        _id: "objectId?", // NOTE: this needs to be changed to non-optional in the docker image.
+        _id: "objectId",
         breed: "string?",
         name: "string",
         realm_id: "string?"
@@ -53,7 +53,7 @@ const PvUuidDog = {
     name: "Dog",
     primaryKey: "_id",
     properties: {
-        _id: "objectId?", // NOTE: this needs to be changed to non-optional in the docker image.
+        _id: "objectId",
         breed: "string?",
         name: "string",
         realm_id: "uuid?"
@@ -64,7 +64,7 @@ const PvObjectIdDog = {
     name: "Dog",
     primaryKey: "_id",
     properties: {
-        _id: "objectId?", // NOTE: this needs to be changed to non-optional in the docker image.
+        _id: "objectId",
         breed: "string?",
         name: "string",
         realm_id: "objectId?"

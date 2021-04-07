@@ -17,7 +17,7 @@ schemas.ParentObject = {
     name: 'ParentObject',
     primaryKey: '_id',
     properties: {
-        _id:           'objectId?',
+        _id:           'objectId',
         id:            'int',
         name:          'NameObject[]'
     }
@@ -27,7 +27,7 @@ schemas.NameObject = {
     name: 'NameObject',
     primaryKey: '_id',
     properties: {
-        _id:          'objectId?',
+        _id:          'objectId',
         family:       'string',
         given:        'string[]',
         prefix:       'string[]'
