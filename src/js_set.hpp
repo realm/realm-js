@@ -40,6 +40,7 @@ namespace set {
  * 
  * @param object_name Name of the Set object (for error reporting purposes)
  * @param prop (mutable) Property object that will be changed to be correct for \ref Set
+ * @exception std::logic_error Thrown if the the prop argument contains an invalid property configuration
  */
 void derive_property_type(StringData const &object_name, Property &prop) {
     using realm::PropertyType;
