@@ -19,9 +19,6 @@
 'use strict';
 const AppConfig = require("./support/testConfig");
 
-
-
-
 // Prevent React Native packager from seeing modules required with this
 const require_method = require;
 function nodeRequire(module) {
@@ -394,7 +391,6 @@ module.exports = {
         TestCase.assertEqual(1, objcount, "Number of objects should still be 1");
         // .. but the object's Set should have two elements
         TestCase.assertEqual(0, objects[0].intSet.length, "Size of Set should be 0");
-
 
         realm.close();
     }
