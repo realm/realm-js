@@ -175,55 +175,8 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         }
     }
     else if (type == "set") {
-        if (prop.object_type == "bool") {
-            prop.type |= PropertyType::Bool | PropertyType::Set;
-            prop.object_type = "";
-        }
-        else if (prop.object_type == "int") {
-            prop.type |= PropertyType::Int | PropertyType::Set;
-            prop.object_type = "";
-        }
-        else if (prop.object_type == "float") {
-            prop.type |= PropertyType::Float | PropertyType::Set;
-            prop.object_type = "";
-        }
-        else if (prop.object_type == "double") {
-            prop.type |= PropertyType::Double | PropertyType::Set;
-            prop.object_type = "";
-        }
-        else if (prop.object_type == "string") {
-            prop.type |= PropertyType::String | PropertyType::Set;
-            prop.object_type = "";
-        }
-        else if (prop.object_type == "date") {
-            prop.type |= PropertyType::Date | PropertyType::Set;
-            prop.object_type = "";
-        }
-        else if (prop.object_type == "data") {
-            prop.type |= PropertyType::Data | PropertyType::Set;
-            prop.object_type = "";
-        }
-        else if (prop.object_type == "decimal128") {
-            prop.type |= PropertyType::Decimal | PropertyType::Set;
-            prop.object_type = "";
-        }
-        else if (prop.object_type == "objectId") {
-            prop.type |= PropertyType::ObjectId | PropertyType::Set;
-            prop.object_type = "";
-        }
-        else if (prop.object_type == "uuid") {
-            prop.type |= PropertyType::UUID | PropertyType::Set;
-            prop.object_type = "";
-        }
-        else {
-            if (is_nullable(prop.type)) {
-                throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
-            }
-            if (is_array(prop.type)) {
-                throw std::logic_error(util::format("List property '%1.%2' must have a non-list value type", object_name, prop.name));
-            }
-            prop.type |= PropertyType::Object | PropertyType::Set;
-        }
+        // apply the correct properties for sets
+        realm::js::set::derive_property_type(object_name, prop);  // may throw std::logic_error
     }
     else if (type == "linkingObjects") {
         prop.type |= PropertyType::LinkingObjects | PropertyType::Array;
