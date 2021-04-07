@@ -58,23 +58,23 @@ function getConfigPath(testName) {
 }
 
 let pathToStitchJson = getConfigPath("common-tests");
-const integrationTestsAppId = `${nodeRequire(pathToStitchJson).app_id}`;
+const integrationTestsAppId = nodeRequire(pathToStitchJson).app_id;
 const integrationAppConfig = makeAppConfig(integrationTestsAppId);
 
 let pathToPvIntJSON = getConfigPath("pv-int-tests");
-const pvIntTestsAppId = `${nodeRequire(pathToPvIntJSON).app_id}`;
+const pvIntTestsAppId = nodeRequire(pathToPvIntJSON).app_id;
 const pvIntAppConfig = makeAppConfig(pvIntTestsAppId);
 
 let pathToPvStringJSON = getConfigPath("pv-string-tests");
-const pvStringTestsAppId = `${nodeRequire(pathToPvStringJSON).app_id}`;
+const pvStringTestsAppId = nodeRequire(pathToPvStringJSON).app_id;
 const pvStringAppConfig = makeAppConfig(pvStringTestsAppId);
 
 let pathToPvUuidJSON = getConfigPath("pv-uuid-tests");
-const pvUuidTestsAppId = `${nodeRequire(pathToPvUuidJSON).app_id}`;
+const pvUuidTestsAppId = nodeRequire(pathToPvUuidJSON).app_id;
 const pvUuidAppConfig = makeAppConfig(pvUuidTestsAppId);
 
 let pathToPvObjectidJSON = getConfigPath("pv-objectid-tests");
-const pvObjectidTestsAppId = `${nodeRequire(pathToPvObjectidJSON).app_id}`;
+const pvObjectidTestsAppId = nodeRequire(pathToPvObjectidJSON).app_id;
 const pvObjectidAppConfig = makeAppConfig(pvObjectidTestsAppId);
 
 module.exports = {
