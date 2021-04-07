@@ -151,7 +151,6 @@ module.exports = {
             ]});
         });
 
-
         let people = realm.objects(people_schema.name);
         TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
         TestCase.assertEqual(2, people[0].Persons.length, "Persons Set length should be 2");
