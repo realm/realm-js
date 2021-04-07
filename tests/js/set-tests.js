@@ -56,14 +56,14 @@ module.exports = {
         const shorthand_schema = {
             name: "ShorthandSchema",
             properties: {
-                Names: "string<>"
+                names: "string<>"
             }
         };
 
         const canonical_schema = {
             name: "CanonicalSchema",
             properties: {
-                Names:  {type: 'set',   objectType: 'string'}
+                names:  {type: 'set',   objectType: 'string'}
 
             }
         };
@@ -82,94 +82,98 @@ module.exports = {
 
     async testSetStringAddDelete() {
         // test add/delete operations on Sets of type string
-        const people_schema = {
-            name: "Person",
+        const teamSchema = {
+            name: "Team",
             properties: {
-                Names: "string<>"
+                names: "string<>"
             }
         };
 
-        const realm = new Realm({ schema: [people_schema] });
+        const realm = new Realm({ schema: [teamSchema] });
         const schema = realm.schema;
 
         realm.write(() => {
             // insert two people
-            realm.create(people_schema.name, {
-                Names: ["John", "Sue"]
+            realm.create(teamSchema.name, {
+                names: ["John", "Sue"]
             });
         });
 
-        let people = realm.objects(people_schema.name);
-        TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
-        TestCase.assertEqual(2, people[0].Names.length, "Persons Set length should be 2");
+        let teams = realm.objects(teamSchema.name);
+        TestCase.assertEqual(1, teams.length, "There should be one team")
+        TestCase.assertEqual(2, teams[0].names.length, "Team Set size should be 2");
 
         // add another three names
         realm.write(() => {
-            people[0].Names.add("Dev").add("Ava").add("Harsha");
+            teams[0].names.add("Pernille").add("Magrethe").add("Wilbur");
         });
-        people = realm.objects(people_schema.name);
-        TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
-        TestCase.assertEqual(5, people[0].Names.length, "Persons Set length should be 5");
+        teams = realm.objects(teamSchema.name);
+        TestCase.assertEqual(1, teams.length, "There should be one team.  We didn't add any")
+        TestCase.assertEqual(5, teams[0].names.length, "Team Set size should be 5");
 
         // remove two names
         realm.write(() => {
-            people[0].Names.delete("John");
-            people[0].Names.delete("Sue");
+            teams[0].names.delete("John");
+            teams[0].names.delete("Sue");
         });
-        people = realm.objects(people_schema.name);
-        TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
-        TestCase.assertEqual(3, people[0].Names.length, "Persons Set length should be 3");
+        teams = realm.objects(teamSchema.name);
+        TestCase.assertEqual(1, teams.length, "There should still be only one team");
+        TestCase.assertEqual(3, teams[0].names.length, "Team Set size should be 3");
+
+        // TODO:  test multiple teams
         
         realm.close();
     },
 
 
     async testSetObjectAddDelete() {
-        const person_schema = {
+        const personSchema = {
             name: "Person",
             properties: {
-                FirstName: 'string',
-                Age: 'int'
+                firstName: 'string',
+                age: 'int'
             }
         };
 
-        const people_schema = {
-            name: 'People',
+        const teamSchema = {
+            name: 'Team',
             properties: {
-                Persons: 'Person<>'
+                persons: 'Person<>'
             }
         };
 
-        const realm = new Realm({ schema: [person_schema, people_schema] });
+        const realm = new Realm({ schema: [personSchema, teamSchema] });
         const schema = realm.schema;
 
         realm.write(() => {
             // insert two people
-            realm.create(people_schema.name, {Persons: [
-                {FirstName: "Joe",  Age: 4},
-                {FirstName: "Sue",  Age: 53},
+            realm.create(teamSchema.name, {persons: [
+                {firstName: "Joe",  age: 4},
+                {firstName: "Sue",  age: 53},
             ]});
         });
 
 
-        let people = realm.objects(people_schema.name);
-        TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
-        TestCase.assertEqual(2, people[0].Persons.length, "Persons Set length should be 2");
+        let people = realm.objects(teamSchema.name);
+        TestCase.assertEqual(1, people.length, "There should be one team")
+        TestCase.assertEqual(2, people[0].persons.length, "Team Set size should be 2");
 
         // add another person
         realm.write(() => {
-            people[0].Persons.add({FirstName: 'bob', Age: 99});
+            people[0].persons.add({firstName: 'Bob', age: 99});
         });
 
-        people = realm.objects(people_schema.name);
-        TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
-        TestCase.assertEqual(3, people[0].Persons.length, "Persons Set length should be 3");
+        people = realm.objects(teamSchema.name);
+        TestCase.assertEqual(1, people.length, "There should still be only one team")
+        TestCase.assertEqual(3, people[0].persons.length, "Team Set size should be 3");
 //        console.log("Joe's name:  " + people.Persons[0].FirstName);
-        let onfe = people[0].Persons.get(0);
+        let onfe = people[0].persons.get(0);
 
-        let filteredsues = people[0].Persons.filtered('FirstName = "Sue"');
+        let filteredsues = people[0].persons.filtered('firstName = "Sue"');
 
-        console.log("Sue's age:  " + filteredsues[0].Age);
+        console.log("Sue's age:  " + filteredsues[0].age);
+
+        // TODO:  filtering on several teams containing the same person
 
 
         // TODO:  The tests below are waiting for LinkedObj support in Mixed
@@ -185,20 +189,20 @@ module.exports = {
 //         people = realm.objects(people_schema.name);
 
 //         TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
-//         TestCase.assertEqual(2, people[0].Persons.length, "Persons Set length should be 2");
+//         TestCase.assertEqual(2, people[0].Persons.length, "Persons Set size should be 2");
 
         // TODO: add another 'People'
     },
 
     async testSetUtilityFunctions() {
-        const people_schema = {
+        const peopleSchema = {
             name: "Person",
             properties: {
-                Names: "string<>"
+                names: "string<>"
             }
         };
 
-        const realm = new Realm({ schema: [people_schema] });
+        const realm = new Realm({ schema: [peopleSchema] });
         const schema = realm.schema;
 
         //
@@ -207,43 +211,43 @@ module.exports = {
 
         realm.write(() => {
             // put some names in our database
-            realm.create(people_schema.name, {
-                Names: ["Kenneth", "Andrew", "Steffen"]
+            realm.create(peopleSchema.name, {
+                names: ["Alice", "Bob", "Cecilia"]
             });
         });
 
-        let teams = realm.objects(people_schema.name);
-        TestCase.assertEqual(1, teams.length, "There should be only one JS team");
-        let js_team = teams[0];
-        TestCase.assertEqual(3, js_team.Names.length, "There should be 3 people in the JS team");
-        TestCase.assertEqual(true, js_team.Names.has("Kenneth"), "Kenneth should be in the JS team");
-        TestCase.assertEqual(false, js_team.Names.has("Jason"), "Jason shouldn't be in the JS team");
+        let teams = realm.objects(peopleSchema.name);
+        TestCase.assertEqual(1, teams.length, "There should be only one team");
+        let footballTeam = teams[0];
+        TestCase.assertEqual(3, footballTeam.names.length, "There should be 3 people in the football team");
+        TestCase.assertEqual(true, footballTeam.names.has("Alice"), "Alice should be in the football team");
+        TestCase.assertEqual(false, footballTeam.names.has("Daniel"), "Daniel shouldn't be in the football team");
 
-        // add one JS team member, delete another one
+        // add one football team member, delete another one
         realm.write(() => {
-            js_team.Names.add("Kræn").delete("Kenneth");
+            footballTeam.names.add("Daniel").delete("Alice");
         });
-        teams = realm.objects(people_schema.name);
-        TestCase.assertEqual(1, teams.length, "There should be only one JS team");
-        js_team = teams[0];
-        TestCase.assertEqual(3, js_team.Names.length, "There should be 3 people in the JS team");
-        TestCase.assertEqual(false, js_team.Names.has("Kenneth"), "Kenneth shouldn't be in the JS team");
+        teams = realm.objects(peopleSchema.name);
+        TestCase.assertEqual(1, teams.length, "There should be only one football team");
+        footballTeam = teams[0];
+        TestCase.assertEqual(3, footballTeam.names.length, "There should be 3 people in the football team after adding Daniel and removing Alice");
+        TestCase.assertEqual(false, footballTeam.names.has("Alice"), "Alice shouldn't be in the football team");
 
         // create another team with two people
         realm.write(() => {
-            realm.create(people_schema.name, {
-                Names: ["Christian", "Claus"]
+            realm.create(peopleSchema.name, {
+                names: ["Daniel", "Felicia"]
             });
         });
-        teams = realm.objects(people_schema.name);
+        teams = realm.objects(peopleSchema.name);
         TestCase.assertEqual(2, teams.length, "There should be two teams");
-        js_team = teams[0];
-        let java_team = teams[1];
-        TestCase.assertEqual(3, js_team.Names.length, "There should be 3 people in the JS team");
-        TestCase.assertEqual(2, java_team.Names.length, "There should be 2 people in the Java team");
+        footballTeam = teams[0];
+        let handballTeam = teams[1];
+        TestCase.assertEqual(3, footballTeam.names.length, "There should be 3 people in the football team.  It wasn't altered");
+        TestCase.assertEqual(2, handballTeam.names.length, "There should be 2 people in the handball team");
 
-        TestCase.assertEqual(false, java_team.Names.has("Kenneth"), "Kenneth shouldn't be in the Java team");
-        TestCase.assertEqual(true, java_team.Names.has("Claus"), "Claus should be in the Java team");
+        TestCase.assertEqual(false, handballTeam.names.has("Bob"), "Bob shouldn't be in the handball team");
+        TestCase.assertEqual(true, handballTeam.names.has("Daniel"), "Daniel should be in the handball team");
 
         //
         // Set.clear() functionality
@@ -251,15 +255,15 @@ module.exports = {
 
         // remove everyone from the JS team
         realm.write(() => {
-            js_team.Names.clear();
+            footballTeam.names.clear();
         });
 
-        teams = realm.objects(people_schema.name);
-        TestCase.assertEqual(2, teams.length, "There should be two teams");
-        js_team = teams[0];
-        java_team = teams[1];
-        TestCase.assertEqual(0, js_team.Names.length, "There should be no people in the JS team");
-        TestCase.assertEqual(2, java_team.Names.length, "There should be 2 people in the Java team");
+        teams = realm.objects(peopleSchema.name);
+        TestCase.assertEqual(2, teams.length, "There should be two teams.  Teams weren't cleared.");
+        footballTeam = teams[0];
+        handballTeam = teams[1];
+        TestCase.assertEqual(0, footballTeam.names.length, "There should be no people in the football team.  It was cleared");
+        TestCase.assertEqual(2, handballTeam.names.length, "There should be 2 people in the handball team.  It was cleared");
 
         realm.close();
     },
@@ -364,7 +368,7 @@ module.exports = {
         // there should still only be one object
         TestCase.assertEqual(1, objcount, "Number of objects should be 1");
         // .. but the object's Set should have two elements
-        TestCase.assertEqual(2, objects[0].intSet.length, "Length of Set should be 2");
+        TestCase.assertEqual(2, objects[0].intSet.length, "Size of Set should be 2");
 
         // add an element to the Set, then delete another one
         realm.write(() => {
@@ -378,7 +382,7 @@ module.exports = {
         // there should still only be one object
         TestCase.assertEqual(1, objcount, "Number of objects should be 1");
         // .. but the object's Set should have two elements
-        TestCase.assertEqual(2, objects[0].intSet.length, "Length of Set should be 2");
+        TestCase.assertEqual(2, objects[0].intSet.length, "Size of Set should be 2");
 
         realm.write(() => {
             objects[0].intSet.clear();
@@ -387,9 +391,9 @@ module.exports = {
         objects = realm.objects(schema.name);
         objcount = objects.length;
         // there should still only be one object
-        TestCase.assertEqual(1, objcount, "Number of objects should be 1");
+        TestCase.assertEqual(1, objcount, "Number of objects should still be 1");
         // .. but the object's Set should have two elements
-        TestCase.assertEqual(0, objects[0].intSet.length, "Length of Set should be 0");
+        TestCase.assertEqual(0, objects[0].intSet.length, "Size of Set should be 0");
 
 
         realm.close();
