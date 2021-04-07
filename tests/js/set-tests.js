@@ -19,9 +19,6 @@
 'use strict';
 const AppConfig = require("./support/testConfig");
 
-
-
-
 // Prevent React Native packager from seeing modules required with this
 const require_method = require;
 function nodeRequire(module) {
