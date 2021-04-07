@@ -49,9 +49,9 @@
         ["QueryCount", 1, "BoolObject", "boolCol == $0", false],
         ["QueryCount", 0, "BoolObject", "boolCol == true && boolCol == false"],
         ["QueryCount", 3, "BoolObject", "boolCol == true || boolCol == false"],
-        ["QueryCount", 1, "BoolObject", "boolCol == 0"],
-        ["QueryCount", 2, "BoolObject", "boolCol == 1"],
 
+        ["QueryThrows", "BoolObject", "boolCol == 0"],
+        ["QueryThrows", "BoolObject", "boolCol == 1"],
         ["QueryThrows", "BoolObject", "boolCol == 'not a bool'"],
         ["QueryThrows", "BoolObject", "boolCol == $0", "not a bool"],
         ["QueryThrows", "BoolObject", "boolCol BEGINSWITH true"],
@@ -74,7 +74,6 @@
         ["QueryCount", 1, "IntObject", "intCol == -1"],
         ["QueryCount", 1, "IntObject", "intCol==0"],
         ["QueryCount", 0, "IntObject", "1 == intCol"],
-        ["QueryCount", 1, "IntObject", "intCol == false"],
         ["QueryCount", 2, "IntObject", "intCol != 0"],
         ["QueryCount", 2, "IntObject", "intCol > -1"],
         ["QueryCount", 3, "IntObject", "intCol >= -1"],
@@ -83,7 +82,8 @@
         ["QueryCount", 1, "IntObject", "intCol > 0x1F"],
         ["QueryCount", 1, "IntObject", "intCol == $0", 100],
         ["QueryCount", 2, "IntObject", "intCol >= 0 LIMIT(2)"],
-
+        
+        ["QueryThrows", "IntObject", "intCol == false"],
         ["QueryThrows", "IntObject", "intCol == 'not an int'"],
         ["QueryThrows", "IntObject", "intCol == $0", "not an int"],
         ["QueryThrows", "IntObject", "intCol BEGINSWITH 1"],
@@ -106,7 +106,6 @@
         ["QueryCount", 1, "FloatObject", "floatCol == -1.001"],
         ["QueryCount", 1, "FloatObject", "floatCol = 0"],
         ["QueryCount", 0, "FloatObject", "1 == floatCol"],
-        ["QueryCount", 1, "FloatObject", "floatCol == false"],
         ["QueryCount", 2, "FloatObject", "floatCol != 0"],
         ["QueryCount", 2, "FloatObject", "floatCol > -1.001"],
         ["QueryCount", 3, "FloatObject", "floatCol >= -1.001"],
@@ -115,7 +114,8 @@
         ["QueryCount", 1, "FloatObject", "floatCol > 0x1F"],
         ["QueryCount", 1, "FloatObject", "floatCol == $0", 100.2],
         ["QueryCount", 2, "FloatObject", "floatCol >= 0.0"],
-
+        
+        ["QueryThrows", "FloatObject", "floatCol == false"],
         ["QueryThrows", "FloatObject", "floatCol == 'not a float'"],
         ["QueryThrows", "FloatObject", "floatCol == $0", "not a float"],
         ["QueryThrows", "FloatObject", "floatCol BEGINSWITH 1"],
@@ -141,7 +141,6 @@
         ["QueryCount", 1, "DoubleObject", "doubleCol == -1.001"],
         ["QueryCount", 1, "DoubleObject", "doubleCol == 0"],
         ["QueryCount", 0, "DoubleObject", "1 == doubleCol"],
-        ["QueryCount", 1, "DoubleObject", "doubleCol == false"],
         ["QueryCount", 2, "DoubleObject", "doubleCol != 0"],
         ["QueryCount", 2, "DoubleObject", "doubleCol > -1.001"],
         ["QueryCount", 3, "DoubleObject", "doubleCol >= -1.001"],
@@ -150,7 +149,8 @@
         ["QueryCount", 1, "DoubleObject", "doubleCol > 0x1F"],
         ["QueryCount", 1, "DoubleObject", "doubleCol == $0", 100.2],
         ["QueryCount", 2, "DoubleObject", "doubleCol >= 0.0 LIMIT(2)"],
-
+        
+        ["QueryThrows", "DoubleObject", "doubleCol == false"],
         ["QueryThrows", "DoubleObject", "doubleCol == 'not a double'"],
         ["QueryThrows", "DoubleObject", "doubleCol == $0", "not a double"],
         ["QueryThrows", "DoubleObject", "doubleCol BEGINSWITH 1"],

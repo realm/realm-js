@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+"use strict";
 
 /* global navigator, WorkerNavigator */
 
@@ -60,7 +60,7 @@ const PvUuidDog = {
     }
 };
 
-const PvObjectidDog = {
+const PvObjectIdDog = {
     name: "Dog",
     primaryKey: "_id",
     properties: {
@@ -71,148 +71,175 @@ const PvObjectidDog = {
     }
 };
 
+const createConfig = (schema, user, partitionValue) => ({
+    schema: Array.isArray(schema) ? schema : [schema],
+    sync: {
+        user,
+        partitionValue,
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+    }
+});
+
 module.exports = {
-    async testPvInt() {
-        let app = new Realm.App(AppConfig.pvIntAppConfig);
+    async testPartitionValueAsInt() {
+        const app = new Realm.App(AppConfig.pvIntAppConfig);
+        const user = await app.logIn(Realm.Credentials.anonymous());
 
-        let credentials = Realm.Credentials.anonymous();
-        let user = await app.logIn(credentials);
-        const realmConfig = {
-            schema: [PvIntDog],
-            sync: {
-                user: user,
-                partitionValue: 42,
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            }
-        };
+        const realmConfigPrimary = createConfig(PvIntDog, user, 42);
+        const realmConfigSecondary = createConfig(PvIntDog, user, 43);
 
-        Realm.deleteFile(realmConfig);
-        let realm1 = await Realm.open(realmConfig);
+        // ensure clean starting point
+        Realm.deleteFile(realmConfigPrimary);
+
+        const realm1 = await Realm.open(realmConfigPrimary);
         realm1.write(() => {
-            realm1.create("Dog", { "_id": new ObjectId(), name: "King" });
+            realm1.create("Dog", { _id: new ObjectId(), name: "King" });
         });
 
         await realm1.syncSession.uploadAllLocalChanges();
         TestCase.assertEqual(realm1.objects("Dog").length, 1);
         realm1.close();
 
-        Realm.deleteFile(realmConfig);
+        // cleanup, re-sync & check changes are synced
+        Realm.deleteFile(realmConfigPrimary);
 
-        let realm2 = await Realm.open(realmConfig);
+        const realm2 = await Realm.open(realmConfigPrimary);
         await realm2.syncSession.downloadAllServerChanges();
 
-        let dogs = realm2.objects("Dog");
-        TestCase.assertEqual(dogs.length, 1);
-
+        TestCase.assertEqual(realm2.objects("Dog").length, 1);
         realm2.close();
+
+        // cleanup & re-sync with different partitionValue
+        Realm.deleteFile(realmConfigPrimary);
+
+        const realm3 = await Realm.open(realmConfigSecondary);
+        await realm3.syncSession.downloadAllServerChanges();
+
+        TestCase.assertEqual(realm3.objects("Dog").length, 0);
+        realm3.close();
+
         await user.logOut();
     },
 
-    async testPvString() {
-        let app = new Realm.App(AppConfig.pvStringAppConfig);
+    async testPartitionValueAsString() {
+        const app = new Realm.App(AppConfig.pvStringAppConfig);
+        const user = await app.logIn(Realm.Credentials.anonymous());
 
-        let credentials = Realm.Credentials.anonymous();
-        let user = await app.logIn(credentials);
-        const realmConfig = {
-            schema: [PvStringDog],
-            sync: {
-                user: user,
-                partitionValue: "42",
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            }
-        };
+        const realmConfigPrimary = createConfig(PvStringDog, user, "42");
+        const realmConfigSecondary = createConfig(PvStringDog, user, "43");
 
-        Realm.deleteFile(realmConfig);
-        let realm1 = await Realm.open(realmConfig);
+        // ensure clean starting point
+        Realm.deleteFile(realmConfigPrimary);
+
+        const realm1 = await Realm.open(realmConfigPrimary);
         realm1.write(() => {
-            realm1.create("Dog", { "_id": new ObjectId(), name: "King" });
+            realm1.create("Dog", { _id: new ObjectId(), name: "King" });
         });
 
         await realm1.syncSession.uploadAllLocalChanges();
         TestCase.assertEqual(realm1.objects("Dog").length, 1);
         realm1.close();
 
-        Realm.deleteFile(realmConfig);
+        // cleanup, re-sync & check changes are synced
+        Realm.deleteFile(realmConfigPrimary);
 
-        let realm2 = await Realm.open(realmConfig);
+        const realm2 = await Realm.open(realmConfigPrimary);
         await realm2.syncSession.downloadAllServerChanges();
 
-        let dogs = realm2.objects("Dog");
-        TestCase.assertEqual(dogs.length, 1);
-
+        TestCase.assertEqual(realm2.objects("Dog").length, 1);
         realm2.close();
+
+        // cleanup & re-sync with different partitionValue
+        Realm.deleteFile(realmConfigPrimary);
+
+        const realm3 = await Realm.open(realmConfigSecondary);
+        await realm3.syncSession.downloadAllServerChanges();
+
+        TestCase.assertEqual(realm3.objects("Dog").length, 0);
+        realm3.close();
+
         await user.logOut();
     },
 
-    /*async testUuidString() {
-        let app = new Realm.App(AppConfig.pvUuidAppConfig);
+    async testPartitionValueAsUuid() {
+        const app = new Realm.App(AppConfig.pvUuidAppConfig);
+        const user = await app.logIn(Realm.Credentials.anonymous());
 
-        let credentials = Realm.Credentials.anonymous();
-        let user = await app.logIn(credentials);
-        const realmConfig = {
-            schema: [PvUuidDog],
-            sync: {
-                user: user,
-                partitionValue: new UUID(),
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            }
-        };
+        const realmConfigPrimary = createConfig(PvUuidDog, user, new UUID("57eade47-8406-4397-ab97-49abcc4d681f"));
+        const realmConfigSecondary = createConfig(PvUuidDog, user, new UUID("90d82df4-6037-4eb6-869b-a62f7af522b0"));
 
-        Realm.deleteFile(realmConfig);
-        let realm1 = await Realm.open(realmConfig);
+        // ensure clean starting point
+        Realm.deleteFile(realmConfigPrimary);
+
+        const realm1 = await Realm.open(realmConfigPrimary);
         realm1.write(() => {
-            realm1.create("Dog", { "_id": new ObjectId(), name: "King" });
+            realm1.create("Dog", { _id: new ObjectId(), name: "King" });
         });
 
         await realm1.syncSession.uploadAllLocalChanges();
         TestCase.assertEqual(realm1.objects("Dog").length, 1);
         realm1.close();
 
-        Realm.deleteFile(realmConfig);
+        // cleanup, re-sync & check changes are synced
+        Realm.deleteFile(realmConfigPrimary);
 
-        let realm2 = await Realm.open(realmConfig);
+        const realm2 = await Realm.open(realmConfigPrimary);
         await realm2.syncSession.downloadAllServerChanges();
 
-        let dogs = realm2.objects("Dog");
-        TestCase.assertEqual(dogs.length, 1);
-
+        TestCase.assertEqual(realm2.objects("Dog").length, 1);
         realm2.close();
+
+        // cleanup & re-sync with different partitionValue
+        Realm.deleteFile(realmConfigPrimary);
+
+        const realm3 = await Realm.open(realmConfigSecondary);
+        await realm3.syncSession.downloadAllServerChanges();
+
+        TestCase.assertEqual(realm3.objects("Dog").length, 0);
+        realm3.close();
+
         await user.logOut();
-    },*/
 
-    async testObjectidString() {
-        let app = new Realm.App(AppConfig.pvObjectidAppConfig);
+        await user.logOut();
+    },
 
-        let credentials = Realm.Credentials.anonymous();
-        let user = await app.logIn(credentials);
-        const realmConfig = {
-            schema: [PvObjectidDog],
-            sync: {
-                user: user,
-                partitionValue: new ObjectId(),
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            }
-        };
+    async testPartitionValueAsObjectId() {
+        const app = new Realm.App(AppConfig.pvObjectidAppConfig);
+        const user = await app.logIn(Realm.Credentials.anonymous());
 
-        Realm.deleteFile(realmConfig);
-        let realm1 = await Realm.open(realmConfig);
+        const realmConfigPrimary = createConfig(PvObjectIdDog, user, new ObjectId("606d8cdf33e41d1409245e60"));
+        const realmConfigSecondary = createConfig(PvObjectIdDog, user, new ObjectId("606d8cdf33e41d1409245e63"));
+
+        // ensure clean starting point
+        Realm.deleteFile(realmConfigPrimary);
+        const realm1 = await Realm.open(realmConfigPrimary);
         realm1.write(() => {
-            realm1.create("Dog", { "_id": new ObjectId(), name: "King" });
+            realm1.create("Dog", { _id: new ObjectId(), name: "King" });
         });
 
         await realm1.syncSession.uploadAllLocalChanges();
         TestCase.assertEqual(realm1.objects("Dog").length, 1);
         realm1.close();
 
-        Realm.deleteFile(realmConfig);
+        Realm.deleteFile(realmConfigPrimary);
 
-        let realm2 = await Realm.open(realmConfig);
+        const realm2 = await Realm.open(realmConfigPrimary);
         await realm2.syncSession.downloadAllServerChanges();
 
-        let dogs = realm2.objects("Dog");
-        TestCase.assertEqual(dogs.length, 1);
-
+        TestCase.assertEqual(realm2.objects("Dog").length, 1);
         realm2.close();
+
+        // cleanup & re-sync with different partitionValue
+        Realm.deleteFile(realmConfigPrimary);
+
+        const realm3 = await Realm.open(realmConfigSecondary);
+        await realm3.syncSession.downloadAllServerChanges();
+
+        TestCase.assertEqual(realm3.objects("Dog").length, 0);
+        realm3.close();
+
+        await user.logOut();
+
         await user.logOut();
     },
 }
