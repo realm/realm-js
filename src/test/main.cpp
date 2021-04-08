@@ -11,12 +11,17 @@ using namespace std;
 
 struct MockedCollection : public IOCollection {
     double N = 1000;
+    MockedCollection(double _N = 1000): N{_N}{}
     void set(JSContextRef ctx, std::string _key, JSValueRef value) {
         N = JSValueToNumber(ctx, value, nullptr);
     }
 
     JSValueRef get(JSContextRef ctx, std::string _key) {
         return JSValueMakeNumber(ctx, N);
+    }
+
+    ~MockedCollection(){
+
     }
 };
 
@@ -36,24 +41,25 @@ struct T1 : public ObjectObserver {
     }
     void unsubscribe_all() { call_count++; }
 
-    static void test_for_null_data_method(JSContextRef context,
-                                          JSValueRef value,
-                                          ObjectObserver* observer,
-                                          IOCollection* collection) {
+    static void test_for_null_data_method(Args arguments) {
         SECTION(
             "This callback should have null values for observer and "
             "collection.") {
-            REQUIRE(true == JSValueIsBoolean(context, value));
-            REQUIRE(collection == nullptr);
-            REQUIRE(observer == nullptr);
+            REQUIRE(true == JSValueIsBoolean(arguments.context, arguments.get(0)));
+            REQUIRE(arguments.collection == nullptr);
+            REQUIRE(arguments.observer == nullptr);
         }
     }
 
-    static void methods(JSContextRef context, JSValueRef value,
-                        ObjectObserver* observer, IOCollection* collection) {
+    static void methods(Args args) {
         SECTION(
             "This callback should have non-null values for observer and "
             "collection.") {
+
+            ObjectObserver *observer =  args.observer;
+            IOCollection *collection = args.collection;
+            auto context = args.context;
+
             REQUIRE(collection != nullptr);
             REQUIRE(observer != nullptr);
 
@@ -61,7 +67,7 @@ struct T1 : public ObjectObserver {
             observer->unsubscribe_all();
             observer->remove_subscription(nullptr);
 
-            collection->set(context, "test", value);
+            collection->set(context, "test", args.get(0));
             JSValueRef _num = collection->get(context, "test");
             double num = JSValueToNumber(context, _num, nullptr);
             /*
@@ -89,7 +95,7 @@ TEST_CASE("Testing Logger#get_level") {
 JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
                 size_t argumentCount, const JSValueRef arguments[],
                 JSValueRef* exception) {
-    SECTION("An object should be created, should have a method hello.") {
+    SECTION("An object should be created, should have a method doSomething.") {
         auto accessor_name = JSC_VM::s("X");
         auto method_name = JSC_VM::s("doSomething");
 
@@ -146,7 +152,7 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
      * object.
      */
     common::JavascriptObject* null_dict =
-        new common::JavascriptObject{jsc_vm.globalContext, "null_dictionary"};
+        new common::JavascriptObject{jsc_vm.globalContext};
 
     TNull* tnull = nullptr;
     null_dict->template add_method<int, T1::test_for_null_data_method>("hello", tnull);
@@ -173,10 +179,13 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
      * IOCollection* get_collection() method and/or ObjectSubscriber.
      */
     common::JavascriptObject* _dict =
-        new common::JavascriptObject{jsc_vm.globalContext, "dictionary"};
+        new common::JavascriptObject{jsc_vm.globalContext};
     _dict->template add_method<int, T1::methods>("doSomething", new T1);
-    _dict->template add_accessor<AccessorsTest<int>>("X", 666);
+    _dict->template add_accessor<AccessorsTest>("X", nullptr);
+    _dict->set_collection(new MockedCollection(666));
+    _dict->set_observer(new T1);
     auto dict_js_object = _dict->get_object();
+
 
     common::JavascriptObject::finalize(dict_js_object, [=]() {
         /*

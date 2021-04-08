@@ -1,17 +1,25 @@
 // eslint-disable-next-line no-undef,strict
-test(dictionary);  // Testing successful object creation.
+let dict = dictionary || {}
 
 // eslint-disable-next-line no-undef
-null_dictionary.hello(true);  // Testing method call from object.
+let null_dict = null_dictionary || {}
 
-// eslint-disable-next-line no-undef
-null_dictionary.alo(true); // Testing method call from object <again>.
+// eslint-disable-next-line no-undef,strict
+test(dict);  // Testing successful object creation.
 
-// eslint-disable-next-line no-undef
-dictionary.doSomething(28850);
+
+null_dict.hello(true);  // Testing method call from object.
+null_dict.alo(true); // Testing method call from object <again>.
+
+
+dict.doSomething(28850);
 
 /* Testing accessors. */
+dict.X=666;
+dict.O = 999; // Trying to access an invalid field.
+
+let _invalid = dict.O
+
+
 // eslint-disable-next-line no-undef
-dictionary.X=666;
-// eslint-disable-next-line no-undef
-test_accessor(dictionary, 'X', 666);
+test_accessor(dict, 'X', 666);

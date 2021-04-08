@@ -17,8 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "common/object/methods.hpp"
+
 #include "dictionary/collection/notification.hpp"
 #include "dictionary/methods/callbacks.hpp"
+
 
 namespace realm {
 namespace js {
@@ -29,42 +32,49 @@ class ListenersMethodsForDictionary {
     using ObjectType = typename T::Object;
     using ContextType = typename T::Context;
     using ValueType = typename T::Value;
-    using Object = js::Object<T>;
-    using Value = js::Value<T>;
-    using Dictionary = CollectionAdapter<TypeMixed<T>, object_store::Dictionary>;
+
    public:
+    static void add_listener(Args arguments) {
+        ContextType context = arguments.context;
+        ObjectObserver *observer = arguments.observer;
+        std::string error_msg =  "A callback function is required.";
 
-
-    static void add_listener(ContextType context, ValueType value, ObjectObserver* observer, IOCollection*) {
-        auto fn = Value::validated_to_function(context, value);
+        auto fn = js::Value<T>::validated_to_function(context, arguments.get(0, error_msg));
         auto *subscriber = new NotificationsCallback<T>{context, fn};
         observer->subscribe(subscriber);
     }
 
-    static void remove_listener(ContextType context, ValueType value, ObjectObserver* observer, IOCollection*) {
-        auto callback = Value::validated_to_function(context, value);
+    static void remove_listener(Args arguments) {
+        ContextType context = arguments.context;
+        ObjectObserver* observer = arguments.observer;
+        std::string error_msg =  "A callback function is required.";
+
+        auto callback = js::Value<T>::validated_to_function(context,  arguments.get(0, error_msg));
         auto *subscriber = new NotificationsCallback<T>{context, callback};
         observer->remove_subscription(subscriber);
     }
 
-    static void remove_all_listeners(ContextType, ValueType, ObjectObserver* observer, IOCollection*) {
-        observer->unsubscribe_all();
+    static void remove_all_listeners(Args arguments) {
+        arguments.observer->unsubscribe_all();
     }
 
-    static void put(ContextType context, ValueType value, ObjectObserver*, IOCollection* dictionary) {
-        auto obj = Value::validated_to_object(context, value);
-        auto keys = Object::get_property_names(context, obj);
-        auto size = keys.size();
+    static void put(Args arguments) {
+        std::string error_msg =  "This method cannot be empty.";
+        auto context = arguments.context;
+        auto dictionary = arguments.collection;
 
-        for (auto index = 0; index < size; index++) {
+        auto obj =  js::Value<T>::validated_to_object(context, arguments.get(0, error_msg));
+        auto keys = js::Object<T>::get_property_names(context, obj);
+
+        for (auto index = 0; index < keys.size(); index++) {
             std::string key = keys[index];
-            auto value = Object::get_property(context, obj, key);
+            auto value = js::Object<T>::get_property(context, obj, key);
             dictionary->set(context, key, value);
         }
     }
 
     template<typename JavascriptObject, typename Data>
-    void apply(JavascriptObject object, Data *_o) {
+    void apply(JavascriptObject& object, Data *_o) {
         object.template add_method<T, add_listener>("addListener", _o);
         object.template add_method<T, remove_listener>("removeListener", _o);
         object.template add_method<T, remove_all_listeners>("removeAllListeners", _o);

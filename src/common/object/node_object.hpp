@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/object/interfaces.hpp"
+#include "common/object/methods.hpp"
 #include "napi.h"
 
 namespace common {
@@ -28,12 +29,11 @@ class JavascriptObject {
     Napi::Env context;
     Napi::Object object;
 
-    template <void cb(Napi::Env context, Napi::Value value,
-                      ObjectObserver* observer, IOCollection* collection),
+    template <void cb(Args),
               typename Data>
     static auto make_callback_method(Data* data) {
         return [=](const auto& info) mutable {
-            cb(info.Env(), info[0], data, data->get_collection());
+            cb({info.Env(), data, data->get_collection(), info.Length(), info.Data()});
         };
     }
 
@@ -58,8 +58,7 @@ class JavascriptObject {
     }
 
     template <class VM,
-              void cb(Napi::Env context, Napi::Value value,
-                      ObjectObserver* observe, IOCollection* collection),
+              void cb(Args),
               class Data>
     void add_method(std::string&& name, Data* data) {
         auto _callback = make_callback_method<cb>(data);

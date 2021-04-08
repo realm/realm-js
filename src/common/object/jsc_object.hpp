@@ -1,3 +1,22 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2021 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+
 #pragma once
 
 // This allow us to run the JSC tests on our Mac's locally.
@@ -9,6 +28,7 @@
 #include <vector>
 
 #include "common/object/interfaces.hpp"
+#include "common/object/methods.hpp"
 
 namespace common {
 
@@ -26,6 +46,7 @@ class JavascriptObject {
     std::vector<JSStaticFunction> methods;
     std::vector<JSStaticValue> accessors;
     PrivateStore *private_object;
+    bool hack = false;
 
     static std::string to_string(JSContextRef context, JSStringRef value) {
         std::string str;
@@ -36,43 +57,44 @@ class JavascriptObject {
     }
 
     static PrivateStore *get_private(JSObjectRef object) {
-        PrivateStore *store = (PrivateStore *)JSObjectGetPrivate(object);
+        PrivateStore *store = static_cast<PrivateStore*>(JSObjectGetPrivate(object));
         if (store == nullptr) {
             std::cout << "Store is empty!! \n";
         }
         return store;
     }
 
-    template <void cb(JSContextRef context, JSValueRef value,
-                      ObjectObserver *observer, IOCollection *collection)>
+    template <void cb(Args)>
     static JSValueRef function_call(JSContextRef ctx, JSObjectRef function,
                                     JSObjectRef thisObject,
                                     size_t argumentCount,
-                                    const JSValueRef arguments[],
+                                    const JSValueRef _arguments[],
                                     JSValueRef *exception) {
-        if (argumentCount > 0) {
+
             PrivateStore *_private = get_private(thisObject);
             ObjectObserver *observer = _private->observer;
             IOCollection *collection = _private->collection;
-            cb(ctx, arguments[0], observer, collection);
-        }
 
+            cb({ctx, observer, collection, argumentCount, _arguments});
         return JSValueMakeUndefined(ctx);
     }
 
-    template <class Accessor>
     static JSValueRef _get(JSContextRef ctx, JSObjectRef object,
                            JSStringRef propertyName, JSValueRef *exception) {
-        Accessor *accessor = (Accessor *)get_private(object)->accessor_data;
-        return accessor->get(ctx, to_string(ctx, propertyName));
+        std::string key = to_string(ctx, propertyName);
+        IOCollection *collection = get_private(object)->collection;
+        JSValueRef value = collection->get(ctx, key);
+
+        return value;
     }
 
-    template <class Accessor>
     static bool _set(JSContextRef ctx, JSObjectRef object,
                      JSStringRef propertyName, JSValueRef value,
                      JSValueRef *exception) {
-        Accessor *accessor = (Accessor *)get_private(object)->accessor_data;
-        accessor->set(ctx, to_string(ctx, propertyName), value);
+        std::string key = to_string(ctx, propertyName);
+
+        IOCollection *collection = get_private(object)->collection;
+        collection->set(ctx, key, value);
         return true;
     }
 
@@ -107,37 +129,53 @@ class JavascriptObject {
     void dbg() {
         std::cout << "methods size: " << methods.size() << " \n";
         std::cout << "accessors size: " << accessors.size() << " \n";
+
+#if REALM_ANDROID
+        for(auto m: methods){
+            if(m.name != nullptr) {
+                std::cout << "method name: " << m.name << " \n";
+            }
+        }
+
+        __android_log_print(ANDROID_LOG_INFO, "RealmJS", "methods size: %d",
+                         (int)methods.size());
+        __android_log_print(ANDROID_LOG_INFO, "RealmJS", "accessors size: %d",
+                         (int)accessors.size());
+#endif
     }
 
     template <class VM,
-              void callback(JSContextRef context, JSValueRef value,
-                            ObjectObserver *observer, IOCollection *collection),
+              void callback(Args),
               class Data>
-    void add_method(std::string name, Data *data) {
-        JSStaticFunction tmp{name.c_str(), function_call<callback>,
+    void add_method(std::string name, Data *) {
+        std::string *leak = new std::string{name};
+        JSStaticFunction method_definition{leak->c_str(), function_call<callback>,
                              kJSPropertyAttributeDontEnum};
-        methods.push_back(tmp);
-
-        if (private_object->observer == nullptr &&
-            private_object->collection == nullptr) {
-            private_object->observer = data;
-            private_object->collection = data->get_collection();
-        }
+        methods.push_back(method_definition);
     }
 
-    template <typename Accessor, typename Data>
-    void add_accessor(std::string key, Data data) {
-        JSStaticValue tmp{key.c_str(), _get<Accessor>, _set<Accessor>,
-                          kJSPropertyAttributeNone};
-        accessors.push_back(tmp);
-        if (private_object->accessor_data == nullptr) {
-            private_object->accessor_data = new Accessor{data};
-        }
+    template <typename Accessor>
+    void add_accessor(std::string name, IOCollection*) {
+        std::string *leak = new std::string{name};
+        JSStaticValue accessor_definition { leak->c_str(), _get, _set,kJSPropertyAttributeNone};
+        accessors.push_back(accessor_definition);
+    }
+
+    void set_collection(IOCollection *collection){
+        private_object->collection = collection;
+    }
+
+    void set_observer(ObjectObserver* observer){
+        private_object->observer = observer;
+    }
+
+    void _hack(){
+        hack = true;
     }
 
     JSObjectRef get_object() {
         auto class_instance = make_class();
-        return JSObjectMake(context, class_instance, private_object);
+        return JSObjectMake(context, class_instance, private_object);;
     }
 
     template <typename RemovalCallback>

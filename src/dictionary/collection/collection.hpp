@@ -24,17 +24,17 @@
 namespace realm {
 namespace js {
 
-template <typename T, typename Collection>
+template <typename T>
 class CollectionAdapter: public IOCollection {
    private:
-    Collection collection;
-    using Mixed = TypeMixed<T>;
+    object_store::Dictionary dictionary;
+    using JSMixedAPI = TypeMixed<T>;
     using ValueType = typename T::Value;
     using ContextType = typename T::Context;
 
 public:
-    CollectionAdapter(Collection _collection)
-        : collection{_collection} {}
+    CollectionAdapter(object_store::Dictionary _dict)
+        : dictionary{_dict} {}
 
     /*
      * Makes the contents of this collection compatible with the existing
@@ -42,28 +42,35 @@ public:
      */
     template <typename... Arguments>
     auto add_notification_callback(Arguments... arguments) {
-        return collection.add_notification_callback(arguments...);
+        return dictionary.add_notification_callback(arguments...);
     }
 
     auto begin() {
-        return collection.begin();
+        return dictionary.begin();
     }
 
     auto end() {
-        return collection.end();
+        return dictionary.end();
     }
 
     void set(ContextType context, std::string key, ValueType value){
-        auto mixed = Mixed::get_instance().unwrap(context, value);
-        collection.insert(key, mixed);
+        auto mixed = JSMixedAPI::get_instance().unwrap(context, value);
+#if REALM_ANDROID
+        __android_log_print(ANDROID_LOG_INFO, "RealmJS::collection", "put k-> %s", key.c_str());
+        __android_log_print(ANDROID_LOG_INFO, "RealmJS::collection", "put v-> %d", mixed.is_null());
+#endif
+        dictionary.insert(key.c_str(), mixed);
     }
 
     ValueType get(ContextType context, std::string key) {
-        auto mixed_value = collection.get_any(key);
-        return Mixed::get_instance().wrap(context, mixed_value);
+        auto mixed_value = dictionary.get_any(key.c_str());
+        auto value = JSMixedAPI::get_instance().wrap(context, mixed_value);
+        return value;
     }
 
-    operator Collection() { return collection; }
+    operator Collection() { return dictionary; }
+
+    ~CollectionAdapter(){}
 };
 
 }  // namespace js

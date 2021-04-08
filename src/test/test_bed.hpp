@@ -57,8 +57,12 @@ struct JSC_VM {
         vm(buffer.str());
     }
     void vm(std::string&& script) {
-        auto _script = str(script);
-        JSEvaluateScript(globalContext, _script, nullptr, nullptr, 1, nullptr);
+        SECTION("Virtual machine should end in a clean state.")
+        {
+            auto _script = str(script);
+            auto ret = JSEvaluateScript(globalContext, _script, nullptr, nullptr, 1, nullptr);
+            REQUIRE(ret != NULL);
+        }
     }
 
     static JSStringRef s(std::string str) {
@@ -83,19 +87,18 @@ struct JSC_VM {
     }
 };
 
-template <typename Collection>
+
 struct AccessorsTest {
-    Collection N = 50;
+    IOCollection *N;
 
     template <typename ContextType>
     auto get(ContextType context, std::string key_name) {
-        return JSValueMakeNumber(context, N);
+        return N->get(context, key_name);
     }
 
     template <typename ContextType, typename ValueType>
     auto set(ContextType context, std::string key_name, ValueType value) {
-        JSValueRef exception = nullptr;
-        N = JSValueToNumber(context, value, &exception);
+       N->set(context, key_name, value);
     }
 };
 
