@@ -36,7 +36,7 @@ class NativeAccessor;
 
 namespace set {
 /**
- * @brief Derive and set correct property flags for \ref Set.
+ * @brief Derive and apply property flags for \ref Set.
  * 
  * @param object_name Name of the Set object (for error reporting purposes)
  * @param prop (mutable) Property object that will be changed to be correct for \ref Set
@@ -136,7 +136,7 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
     // properties
     static void get_length(ContextType, ObjectType, ReturnValue &);
 //     static void get_type(ContextType, ObjectType, ReturnValue &);
-//     static void get_optional(ContextType, ObjectType, ReturnValue &);
+     static void get_optional(ContextType, ObjectType, ReturnValue &);
      static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
      static void get_type(ContextType, ObjectType, ReturnValue &);
 
@@ -181,7 +181,7 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
          {"size", {wrap<get_length>, nullptr}},
          {"length", {wrap<get_length>, nullptr}},       // length property is required for, e.g., JavaScript serialization
          {"type", {wrap<get_type>, nullptr}},
-//         {"optional", {wrap<get_optional>, nullptr}},
+         {"optional", {wrap<get_optional>, nullptr}},
      };
 
      IndexPropertyType<T> const index_accessor = {wrap<get_index>, nullptr};
@@ -232,6 +232,13 @@ void SetClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, 
 }
 
 
+template<typename T>
+void SetClass<T>::get_optional(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto set = get_internal<T, SetClass<T>>(ctx, object);
+    return_value.set(is_nullable(set->get_type()));
+}
+
+
 /**
  * @brief Implements JavaScript Set's add() method
  * 
@@ -278,31 +285,19 @@ template<typename T>
 void SetClass<T>::get(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
+    if (!Value::is_number(ctx, args[0])) {
+        throw std::invalid_argument("Argument to get() must be a number.");
+    }
+
     auto set = get_internal<T, SetClass<T>>(ctx, this_object);
-    // auto size = static_cast<unsigned int>(set->size());
-    // if (size == 0) {
-    //     set->verify_in_transaction();
-    //     return_value.set_undefined();
-    // }
-    // else {
-    //     get_index(ctx, this_object, size - 1, return_value);
-    //     list->remove(size - 1);
-    // }
-
-    // TODO: assert that args[0] is a number
-
     NativeAccessor<T> accessor(ctx, *set);
     auto const value_type = set->get_type();
 
     switch_on_type(value_type, [&](auto const type_indicator) -> void {
-        try {
-            using element_type = std::remove_pointer_t<decltype(type_indicator)>;
-            int requested_index = Value::validated_to_number(ctx, args[0]);
-            realm::Mixed element_value = set->template get<std::remove_pointer_t<decltype(type_indicator)>>(requested_index);
-            return_value.set(element_value);
-        } catch (...) {
-            // TODO:  propagate exception to JS
-        }
+        using element_type = std::remove_pointer_t<decltype(type_indicator)>;
+        int requested_index = Value::validated_to_number(ctx, args[0]);
+        realm::Mixed element_value = set->template get<std::remove_pointer_t<decltype(type_indicator)>>(requested_index);
+        return_value.set(element_value);
     });
 }
 
@@ -444,21 +439,23 @@ void SetClass<T>::validate_value(ContextType ctx, realm::object_store::Set &set,
 
 template<typename T>
 void SetClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto list = get_internal<T, SetClass<T>>(ctx, this_object);
-    ResultsClass<T>::add_listener(ctx, *list, this_object, args);
+    // args is validated by ResultClass
+    auto set = get_internal<T, SetClass<T>>(ctx, this_object);
+    ResultsClass<T>::add_listener(ctx, *set, this_object, args);
 }
 
 template<typename T>
 void SetClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto list = get_internal<T, SetClass<T>>(ctx, this_object);
-    ResultsClass<T>::remove_listener(ctx, *list, this_object, args);
+    // args is validated by ResultClass
+    auto set = get_internal<T, SetClass<T>>(ctx, this_object);
+    ResultsClass<T>::remove_listener(ctx, *set, this_object, args);
 }
 
 template<typename T>
 void SetClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
-    auto list = get_internal<T, SetClass<T>>(ctx, this_object);
-    list->m_notification_tokens.clear();
+    auto set = get_internal<T, SetClass<T>>(ctx, this_object);
+    set->m_notification_tokens.clear();
 }
 
 

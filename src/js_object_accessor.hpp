@@ -235,6 +235,10 @@ public:
     }
 
     bool is_same_set(realm::object_store::Set const &set, ValueType const &value) const {
+        auto object = Value::validated_to_object(m_ctx, value);
+        if (js::Object<JSEngine>::template is_instance<SetClass<JSEngine>>(m_ctx, object)) {
+            return set == *get_internal<JSEngine, SetClass<JSEngine>>(m_ctx, object);
+        }
         return false;
     }
 
