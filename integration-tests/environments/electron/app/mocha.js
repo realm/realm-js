@@ -18,14 +18,14 @@
 
 "use strict";
 
-const { MochaRemoteClient } = require("mocha-remote-client");
+const { Client } = require("mocha-remote-client");
 const { platform } = require("os");
 
 module.exports = (serverURL, processType) => {
-    return new MochaRemoteClient({
+    return new Client({
         id: processType,
         url: serverURL,
-        onInstrumented: mocha => {
+        tests() {
             // Set the Realm global for the tests to use
             global.Realm = require("realm");
             global.fs = require("fs-extra");
@@ -36,8 +36,7 @@ module.exports = (serverURL, processType) => {
                 electron: process.type === "browser" ? "main" : "renderer",
             };
             // Add the integration test suite
-            const testIndexPath = require.resolve("realm-integration-tests");
-            mocha.addFile(testIndexPath);
+            require("realm-integration-tests");
         },
     });
 };

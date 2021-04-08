@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+console.log("Loading Realm Integration Tests");
+
 if (!global.Realm) {
     throw new Error("Expected 'Realm' to be available as a global");
 }

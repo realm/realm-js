@@ -6,8 +6,9 @@ Currently this directory consists of:
   - `index.js` re-exports the `App` component.
 - A test harness in `harness`, where:
   - `android-cli.js` wraps the Android specific `adb` and `emulator` CLIs.
-  - `react-native-cli.js` wraps the `react-native` CLI.
   - `runner.js` starts a mocha remote server, the metro bundler and starts the app (using `react-native run-android` or `react-native run-android`)
+  - `react-native-cli.js` wraps the `react-native` CLI.
+  - `xcode-cli.js` wraps the `react-native` CLI.
 
 To install this environment, simply run:
 
@@ -15,14 +16,7 @@ To install this environment, simply run:
 npm install
 ```
 
-Before building for iOS ensure you've run `pod install` in the `./ios` directory
-
-```bash
-cd ios
-pod install
-```
-
-To avoid integrity checks failing when NPM compares the SHA of the `realm` and `realm-integration-tests` archives with SHA in the package-lock.json we `npm install` the archives on `preinstall`.
+This will run `install-local` and `pod install` (in `./ios`) for you.
 
 ## Running the tests
 
@@ -64,10 +58,80 @@ npm run test/ios -- --watch
 
 This will keep the harness, metro server and mocha-remote servers running and connected to the device. When hot reloading (from an update to Realm JS, the tests or the app itself) the app will re-connect and rerun the tests.
 
-While in watch mode, you can rebuild, repackage and reinstall the tests by running
+## Weird configurations
 
-```bash
-npm run update-tests
+In an attempt to lower the time from change to the Realm JS source-code or the integration test suite, to a test being run, this React Native app has a couple of weird configurations.
+
+Because we're not listing `realm` as a `dependency` of our `package.json` we won't be relying on React Native auto-linking.
+This gives us an opportunity to manually link to the root project, removing the need to reinstall the `realm` package or link build artifacts into the `node_modules/realm` directory.
+
+### Metro bundler configuration
+
+- Watch the Realm library and the integration test suite packages.
+- Block any loading of packages from `node_modules` in the two packages.
+- Use `install-local` install the dependencies of our two packages into the app.
+
+### Android configuration
+
+We've declared the project to the [settings.gradle](./android/settings.gradle):
+
+```gradle
+// [...]
+// Manually linking the Realm package to the root project
+include ':realm'
+project(':realm').projectDir = new File(settingsDir, '../../../../react-native/android')
 ```
 
-Because of https://github.com/facebook/metro/issues/1 we need this extra repackaging step.
+We're loading the project manually in the App's [build.gradle](./android/app/build.gradle):
+
+```gradle
+dependencies {
+    // [...]
+    implementation project(":realm")
+    // [...]
+}
+```
+
+We're manually loading the Realm package into the [MainApplication.java](./android/app/src/main/java/com/realmreactnativetests/MainApplication.java):
+
+```java
+// [...]
+import io.realm.react.RealmReactPackage;
+
+public class MainApplication extends Application implements ReactApplication {
+  // [...]
+  private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
+    // [...]
+    protected List<ReactPackage> getPackages() {
+      // [...]
+      packages.add(new RealmReactPackage());
+      // [...]
+    }
+  }
+}
+```
+
+### iOS Configuration
+
+We're manually linking from the [Podfile](./ios/Podfile):
+
+```ruby
+# [...]
+target 'RealmReactNativeTests' do
+  # [...]
+  pod 'RealmJS', :path => '../../../..'
+  # [...]
+end
+```
+
+### TODO: Automating setting app to run in debugging mode
+
+On Android we can set the `remote_js_debug` preference by pushing a file via the ADB CLI:
+
+```
+adb shell
+run-as com.realmreactnativetests
+cat shared_prefs/com.realmreactnativetests_preferences.xml
+```
+
+On iOS 

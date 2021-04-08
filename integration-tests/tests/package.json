@@ -7,10 +7,11 @@
   "scripts": {
     "build": "tsc -p .",
     "start": "ts-mocha --project ./tsconfig.json --require src/utils/inject-globals.js --watch-extensions ts,js --watch src/index.ts",
-    "prepack": "npm run build",
-    "lint": "tslint -p ."
+    "lint": "tslint -p .",
+    "prepare": "npm run build"
   },
   "peerDependencies": {
+    "bson": "^4.2.3",
     "mocha": "^5.2.0",
     "realm": "*"
   },
@@ -19,7 +20,7 @@
     "@types/mocha": "^5.2.6",
     "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
-    "realm": "../..",
+    "realm": "file:../..",
     "ts-mocha": "^6.0.0",
     "tslint": "^6.1.3",
     "typescript": "^3.8.2"

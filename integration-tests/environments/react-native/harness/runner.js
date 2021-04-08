@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const { MochaRemoteServer } = require("mocha-remote-server");
+const { Server } = require("mocha-remote-server");
 const { timeout, TimeoutError } = require("promise-timeout");
 const Yargs = require("yargs");
 const path = require("path");
@@ -41,9 +41,7 @@ function ensureSimulator(platform, deleteExisting = false) {
             );
         } else {
             // Ensure the device can access the mocha remote server
-            android.adb.reverseServerPort(
-                MochaRemoteServer.DEFAULT_CONFIG.port,
-            );
+            android.adb.reverseServerPort(Server.DEFAULT_CONFIG.port);
         }
     } else if (platform === "ios") {
         const version = xcode.xcrun("--version").stdout.trim();
@@ -116,21 +114,21 @@ async function runApp(platform, junitFilePath, isWatching) {
         console.log("Running in watch-mode");
     }
 
-    const mochaConfig = {};
-
-    // Check if an argument for junit path was requested
-    if (junitFilePath) {
-        mochaConfig.reporter = "mocha-junit-reporter";
-        mochaConfig.reporterOptions = {
-            mochaFile: junitFilePath,
-        };
-    }
+    const reporterConfig = junitFilePath
+        ? {
+              reporter: "mocha-junit-reporter",
+              reporterOptions: {
+                  mochaFile: junitFilePath,
+              },
+          }
+        : {};
 
     // Create and start a server
-    const server = new MochaRemoteServer(mochaConfig, {
+    const server = new Server({
         // Accept connections only from the expected platform, to prevent cross-talk when both emulators are open
         id: platform,
-        runOnConnection: isWatching,
+        autoRun: isWatching,
+        ...reporterConfig,
     });
     await server.start();
 

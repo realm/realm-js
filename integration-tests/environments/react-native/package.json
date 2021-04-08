@@ -1,36 +1,42 @@
 {
-  "name": "realm-react-native-tests",
+  "name": "realmreactnativetests",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "preinstall": "npm install ../../realm-integration-tests.tgz ../../realm.tgz --no-save --ignore-scripts",
-    "update-tests": "npm run tests/pack --prefix ../.. && npm install ../../realm-integration-tests.tgz --no-save",
+    "postinstall": "install-local && npm run pod-install",
+    "pod-install": "cd ios && pod install",
     "test": "npm run test/android && npm run test/ios",
     "test/android": "node harness/runner.js android",
     "test/ios": "node harness/runner.js ios",
-    "lint": "../../../node_modules/.bin/eslint ."
-  },
-  "peerDependencies": {
-    "realm-integration-tests": "*"
+    "lint": "eslint ."
   },
   "dependencies": {
-    "mocha": "^5.2.0",
-    "mocha-junit-reporter": "^1.23.1",
-    "mocha-remote-client": "^0.16.0",
-    "path-browserify": "^1.0.0",
-    "react": "16.8.1",
-    "react-native": "0.61.3",
-    "react-native-fs": "^2.16.1",
-    "realm": "file:../../realm.tgz",
-    "realm-integration-tests": "file:../../realm-integration-tests.tgz"
+    "@react-native-community/art": "^1.2.0",
+    "mocha": "^8.3.2",
+    "mocha-junit-reporter": "^2.0.0",
+    "mocha-remote-client": "^1.0.0",
+    "path-browserify": "^1.0.1",
+    "react": "17.0.1",
+    "react-native": "0.64.0",
+    "react-native-fs": "^2.16.6",
+    "react-native-progress": "^4.1.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.0",
-    "@babel/runtime": "^7.5.0",
-    "fs-extra": "^8.1.0",
-    "metro-react-native-babel-preset": "^0.51.1",
-    "mocha-remote-server": "^0.16.0",
+    "@babel/core": "^7.12.9",
+    "@babel/runtime": "^7.12.5",
+    "@react-native-community/eslint-config": "^2.0.0",
+    "babel-jest": "^26.6.3",
+    "cmake-js": "file:/../../../node_modules/cmake-js",
+    "eslint": "7.14.0",
+    "fs-extra": "^9.1.0",
+    "install-local": "^3.0.1",
+    "metro-react-native-babel-preset": "^0.64.0",
+    "mocha-remote-server": "^1.0.0",
     "promise-timeout": "^1.3.0",
-    "yargs": "^15.3.1"
+    "react-test-renderer": "17.0.1"
+  },
+  "localDependencies": {
+    "realm": "../../..",
+    "realm-integration-tests": "../../tests"
   }
 }

@@ -21,7 +21,7 @@
 const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
-const { MochaRemoteServer } = require("mocha-remote-server");
+const { Server } = require("mocha-remote-server");
 
 // Adjust this as the expected execution time increases
 const TIMEOUT_MS = 1000 * 30; // 30 seconds
@@ -67,8 +67,6 @@ function runElectron(processType, serverUrl) {
 }
 
 async function run() {
-    const mochaConfig = {};
-
     const processType = process.argv[2];
     if (processType !== "main" && processType !== "renderer") {
         throw Error("You need to call this with a runtime argument specifying the process type");
@@ -76,26 +74,30 @@ async function run() {
 
     // Check if an argument for junit path was requested
     const junitFilePath = process.argv[3];
-    if (junitFilePath) {
-        mochaConfig.reporter = "mocha-junit-reporter";
-        mochaConfig.reporterOptions = {
-            mochaFile: junitFilePath,
-        };
-    }
+    const reporterConfig = junitFilePath
+        ? {
+              reporter: "mocha-junit-reporter",
+              reporterOptions: {
+                  mochaFile: junitFilePath,
+              },
+          }
+        : {};
 
     // Start the mocha remote server
-    const server = new MochaRemoteServer(mochaConfig, {
+    const server = new Server({
         id: processType,
         // Listing on all interfaces
         host: "0.0.0.0",
         port: 0,
         // We want to manually start to ensure we can get to the URL
         autoStart: false,
+        // Add in the 
+        ...reporterConfig,
     });
     await server.start();
 
     // Spawn the electron process
-    const appProcess = runElectron(processType, server.getUrl());
+    const appProcess = runElectron(processType, server.url);
     console.log(`Started the Electron app (pid = ${appProcess.pid})`);
 
     try {

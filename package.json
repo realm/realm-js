@@ -71,7 +71,7 @@
   "dependencies": {
     "bindings": "^1.5.0",
     "bson": "^4.3.0",
-    "command-line-args": "^4.0.6",
+    "command-line-args": "^5.1.1",
     "deepmerge": "2.1.0",
     "deprecated-react-native-listview": "0.0.6",
     "fs-extra": "^4.0.3",
@@ -89,6 +89,14 @@
     "sync-request": "^3.0.1",
     "tar": "^6.0.1",
     "url-parse": "^1.4.4"
+  },
+  "peerDependencies": {
+    "react-native": ">=0.60"
+  },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^4.9.1",

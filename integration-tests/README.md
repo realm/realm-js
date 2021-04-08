@@ -140,10 +140,6 @@ In it's current setup, all environments are not getting tested on all their avai
 
 There should be no reason that it couldn't or shouldn't do that, except time spent setting it up (and maintaining it).
 
-### No symbolic links in `./tests` nor `./environments/react-native`
-
-Because React Native's packager (Metro) [does not support symbolic links](https://github.com/facebook/metro/issues/1), we need to install Realm JS and the shared test suite from archives. Fortunately this provides a more realistic test, with the downside of making it more difficult to iterate: You need to re-install the environments after each change to the integration test-suite.
-
 ### Don't call `require` with an expression in `./tests` nor `./environments/react-native`
 
 Because React Native bundles its JavaScript source files into a single bundle, using the Metro bundler, we need to be explicit in the files we include in the test-suite. I.e. we cannot call the require function with a expression which value will only be known at runtime, such as iterating over a list of files, would be. Therefore `tests/src/index.js` must require all individual files in which our tests are defined: We cannot simply ask for all */**.tests.js files to be included.
@@ -168,22 +164,22 @@ Clean up unneeded files
 ```bash
 cd ./environments
 rm -r react-native/__tests__
-rm react-native/App.js
+rm react-native/App.js react-native/.prettierrc.js
 ```
 
 Copy over files related to the test harness
 
 ```bash
 cd ./environments
-cp -r react-native-backup/README.md react-native-backup/harness react-native-backup/src react-native-backup/index.js react-native
+cp -r react-native-backup/README.md react-native-backup/.eslintrc.js react-native-backup/harness react-native-backup/src react-native-backup/index.js react-native
 ```
 
 Install additional dependencies
 
 ```bash
 cd react-native
-npm install mocha mocha-junit-reporter mocha-remote-client react-native-fs path-browserify
-npm install mocha-remote-server fs-extra --save-dev
+npm install mocha mocha-junit-reporter mocha-remote-client react-native-fs path-browserify @react-native-community/art react-native-progress
+npm install mocha-remote-server fs-extra promise-timeout --save-dev
 ```
 
 Open the `package.json` of both `react-native` and `react-native-backup`:
