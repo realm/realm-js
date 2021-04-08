@@ -21,21 +21,26 @@
 #pragma once
 
 #if REALM_PLATFORM_NODE
+
+auto NodeCallbackWrapper(const Napi::CallbackInfo& values) {
+    return [&](int index) -> Napi::Value {
+        return values[index];
+    };
+}
+
 struct Args{
     Napi::Env context;
     ObjectObserver *observer = nullptr;
     IOCollection *collection = nullptr;
     size_t argumentCount;
-    void* values;
+    std::function<Napi::Value(int index)> callback;
 
-    auto get(int index, std::string msg = "Missing argument for method call."){
+    Napi::Value get(int index, std::string msg = "Missing argument for method call."){
         if(index >= argumentCount){
-            throw std::runtime_error(msg);
+            Napi::Error::New(context, msg.c_str());
         }
 
-        Napi::Value *value = (Napi::Value*) values;
-
-        return value[index];
+        return callback(index);
     }
 };
 #else

@@ -33,7 +33,7 @@ class JavascriptObject {
               typename Data>
     static auto make_callback_method(Data* data) {
         return [=](const auto& info) mutable {
-            cb({info.Env(), data, data->get_collection(), info.Length(), info.Data()});
+            cb({info.Env(), data, data->get_collection(), info.Length(), NodeCallbackWrapper(info)});
         };
     }
 
