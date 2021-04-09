@@ -134,10 +134,10 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
     static ObjectType create_instance(ContextType, realm::object_store::Set);
 
     // properties
-    static void get_length(ContextType, ObjectType, ReturnValue &);
+    static void get_size(ContextType, ObjectType, ReturnValue &);
 //     static void get_type(ContextType, ObjectType, ReturnValue &);
      static void get_optional(ContextType, ObjectType, ReturnValue &);
-     static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
+     static void get_indexed(ContextType, ObjectType, uint32_t, ReturnValue &);
      static void get_type(ContextType, ObjectType, ReturnValue &);
 
 //     static bool set_index(ContextType, ObjectType, uint32_t, ValueType);
@@ -161,30 +161,30 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
 
      MethodMap<T> const methods = {
          {"add", wrap<add>},
-         {"get", wrap<get>},
+         {"_getIndexed", wrap<get>},
          {"clear", wrap<clear>},
          {"delete", wrap<delete_element>},
          {"has", wrap<has>},
          {"filtered", wrap<filtered>},
 
 
-//         {"min", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Min>>},
-//         {"max", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Max>>},
-//         {"sum", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Sum>>},
-//         {"avg", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Avg>>},
+        {"min", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Min>>},
+        {"max", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Max>>},
+        {"sum", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Sum>>},
+        {"avg", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Avg>>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
      };
 
      PropertyMap<T> const properties = {
-         {"size", {wrap<get_length>, nullptr}},
-         {"length", {wrap<get_length>, nullptr}},       // length property is required for, e.g., JavaScript serialization
+         {"size", {wrap<get_size>, nullptr}},
          {"type", {wrap<get_type>, nullptr}},
          {"optional", {wrap<get_optional>, nullptr}},
      };
 
-     IndexPropertyType<T> const index_accessor = {wrap<get_index>, nullptr};
+//     IndexPropertyType<T> const index_accessor = {wrap<get_index>, nullptr};
+     IndexPropertyType<T> const index_accessor = {nullptr, nullptr};
 
 private:
     static void validate_value(ContextType, realm::object_store::Set &, ValueType);
@@ -208,7 +208,7 @@ typename T::Object SetClass<T>::create_instance(ContextType ctx, realm::object_s
  * @param return_value \ref ReturnValue wrapping an integer that gives the number of elements in the set to return to the JS context
  */
 template<typename T>
-void SetClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+void SetClass<T>::get_size(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto set = get_internal<T, SetClass<T>>(ctx, object);
     return_value.set(static_cast<uint32_t>(set->size()));
 }
@@ -225,7 +225,7 @@ void SetClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &re
  * @param return_value \ref ReturnValue wrapping an integer that gives the number of elements in the set to return to the JS context
  */
 template<typename T>
-void SetClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
+void SetClass<T>::get_indexed(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
     auto set = get_internal<T, SetClass<T>>(ctx, object);
     NativeAccessor<T> accessor(ctx, *set);
     return_value.set(set->get(accessor, index));
