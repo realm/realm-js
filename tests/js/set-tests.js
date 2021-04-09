@@ -156,6 +156,9 @@ module.exports = {
         TestCase.assertEqual(teams.length, 1, "There should be one team");
         TestCase.assertEqual(teams[0].persons.size, 2, "Team Set size should be 2");
 
+        console.log(teams[0].persons.toJSON());
+
+
         // add another person
         realm.write(() => {
             teams[0].persons.add({firstName: 'Bob', age: 99});
@@ -286,7 +289,7 @@ module.exports = {
         TestCase.assertEqual(footballTeam.names.size, 3, "There should be 3 people in the football team after adding Daniel and removing Alice");
         TestCase.assertEqual(false, footballTeam.names.has("Alice"), "Alice shouldn't be in the football team");
 
-        console.log(JSON.stringify(footballTeam.names));
+//        console.log(JSON.stringify(footballTeam.names));
 
         // create another team with two people
         realm.write(() => {
@@ -301,17 +304,18 @@ module.exports = {
         TestCase.assertEqual(footballTeam.names.size, 3, "There should be 3 people in the football team.  It wasn't altered");
         TestCase.assertEqual(handballTeam.names.size, 2, "There should be 2 people in the handball team");
 
-        TestCase.assertEqual(false, handballTeam.names.has("Bob"), "Bob shouldn't be in the handball team");
-        TestCase.assertEqual(true, handballTeam.names.has("Daniel"), "Daniel should be in the handball team");
+        TestCase.assertFalse(handballTeam.names.has("Bob"), "Bob shouldn't be in the handball team");
+        TestCase.assertTrue(handballTeam.names.has("Daniel"), "Daniel should be in the handball team");
 
         //
         // Set.clear() functionality
         //
 
-        footballTeam.names.forEach(element => {
-            console.log("oifjroi  " + element);
-            
-        });
+        footballTeam.names.forEach(element =>
+            console.log("oifjroi  " + element)
+        );
+
+        console.log(footballTeam.names.toJSON());
 
         // remove everyone from the JS team
         realm.write(() => {
@@ -371,6 +375,132 @@ module.exports = {
         TestCase.assertEqual(myInts.intSet.avg(), 9,  "Avg of intSet should be 9 after deleting elements");
         TestCase.assertEqual(myInts.intSet.min(), 6,  "Min of intSet should be 6 after deleting elements");
         TestCase.assertEqual(myInts.intSet.max(), 14, "Max of intSet should be 14 after deleting elements");
+    },
+
+
+    // Test that iteration (`forEach`, `entries()`, `values()`) work as intended
+    async testSetIteration() {
+        const intSchema = {
+            name: "SetInt",
+            properties: {
+                intSet: "int<>",
+            }
+        };
+
+        const realm = new Realm({ schema: [intSchema] });
+
+        const myInts = [1, 2, 3, 7, 9, 13];
+
+        realm.write(() => {
+            realm.create(intSchema.name, {
+                intSet: myInts,
+            });
+        });
+
+        let dbInts = realm.objects(intSchema.name)[0].intSet;
+        let intArray2 = Array.from(myInts);
+        let intCount = 0;
+        dbInts.forEach((element) => {
+            let foundIndex = intArray2.findIndex((value) => value == element);
+            TestCase.assertNotEqual(foundIndex, -1, element + " should have been present in dbInts");
+            intArray2.splice(foundIndex, 1);
+
+            intCount++;
+        });
+        TestCase.assertEqual(intCount, dbInts.size, "`forEach` loop should execute on each set element")
+
+        const intsValues = Array.from(dbInts.values());
+        const sameInts = intsValues.map((value, index) => {
+            return value == myInts[index];
+        });
+        const isSameInts = sameInts.reduce((prev, curr) => {
+            return prev && curr;
+        });
+        TestCase.assertTrue(isSameInts, "dbInts.values() should contain the same elements as myInts");
+
+        const intsEntries = Array.from(dbInts.entries());
+        const sameEntries = intsEntries.map((value, index) => {
+            return value[0] == myInts[index] && value[1] == myInts[index];
+        });
+        const isCorrect = sameEntries.reduce((prev, curr) => {
+            return prev && curr;
+        });
+        TestCase.assertTrue(isCorrect, "dbInts.entries() should contain the elements of type [myInts[x], myInts[x]]");
+
+        // TODO:  repeat tests with objects
+
+        realm.close();
+    },
+
+    // test that Set's .toJSON works as intended
+    async testSetSerialization() {
+        const intSchema = {
+            name: "SetInt",
+            properties: {
+                intSet: "int<>",
+            }
+        };
+
+        const myInts = [1, 2, 3, 7, 9, 13];
+
+        // test serialization of simple types
+        const intRealm = new Realm({ schema: [intSchema] });
+        intRealm.write(() => {
+            intRealm.create(intSchema.name, {
+                intSet: myInts,
+            });
+        });
+
+        let dbInts = intRealm.objects(intSchema.name)[0].intSet;
+        let dbString = JSON.stringify(dbInts);
+        let jsString = JSON.stringify(myInts);
+        TestCase.assertEqual(dbString, jsString, "JSON serialization of dbInts should be the same as jsInts");
+
+        intRealm.close();
+
+        // test serialization of objects
+        const itemSchema = {
+            name: "Item",
+            properties: {
+                title: 'string',
+                priority: 'int'
+            }
+        };
+        const listSchema = {
+            name: "ItemList",
+            properties: {
+                itemSet: "Item<>",
+            }
+        };
+
+        let myItems = [
+            {
+                title: 'Item 1',
+                priority: 1
+            },
+            {
+                title: 'Item 2',
+                priority: 8
+            },
+            {
+                title: 'Item 3',
+                priority: -4
+            },
+        ];
+
+        const itemRealm = new Realm({ schema: [itemSchema, listSchema] });
+        itemRealm.write(() => {
+            itemRealm.create(listSchema.name, {
+                itemSet: myItems,
+            });
+        });
+
+        let dbItems = itemRealm.objects(listSchema.name)[0].itemSet;
+        let dbItemString = JSON.stringify(dbItems);
+        let jsItemString = JSON.stringify(myItems);
+        TestCase.assertEqual(dbItemString, jsItemString, "Object serialization from Set and JS object should be the same")
+
+        itemRealm.close();
     },
 
     // TODO:  Move Sync tests to separate file
