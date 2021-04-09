@@ -13,7 +13,7 @@
 * Fixed user profile type, making less assumptions on the value type of custom profile data (changing from string to unknown). ([#3576](https://github.com/realm/realm-js/pull/3576), since 1.2.0)
 
 ### Internal
-* None
+* Testing the GitHub PR workflow.
 
 1.2.0 Release notes (2021-01-11)
 =============================================================
