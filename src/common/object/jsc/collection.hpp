@@ -15,15 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
-#if REALM_PLATFORM_NODE
-#include "node/subscriber.hpp"
-#include "node/methods.hpp"
-#include "node/collection.hpp"
-#include "node/object.hpp"
-#else
-#include "jsc/subscriber.hpp"
-#include "jsc/methods.hpp"
-#include "jsc/collection.hpp"
-#include "jsc/object.hpp"
-#endif
+#pragma once
+struct IOCollection {
+    virtual void set(JSContextRef, std::string, JSValueRef) = 0;
+    virtual JSValueRef get(JSContextRef, std::string) = 0;
+};

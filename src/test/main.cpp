@@ -2,12 +2,13 @@
 #include <vector>
 
 #include "catch_amalgamated.hpp"
-#include "common/object/jsc_object.hpp"
+#include "common/object/interfaces.hpp"
 #include "logger.hpp"
 #include "test_bed.hpp"
 
 using Catch::Matchers::Contains;
 using namespace std;
+using namespace realm;
 
 struct MockedCollection : public IOCollection {
     double N = 1000;

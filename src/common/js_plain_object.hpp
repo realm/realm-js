@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-#include "common/object/interfaces.hpp"
+#include "object/interfaces.hpp"
 #include "object/strategies.hpp"
 
 #pragma once
@@ -32,13 +32,6 @@
 
 namespace realm {
 namespace js {
-
-#if REALM_PLATFORM_NODE
-#include "common/object/node_object.hpp"
-#else
-#include "common/object/jsc_object.hpp"
-#endif
-
 
 /*
  *  Dictionary accessors for JS Objects.

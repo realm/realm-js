@@ -16,34 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 #include <iterator>
-#include "interfaces.hpp"
+#include "collection.hpp"
+#include "common/object/observer.hpp"
 
 #pragma once
 
-#if REALM_PLATFORM_NODE
-
-auto NodeCallbackWrapper(const Napi::CallbackInfo& values) {
-    return [&](int index) -> Napi::Value {
-        return values[index];
-    };
-}
-
-struct Args{
-    Napi::Env context;
-    ObjectObserver *observer = nullptr;
-    IOCollection *collection = nullptr;
-    size_t argumentCount;
-    std::function<Napi::Value(int index)> callback;
-
-    Napi::Value get(int index, std::string msg = "Missing argument for method call."){
-        if(index >= argumentCount){
-            Napi::Error::New(context, msg.c_str());
-        }
-
-        return callback(index);
-    }
-};
-#else
 struct Args{
     JSContextRef context;
     ObjectObserver *observer = nullptr;
@@ -59,5 +36,3 @@ struct Args{
         return values[index];
     }
 };
-
-#endif

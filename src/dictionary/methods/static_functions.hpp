@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "common/object/methods.hpp"
+#include "common/object/interfaces.hpp"
 
 #include "dictionary/collection/notification.hpp"
 #include "dictionary/methods/callbacks.hpp"

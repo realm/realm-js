@@ -15,15 +15,33 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+#pragma once
 
 #if REALM_PLATFORM_NODE
-#include "node/subscriber.hpp"
-#include "node/methods.hpp"
-#include "node/collection.hpp"
-#include "node/object.hpp"
+
+
+
+template <typename Error>
+void _throw_error(Napi::Env env, Error& error){
+    throw Napi::Error::New(env, error.what());
+}
 #else
-#include "jsc/subscriber.hpp"
-#include "jsc/methods.hpp"
-#include "jsc/collection.hpp"
-#include "jsc/object.hpp"
+inline JSValueRef _throw_error(JSContextRef ctx, const char* message) {
+    JSStringRef _str = JSStringCreateWithUTF8CString(message);
+    JSValueRef msg = JSValueMakeString(ctx, _str);
+    return JSObjectMakeError(ctx, 1, &msg, NULL);
+}
 #endif
+
+namespace realm{
+    namespace js{
+
+struct VM_Error {
+    template <typename ContextType, typename Error>
+    static void dispatch(ContextType context, Error& error){
+        _throw_error(context, error);
+    }
+};
+
+}
+}

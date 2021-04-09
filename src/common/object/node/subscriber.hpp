@@ -16,14 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#if REALM_PLATFORM_NODE
-#include "node/subscriber.hpp"
-#include "node/methods.hpp"
-#include "node/collection.hpp"
-#include "node/object.hpp"
-#else
-#include "jsc/subscriber.hpp"
-#include "jsc/methods.hpp"
-#include "jsc/collection.hpp"
-#include "jsc/object.hpp"
-#endif
+#pragma once
+#include "realm/object-store/dictionary.hpp"
+
+struct Subscriber {
+    virtual void notify(Napi::Object &, realm::DictionaryChangeSet &) = 0;
+    virtual bool equals(const Subscriber *) const = 0;
+    virtual Napi::Function callback() const = 0;
+
+    // TODO
+    // virtual ~Subscriber() = 0;
+};
+
+

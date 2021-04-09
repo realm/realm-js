@@ -18,20 +18,25 @@
 
 #pragma once
 
+#include <exception>
+
 #include "dictionary/collection/notification.hpp"
 #include "common/object/interfaces.hpp"
+#include "common/object/error_handling.hpp"
 #include "js_mixed.hpp"
+
+
 namespace realm {
 namespace js {
 
 template <typename T>
 class CollectionAdapter: public IOCollection {
    private:
-    object_store::Dictionary dictionary;
     using JSMixedAPI = TypeMixed<T>;
     using ValueType = typename T::Value;
     using ContextType = typename T::Context;
 
+    object_store::Dictionary dictionary;
 public:
     CollectionAdapter(object_store::Dictionary _dict)
         : dictionary{_dict} {}
@@ -55,10 +60,6 @@ public:
 
     void set(ContextType context, std::string key, ValueType value){
         auto mixed = JSMixedAPI::get_instance().unwrap(context, value);
-#if REALM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, "RealmJS::collection", "put k-> %s", key.c_str());
-        __android_log_print(ANDROID_LOG_INFO, "RealmJS::collection", "put v-> %d", mixed.is_null());
-#endif
         dictionary.insert(key.c_str(), mixed);
     }
 
@@ -69,8 +70,6 @@ public:
     }
 
     operator Collection() { return dictionary; }
-
-    ~CollectionAdapter(){}
 };
 
 }  // namespace js

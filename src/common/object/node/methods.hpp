@@ -15,15 +15,30 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+#include <iterator>
+#include "collection.hpp"
+#include "common/object/observer.hpp"
 
-#if REALM_PLATFORM_NODE
-#include "node/subscriber.hpp"
-#include "node/methods.hpp"
-#include "node/collection.hpp"
-#include "node/object.hpp"
-#else
-#include "jsc/subscriber.hpp"
-#include "jsc/methods.hpp"
-#include "jsc/collection.hpp"
-#include "jsc/object.hpp"
-#endif
+#pragma once
+
+auto NodeCallbackWrapper(const Napi::CallbackInfo& values) {
+    return [&](int index) -> Napi::Value {
+        return values[index];
+    };
+}
+
+struct Args{
+    Napi::Env context;
+    ObjectObserver *observer = nullptr;
+    IOCollection *collection = nullptr;
+    size_t argumentCount;
+    std::function<Napi::Value(int index)> callback;
+
+    Napi::Value get(int index, std::string msg = "Missing argument for method call."){
+        if(index >= argumentCount){
+            Napi::Error::New(context, msg.c_str());
+        }
+
+        return callback(index);
+    }
+};

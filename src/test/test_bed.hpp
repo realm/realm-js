@@ -20,7 +20,7 @@
 #include <sstream>
 #include <vector>
 
-#include "common/object/jsc_object.hpp"
+#include "common/object/interfaces.hpp"
 
 #pragma once
 using namespace std;

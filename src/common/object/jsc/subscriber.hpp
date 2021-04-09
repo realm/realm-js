@@ -16,14 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#if REALM_PLATFORM_NODE
-#include "node/subscriber.hpp"
-#include "node/methods.hpp"
-#include "node/collection.hpp"
-#include "node/object.hpp"
-#else
-#include "jsc/subscriber.hpp"
-#include "jsc/methods.hpp"
-#include "jsc/collection.hpp"
-#include "jsc/object.hpp"
+#pragma once
+
+// This allow us to run the JSC tests locally.
+#if __APPLE__
+#include <JavaScriptCore/JavaScriptCore.h>
 #endif
+
+#include "realm/object-store/dictionary.hpp"
+
+struct Subscriber {
+    virtual void notify(JSObjectRef &, realm::DictionaryChangeSet &) = 0;
+    virtual bool equals(const Subscriber *) const = 0;
+    virtual JSValueRef callback() const = 0;
+
+    // TODO
+    // virtual ~Subscriber() = 0;
+};
+

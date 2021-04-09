@@ -33,6 +33,5 @@ class NoData {};
 
 struct NoNotificationsStrategy {
     int empty{0};
-
     void on_change() {}
 };
