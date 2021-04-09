@@ -66,10 +66,16 @@ start_server() {
   else
     echo "no existing stitch instance running in docker, attempting to start one"
     . "${SRCROOT}/dependencies.list"
+    local stitch_apps_path="tests/mongodb"
     DOCKER_VOLUMES=""
-    for app in common-tests pv-int-tests pv-string-tests pv-uuid-tests pv-objectid-tests; do
-      DOCKER_VOLUMES="$DOCKER_VOLUMES -v ${SRCROOT}/tests/mongodb/${app}:/apps/${app}"
+    for app in $(ls -d $stitch_apps_path/*/ | cut -f3 -d'/'); do
+      local app_path="$stitch_apps_path/$app"
+      if [[ -f "$app_path/config.json" ]]; then
+        echo "Mounting folder '$app_path' as Stitch app."
+        DOCKER_VOLUMES="$DOCKER_VOLUMES -v ${SRCROOT}/${app_path}:/apps/${app}"
+      fi
     done
+    echo "DOCKER_VOLUMES: $DOCKER_VOLUMES"
     echo "using object-store stitch dependency: ${MDBREALM_TEST_SERVER_TAG}"
     if [[ -n "$RUN_STITCH_IN_FORGROUND" ]]; then
       # we don't worry about tracking the STITCH_DOCKER_ID because without the -d flag, this docker is tied to the shell
