@@ -52,28 +52,28 @@ function getConfigPath(testName) {
     if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
         const path = nodeRequire("path");
         console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
-        pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, `../${pathToJson}`);
+        pathToJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, `../${pathToJson}`);
     }
     return pathToJson;
 }
 
-let pathToStitchJson = getConfigPath("common-tests");
+const pathToStitchJson = getConfigPath("common-tests");
 const integrationTestsAppId = nodeRequire(pathToStitchJson).app_id;
 const integrationAppConfig = makeAppConfig(integrationTestsAppId);
 
-let pathToPvIntJSON = getConfigPath("pv-int-tests");
+const pathToPvIntJSON = getConfigPath("pv-int-tests");
 const pvIntTestsAppId = nodeRequire(pathToPvIntJSON).app_id;
 const pvIntAppConfig = makeAppConfig(pvIntTestsAppId);
 
-let pathToPvStringJSON = getConfigPath("pv-string-tests");
+const pathToPvStringJSON = getConfigPath("pv-string-tests");
 const pvStringTestsAppId = nodeRequire(pathToPvStringJSON).app_id;
 const pvStringAppConfig = makeAppConfig(pvStringTestsAppId);
 
-let pathToPvUuidJSON = getConfigPath("pv-uuid-tests");
+const pathToPvUuidJSON = getConfigPath("pv-uuid-tests");
 const pvUuidTestsAppId = nodeRequire(pathToPvUuidJSON).app_id;
 const pvUuidAppConfig = makeAppConfig(pvUuidTestsAppId);
 
-let pathToPvObjectidJSON = getConfigPath("pv-objectid-tests");
+const pathToPvObjectidJSON = getConfigPath("pv-objectid-tests");
 const pvObjectidTestsAppId = nodeRequire(pathToPvObjectidJSON).app_id;
 const pvObjectidAppConfig = makeAppConfig(pvObjectidTestsAppId);
 
