@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Using node version 15, the error `sh: cmake-js: command not found` will prevent installation. ([#3670](https://github.com/realm/realm-js/issues/3670), since v10.3.0-rc.1)
+* On React Native, calling an aggregate function would fail with error `Not implemented`. ([#3674](https://github.com/realm/realm-js/issues/3674), since v10.2.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -33,7 +34,7 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.5.4 to v10.5.6. 
+* Upgraded Realm Core from v10.5.4 to v10.5.6.
 
 10.3.0-rc.1 Release notes (2021-3-19)
 =============================================================
@@ -48,7 +49,7 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * There seems to be a few issues regarding class support in realm-js. We are currently coming up with strategies to better support this in the future.  In the meantime, the following fixes have been applied to help avoid crashes and failures.
   * When creating a class that extends Realm.Object and pushing the instantiated object to a list, a segmentation fault would occur.  This has been fixed by a null check and throwing an exception.
   * Creating an object from an instance of Realm.Object that was manually constructed (detached from Realm) would fail the second time.  Now we throw an meaningful exception the first time.
-* Removed a delay when running in node.js. It could make testing using Jest to fail. ([#3608](https://github.com/realm/realm-js/issues/3608), since v2.0.0) 
+* Removed a delay when running in node.js. It could make testing using Jest to fail. ([#3608](https://github.com/realm/realm-js/issues/3608), since v2.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
