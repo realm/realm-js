@@ -171,16 +171,9 @@ export class App extends Component {
     prepareTests() {
         this.client = new Client({
             id: Platform.OS,
+            title: `React-Native on ${Platform.OS} (${mode})`,
             tests(context) {
-                // Setting the title of the root suite
-                global.title = `React-Native on ${Platform.OS} (${mode})`;
-                // Provide the globals for the tests
-                const Realm = require("realm");
-                // When running on device the native module sets the `Realm` global
-                if (typeof global.Realm !== "object") {
-                    // This happens when the app is running in chome debugging mode
-                    global.Realm = Realm;
-                }
+                /* eslint-env mocha */
                 global.fs = require("react-native-fs");
                 global.path = require("path-browserify");
                 global.environment = {
@@ -196,13 +189,12 @@ export class App extends Component {
                         m.isInitialized = false;
                     }
                 }
-                // Require in the integration tests
-                require("realm-integration-tests");
-                /* global beforeEach */
                 beforeEach(() => {
                     // Adding an async task before each, allowing the UI to update
                     return new Promise(resolve => setTimeout(resolve, 0));
                 });
+                // Require in the integration tests
+                require("realm-integration-tests");
             },
         });
 

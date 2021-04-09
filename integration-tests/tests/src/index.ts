@@ -16,15 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import Realm from "realm";
+
 console.log("Loading Realm Integration Tests");
-
-if (!global.Realm) {
-    throw new Error("Expected 'Realm' to be available as a global");
-}
-
-if (!global.title) {
-    throw new Error("Expected 'title' to be available as a global");
-}
 
 if (!global.fs) {
     throw new Error("Expected 'fs' to be available as a global");
@@ -42,15 +36,13 @@ if (!global.environment || typeof global.environment !== "object") {
 import { skipIf } from "./utils/skip-if";
 global.it.skipIf = skipIf;
 
-describe(global.title, () => {
-    require("./realm-constructor");
-    require("./serialization");
-    require("./objects");
-    require("./iterators");
-    require("./dynamic-schema-updates");
-    require("./bson");
-});
-
 beforeEach(() => {
     Realm.clearTestState();
 });
+
+require("./realm-constructor");
+require("./serialization");
+require("./objects");
+require("./iterators");
+require("./dynamic-schema-updates");
+require("./bson");

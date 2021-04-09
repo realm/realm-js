@@ -25,13 +25,11 @@ module.exports = (serverURL, processType) => {
     return new Client({
         id: processType,
         url: serverURL,
+        title: `Electron v${process.versions.electron} ${processType} process on ${platform()}`,
         tests() {
             // Set the Realm global for the tests to use
-            global.Realm = require("realm");
             global.fs = require("fs-extra");
             global.path = require("path");
-            // Sets the root suite title to include the process type
-            global.title = `Electron v${process.versions.electron} ${processType} process on ${platform()}`;
             global.environment = {
                 electron: process.type === "browser" ? "main" : "renderer",
             };

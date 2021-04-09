@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import Realm from "realm";
+
 import {
     IPlaylist as IPlaylistNoId,
     ISong as ISongNoId,

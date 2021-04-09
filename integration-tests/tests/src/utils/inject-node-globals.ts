@@ -21,6 +21,5 @@
 
 global.fs = require("fs-extra");
 global.path = require("path");
-global.Realm = require("realm");
 global.title = "Realm JS development-mode";
 global.environment = { node: true };

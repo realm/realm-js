@@ -26,7 +26,7 @@ interface IFiltering {
 
 function shouldSkipProperty(
     filterValue: boolean | string,
-    environmentValue: string
+    environmentValue: unknown
 ) {
     if (filterValue === true) {
         // If filter value is strictly true, the environment must not be loosely true

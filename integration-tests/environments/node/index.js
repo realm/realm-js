@@ -16,15 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+"use strict";
+
 const os = require("os");
 
 // Exposing the Realm constructor as a global
-
-global.title = `Node.js v${process.versions.node} on ${os.platform()}`;
-global.Realm = require("realm");
 global.fs = require("fs-extra");
 global.path = require("path");
 global.environment = { node: true };
 
 // Require the tests
-require("realm-integration-tests");
+describe(`Node.js v${process.versions.node} on ${os.platform()}`, () => {
+  require("realm-integration-tests");
+});

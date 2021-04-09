@@ -9,10 +9,9 @@ interface path {
 
 type Require = (id: string) => any;
 
-type Environment = { [key: string]: string };
+type Environment = Record<string, unknown>;
 
 interface Global extends NodeJS.Global {
-    Realm: Realm;
     title: string;
     fs: fs;
     path: path;
