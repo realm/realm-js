@@ -151,6 +151,7 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
 
 
     static void filtered(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void snapshot(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // observable
     static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -160,18 +161,20 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
      std::string const name = "Set";
 
      MethodMap<T> const methods = {
-         {"add", wrap<add>},
-         {"_getIndexed", wrap<get>},
-         {"clear", wrap<clear>},
-         {"delete", wrap<delete_element>},
-         {"has", wrap<has>},
-         {"filtered", wrap<filtered>},
-
+        {"add", wrap<add>},
+//        {"_getIndexed", wrap<get>},
+        {"clear", wrap<clear>},
+        {"delete", wrap<delete_element>},
+        {"has", wrap<has>},
+        {"filtered", wrap<filtered>},
 
         {"min", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Min>>},
         {"max", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Max>>},
         {"sum", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Sum>>},
         {"avg", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Avg>>},
+
+
+        {"snapshot", wrap<snapshot>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
@@ -179,11 +182,12 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
 
      PropertyMap<T> const properties = {
          {"size", {wrap<get_size>, nullptr}},
+         {"length", {wrap<get_size>, nullptr}},
          {"type", {wrap<get_type>, nullptr}},
          {"optional", {wrap<get_optional>, nullptr}},
      };
 
-//     IndexPropertyType<T> const index_accessor = {wrap<get_index>, nullptr};
+//     IndexPropertyType<T> const index_accessor = {wrap<get_indexed>, nullptr};
      IndexPropertyType<T> const index_accessor = {nullptr, nullptr};
 
 private:
@@ -436,6 +440,14 @@ void SetClass<T>::validate_value(ContextType ctx, realm::object_store::Set &set,
         throw TypeErrorException("Property", object_type ? object_type : local_string_for_property_type(type), Value::to_string(ctx, value));
     }
 }
+
+template<typename T>
+void SetClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+    auto set = get_internal<T, SetClass<T>>(ctx, this_object);
+    return_value.set(ResultsClass<T>::create_instance(ctx, set->snapshot()));
+}
+
 
 template<typename T>
 void SetClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
