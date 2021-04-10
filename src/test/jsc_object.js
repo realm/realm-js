@@ -16,7 +16,7 @@ dict.doSomething(28850);
 
 /* Testing accessors. */
 dict.X=666;
-dict.O = 999; // Trying to access an invalid field.
+dict.QQQQSX = 999; // Trying to access an invalid field.
 
 let _invalid = dict.O
 

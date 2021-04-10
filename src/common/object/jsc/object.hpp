@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
 
 // This allow us to run the JSC tests on our Mac's locally.
@@ -26,170 +25,177 @@
 
 #include <iostream>
 #include <vector>
-#include "common/object/interfaces.hpp"
+
 #include "common/object/error_handling.hpp"
+#include "common/object/interfaces.hpp"
 #include "realm/object-store/shared_realm.hpp"
+
 namespace realm {
-    namespace common {
+namespace common {
 
-        struct PrivateStore {
-            void *accessor_data = nullptr;
-            ObjectObserver *observer = nullptr;
-            IOCollection *collection = nullptr;
-            std::function<void()> finalizer = nullptr;
-        };
+struct PrivateStore {
+    void *accessor_data = nullptr;
+    ObjectObserver *observer = nullptr;
+    IOCollection *collection = nullptr;
+    std::function<void()> finalizer = nullptr;
+};
 
-        class JavascriptObject {
-        private:
-            JSClassDefinition _class;
-            JSContextRef context;
-            std::vector <JSStaticFunction> methods;
-            std::vector <JSStaticValue> accessors;
-            PrivateStore *private_object;
+class JavascriptObject {
+   private:
+    JSClassDefinition _class;
+    JSContextRef context;
+    std::vector<JSStaticFunction> methods;
+    std::vector<JSStaticValue> accessors;
+    PrivateStore *private_object;
 
-            static std::string to_string(JSContextRef context, JSStringRef value) {
-                std::string str;
-                size_t sizeUTF8 = JSStringGetMaximumUTF8CStringSize(value);
-                str.reserve(sizeUTF8);
-                JSStringGetUTF8CString(value, str.data(), sizeUTF8);
-                return str;
-            }
+    static std::string to_string(JSContextRef context, JSStringRef value) {
+        std::string str;
+        size_t sizeUTF8 = JSStringGetMaximumUTF8CStringSize(value);
+        str.reserve(sizeUTF8);
+        JSStringGetUTF8CString(value, str.data(), sizeUTF8);
+        return str;
+    }
 
-            static PrivateStore *get_private(JSObjectRef object) {
-                PrivateStore *store = static_cast<PrivateStore *>(JSObjectGetPrivate(object));
-                if (store == nullptr) {
-                    std::cout << "Store is empty!! \n";
-                }
-                return store;
-            }
+    static PrivateStore *get_private(JSObjectRef object) {
+        PrivateStore *store =
+            static_cast<PrivateStore *>(JSObjectGetPrivate(object));
+        return store;
+    }
 
-            template<void cb(Args)>
-            static JSValueRef function_call(JSContextRef ctx, JSObjectRef function,
-                                            JSObjectRef thisObject,
-                                            size_t argumentCount,
-                                            const JSValueRef _arguments[],
-                                            JSValueRef *exception) {
+    template <void cb(Args)>
+    static JSValueRef function_call(JSContextRef ctx, JSObjectRef function,
+                                    JSObjectRef thisObject,
+                                    size_t argumentCount,
+                                    const JSValueRef _arguments[],
+                                    JSValueRef *exception) {
+        PrivateStore *_private = get_private(thisObject);
+        ObjectObserver *observer = _private->observer;
+        IOCollection *collection = _private->collection;
 
-                PrivateStore *_private = get_private(thisObject);
-                ObjectObserver *observer = _private->observer;
-                IOCollection *collection = _private->collection;
+        try {
+            cb({ctx, observer, collection, argumentCount, _arguments});
+        } catch (InvalidTransactionException &error) {
+            *exception = _throw_error(ctx, error.what());
+        }
 
-                cb({ctx, observer, collection, argumentCount, _arguments});
-                return JSValueMakeUndefined(ctx);
-            }
+        return JSValueMakeUndefined(ctx);
+    }
 
-            static JSValueRef _get(JSContextRef ctx, JSObjectRef object,
-                                   JSStringRef propertyName, JSValueRef *exception) {
+    static JSValueRef _get(JSContextRef ctx, JSObjectRef object,
+                           JSStringRef propertyName, JSValueRef *exception) {
+        std::string key = to_string(ctx, propertyName);
+        IOCollection *collection = get_private(object)->collection;
+        JSValueRef value = collection->get(ctx, key);
+        return value;
+    }
 
-                std::string key = to_string(ctx, propertyName);
-                IOCollection *collection = get_private(object)->collection;
-                JSValueRef value = collection->get(ctx, key);
-                return value;
-            }
+    static bool _set(JSContextRef ctx, JSObjectRef object,
+                     JSStringRef propertyName, JSValueRef value,
+                     JSValueRef *exception) {
+        try {
+            std::string key = to_string(ctx, propertyName);
+            IOCollection *collection = get_private(object)->collection;
+            collection->set(ctx, key, value);
+            std::cout << "key -> "<< key.c_str() << " \n";
+        } catch (InvalidTransactionException &error) {
+            *exception = _throw_error(ctx, error.what());
+        }
 
-            static bool _set(JSContextRef ctx, JSObjectRef object,
-                             JSStringRef propertyName, JSValueRef value,
-                             JSValueRef *exception) {
+        return true;
+    }
 
-                try{
-                    std::string key = to_string(ctx, propertyName);
-                    IOCollection *collection = get_private(object)->collection;
-                    collection->set(ctx, key, value);
+    static void dispose(JSObjectRef object) {
+        PrivateStore *_private = get_private(object);
+        if (_private->finalizer != nullptr) {
+            _private->finalizer();
+        } else {
+            std::cout << "Warning: No finalizer was specified.";
+        }
+    }
 
-                }catch(InvalidTransactionException& error){
-                    *exception = _throw_error(ctx, error.what());
-                }
+    static bool Base_set(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception)
+    {
+        std::cout << "Calling QQQQSX NotAmbiguosAtAll \n";
+        return true;
+    }
 
-                return true;
-            }
+    static JSValueRef Base_get(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception)
+    {
+        return JSValueMakeNumber(ctx, 1); // distinguish base get form derived get
+    }
 
-            static void dispose(JSObjectRef object) {
-                PrivateStore *_private = get_private(object);
-                if (_private->finalizer != nullptr) {
-                    _private->finalizer();
-                } else {
-                    std::cout << "Warning: No finalizer was specified.";
-                }
-            }
 
-            JSClassRef make_class() {
-                methods.push_back({0});
-                accessors.push_back({0});
+    JSClassRef make_class() {
+        methods.push_back({0});
+        accessors.push_back({0});
 
-                _class.staticValues = accessors.data();
-                _class.staticFunctions = methods.data();
+        _class.staticValues = accessors.data();
+        _class.staticFunctions = methods.data();
 
-                return JSClassCreate(&_class);
-            }
+        return JSClassCreate(&_class);
+    }
 
-        public:
-            JavascriptObject(JSContextRef _ctx, std::string name = "js_object")
-                    : context{_ctx} {
-                _class = kJSClassDefinitionEmpty;
-                _class.className = name.c_str();
-                _class.finalize = dispose;
-                private_object = new PrivateStore{nullptr, nullptr, nullptr};
-            }
+   public:
 
-            void dbg() {
-                std::cout << "methods size: " << methods.size() << " \n";
-                std::cout << "accessors size: " << accessors.size() << " \n";
+    void _test() {
+        accessors.insert(accessors.begin(), {"QQQQSX", Base_get, Base_set, kJSPropertyAttributeNone});
+    }
 
-#if REALM_ANDROID
-                for(auto m: methods){
-                    if(m.name != nullptr) {
-                        std::cout << "method name: " << m.name << " \n";
-                    }
-                }
 
-                __android_log_print(ANDROID_LOG_INFO, "RealmJS", "methods size: %d",
-                                 (int)methods.size());
-                __android_log_print(ANDROID_LOG_INFO, "RealmJS", "accessors size: %d",
-                                 (int)accessors.size());
-#endif
-            }
+    JavascriptObject(JSContextRef _ctx, std::string name = "js_object")
+        : context{_ctx} {
+        _class = kJSClassDefinitionEmpty;
+        _class.className = name.c_str();
+        _class.finalize = dispose;
+        private_object = new PrivateStore{nullptr, nullptr, nullptr};
+    }
 
-            template<class VM,
-                    void callback(Args),
-                    class Data>
-            void add_method(std::string name, Data *) {
-                std::string *leak = new std::string{name};
-                JSStaticFunction method_definition{leak->c_str(), function_call<callback>,
-                                                   kJSPropertyAttributeDontEnum};
-                methods.push_back(method_definition);
-            }
+    void dbg() {
+        std::cout << "methods size: " << methods.size() << " \n";
+        std::cout << "accessors size: " << accessors.size() << " \n";
+    }
 
-            template<typename Accessor>
-            void add_accessor(std::string name, IOCollection *) {
-                std::string *leak = new std::string{name};
-                JSStaticValue accessor_definition{leak->c_str(), _get, _set, kJSPropertyAttributeNone};
-                accessors.push_back(accessor_definition);
-            }
+    template <class VM, void callback(Args), class Data>
+    void add_method(std::string name, Data *) {
+        std::string *leak = new std::string{name};
+        JSStaticFunction method_definition{leak->c_str(),
+                                           function_call<callback>,
+                                           kJSPropertyAttributeDontEnum};
+        methods.push_back(method_definition);
+    }
 
-            void set_collection(IOCollection *collection) {
-                private_object->collection = collection;
-            }
+    void add_accessor(std::string name, IOCollection *) {
+        std::string *leak = new std::string{name};
+        JSStaticValue accessor_definition{leak->c_str(), _get, _set,
+                                          kJSPropertyAttributeNone};
+        accessors.push_back(accessor_definition);
+    }
 
-            void set_observer(ObjectObserver *observer) {
-                private_object->observer = observer;
-            }
+    void set_collection(IOCollection *collection) {
+        private_object->collection = collection;
+    }
 
-            JSObjectRef get_object() {
-                auto class_instance = make_class();
-                return JSObjectMake(context, class_instance, private_object);;
-            }
+    void set_observer(ObjectObserver *observer) {
+        private_object->observer = observer;
+    }
 
-            template<typename RemovalCallback>
-            static void finalize(JSObjectRef object, RemovalCallback &&callback,
-                                 void *_unused = nullptr) {
-                /*
-                 *  JSObject and Self only apply for NodeJS.
-                 */
-                PrivateStore *store = get_private(object);
-                store->finalizer = std::move(callback);
-                JSObjectSetPrivate(object, store);
-            }
-        };
+    JSObjectRef get_object() {
+        auto class_instance = make_class();
+        return JSObjectMake(context, class_instance, private_object);
+        ;
+    }
 
-    }  // namespace common
-}
+    template <typename RemovalCallback>
+    static void finalize(JSObjectRef object, RemovalCallback &&callback,
+                         void *_unused = nullptr) {
+        /*
+         *  JSObject and Self only apply for NodeJS.
+         */
+        PrivateStore *store = get_private(object);
+        store->finalizer = std::move(callback);
+        JSObjectSetPrivate(object, store);
+    }
+};
+
+}  // namespace common
+}  // namespace realm

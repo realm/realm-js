@@ -25,7 +25,7 @@
 #include "dictionary/collection/collection.hpp"
 #include "common/js_plain_object.hpp"
 #include "methods/accessors.hpp"
-#include "methods/static_functions.hpp"
+#include "methods/functions.hpp"
 #include "realm/object-store/dictionary.hpp"
 
 namespace realm {
@@ -37,7 +37,7 @@ class DictionaryAdapter {
     using ValueType = typename T::Value;
     using Context = typename T::Context;
     using Dictionary = CollectionAdapter<T>;
-    using GetterSetters = AccessorsConfiguration<IOCollectionAccessor>;
+    using GetterSetters = DictionaryAccessors;
     using Methods = ListenersMethodsForDictionary<T>;
     using JSDictionary =
         JSObject<T, GetterSetters, DictionaryNotifications, Methods, Dictionary>;
@@ -47,13 +47,9 @@ class DictionaryAdapter {
         auto *js_dictionary = new JSDictionary{context, dictionary};
         auto value = js_dictionary->build();
 
-//        js_dictionary->setup_finalizer(value, [=]() {
-//            delete js_dictionary;
-//#if REALM_ANDROID
-//            __android_log_print(ANDROID_LOG_INFO, "RealmJS", "%s",
-//                        "removing a C++ object.");
-//#endif
-//        });
+        js_dictionary->setup_finalizer(value, [=]() {
+            delete js_dictionary;
+        });
 
         return value;
     }

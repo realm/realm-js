@@ -23,19 +23,45 @@
 namespace realm {
 namespace js {
 
+/*
+ *  Dictionary accessors for JS Objects.
+ */
 
-struct IOCollectionAccessor {
-    IOCollection* dictionary;
+struct DictionaryAccessors {
 
-    template <typename ContextType>
-    auto get(ContextType context, std::string key_name) {
-        return dictionary->get(context, key_name);
+
+    template <class JSObject>
+    void apply(common::JavascriptObject& js_object, JSObject* _o) {
+        auto *collection = _o->get_collection();
+
+        for (auto entry_pair : *collection) {
+            auto key = entry_pair.first.get_string().data();
+            js_object.add_accessor(key, collection);
+        }
     }
 
-    template <typename ContextType, typename ValueType>
-    auto set(ContextType context, std::string key_name, ValueType value) {
-        dictionary->set(context, key_name, value);
+    template <class JSObject>
+    void update(common::JavascriptObject& js_object, JSObject* _o){
+        using Dictionary = object_store::Dictionary;
+        Dictionary dictionary = _o->get_collection()->data();
+        std::vector<std::string> keys = js_object.get_keys();
+        bool mutated = false;
+
+        for(std::string& key: keys){
+            if(!dictionary.contains(key)){
+                js_object.remove_accessor(key);
+                mutated = true;
+            }
+        }
+
+        if(mutated) {
+            apply(js_object, _o);
+        }
     }
+
 };
+
+
+
 }  // namespace js
 }  // namespace realm

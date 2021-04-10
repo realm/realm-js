@@ -185,6 +185,9 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     _dict->template add_accessor<AccessorsTest>("X", nullptr);
     _dict->set_collection(new MockedCollection(666));
     _dict->set_observer(new T1);
+
+    _dict->_test();
+
     auto dict_js_object = _dict->get_object();
 
 

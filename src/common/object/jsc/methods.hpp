@@ -16,20 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 #include <iterator>
+
 #include "collection.hpp"
 #include "common/object/observer.hpp"
 
 #pragma once
 
-struct Args{
+struct Args {
     JSContextRef context;
     ObjectObserver *observer = nullptr;
     IOCollection *collection = nullptr;
     size_t argumentCount;
-    const JSValueRef* values{nullptr};
+    const JSValueRef *values{nullptr};
 
-    JSValueRef get(int index, std::string msg = "Missing argument for method call."){
-        if(index >= argumentCount){
+    JSValueRef get(int index,
+                   std::string msg = "Missing argument for method call.") {
+        if (index >= argumentCount) {
             throw std::runtime_error(msg);
         }
 

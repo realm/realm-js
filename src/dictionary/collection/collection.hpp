@@ -70,6 +70,7 @@ public:
     }
 
     operator Collection() { return dictionary; }
+    object_store::Dictionary& data(){ return dictionary; }
 };
 
 }  // namespace js

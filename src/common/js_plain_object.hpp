@@ -33,23 +33,9 @@
 namespace realm {
 namespace js {
 
-/*
- *  Dictionary accessors for JS Objects.
- */
-template <typename Accessor>
-struct AccessorsConfiguration {
-    template <class JSObject>
-    void apply(common::JavascriptObject& js_object, JSObject* _o) {
-        auto collection = _o->get_collection();
-        for (auto entry_pair : *collection) {
-            auto key = entry_pair.first.get_string().data();
-            js_object.template add_accessor<Accessor>(key, collection);
-        }
-    }
-};
 
-template <typename VM,
-          typename GetterSetters,
+
+template <typename VM, typename GetterSetters,
           typename NotificationStrategy = NoNotificationsStrategy,
           typename Methods = NoMethods<VM>,
           typename Collection = NoData>
@@ -60,36 +46,30 @@ struct JSObject : public ObjectObserver {
     using ObjectType = typename VM::Object;
     using ContextType = typename VM::Context;
 
+    ContextType context;
     NotificationStrategy notifications;
-    std::thread::id this_id;
-
     bool waiting_for_notifications{false};
+
     std::unique_ptr<Methods> methods;
     std::unique_ptr<GetterSetters> getters_setters;
     std::unique_ptr<Collection> collection;
-
     std::vector<Subscriber*> subscribers;
-    ContextType context;
-    Protected<typename VM::GlobalContext> protected_context;
+    common::JavascriptObject js_object;
 
    public:
     template <typename RealmData>
     JSObject(ContextType _context, RealmData _data)
         : context{_context},
-          protected_context {Context<VM>::get_global_context(_context)},
-        notifications{_data} {
+          notifications{_data},
+          js_object{_context} {
         getters_setters = std::make_unique<GetterSetters>();
         methods = std::make_unique<Methods>();
         collection = std::make_unique<Collection>(_data);
-        this_id = std::this_thread::get_id();
-        #if REALM_ANDROID
-            __android_log_print(ANDROID_LOG_INFO, "RealmJS::JS_Plain_Object", "Are we in the same thread %d", (this_id == std::this_thread::get_id() ));
-        #endif
     };
 
     Collection* get_collection() { return collection.get(); }
 
-    void activate_on_change() {
+    void watch_collection() {
         if (waiting_for_notifications) {
             return;
         }
@@ -98,17 +78,15 @@ struct JSObject : public ObjectObserver {
             [=](auto dict, auto change_set) { update(change_set); });
 
         waiting_for_notifications = true;
+        js_object.retain();
     }
 
     void subscribe(Subscriber* subscriber) {
         subscribers.push_back(subscriber);
-        activate_on_change();
+        watch_collection();
     }
 
     void remove_subscription(const Subscriber* subscriber) {
-#if REALM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, "RealmJS::JS_Plain_Object", "remove_subscription [begin]");
-#endif
         int index = -1;
         for (auto const& candidate : subscribers) {
             index++;
@@ -117,73 +95,38 @@ struct JSObject : public ObjectObserver {
                 break;
             }
         }
-
-#if REALM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, "RealmJS::JS_Plain_Object", "remove_subscription [end] size -> %d", (int)subscribers.size());
-#endif
     }
 
-    void unsubscribe_all() {
-        subscribers.clear();
-    }
+    void unsubscribe_all() { subscribers.clear(); }
 
     template <typename Realm_ChangeSet>
     void update(Realm_ChangeSet& change_set) {
         /* This is necessary for NodeJS. */
         HANDLESCOPE(context)
 
-        ObjectType obj;
-
-        #if REALM_ANDROID
-            obj = _test(protected_context);
-        #else
-            obj = build();
-        #endif
+        std::cout << "Update!! 1" << '\n';
+        getters_setters->update(js_object, this);
+        ObjectType v = js_object.get_object();
 
         for (Subscriber* subscriber : subscribers) {
-            subscriber->notify(obj, change_set);
+            subscriber->notify(v, change_set);
         }
     }
 
-    ObjectType _test(ContextType _context) {
-#if REALM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, "RealmJS::JS_Plain_Object", "build_test [begin]");
-#endif
-
-        common::JavascriptObject js_object{_context};
+    ObjectType build(ContextType _context){
 
         methods->apply(js_object, this);
         getters_setters->apply(js_object, this);
 
 #if REALM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, "RealmJS::JS_Plain_Object", "Are we in the same thread %d", (this_id == std::this_thread::get_id() ));
-
-       js_object.set_collection(collection.get());
-       js_object.set_observer(this);
+        js_object.set_collection(collection.get());
+        js_object.set_observer(this);
 #endif
-
-        auto obj =  js_object.get_object();
-
-#if REALM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, "RealmJS::JS_Plain_Object", "build_test [end]");
-#endif
-        return obj;
+        return js_object.get_object();
     }
 
     ObjectType build() {
-#if REALM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, "RealmJS::JS_Plain_Object", "build [begin]");
-#endif
-        common::JavascriptObject js_object{context};
-        methods->apply(js_object, this);
-        getters_setters->apply(js_object, this);
-
-#if REALM_ANDROID
-       js_object.set_collection(collection.get());
-       js_object.set_observer(this);
-#endif
-
-        return js_object.get_object();;
+        return build(context);
     }
 
     template <typename CB>

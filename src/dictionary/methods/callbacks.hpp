@@ -77,6 +77,7 @@ struct NotificationsCallback : public Subscriber {
     }
 
     void notify(ObjectType &object, DictionaryChangeSet& change_set) {
+        std::cout << "Notify!!" << '\n';
         ValueType arguments[]{object, build_changeset_object(change_set)};
         Function<T>::callback(context, fn, object, 2,
                               arguments);

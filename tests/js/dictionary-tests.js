@@ -411,6 +411,22 @@ module.exports = {
         realm.write(() => { fields.field1=1 } )
         TestCase.assertTrue(correct,"This is expected to work.")
     },
+    testDictionaryErrorHandling() {
+        const DictSchema = {
+            name: "Dictionary",
+            properties: {
+                fields: "{}"
+            }
+        }
+
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
+        let fields = realm.objects(DictSchema.name)[0]
+        fields.field1 = 5
+        fields.field2 = 5
+        fields.field3 = 5
+    }
+
 
     /*TODO Comment this until we merge Mixed->Link code.
     testDictionaryErrorHandling(){
