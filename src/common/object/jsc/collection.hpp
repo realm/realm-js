@@ -19,4 +19,5 @@
 struct IOCollection {
     virtual void set(JSContextRef, std::string, JSValueRef) = 0;
     virtual JSValueRef get(JSContextRef, std::string) = 0;
+   // virtual bool contains(std::string) = 0;
 };

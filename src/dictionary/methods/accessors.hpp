@@ -47,8 +47,10 @@ struct DictionaryAccessors {
         std::vector<std::string> keys = js_object.get_keys();
         bool mutated = false;
 
+
         for(std::string& key: keys){
             if(!dictionary.contains(key)){
+                std::cout << "removing -> " << key << "\n";
                 js_object.remove_accessor(key);
                 mutated = true;
             }

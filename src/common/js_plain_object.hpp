@@ -72,10 +72,10 @@ struct JSObject : public ObjectObserver {
             return;
         }
 
-        notifications.on_change(
-            [=](auto dict, auto change_set) { update(change_set); });
-
-        waiting_for_notifications = true;
+        waiting_for_notifications = notifications.on_change(
+            [=](auto dict, auto change_set) {
+                notify_subscribers(change_set);
+            });
     }
 
     void subscribe(Subscriber* subscriber) {
@@ -97,15 +97,15 @@ struct JSObject : public ObjectObserver {
     void unsubscribe_all() { subscribers.clear(); }
 
     template <typename Realm_ChangeSet>
-    void update(Realm_ChangeSet& change_set) {
+    void notify_subscribers(Realm_ChangeSet& change_set) {
         /* This is necessary for NodeJS. */
         HANDLESCOPE(context)
 
         getters_setters->update(js_object, this);
-        ObjectType object = js_object.get_object();
 
         for (Subscriber* subscriber : subscribers) {
-            subscriber->notify(object, change_set);
+            auto obj = js_object.get_object();
+            subscriber->notify(obj, change_set);
         }
     }
 

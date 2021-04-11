@@ -117,13 +117,21 @@ class JavascriptObject {
 
     std::vector<std::string> &get_keys() { return keys; }
 
+    bool remove_key(std::string& key){
+        int index = -1;
+        for (auto const& _key : keys) {
+            index++;
+            if (key == _key) {
+                keys.erase(keys.begin() + index);
+                return true;
+            }
+        }
+        return false;
+    }
     void remove_accessor(std::string &key) {
         Napi::Object obj = get_object();
-        auto it = remove_if(
-            keys.begin(), keys.end(),
-            [&key](std::string const &cmp) -> bool { return key == cmp; });
 
-        if (it != keys.end()) {
+        if (remove_key(key)) {
             // https://github.com/nodejs/node-addon-api/blob/main/doc/object.md#delete
             obj.Delete(key);
         }

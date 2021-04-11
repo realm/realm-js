@@ -142,7 +142,6 @@ class JavascriptObject {
         accessors.insert(accessors.begin(), {"QQQQSX", Base_get, Base_set, kJSPropertyAttributeNone});
     }
 
-
     JavascriptObject(JSContextRef _ctx, std::string name = "js_object")
         : context{_ctx} {
         _class = kJSClassDefinitionEmpty;

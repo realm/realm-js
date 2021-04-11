@@ -50,9 +50,14 @@ class DictionaryNotifications {
     DictionaryNotifications(object_store::Dictionary _dictionary): dictionary{_dictionary}{}
     DictionaryNotifications(DictionaryNotifications &&dictionary) = default;
 
-    void on_change(Update&& _update){
+    bool on_change(Update&& _update){
         update = _update;
-        listen_for_collection_changes();
+        try{
+            listen_for_collection_changes();
+            return true;
+        }catch(...){}
+
+        return false;
     }
 };
 
