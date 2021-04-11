@@ -33,10 +33,11 @@
 namespace realm {
 namespace js {
 
-template <typename VM, typename GetterSetters,
-          typename NotificationStrategy = NoNotificationsStrategy,
-          typename Methods = NoMethods<VM>,
-          typename Collection = NoData>
+template <
+        typename VM,
+        typename GetterSetters,
+        typename Methods = NoMethods<VM>,
+        typename Collection = NoData>
 struct JSObject : public ObjectObserver {
    private:
     using Value = js::Value<VM>;
@@ -45,7 +46,6 @@ struct JSObject : public ObjectObserver {
     using ContextType = typename VM::Context;
 
     ContextType context;
-    NotificationStrategy notifications;
     bool waiting_for_notifications{false};
 
     std::unique_ptr<Methods> methods;
@@ -57,9 +57,7 @@ struct JSObject : public ObjectObserver {
    public:
     template <typename RealmData>
     JSObject(ContextType _context, RealmData _data)
-        : context{_context},
-          notifications{_data},
-          js_object{_context} {
+        : context{_context}, js_object{_context} {
         getters_setters = std::make_unique<GetterSetters>();
         methods = std::make_unique<Methods>();
         collection = std::make_unique<Collection>(_data);
@@ -72,9 +70,9 @@ struct JSObject : public ObjectObserver {
             return;
         }
 
-        waiting_for_notifications = notifications.on_change(
-            [=](auto dict, auto change_set) {
-                notify_subscribers(change_set);
+        waiting_for_notifications =
+            collection->on_change([=](auto dict, auto change_set) {
+                update(change_set);
             });
     }
 
@@ -97,19 +95,20 @@ struct JSObject : public ObjectObserver {
     void unsubscribe_all() { subscribers.clear(); }
 
     template <typename Realm_ChangeSet>
-    void notify_subscribers(Realm_ChangeSet& change_set) {
+    void update(Realm_ChangeSet& change_set) {
         /* This is necessary for NodeJS. */
-        HANDLESCOPE(context)
 
+        std::cout << "Update! \n";
+        HANDLESCOPE(context)
         getters_setters->update(js_object, this);
+        auto obj = js_object.get_object();
 
         for (Subscriber* subscriber : subscribers) {
-            auto obj = js_object.get_object();
             subscriber->notify(obj, change_set);
         }
     }
 
-    ObjectType build(ContextType _context){
+    ObjectType build() {
         methods->apply(js_object, this);
         getters_setters->apply(js_object, this);
 
@@ -118,10 +117,6 @@ struct JSObject : public ObjectObserver {
         js_object.set_observer(this);
 #endif
         return js_object.get_object();
-    }
-
-    ObjectType build() {
-        return build(context);
     }
 
     template <typename CB>

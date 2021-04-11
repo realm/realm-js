@@ -40,7 +40,7 @@ class DictionaryAdapter {
     using GetterSetters = DictionaryAccessors;
     using Methods = ListenersMethodsForDictionary<T>;
     using JSDictionary =
-        JSObject<T, GetterSetters, DictionaryNotifications, Methods, Dictionary>;
+        JSObject<T, GetterSetters, Methods, Dictionary>;
 
    public:
     ValueType wrap(Context context, object_store::Dictionary dictionary) {
