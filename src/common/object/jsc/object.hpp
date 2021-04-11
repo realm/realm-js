@@ -48,6 +48,7 @@ class JavascriptObject {
     std::vector<JSStaticValue> accessors;
     PrivateStore *private_object;
 
+    //TODO leak here use JSStringRelease
     static std::string to_string(JSContextRef context, JSStringRef value) {
         std::string str;
         size_t sizeUTF8 = JSStringGetMaximumUTF8CStringSize(value);

@@ -33,8 +33,6 @@
 namespace realm {
 namespace js {
 
-
-
 template <typename VM, typename GetterSetters,
           typename NotificationStrategy = NoNotificationsStrategy,
           typename Methods = NoMethods<VM>,
@@ -78,7 +76,6 @@ struct JSObject : public ObjectObserver {
             [=](auto dict, auto change_set) { update(change_set); });
 
         waiting_for_notifications = true;
-        js_object.retain();
     }
 
     void subscribe(Subscriber* subscriber) {
@@ -104,17 +101,15 @@ struct JSObject : public ObjectObserver {
         /* This is necessary for NodeJS. */
         HANDLESCOPE(context)
 
-        std::cout << "Update!! 1" << '\n';
         getters_setters->update(js_object, this);
-        ObjectType v = js_object.get_object();
+        ObjectType object = js_object.get_object();
 
         for (Subscriber* subscriber : subscribers) {
-            subscriber->notify(v, change_set);
+            subscriber->notify(object, change_set);
         }
     }
 
     ObjectType build(ContextType _context){
-
         methods->apply(js_object, this);
         getters_setters->apply(js_object, this);
 

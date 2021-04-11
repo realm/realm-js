@@ -25,122 +25,119 @@
 #include "subscriber.hpp"
 
 namespace realm {
-    namespace js {
-        namespace common {
-            class JavascriptObject {
-            private:
-                Napi::Env context;
-                Napi::Object object;
-                Napi::Reference<Napi::Object> ref_object;
 
-                template<class T>
-                using ObjectAPI = realm::js::Object<T>;
-                using Property = realm::js::PropertyAttributes;
-                std::vector<std::string> keys;
+namespace common {
+class JavascriptObject {
+   private:
+    Napi::Env context;
+    Napi::Object object;
+    Napi::Reference<Napi::Object> ref_object;
 
+    template <class T>
+    using ObjectAPI = realm::js::Object<T>;
+    using Property = realm::js::PropertyAttributes;
+    std::vector<std::string> keys;
 
-                template<void cb(Args), typename Data>
-                static auto make_callback_method(Data *data) {
-                    return [=](const auto &info) mutable {
-                        try {
-                            cb({info.Env(), data, data->get_collection(), info.Length(),
-                                NodeCallbackWrapper(info)});
-                        } catch (InvalidTransactionException &e) {
-                            _throw_error(info.Env(), e);
-                        }
-                    };
-                }
+    template <void cb(Args), typename Data>
+    static auto make_callback_method(Data *data) {
+        return [=](const auto &info) mutable {
+            try {
+                cb({info.Env(), data, data->get_collection(), info.Length(),
+                    NodeCallbackWrapper(info)});
+            } catch (InvalidTransactionException &e) {
+                _throw_error(info.Env(), e);
+            }
+        };
+    }
 
-                static auto _get(std::string key_name, IOCollection *collection) {
-                    return [=](const auto &info) mutable {
-                        return collection->get(info.Env(), key_name);
-                    };
-                }
+    static auto _get(std::string key_name, IOCollection *collection) {
+        return [=](const auto &info) mutable {
+            return collection->get(info.Env(), key_name);
+        };
+    }
 
-                static auto _set(std::string key_name, IOCollection *collection) {
-                    return [=](const auto &info) mutable {
-                        try {
-                            collection->set(info.Env(), key_name, info[0]);
-                        } catch (InvalidTransactionException &e) {
-                            _throw_error(info.Env(), e);
-                        }
-                    };
-                }
+    static auto _set(std::string key_name, IOCollection *collection) {
+        return [=](const auto &info) mutable {
+            try {
+                collection->set(info.Env(), key_name, info[0]);
+            } catch (InvalidTransactionException &e) {
+                _throw_error(info.Env(), e);
+            }
+        };
+    }
 
-            public:
-                JavascriptObject(Napi::Env _ctx, std::string name = "js_object")
-                        : context{_ctx} {
-                    object = Napi::Object::New(context);
-                }
+   public:
+    JavascriptObject(Napi::Env _ctx, std::string name = "js_object")
+        : context{_ctx} {
+        ref_object =
+            Napi::Reference<Napi::Object>::New(Napi::Object::New(context));
+    }
 
-                template<class VM, void cb(Args), class Data>
-                void add_method(std::string &&name, Data *data) {
-                    auto _callback = make_callback_method<cb>(data);
-                    auto js_function = Napi::Function::New(context, _callback, name);
+    template <class VM, void cb(Args), class Data>
+    void add_method(std::string &&name, Data *data) {
+        auto _callback = make_callback_method<cb>(data);
+        auto js_function = Napi::Function::New(context, _callback, name);
+        auto _object = get_object();
 
-                    ObjectAPI<VM>::set_property(context, object, name, js_function,
-                                                Property::DontEnum);
-                }
+        ObjectAPI<VM>::set_property(context, _object, name, js_function,
+                                    Property::DontEnum);
+    }
 
-                void add_accessor(std::string key, IOCollection *data) {
-                    /*
-                     * NAPI_enumerable: Enables JSON.stringify(object) and all the good
-                     * stuff for free...
-                     *
-                     * NAPI_configurable: Allow us to modify accessors, for example: Delete
-                     * fields, very handy to reflect object-dictionary mutations.
-                     *
-                     */
-                    auto rules = static_cast<napi_property_attributes>(napi_enumerable |
-                                                                       napi_configurable);
+    void add_accessor(std::string key, IOCollection *data) {
+        auto _object = get_object();
+        /*
+         * NAPI_enumerable: Enables JSON.stringify(object) and all the good
+         * stuff for free...
+         *
+         * NAPI_configurable: Allow us to modify accessors, for example: Delete
+         * fields, very handy to reflect object-dictionary mutations.
+         *
+         */
+        auto rules = static_cast<napi_property_attributes>(napi_enumerable |
+                                                           napi_configurable);
 
-                    /*
-                     * https://github.com/nodejs/node-addon-api/blob/main/doc/property_descriptor.md
-                     */
-                    auto descriptor = Napi::PropertyDescriptor::Accessor(
-                            context, object, key, _get(key, data), _set(key, data), rules);
+        /*
+         * https://github.com/nodejs/node-addon-api/blob/main/doc/property_descriptor.md
+         */
+        auto descriptor = Napi::PropertyDescriptor::Accessor(
+            context, _object, key, _get(key, data), _set(key, data), rules);
 
-                    object.DefineProperty(
-                            descriptor);  // https://github.com/nodejs/node-addon-api/blob/main/doc/object.md#defineproperty
+        _object.DefineProperty(
+            descriptor);  // https://github.com/nodejs/node-addon-api/blob/main/doc/object.md#defineproperty
 
-                    keys.push_back(key);
-                }
+        keys.push_back(key);
+    }
 
-                template<typename JSObject, typename RemovalCallback, typename Self>
-                static void finalize(JSObject object, RemovalCallback &&callback,
-                                     Self *self) {
-                    object.AddFinalizer([callback](auto, void *data_ref) { callback(); },
-                                        self);
-                }
+    template <typename JSObject, typename RemovalCallback, typename Self>
+    static void finalize(JSObject object, RemovalCallback &&callback,
+                         Self *self) {
+        object.AddFinalizer([callback](auto, void *data_ref) { callback(); },
+                            self);
+    }
 
-                std::vector<std::string> &get_keys() {
-                    return keys;
-                }
+    std::vector<std::string> &get_keys() { return keys; }
 
-                void remove_accessor(std::string &key) {
-                    std::cout << "Removing!!" << '\n';
-                    auto it = remove_if(keys.begin(), keys.end(), [&key](std::string const &cmp) -> bool {
-                        return key == cmp;
-                    });
+    void remove_accessor(std::string &key) {
+        Napi::Object obj = get_object();
+        auto it = remove_if(
+            keys.begin(), keys.end(),
+            [&key](std::string const &cmp) -> bool { return key == cmp; });
 
-                    if (it != keys.end()) {
-                        object.Delete(key);
-                    }
-                }
+        if (it != keys.end()) {
+            // https://github.com/nodejs/node-addon-api/blob/main/doc/object.md#delete
+            obj.Delete(key);
+        }
+    }
 
-                void retain(){
-                    ref_object = Napi::Reference<Napi::Object>::New(object);
-                }
+    Napi::Object get_object() { return ref_object.Value(); }
 
-                Napi::Object get_object() {
-                    if(ref_object.IsEmpty()){
-                        return object;
-                    }else{
-                        return ref_object.Value();
-                    }
-                    //return ref_object.IsEmpty()? object: ref_object.Value();
-                }
-            };
-        }  // namespace common
-    }  // namespace realm
-}
+    ~JavascriptObject() {
+        if (!ref_object.IsEmpty()) {
+            // Liberate any retained object.
+            // https://github.com/nodejs/node-addon-api/blob/main/doc/reference.md
+            ref_object.Reset();
+        }
+    }
+};
+}  // namespace common
+}  // namespace realm
