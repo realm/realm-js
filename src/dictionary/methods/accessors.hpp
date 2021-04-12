@@ -36,6 +36,7 @@ struct DictionaryAccessors {
 
         for (auto entry_pair : *collection) {
             auto key = entry_pair.first.get_string().data();
+            std::cout << "add -> " << key << "\n";
             js_object.add_accessor(key, collection);
         }
     }
@@ -52,13 +53,10 @@ struct DictionaryAccessors {
             if(!dictionary.contains(key)){
                 std::cout << "removing -> " << key << "\n";
                 js_object.remove_accessor(key);
-                mutated = true;
             }
         }
 
-        if(mutated) {
-            apply(js_object, _o);
-        }
+        apply(js_object, _o);
     }
 
 };

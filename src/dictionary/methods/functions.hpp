@@ -69,10 +69,7 @@ class ListenersMethodsForDictionary {
         for (auto index = 0; index < keys.size(); index++) {
             std::string key = keys[index];
             auto value = js::Object<T>::get_property(context, obj, key);
-            std::cout << "Inserting [put]: " << key << "\n";
             dictionary->set(context, key, value);
-            std::cout << "Getting [put]: " << key << "\n";
-            dictionary->get(context, key );
         }
     }
 

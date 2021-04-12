@@ -26,7 +26,7 @@
 #include "realm/object-store/dictionary.hpp"
 
 struct Subscriber {
-    virtual void notify(JSObjectRef &, realm::DictionaryChangeSet &) = 0;
+    virtual void notify(JSObjectRef, realm::DictionaryChangeSet &) = 0;
     virtual bool equals(const Subscriber *) const = 0;
     virtual JSValueRef callback() const = 0;
 

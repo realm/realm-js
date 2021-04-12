@@ -52,6 +52,7 @@ class DictionaryAdapter {
             std::cout << "killing associated dictionary. \n";
         });
 
+        std::cout << "Hello! \n";
         return value;
     }
 };

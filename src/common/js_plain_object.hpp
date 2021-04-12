@@ -61,6 +61,15 @@ struct JSObject : public ObjectObserver {
         getters_setters = std::make_unique<GetterSetters>();
         methods = std::make_unique<Methods>();
         collection = std::make_unique<Collection>(_data);
+
+        collection->on_change([=](collection::Notification notification) {
+            std::cout << "Update! \n";
+            update(notification);
+
+            if(notification.from_realm){
+                notify_subscriber(notification);
+            }
+        });
     };
 
     Collection* get_collection() { return collection.get(); }
@@ -70,10 +79,7 @@ struct JSObject : public ObjectObserver {
             return;
         }
 
-        waiting_for_notifications =
-            collection->on_change([=](auto dict, auto change_set) {
-                update(change_set);
-            });
+        waiting_for_notifications = collection->watch();
     }
 
     void subscribe(Subscriber* subscriber) {
@@ -94,18 +100,19 @@ struct JSObject : public ObjectObserver {
 
     void unsubscribe_all() { subscribers.clear(); }
 
+    void notify_subscriber(collection::Notification notification){
+        HANDLESCOPE(context)
+        for (Subscriber* subscriber : subscribers) {
+            subscriber->notify(js_object.get_object(), notification.change_set);
+        }
+    }
+
     template <typename Realm_ChangeSet>
     void update(Realm_ChangeSet& change_set) {
         /* This is necessary for NodeJS. */
-
         std::cout << "Update! \n";
         HANDLESCOPE(context)
         getters_setters->update(js_object, this);
-        auto obj = js_object.get_object();
-
-        for (Subscriber* subscriber : subscribers) {
-            subscriber->notify(obj, change_set);
-        }
     }
 
     ObjectType build() {

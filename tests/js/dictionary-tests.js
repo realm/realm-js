@@ -411,20 +411,23 @@ module.exports = {
         realm.write(() => { fields.field1=1 } )
         TestCase.assertTrue(correct,"This is expected to work.")
     },
-    testDictionaryErrorHandling() {
+    testDictionaryPut() {
         const DictSchema = {
             name: "Dictionary",
             properties: {
-                fields: "{}"
+                dict: "{}"
             }
         }
-
         let realm = new Realm({schema: [DictSchema]})
-        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
-        let fields = realm.objects(DictSchema.name)[0]
-        fields.field1 = 5
-        fields.field2 = 5
-        fields.field3 = 5
+
+        realm.write(()=> realm.create(DictSchema.name, { dict: {oo:2, y:2, z:2} } ))
+
+        let D = realm.objects(DictSchema.name)[0].dict
+        let T = D
+
+        realm.write(()=> {  D.put( {ff:2, pp:4} )  })
+
+        TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
     }
 
 
