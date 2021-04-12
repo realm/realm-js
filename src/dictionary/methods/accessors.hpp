@@ -26,9 +26,7 @@ namespace js {
 /*
  *  Dictionary accessors for JS Objects.
  */
-
 struct DictionaryAccessors {
-
 
     template <class JSObject>
     void apply(common::JavascriptObject& js_object, JSObject* _o) {
@@ -36,7 +34,6 @@ struct DictionaryAccessors {
 
         for (auto entry_pair : *collection) {
             auto key = entry_pair.first.get_string().data();
-            std::cout << "add -> " << key << "\n";
             js_object.add_accessor(key, collection);
         }
     }
@@ -60,8 +57,6 @@ struct DictionaryAccessors {
     }
 
 };
-
-
 
 }  // namespace js
 }  // namespace realm

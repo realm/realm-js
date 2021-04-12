@@ -91,7 +91,6 @@ class ListenersMethodsForDictionary {
                     [=](std::string& key, auto object){
                         auto _value = js::Object<T>::get_property(context, object, key);
                         std::string value = js::Value<T>::validated_to_string(context, _value, "Dictionary key");
-                        std::cout << "removing -> " << key << " ->" << value << " \n";
 
                         collection->remove(context, value);
                     });

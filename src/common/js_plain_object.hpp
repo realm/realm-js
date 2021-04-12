@@ -110,7 +110,6 @@ struct JSObject : public ObjectObserver {
     template <typename Realm_ChangeSet>
     void update(Realm_ChangeSet& change_set) {
         /* This is necessary for NodeJS. */
-        std::cout << "Update! \n";
         HANDLESCOPE(context)
         getters_setters->update(js_object, this);
     }

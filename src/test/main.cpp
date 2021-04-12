@@ -21,8 +21,11 @@ struct MockedCollection : public IOCollection {
         return JSValueMakeNumber(ctx, N);
     }
 
-    ~MockedCollection(){
+    void remove(JSContextRef ctx, std::string _key){
+        N = 0;
+    }
 
+    ~MockedCollection(){
     }
 };
 
@@ -50,6 +53,10 @@ struct T1 : public ObjectObserver {
             REQUIRE(arguments.collection == nullptr);
             REQUIRE(arguments.observer == nullptr);
         }
+    }
+
+    static void removeTest(Args args){
+
     }
 
     static void methods(Args args) {
@@ -182,15 +189,11 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     common::JavascriptObject* _dict =
         new common::JavascriptObject{jsc_vm.globalContext};
     _dict->template add_method<int, T1::methods>("doSomething", new T1);
-    _dict->template add_accessor<AccessorsTest>("X", nullptr);
+    _dict->add_accessor("X", nullptr);
     _dict->set_collection(new MockedCollection(666));
     _dict->set_observer(new T1);
 
-    _dict->_test();
-
     auto dict_js_object = _dict->get_object();
-
-
     common::JavascriptObject::finalize(dict_js_object, [=]() {
         /*
          *  Private object should be deallocated just once.
@@ -200,7 +203,7 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     });
 
     // Adds object to the JS global scope.
-    jsc_vm.set_obj_prop("dictionary", dict_js_object);
+        jsc_vm.set_obj_prop("dictionary", dict_js_object);
 
     /*
      *
