@@ -21,5 +21,6 @@
 struct IOCollection {
     virtual void set(Napi::Env, std::string, Napi::Value) = 0;
     virtual Napi::Value get(Napi::Env, std::string) = 0;
+    virtual void remove(Napi::Env, std::string) = 0;
 };
 

@@ -34,6 +34,18 @@ class ListenersMethodsForDictionary {
     using ValueType = typename T::Value;
 
    public:
+
+    template <typename Fn>
+    static void object_keys(ContextType& context, ValueType _object, Fn&& fn){
+        auto obj =  js::Value<T>::validated_to_object(context, _object);
+        auto keys = js::Object<T>::get_property_names(context, obj);
+
+        for (auto index = 0; index < keys.size(); index++) {
+            std::string key = keys[index];
+            fn(key, obj);
+        }
+    }
+
     static void add_listener(Args arguments) {
         ContextType context = arguments.context;
         ObjectObserver *observer = arguments.observer;
@@ -61,16 +73,28 @@ class ListenersMethodsForDictionary {
     static void put(Args arguments) {
         std::string error_msg =  "This method cannot be empty.";
         auto context = arguments.context;
-        auto dictionary = arguments.collection;
+        IOCollection *collection = arguments.collection;
 
-        auto obj =  js::Value<T>::validated_to_object(context, arguments.get(0, error_msg));
-        auto keys = js::Object<T>::get_property_names(context, obj);
+        object_keys(context, arguments.get(0, error_msg),
+                    [=](std::string& key, auto object){
+            auto value = js::Object<T>::get_property(context, object, key);
+            collection->set(context, key, value);
+        });
+    }
 
-        for (auto index = 0; index < keys.size(); index++) {
-            std::string key = keys[index];
-            auto value = js::Object<T>::get_property(context, obj, key);
-            dictionary->set(context, key, value);
-        }
+    static void remove(Args arguments) {
+        std::string error_msg =  "This method cannot be empty.";
+        auto context = arguments.context;
+        IOCollection *collection = arguments.collection;
+
+        object_keys(context, arguments.get(0, error_msg),
+                    [=](std::string& key, auto object){
+                        auto _value = js::Object<T>::get_property(context, object, key);
+                        std::string value = js::Value<T>::validated_to_string(context, _value, "Dictionary key");
+                        std::cout << "removing -> " << key << " ->" << value << " \n";
+
+                        collection->remove(context, value);
+                    });
     }
 
     template<typename JavascriptObject, typename Data>
@@ -79,6 +103,7 @@ class ListenersMethodsForDictionary {
         object.template add_method<T, remove_listener>("removeListener", _o);
         object.template add_method<T, remove_all_listeners>("removeAllListeners", _o);
         object.template add_method<T, put>("put", _o);
+        object.template add_method<T, remove>("remove", _o);
     }
 };
 

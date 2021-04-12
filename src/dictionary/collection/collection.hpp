@@ -125,6 +125,13 @@ public:
         return Value::from_undefined(context);
     }
 
+    void remove(ContextType context, std::string key){
+        try{
+            dictionary.erase(key.c_str());
+            update(collection::Notification{dictionary, {}, false});
+        }catch (realm::KeyNotFound& error){}
+    }
+
     operator Collection() { return dictionary; }
     object_store::Dictionary& data(){ return dictionary; }
 };

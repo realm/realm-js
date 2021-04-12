@@ -428,7 +428,33 @@ module.exports = {
         realm.write(()=> {  D.put( {ff:2, pp:4} )  })
 
         TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
+    },
+    testDictionaryRemove() {
+        const DictSchema = {
+            name: "Dictionary",
+            properties: {
+                dict: "{}"
+            }
+        }
+        let realm = new Realm({schema: [DictSchema]})
+
+        realm.write(()=> realm.create(DictSchema.name, { dict: {oo:2, y:2, z:2} } ))
+
+        let D = realm.objects(DictSchema.name)[0].dict
+        let T = D
+
+        realm.write(()=> {  D.remove( ['oo', 'y', 'z'] )  })
+
+        TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
+        TestCase.assertEqual(Object.keys(D).length,  0,"We should have an empty object.")
+
+        realm.write(()=> {  D.put( {ff:2, pp:'111011'} )  })
+
+        TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
+        TestCase.assertEqual(Object.keys(D).length,2,"We should be able to successfully re-populate a dictionary.")
+        TestCase.assertEqual(Object.values(D).join(''),[2,'111011'].join(''),"We should be able to successfully re-populate a dictionary.")
     }
+
 
 
     /*TODO Comment this until we merge Mixed->Link code.
