@@ -17,24 +17,43 @@
 ////////////////////////////////////////////////////////////////////////////
 #include <iterator>
 
-#include "collection.hpp"
+
 #include "common/object/observer.hpp"
+#include "common/collection.hpp"
 
 #pragma once
+namespace method{
+    struct Arguments {
+        JSContextRef context;
+        ObjectObserver *observer = nullptr;
+        IOCollection *collection = nullptr;
+        size_t argumentCount;
+        const JSValueRef *values{nullptr};
 
-struct Args {
-    JSContextRef context;
-    ObjectObserver *observer = nullptr;
-    IOCollection *collection = nullptr;
-    size_t argumentCount;
-    const JSValueRef *values{nullptr};
+        JSValueRef get(int index,
+                       std::string msg = "Missing argument for method call.") {
+            if (index >= argumentCount) {
+                throw std::runtime_error(msg);
+            }
 
-    JSValueRef get(int index,
-                   std::string msg = "Missing argument for method call.") {
-        if (index >= argumentCount) {
-            throw std::runtime_error(msg);
+            return values[index];
         }
+    };
 
-        return values[index];
-    }
+};
+
+namespace accessor{
+    struct Arguments{
+        JSContextRef context;
+        JSObjectRef object;
+        std::string property_name;
+        JSValueRef value;
+        JSValueRef *exception;
+
+        void throw_error(std::string&& message){
+            JSStringRef _str = JSStringCreateWithUTF8CString(message.c_str());
+            JSValueRef msg = JSValueMakeString(context, _str);
+            *exception = JSObjectMakeError(context, 1, &msg, NULL);
+        }
+    };
 };

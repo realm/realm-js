@@ -20,7 +20,7 @@
 #include <exception>
 
 #include "dictionary/collection/notification.hpp"
-#include "common/object/interfaces.hpp"
+#include "common/collection.hpp"
 #include "common/object/error_handling.hpp"
 #include "js_mixed.hpp"
 
@@ -41,13 +41,8 @@ namespace collection {
     };
 }
 
-template <typename T>
 class CollectionAdapter: public IOCollection {
    private:
-    using Value = js::Value<T>;
-    using JSMixedAPI = TypeMixed<T>;
-    using ValueType = typename T::Value;
-    using ContextType = typename T::Context;
     using Update = std::function<void(collection::Notification)>;
 
     object_store::Dictionary dictionary;
@@ -108,24 +103,22 @@ public:
         return dictionary.end();
     }
 
-    void set(ContextType context, std::string key, ValueType value){
-        auto mixed = JSMixedAPI::get_instance().unwrap(context, value);
+    void set(std::string key, realm::Mixed value){
         dictionary.insert(key.c_str(), mixed);
-
         update(collection::Notification{dictionary, {}, false});
     }
 
-    ValueType get(ContextType context, std::string key) {
+    realm::Mixed get(std::string key) {
         try{
             auto mixed_value = dictionary.get_any(key.c_str());
-            auto value = JSMixedAPI::get_instance().wrap(context, mixed_value);
-            return value;
+
+            return realm::Mixed;
         }catch (realm::KeyNotFound& error){}
 
         return Value::from_undefined(context);
     }
 
-    void remove(ContextType context, std::string key){
+    void remove(std::string key){
         try{
             dictionary.erase(key.c_str());
             update(collection::Notification{dictionary, {}, false});

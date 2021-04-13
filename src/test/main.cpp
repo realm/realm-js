@@ -10,22 +10,40 @@ using Catch::Matchers::Contains;
 using namespace std;
 using namespace realm;
 
-struct MockedCollection : public IOCollection {
+
+struct MockedCollection: public IOCollection{
     double N = 1000;
-    MockedCollection(double _N = 1000): N{_N}{}
-    void set(JSContextRef ctx, std::string _key, JSValueRef value) {
-        N = JSValueToNumber(ctx, value, nullptr);
+    MockedCollection(double start): N{start} {}
+    realm::Mixed get(std::string) override{
+        return realm::Mixed(N);
     }
 
-    JSValueRef get(JSContextRef ctx, std::string _key) {
-        return JSValueMakeNumber(ctx, N);
+    void set(std::string key, realm::Mixed val) override{
+        N = val.get_double();
     }
 
-    void remove(JSContextRef ctx, std::string _key){
+    void remove(std::string key) override {
         N = 0;
     }
+};
 
-    ~MockedCollection(){
+struct MockedGetterSetter {
+    IOCollection *collection{nullptr};
+
+    MockedGetterSetter(IOCollection *_collection): collection{_collection}{}
+
+    void set(accessor::Arguments args) {
+        printf("args->property_name: %s \n", args.property_name.c_str());
+        std::cout << "property name: " << args.property_name << "\n";
+        double N = JSValueToNumber(args.context, args.value, nullptr);
+        collection->set("N", realm::Mixed(N));
+    }
+
+    JSValueRef get(accessor::Arguments args) {
+        return JSValueMakeNumber(args.context, collection->get(args.property_name).get_double());
+    }
+
+    ~MockedGetterSetter(){
     }
 };
 
@@ -45,7 +63,7 @@ struct T1 : public ObjectObserver {
     }
     void unsubscribe_all() { call_count++; }
 
-    static void test_for_null_data_method(Args arguments) {
+    static void test_for_null_data_method(method::Arguments arguments) {
         SECTION(
             "This callback should have null values for observer and "
             "collection.") {
@@ -55,40 +73,37 @@ struct T1 : public ObjectObserver {
         }
     }
 
-    static void removeTest(Args args){
+    static void removeTest(method::Arguments args){
 
     }
 
-    static void methods(Args args) {
+    static void methods(method::Arguments args) {
         SECTION(
             "This callback should have non-null values for observer and "
             "collection.") {
 
-            ObjectObserver *observer =  args.observer;
-            IOCollection *collection = args.collection;
             auto context = args.context;
 
-            REQUIRE(collection != nullptr);
-            REQUIRE(observer != nullptr);
+            REQUIRE(args.collection != nullptr);
+            REQUIRE(args.observer != nullptr);
 
-            observer->subscribe(nullptr);
-            observer->unsubscribe_all();
-            observer->remove_subscription(nullptr);
+            args.observer->subscribe(nullptr);
+            args.observer->unsubscribe_all();
+            args.observer->remove_subscription(nullptr);
 
-            collection->set(context, "test", args.get(0));
-            JSValueRef _num = collection->get(context, "test");
-            double num = JSValueToNumber(context, _num, nullptr);
+            double n = JSValueToNumber(context, args.get(0), nullptr);
+            args.collection->set("test", n);
+            realm::Mixed _num = args.collection->get("test");
+
             /*
              * jsc_object line 11
              * dictionary.doSomething(28850);
              * we test here that we successfully read the argument.
              *
              */
-            REQUIRE(num == 28850);
+            REQUIRE(_num.get_double() == 28850);
         }
     }
-
-    IOCollection* get_collection() { return new MockedCollection(); }
 };
 
 TEST_CASE("Testing Logger#get_level") {
@@ -103,19 +118,10 @@ TEST_CASE("Testing Logger#get_level") {
 JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
                 size_t argumentCount, const JSValueRef arguments[],
                 JSValueRef* exception) {
-    SECTION("An object should be created, should have a method doSomething.") {
-        auto accessor_name = JSC_VM::s("X");
-        auto method_name = JSC_VM::s("doSomething");
-
-        auto obj = (JSObjectRef)arguments[0];
-
-        bool is_obj = JSValueIsObject(ctx, arguments[0]);
-        bool has_method = JSObjectHasProperty(ctx, obj, method_name);
-        bool has_accessor = JSObjectHasProperty(ctx, obj, accessor_name);
-
-        REQUIRE(is_obj == true);
-        REQUIRE(has_accessor == true);
-        REQUIRE(has_method == true);
+    SECTION("The Object should contain accessor *X* and method *doSomething*") {
+        REQUIRE(JSValueIsBoolean(ctx, arguments[0]) == true);
+        bool val = JSValueToBoolean(ctx, arguments[0]);
+        REQUIRE(val == true);
     }
 
     return JSValueMakeUndefined(ctx);
@@ -130,7 +136,7 @@ JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
 JSValueRef GetterSetter(JSContextRef ctx, JSObjectRef function,
                         JSObjectRef thisObject, size_t argumentCount,
                         const JSValueRef arguments[], JSValueRef* exception) {
-    SECTION("Testing object accessors for X value..") {
+    SECTION("Testing accessors I/O for input X") {
         auto accessor_name = JSC_VM::s("X");
         REQUIRE(true == JSValueIsObject(ctx, arguments[0]));
 
@@ -151,7 +157,7 @@ JSValueRef GetterSetter(JSContextRef ctx, JSObjectRef function,
 TEST_CASE("Testing Object creation on JavascriptCore.") {
     JSC_VM jsc_vm;
 
-    jsc_vm.make_gbl_fn("test", &Test);
+    jsc_vm.make_gbl_fn("assert_true", &Test);
     jsc_vm.make_gbl_fn("test_accessor", &GetterSetter);
 
     /*
@@ -159,15 +165,16 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
      *  With null_dictionary is just a Javascript object without a private C++
      * object.
      */
-    common::JavascriptObject* null_dict =
-        new common::JavascriptObject{jsc_vm.globalContext};
+    common::JavascriptObject<MockedGetterSetter>* null_dict =
+        new common::JavascriptObject<MockedGetterSetter>{jsc_vm.globalContext};
 
     TNull* tnull = nullptr;
-    null_dict->template add_method<int, T1::test_for_null_data_method>("hello", tnull);
-    null_dict->template add_method<int, T1::test_for_null_data_method>("alo", tnull);
+    null_dict->template add_method<int, T1::test_for_null_data_method>("hello");
+    null_dict->template add_method<int, T1::test_for_null_data_method>("alo");
+    null_dict->set_observer(tnull);
     JSObjectRef null_dict_js_object = null_dict->get_object();
 
-    common::JavascriptObject::finalize(null_dict_js_object, [=]() {
+    common::JavascriptObject<MockedGetterSetter>::finalize(null_dict_js_object, [=]() {
         /*
          *  Private object should be deallocated just once.
          */
@@ -186,15 +193,19 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
      *  To provide a private object we just need to pass a C++ object that has a
      * IOCollection* get_collection() method and/or ObjectSubscriber.
      */
-    common::JavascriptObject* _dict =
-        new common::JavascriptObject{jsc_vm.globalContext};
-    _dict->template add_method<int, T1::methods>("doSomething", new T1);
-    _dict->add_accessor("X", nullptr);
+    common::JavascriptObject<MockedGetterSetter>* _dict =
+        new common::JavascriptObject<MockedGetterSetter>{jsc_vm.globalContext};
+    _dict->template add_method<int, T1::methods>("doSomething");
+    _dict->add_key("X");
+    _dict->add_key("A");
+    _dict->add_key("B");
+    _dict->add_key("C");
+
     _dict->set_collection(new MockedCollection(666));
     _dict->set_observer(new T1);
 
     auto dict_js_object = _dict->get_object();
-    common::JavascriptObject::finalize(dict_js_object, [=]() {
+    common::JavascriptObject<MockedGetterSetter>::finalize(dict_js_object, [=]() {
         /*
          *  Private object should be deallocated just once.
          */
@@ -203,7 +214,7 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     });
 
     // Adds object to the JS global scope.
-        jsc_vm.set_obj_prop("dictionary", dict_js_object);
+    jsc_vm.set_obj_prop("dictionary", dict_js_object);
 
     /*
      *

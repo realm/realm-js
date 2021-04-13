@@ -25,13 +25,16 @@
 #include "subscriber.hpp"
 
 namespace realm {
-
 namespace common {
+
+
+template <typename GetterSetter>
 class JavascriptObject {
    private:
     Napi::Env context;
     Napi::Object object;
     Napi::Reference<Napi::Object> ref_object;
+    GetterSetter getter_setter
 
     template <class T>
     using ObjectAPI = realm::js::Object<T>;

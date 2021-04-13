@@ -19,9 +19,39 @@
 #pragma once
 #include "realm/dictionary.hpp"
 #include "dictionary/collection/collection.hpp"
+#include "common/object/interfaces.hpp"
 
 namespace realm {
 namespace js {
+
+template <typename T>
+struct Accessor{
+    IOCollection *collection;
+    using Value = js::Value<T>;
+    using JSMixedAPI = TypeMixed<T>;
+    using ValueType = typename T::Value;
+    using ContextType = typename T::Context;
+
+    void set(accessor::Arguments args){
+        try{
+            auto mixed = JSMixedAPI::get_instance().unwrap(args.context, args.value);
+            collection->set(args.propert_name.c_str(), mixed);
+        } catch (InvalidTransactionException &error) {
+            args.throw_error(ctx, error.what());
+        }
+    }
+
+    auto get(accessors::Arguments args) {
+        try{
+            auto mixed_value = dictionary.get_any(key.c_str());
+            auto value = JSMixedAPI::get_instance().wrap(context, mixed_value);
+            return value;
+        }catch (realm::KeyNotFound& error){}
+
+        return Value::from_undefined(context);
+    }
+};
+
 
 /*
  *  Dictionary accessors for JS Objects.
@@ -34,7 +64,7 @@ struct DictionaryAccessors {
 
         for (auto entry_pair : *collection) {
             auto key = entry_pair.first.get_string().data();
-            js_object.add_accessor(key, collection);
+            js_object.add_key(key);
         }
     }
 

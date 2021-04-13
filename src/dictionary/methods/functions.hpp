@@ -32,6 +32,7 @@ class ListenersMethodsForDictionary {
     using ObjectType = typename T::Object;
     using ContextType = typename T::Context;
     using ValueType = typename T::Value;
+    using JSMixedAPI = TypeMixed<T>;
 
    public:
 
@@ -46,7 +47,7 @@ class ListenersMethodsForDictionary {
         }
     }
 
-    static void add_listener(Args arguments) {
+    static void add_listener(method::Arguments arguments) {
         ContextType context = arguments.context;
         ObjectObserver *observer = arguments.observer;
         std::string error_msg =  "A callback function is required.";
@@ -56,7 +57,7 @@ class ListenersMethodsForDictionary {
         observer->subscribe(subscriber);
     }
 
-    static void remove_listener(Args arguments) {
+    static void remove_listener(method::Arguments arguments) {
         ContextType context = arguments.context;
         ObjectObserver* observer = arguments.observer;
         std::string error_msg =  "A callback function is required.";
@@ -66,11 +67,11 @@ class ListenersMethodsForDictionary {
         observer->remove_subscription(subscriber);
     }
 
-    static void remove_all_listeners(Args arguments) {
+    static void remove_all_listeners(method::Arguments arguments) {
         arguments.observer->unsubscribe_all();
     }
 
-    static void put(Args arguments) {
+    static void put(method::Arguments arguments) {
         std::string error_msg =  "This method cannot be empty.";
         auto context = arguments.context;
         IOCollection *collection = arguments.collection;
@@ -78,11 +79,12 @@ class ListenersMethodsForDictionary {
         object_keys(context, arguments.get(0, error_msg),
                     [=](std::string& key, auto object){
             auto value = js::Object<T>::get_property(context, object, key);
-            collection->set(context, key, value);
+            auto mixed = JSMixedAPI::get_instance().unwrap(context, mixed);
+            collection->set(key, mixed);
         });
     }
 
-    static void remove(Args arguments) {
+    static void remove(method::Arguments arguments) {
         std::string error_msg =  "This method cannot be empty.";
         auto context = arguments.context;
         IOCollection *collection = arguments.collection;
@@ -91,8 +93,7 @@ class ListenersMethodsForDictionary {
                     [=](std::string& key, auto object){
                         auto _value = js::Object<T>::get_property(context, object, key);
                         std::string value = js::Value<T>::validated_to_string(context, _value, "Dictionary key");
-
-                        collection->remove(context, value);
+                        collection->remove(value);
                     });
     }
 

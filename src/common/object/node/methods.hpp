@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 #include <iterator>
 
-#include "collection.hpp"
+#include "common/collection.hpp"
 #include "common/object/observer.hpp"
 
 #pragma once

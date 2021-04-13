@@ -19,11 +19,9 @@
 #if REALM_PLATFORM_NODE
 #include "node/subscriber.hpp"
 #include "node/methods.hpp"
-#include "node/collection.hpp"
 #include "node/object.hpp"
 #else
 #include "jsc/subscriber.hpp"
 #include "jsc/methods.hpp"
-#include "jsc/collection.hpp"
 #include "jsc/object.hpp"
 #endif
