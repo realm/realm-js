@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 'use strict';
-const AppConfig = require("./support/testConfig");
 
 // Prevent React Native packager from seeing modules required with this
 const require_method = require;
@@ -25,14 +24,9 @@ function nodeRequire(module) {
     return require_method(module);
 }
 
-function closeAfterUpload(realm) {
-    return realm.syncSession.uploadAllLocalChanges().then(() => realm.close());
-}
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
-const schemas = require('./schemas');
-const Utils = require('./test-utils');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -117,8 +111,6 @@ module.exports = {
         TestCase.assertEqual(teams.length, 1, "There should still be only one team");
         TestCase.assertEqual(teams[0].names.size, 3, "Team Set size should be 3");
 
-        // TODO:  test multiple teams
-        
         realm.close();
     },
 
@@ -155,9 +147,6 @@ module.exports = {
         let teams = realm.objects(teamSchema.name);
         TestCase.assertEqual(teams.length, 1, "There should be one team");
         TestCase.assertEqual(teams[0].persons.size, 2, "Team Set size should be 2");
-
-        console.log(teams[0].persons.toJSON());
-
 
         // add another person
         realm.write(() => {
@@ -259,7 +248,7 @@ module.exports = {
         };
 
         const realm = new Realm({ schema: [peopleSchema] });
-        const schema = realm.schema;
+//        const schema = realm.schema;
 
         //
         // Set.has() functionality
@@ -289,8 +278,6 @@ module.exports = {
         TestCase.assertEqual(footballTeam.names.size, 3, "There should be 3 people in the football team after adding Daniel and removing Alice");
         TestCase.assertEqual(false, footballTeam.names.has("Alice"), "Alice shouldn't be in the football team");
 
-//        console.log(JSON.stringify(footballTeam.names));
-
         // create another team with two people
         realm.write(() => {
             realm.create(peopleSchema.name, {
@@ -310,14 +297,7 @@ module.exports = {
         //
         // Set.clear() functionality
         //
-
-        footballTeam.names.forEach(element =>
-            console.log("oifjroi  " + element)
-        );
-
-        console.log(footballTeam.names.toJSON());
-
-        // remove everyone from the JS team
+        // remove everyone from the football team
         realm.write(() => {
             footballTeam.names.clear();
         });
@@ -427,8 +407,6 @@ module.exports = {
         });
         TestCase.assertTrue(isCorrect, "dbInts.entries() should contain the elements of type [myInts[x], myInts[x]]");
 
-        // TODO:  repeat tests with objects
-
         realm.close();
     },
 
@@ -502,207 +480,4 @@ module.exports = {
 
         itemRealm.close();
     },
-
-    // TODO:  Move Sync tests to separate file
-    async testSetSyncedNonRequired() {
-        // test that we can create a synced realm with a Set
-        // that isn't required
-        if (!global.enableSyncTests) return;
-
-        const schema = {
-            name: "SyncedSetInt",
-            primaryKey: "_id",
-            properties: {
-                _id: "int",
-                intSet: "int<>",
-            }
-        }
-
-        const appConfig = AppConfig.integrationAppConfig;
-        const app = new Realm.App(appConfig);
-        const credentials = Realm.Credentials.anonymous();
-
-        const user = await app.logIn(credentials);
-        const config = {
-            sync: {
-                user,
-                partitionValue: "_id",
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            },
-            schema: [schema]
-        };
-        const realm = await Realm.open(config);
-
-
-        realm.write(() => {
-            realm.deleteAll();
-        });
-
-        let objects = realm.objects(schema.name);
-        let objcount = objects.length;
-
-        TestCase.assertEqual(objcount, 0, "Table should be empty");
-    },
-
-
-    //
-    // test that deletions and additions to a Set are propagated correctly through Sync
-    async testSetSyncedAddDelete() {
-        // tests a synced realm while adding/deleting elements in a Set
-        if (!global.enableSyncTests) return;
-
-        const schema = {
-            name: "SyncedSetInt",
-            primaryKey: "_id",
-            properties: {
-                _id: "int",
-                intSet: "int<>",
-            }
-        }
-        
-        const appConfig = AppConfig.integrationAppConfig;
-        const app = new Realm.App(appConfig);
-//        Realm.App.Sync.setLogLevel(app, 'all');
-        const credentials = Realm.Credentials.anonymous();
-
-        const user = await app.logIn(credentials);
-        const config = {
-            sync: {
-                user,
-                partitionValue: "_id",
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            },
-            schema: [schema]
-        };
-        const realm = await Realm.open(config);
-
-        realm.write(() => {
-            realm.deleteAll();
-        });
-
-        // TODO:  fix Error: mySetfrew.mandatory must be of type 'number', got 'number' (2)
-        realm.write(() => {
-            realm.create(schema.name, { 
-                _id: 77,
-                intSet: [2],
-              });  
-        });
-
-        await realm.syncSession.uploadAllLocalChanges();
-
-        let objects = realm.objects(schema.name);
-        let objcount = objects.length;
-        TestCase.assertEqual(objcount, 1, "There should be 1 object");
-
-        // add an element to the Set
-        realm.write(() => {
-            let myset = objects[0].intSet.add(5);
-        });
-        await realm.syncSession.uploadAllLocalChanges();
-
-        objects = realm.objects(schema.name);
-        objcount = objects.length;
-
-        // there should still only be one object
-        TestCase.assertEqual(objcount, 1, "Number of objects should be 1");
-        // .. but the object's Set should have two elements
-        TestCase.assertEqual(objects[0].intSet.size, 2, "Size of intSet should be 2");
-
-        // add an element to the Set, then delete another one
-        realm.write(() => {
-            let myset = objects[0].intSet.add(6).delete(2);
-        });
-        await realm.syncSession.uploadAllLocalChanges();
-
-        objects = realm.objects(schema.name);
-        objcount = objects.length;
-
-        // there should still only be one object
-        TestCase.assertEqual(objcount, 1, "Number of objects should be 1");
-        // .. but the object's Set should have two elements
-        TestCase.assertEqual(objects[0].intSet.size, 2, "Size of intSet should be 2");
-
-        realm.write(() => {
-            objects[0].intSet.clear();
-        });
-        await realm.syncSession.uploadAllLocalChanges();
-        objects = realm.objects(schema.name);
-        objcount = objects.length;
-        // there should still only be one object
-        TestCase.assertEqual(objcount, 1, "Number of objects should still be 1");
-        // .. but the object's Set should have two elements
-        TestCase.assertEqual(objects[0].intSet.size, 0, "Size of intSet should be 0");
-
-        realm.close();
-    },
-
-    // TODO:  Add tests for is_optional
-    // TODO:  Sync test:  Create realm -> add data -> upload -> delete realm -> re-create realm -> data should download
-    // TODO:  Add test for == operator
-
-    async testSetFoo() {
-        const peopleSchema = {
-            name: "Person2",
-            properties: {
-                names: "string[]"
-            }
-        };
-
-        const realm = new Realm({ schema: [peopleSchema] });
-        const schema = realm.schema;
-
-        realm.write(() => {
-            // put some names in our database
-            realm.create(peopleSchema.name, {
-                names: ["Alice", "Bob", "Cecilia"]
-            });
-        });
-
-        let people = realm.objects(peopleSchema.name);
-        let names = people[0].names;
-        names.forEach((value) => {
-            console.log("value: " + value);
-        });
-    },
-
-    async testSetFoo2() {
-        const peopleSchema = {
-            name: "Person3",
-            properties: {
-                names: "string<>"
-            }
-        };
-
-        const realm = new Realm({ schema: [peopleSchema] });
-        const schema = realm.schema;
-
-        realm.write(() => {
-            // put some names in our database
-            realm.create(peopleSchema.name, {
-                names: ["Alice", "Bob", "Cecilia"]
-            });
-        });
-
-        let people = realm.objects(peopleSchema.name);
-        let names = people[0].names;
-        // names.forEach((value) => {
-        //     console.log("value: " + value);
-        // });
-
-        // const it1 = names.entries();
-        // for (const entry of it1) {
-        //     console.log("it entry:  " + entry);
-        // }
-
-        // const it2 = names.values();
-        // for (const entry of it2) {
-        //     console.log("it2 entry:  " + entry);
-        // }
-
-        // const it3 = names.keys();
-        // for (const entry of it3) {
-        //     console.log("key entry: " + entry);
-        // }
-    },
-
 }
