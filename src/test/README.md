@@ -38,7 +38,12 @@ Another advantage of this kind of testing is that we can target [JavaScriptCore]
 * Then to run the test you should run:
 
 ```sh
+# To compile the tests
 sh test.sh
+
+# To run 
+./testing.o
+
 
 ===============================================================================
 All tests passed (4 assertions in 2 test cases)

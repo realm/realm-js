@@ -25,67 +25,34 @@ namespace realm {
 namespace js {
 
 template <typename T>
-struct Accessor{
+struct DictionaryGetterSetter{
     IOCollection *collection;
     using Value = js::Value<T>;
     using JSMixedAPI = TypeMixed<T>;
-    using ValueType = typename T::Value;
-    using ContextType = typename T::Context;
 
     void set(accessor::Arguments args){
+        auto context = args.context;
+        auto key = args.property_name.c_str();
         try{
-            auto mixed = JSMixedAPI::get_instance().unwrap(args.context, args.value);
-            collection->set(args.propert_name.c_str(), mixed);
+            auto mixed = JSMixedAPI::get_instance().unwrap(context, args.value);
+            collection->set(key, mixed);
         } catch (InvalidTransactionException &error) {
-            args.throw_error(ctx, error.what());
+            args.throw_error(error.what());
         }
     }
 
-    auto get(accessors::Arguments args) {
+    auto get(accessor::Arguments args) {
+        auto context = args.context;
+        auto key = args.property_name.c_str();
+
         try{
-            auto mixed_value = dictionary.get_any(key.c_str());
+            auto mixed_value = collection->get(key);
             auto value = JSMixedAPI::get_instance().wrap(context, mixed_value);
             return value;
         }catch (realm::KeyNotFound& error){}
 
         return Value::from_undefined(context);
     }
-};
-
-
-/*
- *  Dictionary accessors for JS Objects.
- */
-struct DictionaryAccessors {
-
-    template <class JSObject>
-    void apply(common::JavascriptObject& js_object, JSObject* _o) {
-        auto *collection = _o->get_collection();
-
-        for (auto entry_pair : *collection) {
-            auto key = entry_pair.first.get_string().data();
-            js_object.add_key(key);
-        }
-    }
-
-    template <class JSObject>
-    void update(common::JavascriptObject& js_object, JSObject* _o){
-        using Dictionary = object_store::Dictionary;
-        Dictionary dictionary = _o->get_collection()->data();
-        std::vector<std::string> keys = js_object.get_keys();
-        bool mutated = false;
-
-
-        for(std::string& key: keys){
-            if(!dictionary.contains(key)){
-                std::cout << "removing -> " << key << "\n";
-                js_object.remove_accessor(key);
-            }
-        }
-
-        apply(js_object, _o);
-    }
-
 };
 
 }  // namespace js

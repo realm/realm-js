@@ -103,29 +103,25 @@ public:
         return dictionary.end();
     }
 
+    bool contains(std::string key){
+        return dictionary.contains(key.c_str());
+    }
+
     void set(std::string key, realm::Mixed value){
-        dictionary.insert(key.c_str(), mixed);
+        dictionary.insert(key.c_str(), value);
         update(collection::Notification{dictionary, {}, false});
     }
 
     realm::Mixed get(std::string key) {
-        try{
-            auto mixed_value = dictionary.get_any(key.c_str());
-
-            return realm::Mixed;
-        }catch (realm::KeyNotFound& error){}
-
-        return Value::from_undefined(context);
+        return dictionary.get_any(key.c_str());
     }
 
     void remove(std::string key){
-        try{
-            dictionary.erase(key.c_str());
-            update(collection::Notification{dictionary, {}, false});
-        }catch (realm::KeyNotFound& error){}
+        dictionary.erase(key.c_str());
+        update(collection::Notification{dictionary, {}, false});
     }
 
-    operator Collection() { return dictionary; }
+    operator object_store::Dictionary() { return dictionary; }
     object_store::Dictionary& data(){ return dictionary; }
 };
 

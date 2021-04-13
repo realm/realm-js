@@ -35,8 +35,8 @@ namespace js {
 
 template <
         typename VM,
-        typename GetterSetters,
-        typename Methods = NoMethods<VM>,
+        typename GetterSetters = EmptyGetterSetters,
+        typename Builder = NoBuilder<VM>,
         typename Collection = NoData>
 struct JSObject : public ObjectObserver {
    private:
@@ -48,26 +48,23 @@ struct JSObject : public ObjectObserver {
     ContextType context;
     bool waiting_for_notifications{false};
 
-    std::unique_ptr<Methods> methods;
-    std::unique_ptr<GetterSetters> getters_setters;
+    std::unique_ptr<Builder> builder;
     std::unique_ptr<Collection> collection;
     std::vector<Subscriber*> subscribers;
-    common::JavascriptObject js_object;
+    common::JavascriptObject<GetterSetters> javascript_object;
 
    public:
     template <typename RealmData>
     JSObject(ContextType _context, RealmData _data)
-        : context{_context}, js_object{_context} {
-        getters_setters = std::make_unique<GetterSetters>();
-        methods = std::make_unique<Methods>();
+        : context{_context}, javascript_object{_context} {
+        builder = std::make_unique<Builder>();
         collection = std::make_unique<Collection>(_data);
 
         collection->on_change([=](collection::Notification notification) {
-            std::cout << "Update! \n";
             update(notification);
 
             if(notification.from_realm){
-                notify_subscriber(notification);
+                notify_subscribers(notification);
             }
         });
     };
@@ -100,10 +97,10 @@ struct JSObject : public ObjectObserver {
 
     void unsubscribe_all() { subscribers.clear(); }
 
-    void notify_subscriber(collection::Notification notification){
+    void notify_subscribers(collection::Notification notification){
         HANDLESCOPE(context)
         for (Subscriber* subscriber : subscribers) {
-            subscriber->notify(js_object.get_object(), notification.change_set);
+            subscriber->notify(javascript_object.get(), notification.change_set);
         }
     }
 
@@ -111,25 +108,24 @@ struct JSObject : public ObjectObserver {
     void update(Realm_ChangeSet& change_set) {
         /* This is necessary for NodeJS. */
         HANDLESCOPE(context)
-        getters_setters->update(js_object, this);
+        builder->add_accessors(javascript_object, collection->data());
+        builder->remove_accessors(javascript_object, collection.get());
     }
 
     ObjectType build() {
-        methods->apply(js_object, this);
-        getters_setters->apply(js_object, this);
+        builder->template add_methods<VM>(javascript_object);
+        builder->add_accessors(javascript_object, collection->data());
 
-#if REALM_ANDROID
-        js_object.set_collection(collection.get());
-        js_object.set_observer(this);
-#endif
-        return js_object.get_object();
+        javascript_object.set_collection(collection.get());
+        javascript_object.set_observer(this);
+
+        return javascript_object.create();
     }
 
     template <typename CB>
-    void setup_finalizer(ObjectType object, CB&& cb) {
+    void setup_finalizer(CB&& cb) {
         // This method gets called when GC dispose the JS Object.
-        common::JavascriptObject::finalize(
-            object, [=]() { cb(); }, this);
+        javascript_object.finalize([=]() { cb(); }, this);
     }
 
     ~JSObject() = default;

@@ -27,7 +27,7 @@ namespace realm {
 namespace js {
 
 template <typename T>
-class ListenersMethodsForDictionary {
+class MethodsForDictionary {
    private:
     using ObjectType = typename T::Object;
     using ContextType = typename T::Context;
@@ -35,7 +35,6 @@ class ListenersMethodsForDictionary {
     using JSMixedAPI = TypeMixed<T>;
 
    public:
-
     template <typename Fn>
     static void object_keys(ContextType& context, ValueType _object, Fn&& fn){
         auto obj =  js::Value<T>::validated_to_object(context, _object);
@@ -79,7 +78,7 @@ class ListenersMethodsForDictionary {
         object_keys(context, arguments.get(0, error_msg),
                     [=](std::string& key, auto object){
             auto value = js::Object<T>::get_property(context, object, key);
-            auto mixed = JSMixedAPI::get_instance().unwrap(context, mixed);
+            auto mixed = JSMixedAPI::get_instance().unwrap(context, value);
             collection->set(key, mixed);
         });
     }
@@ -90,21 +89,14 @@ class ListenersMethodsForDictionary {
         IOCollection *collection = arguments.collection;
 
         object_keys(context, arguments.get(0, error_msg),
-                    [=](std::string& key, auto object){
-                        auto _value = js::Object<T>::get_property(context, object, key);
-                        std::string value = js::Value<T>::validated_to_string(context, _value, "Dictionary key");
-                        collection->remove(value);
+                    [=](std::string& _key, auto object){
+                        auto value = js::Object<T>::get_property(context, object, _key);
+                        std::string key = js::Value<T>::validated_to_string(context, value, "Dictionary key");
+                        collection->remove(key);
                     });
     }
 
-    template<typename JavascriptObject, typename Data>
-    void apply(JavascriptObject& object, Data *_o) {
-        object.template add_method<T, add_listener>("addListener", _o);
-        object.template add_method<T, remove_listener>("removeListener", _o);
-        object.template add_method<T, remove_all_listeners>("removeAllListeners", _o);
-        object.template add_method<T, put>("put", _o);
-        object.template add_method<T, remove>("remove", _o);
-    }
+
 };
 
 }  // namespace js

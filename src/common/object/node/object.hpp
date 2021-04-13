@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "collection.hpp"
+#include "common/collection.hpp"
 #include "common/object/error_handling.hpp"
 #include "methods.hpp"
 #include "napi.h"
@@ -32,42 +32,15 @@ template <typename GetterSetter>
 class JavascriptObject {
    private:
     Napi::Env context;
-    Napi::Object object;
     Napi::Reference<Napi::Object> ref_object;
-    GetterSetter getter_setter
+    ObjectObserver *observer = nullptr;
+    IOCollection *collection = nullptr;
+    std::vector<std::string> keys;
 
     template <class T>
     using ObjectAPI = realm::js::Object<T>;
     using Property = realm::js::PropertyAttributes;
-    std::vector<std::string> keys;
 
-    template <void cb(Args), typename Data>
-    static auto make_callback_method(Data *data) {
-        return [=](const auto &info) mutable {
-            try {
-                cb({info.Env(), data, data->get_collection(), info.Length(),
-                    NodeCallbackWrapper(info)});
-            } catch (InvalidTransactionException &e) {
-                _throw_error(info.Env(), e);
-            }
-        };
-    }
-
-    static auto _get(std::string key_name, IOCollection *collection) {
-        return [=](const auto &info) mutable {
-            return collection->get(info.Env(), key_name);
-        };
-    }
-
-    static auto _set(std::string key_name, IOCollection *collection) {
-        return [=](const auto &info) mutable {
-            try {
-                collection->set(info.Env(), key_name, info[0]);
-            } catch (InvalidTransactionException &e) {
-                _throw_error(info.Env(), e);
-            }
-        };
-    }
 
    public:
     JavascriptObject(Napi::Env _ctx, std::string name = "js_object")
@@ -76,49 +49,75 @@ class JavascriptObject {
             Napi::Reference<Napi::Object>::New(Napi::Object::New(context));
     }
 
-    template <class VM, void cb(Args), class Data>
-    void add_method(std::string &&name, Data *data) {
-        auto _callback = make_callback_method<cb>(data);
-        auto js_function = Napi::Function::New(context, _callback, name);
-        auto _object = get_object();
+    void set_collection(IOCollection *_collection){
+        collection = _collection;
+    }
 
-        ObjectAPI<VM>::set_property(context, _object, name, js_function,
+    void set_observer(ObjectObserver *_observer){
+        observer = _observer;
+    }
+
+    template <class VM, void callback(method::Arguments)>
+    void add_method(std::string &&name) {
+        auto object = get();
+
+        auto method = [=](const auto &info){
+            callback({info.Env(), observer, collection, info.Length(), NodeCallbackWrapper(info)});
+        };
+
+        auto method_function = Napi::Function::New(context, method, name);
+
+        ObjectAPI<VM>::set_property(context, object, name, method_function,
                                     Property::DontEnum);
     }
 
-    void add_accessor(std::string key, IOCollection *data) {
-        auto _object = get_object();
+    void add_key(std::string key) {
+        auto _object = get();
         /*
-         * NAPI_enumerable: Enables JSON.stringify(object) and all the good
-         * stuff for free...
-         *
-         * NAPI_configurable: Allow us to modify accessors, for example: Delete
-         * fields, very handy to reflect object-dictionary mutations.
-         *
-         */
+        * NAPI_enumerable: Enables JSON.stringify(object) and other JS stuff for free...
+        *
+        * NAPI_configurable: Allow us to modify accessors, for example: Delete
+        * fields, very handy to reflect object-dictionary mutations.
+        *
+        */
         auto rules = static_cast<napi_property_attributes>(napi_enumerable |
                                                            napi_configurable);
+
+        auto Getter = [=](std::string& key) {
+            return [=](const auto &info) mutable {
+                GetterSetter gs{collection};
+                return gs.get(accessor::Arguments{info.Env(), key.c_str()});
+            };
+        };
+
+        auto Setter = [=](std::string& key){
+            return [=](const auto &info) mutable {
+                GetterSetter gs{collection};
+                gs.set(accessor::Arguments{info.Env(), key.c_str(), info[0]});
+            };
+        };
 
         /*
          * https://github.com/nodejs/node-addon-api/blob/main/doc/property_descriptor.md
          */
         auto descriptor = Napi::PropertyDescriptor::Accessor(
-            context, _object, key, _get(key, data), _set(key, data), rules);
+            context, _object, key, Getter(key), Setter(key), rules);
 
-        _object.DefineProperty(
-            descriptor);  // https://github.com/nodejs/node-addon-api/blob/main/doc/object.md#defineproperty
+        // https://github.com/nodejs/node-addon-api/blob/main/doc/object.md#defineproperty
+        _object.DefineProperty(descriptor);
 
         keys.push_back(key);
     }
 
-    template <typename JSObject, typename RemovalCallback, typename Self>
-    static void finalize(JSObject object, RemovalCallback &&callback,
-                         Self *self) {
-        object.AddFinalizer([callback](auto, void *data_ref) { callback(); },
-                            self);
+    template <typename RemovalCallback, typename Self>
+    void finalize(RemovalCallback &&callback, Self *self) {
+        auto object = get();
+        object.AddFinalizer([callback](auto, void *data_ref) {
+            callback();
+            },self);
     }
 
-    std::vector<std::string> &get_keys() { return keys; }
+    std::vector<std::string> &get_properties() { return keys; }
 
     bool remove_key(std::string& key){
         int index = -1;
@@ -132,7 +131,7 @@ class JavascriptObject {
         return false;
     }
     void remove_accessor(std::string &key) {
-        Napi::Object obj = get_object();
+        Napi::Object obj = get();
 
         if (remove_key(key)) {
             // https://github.com/nodejs/node-addon-api/blob/main/doc/object.md#delete
@@ -140,7 +139,11 @@ class JavascriptObject {
         }
     }
 
-    Napi::Object get_object() { return ref_object.Value(); }
+    Napi::Object get() {return ref_object.Value();  }
+    Napi::Object create() {
+        // Only necessary to keep compatibility with the JSCore.
+        return get();
+    }
 
     ~JavascriptObject() {
         if (!ref_object.IsEmpty()) {

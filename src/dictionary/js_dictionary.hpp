@@ -27,33 +27,27 @@
 #include "methods/accessors.hpp"
 #include "methods/functions.hpp"
 #include "realm/object-store/dictionary.hpp"
-
+#include "builder/dictionary_builder.hpp"
 namespace realm {
 namespace js {
 
 template <typename T>
 class DictionaryAdapter {
    private:
-    using ValueType = typename T::Value;
-    using Context = typename T::Context;
-    using Dictionary = CollectionAdapter<T>;
-    using GetterSetters = DictionaryAccessors;
-    using Methods = ListenersMethodsForDictionary<T>;
-    using JSDictionary =
-        JSObject<T, GetterSetters, Methods, Dictionary>;
+    using ContextType = typename T::Context;
+    using GetterSetter = DictionaryGetterSetter<T>;
+    using Builder = DictionaryObjectBuilder;
+    using JSDictionary = JSObject<T, GetterSetter, Builder, CollectionAdapter>;
 
    public:
-    ValueType wrap(Context context, object_store::Dictionary dictionary) {
+    auto wrap(ContextType context, object_store::Dictionary dictionary) {
         auto *js_dictionary = new JSDictionary{context, dictionary};
-        auto value = js_dictionary->build();
 
-        js_dictionary->setup_finalizer(value, [=]() {
+        js_dictionary->setup_finalizer([=]() {
             delete js_dictionary;
-            std::cout << "killing associated dictionary. \n";
         });
 
-        std::cout << "Hello! \n";
-        return value;
+        return js_dictionary->build();
     }
 };
 

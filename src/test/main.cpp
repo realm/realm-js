@@ -25,6 +25,10 @@ struct MockedCollection: public IOCollection{
     void remove(std::string key) override {
         N = 0;
     }
+
+    bool contains(std::string key) override {
+        return true;
+    }
 };
 
 struct MockedGetterSetter {
@@ -153,10 +157,31 @@ JSValueRef GetterSetter(JSContextRef ctx, JSObjectRef function,
 
     return JSValueMakeUndefined(ctx);
 }
+//TODO leak here use JSStringRelease
+static std::string __to_string(JSContextRef context, JSValueRef value) {
+    std::string str;
+    JSStringRef valueAsString = JSValueToStringCopy(context, value, NULL);
+
+    size_t sizeUTF8 = JSStringGetMaximumUTF8CStringSize(valueAsString);
+    str.reserve(sizeUTF8);
+    JSStringGetUTF8CString(valueAsString, str.data(), sizeUTF8);
+    JSStringRelease(valueAsString);
+    return str;
+}
+
+JSValueRef TestPrint(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
+                size_t argumentCount, const JSValueRef arguments[],
+                JSValueRef* exception) {
+
+    auto str = __to_string(ctx, arguments[0]);
+    printf("printing: %s \n", str.c_str());
+    return JSValueMakeUndefined(ctx);
+}
+
 
 TEST_CASE("Testing Object creation on JavascriptCore.") {
     JSC_VM jsc_vm;
-
+    jsc_vm.make_gbl_fn("print", &TestPrint);
     jsc_vm.make_gbl_fn("assert_true", &Test);
     jsc_vm.make_gbl_fn("test_accessor", &GetterSetter);
 
@@ -172,9 +197,7 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     null_dict->template add_method<int, T1::test_for_null_data_method>("hello");
     null_dict->template add_method<int, T1::test_for_null_data_method>("alo");
     null_dict->set_observer(tnull);
-    JSObjectRef null_dict_js_object = null_dict->get_object();
-
-    common::JavascriptObject<MockedGetterSetter>::finalize(null_dict_js_object, [=]() {
+    null_dict->finalize([=]() {
         /*
          *  Private object should be deallocated just once.
          */
@@ -182,6 +205,10 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
         REQUIRE(null_dict != nullptr);
         delete null_dict;
     });
+
+    JSObjectRef null_dict_js_object = null_dict->create();
+
+
 
     // Adds object to the JS global scope. This way we can call the functions
     // from the VM like this null_dictionary.hello() null_dictionary.alo() for
@@ -203,15 +230,16 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
 
     _dict->set_collection(new MockedCollection(666));
     _dict->set_observer(new T1);
-
-    auto dict_js_object = _dict->get_object();
-    common::JavascriptObject<MockedGetterSetter>::finalize(dict_js_object, [=]() {
+    _dict->finalize([=]() {
         /*
          *  Private object should be deallocated just once.
          */
         REQUIRE(_dict != nullptr);
         delete _dict;
     });
+
+    auto dict_js_object = _dict->create();
+
 
     // Adds object to the JS global scope.
     jsc_vm.set_obj_prop("dictionary", dict_js_object);

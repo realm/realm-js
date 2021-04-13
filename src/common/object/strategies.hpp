@@ -23,13 +23,14 @@
 #pragma once
 
 template <typename VM>
-struct NoMethods {
+struct NoBuilder {
     using ContextType = typename VM::Context;
     ContextType context;
-    NoMethods(ContextType _context) : context{_context} {};
+    NoBuilder(ContextType _context) : context{_context} {};
 };
 
 class NoData {};
+class EmptyGetterSetters{};
 
 struct NoNotificationsStrategy {
     int empty{0};
