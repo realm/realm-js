@@ -18,6 +18,9 @@
 
 #pragma once
 
+#if !defined(__JS_SET_HPP__)
+#define __JS_SET_HPP__
+
 #include "js_collection.hpp"
 #include "js_object_accessor.hpp"
 #include "js_realm_object.hpp"
@@ -508,3 +511,5 @@ void SetClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, 
 
 } // js
 } // realm
+
+#endif  // !defined(__JS_SET_HPP__)
