@@ -68,7 +68,7 @@ if (global.enableSyncTests) {
         TESTS.UserTests = require("./user-tests");
         TESTS.SessionTests = require("./session-tests");
         TESTS.UUIDSyncTests= node_require("./uuid-sync-tests");
-        TESTS.PartitionValueTests = node_require("./pv-tests");
+        TESTS.PartitionValueTests = node_require("./partition-value-tests");
     }
 }
 

@@ -18,8 +18,6 @@
 
 "use strict";
 
-/* global navigator, WorkerNavigator */
-
 const require_method = require;
 
 const Realm = require("realm");
@@ -199,8 +197,6 @@ module.exports = {
         realm3.close();
 
         await user.logOut();
-
-        await user.logOut();
     },
 
     async testPartitionValueAsObjectId() {
@@ -237,8 +233,6 @@ module.exports = {
 
         TestCase.assertEqual(realm3.objects("Dog").length, 0);
         realm3.close();
-
-        await user.logOut();
 
         await user.logOut();
     },
