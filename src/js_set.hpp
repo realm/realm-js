@@ -135,14 +135,11 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
 
     // properties
     static void get_size(ContextType, ObjectType, ReturnValue &);
-//     static void get_type(ContextType, ObjectType, ReturnValue &);
      static void get_optional(ContextType, ObjectType, ReturnValue &);
      static void get_indexed(ContextType, ObjectType, uint32_t, ReturnValue &);
      static void get_type(ContextType, ObjectType, ReturnValue &);
 
-//     static bool set_index(ContextType, ObjectType, uint32_t, ValueType);
-
-//     // methods
+    // methods
     static void add(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void get(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void clear(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -162,7 +159,6 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
 
      MethodMap<T> const methods = {
         {"add", wrap<add>},
-//        {"_getIndexed", wrap<get>},
         {"clear", wrap<clear>},
         {"delete", wrap<delete_element>},
         {"has", wrap<has>},
@@ -182,12 +178,10 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
 
      PropertyMap<T> const properties = {
          {"size", {wrap<get_size>, nullptr}},
-         {"length", {wrap<get_size>, nullptr}},
          {"type", {wrap<get_type>, nullptr}},
          {"optional", {wrap<get_optional>, nullptr}},
      };
 
-//     IndexPropertyType<T> const index_accessor = {wrap<get_indexed>, nullptr};
      IndexPropertyType<T> const index_accessor = {nullptr, nullptr};
 
 private:
@@ -201,10 +195,9 @@ typename T::Object SetClass<T>::create_instance(ContextType ctx, realm::object_s
 
 
 /**
- * @brief Implements JavaScript Set's `.length` and `.size` properties
+ * @brief Implements JavaScript Set's `.size` property
  * 
  *  Returns the number of elements in the SetClass.
- *  `.size` and `.length` are synonyms.  `.length` is required by some enumeration functions.
  *  See [MDN's reference documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/size)
  * 
  * @param ctx JS context
@@ -221,7 +214,7 @@ void SetClass<T>::get_size(ContextType ctx, ObjectType object, ReturnValue &retu
 /**
  * @brief Accessor for elements at a given index in the set.
  * 
- *  Wraps JS's getter method.  Also required for internal object management.
+ *  For internal use only!
  * 
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SetClass itself
@@ -236,6 +229,13 @@ void SetClass<T>::get_indexed(ContextType ctx, ObjectType object, uint32_t index
 }
 
 
+/**
+ * @brief Check whether the Set's element type is marked as optional (`nullable`)
+ * 
+ * @param ctx JS context
+ * @param object \ref ObjectType wrapping the SetClass itself
+ * @param return_value \ref ReturnValue wrapping a boolean that is true if the Set's element type is nullable, false otherwise
+ */
 template<typename T>
 void SetClass<T>::get_optional(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto set = get_internal<T, SetClass<T>>(ctx, object);
@@ -275,10 +275,10 @@ void SetClass<T>::add(ContextType ctx, ObjectType this_object, Arguments &args, 
 
 
 /**
- * @brief Implements JavaScript Set's `get()` method
+ * @brief Index-based accessing to the Set
  * 
  *  Returns a single element found at the given index
- *  See [MDN's reference documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/get).
+ *  For internal use only!
  * 
  * @param ctx JS context
  * @param this_object \ref ObjectType wrapping the SetClass itself
@@ -408,7 +408,7 @@ void SetClass<T>::filtered(ContextType ctx, ObjectType this_object, Arguments &a
  * @brief Return a textual description of the value element type for the given set
  * 
  * @param ctx JS context
- * @param object /ref ObjectType wrapping the SetClass itself
+ * @param object \ref ObjectType wrapping the SetClass itself
  * @param return_value \ref ReturnValue wrapping a static `const char *` descriping the set's element type
  */
 template<typename T>
@@ -441,6 +441,16 @@ void SetClass<T>::validate_value(ContextType ctx, realm::object_store::Set &set,
     }
 }
 
+
+/**
+ * @brief Create a snapshot of the Set in the Realm database
+ * 
+ * @param ctx JS context
+ * @param set \ref realm::object_store::Set that contains the valid value type
+ * @param value \ref ValueType that is to be checked whether it is valid for the set
+ * @param args None -- must be empty
+ * @param return_value \ref ReturnValue wrapping a a new Set instance created by the snapshot
+ */
 template<typename T>
 void SetClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
@@ -449,6 +459,14 @@ void SetClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments &a
 }
 
 
+/**
+ * @brief Add a new listener on the Set
+ * 
+ * @param ctx JS context
+ * @param set \ref realm::object_store::Set that contains the valid value type
+ * @param args A single argument containing a callback function
+ * @param return_value None
+ */
 template<typename T>
 void SetClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     // args is validated by ResultClass
@@ -456,6 +474,15 @@ void SetClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
     ResultsClass<T>::add_listener(ctx, *set, this_object, args);
 }
 
+
+/**
+ * @brief Remove a listener that was previously registered on the Set
+ * 
+ * @param ctx JS context
+ * @param set \ref realm::object_store::Set that contains the valid value type
+ * @param args A single argument containing the callback function of the previously-registered listener
+ * @param return_value None
+ */
 template<typename T>
 void SetClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     // args is validated by ResultClass
@@ -463,13 +490,21 @@ void SetClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argum
     ResultsClass<T>::remove_listener(ctx, *set, this_object, args);
 }
 
+
+/**
+ * @brief Remove all listeners registered on the Set
+ * 
+ * @param ctx JS context
+ * @param set \ref realm::object_store::Set that contains the valid value type
+ * @param args None
+ * @param return_value None
+ */
 template<typename T>
 void SetClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
     auto set = get_internal<T, SetClass<T>>(ctx, this_object);
     set->m_notification_tokens.clear();
 }
-
 
 } // js
 } // realm
