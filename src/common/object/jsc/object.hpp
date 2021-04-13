@@ -41,7 +41,6 @@ struct PrivateStore {
     std::unordered_map<std::string, bool> keys;
 };
 
-
 template <typename GetterSetter>
 class JavascriptObject {
    private:
@@ -52,7 +51,6 @@ class JavascriptObject {
     std::vector<std::string> accessors;
     PrivateStore *private_object;
 
-    //TODO leak here use JSStringRelease
     static std::string to_string(JSContextRef context, JSStringRef value) {
         std::string str;
         size_t sizeUTF8 = JSStringGetMaximumUTF8CStringSize(value);
@@ -95,54 +93,56 @@ class JavascriptObject {
         }
     }
 
-    static bool contains_key(JSContextRef ctx, JSObjectRef object, std::string key){
+    static bool contains_key(JSContextRef ctx, JSObjectRef object,
+                             std::string key) {
         auto keys = get_private(object)->keys;
         return keys[key.c_str()] == true;
     }
 
-    static void get_property_names(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames){
+    static void get_property_names(JSContextRef ctx, JSObjectRef object,
+                                   JSPropertyNameAccumulatorRef propertyNames) {
         auto keys = get_private(object)->keys;
-        for(const auto& pair: keys){
-            if(pair.second){
+        for (const auto &pair : keys) {
+            if (pair.second) {
                 auto entry = JSStringCreateWithUTF8CString(pair.first.c_str());
                 JSPropertyNameAccumulatorAddName(propertyNames, entry);
             }
         }
     }
 
-
-    static JSValueRef getter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception)
-    {
-
+    static JSValueRef getter(JSContextRef ctx, JSObjectRef object,
+                             JSStringRef propertyName, JSValueRef *exception) {
         std::string key = to_string(ctx, propertyName);
 
-        if(!contains_key(ctx,object, key)){
-           return JSValueMakeNull(ctx);
+        if (!contains_key(ctx, object, key)) {
+            return JSValueMakeNull(ctx);
         }
 
         IOCollection *collection = get_private(object)->collection;
         GetterSetter gs{collection};
-        return gs.get(accessor::Arguments{ctx,object, key.c_str(), 0,exception});
+        return gs.get(
+            accessor::Arguments{ctx, object, key.c_str(), 0, exception});
     }
 
     static bool setter(JSContextRef ctx, JSObjectRef object,
-                     JSStringRef propertyName, JSValueRef value,
-                     JSValueRef *exception) {
+                       JSStringRef propertyName, JSValueRef value,
+                       JSValueRef *exception) {
         std::string key = to_string(ctx, propertyName);
 
-        if(!contains_key(ctx,object, key)){
+        if (!contains_key(ctx, object, key)) {
             return false;
         }
 
         IOCollection *collection = get_private(object)->collection;
         GetterSetter gs{collection};
-        gs.set(accessor::Arguments{ctx,object, key, value, exception});
+        gs.set(accessor::Arguments{ctx, object, key, value, exception});
         return true;
     }
 
-    static bool has_property(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName){
+    static bool has_property(JSContextRef ctx, JSObjectRef object,
+                             JSStringRef propertyName) {
         auto key = to_string(ctx, propertyName);
-        return contains_key(ctx,object, key);
+        return contains_key(ctx, object, key);
     }
 
     JSClassRef make_class() {
@@ -152,11 +152,11 @@ class JavascriptObject {
         return JSClassCreate(&_class);
     }
 
-    JSObjectRef lazily_build_object(){
-        if(object == nullptr){
+    JSObjectRef lazily_build_object() {
+        if (object == nullptr) {
             auto class_instance = make_class();
             return JSObjectMake(context, class_instance, private_object);
-        }else{
+        } else {
             return object;
         }
     }
@@ -181,14 +181,12 @@ class JavascriptObject {
     }
 
     template <class VM, void callback(method::Arguments)>
-    void add_method(std::string&& name) {
+    void add_method(std::string &&name) {
         std::string *leak = new std::string{name};
 
-        JSStaticFunction method_definition{
-            leak->c_str(),
-            function_call<callback>,
-            kJSPropertyAttributeDontEnum
-        };
+        JSStaticFunction method_definition{leak->c_str(),
+                                           function_call<callback>,
+                                           kJSPropertyAttributeDontEnum};
 
         methods.push_back(method_definition);
     }
@@ -196,11 +194,9 @@ class JavascriptObject {
     void add_key(std::string name) {
         private_object->keys[name.c_str()] = true;
         accessors.push_back(name);
-   }
-
-   std::vector<std::string>& get_properties(){
-        return accessors;
     }
+
+    std::vector<std::string> &get_properties() { return accessors; }
 
     void remove_accessor(std::string property_name) {
         private_object->keys[property_name.c_str()] = false;
@@ -214,9 +210,7 @@ class JavascriptObject {
         private_object->observer = observer;
     }
 
-    JSObjectRef get(){
-        return object;
-    }
+    JSObjectRef get() { return object; }
 
     JSObjectRef create() {
         object = lazily_build_object();
@@ -224,8 +218,7 @@ class JavascriptObject {
     }
 
     template <typename RemovalCallback>
-    void finalize(RemovalCallback &&callback,
-                         void *_unused = nullptr) {
+    void finalize(RemovalCallback &&callback, void *_unused = nullptr) {
         /*
          *  JSObject and Self only apply for NodeJS.
          */

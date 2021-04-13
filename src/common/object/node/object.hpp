@@ -27,7 +27,6 @@
 namespace realm {
 namespace common {
 
-
 template <typename GetterSetter>
 class JavascriptObject {
    private:
@@ -41,7 +40,6 @@ class JavascriptObject {
     using ObjectAPI = realm::js::Object<T>;
     using Property = realm::js::PropertyAttributes;
 
-
    public:
     JavascriptObject(Napi::Env _ctx, std::string name = "js_object")
         : context{_ctx} {
@@ -49,20 +47,17 @@ class JavascriptObject {
             Napi::Reference<Napi::Object>::New(Napi::Object::New(context));
     }
 
-    void set_collection(IOCollection *_collection){
-        collection = _collection;
-    }
+    void set_collection(IOCollection *_collection) { collection = _collection; }
 
-    void set_observer(ObjectObserver *_observer){
-        observer = _observer;
-    }
+    void set_observer(ObjectObserver *_observer) { observer = _observer; }
 
     template <class VM, void callback(method::Arguments)>
     void add_method(std::string &&name) {
         auto object = get();
 
-        auto method = [=](const auto &info){
-            callback({info.Env(), observer, collection, info.Length(), NodeCallbackWrapper(info)});
+        auto method = [=](const auto &info) {
+            callback({info.Env(), observer, collection, info.Length(),
+                      NodeCallbackWrapper(info)});
         };
 
         auto method_function = Napi::Function::New(context, method, name);
@@ -74,23 +69,24 @@ class JavascriptObject {
     void add_key(std::string key) {
         auto _object = get();
         /*
-        * NAPI_enumerable: Enables JSON.stringify(object) and other JS stuff for free...
-        *
-        * NAPI_configurable: Allow us to modify accessors, for example: Delete
-        * fields, very handy to reflect object-dictionary mutations.
-        *
-        */
+         * NAPI_enumerable: Enables JSON.stringify(object) and other JS stuff
+         * for free...
+         *
+         * NAPI_configurable: Allow us to modify accessors, for example: Delete
+         * fields, very handy to reflect object-dictionary mutations.
+         *
+         */
         auto rules = static_cast<napi_property_attributes>(napi_enumerable |
                                                            napi_configurable);
 
-        auto Getter = [=](std::string& key) {
+        auto Getter = [=](std::string &key) {
             return [=](const auto &info) mutable {
                 GetterSetter gs{collection};
                 return gs.get(accessor::Arguments{info.Env(), key.c_str()});
             };
         };
 
-        auto Setter = [=](std::string& key){
+        auto Setter = [=](std::string &key) {
             return [=](const auto &info) mutable {
                 GetterSetter gs{collection};
                 gs.set(accessor::Arguments{info.Env(), key.c_str(), info[0]});
@@ -112,16 +108,15 @@ class JavascriptObject {
     template <typename RemovalCallback, typename Self>
     void finalize(RemovalCallback &&callback, Self *self) {
         auto object = get();
-        object.AddFinalizer([callback](auto, void *data_ref) {
-            callback();
-            },self);
+        object.AddFinalizer([callback](auto, void *data_ref) { callback(); },
+                            self);
     }
 
     std::vector<std::string> &get_properties() { return keys; }
 
-    bool remove_key(std::string& key){
+    bool remove_key(std::string &key) {
         int index = -1;
-        for (auto const& _key : keys) {
+        for (auto const &_key : keys) {
             index++;
             if (key == _key) {
                 keys.erase(keys.begin() + index);
@@ -139,7 +134,7 @@ class JavascriptObject {
         }
     }
 
-    Napi::Object get() {return ref_object.Value();  }
+    Napi::Object get() { return ref_object.Value(); }
     Napi::Object create() {
         // Only necessary to keep compatibility with the JSCore.
         return get();
