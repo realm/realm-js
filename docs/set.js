@@ -36,7 +36,7 @@ class Set extends Collection {
      * Remove a value from the Set
      * @param {T} value Value to delete from the Set
      * @throws {Error} If not inside a write transaction.
-     * @returns {boolean} true if the value existed in the Set, false otherwise
+     * @returns {boolean}: true if the value existed in the Set, false otherwise
      */
      delete(value) { }
 
@@ -56,7 +56,7 @@ class Set extends Collection {
      *   {@linkcode Realm~ObjectSchema object schema} for the Set.
      *
      * @throws {Error} If not inside a write transaction.
-     * @returns {Set} The Set itself, after adding the element
+     * @returns {Realm.Set}: The Set itself, after adding the element
      */
      add(value) { }
 
@@ -68,7 +68,7 @@ class Set extends Collection {
      *   the Set, or if an object being added to the Set does not match the
      *   {@linkcode Realm~ObjectSchema object schema} for the Set.
      *
-     * @returns {Boolean} True if the value exists in the Set, false otherwise
+     * @returns {boolean}: True if the value exists in the Set, false otherwise
      */
      has(value) { }
 }
