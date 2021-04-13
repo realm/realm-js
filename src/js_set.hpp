@@ -18,9 +18,6 @@
 
 #pragma once
 
-#if !defined(__JS_SET_HPP__)
-#define __JS_SET_HPP__
-
 #include "js_collection.hpp"
 #include "js_object_accessor.hpp"
 #include "js_realm_object.hpp"
@@ -38,14 +35,14 @@ template<typename JSEngine>
 class NativeAccessor;
 
 namespace set {
-/**
+    /**
  * @brief Derive and apply property flags for \ref Set.
  * 
  * @param object_name Name of the Set object (for error reporting purposes)
  * @param prop (mutable) Property object that will be changed to be correct for \ref Set
  * @exception std::logic_error Thrown if the the prop argument contains an invalid property configuration
  */
-void derive_property_type(StringData const &object_name, Property &prop) {
+inline static void derive_property_type(StringData const &object_name, Property &prop) {
     using realm::PropertyType;
 
     if (prop.object_type == "bool") {
@@ -98,6 +95,7 @@ void derive_property_type(StringData const &object_name, Property &prop) {
         prop.type |= PropertyType::Object | PropertyType::Set;
     }
 }  // validated_property_type()
+
 };  // set namespace
 
 /**
@@ -113,9 +111,11 @@ template<typename T>
 class Set : public realm::object_store::Set {
   public:
     Set(const realm::object_store::Set &set) : realm::object_store::Set(set) {}
+    void derive_property_type(StringData const &object_name, Property &prop) const;
 
     std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
 };
+
 
 /**
  * @brief Implementation class for JavaScript's [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) class
@@ -511,5 +511,3 @@ void SetClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, 
 
 } // js
 } // realm
-
-#endif  // !defined(__JS_SET_HPP__)
