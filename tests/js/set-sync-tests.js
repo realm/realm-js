@@ -28,7 +28,6 @@ function nodeRequire(module) {
 const Realm = require('realm');
 const TestCase = require('./asserts');
 
-let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
 
