@@ -60,13 +60,18 @@ class CollectionAdapter: public IOCollection {
                 std::rethrow_exception(error);
             }
 
-            if(update) {
-                update(collection::Notification{dictionary, change_set, true});
-            }
+            notify(collection::Notification{dictionary, change_set, true});
         };
 
         token = dictionary.add_key_based_notification_callback(callback);
         listening = true;
+    }
+
+    template <typename... Args>
+    void notify(Args... args){
+        if(update) {
+            update(args...);
+        }
     }
 
 public:
@@ -109,7 +114,7 @@ public:
 
     void set(std::string key, realm::Mixed value){
         dictionary.insert(key.c_str(), value);
-        update(collection::Notification{dictionary, {}, false});
+        notify(collection::Notification{dictionary, {}, false});
     }
 
     realm::Mixed get(std::string key) {
@@ -118,7 +123,7 @@ public:
 
     void remove(std::string key){
         dictionary.erase(key.c_str());
-        update(collection::Notification{dictionary, {}, false});
+        notify(collection::Notification{dictionary, {}, false});
     }
 
     operator object_store::Dictionary() { return dictionary; }

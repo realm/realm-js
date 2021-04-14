@@ -18,11 +18,13 @@ dict.X=666;
 // eslint-disable-next-line no-undef
 test_accessor(dict, 'X', 666);
 
-var x = {a:1,b:1,c:1}
-print(" X -> " + JSON.stringify(x))
-print(" dict -> " + JSON.stringify(dict))
+assert_enumerate(JSON.stringify(dict))
 
-// dict.QQQQSX = 999; // Trying to access an invalid field.
-//
-// // eslint-disable-next-line no-undef
-// test_accessor(dict, 'X', 99);
+/*
+    Testing exception mechanism.
+*/
+try {
+    dict.X = -1  // testing wrong value.
+}catch(error){
+    assert_exception(error.message)
+}

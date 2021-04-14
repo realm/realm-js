@@ -37,10 +37,12 @@ struct MockedGetterSetter {
     MockedGetterSetter(IOCollection *_collection): collection{_collection}{}
 
     void set(accessor::Arguments args) {
-        printf("args->property_name: %s \n", args.property_name.c_str());
-        std::cout << "property name: " << args.property_name << "\n";
         double N = JSValueToNumber(args.context, args.value, nullptr);
         collection->set("N", realm::Mixed(N));
+
+        if(N == -1){
+            args.throw_error("Error: No Negative Number Please.");
+        }
     }
 
     JSValueRef get(accessor::Arguments args) {
@@ -137,7 +139,7 @@ JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
 
     test_accessor(dictionary, 'X', 666)  // Will look for the field X and 666.
  */
-JSValueRef GetterSetter(JSContextRef ctx, JSObjectRef function,
+JSValueRef TestingGetterSetter(JSContextRef ctx, JSObjectRef function,
                         JSObjectRef thisObject, size_t argumentCount,
                         const JSValueRef arguments[], JSValueRef* exception) {
     SECTION("Testing accessors I/O for input X") {
@@ -157,33 +159,49 @@ JSValueRef GetterSetter(JSContextRef ctx, JSObjectRef function,
 
     return JSValueMakeUndefined(ctx);
 }
-//TODO leak here use JSStringRelease
-static std::string __to_string(JSContextRef context, JSValueRef value) {
-    std::string str;
-    JSStringRef valueAsString = JSValueToStringCopy(context, value, NULL);
 
-    size_t sizeUTF8 = JSStringGetMaximumUTF8CStringSize(valueAsString);
-    str.reserve(sizeUTF8);
-    JSStringGetUTF8CString(valueAsString, str.data(), sizeUTF8);
-    JSStringRelease(valueAsString);
-    return str;
+void TestingEnumeration(std::string& str_param) {
+    const char* payload = "{\"X\":666,\"A\":666,\"B\":666,\"C\":666}";
+    const char* _str = str_param.c_str();
+
+    std::string e1{payload};
+    std::string e2{_str};
+
+    /* Testing that our object support JSON.stringify */
+    SECTION("Testing that enumeration works correctly for object {X,A,B,C}") {
+        REQUIRE(e1 == e2);
+    }
 }
+void TestingExceptionMessage(std::string& str_param) {
+    const char* payload = "Error: No Negative Number Please.";
+    const char* _str = str_param.c_str();
 
-JSValueRef TestPrint(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
-                size_t argumentCount, const JSValueRef arguments[],
-                JSValueRef* exception) {
+    std::string e1{payload};
+    std::string e2{_str};
 
-    auto str = __to_string(ctx, arguments[0]);
-    printf("printing: %s \n", str.c_str());
-    return JSValueMakeUndefined(ctx);
+    /*
+     *  Testing that we can throw errors to the VM instead of crashing the
+     *  whole process.
+     */
+    SECTION("Testing that our JSC object can throw errors to the VM.") {
+        REQUIRE(e1 == e2);
+    }
 }
 
 
 TEST_CASE("Testing Object creation on JavascriptCore.") {
     JSC_VM jsc_vm;
-    jsc_vm.make_gbl_fn("print", &TestPrint);
+
+    /*
+     *  Load print and other functions into the JSC VM.
+     *
+     */
+    TestTools::Load(jsc_vm);
+
     jsc_vm.make_gbl_fn("assert_true", &Test);
-    jsc_vm.make_gbl_fn("test_accessor", &GetterSetter);
+    jsc_vm.make_gbl_fn("test_accessor", &TestingGetterSetter);
+    jsc_vm.make_gbl_fn("assert_enumerate", &TestTools::CaptureStrings<TestingEnumeration>);
+    jsc_vm.make_gbl_fn("assert_exception", &TestTools::CaptureStrings<TestingExceptionMessage>);
 
     /*
      *  JavascriptObject Instantiation and configuration into JSC.
@@ -256,6 +274,9 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
      *  above using T1 struct.
      *
      *  dictionary.hello(true)
+     *
+     *  Finally as part of the test the VM needs to exit in a succeed state, otherwise we mark the test
+     *  as unsuccessful.
      *
      */
     jsc_vm.load_into_vm("./jsc_object.js");

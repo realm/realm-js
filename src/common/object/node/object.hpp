@@ -40,6 +40,18 @@ class JavascriptObject {
     using ObjectAPI = realm::js::Object<T>;
     using Property = realm::js::PropertyAttributes;
 
+    bool remove_key(std::string &key) {
+        int index = -1;
+        for (auto const &_key : keys) {
+            index++;
+            if (key == _key) {
+                keys.erase(keys.begin() + index);
+                return true;
+            }
+        }
+        return false;
+    }
+
    public:
     JavascriptObject(Napi::Env _ctx, std::string name = "js_object")
         : context{_ctx} {
@@ -114,17 +126,6 @@ class JavascriptObject {
 
     std::vector<std::string> &get_properties() { return keys; }
 
-    bool remove_key(std::string &key) {
-        int index = -1;
-        for (auto const &_key : keys) {
-            index++;
-            if (key == _key) {
-                keys.erase(keys.begin() + index);
-                return true;
-            }
-        }
-        return false;
-    }
     void remove_accessor(std::string &key) {
         Napi::Object obj = get();
 

@@ -69,8 +69,8 @@ struct JSC_VM {
         return JSStringCreateWithUTF8CString(str.c_str());
     }
 
-    template <typename FN>
-    JSObjectRef make_gbl_fn(std::string&& fn_name, FN* fn) {
+
+    JSObjectRef make_gbl_fn(std::string&& fn_name, JSObjectCallAsFunctionCallback fn) {
         JSStringRef _fn_name = str(fn_name);
         JSObjectRef _fn =
             JSObjectMakeFunctionWithCallback(globalContext, _fn_name, fn);
@@ -85,6 +85,43 @@ struct JSC_VM {
         JSGlobalContextRelease(globalContext);
         JSContextGroupRelease(group);
     }
+};
+
+struct TestTools{
+
+    static std::string __to_string(JSContextRef context, JSValueRef value) {
+        std::string str;
+        JSStringRef valueAsString = JSValueToStringCopy(context, value, NULL);
+        size_t sizeUTF8 = JSStringGetMaximumUTF8CStringSize(valueAsString);
+        str.reserve(sizeUTF8);
+        JSStringGetUTF8CString(valueAsString, str.data(), sizeUTF8);
+        JSStringRelease(valueAsString);
+        return str;
+    }
+
+    static void Load(JSC_VM& vm){
+        vm.make_gbl_fn("print", &TestTools::Print);
+    }
+
+    static JSValueRef Print(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
+                     size_t argumentCount, const JSValueRef arguments[],
+                     JSValueRef* exception) {
+
+        std::string str = __to_string(ctx, arguments[0]);
+        printf("printing: %s \n", str.c_str());
+        return JSValueMakeUndefined(ctx);
+    }
+
+    template <void callback(std::string&)>
+    static JSValueRef CaptureStrings(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
+                            size_t argumentCount, const JSValueRef arguments[],
+                            JSValueRef* exception) {
+
+        std::string str = __to_string(ctx, arguments[0]);
+        callback(str);
+        return JSValueMakeUndefined(ctx);
+    }
+
 };
 
 
