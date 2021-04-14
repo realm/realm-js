@@ -119,7 +119,7 @@ module.exports = {
                 name: "MixedObject",
                 primaryKey: "_id",
                 properties: {
-                    _id: "objectId?",
+                    _id: "objectId",
                     key: "string",
                     value: "mixed"
                 }

@@ -598,7 +598,13 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
               // see https://github.com/realm/ci/tree/master/realm/docker/mongodb-realm
               // we refrain from using "latest" here to optimise docker pull cost due to a new image being built every day
               // if there's really a new feature you need from the latest stitch, upgrade this manually
-            withRealmCloud(version: dependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: ['auth-integration-tests': "${env.WORKSPACE}/tests/mongodb"]) { networkName ->
+            withRealmCloud(version: dependencies.MDBREALM_TEST_SERVER_TAG, appsToImport: [
+              'auth-integration-tests': "${env.WORKSPACE}/tests/mongodb/common-tests",
+              'pv-int-tests':           "${env.WORKSPACE}/tests/mongodb/pv-int-tests",
+              'pv-string-tests':        "${env.WORKSPACE}/tests/mongodb/pv-string-tests",
+              'pv-objectid-tests':      "${env.WORKSPACE}/tests/mongodb/pv-objectid-tests",
+              'pv-uuid-tests':          "${env.WORKSPACE}/tests/mongodb/pv-uuid-tests"
+              ]) { networkName ->
                 buildSteps("-e MONGODB_REALM_ENDPOINT=\"http://mongodb-realm\" --network=${networkName}")
             }
           } else {
