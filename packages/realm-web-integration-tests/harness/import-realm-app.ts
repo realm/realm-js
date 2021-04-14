@@ -18,7 +18,7 @@
 
 import path from "path";
 
-import { RealmAppImporter } from "realm-app-importer";
+import { AppImporter } from "realm-app-importer";
 
 const MDB_REALM_BASE_URL =
     process.env.MDB_REALM_BASE_URL || "http://localhost:9090";
@@ -39,7 +39,7 @@ export async function importRealmApp() {
         );
         return { appId: MDB_REALM_APP_ID, baseUrl };
     } else {
-        const importer = new RealmAppImporter({
+        const importer = new AppImporter({
             baseUrl,
             username: MDB_REALM_USERNAME,
             password: MDB_REALM_PASSWORD,

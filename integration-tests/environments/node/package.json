@@ -4,7 +4,9 @@
   "description": "Realm JS tests running in a Node.js environment",
   "private": true,
   "scripts": {
-    "test": "mocha --exit index.js"
+    "test": "mocha-remote -- concurrently npm:app-importer npm:start",
+    "start": "node index.js",
+    "app-importer": "realm-app-importer serve ../../realm-apps"
   },
   "dependencies": {
     "command-line-args": "^4.0.6",
@@ -13,10 +15,15 @@
     "mocha": "^8.3.2",
     "mocha-cli": "^1.0.1",
     "mocha-junit-reporter": "^1.18.0",
+    "mocha-remote-cli": "1.0.0",
+    "mocha-remote-client": "1.0.0",
+    "node-fetch": "^2.6.1",
     "realm": "file:../../..",
     "realm-integration-tests": "file:../../tests"
   },
   "devDependencies": {
-    "cmake-js": "^6.1.0"
+    "cmake-js": "^6.1.0",
+    "concurrently": "^6.0.2",
+    "realm-app-importer": "file:../../../packages/realm-app-importer"
   }
 }

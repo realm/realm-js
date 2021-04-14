@@ -20,10 +20,18 @@ import cp from "child_process";
 import fetch from "node-fetch";
 import path from "path";
 import fs from "fs-extra";
+import glob from "glob";
+import deepmerge from "deepmerge";
+
+/**
+ * First level keys are file globs and the values are objects that are spread over the content of the files matching the glob.
+ * @example { "config.json": { name: "overridden-name" }, "services/local-mongodb/rules/*.json": { database: "another-database" } }
+ */
+export type TemplateReplacements = Record<string, Record<string, unknown>>;
 
 /* eslint-disable no-console */
 
-export interface RealmAppImporterOptions {
+export interface AppImporterOptions {
     baseUrl: string;
     username: string;
     password: string;
@@ -32,7 +40,7 @@ export interface RealmAppImporterOptions {
     cleanUp?: boolean;
 }
 
-export class RealmAppImporter {
+export class AppImporter {
     private readonly baseUrl: string;
     private readonly username: string;
     private readonly password: string;
@@ -48,7 +56,7 @@ export class RealmAppImporter {
         realmConfigPath,
         appsDirectoryPath,
         cleanUp = true,
-    }: RealmAppImporterOptions) {
+    }: AppImporterOptions) {
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
@@ -71,8 +79,14 @@ export class RealmAppImporter {
         }
     }
 
+    /**
+     * @param appTemplatePath The path to a template directory containing the configuration files needed to import the app.
+     * @param replacements An object with file globs as keys and a replacement object as values. Allows for just-in-time replacements of configuration parameters.
+     * @returns A promise of an object containing the app id.
+     */
     public async importApp(
         appTemplatePath: string,
+        replacements: TemplateReplacements = {},
     ): Promise<{ appId: string }> {
         const { name: appName } = this.loadAppConfigJson(appTemplatePath);
         await this.logIn();
@@ -98,6 +112,8 @@ export class RealmAppImporter {
         const appPath = path.resolve(this.appsDirectoryPath, appId);
         // Copy over the app template
         this.copyAppTemplate(appPath, appTemplatePath);
+        // Apply any replacements to the files before importing from them
+        this.applyReplacements(appPath, replacements);
 
         // Import
         this.realmCli(
@@ -159,6 +175,24 @@ export class RealmAppImporter {
             fs.copySync(appTemplatePath, appPath, {
                 recursive: true,
             });
+        }
+    }
+
+    private applyReplacements(
+        appPath: string,
+        replacements: TemplateReplacements,
+    ) {
+        for (const [fileGlob, replacement] of Object.entries(replacements)) {
+            console.log(`Applying replacements to ${fileGlob}`);
+            const files = glob.sync(fileGlob, { cwd: appPath });
+            for (const relativeFilePath of files) {
+                const filePath = path.resolve(appPath, relativeFilePath);
+                const content = fs.readJSONSync(filePath);
+                console.log("content before", content);
+                const mergedContent = deepmerge(content, replacement);
+                console.log(filePath, mergedContent);
+                fs.writeJSONSync(filePath, mergedContent, { spaces: 2 });
+            }
         }
     }
 

@@ -28,6 +28,10 @@ if (!global.path) {
     throw new Error("Expected 'path' to be available as a global");
 }
 
+if (!global.fetch) {
+    throw new Error("Expected 'fetch' to be available as a global");
+}
+
 if (!global.environment || typeof global.environment !== "object") {
     throw new Error("Expected 'environment' to be available as a global");
 }
@@ -40,9 +44,10 @@ beforeEach(() => {
     Realm.clearTestState();
 });
 
-require("./realm-constructor");
-require("./serialization");
-require("./objects");
-require("./iterators");
-require("./dynamic-schema-updates");
-require("./bson");
+require("./tests/import-app-util");
+require("./tests/realm-constructor");
+require("./tests/serialization");
+require("./tests/objects");
+require("./tests/iterators");
+require("./tests/dynamic-schema-updates");
+require("./tests/bson");

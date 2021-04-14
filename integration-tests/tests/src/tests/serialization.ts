@@ -26,7 +26,7 @@ import {
     SongSchema as SongSchemaNoId,
     Playlist as PlaylistNoId,
     Song as SongNoId,
-} from "./schemas/playlist-with-songs";
+} from "../schemas/playlist-with-songs";
 import {
     IPlaylist as IPlaylistWithId,
     ISong as ISongWithId,
@@ -34,9 +34,9 @@ import {
     SongSchema as SongSchemaWithId,
     Playlist as PlaylistWithId,
     Song as SongWithId,
-} from "./schemas/playlist-with-songs-with-ids";
-import circularCollectionResult from "./structures/circular-collection-result.json";
-import circularCollectionResultWithIds from "./structures/circular-collection-result-with-primary-ids.json";
+} from "../schemas/playlist-with-songs-with-ids";
+import circularCollectionResult from "../structures/circular-collection-result.json";
+import circularCollectionResultWithIds from "../structures/circular-collection-result-with-primary-ids.json";
 
 describe("JSON serialization (exposed properties)", () => {
     it("JsonSerializationReplacer is exposed on the Realm constructor", () => {

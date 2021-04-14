@@ -16,10 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const { Server } = require("mocha-remote-server");
-const { timeout, TimeoutError } = require("promise-timeout");
 const Yargs = require("yargs");
-const path = require("path");
 
 const rn = require("./react-native-cli");
 const android = require("./android-cli");
@@ -41,7 +38,7 @@ function ensureSimulator(platform, deleteExisting = false) {
             );
         } else {
             // Ensure the device can access the mocha remote server
-            android.adb.reverseServerPort(Server.DEFAULT_CONFIG.port);
+            android.adb.reverseServerPort(process.env.MOCHA_REMOTE_PORT);
         }
     } else if (platform === "ios") {
         const version = xcode.xcrun("--version").stdout.trim();
@@ -109,43 +106,7 @@ function ensureSimulator(platform, deleteExisting = false) {
     }
 }
 
-async function runApp(platform, junitFilePath, isWatching) {
-    if (isWatching) {
-        console.log("Running in watch-mode");
-    }
-
-    const reporterConfig = junitFilePath
-        ? {
-              reporter: "mocha-junit-reporter",
-              reporterOptions: {
-                  mochaFile: junitFilePath,
-              },
-          }
-        : {};
-
-    // Create and start a server
-    const server = new Server({
-        // Accept connections only from the expected platform, to prevent cross-talk when both emulators are open
-        id: platform,
-        autoRun: isWatching,
-        ...reporterConfig,
-    });
-    await server.start();
-
-    // Spawn a react-native metro server
-    const metro = rn.async("start", "--reset-cache" /*, "--verbose"*/);
-    // Kill metro when the process is killed
-    process.on("exit", code => {
-        metro.kill("SIGHUP");
-    });
-    // Close the runner if metro closes unexpectedly
-    metro.on("close", code => {
-        console.error(`Metro server closed (code = ${code})`);
-        if (code !== 0) {
-            process.exit(code);
-        }
-    });
-
+async function runApp(platform) {
     // Ensure the simulator is booted and ready for the app to start
     ensureSimulator(platform);
 
@@ -159,70 +120,21 @@ async function runApp(platform, junitFilePath, isWatching) {
     } else {
         throw new Error(`Unexpected platform: '${platform}'`);
     }
-
-    // Set an interval that calls "react-native run-ios" every minute to make it refetch the bundle if it fails
-    const retryInterval = setInterval(() => {
-        if (platform === "ios") {
-            console.log("Retrying starting the iOS app");
-            // Ask React Native to re-run the ios app
-            rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
-        }
-    }, 60000);
-
-    if (isWatching) {
-        clearInterval(retryInterval);
-    } else {
-        // Run tests with a 5 minute timeout
-        return timeout(
-            new Promise(resolve => {
-                console.log("Running tests 🏃‍");
-                server.run(resolve);
-            }),
-            60000 * 5,
-        ).finally(() => {
-            clearInterval(retryInterval);
-        });
-    }
 }
 
 Yargs.command(
     "$0 <platform>",
     "Run the integration tests",
     yargs => {
-        return yargs
-            .positional("platform", {
-                type: "string",
-                choices: ["ios", "android"],
-            })
-            .option("junit-output-path", {
-                type: "string",
-                coerce: path.resolve,
-            })
-            .option("watch", {
-                alias: "w",
-                type: "boolean",
-            });
+        return yargs.positional("platform", {
+            type: "string",
+            choices: ["ios", "android"],
+        });
     },
     args => {
-        const isWatching = args.watch;
-        runApp(args.platform, args["junit-output-path"], isWatching).then(
-            failures => {
-                if (isWatching) {
-                    console.log("Waiting for mocha-remote-client to connect");
-                } else {
-                    console.log(`Completed running (${failures} failures)`);
-                    // Exit with a non-zero code if we had failures
-                    process.exit(failures > 0 ? 1 : 0);
-                }
-            },
-            err => {
-                if (err instanceof TimeoutError) {
-                    console.error("Timed out running tests");
-                } else {
-                    console.error(err.stack);
-                }
-                process.exit(2);
-            },
-        );
+        runApp(args.platform).catch(err => {
+            console.error(err.stack);
+            process.exit(1);
+        });
     },
 ).help().argv;

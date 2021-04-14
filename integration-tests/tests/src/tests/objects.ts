@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import Realm from "realm";
 
-import { IPerson, Person, PersonSchema } from "./schemas/person-and-dogs";
+import { IPerson, Person, PersonSchema } from "../schemas/person-and-dogs";
 import {
     IPerson as IPersonWithId,
     Person as PersonWithId,
     PersonSchema as PersonSchemaWithId,
-} from "./schemas/person-and-dog-with-object-ids";
+} from "../schemas/person-and-dog-with-object-ids";
 
 describe("Realm objects", () => {
     describe("Interface & object literal", () => {

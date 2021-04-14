@@ -17,9 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // Require this file to get the Realm constructor injected into the global.
-// This is useful when we want to run the tests outside of any particular environment
+// This is only useful when we want to run the tests outside of any particular environment
 
 global.fs = require("fs-extra");
 global.path = require("path");
 global.title = "Realm JS development-mode";
 global.environment = { node: true };
+global.fetch = require("node-fetch");

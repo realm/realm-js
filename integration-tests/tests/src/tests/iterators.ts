@@ -24,7 +24,7 @@ import {
     IDog,
     IPerson,
     PersonSchema
-} from "./schemas/person-and-dogs";
+} from "../schemas/person-and-dogs";
 
 describe("Iterating", () => {
     let realm: Realm;

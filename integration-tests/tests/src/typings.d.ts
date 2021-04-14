@@ -17,6 +17,7 @@ interface Global extends NodeJS.Global {
     path: path;
     environment: Environment;
     require: Require;
+    fetch: typeof fetch;
 }
 
 declare var global: Global;

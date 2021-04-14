@@ -11,24 +11,29 @@
   "main": "app/main.js",
   "scripts": {
     "package": "electron-builder --dir",
-    "start": "electron ./app/main.js",
+    "runner/main": "node runner.js main",
+    "runner/renderer": "node runner.js renderer",
     "test": "npm run test/main && npm run test/renderer",
-    "test/main": "node runner.js main",
-    "test/renderer": "node runner.js renderer"
+    "test/main": "mocha-remote --id main -- concurrently npm:app-importer npm:runner/main",
+    "test/renderer": "mocha-remote --id renderer -- concurrently npm:app-importer npm:runner/renderer",
+    "app-importer": "realm-app-importer serve ../../realm-apps"
   },
   "devDependencies": {
     "cmake-js": "^6.1.0",
     "command-line-args": "^5.1.1",
+    "concurrently": "^6.0.2",
     "electron": "^12.0.1",
     "electron-builder": "^22.10.5",
     "mocha-junit-reporter": "^2.0.0",
     "mocha-remote-cli": "^1.0.0",
-    "mocha-remote-server": "^1.0.0"
+    "mocha-remote-server": "^1.0.0",
+    "realm-app-importer": "file:../../../packages/realm-app-importer"
   },
   "dependencies": {
     "fs-extra": "^9.1.0",
     "mocha": "^8.3.2",
     "mocha-remote-client": "^1.0.0",
+    "node-fetch": "^2.6.1",
     "realm": "file:../../..",
     "realm-integration-tests": "file:../../tests"
   },

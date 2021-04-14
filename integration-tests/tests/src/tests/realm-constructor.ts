@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import Realm from "realm";
 
-import { IPerson, PersonSchema, DogSchema } from "./schemas/person-and-dogs";
+import { IPerson, PersonSchema, DogSchema } from "../schemas/person-and-dogs";
 
 const RealmAsAny = Realm as any;
 

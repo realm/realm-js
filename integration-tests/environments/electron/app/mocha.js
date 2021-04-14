@@ -30,6 +30,7 @@ module.exports = (serverURL, processType) => {
             // Set the Realm global for the tests to use
             global.fs = require("fs-extra");
             global.path = require("path");
+            global.fetch = require("node-fetch");
             global.environment = {
                 electron: process.type === "browser" ? "main" : "renderer",
             };
