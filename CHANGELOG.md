@@ -1,11 +1,15 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* We now make a backup of the realm file prior to any file format upgrade. The backup is retained for 3 months. Backups from before a file format upgrade allows for better analysis of any upgrade failure. We also restore a backup, if a) an attempt is made to open a realm file whith a “future” file format and b) a backup file exist that fits the current file format. ([#4166](https://github.com/realm/realm-core/pull/4166))
+ 
 
 ### Fixed
 * Using node version 15, the error `sh: cmake-js: command not found` will prevent installation. ([#3670](https://github.com/realm/realm-js/issues/3670), since v10.3.0-rc.1)
 * On React Native, calling an aggregate function would fail with error `Not implemented`. ([#3674](https://github.com/realm/realm-js/issues/3674), since v10.2.0)
+* Fixed name aliasing (`mapTo` in schemas) not working in sort/distinct clauses of the query language. ([realm/realm-core#4550](https://github.com/realm/realm-core/issues/4550), never worked)
+* Potential/unconfirmed fix for crashes associated with failure to memory map (low on memory, low on virtual address space). ([realm/realm-core#4514](https://github.com/realm/realm-core/issues/4514))
+* Fixed collection notification reporting for modifications. This could be observed by receiving the wrong indices of modifications on sorted or distinct results, or notification blocks sometimes not being called when only modifications have occured. ([realm/realm-core#4573](https://github.com/realm/realm-core/pull/4573), since v6.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -13,7 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Upgraded Realm Core from v10.5.6 to v10.6.0.
 
 10.3.0 Release notes (2021-3-30)
 =============================================================
