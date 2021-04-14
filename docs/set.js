@@ -27,6 +27,9 @@
  * They can only be modified inside a {@linkplain Realm#write write} transaction.
  * Unlike JavaScript's Set, Realm~Set does NOT make any guarantees about the 
  * traversal order of `values()`, `entries()`, `keys()`, or `forEach` iterations.
+ * If values in a Set are required to have some order, it must be implemented
+ * by the developer by, for example, wrapping values in an object that holds
+ * a user-supplied insertion order.
  *
  * @extends Realm.Collection
  * @memberof Realm
