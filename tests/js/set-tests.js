@@ -24,18 +24,11 @@ function nodeRequire(module) {
     return require_method(module);
 }
 
-
 const Realm = require('realm');
 const TestCase = require('./asserts');
 
-let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
-
-if (isNodeProcess && process.platform === 'win32') {
-    pathSeparator = '\\';
-}
-
 const fs = isNodeProcess ? nodeRequire('fs-extra') : require('react-native-fs');
 
 module.exports = {

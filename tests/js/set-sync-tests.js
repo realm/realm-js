@@ -30,11 +30,6 @@ const TestCase = require('./asserts');
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
-
-if (isNodeProcess && process.platform === 'win32') {
-    pathSeparator = '\\';
-}
-
 const fs = isNodeProcess ? nodeRequire('fs-extra') : require('react-native-fs');
 
 module.exports = {
@@ -73,9 +68,7 @@ module.exports = {
         });
 
         let objects = realm.objects(schema.name);
-        let objcount = objects.length;
-
-        TestCase.assertEqual(objcount, 0, "Table should be empty");
+        TestCase.assertEqual(objects.length, 0, "Table should be empty");
     },
 
 
@@ -124,34 +117,28 @@ module.exports = {
         await realm.syncSession.uploadAllLocalChanges();
 
         let objects = realm.objects(schema.name);
-        let objcount = objects.length;
-        TestCase.assertEqual(objcount, 1, "There should be 1 object");
+        TestCase.assertEqual(objects.length, 1, "There should be 1 object");
 
         // add an element to the Set
         realm.write(() => {
-            let myset = objects[0].intSet.add(5);
+            objects[0].intSet.add(5);
         });
         await realm.syncSession.uploadAllLocalChanges();
 
-        objects = realm.objects(schema.name);
-        objcount = objects.length;
-
         // there should still only be one object
-        TestCase.assertEqual(objcount, 1, "Number of objects should be 1");
+        TestCase.assertEqual(objects.length, 1, "Number of objects should be 1");
         // .. but the object's Set should have two elements
         TestCase.assertEqual(objects[0].intSet.size, 2, "Size of intSet should be 2");
 
         // add an element to the Set, then delete another one
         realm.write(() => {
-            let myset = objects[0].intSet.add(6).delete(2);
+            objects[0].intSet.add(6).delete(2);
         });
         await realm.syncSession.uploadAllLocalChanges();
 
         objects = realm.objects(schema.name);
-        objcount = objects.length;
-
         // there should still only be one object
-        TestCase.assertEqual(objcount, 1, "Number of objects should be 1");
+        TestCase.assertEqual(objects.length, 1, "Number of objects should be 1");
         // .. but the object's Set should have two elements
         TestCase.assertEqual(objects[0].intSet.size, 2, "Size of intSet should be 2");
 
@@ -160,9 +147,8 @@ module.exports = {
         });
         await realm.syncSession.uploadAllLocalChanges();
         objects = realm.objects(schema.name);
-        objcount = objects.length;
         // there should still only be one object
-        TestCase.assertEqual(objcount, 1, "Number of objects should still be 1");
+        TestCase.assertEqual(objects.length, 1, "Number of objects should still be 1");
         // .. but the object's Set should have two elements
         TestCase.assertEqual(objects[0].intSet.size, 0, "Size of intSet should be 0");
 
@@ -200,11 +186,11 @@ module.exports = {
             realm.deleteAll();
         });
 
-        const integerSet = [1, 2, 3, 4, 5, 6, 7];
+        const integerArray = [1, 2, 3, 4, 5, 6, 7];
         realm.write(() => {
             realm.create(schema.name, {
                 _id: 0,
-                intSet: integerSet
+                intSet: integerArray
             });
         });
         // make sure everything is synced upstream
@@ -214,13 +200,11 @@ module.exports = {
         let integers = realm.objects(schema.name)[0];
         TestCase.assertEqual(integers.intSet.size, 7, "There should be 7 integers");
 
-        const realmPath = realm.path;
-
-        realm.close();
-
         // make sure we don't have a local copy of the realm
-        fs.unlinkSync(realmPath);
+        realm.close();
+        Realm.deleteFile(config);
 
+        // create a new local realm and sync from server
         const syncedRealm = await Realm.open(config)
         await syncedRealm.syncSession.downloadAllServerChanges();
 
@@ -229,13 +213,16 @@ module.exports = {
         TestCase.assertEqual(syncedIntegers.size, 7, "There still should be 7 integers");
 
         const intsValues = Array.from(syncedIntegers.values());
-        const sameInts = intsValues.map((value, index) => {
-            return value == integerSet[index];
+        let locatedElements = 0;
+        // make sure that every element pulled from the database is also
+        // in the original array (this only works because all values in integerArray
+        // are unique)
+        intsValues.forEach(dbValue => {
+            if (integerArray.find(arrrayValue => arrrayValue == dbValue)) {
+                locatedElements++;
+            }
         });
-        const isSameInts = sameInts.reduce((prev, curr) => {
-            return prev && curr;
-        });
-        TestCase.assertTrue(isSameInts, "Downloaded integers should be the same as uploaded integers");
+        TestCase.assertEqual(locatedElements, integerArray.length, "Downloaded integers should be the same as uploaded integers");
 
         // clean up the objects we created
         syncedRealm.write(() => {
