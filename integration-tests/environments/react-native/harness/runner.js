@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const Yargs = require("yargs");
-
 const rn = require("./react-native-cli");
 const android = require("./android-cli");
 const xcode = require("./xcode-cli");
@@ -39,6 +37,8 @@ function ensureSimulator(platform, deleteExisting = false) {
         } else {
             // Ensure the device can access the mocha remote server
             android.adb.reverseServerPort(process.env.MOCHA_REMOTE_PORT);
+            // Ensure the Realm App Importer is reachable
+            android.adb.reverseServerPort(8091);
         }
     } else if (platform === "ios") {
         const version = xcode.xcrun("--version").stdout.trim();
@@ -122,19 +122,10 @@ async function runApp(platform) {
     }
 }
 
-Yargs.command(
-    "$0 <platform>",
-    "Run the integration tests",
-    yargs => {
-        return yargs.positional("platform", {
-            type: "string",
-            choices: ["ios", "android"],
-        });
-    },
-    args => {
-        runApp(args.platform).catch(err => {
-            console.error(err.stack);
-            process.exit(1);
-        });
-    },
-).help().argv;
+if (module.parent === null) {
+    const platform = process.env.PLATFORM;
+    runApp(platform).catch(err => {
+        console.error(err.stack);
+        process.exit(1);
+    });
+}
