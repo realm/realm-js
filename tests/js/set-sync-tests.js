@@ -238,6 +238,11 @@ module.exports = {
         });
         TestCase.assertTrue(isSameInts, "Downloaded integers should be the same as uploaded integers");
 
+        // clean up the objects we created
+        syncedRealm.write(() => {
+            syncedRealm.deleteAll();
+        });
+        await syncedRealm.syncSession.uploadAllLocalChanges();
         realm.close();
     },
 };  // module.exports
