@@ -499,7 +499,7 @@ class Realm {
  * @property {Realm.List} "list" - Property may be assigned any ordered collection
  *   (e.g. `Array`, {@link Realm.List}, {@link Realm.Results}) of objects all matching the
  *   `objectType` specified in the {@link Realm~ObjectSchemaProperty ObjectSchemaProperty}.
- * @property {Realm.Set} "set" - Prpperty may be assigned an array (e.g., `Array`) of objects all matching the
+ * @property {Realm.Set} "set" - Property may be assigned an array (e.g., `Array`) of objects all matching the
  *   `objectType` specified in the {@link Realm~ObjectSchemaProperty ObjectSchemaProperty}.
  * @property {Realm.Results} "linkingObjects" - Property is read-only and always returns a {@link Realm.Results}
  *   of all the objects matching the `objectType` that are linking to the current object
