@@ -26,7 +26,6 @@
 #include <iostream>
 #include <vector>
 
-#include "common/object/error_handling.hpp"
 #include "common/object/interfaces.hpp"
 #include "realm/object-store/shared_realm.hpp"
 
@@ -75,12 +74,7 @@ class JavascriptObject {
         ObjectObserver *observer = _private->observer;
         IOCollection *collection = _private->collection;
 
-        try {
-            cb({ctx, observer, collection, argumentCount, _arguments});
-        } catch (InvalidTransactionException &error) {
-            *exception = _throw_error(ctx, error.what());
-        }
-
+        cb({ctx, observer, collection, argumentCount, _arguments});
         return JSValueMakeUndefined(ctx);
     }
 

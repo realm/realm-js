@@ -113,7 +113,7 @@ struct TestTools{
     }
 
     template <void callback(std::string&)>
-    static JSValueRef CaptureStrings(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
+    static JSValueRef SimpleJSStringFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
                             size_t argumentCount, const JSValueRef arguments[],
                             JSValueRef* exception) {
 

@@ -19,7 +19,6 @@
 #pragma once
 
 #include "common/collection.hpp"
-#include "common/object/error_handling.hpp"
 #include "methods.hpp"
 #include "napi.h"
 #include "subscriber.hpp"

@@ -200,8 +200,8 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
 
     jsc_vm.make_gbl_fn("assert_true", &Test);
     jsc_vm.make_gbl_fn("test_accessor", &TestingGetterSetter);
-    jsc_vm.make_gbl_fn("assert_enumerate", &TestTools::CaptureStrings<TestingEnumeration>);
-    jsc_vm.make_gbl_fn("assert_exception", &TestTools::CaptureStrings<TestingExceptionMessage>);
+    jsc_vm.make_gbl_fn("assert_enumerate", &TestTools::SimpleJSStringFunction<TestingEnumeration>);
+    jsc_vm.make_gbl_fn("assert_exception", &TestTools::SimpleJSStringFunction<TestingExceptionMessage>);
 
     /*
      *  JavascriptObject Instantiation and configuration into JSC.
