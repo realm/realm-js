@@ -1,14 +1,15 @@
+import { App } from "realm";
 import { expect } from "chai";
 
-import { importApp } from "../utils/app-importer";
+import { importApp } from "../utils/import-app";
 
 describe("importApp utility", function() {
   this.slow(2000);
 
   it("can import an app", async () => {
-    const appId = await importApp("simple");
-    expect(typeof appId).equals("string");
-    expect(appId.startsWith("simple")).equals(true);
+    const app = await importApp("simple");
+    expect(app).instanceOf(App);
+    expect(app.id.startsWith("simple")).equals(true);
   });
 
   it("throws on unexpected app names", async () => {
