@@ -148,20 +148,6 @@ stage('test') {
   parallel parallelExecutors
 }
 
-stage('prepare integration tests') {
-  parallel(
-    'Build integration tests': buildLinux {
-      sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
-      dir('integration-tests/tests') {
-        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
-        sh "../../scripts/nvm-wrapper.sh ${nodeTestVersion} npm pack"
-        sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
-        stash includes: 'realm-integration-tests.tgz', name: 'integration-tests-tgz'
-      }
-    }
-  )
-}
-
 stage('integration tests') {
   parallel(
     'Node.js on Mac':       buildMacOS { nodeIntegrationTests(nodeTestVersion, it) },
@@ -189,17 +175,14 @@ def nodeIntegrationTests(nodeVersion, platform) {
   unstash "prebuild-${platform}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
-  dir('integration-tests') {
-    // Renaming the package to avoid having to specify version in the apps package.json
-    sh 'mv realm-*.tgz realm.tgz'
-    // Unstash the integration tests package
-    unstash 'integration-tests-tgz'
-  }
-
   dir('integration-tests/environments/node') {
     sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
     try {
-      sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm test -- --reporter mocha-junit-reporter"
+      withEnv([
+        "MOCHA_REMOTE_REPORTER=mocha-junit-reporter",
+      ]) {
+        sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm test"
+      }
     } finally {
       junit(
         allowEmptyResults: true,
@@ -218,21 +201,25 @@ def electronIntegrationTests(electronVersion, platform) {
   unstash "prebuild-${platform}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
-  dir('integration-tests') {
-    // Renaming the package to avoid having to specify version in the apps package.json
-    sh 'mv realm-*.tgz realm.tgz'
-    // Unstash the integration tests package
-    unstash 'integration-tests-tgz'
-  }
-
   // On linux we need to use xvfb to let up open GUI windows on the headless machine
   def commandPrefix = platform == 'linux-x64' ? 'xvfb-run ' : ''
 
   dir('integration-tests/environments/electron') {
     sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
     try {
-      sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} ${commandPrefix} npm run test/main -- main-test-results.xml"
-      sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} ${commandPrefix} npm run test/renderer -- renderer-test-results.xml"
+      withEnv([
+        "MOCHA_REMOTE_REPORTER=mocha-junit-reporter",
+        "MOCHA_REMOTE_REPORTER_OPTIONS=mochaFile=main-test-results.xml"
+      ]) {
+        sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} ${commandPrefix} npm run test/main"
+      }
+      
+      withEnv([
+        "MOCHA_REMOTE_REPORTER=mocha-junit-reporter",
+        "MOCHA_REMOTE_REPORTER_OPTIONS=mochaFile=renderer-test-results.xml"
+      ]) {
+        sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} ${commandPrefix} npm run test/renderer"
+      }
     } finally {
       junit(
         allowEmptyResults: true,
@@ -263,16 +250,6 @@ def reactNativeIntegrationTests(targetPlatform) {
     }
   }
 
-  // Pack up Realm JS into a .tar
-  sh "${nvm} npm pack"
-
-  dir('integration-tests') {
-    // Renaming the package to avoid having to specify version in the apps package.json
-    sh 'mv ../realm-*.tgz realm.tgz'
-    // Unstash the integration tests package
-    unstash 'integration-tests-tgz'
-  }
-
   dir('integration-tests/environments/react-native') {
     sh "${nvm} npm install"
 
@@ -289,7 +266,9 @@ def reactNativeIntegrationTests(targetPlatform) {
 
     timeout(30) { // minutes
       try {
-        sh "${nvm} npm run test/${targetPlatform} -- --junit-output-path test-results.xml"
+        withEnv([ "MOCHA_REMOTE_REPORTER=mocha-junit-reporter" ]) {
+          sh "${nvm} npm run test/${targetPlatform}"
+        }
       } finally {
         junit(
           allowEmptyResults: true,
