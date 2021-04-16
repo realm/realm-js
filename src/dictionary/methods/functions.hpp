@@ -20,7 +20,7 @@
 #include "common/object/interfaces.hpp"
 
 #include "dictionary/collection/notification.hpp"
-#include "dictionary/methods/dictionary_changes_subscriber.hpp"
+#include "dictionary/methods/subscriber.hpp"
 
 namespace realm {
 namespace js {

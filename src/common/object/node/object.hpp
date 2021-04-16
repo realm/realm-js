@@ -135,6 +135,11 @@ class JavascriptObject {
     }
 
     Napi::Object get() { return ref_object.Value(); }
+
+    bool is_alive(){
+        return !get().IsUndefined();
+    }
+
     Napi::Object create() {
         // Only necessary to keep compatibility with the JSCore.
         return get();

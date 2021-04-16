@@ -204,6 +204,10 @@ class JavascriptObject {
         private_object->observer = observer;
     }
 
+    bool is_alive(){
+        return JSValueIsUndefined(context, object);
+    }
+
     JSObjectRef get() { return object; }
 
     JSObjectRef create() {

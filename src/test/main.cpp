@@ -49,8 +49,7 @@ struct MockedGetterSetter {
         return JSValueMakeNumber(args.context, collection->get(args.property_name).get_double());
     }
 
-    ~MockedGetterSetter(){
-    }
+    ~MockedGetterSetter(){}
 };
 
 struct TNull : public ObjectObserver {
@@ -59,9 +58,9 @@ struct TNull : public ObjectObserver {
 
 struct T1 : public ObjectObserver {
     int call_count = 0;
-    void subscribe(Subscriber*) { call_count++; }
+    void subscribe(std::unique_ptr<Subscriber>) { call_count++; }
 
-    void remove_subscription(const Subscriber*) {
+    void remove_subscription(std::unique_ptr<Subscriber>) {
         call_count++;
         // Making Sure that unsubscribe_all & subscribe has been successfully
         // invoked.

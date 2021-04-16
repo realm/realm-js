@@ -101,8 +101,13 @@ struct JSObject : public ObjectObserver {
     void update(Realm_ChangeSet& change_set) {
         /* This is necessary for NodeJS. */
         HANDLESCOPE(context)
-        builder->add_accessors(javascript_object, collection->data());
-        builder->remove_accessors(javascript_object, collection.get());
+
+        // This is to control when JS-VM is shutting down but they are still updates pending by Realm.
+        // We basically ignore any update if the object has been disposed.
+        if(javascript_object.is_alive()) {
+            builder->add_accessors(javascript_object, collection->data());
+            builder->remove_accessors(javascript_object, collection.get());
+        }
     }
 
     ObjectType build() {

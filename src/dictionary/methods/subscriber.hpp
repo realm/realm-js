@@ -39,13 +39,9 @@ struct DictionaryChangesSubscriber : public Subscriber {
         : fn{_context, _fn},
           context{Context<T>::get_global_context(_context)} {}
 
-    DictionaryChangesSubscriber(DictionaryChangesSubscriber&& _subscriber){
-        std::cout << "Moving!? \n";
-    }
+    DictionaryChangesSubscriber(DictionaryChangesSubscriber&& _subscriber){}
 
-    DictionaryChangesSubscriber(DictionaryChangesSubscriber& _subscriber){
-        std::cout << "Copying!? \n";
-    }
+    DictionaryChangesSubscriber(DictionaryChangesSubscriber& _subscriber){}
 
     template <typename Collection>
     auto build_array(Collection &collection) const {
