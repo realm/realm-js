@@ -27,15 +27,15 @@
     "mocha-junit-reporter": "^2.0.0",
     "mocha-remote-cli": "^1.1.0",
     "mocha-remote-server": "^1.0.0",
-    "realm-app-importer": "file:../../../packages/realm-app-importer"
+    "realm-app-importer": "*"
   },
   "dependencies": {
     "fs-extra": "^9.1.0",
     "mocha": "^8.3.2",
     "mocha-remote-client": "^1.0.0",
     "node-fetch": "^2.6.1",
-    "realm": "file:../../..",
-    "realm-integration-tests": "file:../../tests"
+    "realm": "*",
+    "realm-integration-tests": "*"
   },
   "build": {
     "appId": "io.realm.realm-js.electron-tests",

@@ -24,11 +24,11 @@
     "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
     "node-fetch": "^2.6.1",
-    "realm": "file:../..",
-    "realm-app-importer": "file:../../packages/realm-app-importer",
+    "realm": "*",
+    "realm-app-importer": "*",
     "ts-mocha": "^6.0.0",
     "tslint": "^6.1.3",
-    "typescript": "^3.8.2"
+    "typescript": "^4.2.4"
   },
   "dependencies": {
     "chai": "^4.2.0"

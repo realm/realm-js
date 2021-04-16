@@ -18,12 +18,12 @@
     "mocha-remote-cli": "1.1.0",
     "mocha-remote-client": "1.0.0",
     "node-fetch": "^2.6.1",
-    "realm": "file:../../..",
-    "realm-integration-tests": "file:../../tests"
+    "realm": "*",
+    "realm-integration-tests": "*"
   },
   "devDependencies": {
     "cmake-js": "^6.1.0",
     "concurrently": "^6.0.2",
-    "realm-app-importer": "file:../../../packages/realm-app-importer"
+    "realm-app-importer": "*"
   }
 }

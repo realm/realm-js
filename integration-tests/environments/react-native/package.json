@@ -1,9 +1,9 @@
 {
-  "name": "realmreactnativetests",
+  "name": "realm-react-native-tests",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "postinstall": "install-local && npm run pod-install",
+    "prepare": "install-local && npm run pod-install",
     "pod-install": "cd ios && pod install",
     "test": "npm run test/android && npm run test/ios",
     "test/ios": "PLATFORM=ios WATCH=false npm run common",
@@ -27,12 +27,15 @@
     "react-native-fs": "^2.16.6",
     "react-native-progress": "^4.1.2"
   },
+  "peerDependencies": {
+    "realm": "*",
+    "realm-integration-tests": "*"
+  },
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/runtime": "^7.12.5",
     "@react-native-community/eslint-config": "^2.0.0",
     "babel-jest": "^26.6.3",
-    "cmake-js": "file:/../../../node_modules/cmake-js",
     "concurrently": "^6.0.2",
     "eslint": "7.14.0",
     "fs-extra": "^9.1.0",
@@ -40,7 +43,7 @@
     "metro-react-native-babel-preset": "^0.64.0",
     "mocha-remote-cli": "^1.1.0",
     "react-test-renderer": "17.0.1",
-    "realm-app-importer": "file:../../../packages/realm-app-importer"
+    "realm-app-importer": "*"
   },
   "localDependencies": {
     "realm": "../../..",

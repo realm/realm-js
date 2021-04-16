@@ -4,20 +4,18 @@
   "description": "A wrapper module that can install and run Realm JS tests in various environments",
   "private": true,
   "scripts": {
-    "postinstall": "npm run realm/pack && npm run tests/install && npm run tests/pack && npm run environments/install",
-    "start": "cd tests && npm start --",
-    "lint": "npm run tests/lint && npm run environments/lint",
-    "test": "npm run environments/test",
-    "tests/install": "cd tests && npm ci",
-    "tests/lint": "npm run lint --prefix tests",
-    "tests/pack": "npm pack ./tests && mv realm-integration-tests-*.tgz realm-integration-tests.tgz",
-    "realm/pack-internal": "npm pack .. && mv realm-*.*.*.tgz realm.tgz",
-    "realm/pack": "npm run realm/pack-internal",
-    "environments/install": "node environments 'npm install'",
-    "environments/lint": "node environments 'eslint **/*.js'",
-    "environments/test": "node environments 'npm test'"
+    "start": "npm start --prefix ./tests --",
+    "skippostinstall": "concurrently -m 1 npm:install/*",
+    "install/tests": "npm install --ignore-scripts --prefix ./tests",
+    "install/node": "npm install --prefix environments/node",
+    "install/electron": "npm install --prefix environments/electron",
+    "install/react-native": "npm install --prefix environments/react-native",
+    "test": "concurrently -m 1 npm:test/*",
+    "test/node": "npm test --prefix environments/node",
+    "test/electron": "npm test --prefix environments/electron",
+    "test/react-native": "npm test --prefix environments/react-native"
   },
   "devDependencies": {
-    "concurrently": "^4.1.0"
+    "concurrently": "^6.0.2"
   }
 }
