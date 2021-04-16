@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "start": "react-native start",
     "prepare": "install-local && npm run pod-install",
     "pod-install": "cd ios && pod install",
     "test": "npm run test/android && npm run test/ios",
