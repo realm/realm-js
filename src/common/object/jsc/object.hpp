@@ -205,7 +205,7 @@ class JavascriptObject {
     }
 
     bool is_alive(){
-        return JSValueIsUndefined(context, object);
+        return object != nullptr;
     }
 
     JSObjectRef get() { return object; }

@@ -56,6 +56,8 @@ struct JSObject : public ObjectObserver {
         collection->on_change([=](collection::Notification notification) {
             update(notification);
 
+            // This is to control when JS-VM is shutting down but they are still updates pending by Realm.
+            // We basically ignore any update if the object has been disposed.
             if(notification.from_realm){
                 notify_subscribers(notification);
             }
