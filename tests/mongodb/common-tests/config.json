@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD:tests/mongodb/config.json
-    "app_id": "auth-integration-tests-bhnql",
-=======
-    "app_id": "auth-integration-tests-pntad",
->>>>>>> develop:tests/mongodb/common-tests/config.json
+    "app_id": "auth-integration-tests-fevvt",
     "config_version": 20200603,
     "name": "auth-integration-tests",
     "location": "US-VA",
