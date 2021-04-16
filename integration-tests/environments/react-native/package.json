@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "react-native start",
-    "prepare": "install-local && npm run pod-install",
+    "prepare": "install-local && npm run link-ios-framework && npm run pod-install",
+    "link-ios-framework": "rm -rf node_modules/realm/react-native/ios/realm-js-ios.xcframework && ln -s ../../../../../../../react-native/ios/realm-js-ios.xcframework node_modules/realm/react-native/ios/realm-js-ios.xcframework",
     "pod-install": "cd ios && pod install",
     "test": "npm run test/android && npm run test/ios",
     "test/ios": "PLATFORM=ios WATCH=false npm run common",
@@ -26,9 +27,7 @@
     "react": "17.0.1",
     "react-native": "0.64.0",
     "react-native-fs": "^2.16.6",
-    "react-native-progress": "^4.1.2"
-  },
-  "peerDependencies": {
+    "react-native-progress": "^4.1.2",
     "realm": "*",
     "realm-integration-tests": "*"
   },
