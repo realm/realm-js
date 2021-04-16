@@ -39,13 +39,13 @@ module.exports = {
         if (!global.enableSyncTests) return;
 
         const schema = {
-            name: "SyncedSetInt",
+            name: "SyncedNumbers",
             primaryKey: "_id",
             properties: {
                 _id: "int",
-                intSet: "int<>",
+                numbers: "int<>",
             }
-        }
+        };
 
         const appConfig = AppConfig.integrationAppConfig;
         const app = new Realm.App(appConfig);
@@ -60,9 +60,8 @@ module.exports = {
             },
             schema: [schema]
         };
+
         const realm = await Realm.open(config);
-
-
         realm.write(() => {
             realm.deleteAll();
         });
@@ -71,7 +70,6 @@ module.exports = {
         TestCase.assertEqual(objects.length, 0, "Table should be empty");
     },
 
-
     //
     // test that deletions and additions to a Set are propagated correctly through Sync
     async testSetSyncedAddDelete() {
@@ -79,11 +77,11 @@ module.exports = {
         if (!global.enableSyncTests) return;
 
         const schema = {
-            name: "SyncedSetInt",
+            name: "SyncedNumbers",
             primaryKey: "_id",
             properties: {
                 _id: "int",
-                intSet: "int<>",
+                numbers: "int<>",
             }
         }
         
@@ -110,7 +108,7 @@ module.exports = {
         realm.write(() => {
             realm.create(schema.name, { 
                 _id: 77,
-                intSet: [2],
+                numbers: [2],
               });  
         });
 
@@ -121,18 +119,18 @@ module.exports = {
 
         // add an element to the Set
         realm.write(() => {
-            objects[0].intSet.add(5);
+            objects[0].numbers.add(5);
         });
         await realm.syncSession.uploadAllLocalChanges();
 
         // there should still only be one object
         TestCase.assertEqual(objects.length, 1, "Number of objects should be 1");
         // .. but the object's Set should have two elements
-        TestCase.assertEqual(objects[0].intSet.size, 2, "Size of intSet should be 2");
+        TestCase.assertEqual(objects[0].numbers.size, 2, "Size of `numbers` should be 2");
 
         // add an element to the Set, then delete another one
         realm.write(() => {
-            objects[0].intSet.add(6).delete(2);
+            objects[0].numbers.add(6).delete(2);
         });
         await realm.syncSession.uploadAllLocalChanges();
 
@@ -140,17 +138,17 @@ module.exports = {
         // there should still only be one object
         TestCase.assertEqual(objects.length, 1, "Number of objects should be 1");
         // .. but the object's Set should have two elements
-        TestCase.assertEqual(objects[0].intSet.size, 2, "Size of intSet should be 2");
+        TestCase.assertEqual(objects[0].numbers.size, 2, "Size of `numbers` should be 2");
 
         realm.write(() => {
-            objects[0].intSet.clear();
+            objects[0].numbers.clear();
         });
         await realm.syncSession.uploadAllLocalChanges();
         objects = realm.objects(schema.name);
         // there should still only be one object
         TestCase.assertEqual(objects.length, 1, "Number of objects should still be 1");
         // .. but the object's Set should have two elements
-        TestCase.assertEqual(objects[0].intSet.size, 0, "Size of intSet should be 0");
+        TestCase.assertEqual(objects[0].numbers.size, 0, "Size of `numbers` should be 0");
 
         realm.close();
     },
@@ -159,11 +157,11 @@ module.exports = {
         if (!global.enableSyncTests) return;
 
         const schema = {
-            name: "SyncedSetInt",
+            name: "SyncedNumbers",
             primaryKey: "_id",
             properties: {
                 _id: "int",
-                intSet: "int<>",
+                numbers: "int<>",
             }
         };
 
@@ -190,7 +188,7 @@ module.exports = {
         realm.write(() => {
             realm.create(schema.name, {
                 _id: 0,
-                intSet: integerArray
+                numbers: integerArray
             });
         });
         // make sure everything is synced upstream
@@ -198,7 +196,7 @@ module.exports = {
 
         // make sure everything is in the database
         let integers = realm.objects(schema.name)[0];
-        TestCase.assertEqual(integers.intSet.size, 7, "There should be 7 integers");
+        TestCase.assertEqual(integers.numbers.size, 7, "There should be 7 integers");
 
         // make sure we don't have a local copy of the realm
         realm.close();
@@ -209,7 +207,7 @@ module.exports = {
         await syncedRealm.syncSession.downloadAllServerChanges();
 
         // check that our set of integers is the same as before
-        let syncedIntegers = syncedRealm.objects(schema.name)[0].intSet;
+        let syncedIntegers = syncedRealm.objects(schema.name)[0].numbers;
         TestCase.assertEqual(syncedIntegers.size, 7, "There still should be 7 integers");
 
         const intsValues = Array.from(syncedIntegers.values());
