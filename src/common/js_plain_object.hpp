@@ -16,19 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef JS_DICTIONARY_HEADER
-#define JS_DICTIONARY_HEADER
-
 #include <iostream>
 
 #include "object/interfaces.hpp"
 #include "object/strategies.hpp"
 
 #pragma once
-
-#if REALM_ANDROID
-#include <android/log.h>
-#endif
 
 namespace realm {
 namespace js {
@@ -50,7 +43,7 @@ struct JSObject : public ObjectObserver {
 
     std::unique_ptr<Builder> builder;
     std::unique_ptr<Collection> collection;
-    std::vector<Subscriber*> subscribers;
+    std::vector<std::unique_ptr<Subscriber>> subscribers;
     common::JavascriptObject<GetterSetters> javascript_object;
 
    public:
@@ -79,12 +72,12 @@ struct JSObject : public ObjectObserver {
         waiting_for_notifications = collection->watch();
     }
 
-    void subscribe(Subscriber* subscriber) {
-        subscribers.push_back(subscriber);
+    void subscribe(std::unique_ptr<Subscriber> subscriber) {
+        subscribers.push_back(std::move(subscriber));
         watch_collection();
     }
 
-    void remove_subscription(const Subscriber* subscriber) {
+    void remove_subscription(std::unique_ptr<Subscriber> subscriber) {
         int index = -1;
         for (auto const& candidate : subscribers) {
             index++;
@@ -99,7 +92,7 @@ struct JSObject : public ObjectObserver {
 
     void notify_subscribers(collection::Notification notification){
         HANDLESCOPE(context)
-        for (Subscriber* subscriber : subscribers) {
+        for (auto& subscriber : subscribers) {
             subscriber->notify(javascript_object.get(), notification.change_set);
         }
     }
@@ -132,5 +125,3 @@ struct JSObject : public ObjectObserver {
 };
 }  // namespace js
 }  // namespace realm
-
-#endif

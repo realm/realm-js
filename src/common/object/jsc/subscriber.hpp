@@ -27,10 +27,8 @@
 
 struct Subscriber {
     virtual void notify(JSObjectRef, realm::DictionaryChangeSet &) = 0;
-    virtual bool equals(const Subscriber *) const = 0;
+    virtual bool equals(std::unique_ptr<Subscriber>&) const = 0;
     virtual JSValueRef callback() const = 0;
-
-    // TODO
-    // virtual ~Subscriber() = 0;
+    virtual ~Subscriber() = default;
 };
 

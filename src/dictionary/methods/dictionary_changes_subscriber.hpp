@@ -22,7 +22,7 @@ namespace realm {
 namespace js {
 
 template <typename T>
-struct NotificationsCallback : public Subscriber {
+struct DictionaryChangesSubscriber : public Subscriber {
     using ObjectType = typename T::Object;
     using FunctionType = typename T::Function;
     using ValueType = typename T::Value;
@@ -35,9 +35,17 @@ struct NotificationsCallback : public Subscriber {
     PFunction fn;
     PGlobalContext context;
 
-    NotificationsCallback(ContextType &_context, FunctionType &_fn)
+    DictionaryChangesSubscriber(ContextType &_context, FunctionType &_fn)
         : fn{_context, _fn},
           context{Context<T>::get_global_context(_context)} {}
+
+    DictionaryChangesSubscriber(DictionaryChangesSubscriber&& _subscriber){
+        std::cout << "Moving!? \n";
+    }
+
+    DictionaryChangesSubscriber(DictionaryChangesSubscriber& _subscriber){
+        std::cout << "Copying!? \n";
+    }
 
     template <typename Collection>
     auto build_array(Collection &collection) const {
@@ -50,7 +58,7 @@ struct NotificationsCallback : public Subscriber {
         return Object::create_array(context, values);
     }
 
-    bool operator==(const NotificationsCallback<T> &candidate) const {
+    bool operator==(const DictionaryChangesSubscriber<T> &candidate) const {
         return static_cast<FunctionType>(fn) ==
                static_cast<FunctionType>(candidate.fn);
     }
@@ -72,7 +80,7 @@ struct NotificationsCallback : public Subscriber {
         return static_cast<FunctionType>(fn);
     }
 
-    bool equals(const Subscriber *rhs) const{
+    bool equals(std::unique_ptr<Subscriber>& rhs) const{
         return (callback() == rhs->callback());
     }
 
@@ -81,6 +89,7 @@ struct NotificationsCallback : public Subscriber {
         Function<T>::callback(context, fn, object, 2,
                               arguments);
     }
+    ~DictionaryChangesSubscriber(){}
 };
 
 }  // namespace js

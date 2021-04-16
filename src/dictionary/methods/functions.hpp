@@ -20,8 +20,7 @@
 #include "common/object/interfaces.hpp"
 
 #include "dictionary/collection/notification.hpp"
-#include "dictionary/methods/callbacks.hpp"
-
+#include "dictionary/methods/dictionary_changes_subscriber.hpp"
 
 namespace realm {
 namespace js {
@@ -33,6 +32,7 @@ class MethodsForDictionary {
     using ContextType = typename T::Context;
     using ValueType = typename T::Value;
     using JSMixedAPI = TypeMixed<T>;
+    using Subscriber = DictionaryChangesSubscriber<T>;
 
    public:
     template <typename Fn>
@@ -51,9 +51,8 @@ class MethodsForDictionary {
         ObjectObserver *observer = arguments.observer;
         std::string error_msg =  "A callback function is required.";
 
-        auto fn = js::Value<T>::validated_to_function(context, arguments.get(0, error_msg));
-        auto *subscriber = new NotificationsCallback<T>{context, fn};
-        observer->subscribe(subscriber);
+        auto callback = js::Value<T>::validated_to_function(context, arguments.get(0, error_msg));
+        observer->subscribe(std::make_unique<Subscriber>(context, callback));
     }
 
     static void remove_listener(method::Arguments arguments) {
@@ -62,8 +61,7 @@ class MethodsForDictionary {
         std::string error_msg =  "A callback function is required.";
 
         auto callback = js::Value<T>::validated_to_function(context,  arguments.get(0, error_msg));
-        auto *subscriber = new NotificationsCallback<T>{context, callback};
-        observer->remove_subscription(subscriber);
+        observer->remove_subscription(std::make_unique<Subscriber>(context, callback));
     }
 
     static void remove_all_listeners(method::Arguments arguments) {

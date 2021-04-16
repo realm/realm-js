@@ -21,7 +21,6 @@
 
 #include "dictionary/collection/notification.hpp"
 #include "common/collection.hpp"
-#include "common/object/error_handling.hpp"
 #include "js_mixed.hpp"
 
 namespace realm {

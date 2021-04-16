@@ -19,7 +19,7 @@
 #pragma once
 
 struct ObjectObserver {
-    virtual void subscribe(Subscriber *) = 0;
-    virtual void remove_subscription(const Subscriber *) = 0;
+    virtual void subscribe(std::unique_ptr<Subscriber>) = 0;
+    virtual void remove_subscription(std::unique_ptr<Subscriber>) = 0;
     virtual void unsubscribe_all() = 0;
 };

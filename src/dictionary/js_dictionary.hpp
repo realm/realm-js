@@ -44,6 +44,7 @@ class DictionaryAdapter {
         auto *js_dictionary = new JSDictionary{context, dictionary};
 
         js_dictionary->setup_finalizer([=]() {
+            std::cout << "dictionary object deleted! \n";
             delete js_dictionary;
         });
 

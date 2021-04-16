@@ -20,12 +20,10 @@
 #include "realm/object-store/dictionary.hpp"
 
 struct Subscriber {
-    virtual void notify(Napi::Object, realm::DictionaryChangeSet &) = 0;
-    virtual bool equals(const Subscriber *) const = 0;
+    virtual void notify(Napi::Object, realm::DictionaryChangeSet&) = 0;
+    virtual bool equals(std::unique_ptr<Subscriber>&) const = 0;
     virtual Napi::Function callback() const = 0;
-
-    // TODO
-    // virtual ~Subscriber() = 0;
+    virtual ~Subscriber() = default;
 };
 
 
