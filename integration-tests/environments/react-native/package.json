@@ -29,6 +29,10 @@
     "react-native-fs": "^2.16.6",
     "react-native-progress": "^4.1.2"
   },
+  "peerDependencies": {
+    "realm": "*",
+    "realm-integration-tests": "*"
+  },
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/runtime": "^7.12.5",
