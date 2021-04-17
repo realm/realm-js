@@ -4,8 +4,7 @@
     "packages/*",
     "integration-tests",
     "integration-tests/tests",
-    "integration-tests/environments/node",
-    "integration-tests/environments/electron"
+    "integration-tests/environments/*"
   ],
   "version": "independent"
 }
