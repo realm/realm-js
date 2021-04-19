@@ -2,7 +2,11 @@
 
 Imports an app directory into MongoDB Realm (formerly known as Stitch).
 
-This CLI works around a few shortcomings of the official Realm CLI - most notably around import of apps referencing secrets. When importing an app, the server creates an app id based on the apps name. This package also helps you inject this id into other tools by either saving it to a file or serving it over HTTP.
+This CLI works around a few shortcomings of the official Realm CLI - most notably around import of apps referencing secrets and the fact that the CLI updates apps (leaving upstages changes to app directories, degrading developer experience).
+
+The CLI provides two commands:
+- **import** (the default command): Called to import a single app: The server creates an app id based on the apps name. This command also help you to inject this id into other tools by either saving it to a file or serving it over HTTP.
+- **serve**: Start an HTTP server allowing other processes (such as an integration test suite) to import apps on demand, without having to provide credentials or have direct file-system access to the app template directories.
 
 ## Importing an app
 
@@ -31,6 +35,12 @@ realm-app-importer <template-path>
 
 Import a Realm App
 
+Commands:
+  realm-app-importer import                 Import a Realm App
+  <template-path>                                                      [default]
+  realm-app-importer serve                  Start serving an HTTP server capable
+  <template-path..>                         of importing apps
+
 Positionals:
   template-path  Path of the application directory to import            [string]
 
@@ -44,17 +54,18 @@ Options:
   --password             Password of an adminstrative user
                                                   [string] [default: "password"]
   --config               Path for the realm-cli configuration to temporarily
-                         store credentials
-                                         [string] [default: "realm-config.json"]
+                         store credentials    [string] [default: "realm-config"]
   --apps-directory-path  Path to temporarily copy the app while importing it
                                              [string] [default: "imported-apps"]
   --app-id-path          Saves the app id to a file at this path        [string]
   --app-id-port          Starts up an HTTP server and serves the app id [number]
+  --clean-up             Should the tool delete temporary files when exiting?
+                                                       [boolean] [default: true]
 ```
 
 Besides the `<template-path>` the CLI takes a few optional runtime parameters, most of which should be self-explanatory and set to defaults that should ease the use-case of integration tests agains local deployments.
 
-When using this for integration tests, there exists a couple of ways to get a hold of the id of the app, once it's imported:
+When using the `import` command, a consuming integration test can to get a hold of the id of the app, in a couple of ways:
 
 1. the consuming test harness can use the package programmatically, instantiating the `AppImporter` class and calling its `importApp` method, which returns a `Promise<{ appId: string }>`.
 2. the `--app-id-path` runtime option saves the app id to a file, which can be read by the test harness.
