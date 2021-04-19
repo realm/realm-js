@@ -1,7 +1,7 @@
 {
-    "collection": "UUIDObject",
+    "collection": "SyncedNumbers",
     "database": "test_data",
-    "id": "6079296ee2cbbda01842813f",
+    "id": "6079296ee2cbbda01842813e",
     "roles": [
         {
             "name": "default",
@@ -15,28 +15,22 @@
     "schema": {
         "properties": {
             "_id": {
-                "bsonType": "uuid"
+                "bsonType": "int"
             },
-            "list": {
+            "numbers": {
                 "bsonType": "array",
                 "items": {
-                    "bsonType": "uuid"
-                }
-            },
-            "mandatory": {
-                "bsonType": "uuid"
-            },
-            "optional": {
-                "bsonType": "uuid"
+                    "bsonType": "int"
+                },
+                "uniqueItems": true
             },
             "realm_id": {
                 "bsonType": "string"
             }
         },
         "required": [
-            "_id",
-            "mandatory"
+            "_id"
         ],
-        "title": "UUIDObject"
+        "title": "SyncedNumbers"
     }
 }

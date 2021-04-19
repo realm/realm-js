@@ -299,7 +299,7 @@ declare namespace Realm {
      * List
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.List.html }
      */
-    interface List<T> extends Collection<T> {
+     interface List<T> extends Collection<T> {
         [n: number]: T;
 
         pop(): T | null | undefined;
@@ -328,6 +328,45 @@ declare namespace Realm {
 
     const List: {
         readonly prototype: List<any>;
+    };
+
+
+    /**
+     * Set
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Set.html }
+     */
+     interface Set<T> extends Collection<T> {
+        /**
+         * Delete a value from the Set
+         * @param {T} object Value to delete from the Set
+         * @returns Boolean:  true if the value existed in the Set prior to deletion, false otherwise
+         */
+        delete(object: T): boolean;
+
+        /**
+         * Add a new value to the Set
+         * @param  {T} object Value to add to the Set
+         * @returns The Realm.Set<T> itself, after adding the new value
+         */
+        add(object: T): Realm.Set<T>;
+
+        /**
+         * Clear all values from the Set
+         */
+        clear(): void;
+
+        /**
+         * Check for existence of a value in the Set
+         * @param  {T} object Value to search for in the Set
+         * @returns Boolean: true if the value exists in the Set, false otherwise
+         */
+         has(object: T): boolean;
+
+         readonly size: number
+    }
+
+    const Set: {
+        readonly prototype: Set<any>;
     };
 
     /**

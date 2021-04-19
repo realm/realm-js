@@ -56,6 +56,9 @@ struct ResultsClass;
 template<typename>
 struct ListClass;
 
+template<typename>
+struct SetClass;
+
 enum PropertyAttributes : unsigned {
     None       = 0,
     ReadOnly   = 1 << 0,
@@ -507,7 +510,7 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
             && (type != PropertyType::Object || list->get_object_schema().name == object_type);
     };
 
-    if (!realm::is_array(type)) {
+    if (!realm::is_array(type) && !realm::is_set(type)) {
         return check_value(value);
     }
 

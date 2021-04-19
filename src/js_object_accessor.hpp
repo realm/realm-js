@@ -22,6 +22,7 @@
 
 #include "js_mixed.hpp"
 #include "js_list.hpp"
+#include "js_set.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
 
@@ -165,7 +166,7 @@ public:
         return ResultsClass<JSEngine>::create_instance(m_ctx, std::move(results));
     }
     ValueType box(realm::object_store::Set set) {
-        throw std::runtime_error("'Set' type support is not implemented yet");
+        return SetClass<JSEngine>::create_instance(m_ctx, std::move(set));
     }
     ValueType box(realm::object_store::Dictionary dictionart) {
         throw std::runtime_error("'Dictionary' type support is not implemented yet");
@@ -233,8 +234,12 @@ public:
         return false;
     }
 
-    bool is_same_set(realm::object_store::Set const& set, ValueType const& value) const {
-        throw std::runtime_error("'Set' type support is not implemented yet");
+    bool is_same_set(realm::object_store::Set const &set, ValueType const &value) const {
+        auto object = Value::validated_to_object(m_ctx, value);
+        if (js::Object<JSEngine>::template is_instance<SetClass<JSEngine>>(m_ctx, object)) {
+            return set == *get_internal<JSEngine, SetClass<JSEngine>>(m_ctx, object);
+        }
+        return false;
     }
 
     bool is_same_dictionary(realm::object_store::Dictionary const& dictionary, ValueType const& value) const {
