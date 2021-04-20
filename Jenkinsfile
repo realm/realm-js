@@ -180,6 +180,7 @@ def nodeIntegrationTests(nodeVersion, platform) {
     try {
       withEnv([
         "MOCHA_REMOTE_REPORTER=mocha-junit-reporter",
+        "MOCHA_REMOTE_CONTEXT=localOnly"
       ]) {
         sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm test"
       }
@@ -209,14 +210,16 @@ def electronIntegrationTests(electronVersion, platform) {
     try {
       withEnv([
         "MOCHA_REMOTE_REPORTER=mocha-junit-reporter",
-        "MOCHA_REMOTE_REPORTER_OPTIONS=mochaFile=main-test-results.xml"
+        "MOCHA_REMOTE_REPORTER_OPTIONS=mochaFile=main-test-results.xml",
+        "MOCHA_REMOTE_CONTEXT=localOnly"
       ]) {
         sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} ${commandPrefix} npm run test/main"
       }
       
       withEnv([
         "MOCHA_REMOTE_REPORTER=mocha-junit-reporter",
-        "MOCHA_REMOTE_REPORTER_OPTIONS=mochaFile=renderer-test-results.xml"
+        "MOCHA_REMOTE_REPORTER_OPTIONS=mochaFile=renderer-test-results.xml",
+        "MOCHA_REMOTE_CONTEXT=localOnly"
       ]) {
         sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} ${commandPrefix} npm run test/renderer"
       }
@@ -266,7 +269,10 @@ def reactNativeIntegrationTests(targetPlatform) {
 
     timeout(30) { // minutes
       try {
-        withEnv([ "MOCHA_REMOTE_REPORTER=mocha-junit-reporter" ]) {
+        withEnv([
+          "MOCHA_REMOTE_REPORTER=mocha-junit-reporter",
+          "MOCHA_REMOTE_CONTEXT=localOnly"
+        ]) {
           sh "${nvm} npm run test/${targetPlatform}"
         }
       } finally {

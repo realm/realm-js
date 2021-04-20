@@ -3,7 +3,7 @@ import { App, Credentials, User } from "realm";
 
 import { importApp } from "../../utils/import-app";
 
-describe("anonymous credentials", () => {
+describe.skipIf("localOnly", "anonymous credentials", () => {
   let app: App;
   
   before(async function() {
