@@ -37,8 +37,9 @@ if (!global.environment || typeof global.environment !== "object") {
 }
 
 // Patch in a function that can skip running tests in specific environments
-import { skipIf } from "./utils/skip-if";
-global.it.skipIf = skipIf;
+import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
+global.describe.skipIf = suiteSkipIf;
+global.it.skipIf = testSkipIf;
 
 beforeEach(() => {
     Realm.clearTestState();

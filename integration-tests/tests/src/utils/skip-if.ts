@@ -16,11 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { AsyncFunc, Func, Test } from "mocha";
+import { AsyncFunc, Func, Test, Suite } from "mocha";
 
-interface IFiltering {
+type Filtering = {
     [k: string]: string | boolean;
-}
+};
 
 // Implements a way to skip tests on specific platforms
 
@@ -40,7 +40,7 @@ function shouldSkipProperty(
     }
 }
 
-function shouldSkip(filter: IFiltering) {
+function shouldSkip(filter: Filtering) {
     for (const k in filter) {
         if (shouldSkipProperty(filter[k], environment[k])) {
             return true;
@@ -60,24 +60,57 @@ function shouldSkip(filter: IFiltering) {
  * If a string is provided skipIf will simply be called with an object with the provided string as key and `true` as the
  * value for that single property.
  */
-export function skipIf(
-    filter: string | string[] | IFiltering,
+export function testSkipIf(
+    filter: string | string[] | Filtering,
     title: string,
     callback: Func | AsyncFunc
 ): Test {
     if (typeof filter === "string") {
-        return skipIf({ [filter]: true }, title, callback);
+        return testSkipIf({ [filter]: true }, title, callback);
     } else if (Array.isArray(filter)) {
-        const filterObject: IFiltering = {};
+        const filterObject: Filtering = {};
         for (const environment of filter) {
             filterObject[environment] = true;
         }
-        return skipIf(filterObject, title, callback);
+        return testSkipIf(filterObject, title, callback);
     } else {
         if (shouldSkip(filter)) {
             it.skip(title, callback);
         } else {
             it(title, callback);
+        }
+    }
+}
+
+/**
+ * Skips the suite if the values provided in `filter` matches that of the environment.
+ * Use this to skip particular tests based on the environment, if we for example have a failing test which is not
+ * applicable for the environment or if we want to eventually fix it, but doesn't want the tests to fail right now.
+ *
+ * @argument filter can be an object, an array or a string. If an object is provided every key with value `true` will
+ * skip the suite if the same key has a "truly" value (a true boolean, a string, etc). If an array is provided it will
+ * be turned into an object with the array elements as keys and `true` values and `skipIf` will be called recursively.
+ * If a string is provided skipIf will simply be called with an object with the provided string as key and `true` as the
+ * value for that single property.
+ */
+export function suiteSkipIf(
+    filter: string | string[] | Filtering,
+    title: string,
+    callback: (this: Suite) => void
+): Suite {
+    if (typeof filter === "string") {
+        return suiteSkipIf({ [filter]: true }, title, callback);
+    } else if (Array.isArray(filter)) {
+        const filterObject: Filtering = {};
+        for (const environment of filter) {
+            filterObject[environment] = true;
+        }
+        return suiteSkipIf(filterObject, title, callback);
+    } else {
+        if (shouldSkip(filter)) {
+            describe.skip(title, callback);
+        } else {
+            describe(title, callback);
         }
     }
 }
