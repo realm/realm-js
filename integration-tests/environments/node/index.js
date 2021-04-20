@@ -23,11 +23,11 @@ const { Client } = require("mocha-remote-client");
 
 const client = new Client({
   title: `Node.js v${process.versions.node} on ${os.platform()}`,
-  tests() {
+  tests(context) {
     // Exposing the Realm constructor as a global
     global.fs = require("fs-extra");
     global.path = require("path");
-    global.environment = { node: true };
+    global.environment = { ...context, node: true };
     global.fetch = require("node-fetch");
 
     // Require the tests

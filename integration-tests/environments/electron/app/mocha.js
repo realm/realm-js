@@ -26,12 +26,13 @@ module.exports = (serverURL, processType) => {
         id: processType,
         url: serverURL,
         title: `Electron v${process.versions.electron} ${processType} process on ${platform()}`,
-        tests() {
+        tests(context) {
             // Set the Realm global for the tests to use
             global.fs = require("fs-extra");
             global.path = require("path");
             global.fetch = require("node-fetch");
             global.environment = {
+                ...context,
                 electron: process.type === "browser" ? "main" : "renderer",
             };
             // Add the integration test suite

@@ -177,6 +177,7 @@ export class App extends Component {
                 global.fs = require("react-native-fs");
                 global.path = require("path-browserify");
                 global.environment = {
+                    ...context,
                     reactNative: Platform.OS,
                     android: Platform.OS === "android",
                     ios: Platform.OS === "ios",
