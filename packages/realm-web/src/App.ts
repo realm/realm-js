@@ -173,7 +173,15 @@ export class App<
             () => this.deviceInformation,
         );
         // Hydrate the app state from storage
-        this.hydrate();
+        try {
+            this.hydrate();
+        } catch (err) {
+            // The storage was corrupted
+            this.storage.clear();
+            // A failed hydration shouldn't throw and break the app experience
+            // Since this is "just" persisted state that unfortunately got corrupted or partially lost
+            console.warn("Realm app hydration failed:", err.message);
+        }
     }
 
     /**
@@ -274,7 +282,7 @@ export class App<
      * @returns An array of users active or loggedout users (current user being the first).
      */
     public get allUsers(): Readonly<
-        Record<string, Realm.User<FunctionsFactoryType, CustomDataType>>
+        Record<string, User<FunctionsFactoryType, CustomDataType>>
     > {
         // Returning a freezed copy of the list of users to prevent outside changes
         return Object.fromEntries(this.users.map(user => [user.id, user]));
@@ -366,13 +374,7 @@ export class App<
      * Restores the state of the app (active and logged-out users) from the storage
      */
     private hydrate() {
-        try {
-            const userIds = this.storage.getUserIds();
-            this.users = userIds.map(id => new User({ app: this, id }));
-        } catch (err) {
-            // The storage was corrupted
-            this.storage.clear();
-            throw err;
-        }
+        const userIds = this.storage.getUserIds();
+        this.users = userIds.map(id => new User({ app: this, id }));
     }
 }

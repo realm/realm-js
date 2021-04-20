@@ -22,7 +22,7 @@ var Realm = require('realm');
 var TestCase = require('./asserts');
 var Schemas = require('./schemas');
 
-const { ObjectId } = require("bson");
+const { ObjectId } = Realm.BSON;
 
 // Prevent React Native packager from seeing modules required with this
 const require_method = require;

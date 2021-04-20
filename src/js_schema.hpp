@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 #pragma once
 
 #include <map>
-
 #include "js_types.hpp"
 #include <realm/object-store/schema.hpp>
 
@@ -80,6 +79,11 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         type = type.substr(0, type.size() - 2);
     }
 
+    if (type.ends_with("<>")) {
+        prop.type |= PropertyType::Set;
+        type = type.substr(0, type.size() - 2);
+    }
+
     if (type.ends_with("?")) {
         prop.type |= PropertyType::Nullable;
         type = type.substr(0, type.size() - 1);
@@ -114,6 +118,9 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     }
     else if (type == "objectId") {
         prop.type |= PropertyType::ObjectId;
+    }
+    else if (type == "uuid") {
+        prop.type |= PropertyType::UUID;
     }
     else if (type == "list") {
         if (prop.object_type == "bool") {
@@ -152,6 +159,11 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
             prop.type |= PropertyType::ObjectId | PropertyType::Array;
             prop.object_type = "";
         }
+        else if (prop.object_type == "uuid") {
+            prop.type |= PropertyType::UUID | PropertyType::Array;
+            prop.object_type = "";
+        }
+
         else {
             if (is_nullable(prop.type)) {
                 throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
@@ -161,6 +173,10 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
             }
             prop.type |= PropertyType::Object | PropertyType::Array;
         }
+    }
+    else if (type == "set") {
+        // apply the correct properties for sets
+        realm::js::set::derive_property_type(object_name, prop);  // may throw std::logic_error
     }
     else if (type == "linkingObjects") {
         prop.type |= PropertyType::LinkingObjects | PropertyType::Array;
@@ -175,7 +191,7 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     }
 
     // Object properties are implicitly optional
-    if (prop.type == PropertyType::Object && !is_array(prop.type)) {
+    if (prop.type == PropertyType::Object && !is_array(prop.type) && !is_set(prop.type)) {
         prop.type |= PropertyType::Nullable;
     }
 }

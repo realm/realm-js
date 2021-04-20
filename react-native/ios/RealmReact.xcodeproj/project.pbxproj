@@ -3,55 +3,40 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		85CA5FE61F1536720038172D /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F606902F1CA277CD0003FB26 /* libRealmJS.a */; };
+		85B3572725FEB5B9003A02D4 /* realm-js-ios.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85B3572625FEB5B9003A02D4 /* realm-js-ios.xcframework */; };
+		85B358EA25FF80CF003A02D4 /* GCDWebServerResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358CE25FF80CF003A02D4 /* GCDWebServerResponse.m */; };
+		85B358EB25FF80CF003A02D4 /* GCDWebServerRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358D125FF80CF003A02D4 /* GCDWebServerRequest.m */; };
+		85B358EC25FF80CF003A02D4 /* GCDWebServerFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358D425FF80CF003A02D4 /* GCDWebServerFunctions.m */; };
+		85B358ED25FF80CF003A02D4 /* GCDWebServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358D525FF80CF003A02D4 /* GCDWebServer.m */; };
+		85B358EE25FF80CF003A02D4 /* GCDWebServerConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358D625FF80CF003A02D4 /* GCDWebServerConnection.m */; };
+		85B358EF25FF80CF003A02D4 /* GCDWebServerErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358DB25FF80CF003A02D4 /* GCDWebServerErrorResponse.m */; };
+		85B358F025FF80CF003A02D4 /* GCDWebServerFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358DD25FF80CF003A02D4 /* GCDWebServerFileResponse.m */; };
+		85B358F125FF80CF003A02D4 /* GCDWebServerDataResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358DE25FF80CF003A02D4 /* GCDWebServerDataResponse.m */; };
+		85B358F225FF80CF003A02D4 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358E025FF80CF003A02D4 /* GCDWebServerStreamedResponse.m */; };
+		85B358F325FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358E525FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.m */; };
+		85B358F425FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358E625FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.m */; };
+		85B358F525FF80CF003A02D4 /* GCDWebServerDataRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358E725FF80CF003A02D4 /* GCDWebServerDataRequest.m */; };
+		85B358F625FF80CF003A02D4 /* GCDWebServerFileRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358E825FF80CF003A02D4 /* GCDWebServerFileRequest.m */; };
+		85B358F925FF80DB003A02D4 /* libGCDWebServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 85B358BB25FF8070003A02D4 /* libGCDWebServer.a */; };
 		F60690171CA2766F0003FB26 /* RealmReact.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = F60690161CA2766F0003FB26 /* RealmReact.h */; };
 		F60690191CA2766F0003FB26 /* RealmReact.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690181CA2766F0003FB26 /* RealmReact.mm */; };
 		F60690211CA277410003FB26 /* RealmAnalytics.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690201CA277410003FB26 /* RealmAnalytics.mm */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		F606902E1CA277CD0003FB26 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = F63FF2B11C1241E500B3B8E0;
-			remoteInfo = "RealmJS static";
-		};
-		F60690321CA277CD0003FB26 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 02B58CBC1AE99CEC009B348C;
-			remoteInfo = RealmJSTests;
-		};
-		F60690381CA278E10003FB26 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = F63FF2B01C1241E500B3B8E0;
-			remoteInfo = "RealmJS static";
-		};
-		F606903A1CA278F10003FB26 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = F63FF2EF1C16405C00B3B8E0;
-			remoteInfo = GCDWebServers;
-		};
-		F68759FA1D21949A007471AB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = F63FF2F01C16405C00B3B8E0;
-			remoteInfo = GCDWebServers;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXCopyFilesBuildPhase section */
+		85B358B925FF8070003A02D4 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F60690111CA2766F0003FB26 /* Copy Headers */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -67,32 +52,140 @@
 
 /* Begin PBXFileReference section */
 		3F8D968A220CE21400327C8C /* RealmReact.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = RealmReact.xcconfig; sourceTree = "<group>"; };
+		85B3572625FEB5B9003A02D4 /* realm-js-ios.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = "realm-js-ios.xcframework"; sourceTree = "<group>"; };
+		85B358BB25FF8070003A02D4 /* libGCDWebServer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libGCDWebServer.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		85B358CC25FF80CF003A02D4 /* GCDWebServerFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerFunctions.h; sourceTree = "<group>"; };
+		85B358CD25FF80CF003A02D4 /* GCDWebServerPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerPrivate.h; sourceTree = "<group>"; };
+		85B358CE25FF80CF003A02D4 /* GCDWebServerResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerResponse.m; sourceTree = "<group>"; };
+		85B358CF25FF80CF003A02D4 /* GCDWebServerConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerConnection.h; sourceTree = "<group>"; };
+		85B358D025FF80CF003A02D4 /* GCDWebServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServer.h; sourceTree = "<group>"; };
+		85B358D125FF80CF003A02D4 /* GCDWebServerRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerRequest.m; sourceTree = "<group>"; };
+		85B358D225FF80CF003A02D4 /* GCDWebServerHTTPStatusCodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerHTTPStatusCodes.h; sourceTree = "<group>"; };
+		85B358D325FF80CF003A02D4 /* GCDWebServerResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerResponse.h; sourceTree = "<group>"; };
+		85B358D425FF80CF003A02D4 /* GCDWebServerFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerFunctions.m; sourceTree = "<group>"; };
+		85B358D525FF80CF003A02D4 /* GCDWebServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServer.m; sourceTree = "<group>"; };
+		85B358D625FF80CF003A02D4 /* GCDWebServerConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerConnection.m; sourceTree = "<group>"; };
+		85B358D725FF80CF003A02D4 /* GCDWebServerRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerRequest.h; sourceTree = "<group>"; };
+		85B358D925FF80CF003A02D4 /* GCDWebServerFileResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerFileResponse.h; sourceTree = "<group>"; };
+		85B358DA25FF80CF003A02D4 /* GCDWebServerStreamedResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerStreamedResponse.h; sourceTree = "<group>"; };
+		85B358DB25FF80CF003A02D4 /* GCDWebServerErrorResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerErrorResponse.m; sourceTree = "<group>"; };
+		85B358DC25FF80CF003A02D4 /* GCDWebServerDataResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerDataResponse.h; sourceTree = "<group>"; };
+		85B358DD25FF80CF003A02D4 /* GCDWebServerFileResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerFileResponse.m; sourceTree = "<group>"; };
+		85B358DE25FF80CF003A02D4 /* GCDWebServerDataResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerDataResponse.m; sourceTree = "<group>"; };
+		85B358DF25FF80CF003A02D4 /* GCDWebServerErrorResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerErrorResponse.h; sourceTree = "<group>"; };
+		85B358E025FF80CF003A02D4 /* GCDWebServerStreamedResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerStreamedResponse.m; sourceTree = "<group>"; };
+		85B358E225FF80CF003A02D4 /* GCDWebServerDataRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerDataRequest.h; sourceTree = "<group>"; };
+		85B358E325FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerMultiPartFormRequest.h; sourceTree = "<group>"; };
+		85B358E425FF80CF003A02D4 /* GCDWebServerFileRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerFileRequest.h; sourceTree = "<group>"; };
+		85B358E525FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerURLEncodedFormRequest.m; sourceTree = "<group>"; };
+		85B358E625FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerMultiPartFormRequest.m; sourceTree = "<group>"; };
+		85B358E725FF80CF003A02D4 /* GCDWebServerDataRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerDataRequest.m; sourceTree = "<group>"; };
+		85B358E825FF80CF003A02D4 /* GCDWebServerFileRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerFileRequest.m; sourceTree = "<group>"; };
+		85B358E925FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerURLEncodedFormRequest.h; sourceTree = "<group>"; };
 		F60690131CA2766F0003FB26 /* libRealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60690161CA2766F0003FB26 /* RealmReact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RealmReact.h; sourceTree = "<group>"; };
 		F60690181CA2766F0003FB26 /* RealmReact.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmReact.mm; sourceTree = "<group>"; };
 		F606901F1CA277410003FB26 /* RealmAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RealmAnalytics.h; sourceTree = "<group>"; };
 		F60690201CA277410003FB26 /* RealmAnalytics.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmAnalytics.mm; sourceTree = "<group>"; };
-		F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RealmJS.xcodeproj; path = ../../src/RealmJS.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		85B358B825FF8070003A02D4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		85CA5FE41F1536660038172D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				85CA5FE61F1536720038172D /* libRealmJS.a in Frameworks */,
+				85B358F925FF80DB003A02D4 /* libGCDWebServer.a in Frameworks */,
+				85B3572725FEB5B9003A02D4 /* realm-js-ios.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		85B3572525FEB5B8003A02D4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				85B3572625FEB5B9003A02D4 /* realm-js-ios.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		85B358BC25FF8070003A02D4 /* GCDWebServer */ = {
+			isa = PBXGroup;
+			children = (
+				85B358CB25FF80CF003A02D4 /* Core */,
+				85B358E125FF80CF003A02D4 /* Requests */,
+				85B358D825FF80CF003A02D4 /* Responses */,
+			);
+			path = GCDWebServer;
+			sourceTree = "<group>";
+		};
+		85B358CB25FF80CF003A02D4 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				85B358CC25FF80CF003A02D4 /* GCDWebServerFunctions.h */,
+				85B358CD25FF80CF003A02D4 /* GCDWebServerPrivate.h */,
+				85B358CE25FF80CF003A02D4 /* GCDWebServerResponse.m */,
+				85B358CF25FF80CF003A02D4 /* GCDWebServerConnection.h */,
+				85B358D025FF80CF003A02D4 /* GCDWebServer.h */,
+				85B358D125FF80CF003A02D4 /* GCDWebServerRequest.m */,
+				85B358D225FF80CF003A02D4 /* GCDWebServerHTTPStatusCodes.h */,
+				85B358D325FF80CF003A02D4 /* GCDWebServerResponse.h */,
+				85B358D425FF80CF003A02D4 /* GCDWebServerFunctions.m */,
+				85B358D525FF80CF003A02D4 /* GCDWebServer.m */,
+				85B358D625FF80CF003A02D4 /* GCDWebServerConnection.m */,
+				85B358D725FF80CF003A02D4 /* GCDWebServerRequest.h */,
+			);
+			name = Core;
+			path = ../../../vendor/GCDWebServer/GCDWebServer/Core;
+			sourceTree = "<group>";
+		};
+		85B358D825FF80CF003A02D4 /* Responses */ = {
+			isa = PBXGroup;
+			children = (
+				85B358D925FF80CF003A02D4 /* GCDWebServerFileResponse.h */,
+				85B358DA25FF80CF003A02D4 /* GCDWebServerStreamedResponse.h */,
+				85B358DB25FF80CF003A02D4 /* GCDWebServerErrorResponse.m */,
+				85B358DC25FF80CF003A02D4 /* GCDWebServerDataResponse.h */,
+				85B358DD25FF80CF003A02D4 /* GCDWebServerFileResponse.m */,
+				85B358DE25FF80CF003A02D4 /* GCDWebServerDataResponse.m */,
+				85B358DF25FF80CF003A02D4 /* GCDWebServerErrorResponse.h */,
+				85B358E025FF80CF003A02D4 /* GCDWebServerStreamedResponse.m */,
+			);
+			name = Responses;
+			path = ../../../vendor/GCDWebServer/GCDWebServer/Responses;
+			sourceTree = "<group>";
+		};
+		85B358E125FF80CF003A02D4 /* Requests */ = {
+			isa = PBXGroup;
+			children = (
+				85B358E225FF80CF003A02D4 /* GCDWebServerDataRequest.h */,
+				85B358E325FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.h */,
+				85B358E425FF80CF003A02D4 /* GCDWebServerFileRequest.h */,
+				85B358E525FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.m */,
+				85B358E625FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.m */,
+				85B358E725FF80CF003A02D4 /* GCDWebServerDataRequest.m */,
+				85B358E825FF80CF003A02D4 /* GCDWebServerFileRequest.m */,
+				85B358E925FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.h */,
+			);
+			name = Requests;
+			path = ../../../vendor/GCDWebServer/GCDWebServer/Requests;
+			sourceTree = "<group>";
+		};
 		F606900A1CA2766F0003FB26 = {
 			isa = PBXGroup;
 			children = (
 				F60690221CA277BE0003FB26 /* Libraries */,
 				F60690151CA2766F0003FB26 /* RealmReact */,
 				F60690141CA2766F0003FB26 /* Products */,
+				85B3572525FEB5B8003A02D4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -100,6 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				F60690131CA2766F0003FB26 /* libRealmReact.a */,
+				85B358BB25FF8070003A02D4 /* libGCDWebServer.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -119,24 +213,31 @@
 		F60690221CA277BE0003FB26 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */,
+				85B358BC25FF8070003A02D4 /* GCDWebServer */,
 			);
 			name = Libraries;
-			sourceTree = "<group>";
-		};
-		F60690241CA277CC0003FB26 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				F68759FB1D21949A007471AB /* libGCDWebServers.a */,
-				F606902F1CA277CD0003FB26 /* libRealmJS.a */,
-				F60690331CA277CD0003FB26 /* RealmJSTests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		85B358BA25FF8070003A02D4 /* GCDWebServer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 85B358C125FF8070003A02D4 /* Build configuration list for PBXNativeTarget "GCDWebServer" */;
+			buildPhases = (
+				85B358B725FF8070003A02D4 /* Sources */,
+				85B358B825FF8070003A02D4 /* Frameworks */,
+				85B358B925FF8070003A02D4 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GCDWebServer;
+			productName = GCDWebServer;
+			productReference = 85B358BB25FF8070003A02D4 /* libGCDWebServer.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		F60690121CA2766F0003FB26 /* RealmReact */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F606901C1CA2766F0003FB26 /* Build configuration list for PBXNativeTarget "RealmReact" */;
@@ -148,8 +249,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				F606903B1CA278F10003FB26 /* PBXTargetDependency */,
-				F60690391CA278E10003FB26 /* PBXTargetDependency */,
 			);
 			name = RealmReact;
 			productName = RealmReact;
@@ -165,6 +264,9 @@
 				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = Realm;
 				TargetAttributes = {
+					85B358BA25FF8070003A02D4 = {
+						CreatedOnToolsVersion = 12.4;
+					};
 					F60690121CA2766F0003FB26 = {
 						CreatedOnToolsVersion = 7.3;
 					};
@@ -181,44 +283,35 @@
 			mainGroup = F606900A1CA2766F0003FB26;
 			productRefGroup = F60690141CA2766F0003FB26 /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = F60690241CA277CC0003FB26 /* Products */;
-					ProjectRef = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				F60690121CA2766F0003FB26 /* RealmReact */,
+				85B358BA25FF8070003A02D4 /* GCDWebServer */,
 			);
 		};
 /* End PBXProject section */
 
-/* Begin PBXReferenceProxy section */
-		F606902F1CA277CD0003FB26 /* libRealmJS.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libRealmJS.a;
-			remoteRef = F606902E1CA277CD0003FB26 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		F60690331CA277CD0003FB26 /* RealmJSTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = RealmJSTests.xctest;
-			remoteRef = F60690321CA277CD0003FB26 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		F68759FB1D21949A007471AB /* libGCDWebServers.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libGCDWebServers.a;
-			remoteRef = F68759FA1D21949A007471AB /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
-
 /* Begin PBXSourcesBuildPhase section */
+		85B358B725FF8070003A02D4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				85B358F425FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				85B358EF25FF80CF003A02D4 /* GCDWebServerErrorResponse.m in Sources */,
+				85B358F525FF80CF003A02D4 /* GCDWebServerDataRequest.m in Sources */,
+				85B358F125FF80CF003A02D4 /* GCDWebServerDataResponse.m in Sources */,
+				85B358ED25FF80CF003A02D4 /* GCDWebServer.m in Sources */,
+				85B358EB25FF80CF003A02D4 /* GCDWebServerRequest.m in Sources */,
+				85B358F025FF80CF003A02D4 /* GCDWebServerFileResponse.m in Sources */,
+				85B358EE25FF80CF003A02D4 /* GCDWebServerConnection.m in Sources */,
+				85B358F225FF80CF003A02D4 /* GCDWebServerStreamedResponse.m in Sources */,
+				85B358F325FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
+				85B358EA25FF80CF003A02D4 /* GCDWebServerResponse.m in Sources */,
+				85B358EC25FF80CF003A02D4 /* GCDWebServerFunctions.m in Sources */,
+				85B358F625FF80CF003A02D4 /* GCDWebServerFileRequest.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F606900F1CA2766F0003FB26 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -230,20 +323,46 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		F60690391CA278E10003FB26 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "RealmJS static";
-			targetProxy = F60690381CA278E10003FB26 /* PBXContainerItemProxy */;
-		};
-		F606903B1CA278F10003FB26 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = GCDWebServers;
-			targetProxy = F606903A1CA278F10003FB26 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
+		85B358C225FF8070003A02D4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		85B358C325FF8070003A02D4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		F606901A1CA2766F0003FB26 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3F8D968A220CE21400327C8C /* RealmReact.xcconfig */;
@@ -276,6 +395,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 10.2.0;
 				CXX = "$(SRCROOT)/../../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -303,6 +423,7 @@
 				);
 				SDKROOT = iphoneos;
 				STRIP_INSTALLED_PRODUCT = NO;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
 		};
@@ -338,6 +459,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 10.2.0;
 				CXX = "$(SRCROOT)/../../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -359,6 +481,7 @@
 				SDKROOT = iphoneos;
 				STRIP_INSTALLED_PRODUCT = NO;
 				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
 		};
@@ -367,18 +490,15 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../src",
-					"$(SRCROOT)/../../src/object-store/src/**",
-					"$(SRCROOT)/../../src/object-store/external/json/**",
-					"$(SRCROOT)/../../vendor/**",
-					"$(SRCROOT)/../../vendor/realm-ios/include/**",
-					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**",
 					"$(SRCROOT)/../../tests/react-test-app/ios/Pods/Headers/Public/React",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 				);
-				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -389,16 +509,14 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../src",
-					"$(SRCROOT)/../../src/object-store/src/**",
-					"$(SRCROOT)/../../src/object-store/external/json/**",
-					"$(SRCROOT)/../../vendor/**",
-					"$(SRCROOT)/../../vendor/realm-ios/include/**",
-					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**",
 					"$(SRCROOT)/../../tests/react-test-app/ios/Pods/Headers/Public/React",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -408,6 +526,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		85B358C125FF8070003A02D4 /* Build configuration list for PBXNativeTarget "GCDWebServer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				85B358C225FF8070003A02D4 /* Debug */,
+				85B358C325FF8070003A02D4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		F606900E1CA2766F0003FB26 /* Build configuration list for PBXProject "RealmReact" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -26,7 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
-const { ObjectId } = require("bson");
+const { ObjectId, UUID } = Realm.BSON;
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
@@ -68,7 +68,7 @@ function getSyncConfiguration(user, partition) {
             name: 'Dog',
             primaryKey: '_id',
             properties: {
-                _id: 'objectId?',
+                _id: 'objectId',
                 breed: 'string?',
                 name: 'string',
                 realm_id: 'string?',
@@ -175,6 +175,30 @@ module.exports = {
                 TestCase.assertEqual(session.state, 'active');
                 return user.logOut();
             });
+    },
+
+    async testRealmOpenWithDestructiveSchemaUpdate() {
+        if (!isNodeProcess) {
+            return;
+        }
+
+        const partition = Utils.genPartition();
+
+        await runOutOfProcess(__dirname + "/download-api-helper.js", appConfig.id, appConfig.url, partition, REALM_MODULE_PATH);
+
+        const app = new Realm.App(appConfig);
+        const user = await app.logIn(Realm.Credentials.anonymous());
+        const config = getSyncConfiguration(user, partition);
+
+        const realm = await Realm.open(config)
+        realm.close();
+
+        // change the 'breed' property from 'string?' to 'string' to trigger a non-additive-only error.
+        config.schema[0].properties.breed = "string";
+
+        await TestCase.assertThrowsAsyncContaining(
+            async() => await Realm.open(config), // This crashed in bug #3414.
+            "The following changes cannot be made in additive-only schema mode:");
     },
 
     testRealmOpenWithExistingLocalRealm() {
@@ -389,98 +413,42 @@ module.exports = {
             }).then(() => TestCase.assertTrue(progressCalled));
     },
 
-    /*
-    testProgressNotificationsForRealmOpenAsync() {
-        if (!platformSupported) {
-            return;
-        }
-
-        const username = Utils.uuid();
-        const realmName = Utils.uuid();
-
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
-            .then(user => {
-                return new Promise((resolve, reject) => {
-                    let config = {
-                        sync: {
-                            user,
-                            url: `realm://127.0.0.1:9080/~/${realmName}`
-                        },
-                        schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                    };
-
-                    let progressCalled = false;
-
-                    Realm.openAsync(config,
-                        (error, realm) => {
-                            if (error) {
-                                reject(error);
-                                return;
-                            }
-
-                            TestCase.assertTrue(progressCalled);
-                            resolve();
-                        },
-                        (transferred, total) => {
-                            progressCalled = true;
-                        });
-
-                    setTimeout(function() {
-                        reject("Progress Notifications API failed to call progress callback for Realm constructor");
-                    }, 5000);
-                });
-            });
-    },
-*/
-
-    /*
-    async testClientResyncDiscard() {
+    testClientReset() {
         // FIXME: try to enable for React Native
         if (!platformSupported) {
             return;
         }
-        const fetch = require('node-fetch');
 
-        const realmUrl = 'realm://127.0.0.1:9080/~/myrealm';
-        let user = await Realm.App.Sync.User.login('http://127.0.0.1:9080', Realm.App.Sync.Credentials.nickname('admin', true));
-        const config1 = user.createConfiguration({ sync: { url: realmUrl } });
-        config1.schema = [schemas.IntOnly];
-        config1.sync.clientResyncMode = 'discard';
-        config1._cache = false;
+        const partition = Utils.genPartition();
+        let creds = Realm.Credentials.anonymous();
+        let app = new Realm.App(appConfig);
+        return app.logIn(creds).then(user => {
+            return new Promise((resolve, _reject) => {
+                let realm;
+                const config = getSyncConfiguration(user, partition);
+                config.sync.error = (sender, error) => {
+                    try {
+                        TestCase.assertEqual(error.name, 'ClientReset');
+                        TestCase.assertDefined(error.config);
+                        TestCase.assertNotEqual(error.config.path, '');
+                        const path = realm.path;
+                        realm.close();
+                        Realm.App.Sync.initiateClientReset(app, path);
+                        // open Realm with error.config, and copy required objects a Realm at `path`
+                        resolve();
+                    }
+                    catch (e) {
+                        _reject(e);
+                    }
+                };
+                realm = new Realm(config);
+                const session = realm.syncSession;
 
-        // open, download, create an object, upload and close
-        let realm1 = await Realm.open(config1);
-        await realm1.syncSession.downloadAllServerChanges();
-        realm1.write(() => {
-            realm1.create(schemas.IntOnly.name, { intCol: 1 });
+                TestCase.assertEqual(session.config.error, config.sync.error);
+                session._simulateError(211, 'ClientReset'); // 211 -> divering histories
+            });
         });
-        await realm1.syncSession.uploadAllLocalChanges();
-        realm1.close();
-
-        // delete Realm on server
-        let encodedPath = encodeURIComponent(`${user.id}/myrealm`);
-        let url = new URL(`/realms/files/${encodedPath}`, user.server);
-        let options = {
-            headers: {
-                Authorization: `${user.accessToken}`,
-                'Content-Type': 'application/json',
-            },
-            method: 'DELETE',
-        };
-        await fetch(url.toString(), options);
-
-        // open the Realm again without schema and download
-        const config2 = user.createConfiguration({ sync: { url: realmUrl } });
-        config2.sync.clientResyncMode = 'discard';
-        config2._cache = false;
-        let realm2 = await Realm.open(config2);
-        await realm2.syncSession.downloadAllServerChanges();
-        TestCase.assertEqual(realm2.schema.length, 0);
-        realm2.close();
     },
-    */
 
     testAddConnectionNotification() {
         const partition = Utils.genPartition();
@@ -817,26 +785,28 @@ module.exports = {
             -12342908,
             -7482937500235834,
             -Number.MAX_SAFE_INTEGER,
-            new ObjectId(),
+            new ObjectId("603fa0af4caa9c90ff6e126c"),
+            new UUID("f3287217-d1a2-445b-a4f7-af0520413b2a"),
             null
         ];
 
         for (const partitionValue of testPartitionValues) {
-            console.log('>partitionValue', partitionValue)
             const app = new Realm.App(appConfig);
 
-            const user = await app.logIn(Realm.Credentials.anonymous())
+            const user = await app.logIn(Realm.Credentials.anonymous());
 
             const config = getSyncConfiguration(user, partitionValue);
             TestCase.assertEqual(partitionValue, config.sync.partitionValue);
 
+            // TODO: Update docker testing-setup to allow for multiple apps and test each type on a supported App.
+            // Note: This does NOT await errors from the server, as we currently have limitations in the docker-server-setup. All tests with with non-string fails server-side.
             const realm = new Realm(config);
             TestCase.assertDefined(realm);
 
             const spv = realm.syncSession.config.partitionValue;
 
             // BSON types have their own 'equals' comparer
-            if (spv instanceof ObjectId) {
+            if (spv instanceof ObjectId || spv instanceof UUID) {
                 TestCase.assertTrue(spv.equals(partitionValue));
             } else {
                 TestCase.assertEqual(spv, partitionValue);
@@ -864,6 +834,7 @@ module.exports = {
             const user = await app.logIn(Realm.Credentials.anonymous())
 
             const config = getSyncConfiguration(user, partitionValue);
+            // Note: We do not test with Realm.open() as we do not care about server errors (these tests MUST fail before hitting the server).
             TestCase.assertThrows(() => new Realm(config));
         }
     },
@@ -906,5 +877,23 @@ module.exports = {
             });
             realm.close();
         });
+    },
+
+    async testAnalyticsSubmission() {
+        const context = node_require('realm/package.json');
+        const analytics = node_require('realm/lib/submit-analytics');
+
+        const payload = await analytics.fetchPlatformData(context, 'TestEvent');
+
+        TestCase.assertDefined(payload.webHook);
+        TestCase.assertType(payload.webHook.event, 'string');
+        TestCase.assertDefined(payload.webHook.properties);
+        TestCase.assertType(payload.webHook.properties.Binding, 'string');
+        TestCase.assertDefined(payload.mixPanel);
+        TestCase.assertType(payload.mixPanel.event, 'string');
+        TestCase.assertDefined(payload.mixPanel.properties);
+        TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
+
+        await analytics.submitStageAnalytics('TestEvent');
     }
 };

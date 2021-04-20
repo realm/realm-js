@@ -23,6 +23,7 @@
 #include "js_util.hpp"
 #include "js_realm_object.hpp"
 #include "js_list.hpp"
+#include "js_set.hpp"
 #include "js_results.hpp"
 #include "js_schema.hpp"
 #include "js_observable.hpp"
@@ -481,12 +482,14 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
     FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
+    FunctionType set_constructor = ObjectWrap<T, SetClass<T>>::create_constructor(ctx);
     FunctionType realm_object_constructor = ObjectWrap<T, RealmObjectClass<T>>::create_constructor(ctx);
     FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "Set", set_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 
@@ -788,7 +791,7 @@ void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Argume
     SharedRealm& realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
 
     auto& config = realm->config();
-    if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::Additive || config.schema_mode == SchemaMode::ReadOnlyAlternative) {
+    if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::AdditiveExplicit || config.schema_mode == SchemaMode::ReadOnlyAlternative) {
         throw std::runtime_error("Cannot delete model for a read-only or a synced Realm.");
     }
 
@@ -924,7 +927,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         if (error) {
             try {
                 std::rethrow_exception(error);
-            } catch (const std::system_error& e) {
+            } catch (const std::exception& e) {
                 ObjectType object = Object::create_empty(protected_ctx);
                 Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
                 Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));

@@ -21,10 +21,7 @@ RUN yum -y install \
 RUN mkdir -p $NVM_DIR \
  && curl -s https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash \
  && . $NVM_DIR/nvm.sh \
- && nvm install 10 \
  && nvm install 12 \
- && nvm install 13 \
- && nvm install 14 \
  && chmod a+rwX -R $NVM_DIR
 
 ENV PATH /opt/rh/rh-git218/root/usr/bin:/opt/rh/python27/root/usr/bin:/opt/rh/devtoolset-9/root/usr/bin:$PATH

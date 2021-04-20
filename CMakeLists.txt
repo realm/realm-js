@@ -35,6 +35,10 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
     set(REALM_BUILD_LIB_ONLY ON)
     set(REALM_ENABLE_SYNC ON)
 
+    if(ANDROID)
+        set(REALM_ANDROID ON)
+    endif()
+
     add_subdirectory(vendor/realm-core EXCLUDE_FROM_ALL)
 endif()
 

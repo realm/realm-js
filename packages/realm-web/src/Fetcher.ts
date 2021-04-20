@@ -269,24 +269,21 @@ export class Fetcher implements LocationUrlContext {
                 response.status === 401 &&
                 tokenType === "access"
             ) {
-                try {
-                    // If the access token has expired, it would help refreshing it
-                    await user.refreshAccessToken();
-                    // Retry with the specific user, since the currentUser might have changed.
-                    return this.fetch({ ...request, user });
-                } catch (err) {
-                    if (
-                        err instanceof MongoDBRealmError &&
-                        err.statusCode === 401
-                    ) {
-                        // A 401 error while refreshing the access token indicates the refresh token has an issue too
-                        // Log out the user to prevent a live lock.
-                        await user.logOut();
-                    }
-                    // Rethrow
-                    throw err;
-                }
+                // If the access token has expired, it would help refreshing it
+                await user.refreshAccessToken();
+                // Retry with the specific user, since the currentUser might have changed.
+                return this.fetch({ ...request, user });
             } else {
+                if (
+                    user &&
+                    response.status === 401 &&
+                    tokenType === "refresh"
+                ) {
+                    // A 401 error while using the refresh token indicates the token has an issue.
+                    // Reset the tokens to prevent a lock.
+                    user.accessToken = null;
+                    user.refreshToken = null;
+                }
                 // Throw an error with a message extracted from the body
                 throw await MongoDBRealmError.fromRequestAndResponse(
                     request as Request<RequestBody>,

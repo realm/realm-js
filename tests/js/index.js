@@ -45,9 +45,15 @@ var TESTS = {
     EncryptionTests: require("./encryption-tests"),
     AliasTests: require("./alias-tests"),
     BsonTests: require("./bson-tests"),
-    MixedTests: require("./mixed-tests"),
     // Garbagecollectiontests: require('./garbage-collection'),
+    ArrayBuffer: require("./array-buffer-tests"),
+    SetTests: require("./set-tests")
 };
+
+//FIXME: MIXED: fix for JSC
+if (isNodeProcess || isElectronProcess) {
+    TESTS.MixedTests= node_require("./mixed-tests");
+}
 
 //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
 if (isNodeProcess) {
@@ -62,6 +68,9 @@ if (global.enableSyncTests) {
         TESTS.OpenBehaviorTests = require("./open-behavior-tests");
         TESTS.UserTests = require("./user-tests");
         TESTS.SessionTests = require("./session-tests");
+        TESTS.UUIDSyncTests= node_require("./uuid-sync-tests");
+        TESTS.PartitionValueTests = node_require("./partition-value-tests");
+        TESTS.SetSyncTests = node_require("./set-sync-tests");
     }
 }
 
@@ -105,7 +114,7 @@ exports.runTest = function(suiteName, testName) {
 
     if (testMethod) {
         Realm.clearTestState();
-        console.warn("Starting test " + testName);
+        console.log("Starting test " + testName);
         var result = testMethod.call(testSuite);
 
         //make sure v8 GC can collect garbage after each test and does not fail

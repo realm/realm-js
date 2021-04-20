@@ -24,7 +24,7 @@ exports.DogForSync = {
     name: 'Dog',
     primaryKey: '_id',
     properties: {
-        _id: 'objectId?', // NOTE: this needs to be changed to non-optional in the docker image.
+        _id: 'objectId',
         breed: 'string?',
         name: 'string',
         realm_id: 'string?',
@@ -35,7 +35,7 @@ exports.PersonForSync = {
     name: 'Person',
     primaryKey: '_id',
     properties: {
-        _id: 'objectId?',
+        _id: 'objectId',
         age: 'int',
         dogs: 'Dog[]',
         firstName: 'string',
@@ -73,6 +73,21 @@ exports.ObjectIdObject = {
     name: 'ObjectIdObject',
     properties: {
         id: 'objectId'
+    }
+};
+
+exports.UUIDObject = {
+    name: "uuid",
+    properties: {
+        id: "uuid"
+    }
+};
+
+exports.UUIDPkObject = {
+    name: "uuid",
+    primaryKey: "_id",
+    properties: {
+        _id: "uuid"
     }
 };
 
@@ -116,6 +131,7 @@ exports.BasicTypes = {
         dataCol:     'data',
         decimal128Col:  'decimal128',
         objectIdCol: 'objectId',
+        uuidCol: 'uuid',
     }
 };
 
@@ -221,6 +237,7 @@ exports.PrimitiveArrays = {
         data:   'data[]',
         decimal128: 'decimal128[]',
         objectId:    'objectId[]',
+        uuid: "uuid[]",
 
         optBool:   'bool?[]',
         optInt:    'int?[]',
@@ -230,7 +247,8 @@ exports.PrimitiveArrays = {
         optDate:   'date?[]',
         optData:   'data?[]',
         optDecimal128: 'decimal128?[]',
-        optObjectId:    'objectId?[]'
+        optObjectId:    'objectId?[]',
+        optUuid: "uuid?[]"
     }
 };
 
@@ -371,7 +389,7 @@ exports.ParentObject = {
     name: 'ParentObject',
     primaryKey: '_id',
     properties: {
-        _id:           'objectId?',
+        _id:           'objectId',
         id:            'int',
         name:          'NameObject[]'
     }
@@ -381,7 +399,7 @@ exports.NameObject = {
     name: 'NameObject',
     primaryKey: '_id',
     properties: {
-        _id:          'objectId?',
+        _id:          'objectId',
         family:       'string',
         given:        'string[]',
         prefix:       'string[]'

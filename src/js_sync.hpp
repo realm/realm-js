@@ -19,11 +19,13 @@
 #pragma once
 
 #include <math.h>
+#include <cstdlib>
 
 #include "js_class.hpp"
 #include "js_collection.hpp"
 #include "js_app.hpp"
 #include "js_user.hpp"
+#include "logger.hpp"
 
 #include "platform.hpp"
 #include <realm/sync/config.hpp>
@@ -39,7 +41,6 @@
 
 #if REALM_PLATFORM_NODE
 #include <realm/object-store/impl/realm_coordinator.hpp>
-#include "node/sync_logger.hpp"
 #endif
 
 #if REALM_ANDROID
@@ -78,6 +79,10 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
     }
     else if (Value<T>::is_object_id(ctx, partition_value_value)) {
         auto pv = Value<T>::validated_to_object_id(ctx, partition_value_value);
+        partition_bson = bson::Bson(pv);
+    }
+    else if (Value<T>::is_uuid(ctx, partition_value_value)) {
+        auto pv = Value<T>::validated_to_uuid(ctx, partition_value_value);
         partition_bson = bson::Bson(pv);
     }
     else if (Value<T>::is_null(ctx, partition_value_value)) {
@@ -135,7 +140,6 @@ public:
 //    static void override_server(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void wait_for_download_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void wait_for_upload_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
-
 
     // TODO: add app or appId property
     PropertyMap<T> const properties = {
@@ -648,6 +652,7 @@ public:
 
     // private
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
+    static void populate_sync_config_for_ssl(ContextType, ObjectType, SyncConfig&);
 
     MethodMap<T> const static_methods = {
         {"_hasExistingSessions", {wrap<has_existing_sessions>}},
@@ -658,11 +663,8 @@ public:
         {"setUserAgent", wrap<set_sync_user_agent>},
         {"getAllSyncSessions", wrap<get_all_sync_sessions>},
         {"getSyncSession", wrap<get_sync_session>},
-
-#if REALM_PLATFORM_NODE
         {"setLogger", wrap<set_sync_logger>},
         {"setSyncLogger", wrap<set_sync_logger>},
-#endif
     };
 };
 
@@ -726,26 +728,35 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
 
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     std::string log_level = Value::validated_to_string(ctx, args[1], "log level");
-    std::istringstream in(log_level); // Throws
-    in.imbue(std::locale::classic()); // Throws
-    in.unsetf(std::ios_base::skipws);
-    util::Logger::Level log_level_2 = util::Logger::Level();
-    in >> log_level_2; // Throws
-    if (!in || !in.eof())
-        throw std::runtime_error("Bad log level");
-    app->sync_manager()->set_log_level(log_level_2);
+
+    auto level = common::logger::Logger::get_level(log_level);
+    app->sync_manager()->set_log_level(level);
 }
 
-#if REALM_PLATFORM_NODE
 template<typename T>
 void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(2);
 
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     auto callback_fn = Value::validated_to_function(ctx, args[1], "logger_callback");
-    app->sync_manager()->set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
+
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<FunctionType> protected_callback(ctx, callback_fn);
+
+    common::logger::Delegated show_logs = [=](int level, std::string message) {
+        HANDLESCOPE(protected_ctx)
+
+        ValueType arguments[2] = {
+            Value::from_number(protected_ctx, level),
+            Value::from_string(protected_ctx, message)
+        };
+
+        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, arguments);
+    };
+
+    auto sync_logger = common::logger::Logger::build_sync_logger(show_logs);
+    app->sync_manager()->set_logger_factory( *sync_logger );
 }
-#endif
 
 template<typename T>
 void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
@@ -776,7 +787,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     if (Value::is_boolean(ctx, sync_config_value)) {
         config.force_sync_history = Value::to_boolean(ctx, sync_config_value);
         if (config.force_sync_history) {
-            config.schema_mode = SchemaMode::Additive;
+            config.schema_mode = SchemaMode::AdditiveExplicit;
         }
     } else if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
@@ -830,14 +841,76 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             config.sync_config->custom_http_headers = std::move(http_headers);
         }
 
+        // HTTP proxy: only node is supported
+#ifdef REALM_PLATFORM_NODE
+        SyncConfig::ProxyConfig proxy_config;
+        std::vector<std::string> env_vars = { "https_proxy", "HTTPS_PROXY" };
+        for (auto env_var : env_vars) {
+            char *http_proxy = std::getenv(env_var.c_str());
+            if (http_proxy != NULL) {
+                // https://stackoverflow.com/questions/43906956/split-url-into-host-port-and-resource-c
+                std::string url(http_proxy);
+
+                std::size_t index1 = url.find_first_of(":");
+                std::string protocol = url.substr(0, index1);
+
+                std::string url_new = url.substr(index1 + 3); // skip http(s)
+                std::size_t index2 = url_new.find_first_of(":");
+                std::string host = url_new.substr(0, index2);
+
+                std::size_t index3 = url_new.find_first_of("/");
+                std::string port = url_new.substr(index2 + 1, index3 - index2 - 1);
+
+                if (protocol == "http") {
+                    proxy_config.type = SyncConfig::ProxyConfig::Type::HTTP;
+                } else if (protocol == "https") {
+                    proxy_config.type = SyncConfig::ProxyConfig::Type::HTTPS;
+                } else {
+                    throw std::runtime_error("Expected either 'http' or 'https' as protocol for " + env_var + " (got " + protocol + ")");
+                }
+                proxy_config.address = std::move(host);
+                proxy_config.port = static_cast<std::uint_fast16_t>(atoi(port.c_str()));
+
+                config.sync_config->proxy_config = util::Optional<SyncConfig::ProxyConfig>(std::move(proxy_config));
+                break;
+            }
+        }
+
+#endif
+
+        ValueType ssl_config_value = Object::get_property(ctx, sync_config_object, "ssl");
+        if (Value::is_object(ctx, ssl_config_value)) {
+            auto ssl_config_object = Value::to_object(ctx, ssl_config_value);
+            populate_sync_config_for_ssl(ctx, ssl_config_object, *config.sync_config);
+        }
+
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();
             std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
         }
 
         config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
-        config.schema_mode = SchemaMode::Additive;
+        config.schema_mode = SchemaMode::AdditiveExplicit;
         config.path = user->sync_manager()->path_for_realm(*(config.sync_config));
+    }
+}
+
+template<typename T>
+void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType config_object, SyncConfig& config)
+{
+    ValueType validate_ssl = Object::get_property(ctx, config_object, "validate");
+    if (Value::is_boolean(ctx, validate_ssl)) {
+        config.client_validate_ssl = Value::to_boolean(ctx, validate_ssl);
+    }
+
+    ValueType certificate_path = Object::get_property(ctx, config_object, "certificatePath");
+    if (Value::is_string(ctx, certificate_path)) {
+        config.ssl_trust_certificate_path = std::string(Value::to_string(ctx, certificate_path));
+    }
+
+    ValueType validate_callback = Object::get_property(ctx, config_object, "validateCallback");
+    if (Value::is_function(ctx, validate_callback)) {
+        config.ssl_verify_callback = SSLVerifyCallbackSyncThreadFunctor<T> { ctx, Value::to_function(ctx, validate_callback) };
     }
 }
 
