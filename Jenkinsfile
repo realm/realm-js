@@ -174,9 +174,8 @@ def nodeIntegrationTests(nodeVersion, platform) {
   unstash 'source'
   unstash "prebuild-${platform}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
-
+  sh "./scripts/nvm-wrapper.sh ${nodeVersion} npx lerna bootstrap --scope realm-node-tests --include-dependencies"
   dir('integration-tests/environments/node') {
-    sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
     try {
       withEnv([
         "MOCHA_REMOTE_REPORTER=mocha-junit-reporter",
@@ -201,12 +200,12 @@ def electronIntegrationTests(electronVersion, platform) {
   unstash 'source'
   unstash "prebuild-${platform}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
+  sh "./scripts/nvm-wrapper.sh ${nodeVersion} npx lerna bootstrap --scope realm-electron-tests --include-dependencies"
 
   // On linux we need to use xvfb to let up open GUI windows on the headless machine
   def commandPrefix = platform == 'linux-x64' ? 'xvfb-run ' : ''
 
   dir('integration-tests/environments/electron') {
-    sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
     try {
       withEnv([
         "MOCHA_REMOTE_REPORTER=mocha-junit-reporter",
@@ -243,6 +242,8 @@ def reactNativeIntegrationTests(targetPlatform) {
     nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
   }
 
+  sh "${nvm} npx lerna bootstrap --scope realm-react-native-tests --include-dependencies"
+
   if (targetPlatform == "android") {
     dir('react-native/android/src/main') {
       unstash 'android-jnilibs'
@@ -254,8 +255,6 @@ def reactNativeIntegrationTests(targetPlatform) {
   }
 
   dir('integration-tests/environments/react-native') {
-    sh "${nvm} npm install"
-
     if (targetPlatform == "android") {
       runEmulator();
       // In case the tests fail, it's nice to have an idea on the devices attached to the machine
