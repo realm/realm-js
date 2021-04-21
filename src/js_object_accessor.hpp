@@ -22,8 +22,10 @@
 
 #include "js_mixed.hpp"
 #include "js_list.hpp"
+#include "js_set.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
+#include "js_links.hpp"
 #include "dictionary/js_dictionary.hpp"
 
 #if REALM_ENABLE_SYNC
@@ -55,22 +57,25 @@ public:
     using OptionalValue = util::Optional<ValueType>;
 
     NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm, const ObjectSchema& object_schema)
-    : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(&object_schema) { }
+    : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(&object_schema) {
+        register_plugins();
+    }
 
     template<typename Collection>
     NativeAccessor(ContextType ctx, Collection const& collection)
     : m_ctx(ctx)
     , m_realm(collection.get_realm())
     , m_object_schema(collection.get_type() == realm::PropertyType::Object ? &collection.get_object_schema() : nullptr)
-    { }
+    {
+        register_plugins();
+    }
 
     NativeAccessor(NativeAccessor& na, Obj parent, Property const& prop)
         : m_ctx(na.m_ctx)
         , m_realm(na.m_realm)
         , m_parent(std::move(parent))
         , m_property(&prop)
-        , m_object_schema(nullptr)
-    {
+        , m_object_schema(nullptr) {
         if (prop.type == realm::PropertyType::Object) {
             auto schema = m_realm->schema().find(prop.object_type);
             if (schema != m_realm->schema().end()) {
@@ -80,6 +85,8 @@ public:
         else {
             m_object_schema = na.m_object_schema;
         }
+
+        register_plugins();
     }
 
     NativeAccessor(NativeAccessor& parent, const Property& prop)
@@ -91,7 +98,17 @@ public:
 		if (schema != m_realm->schema().end()) {
 			m_object_schema = &*schema;
 		}
+
+        register_plugins();
 	}
+
+    void register_plugins() {
+        MixedLink<JSEngine>::add_strategy(m_realm);
+    }
+
+    ~NativeAccessor() {
+        MixedLink<JSEngine>::remove_strategy();
+    }
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
@@ -127,9 +144,6 @@ public:
         return is_null(value) ? util::none : util::make_optional(unbox<T>(value));
     }
 
-
-
-
     template<typename T>
     ValueType box(util::Optional<T> v) { return v ? box(*v) : null_value(); }
 
@@ -141,8 +155,8 @@ public:
     ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
     ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
     ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
+    ValueType box(UUID uuid)         { return Value::from_uuid(m_ctx, uuid); }
     ValueType box(Mixed mixed)       { return TypeMixed<JSEngine>::get_instance().wrap(m_ctx, mixed); }
-    ValueType box(UUID)              { throw std::runtime_error("'UUID' type support is not implemented yet"); }
 
     ValueType box(Timestamp ts) {
         if (ts.is_null()) {
@@ -166,7 +180,7 @@ public:
         return ResultsClass<JSEngine>::create_instance(m_ctx, std::move(results));
     }
     ValueType box(realm::object_store::Set set) {
-        throw std::runtime_error("'Set' type support is not implemented yet");
+        return SetClass<JSEngine>::create_instance(m_ctx, std::move(set));
     }
     ValueType box(realm::object_store::Dictionary dictionary) {
         return dictionary_adapter.wrap(m_ctx, dictionary);
@@ -194,6 +208,9 @@ public:
         }
         if (Value::is_object_id(m_ctx, value)) {
             return type_ObjectId;
+        }
+        if (Value::is_uuid(m_ctx, value)) {
+            return type_UUID;
         }
         if (Value::is_decimal128(m_ctx, value)) {
             return type_Decimal;
@@ -237,8 +254,12 @@ public:
         return false;
     }
 
-    bool is_same_set(realm::object_store::Set const& set, ValueType const& value) const {
-        throw std::runtime_error("'Set' type support is not implemented yet");
+    bool is_same_set(realm::object_store::Set const &set, ValueType const &value) const {
+        auto object = Value::validated_to_object(m_ctx, value);
+        if (js::Object<JSEngine>::template is_instance<SetClass<JSEngine>>(m_ctx, object)) {
+            return set == *get_internal<JSEngine, SetClass<JSEngine>>(m_ctx, object);
+        }
+        return false;
     }
 
     bool is_same_dictionary(realm::object_store::Dictionary const& dictionary, ValueType const& value) const {
@@ -395,7 +416,7 @@ struct Unbox<JSEngine, Mixed> {
 template<typename JSEngine>
 struct Unbox<JSEngine, UUID> {
     static UUID call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        throw std::runtime_error("'UUID' type suport is not implemented yet");
+        return js::Value<JSEngine>::validated_to_uuid(ctx->m_ctx, value, "Property");
     }
 };
 
@@ -409,7 +430,7 @@ struct Unbox<JSEngine, ObjLink> {
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<UUID>> {
     static util::Optional<UUID> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        throw std::runtime_error("'UUID' type suport is not implemented yet");
+        return ctx->template unbox_optional<UUID>(value);
     }
 };
 
@@ -436,33 +457,33 @@ struct Unbox<JSEngine, Timestamp> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Obj> {
-    static Obj call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
+    static Obj call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
         using Value = js::Value<JSEngine>;
         using ValueType = typename JSEngine::Value;
 
-        auto object = Value::validated_to_object(ctx->m_ctx, value);
-        if (js::Object<JSEngine>::template is_instance<RealmObjectClass<JSEngine>>(ctx->m_ctx, object)) {
-            auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(ctx->m_ctx, object);
-            if (realm_object->realm() == ctx->m_realm) {
-                return realm_object->obj();
-            }
+        RealmLink<JSEngine> realm_link {native_accessor->m_ctx, value};
+        auto current_realm = native_accessor->m_realm;
 
-            bool updating = policy.copy && policy.update;
-            if (!updating && !policy.create) {
-                throw std::runtime_error("Realm object is from another Realm");
-            }
+        if(realm_link.belongs_to_realm(current_realm)){
+            return realm_link.get_realm_object();
+        }
+
+        if(realm_link.is_instance() && realm_link.is_read_only(policy)){
+            throw std::runtime_error("Realm object is from another Realm");
         }
 
         if (!policy.create) {
             return Obj();
         }
 
-        if (Value::is_array(ctx->m_ctx, object)) {
-            object = Schema<JSEngine>::dict_for_property_array(ctx->m_ctx, *ctx->m_object_schema, object);
+        auto object = Value::validated_to_object(native_accessor->m_ctx, value);
+        if (Value::is_array(native_accessor->m_ctx, object)) {
+            object = Schema<JSEngine>::dict_for_property_array(native_accessor->m_ctx, *native_accessor->m_object_schema, object);
         }
 
-        auto child = realm::Object::create<ValueType>(*ctx, ctx->m_realm, *ctx->m_object_schema,
-                                                      static_cast<ValueType>(object), policy, current_row);
+        auto child = realm::Object::create<ValueType>
+            (*native_accessor, native_accessor->m_realm, *native_accessor->m_object_schema,
+                    static_cast<ValueType>(object), policy, current_row);
         return child.obj();
     }
 };

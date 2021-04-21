@@ -5,8 +5,10 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Enhancements
 * Adding Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
+* Added Set type ([#3378](https://github.com/realm/realm-js/issues/3378)).
+* Array of primitive lists will not be `snapshot()`'ed.
+* Added `ssl` option to `Realm.App.Sync` configuration.
 * Adding Dictionaries types. ([#3392](https://github.com/realm/realm-js/issues/3392))
-* Array of primitive listed will not be `snapshot()`'ed.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

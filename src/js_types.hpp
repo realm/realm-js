@@ -56,6 +56,9 @@ struct ResultsClass;
 template<typename>
 struct ListClass;
 
+template<typename>
+struct SetClass;
+
 enum PropertyAttributes : unsigned {
     None       = 0,
     ReadOnly   = 1 << 0,
@@ -138,6 +141,7 @@ struct Value {
     static bool is_binary(ContextType, const ValueType &);
     static bool is_valid(const ValueType &);
     static bool is_bson(ContextType, const ValueType &);
+    static bool is_uuid(ContextType, const ValueType &);
 
     static bool is_valid_for_property(ContextType, const ValueType&, const Property&);
     static bool is_valid_for_property_type(ContextType, const ValueType&, realm::PropertyType type, StringData object_type);
@@ -169,6 +173,7 @@ struct Value {
     static double to_number(ContextType, const ValueType &);
     static Decimal128 to_decimal128(ContextType, const ValueType &);
     static ObjectId to_object_id(ContextType, const ValueType &);
+    static UUID to_uuid(ContextType, const ValueType &);
     static ObjectType to_object(ContextType, const ValueType &);
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, ValueType);
@@ -194,6 +199,7 @@ struct Value {
     VALIDATED(OwnedBinaryData, binary)
     VALIDATED(Decimal128, decimal128)
     VALIDATED(ObjectId, object_id)
+    VALIDATED(UUID, uuid)
 
 #undef VALIDATED
 };
@@ -314,6 +320,7 @@ struct Object {
     VALIDATED(ObjectType, object)
     VALIDATED(String<T>, string)
     VALIDATED(ObjectType, ObjectId)
+    VALIDATED(ObjectType, UUID)
 
 #undef VALIDATED
 
@@ -491,7 +498,7 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
             case PropertyType::Mixed: 
                 return true;
             case PropertyType::UUID:
-                throw std::runtime_error("'UUID' type support is not implemented yet");
+                return is_uuid(context, value);
             default:
                 REALM_UNREACHABLE();
         }
@@ -503,6 +510,11 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
             && is_nullable(list_type) == is_nullable(type)
             && (type != PropertyType::Object || list->get_object_schema().name == object_type);
     };
+
+    
+    if (!realm::is_array(type) && !realm::is_set(type)) {
+        return check_value(value);
+    }
 
     if (is_object(context, value)) {
         auto object = to_object(context, value);
@@ -570,13 +582,6 @@ inline typename T::Value Object<T>::create_from_optional_app_error(ContextType c
     return create_from_app_error(ctx, *error);
 }
 
-
-
-template<typename T>
-inline typename T::Value Value<T>::from_uuid(typename T::Context ctx, const UUID& value) {
-    throw std::runtime_error("'UUID' type support is not implemented yet");
-}
-
 template<typename T>
 inline typename T::Value Value<T>::from_objkey(typename T::Context ctx, const ObjKey& value) {
     throw std::runtime_error("'Mixed' type support is not implemented yet");
@@ -593,7 +598,7 @@ inline typename T::Value Value<T>::from_bson(typename T::Context ctx, const bson
 
     switch (value.type()) {
     case Type::Uuid:
-         throw std::runtime_error("'UUID' type support is not implemented yet");
+        return from_uuid(ctx, value.operator UUID());
     case Type::MinKey:
         return Object<T>::create_bson_type(ctx, "MinKey", {});
     case Type::MaxKey:

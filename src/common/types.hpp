@@ -28,7 +28,7 @@ namespace types {
 
 enum Type {
     NotImplemented = -100,
-    Object = -3,
+    Object = 16,    // We translate TypedLink (16) -> Object 
     Undefined = -2,
     Null = -1,
     Integer = 0,
@@ -43,10 +43,10 @@ enum Type {
     Link = 12,
     LinkList = 13,
     ObjectId = 15,
-    TypedLink = 16,
     UUID = 17,
 };
 
-}  // namespace types
-}  // namespace js
-}  // namespace realm
+
+} // namespace types
+} // namespace js
+} // namespace realm

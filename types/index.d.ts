@@ -19,9 +19,8 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
-/// <reference path="./app.d.ts"/>
 
-type ObjectId = import("bson").ObjectId;
+/// <reference path="./app.d.ts"/>
 
 declare namespace Realm {
     interface CollectionChangeSet {
@@ -83,6 +82,8 @@ declare namespace Realm {
         schema: ObjectSchema;
     }
 
+    type PrimaryKey = number | string | Realm.BSON.ObjectId | Realm.BSON.UUID;
+
     /**
      * ObjectType
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectType }
@@ -97,12 +98,28 @@ declare namespace Realm {
     type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
 
+    interface SSLVerifyObject {
+        serverAddress: string;
+        serverPort: number;
+        pemCertificate: string;
+        acceptedByOpenSSL: boolean;
+        depth: number;
+    }
+
+    type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
+    interface SSLConfiguration {
+        validate?: boolean;
+        certificatePath?: string;
+        validateCallback?: SSLVerifyCallback;
+    }
+
     interface SyncConfiguration {
         user: User;
-        partitionValue: string|number|ObjectId|null;
+        partitionValue: Realm.App.Sync.PartitionValue;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        ssl?: SSLConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
         error?: ErrorCallback;
     }
@@ -282,7 +299,7 @@ declare namespace Realm {
      * List
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.List.html }
      */
-    interface List<T> extends Collection<T> {
+     interface List<T> extends Collection<T> {
         [n: number]: T;
 
         pop(): T | null | undefined;
@@ -311,6 +328,45 @@ declare namespace Realm {
 
     const List: {
         readonly prototype: List<any>;
+    };
+
+
+    /**
+     * Set
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Set.html }
+     */
+     interface Set<T> extends Collection<T> {
+        /**
+         * Delete a value from the Set
+         * @param {T} object Value to delete from the Set
+         * @returns Boolean:  true if the value existed in the Set prior to deletion, false otherwise
+         */
+        delete(object: T): boolean;
+
+        /**
+         * Add a new value to the Set
+         * @param  {T} object Value to add to the Set
+         * @returns The Realm.Set<T> itself, after adding the new value
+         */
+        add(object: T): Realm.Set<T>;
+
+        /**
+         * Clear all values from the Set
+         */
+        clear(): void;
+
+        /**
+         * Check for existence of a value in the Set
+         * @param  {T} object Value to search for in the Set
+         * @returns Boolean: true if the value exists in the Set, false otherwise
+         */
+         has(object: T): boolean;
+
+         readonly size: number
+    }
+
+    const Set: {
+        readonly prototype: Set<any>;
     };
 
     /**
@@ -432,8 +488,10 @@ declare namespace Realm {
             Off,
         }
 
+        type PartitionValue = string|number|Realm.BSON.ObjectId|Realm.BSON.UUID|null;
+
         function getAllSyncSessions(user: Realm.User): [Realm.App.Sync.Session];
-        function getSyncSession(user: Realm.User, partitionValue: string|number|ObjectId|null) : Realm.App.Sync.Session;
+        function getSyncSession(user: Realm.User, partitionValue: Realm.App.Sync.PartitionValue) : Realm.App.Sync.Session;
         function setLogLevel(app: App, logLevel: LogLevel): void;
         function setLogger(app: App, callback: (level: NumericLogLevel, message: string) => void): void;
         function setUserAgent(app: App, userAgent: string): void;
@@ -451,6 +509,12 @@ declare namespace Realm {
          * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
          */
         const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
+    }
+
+    namespace BSON {
+        type Decimal128 = import("bson").Decimal128;
+        type ObjectId = import("bson").ObjectId;
+        type UUID = import("bson").UUID;
     }
 
     const BSON: typeof import("bson");
@@ -588,17 +652,17 @@ declare class Realm {
 
     /**
      * @param  {string} type
-     * @param  {number|string|ObjectId} key
+     * @param  {number|string|ObjectId|UUID} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string, key: number | string | ObjectId): (T & Realm.Object) | undefined;
+    objectForPrimaryKey<T>(type: string, key: Realm.PrimaryKey): (T & Realm.Object) | undefined;
 
     /**
      * @param  {Class} type
-     * @param  {number|string|ObjectId} key
+     * @param  {number|string|ObjectId|UUID} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | ObjectId): T | undefined;
+    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: Realm.PrimaryKey): T | undefined;
 
     /**
      * @param  {string} type

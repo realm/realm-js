@@ -26,7 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
-const { ObjectId } = require("bson");
+const { ObjectId, UUID } = Realm.BSON;
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
@@ -68,7 +68,7 @@ function getSyncConfiguration(user, partition) {
             name: 'Dog',
             primaryKey: '_id',
             properties: {
-                _id: 'objectId?',
+                _id: 'objectId',
                 breed: 'string?',
                 name: 'string',
                 realm_id: 'string?',
@@ -785,26 +785,28 @@ module.exports = {
             -12342908,
             -7482937500235834,
             -Number.MAX_SAFE_INTEGER,
-            new ObjectId(),
+            new ObjectId("603fa0af4caa9c90ff6e126c"),
+            new UUID("f3287217-d1a2-445b-a4f7-af0520413b2a"),
             null
         ];
 
         for (const partitionValue of testPartitionValues) {
-            console.log('>partitionValue', partitionValue)
             const app = new Realm.App(appConfig);
 
-            const user = await app.logIn(Realm.Credentials.anonymous())
+            const user = await app.logIn(Realm.Credentials.anonymous());
 
             const config = getSyncConfiguration(user, partitionValue);
             TestCase.assertEqual(partitionValue, config.sync.partitionValue);
 
+            // TODO: Update docker testing-setup to allow for multiple apps and test each type on a supported App.
+            // Note: This does NOT await errors from the server, as we currently have limitations in the docker-server-setup. All tests with with non-string fails server-side.
             const realm = new Realm(config);
             TestCase.assertDefined(realm);
 
             const spv = realm.syncSession.config.partitionValue;
 
             // BSON types have their own 'equals' comparer
-            if (spv instanceof ObjectId) {
+            if (spv instanceof ObjectId || spv instanceof UUID) {
                 TestCase.assertTrue(spv.equals(partitionValue));
             } else {
                 TestCase.assertEqual(spv, partitionValue);
@@ -832,6 +834,7 @@ module.exports = {
             const user = await app.logIn(Realm.Credentials.anonymous())
 
             const config = getSyncConfiguration(user, partitionValue);
+            // Note: We do not test with Realm.open() as we do not care about server errors (these tests MUST fail before hitting the server).
             TestCase.assertThrows(() => new Realm(config));
         }
     },

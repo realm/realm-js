@@ -49,6 +49,8 @@ var TESTS = {
     ArrayBuffer: require("./array-buffer-tests"),
     DictionaryTest: require("./dictionary-tests")
     // Garbagecollectiontests: require('./garbage-collection'),
+    ArrayBuffer: require("./array-buffer-tests"),
+    SetTests: require("./set-tests")
 };
 
 //FIXME: MIXED: fix for JSC
@@ -69,6 +71,9 @@ if (global.enableSyncTests) {
         TESTS.OpenBehaviorTests = require("./open-behavior-tests");
         TESTS.UserTests = require("./user-tests");
         TESTS.SessionTests = require("./session-tests");
+        TESTS.UUIDSyncTests= node_require("./uuid-sync-tests");
+        TESTS.PartitionValueTests = node_require("./partition-value-tests");
+        TESTS.SetSyncTests = node_require("./set-sync-tests");
     }
 }
 
