@@ -1,0 +1,37 @@
+name: Integration Testing Realm JS (Pull Request)
+
+on:
+  pull_request:
+    paths:
+      # Source code
+      - '*'
+      - 'lib/**'
+      - 'src/**'
+      - 'types/**'
+      - 'react-native/**'
+      - 'vendor/**'
+      # Integration tests
+      - 'integration-tests/**'
+      # No need to run when updating documentation
+      - '!**.md'
+
+jobs:
+  node:
+    name: Integration Tests (Node.js on Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      # Install the root package (builds the native module)
+      - run: npm ci
+      # Bootstrap lerna sub-packages (builds the packages)
+      - run: npx lerna bootstrap --scope realm-node-tests --include-dependencies
+      # Lint, build and test the package
+      - run: npm test --prefix integration-tests/environments/node
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer
