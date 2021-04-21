@@ -77,7 +77,7 @@ class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
 
         if(!realm_link.is_instance() ||
         !realm_link.belongs_to_realm(realm)){
-            throw std::runtime_error("Only Realm objects are supported.");
+            throw std::runtime_error("Only Realm instances are supported.");
         }
 
         auto realm_object = realm_link.get_realm_object();

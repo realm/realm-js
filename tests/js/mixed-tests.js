@@ -173,7 +173,7 @@ module.exports = {
 
         TestCase.assertThrowsException(
             () => realm.write(()=> realm.create(SingleSchema.name, { a: Object.create({}) }  ) ),
-            new Error('Mixed conversion not possible for type: Object') )
+            new Error('Only Realm instances are supported.') )
     },
 
     async testMixedSync() {
