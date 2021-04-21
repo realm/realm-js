@@ -45,10 +45,10 @@ namespace realm {
             }
 
             template <class JSObject>
-            void remove_accessors(JSObject& js_object, IOCollection* collection){
+            void remove_accessors(JSObject& js_object, IOCollection* collection) {
                 std::vector<std::string> properties = js_object.get_properties();
-                for(std::string& key: properties){
-                    if(!collection->contains(key)){
+                for (std::string& key: properties) {
+                    if (!collection->contains(key)) {
                         js_object.remove_accessor(key);
                     }
                 }
