@@ -50,12 +50,12 @@ class DictionaryNotifications {
     DictionaryNotifications(object_store::Dictionary _dictionary): dictionary{_dictionary}{}
     DictionaryNotifications(DictionaryNotifications &&dictionary) = default;
 
-    bool on_change(Update&& _update){
+    bool on_change(Update&& _update) {
         update = _update;
-        try{
+        try {
             listen_for_collection_changes();
             return true;
-        }catch(...){}
+        } catch(...) {}
 
         return false;
     }
@@ -63,5 +63,4 @@ class DictionaryNotifications {
 
 }  // namespace js
 }  // namespace realm
-
 
