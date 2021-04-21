@@ -17,6 +17,7 @@ on:
 
 jobs:
   node:
+    if: ${{ false }}
     name: Integration Tests (Node.js on Linux)
     runs-on: ubuntu-latest
     steps:
@@ -27,11 +28,32 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-      # Install the root package (builds the native module)
-      - run: npm ci
-      # Bootstrap lerna sub-packages (builds the packages)
+      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
+      - run: npm ci --ignore-scripts
+      # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
       - run: npx lerna bootstrap --scope realm-node-tests --include-dependencies
       # Lint, build and test the package
       - run: npm test --prefix integration-tests/environments/node
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer
+  react-native-ios:
+    name: Integration Tests (React Native on iOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
+      - run: npm ci --ignore-scripts
+      # Build the iOS xcframework
+      - run: ./scripts/build-ios.sh -c Debug -s
+      # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
+      - run: npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
+      # Lint, build and test the package
+      - run: npm run test/ios --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
