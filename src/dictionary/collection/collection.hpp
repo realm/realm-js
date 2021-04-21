@@ -75,10 +75,10 @@ class CollectionAdapter: public IOCollection {
 
 public:
     bool watch(){
-        try{
+        try {
             listen_for_collection_changes();
             return true;
-        }catch(...){}
+        } catch(...) {}
 
         return false;
     }
