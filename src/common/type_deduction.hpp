@@ -15,14 +15,14 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
+#pragma once
 #include <iostream>
 #include <map>
 
 #include "js_types.hpp"
 #include "types.hpp"
 
-#pragma once
+
 
 namespace realm {
 namespace js {

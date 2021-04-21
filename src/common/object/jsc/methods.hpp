@@ -15,13 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+#pragma once
 #include <iterator>
 
 
 #include "common/object/observer.hpp"
 #include "common/collection.hpp"
 
-#pragma once
 namespace method{
     struct Arguments {
         JSContextRef context;

@@ -15,12 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+#pragma once
 #include <iterator>
 
 #include "common/collection.hpp"
 #include "common/object/observer.hpp"
 
-#pragma once
+
 
 auto NodeCallbackWrapper(const Napi::CallbackInfo &values) {
     return [&](int index) -> Napi::Value { return values[index]; };

@@ -15,13 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
+#pragma once
 #include <iostream>
 
 #include "object/interfaces.hpp"
 #include "object/strategies.hpp"
 
-#pragma once
+
 
 namespace realm {
 namespace js {

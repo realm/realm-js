@@ -15,8 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-#include "common/object/interfaces.hpp"
 #pragma once
+#include "common/object/interfaces.hpp"
+
 
 namespace realm {
 namespace js {

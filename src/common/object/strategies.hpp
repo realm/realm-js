@@ -15,12 +15,12 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
+#pragma once
 #include <iostream>
 
 #include "common/object/interfaces.hpp"
 
-#pragma once
+
 
 template <typename VM>
 struct NoBuilder {

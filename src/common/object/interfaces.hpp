@@ -15,6 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+#pragma once
 
 #if REALM_PLATFORM_NODE
 #include "node/subscriber.hpp"
