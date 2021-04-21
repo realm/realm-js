@@ -67,7 +67,7 @@ class CollectionAdapter: public IOCollection {
     }
 
     template <typename... Args>
-    void notify(Args... args){
+    void notify(Args... args) {
         if(update) {
             update(args...);
         }
