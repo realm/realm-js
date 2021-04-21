@@ -3,7 +3,7 @@ import { expect } from "chai";
 
 import { importApp } from "../utils/import-app";
 
-describe.skipIf("localOnly", "importApp utility", function() {
+describe.skipIf("missingServer", "importApp utility", function() {
   this.slow(2000);
 
   it("can import an app", async () => {
