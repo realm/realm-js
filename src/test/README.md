@@ -8,7 +8,7 @@ doing it, we can enjoy the added benefit of also unit test our C++ codebase and 
 
 >As a *proof of concept* this folder includes Dictionary tests against [JavaScriptCore](https://developer.apple.com/documentation/javascriptcore).
 
-### API's
+### APIs
 
 To achieve this we can use the following libraries:  
 
