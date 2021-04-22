@@ -3,6 +3,9 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 
 platform :ios, '10.0'
 
+# Remove all warnings to limit the build logs
+inhibit_all_warnings!
+
 target 'RealmReactNativeTests' do
   config = use_native_modules!
 
@@ -15,7 +18,7 @@ target 'RealmReactNativeTests' do
   # Since we're installing Realm using install-local,
   # auto-linking won't find a key for it in our package.json's dependencies,
   # hence, we need to add this manually
-  pod 'RealmJS', :path => '../../../..'
+  pod 'RealmJS', :path => '../../../..', :inhibit_warnings => false
 
   target 'RealmReactNativeTestsTests' do
     inherit! :complete
