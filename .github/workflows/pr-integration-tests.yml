@@ -64,8 +64,12 @@ jobs:
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
       # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
-      # Lint, build and test the package
+      # Run the tests (natively and in Chome debugging mode)
       - run: npm run test/ios --prefix integration-tests/environments/react-native
         env:
-          MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_CONTEXT: missingServer,mode=native
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+      - run: npm run test/ios --prefix integration-tests/environments/react-native
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer,mode=chrome-debugging
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter

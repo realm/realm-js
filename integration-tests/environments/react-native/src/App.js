@@ -43,6 +43,14 @@ const mode =
         ? "native"
         : "chrome-debugging";
 
+function ensureMode(desiredMode) {
+    if (desiredMode === "native" && mode !== "native") {
+        NativeModules.DevSettings.setIsDebuggingRemotely(false);
+    } else if (desiredMode === "chrome-debugging" && mode !== "chrome-debugging") {
+        NativeModules.DevSettings.setIsDebuggingRemotely(true);
+    }
+}
+
 export class App extends Component {
     state = { status: "disconnected" };
 
@@ -173,6 +181,7 @@ export class App extends Component {
             id: Platform.OS,
             title: `React-Native on ${Platform.OS} (${mode})`,
             tests(context) {
+                ensureMode(context.mode);
                 /* eslint-env mocha */
                 global.fs = require("react-native-fs");
                 global.path = require("path-browserify");
