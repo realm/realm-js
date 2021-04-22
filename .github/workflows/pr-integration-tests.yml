@@ -47,8 +47,11 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
+      # TODO: Expose a way to skip building the Node.js native module
+      - name: Patch package.json to avoid building Node.js native module
+        run: cat <<< $(jq '.scripts.install = "echo skipping install"' < package.json) > package.json
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
-      - run: npm ci --ignore-scripts
+      - run: npm ci
       # Restore the xcframework from cache (if possible)
       - uses: actions/cache@v2
         name: Restore xcframework from cache
@@ -65,3 +68,4 @@ jobs:
       - run: npm run test/ios --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter

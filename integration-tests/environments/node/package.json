@@ -14,6 +14,7 @@
     "https-proxy-agent": "^2.2.3",
     "mocha": "^8.3.2",
     "mocha-cli": "^1.0.1",
+    "mocha-github-actions-reporter": "^0.2.3",
     "mocha-junit-reporter": "^1.18.0",
     "mocha-remote-cli": "1.1.0",
     "mocha-remote-client": "1.0.0",
