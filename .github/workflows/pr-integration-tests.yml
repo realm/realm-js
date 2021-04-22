@@ -18,7 +18,7 @@ on:
 jobs:
   node:
     if: ${{ false }}
-    name: Integration Tests (Node.js on Linux)
+    name: Node.js on Linux
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -37,7 +37,7 @@ jobs:
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
   react-native-ios:
-    name: Integration Tests (React Native on iOS)
+    name: React Native on iOS
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
@@ -49,10 +49,18 @@ jobs:
           registry-url: https://registry.npmjs.org/
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
-      # Build the iOS xcframework
+      # Restore the xcframework from cache (if possible)
+      - uses: actions/cache@v2
+        name: Restore xcframework from cache
+        id: cache-xcframework
+        with:
+          path: react-native/ios/realm-js-ios.xcframework
+          key: xcframework-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
+      # Build the iOS xcframework (if the cache didn't hit)
       - run: ./scripts/build-ios.sh -c Debug -s
+        if: steps.cache-xcframework.outputs.cache-hit != 'true'
       # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
-      - run: npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
+      - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Lint, build and test the package
       - run: npm run test/ios --prefix integration-tests/environments/react-native
         env:
