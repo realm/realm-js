@@ -1748,5 +1748,5 @@ module.exports = {
             realm.objects(schemas.AddressSchema.name);
         });
         realm.close();
-    },
+    }
 };

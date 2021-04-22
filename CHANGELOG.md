@@ -8,6 +8,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 ### Enhancements
 * Added Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
 * Added support for HTTP proxy.
+* Added Set type ([#3378](https://github.com/realm/realm-js/issues/3378)).
 * Array of primitive lists will not be `snapshot()`'ed.
 * Added `ssl` option to `Realm.App.Sync` configuration.
 * Added UUID types. ([#3244](https://github.com/realm/realm-js/issues/3244))
@@ -25,6 +26,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * Bump the Realm Sync protocol version to 3.
 * Bump Realm File Format version to 21.
 * Prebuild the React Native iOS variant and bundle it in the npm tarball. ([#3649](https://github.com/realm/realm-js/pull/3649))
+* Upgraded Realm Core to v11.0.0-beta.3.
 
 10.2.0 Release notes (2021-2-5)
 =============================================================

@@ -24,7 +24,7 @@ exports.DogForSync = {
     name: 'Dog',
     primaryKey: '_id',
     properties: {
-        _id: 'objectId?', // NOTE: this needs to be changed to non-optional in the docker image.
+        _id: 'objectId',
         breed: 'string?',
         name: 'string',
         realm_id: 'string?',
@@ -35,7 +35,7 @@ exports.PersonForSync = {
     name: 'Person',
     primaryKey: '_id',
     properties: {
-        _id: 'objectId?',
+        _id: 'objectId',
         age: 'int',
         dogs: 'Dog[]',
         firstName: 'string',
@@ -389,7 +389,7 @@ exports.ParentObject = {
     name: 'ParentObject',
     primaryKey: '_id',
     properties: {
-        _id:           'objectId?',
+        _id:           'objectId',
         id:            'int',
         name:          'NameObject[]'
     }
@@ -399,7 +399,7 @@ exports.NameObject = {
     name: 'NameObject',
     primaryKey: '_id',
     properties: {
-        _id:          'objectId?',
+        _id:          'objectId',
         family:       'string',
         given:        'string[]',
         prefix:       'string[]'
