@@ -43,7 +43,7 @@ class DictionarySchema {
     }
 
     realm::PropertyType make_generic() {
-        return realm::PropertyType::Dictionary | realm::PropertyType::Mixed;
+        return realm::PropertyType::Dictionary | realm::PropertyType::Mixed | realm::PropertyType::Nullable;
     }
 
     realm::PropertyType schema() {
@@ -58,7 +58,7 @@ class DictionarySchema {
         }
 
         auto dictionary_type_value = type_deduction.realm_type(type);
-        return (realm::PropertyType::Dictionary |
+        return (realm::PropertyType::Dictionary | realm::PropertyType::Nullable |
                 static_cast<realm::PropertyType>(dictionary_type_value));
     }
 
@@ -66,4 +66,3 @@ class DictionarySchema {
 };
 }  // namespace js
 }  // namespace realm
-

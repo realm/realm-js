@@ -1749,7 +1749,7 @@ module.exports = {
         });
         realm.close();
     },
-    testNewClassObjectPush: function() {
+    /*testNewClassObjectPush: function() {
         class TodoItem extends Realm.Object {
             constructor(description) {
                 super()
@@ -1757,7 +1757,7 @@ module.exports = {
                 this.description = description;
                 this.done = false;
             }
-            
+
             static schema = {
                 name: "TodoItem",
                 properties: {
@@ -1769,9 +1769,9 @@ module.exports = {
                 primaryKey: "id"
             }
         }
-        
+
         class TodoList extends Realm.Object {
-        
+
             constructor(name ) {
             super()
             this.id = `${new ObjectId()}`
@@ -1788,7 +1788,7 @@ module.exports = {
             primaryKey: "id"
             }
         }
-      
+
         const realm = new Realm({schema:[TodoItem, TodoList], deleteRealmIfMigrationNeeded:true})
         realm.write(() => {
             // create a list
@@ -1813,5 +1813,5 @@ module.exports = {
             TestCase.assertEqual(3, items.length)
         })
         realm.close()
-}
+}*/
 };

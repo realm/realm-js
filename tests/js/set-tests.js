@@ -33,7 +33,7 @@ const fs = isNodeProcess ? nodeRequire('fs-extra') : require('react-native-fs');
 
 module.exports = {
     async testSetSchema() {
-        // test that short (JS) and canonical schema types yield
+        // Test that short (JS) and canonical schema types yield
         // the same results
         const shorthandSchema = {
             name: "ShorthandSchema",
@@ -58,7 +58,7 @@ module.exports = {
         const canSchema = canonicalRealm.schema;
         canonicalRealm.close();
 
-        TestCase.assertEqual(shSchema.properties, canSchema.properties, 
+        TestCase.assertEqual(shSchema.properties, canSchema.properties,
             "Canonical and shorthand schemas should have idendical properties");
     },
 

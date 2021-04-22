@@ -131,4 +131,3 @@ struct TypeDeduction : GenericTypeDeductionImpl {};
 
 }  // namespace js
 }  // namespace realm
-

@@ -495,7 +495,7 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
                 return is_date(context, value) || is_string(context, value);
             case PropertyType::Object:
                 return true;
-            case PropertyType::Mixed: 
+            case PropertyType::Mixed:
                 return true;
             case PropertyType::UUID:
                 return is_uuid(context, value);
@@ -511,8 +511,8 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
             && (type != PropertyType::Object || list->get_object_schema().name == object_type);
     };
 
-    
-    if (!realm::is_array(type) && !realm::is_set(type)) {
+
+    if (!realm::is_array(type) && !realm::is_set(type) && !realm::is_dictionary(type)) {
         return check_value(value);
     }
 
@@ -524,15 +524,12 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
         if (Object<T>::template is_instance<ListClass<T>>(context, object)) {
             return check_collection_type(get_internal<T, ListClass<T>>(context, object));
         }
-        if(type == PropertyType::Dictionary) {
+        if (Object<T>::template is_instance<SetClass<T>>(context, object)) {
+            return check_collection_type(get_internal<T, SetClass<T>>(context, object));
+        }
+        if (realm::is_dictionary(type)) { // FIXME: check type of `value`
             return true; // dictionary place-holder
         }
-
-        //TODO: add checks for sets and dictionaries
-    }
-
-    if (!realm::is_array(type)) {
-        return check_value(value);
     }
 
     if (type == PropertyType::Object) {

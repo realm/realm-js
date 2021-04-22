@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-    
+
 "use strict";
 
 const Realm = require("realm");
@@ -94,9 +94,7 @@ module.exports = {
                a: "int{}"
            }
        }
-
        let realm = new Realm({schema: [DictIntSchema]})
-
        realm.write(() => realm.create(DictIntSchema.name, {a: {x: 1, y: 2, z: 4}}))
        let data = realm.objects(DictIntSchema.name)[0]
        TestCase.assertEqual(data.a.x, 1, "Should be an equals to a.x = 1");
@@ -105,7 +103,7 @@ module.exports = {
 
        let err = new Error("Property must be of type 'number', got (error)")
        TestCase.assertThrowsException(() =>realm.write(() => realm.create(DictIntSchema.name, {a: { c:"error" }})), err)
-       TestCase.assertThrowsException(() =>realm.write(() => data.a = "cc"), new Error("Dictionary.a must be of type 'number', got 'string' ('cc')"))
+       TestCase.assertThrowsException(() =>realm.write(() => data.a = "cc"), new Error("Dictionary.a must be of type 'number{}', got 'string' ('cc')"))
    },
     testDictionaryHandlingSchemaParsingError(){
         const DictWrongSchema = {
@@ -311,7 +309,7 @@ module.exports = {
 
         delete ff.fields.x1
         delete ff.fields.x2
-        
+
         TestCase.assertEqual(Object.keys(ff.fields)[0], "x2", "Should contain x2 field")
         TestCase.assertEqual(Object.keys(ff.fields)[1], "x1", "Should contain x1 field")
     },
@@ -468,5 +466,3 @@ module.exports = {
 
     } */
 }
-
- 
