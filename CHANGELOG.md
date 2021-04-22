@@ -13,13 +13,16 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* <Either mention core version or upgrade>
+* <Using Realm Core vX.Y.Z>
+* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+
 
 10.4.0 Release notes (2021-4-15)
 =============================================================
 ### Enhancements
 * We now make a backup of the realm file prior to any file format upgrade. The backup is retained for 3 months. Backups from before a file format upgrade allows for better analysis of any upgrade failure. We also restore a backup, if a) an attempt is made to open a realm file whith a “future” file format and b) a backup file exist that fits the current file format. ([#4166](https://github.com/realm/realm-core/pull/4166))
- 
+
 
 ### Fixed
 * Using node version 15, the error `sh: cmake-js: command not found` will prevent installation. ([#3670](https://github.com/realm/realm-js/issues/3670), since v10.3.0-rc.1)
