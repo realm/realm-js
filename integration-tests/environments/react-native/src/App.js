@@ -247,8 +247,6 @@ export class App extends Component {
                         status: "ended",
                         failures: runner.failures,
                     });
-                    // Stop trying to connect to the remote server
-                    this.client.disconnect();
                     delete this.client;
                     delete this.runner;
                 });
