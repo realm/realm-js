@@ -11,11 +11,11 @@
   "main": "app/main.js",
   "scripts": {
     "package": "electron-builder --dir",
-    "runner/main": "node runner.js main",
-    "runner/renderer": "node runner.js renderer",
-    "test": "npm run test/main && npm run test/renderer",
-    "test/main": "mocha-remote --id main -- concurrently npm:app-importer npm:runner/main",
-    "test/renderer": "mocha-remote --id renderer -- concurrently npm:app-importer npm:runner/renderer",
+    "runner:main": "node runner.js main",
+    "runner:renderer": "node runner.js renderer",
+    "test": "npm run test:main && npm run test:renderer",
+    "test:main": "mocha-remote --id main -- concurrently npm:app-importer npm:runner:main",
+    "test:renderer": "mocha-remote --id renderer -- concurrently npm:app-importer npm:runner:renderer",
     "app-importer": "realm-app-importer serve ../../realm-apps"
   },
   "devDependencies": {

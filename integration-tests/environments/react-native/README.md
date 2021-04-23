@@ -10,10 +10,10 @@ Currently this directory consists of:
   - `react-native-cli.js` wraps the `react-native` CLI.
   - `xcode-cli.js` wraps the `react-native` CLI.
 
-To install this environment, simply run:
+To install this environment, run the following command from the root directory of repository:
 
 ```bash
-npm install
+npx bootstrap --scope realm-react-native-tests --include-dependencies
 ```
 
 This will run `install-local` and `pod install` (in `./ios`) for you.
@@ -23,13 +23,13 @@ This will run `install-local` and `pod install` (in `./ios`) for you.
 To run tests on Android, start an emulator and run:
 
 ```bash
-npm run test/android
+npm run test:android
 ```
 
 To run tests on iOS:
 
 ```bash
-npm run test/ios
+npm run test:ios
 ```
 
 To run tests in both processes in sequence, start an Android emulator and run:
@@ -42,18 +42,18 @@ npm test
 
 When making rapid iterations on the tests or Realm JS, its important to shorten the latency from change to feedback.
 
-To run the tests in watch mode, prepend the `--watch` runtime option when starting the tests:
+To run the tests in watch mode, use the `watch:*` scripts:
 
 On Android
 
 ```bash
-npm run test/android -- --watch
+npm run watch:android
 ```
 
 On iOS
 
 ```bash
-npm run test/ios -- --watch
+npm run watch:ios
 ```
 
 This will keep the harness, metro server and mocha-remote servers running and connected to the device. When hot reloading (from an update to Realm JS, the tests or the app itself) the app will re-connect and rerun the tests.
@@ -62,7 +62,7 @@ This will keep the harness, metro server and mocha-remote servers running and co
 
 In an attempt to lower the time from change to the Realm JS source-code or the integration test suite, to a test being run, this React Native app has a couple of weird configurations.
 
-Because we're not listing `realm` as a `dependency` of our `package.json` we won't be relying on React Native auto-linking.
+Because we're not listing `realm` as a `dependency` of our `package.json` we can't rely on React Native auto-linking.
 This gives us an opportunity to manually link to the root project, removing the need to reinstall the `realm` package or link build artifacts into the `node_modules/realm` directory.
 
 ### Metro bundler configuration
@@ -124,14 +124,14 @@ target 'RealmReactNativeTests' do
 end
 ```
 
-### TODO: Automating setting app to run in debugging mode
+### Automating setting app to run in debugging mode
 
-On Android we can set the `remote_js_debug` preference by pushing a file via the ADB CLI:
+Running in chrome debugging vs native mode can be switched manually in the app or alternatively via a Mocha Remote context parameter.
+The package defines a couple of scripts for convenience:
 
 ```
-adb shell
-run-as com.realmreactnativetests
-cat shared_prefs/com.realmreactnativetests_preferences.xml
+npm run test:ios:chrome
+npm run test:android:chrome
+npm run watch:ios:chrome
+npm run watch:android:chrome
 ```
-
-On iOS 

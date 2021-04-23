@@ -50,7 +50,7 @@ jobs:
       # TODO: Expose a way to skip building the Node.js native module
       - name: Patch package.json to avoid building Node.js native module
         run: cat <<< $(jq '.scripts.install = "echo skipping install"' < package.json) > package.json
-      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
+      # Install the root package
       - run: npm ci
       # Restore the xcframework from cache (if possible)
       - uses: actions/cache@v2
@@ -59,17 +59,19 @@ jobs:
         with:
           path: react-native/ios/realm-js-ios.xcframework
           key: xcframework-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
-      # Build the iOS xcframework (if the cache didn't hit)
+      # Build the iOS xcframework (if cache missed)
       - run: ./scripts/build-ios.sh -c Debug -s
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
       # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests (natively and in Chome debugging mode)
-      - run: npm run test/ios --prefix integration-tests/environments/react-native
+      - name: Run tests (Native)
+        run: npm run test:ios --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer,mode=native
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-      - run: npm run test/ios --prefix integration-tests/environments/react-native
+      - name: Run tests (Chrome Debugging)
+        run: npm run test:ios --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer,mode=chrome-debugging
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter

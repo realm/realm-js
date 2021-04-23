@@ -1,12 +1,10 @@
 # Realm JS tests running in an Electron environment
 
-To install this environment, simply run:
+To install this environment, run the following command from the root directory of repository:
 
 ```bash
-npm install
+npx bootstrap --scope realm-electron-tests --include-dependencies
 ```
-
-The `realm` and `realm-integration-tests` packages are listed as local archive `dependencies` in the `package.json` because `electron-builder` will only include packages listed in `dependencies` in the packaged `app.asar` file. To avoid integrity checks failing when NPM compares the SHA of the archives with SHA in the package-lock.json we `npm install` the archives on `preinstall`.
 
 Currently this directory consists of:
 - `runner.js` which start the Mocha remote server and the Electron app (using the distribution package when available).
@@ -20,11 +18,11 @@ Currently this directory consists of:
 
 To run tests in the main process:
 
-    npm run test/main
+    npm run test:main
 
 To run tests in a renderer process:
 
-    npm run test/renderer
+    npm run test:renderer
 
 To run tests in both processes in sequence:
 
