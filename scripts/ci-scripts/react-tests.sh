@@ -154,8 +154,8 @@ delete_ios_simulator() {
   xcrun simctl delete ${SIM_DEVICE_NAME} || true
 }
 
-npm ci --ignore-scripts
-npm run check-environment
+#npm ci --ignore-scripts
+#npm run check-environment
 
 echo "building iOS binaries"
 #./scripts/build-ios.sh -s -c $CONFIGURATION
@@ -164,7 +164,9 @@ echo "building iOS binaries"
 # start_server
 
 pushd tests/react-test-app
+echo "tests/react-test-app npm ci --no-optional"
 npm ci --no-optional
+echo "installing install-local"
 ./node_modules/.bin/install-local
 # open_chrome
 # start_packager

@@ -48,11 +48,11 @@ if (options.arch) {
 
 const buildType = options.buildType;
 
-const ndkPath = process.env["ANDROID_NDK"];
-if (!ndkPath) {
-    throw Error("ANDROID_NDK environment variable not set");
-}
 const ndkPath = process.env["ANDROID_NDK"] || process.env["ANDROID_NDK_HOME"];
+
+if (!ndkPath) {
+    throw Error("ANDROID_NDK / ANDROID_NDK_HOME environment variable not set");
+}
 
 const sdkPath = getAndroidSdkPath();
 const cmakePath = getCmakePath(sdkPath);
