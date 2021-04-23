@@ -65,6 +65,12 @@ jobs:
         with:
           path: ~/Library/Developer/Xcode/DerivedData
           key: xcode-derived-data
+      # Restore the CocoaPods
+      - uses: actions/cache@v2
+        name: Restore CocoaPods from cache
+        with:
+          path: integration-tests/environments/react-native/ios/Pods
+          key: cocoapods
       # Build the iOS xcframework (if cache missed)
       - run: ./scripts/build-ios.sh -c Debug -s
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
