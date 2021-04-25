@@ -45,7 +45,7 @@ When fixing a single failing test, it's beneficial to use mochas [`--grep`](http
 npm start -- --grep "Realm#constructor"
 ```
 
-It's adviced to have two terminals open, one occationally running `npm run build-changes` (from the project root directory) when changes are made to the C++ source-code of Realm JS and another running `npm start` (from the `./tests` directory) to continiously run the integration tests when code change.
+It's advised to have two terminals open, one occasionally running `npm run build-changes` (from the project root directory) when changes are made to the C++ source-code of Realm JS and another running `npm start` (from the `./tests` directory) to continiously run the integration tests when code change.
 The tests will re-run when the test suite changes and it has Realm JS installed as a symbolic link and will therefore run the latest Realm JS javascript code when the tests run. To reload the native module, you will however need to kill and restart the process running in the second terminal.
 
 ### Running the tests in all or specific environments

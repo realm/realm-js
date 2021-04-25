@@ -39,9 +39,9 @@ Options:
   --help                 Show help                                     [boolean]
   --base-url             Base url of the stitch server to import the app into
                                      [string] [default: "http://localhost:9090"]
-  --username             Username of an adminstrative user
+  --username             Username of an administrative user
                                     [string] [default: "unique_user@domain.com"]
-  --password             Password of an adminstrative user
+  --password             Password of an administrative user
                                                   [string] [default: "password"]
   --config               Path for the stitch-cli configuration to temporarily
                          store credentials
@@ -52,7 +52,7 @@ Options:
   --app-id-port          Starts up an HTTP server and serves the app id [number]
 ```
 
-Besides the `<template-path>` the CLI takes a few optional runtime parameters, most of which should be self-explainatory and set to defaults that should ease the usecase of integration tests agains local deployments.
+Besides the `<template-path>` the CLI takes a few optional runtime parameters, most of which should be self-explainatory and set to defaults that should ease the usecase of integration tests against local deployments.
 
 When using this for integration tests, there exists a couple of ways to get a hold of the id of the app, once it's imported:
 

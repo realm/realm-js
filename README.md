@@ -168,7 +168,7 @@ Some users have reported the Chrome debugging being too slow to use after integr
 
 ## Running the tests
 
-The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your prefered shell setup:
+The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your preferred shell setup:
 
 ```
 export NVM_DIR="$HOME/.nvm"
