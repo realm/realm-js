@@ -61,6 +61,13 @@ jobs:
         with:
           path: react-native/ios/realm-js-ios.xcframework
           key: xcframework-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
+      # Restore the build artifacts from cache (if xcframework cache got hit)
+      - uses: actions/cache@v2
+        name: Restore iOS build artifacts from cache
+        if: steps.cache-xcframework.outputs.cache-hit == 'true'
+        with:
+          path: react-native/ios/build
+          key: ios-build-artifacts
       # Restore the derived data
       - uses: actions/cache@v2
         name: Restore Xcode "derived data" from cache
