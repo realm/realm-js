@@ -73,6 +73,8 @@ jobs:
         with:
           path: integration-tests/environments/react-native/ios/Pods
           key: cocoapods-${{ hashFiles('integration-tests/environments/react-native/ios/Podfile.lock') }}
+          restore-keys: | # Enables running from an old build
+            cocoapods-
       # Build the iOS xcframework (if cache missed)
       - run: ./scripts/build-ios.sh -c Debug -s
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
@@ -90,3 +92,4 @@ jobs:
         env:
           MOCHA_REMOTE_CONTEXT: missingServer,mode=chrome-debugging
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+          HEADLESS_DEBUGGER: true

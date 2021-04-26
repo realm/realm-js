@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+const puppeteer = require("puppeteer");
+
 const rn = require("./react-native-cli");
 const android = require("./android-cli");
 const xcode = require("./xcode-cli");
@@ -106,9 +108,21 @@ function ensureSimulator(platform, deleteExisting = false) {
     }
 }
 
-async function runApp(platform) {
+async function run(platform, headlessDebugger) {
     // Ensure the simulator is booted and ready for the app to start
     ensureSimulator(platform);
+
+    // Connect the debugger, right away
+    if (headlessDebugger) {
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        page.on("console", msg => {
+            const type = msg.type();
+            const log = console[typeof console[type] === "function" ? type : "log"];
+            log("[chrome]", msg.text());
+        });
+        await page.goto("http://localhost:8081/debugger-ui/");
+    }
 
     console.log("Starting the app");
     if (platform === "android") {
@@ -124,7 +138,8 @@ async function runApp(platform) {
 
 if (module.parent === null) {
     const platform = process.env.PLATFORM;
-    runApp(platform).catch(err => {
+    const headlessDebugger = process.env.HEADLESS_DEBUGGER === "true";
+    run(platform, headlessDebugger).catch(err => {
         console.error(err.stack);
         process.exit(1);
     });
