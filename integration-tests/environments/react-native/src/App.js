@@ -176,7 +176,8 @@ export class App extends Component {
                 if (typeof context.mode === "string" && context.mode !== mode) {
                     this.client.disconnect();
                     NativeModules.DevSettings.setIsDebuggingRemotely(context.mode === "chrome-debugging");
-                    throw new Error(`Switching mode to '${context.mode}'`);
+                    console.log(`Switching mode to '${context.mode}'`);
+                    return;
                 }
                 /* eslint-env mocha */
                 global.fs = require("react-native-fs");
@@ -190,6 +191,7 @@ export class App extends Component {
                 };
                 // Make all test related modules reinitialize
                 const modules = require.getModules();
+                console.log(modules);
                 for (const [_id, m] of Object.entries(modules)) {
                     if (m.verboseName.startsWith("../../tests/")) {
                         m.isInitialized = false;
