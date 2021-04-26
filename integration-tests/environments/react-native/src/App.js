@@ -191,8 +191,8 @@ export class App extends Component {
                 };
                 // Make all test related modules reinitialize
                 const modules = require.getModules();
-                console.log(modules);
                 for (const [_id, m] of Object.entries(modules)) {
+                    console.log(m.verboseName);
                     if (m.verboseName.startsWith("../../tests/")) {
                         m.isInitialized = false;
                     }
