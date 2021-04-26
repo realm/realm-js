@@ -16,6 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+// Patching the console.error to include a stack if an error message is logged.
+const originalError = console.error;
+console.error = function error(msg, ...rest) {
+  if (typeof msg === "string") {
+    const err = new Error(msg);
+    originalError(err.stack, ...rest);
+  } else {
+    originalError(msg, ...rest);
+  }
+};
+
 export { App } from "./App";
 
 console.log("Hello from the Realm React Native integration tests!");

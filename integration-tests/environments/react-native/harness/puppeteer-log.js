@@ -49,7 +49,7 @@ async function handleConsole(msg) {
   const type = msg.type();
   const color = COLORS[type] || chalk.white;
   const log = console[type] || console.log;
-  log(color(`chrome-debugging:${type}`), ...args);
+  log(color(`[chrome:${type}]`), ...args);
 }
 
 module.exports = { handleConsole };
