@@ -193,15 +193,17 @@ export class App extends Component {
                     ios: Platform.OS === "ios",
                     chromeDebugging: mode === "chrome-debugging",
                 };
-                // Make all test related modules reinitialize
+                // Require in the integration tests
+                require("realm-integration-tests");
+                // Make all test related modules reinitializable
+                /*
                 const modules = require.getModules();
                 for (const [_id, m] of Object.entries(modules)) {
                     if (m.verboseName.startsWith("../../tests/")) {
                         m.isInitialized = false;
                     }
                 }
-                // Require in the integration tests
-                require("realm-integration-tests");
+                */
             },
         });
 
