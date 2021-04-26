@@ -5,10 +5,11 @@
   "main": "dist/index.js",
   "private": true,
   "scripts": {
+    "start": "node start.js --watch",
+    "test": "node start.js --exit",
     "build": "tsc -p .",
-    "start": "concurrently npm:app-importer npm:mocha",
     "app-importer": "realm-app-importer serve ../realm-apps",
-    "mocha": "ts-mocha --project ./tsconfig.json --require src/utils/inject-node-globals.ts --watch-extensions ts,js --watch src/index.ts",
+    "mocha": "ts-mocha --project ./tsconfig.json --require src/utils/inject-node-globals.ts --watch-extensions ts,js src/index.ts",
     "lint": "tslint -p .",
     "prepare": "npm run build"
   },
