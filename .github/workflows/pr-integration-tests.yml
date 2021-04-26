@@ -78,6 +78,7 @@ jobs:
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests (natively and in Chome debugging mode)
       - name: Run tests (Native)
+        if: ${{ false }}
         run: npm run test:ios --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer,mode=native
