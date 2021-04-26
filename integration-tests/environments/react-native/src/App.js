@@ -174,39 +174,34 @@ export class App extends Component {
             title: `React-Native on ${Platform.OS} (${mode})`,
             tests: context => {
                 /* eslint-env mocha */
-                try {
-                    if (typeof context.mode === "string" && context.mode !== mode) {
-                        this.client.disconnect();
-                        NativeModules.DevSettings.setIsDebuggingRemotely(context.mode === "chrome-debugging");
-                        console.log(`Switching mode to '${context.mode}'`);
-                        return;
-                    }
-                    // Adding an async hook before each test to allow the UI to update
-                    beforeEach(() => {
-                        return new Promise(resolve => setTimeout(resolve, 0));
-                    });
-                    global.fs = require("react-native-fs");
-                    global.path = require("path-browserify");
-                    global.environment = {
-                        ...context,
-                        reactNative: Platform.OS,
-                        android: Platform.OS === "android",
-                        ios: Platform.OS === "ios",
-                        chromeDebugging: mode === "chrome-debugging",
-                    };
-                    // Make all test related modules reinitialize
-                    const modules = require.getModules();
-                    for (const [_id, m] of Object.entries(modules)) {
-                        if (m.verboseName.startsWith("../../tests/")) {
-                            m.isInitialized = false;
-                        }
-                    }
-                    // Require in the integration tests
-                    require("realm-integration-tests");
-                } catch (err) {
-                    console.error("Failed to load tests:", err.stack);
-                    throw err;
+                if (typeof context.mode === "string" && context.mode !== mode) {
+                    this.client.disconnect();
+                    NativeModules.DevSettings.setIsDebuggingRemotely(context.mode === "chrome-debugging");
+                    console.log(`Switching mode to '${context.mode}'`);
+                    return;
                 }
+                // Adding an async hook before each test to allow the UI to update
+                beforeEach(() => {
+                    return new Promise(resolve => setTimeout(resolve, 0));
+                });
+                global.fs = require("react-native-fs");
+                global.path = require("path-browserify");
+                global.environment = {
+                    ...context,
+                    reactNative: Platform.OS,
+                    android: Platform.OS === "android",
+                    ios: Platform.OS === "ios",
+                    chromeDebugging: mode === "chrome-debugging",
+                };
+                // Make all test related modules reinitialize
+                const modules = require.getModules();
+                for (const [_id, m] of Object.entries(modules)) {
+                    if (m.verboseName.startsWith("../../tests/")) {
+                        m.isInitialized = false;
+                    }
+                }
+                // Require in the integration tests
+                require("realm-integration-tests");
             },
         });
 

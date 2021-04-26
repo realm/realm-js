@@ -21,6 +21,7 @@ const puppeteer = require("puppeteer");
 const rn = require("./react-native-cli");
 const android = require("./android-cli");
 const xcode = require("./xcode-cli");
+const puppeteerLog = require("./puppeteer-log");
 
 const IOS_DEVICE_NAME = "realm-js-integration-tests";
 const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
@@ -108,19 +109,15 @@ function ensureSimulator(platform, deleteExisting = false) {
     }
 }
 
-async function run(platform, headlessDebugger) {
+async function run(platform, headless) {
     // Ensure the simulator is booted and ready for the app to start
     ensureSimulator(platform);
 
     // Connect the debugger, right away
-    if (headlessDebugger) {
-        const browser = await puppeteer.launch();
+    if (typeof headless === "boolean") {
+        const browser = await puppeteer.launch({ headless });
         const page = await browser.newPage();
-        page.on("console", msg => {
-            const type = msg.type();
-            const log = console[typeof console[type] === "function" ? type : "log"];
-            log("[chrome]", msg.text());
-        });
+        page.on("console", puppeteerLog.handleConsole);
         await page.goto("http://localhost:8081/debugger-ui/");
     }
 
@@ -136,9 +133,13 @@ async function run(platform, headlessDebugger) {
     }
 }
 
+function optionalStringToBoolean(value) {
+    return typeof value === "string" ? value === "true" : value;
+}
+
 if (module.parent === null) {
     const platform = process.env.PLATFORM;
-    const headlessDebugger = process.env.HEADLESS_DEBUGGER === "true";
+    const headlessDebugger = optionalStringToBoolean(process.env.HEADLESS_DEBUGGER);
     run(platform, headlessDebugger).catch(err => {
         console.error(err.stack);
         process.exit(1);
