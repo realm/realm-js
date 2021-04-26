@@ -53,7 +53,14 @@ jobs:
       - name: Patch package.json to avoid building Node.js native module
         run: cat <<< $(jq '.scripts.install = "echo skipping install"' < package.json) > package.json
       # Install the root package
+      - uses: actions/cache@v2
+        name: Restore node_modules
+        id: cache-node-modules
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}
       - run: npm ci
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
       # Restore the xcframework from cache (if possible)
       - uses: actions/cache@v2
         name: Restore xcframework from cache
