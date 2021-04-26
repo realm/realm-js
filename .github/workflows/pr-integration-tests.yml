@@ -47,6 +47,8 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
+      - name: Install tools
+        run: brew install watchman
       # TODO: Expose a way to skip building the Node.js native module
       - name: Patch package.json to avoid building Node.js native module
         run: cat <<< $(jq '.scripts.install = "echo skipping install"' < package.json) > package.json
