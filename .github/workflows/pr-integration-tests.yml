@@ -70,11 +70,11 @@ jobs:
         name: Restore CocoaPods from cache
         with:
           path: integration-tests/environments/react-native/ios/Pods
-          key: cocoapods
+          key: cocoapods-${{ hashFiles('integration-tests/environments/react-native/ios/Podfile.lock') }}
       # Build the iOS xcframework (if cache missed)
       - run: ./scripts/build-ios.sh -c Debug -s
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
-      # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
+      # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests (natively and in Chome debugging mode)
       - name: Run tests (Native)

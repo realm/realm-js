@@ -33,7 +33,7 @@ node_modules/
 npm-debug.log
 build/
 /prebuilds/
-*.lock
+yarn.lock
 
 # Emacs
 *~
@@ -69,6 +69,8 @@ integration-tests/environments/*/realm-config
 integration-tests/environments/electron/dist/
 integration-tests/environments/react-native/ios/Pods/
 integration-tests/tests/dist/
+# TODO: Solve .lock files are produced in "throws when called with an empty string"
+integration-tests/environments/*/.lock
 
 # Realm App Importer artifacts
 **/imported-apps/
