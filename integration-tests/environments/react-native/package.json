@@ -14,7 +14,7 @@
     "watch:ios:chrome": "PLATFORM=ios WATCH=true MODE=chrome-debugging npm run common",
     "watch:android": "PLATFORM=android WATCH=true MODE=native npm run common",
     "watch:android:chrome": "PLATFORM=android WATCH=true MODE=chrome-debugging npm run common",
-    "common": "mocha-remote --context mode=$MODE --id $PLATFORM --watch $WATCH -- concurrently npm:app-importer npm:metro npm:runner",
+    "common": "mocha-remote --context mode=$MODE,$MOCHA_REMOTE_CONTEXT --id $PLATFORM --watch $WATCH -- concurrently npm:app-importer npm:metro npm:runner",
     "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js",
