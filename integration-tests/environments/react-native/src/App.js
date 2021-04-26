@@ -202,7 +202,12 @@ export class App extends Component {
                     return new Promise(resolve => setTimeout(resolve, 0));
                 });
                 // Require in the integration tests
-                require("realm-integration-tests");
+                try {
+                    require("realm-integration-tests");
+                } catch (err) {
+                    console.error("Failed to load tests:", err.stack);
+                    throw err;
+                }
             },
         });
 
