@@ -96,17 +96,27 @@ jobs:
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests (natively and in Chome debugging mode)
-      - name: Run tests (Native)
+      - name: Run tests (iOS / Native)
         if: ${{ false }}
         run: npm run test:ios --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
-      - name: Run tests (Chrome Debugging)
+      - name: Run tests (iOS / Chrome Debugging)
+        if: ${{ false }}
         run: npm run test:ios:chrome --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           HEADLESS_DEBUGGER: true
+      - name: Run tests (Android / Native)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: npm run test:android --prefix integration-tests/environments/react-native
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+          MOCHA_REMOTE_EXIT_ON_ERROR: true
