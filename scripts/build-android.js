@@ -19,7 +19,7 @@
 "use strict";
 
 const commandLineArgs = require("command-line-args");
-const fs = require("fs");
+const fs = require("fs-extra");
 const { arch } = require("os");
 const path = require("path");
 const exec = require("child_process").execFileSync;
@@ -28,17 +28,44 @@ const compareVersions = require("compare-versions");
 //simple validation of current directory.
 const rnDir = path.resolve(process.cwd(), "react-native");
 if (!fs.existsSync(rnDir)) {
-    throw new Error("This script needs to be run at the root dir of the project");
+    throw new Error(
+        "This script needs to be run at the root dir of the project",
+    );
 }
 
-const copyOutputPath = path.resolve(process.cwd(), "react-native", "android", "src", "main", "jniLibs");
+const copyOutputPath = path.resolve(
+    process.cwd(),
+    "react-native",
+    "android",
+    "src",
+    "main",
+    "jniLibs",
+);
 
 const buildTypes = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"];
 let architectures = ["x86", "armeabi-v7a", "arm64-v8a", "x86_64"];
 const optionDefinitions = [
-    { name: "arch", type: validateArchitectures, multiple: false, description: "Build only for a single architecture" },
-    { name: "changes", type: Boolean, defaultValue: false, multiple: false, description: "Build changes only" },
-    { name: "build-type", type: validateBuildType, defaultValue: "Release", multiple: false, description: "CMAKE_BUILD_TYPE: Debug, Release, RelWithDebInfo, MinSizeRel" },
+    {
+        name: "arch",
+        type: validateArchitectures,
+        multiple: false,
+        description: "Build only for a single architecture",
+    },
+    {
+        name: "clean",
+        type: Boolean,
+        defaultValue: false,
+        multiple: false,
+        description: "Remove build folder before build",
+    },
+    {
+        name: "buildType",
+        type: validateBuildType,
+        defaultValue: "Release",
+        multiple: false,
+        description:
+            "CMAKE_BUILD_TYPE: Debug, Release, RelWithDebInfo, MinSizeRel",
+    },
 ];
 const options = commandLineArgs(optionDefinitions, { camelCase: true });
 
@@ -59,13 +86,15 @@ const cmakePath = getCmakePath(sdkPath);
 const cmakeVersion = getCmakeVersion(sdkPath);
 
 const buildPath = path.resolve(process.cwd(), "build-realm-android");
-if (!options.changes) {
+if (options.clean) {
     if (fs.existsSync(buildPath)) {
-        fs.rmdirSync(buildPath, { recursive: true });
+        fs.removeSync(buildPath);
     }
-    fs.mkdirSync(buildPath);
 }
 
+if (!fs.existsSync(buildPath)) {
+    fs.mkdirSync(buildPath);
+}
 //shared root dir to download jsc once for all architectures
 const jscDir = path.resolve(buildPath, "jsc-android");
 
@@ -90,7 +119,7 @@ for (const arch of architectures) {
         `-DCMAKE_BUILD_TYPE=${buildType}`,
         "-DANDROID_STL=c++_static",
         `-DJSC_ROOT_DIR=${jscDir}`,
-        process.cwd()
+        process.cwd(),
     ];
     exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 
@@ -104,7 +133,18 @@ for (const arch of architectures) {
 generateVersionFile();
 
 function generateVersionFile() {
-    const targetFile = path.resolve(process.cwd(), "react-native", "android", "src", "main", "java", "io", "realm", "react", "Version.java");
+    const targetFile = path.resolve(
+        process.cwd(),
+        "react-native",
+        "android",
+        "src",
+        "main",
+        "java",
+        "io",
+        "realm",
+        "react",
+        "Version.java",
+    );
     const version = getVersion();
     const versionFileContents = `package io.realm.react;
 
@@ -117,24 +157,38 @@ public class Version {
 }
 
 function getVersion() {
-    const depencenciesListFile = path.resolve(process.cwd(), "dependencies.list");
+    const depencenciesListFile = path.resolve(
+        process.cwd(),
+        "dependencies.list",
+    );
     const contents = fs.readFileSync(depencenciesListFile, "UTF-8");
     const lines = contents.split(/\r?\n/);
     const versionValue = lines.find(line => line.startsWith("VERSION="));
     if (!versionValue) {
-        throw new Error("Realm version not found. Invalid dependencies.list file");
+        throw new Error(
+            "Realm version not found. Invalid dependencies.list file",
+        );
     }
 
     const version = versionValue.split("=")[1];
     if (!version) {
-        throw new Error("Realm version not found. Invalid version value in dependencies.list file");
+        throw new Error(
+            "Realm version not found. Invalid version value in dependencies.list file",
+        );
     }
 
     return version;
 }
 
 function copyOutput(arch, buildDir) {
-    const outFile = path.resolve(buildDir, "src", "android", "libs", arch, "librealm.so");
+    const outFile = path.resolve(
+        buildDir,
+        "src",
+        "android",
+        "libs",
+        arch,
+        "librealm.so",
+    );
     if (!fs.existsSync(outFile)) {
         throw new Error(`Build output file not found: ${outFile}`);
     }
@@ -165,13 +219,14 @@ function getAndroidSdkPath() {
         return process.env["ANDROID_SDK_HOME"];
     }
 
-
     if ("ANDROID_HOME" in process.env) {
         console.log("Using ANDROID_HOME env variable");
         return process.env["ANDROID_HOME"];
     }
 
-    throw new Error("Android SDK not found. ANDROID_SDK or ANDROID_HOME or ANDROID_SDK_ROOT needs to be set");
+    throw new Error(
+        "Android SDK not found. ANDROID_SDK or ANDROID_HOME or ANDROID_SDK_ROOT needs to be set",
+    );
 }
 
 function getCmakePath(sdkPath) {
@@ -197,7 +252,9 @@ function getCmakeVersion(sdkPath) {
 
 function validateBuildType(buildTypeOption) {
     if (!buildTypes.includes(buildTypeOption)) {
-        throw new Error(`Invalid build type: ${buildTypeOption}. Supported architectures ${buildTypes}`);
+        throw new Error(
+            `Invalid build type: ${buildTypeOption}. Supported architectures ${buildTypes}`,
+        );
     }
 
     return buildTypeOption;
@@ -205,7 +262,9 @@ function validateBuildType(buildTypeOption) {
 
 function validateArchitectures(arch) {
     if (!architectures.includes(arch)) {
-        throw new Error(`"Invalid architecture ${arch}. Supported architectures ${architectures}`);
+        throw new Error(
+            `"Invalid architecture ${arch}. Supported architectures ${architectures}`,
+        );
     }
 
     return arch;
