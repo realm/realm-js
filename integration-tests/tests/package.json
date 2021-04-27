@@ -15,7 +15,6 @@
   },
   "peerDependencies": {
     "bson": "^4.2.3",
-    "mocha": "^5.2.0",
     "realm": "*"
   },
   "devDependencies": {
