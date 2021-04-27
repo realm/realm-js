@@ -204,7 +204,7 @@ export class App extends Component {
                     ios: Platform.OS === "ios",
                     chromeDebugging: mode === "chrome-debugging",
                 };
-                // Make all test related modules reinitializable
+                // Make the tests reinitializable, to allow test running on changes to the "realm" package
                 const modules = require.getModules();
                 for (const [_id, m] of Object.entries(modules)) {
                     if (m.verboseName.startsWith("../../tests/")) {

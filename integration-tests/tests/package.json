@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node start.js --watch",
     "test": "node start.js --exit",
-    "build": "tsc -p .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
     "app-importer": "realm-app-importer serve ../realm-apps",
     "mocha": "ts-mocha --project ./tsconfig.json --require src/utils/inject-node-globals.ts --watch-extensions ts,js src/index.ts",
     "lint": "tslint -p .",
