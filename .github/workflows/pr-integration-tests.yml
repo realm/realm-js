@@ -61,6 +61,14 @@ jobs:
           key: node-modules-${{ hashFiles('package-lock.json') }}
       - run: npm ci
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      # Restore the iOS build folder
+      - uses: actions/cache@v2
+        name: Restore iOS build folder from cache
+        with:
+          path: react-native/ios/build
+          key: ios-build-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
+          restore-keys: |
+            ios-build-
       # Restore the xcframework from cache (if possible)
       - uses: actions/cache@v2
         name: Restore xcframework from cache
