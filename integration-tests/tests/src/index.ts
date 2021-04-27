@@ -16,15 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// import Realm from "realm";
+import Realm from "realm";
 
 console.log("Loading Realm Integration Tests");
 
-it("loads", () => {
-    console.log("Great success!");
-});
-
-/*
 if (!global.fs) {
     throw new Error("Expected 'fs' to be available as a global");
 }
@@ -58,4 +53,3 @@ require("./tests/iterators");
 require("./tests/dynamic-schema-updates");
 require("./tests/bson");
 require("./tests/credentials/anonymous");
-*/
