@@ -66,9 +66,9 @@ jobs:
         name: Restore iOS build folder from cache
         with:
           path: react-native/ios/build
-          key: ios-build-v2-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
+          key: ios-build-dir-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
           restore-keys: |
-            ios-build-v2-*
+            ios-build-dir-
       # Restore the xcframework from cache (if possible)
       - uses: actions/cache@v2
         name: Restore xcframework from cache
@@ -102,14 +102,11 @@ jobs:
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+          MOCHA_REMOTE_EXIT_ON_ERROR: true
       - name: Run tests (Chrome Debugging)
         run: npm run test:ios:chrome --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+          MOCHA_REMOTE_EXIT_ON_ERROR: true
           HEADLESS_DEBUGGER: true
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
-        timeout-minutes: 30

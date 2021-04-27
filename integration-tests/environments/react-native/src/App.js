@@ -36,6 +36,15 @@ import {
 } from "react-native";
 import { Circle } from "react-native-progress";
 
+// Registering an error handler that always throw unhandled exceptions
+// This is to enable the remote-mocha-cli to exit on uncaught errors
+const originalHandler = ErrorUtils.getGlobalHandler();
+ErrorUtils.setGlobalHandler((err, isFatal) => {
+  // Calling the original handler to show the error visually too
+  originalHandler(err, isFatal);
+  throw err;
+});
+
 // NativeModules.DevSettings.setIsDebuggingRemotely(false);
 
 const mode =
@@ -180,6 +189,8 @@ export class App extends Component {
                     console.log(`Switching mode to '${context.mode}'`);
                     return;
                 }
+                // Quick sanity check that "realm" is loadable at all
+                require("realm");
                 // Adding an async hook before each test to allow the UI to update
                 beforeEach(() => {
                     return new Promise(resolve => setTimeout(resolve, 0));

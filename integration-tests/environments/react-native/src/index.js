@@ -18,17 +18,4 @@
 
 export { App } from "./App";
 
-import parseErrorStack from "react-native/Libraries/Core/Devtools/parseErrorStack";
-import symbolicateStackTrace from "react-native/Libraries/Core/Devtools/symbolicateStackTrace";
-
 console.log("Hello from the Realm React Native integration tests!");
-
-try {
-  const Realm = require("realm");
-  console.log("Realm was loaded:", Realm);
-} catch (err) {
-  const stack = parseErrorStack(err.stack);
-  symbolicateStackTrace(stack).then(stack => {
-    console.error("Failed to load Realm!", stack);
-  });
-}
