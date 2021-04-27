@@ -125,7 +125,7 @@
     "lerna": "^4.0.0",
     "license-checker": "^8.0.3",
     "mockery": "^2.0.0",
-    "prebuild": "^10.0.1",
+    "prebuild": "github:takameyer/prebuild#fix_cmake",
     "prettier": "^2.0.4",
     "rimraf": "^2.6.3",
     "semver": "^5.6.0",

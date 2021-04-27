@@ -37,25 +37,36 @@ jobs:
             - name: Cache nodejs build artifacts
               id: cache-nodejs-build
               uses: actions/cache@v2
-              env:
-                  cache-name: cache-nodejs-build
               with:
                   path: build
-                  key: ${{ matrix.os }}-${{matrix.arch}}-build-nodejs-${{hashFiles('./src/**')}}
+                  key: ${{ matrix.os }}-${{matrix.arch}}-v2-build-nodejs-${{hashFiles('./src/**')}}
                   restore-keys: |
-                      ${{ matrix.os }}-${{matrix.arch}}-build-nodejs-
+                      ${{ matrix.os }}-${{matrix.arch}}-v2-build-nodejs-
 
-            - name: Windows Environment setup
-              if: steps.cache-prebuild.outputs.cache-hit != 'true' && matrix.os == 'windows'
-              run: |
-                  Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-                  Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-              shell: powershell
+            - name: Setup Ninja
+              uses: ashutoshvarma/setup-ninja@master
+              with:
+                # ninja version to download. Default: 1.10.0
+                version: 1.10.0
 
+            # - name: Build with CMake
+            #   uses: ashutoshvarma/action-cmake-build@master
+            #   with:
+            #     build-dir: ${{ runner.workspace }}/build
+            #     cc: ${{ matrix.config.cc }}
+            #     cxx: ${{ matrix.config.cxx }}
+            #     configure-options: -G Ninja
+            #     build-type: Release
             # Install node dependencies and build the c++ library
             - name: Build
               run: |
                   npm run package
+
+            - name: Setup tmate session
+              uses: mxschmitt/action-tmate@v3
+              with:
+                  limit-access-to-actor: true
+              timeout-minutes: 30
 
             - name: Upload prebuild artifact
               uses: actions/upload-artifact@v2
@@ -224,20 +235,33 @@ jobs:
               uses: actions/setup-node@v1
 
             - name: Cache android build artifacts
-              id: cache-android-build
+              id: cache-android
               uses: actions/cache@v2
-              env:
-                  cache-name: cache-android-build
               with:
-                  path: build-realm-android
-                  key: build-android-${{matrix.arch}}-${{ hashFiles('./src/**') }}
+                  path: build-realm-android.tgz
+                  key: build-android-v3-${{matrix.arch}}-${{ hashFiles('./src/**') }}
                   restore-keys: |
-                      build-android-${{matrix.arch}}-
+                      build-android-v3-${{matrix.arch}}-
+
+            - name: Decompress cached artifacts
+              if: ${{steps.cache-android.outputs.cach-hit}}
+              run: tar xf build-realm-android.tgz
+
+            - name: Setup tmate session
+              if: ${{matrix.arch == 'x86'}}
+              uses: mxschmitt/action-tmate@v3
+              with:
+                  limit-access-to-actor: true
+              timeout-minutes: 30
 
             - name: Build Android
               run: |
                   npm ci --ignore-scripts
                   node scripts/build-android.js --arch=${{matrix.arch}}
+
+            - name: Compress build artifacts
+              run: |
+                  tar cf build-realm-android.tgz build-realm-android
 
             - name: Upload android artifact
               uses: actions/upload-artifact@v2
@@ -246,7 +270,8 @@ jobs:
                   path: react-native/android/src/main/jniLibs
 
     test-node:
-        needs: [build-prebuild-macos, build-prebuild-linux, build-prebuild-windows]
+        needs:
+            [build-prebuild-macos, build-prebuild-linux, build-prebuild-windows]
         strategy:
             fail-fast: true
             matrix:
@@ -284,7 +309,8 @@ jobs:
               run: npm test
 
     test-electron:
-        needs: [build-prebuild-macos, build-prebuild-windows, build-prebuild-linux]
+        needs:
+            [build-prebuild-macos, build-prebuild-windows, build-prebuild-linux]
         strategy:
             fail-fast: true
             matrix:
@@ -491,7 +517,6 @@ jobs:
 
             - name: Publish to Github
               run: npx prebuild --upload-all ${{ secrets.GITHUB_TOKEN }}
-
             # - name: Setup tmate session
             #   uses: mxschmitt/action-tmate@v3
             #   if: ${{ failure() }}
