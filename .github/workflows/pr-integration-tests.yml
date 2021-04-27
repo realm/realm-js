@@ -51,7 +51,7 @@ jobs:
         run: brew install watchman
       # TODO: Expose a way to skip building the Node.js native module
       - name: Patch package.json to avoid building Node.js native module
-        run: cat <<< $(jq '.scripts.install = "echo skipping install"' < package.json) > package.json
+        run: cat <<< $(jq '.scripts.install = "echo skipping building Node.js binary"' < package.json) > package.json
       # Install the root package
       - uses: actions/cache@v2
         name: Restore node_modules
@@ -100,12 +100,12 @@ jobs:
         if: ${{ false }}
         run: npm run test:ios --prefix integration-tests/environments/react-native
         env:
-          MOCHA_REMOTE_CONTEXT: missingServer,mode=native
+          MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       - name: Run tests (Chrome Debugging)
-        run: npm run test:ios --prefix integration-tests/environments/react-native
+        run: npm run test:ios:chrome --prefix integration-tests/environments/react-native
         env:
-          MOCHA_REMOTE_CONTEXT: missingServer,mode=chrome-debugging
+          MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           HEADLESS_DEBUGGER: true
       - name: Setup tmate session
