@@ -18,6 +18,12 @@
 
 // import Realm from "realm";
 
+try {
+    require("realm");
+} catch (err) {
+    console.error("Failed to load Realm:", err.stack);
+}
+
 console.log("Loading Realm Integration Tests");
 
 it("loads", () => {
