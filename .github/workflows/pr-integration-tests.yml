@@ -66,9 +66,9 @@ jobs:
         name: Restore iOS build folder from cache
         with:
           path: react-native/ios/build
-          key: ios-build-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
+          key: ios-build-v2-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
           restore-keys: |
-            ios-build-
+            ios-build-v2-*
       # Restore the xcframework from cache (if possible)
       - uses: actions/cache@v2
         name: Restore xcframework from cache
