@@ -47,6 +47,79 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
+      # Setup tools
+      - name: Install tools
+        run: brew install watchman
+      # TODO: Expose a way to skip building the Node.js native module
+      - name: Patch package.json to avoid building Node.js native module
+        run: cat <<< $(jq '.scripts.install = "echo skipping building Node.js binary"' < package.json) > package.json
+
+      # Caches
+      - uses: actions/cache@v2
+        name: Restore node_modules
+        id: cache-node-modules
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+      - uses: actions/cache@v2
+        name: Restore iOS build folder from cache
+        with:
+          path: react-native/ios/build
+          key: ios-build-dir-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
+          restore-keys: |
+            ios-build-dir-
+      - uses: actions/cache@v2
+        name: Restore xcframework from cache
+        id: cache-xcframework
+        with:
+          path: react-native/ios/realm-js-ios.xcframework
+          key: xcframework-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
+      - uses: actions/cache@v2
+        name: Restore Xcode "derived data" from cache
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: xcode-derived-data
+      - uses: actions/cache@v2
+        name: Restore CocoaPods from cache
+        with:
+          path: integration-tests/environments/react-native/ios/Pods
+          key: cocoapods-${{ hashFiles('integration-tests/environments/react-native/ios/Podfile.lock') }}
+          restore-keys: | # Enables running from an old build
+            cocoapods-
+
+      - run: npm ci
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+      # Build the iOS xcframework (if cache missed)
+      - run: ./scripts/build-ios.sh -c Debug -s
+        if: ${{ steps.cache-xcframework.outputs.cache-hit != 'true' }}
+      # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
+      - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
+      # Run the tests
+      - name: Run tests (iOS / Native)
+        run: npm run test:ios --prefix integration-tests/environments/react-native
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+          MOCHA_REMOTE_EXIT_ON_ERROR: true
+      - name: Run tests (iOS / Chrome Debugging)
+        run: npm run test:ios:chrome --prefix integration-tests/environments/react-native
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+          MOCHA_REMOTE_EXIT_ON_ERROR: true
+          HEADLESS_DEBUGGER: true
+  react-native-android:
+    name: React Native on Android
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      # Setup tools
       - name: Install tools
         run: brew install watchman
       # TODO: Expose a way to skip building the Node.js native module
@@ -59,58 +132,32 @@ jobs:
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('package-lock.json') }}
-      - run: npm ci
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-      # Restore the iOS build folder
+
+      # Caches
       - uses: actions/cache@v2
-        name: Restore iOS build folder from cache
+        name: Restore Android build folders from cache
         with:
-          path: react-native/ios/build
-          key: ios-build-dir-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
+          path: |
+            build-realm-android
+            react-native/android/build
+          key: android-build-dir-${{ hashFiles('src/**', 'react-native/android/**', 'vendor/**') }}
           restore-keys: |
-            ios-build-dir-
-      # Restore the xcframework from cache (if possible)
+            android-build-dir-
       - uses: actions/cache@v2
-        name: Restore xcframework from cache
-        id: cache-xcframework
+        name: Restore Android librealm.so from cache
+        id: cache-android-so
         with:
-          path: react-native/ios/realm-js-ios.xcframework
-          key: xcframework-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
-      # Restore the derived data
-      - uses: actions/cache@v2
-        name: Restore Xcode "derived data" from cache
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: xcode-derived-data
-      # Restore the CocoaPods
-      - uses: actions/cache@v2
-        name: Restore CocoaPods from cache
-        with:
-          path: integration-tests/environments/react-native/ios/Pods
-          key: cocoapods-${{ hashFiles('integration-tests/environments/react-native/ios/Podfile.lock') }}
-          restore-keys: | # Enables running from an old build
-            cocoapods-
-      # Build the iOS xcframework (if cache missed)
-      - run: ./scripts/build-ios.sh -c Debug -s
-        if: steps.cache-xcframework.outputs.cache-hit != 'true'
+          path: react-native/android/**/librealm.so
+          key: android-so-${{ hashFiles('src/**', 'react-native/android/**', 'vendor/**') }}
+
+      - run: npm ci
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+      # Build the Android shared object file (if cache missed)
+      - run: node scripts/build-android.js --arch=x86 --build-type=Debug
+        if: ${{ steps.cache-android-so.outputs.cache-hit != 'true' }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
-      # Run the tests (natively and in Chome debugging mode)
-      - name: Run tests (iOS / Native)
-        if: ${{ false }}
-        run: npm run test:ios --prefix integration-tests/environments/react-native
-        env:
-          MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-          MOCHA_REMOTE_EXIT_ON_ERROR: true
-      - name: Run tests (iOS / Chrome Debugging)
-        if: ${{ false }}
-        run: npm run test:ios:chrome --prefix integration-tests/environments/react-native
-        env:
-          MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-          MOCHA_REMOTE_EXIT_ON_ERROR: true
-          HEADLESS_DEBUGGER: true
+      # Run the tests
       - name: Run tests (Android / Native)
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -120,3 +167,13 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
+      - name: Run tests (Android / Chrome Debugging)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: npm run test:android:chrome --prefix integration-tests/environments/react-native
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+          MOCHA_REMOTE_EXIT_ON_ERROR: true
+          HEADLESS_DEBUGGER: true
