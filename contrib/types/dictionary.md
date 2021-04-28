@@ -133,7 +133,7 @@ let summer_hill_houses = houses.filtered(`home.@values = "Summerhill St." `)
 ``` 
 > To find objects with a specific value. 
 
-In both cases the query will run against all the Models, this mean that it will return all the Dictionary objects targeted by the query.  
+In both cases the query will run against all the Models in a particular collection.  
 
 #### Specific Key/Value 
 
