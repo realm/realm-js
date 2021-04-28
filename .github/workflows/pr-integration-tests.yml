@@ -52,14 +52,14 @@ jobs:
       - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
       - run: npx lerna bootstrap --scope realm-electron-tests --include-dependencies
-      # Run tests
+      # Run tests (using xvfb-run to enable opening windows in a virtual framebuffer)
       - name: Run tests (Electron / Main)
-        run: npm run test:main --prefix integration-tests/environments/electron
+        run: xvfb-run npm run test:main --prefix integration-tests/environments/electron
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       - name: Run tests (Electron / Renderer)
-        run: npm run test:renderer --prefix integration-tests/environments/electron
+        run: xvfb-run npm run test:renderer --prefix integration-tests/environments/electron
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
@@ -181,10 +181,8 @@ jobs:
       - run: npm ci
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
       # Build the Android shared object file (if cache missed)
-      - run: node scripts/build-android.js --arch=x86 --build-type=Debug
+      - run: ANDROID_NDK=$ANDROID_NDK_HOME node scripts/build-android.js --arch=x86 --build-type=Debug
         if: ${{ steps.cache-android-so.outputs.cache-hit != 'true' }}
-        env:
-          ANDROID_NDK: ${{ env.ANDROID_NDK_HOME }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests
