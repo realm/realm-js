@@ -66,6 +66,8 @@ Object.values(red_house) // Will return all the values from the DB.
 let {doors} = red_house // Get the door field from the DB.
 ```
 
+Or you can transform the Dictionary object into a JavaScript non-realm-backed Object:
+
 ```js
 //Makes a new object and copy the members of the home Dictionary.
 let my_pure_house_object = Object.assign({}, red_house)
