@@ -82,27 +82,6 @@ let my_pure_house_object = Object.assign({}, red_house)
 
 > This creates a detached object, meaning that data is no longer backed by Realm. This is good if you want to deal with an independent copy of a Dictionary.
 
-### Update
-
-To update you can use the ``put`` method which updates fields:
-
-```js
-// we get the house dictionary from the housemodel object.
-let red_house = realm.objects(dictschema.name)[0].home
-
-realm.write(() => red_home.put({ doors:6 }) )
-```
-
-And we can use this method to add new members to the Dictionary like this:
-
-```js
-// we get the house dictionary from the housemodel object.
-let red_house = realm.objects(dictschema.name)[0].home
-realm.write(() => red_home.put({ style:'Gregorian', gravity:9 }) )
-
-console.log(Object.keys(red_home)) // ['door','windows','style', 'gravity', 'color', 'floor']
-```
-
 ### Remove
 
 The ``remove`` methods delete members of the Dictionary and works by passing an Array with the fields you want to delete:
