@@ -33,14 +33,21 @@ realm.write(()=> realm.create(CitySchema.name, { home: {windows:5, doors:3, floo
 
 ### Update
 
-To update you have two option you can use ``put`` to change members of the object:
+To update you have two option you override the dictionary field of the Realm Model:
+
+```js
+let homeModel = realm.objects(DictSchema.name)[0]
+realm.write(() => homeModel.home = {windows:1, doors:1, floor:1, color: 'purple'})
+```
+
+Or you can use the method ``put`` which is part of the Dictionary object:
 
 ```js
 let homeModel = realm.objects(DictSchema.name)[0] // We get the model object.
 realm.write(() => homeModel.home.put({type:'future-proof' }) )
 ```
 
-Or you can use put to add new members/fields to the Dictionary:
+This method can also be use to add new members/fields to the Dictionary, for example:
 
 ```js
 realm.write(() => homeModel.home.put({state:'flying', type:'future-proof' }))
