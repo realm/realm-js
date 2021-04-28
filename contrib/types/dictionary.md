@@ -114,7 +114,8 @@ let first_house = realm.objects(DictSchema.name)[0].home
 let second_house = first_house
 
 realm.write(()=> {  first_house.remove( ['doors', 'windows'] )  })
-Object.keys(first_house) == Object.keys(second_house) // ['color'] === ['color'] => true
+// After we delete the following propositions are true:
+console.log(first_house === second_house) // the two objects are the same.
 ```
 
 
