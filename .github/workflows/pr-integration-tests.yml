@@ -17,16 +17,19 @@ on:
 
 jobs:
   node:
-    if: ${{ false }}
-    name: Node.js on Linux
-    runs-on: ubuntu-latest
+    name: Node.js v${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [12, 14]
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: ${{ matrix.node }}
           registry-url: https://registry.npmjs.org/
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
@@ -37,8 +40,7 @@ jobs:
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-  electron:
-    if: ${{ false }}
+  electron-linux:
     name: Electron on Linux
     runs-on: ubuntu-latest
     steps:
@@ -65,7 +67,6 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   react-native-ios:
-    if: ${{ false }}
     name: React Native on iOS
     runs-on: macos-latest
     steps:
