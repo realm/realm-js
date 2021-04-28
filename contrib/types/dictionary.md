@@ -119,6 +119,29 @@ realm.write(()=> {  first_house.remove( ['doors', 'windows'] )  })
 console.log(first_house === second_house) // the two objects are the same.
 ```
 
+### Query 
+
+#### Key/Value 
+
+```js
+let house_greater_than_five = houses.filtered(`home.@keys = "windows" `)
+``` 
+> To find objects that has `windows` as a key. 
+
+```js
+let house_greater_than_five = houses.filtered(`home.@values = "Summerhill St." `)
+``` 
+> To find objects with a specific value. 
+
+In both cases the query will run against all the Models, this mean that it will return all the Dictionary objects targeted by the query.  
+
+#### Specific Key/Value 
+
+To target a specific key/value we can construct the following query: 
+
+```js
+let summer_hill_houses = houses.filtered(`home['address'] = "Summerhill St."`)
+```
 
 ### Listeners
 
