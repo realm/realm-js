@@ -124,12 +124,12 @@ console.log(first_house === second_house) // the two objects are the same.
 #### Key/Value 
 
 ```js
-let house_greater_than_five = houses.filtered(`home.@keys = "windows" `)
+let houses_with_windows = houses.filtered(`home.@keys = "windows" `)
 ``` 
 > To find objects that has `windows` as a key. 
 
 ```js
-let house_greater_than_five = houses.filtered(`home.@values = "Summerhill St." `)
+let summer_hill_houses = houses.filtered(`home.@values = "Summerhill St." `)
 ``` 
 > To find objects with a specific value. 
 
@@ -149,7 +149,7 @@ This method is very similar to the ones used by other Realm objects, once you ha
 
 
 ```js
-red_home.addListener((dict, chg_set)=>{ })
+house.addListener((dict, chg_set)=>{ })
 ```
 
 Where:
