@@ -38,6 +38,7 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   electron:
+    if: ${{ false }}
     name: Electron on Linux
     runs-on: ubuntu-latest
     steps:
