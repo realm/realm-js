@@ -137,7 +137,6 @@ jobs:
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           HEADLESS_DEBUGGER: true
   react-native-android:
-    if: ${{ false }}
     name: React Native on Android
     runs-on: macos-latest
     steps:
@@ -184,6 +183,8 @@ jobs:
       # Build the Android shared object file (if cache missed)
       - run: node scripts/build-android.js --arch=x86 --build-type=Debug
         if: ${{ steps.cache-android-so.outputs.cache-hit != 'true' }}
+        env:
+          ANDROID_NDK: ${{ env.ANDROID_NDK_HOME }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests
