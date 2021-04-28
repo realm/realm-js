@@ -20,6 +20,7 @@ jobs:
     name: Node.js v${{ matrix.node }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         node: [12, 14]
