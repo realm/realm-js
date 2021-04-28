@@ -9,7 +9,7 @@ The idea behind dictionaries is to provide a key/value store to store data in a 
 
 ```js
 const CitySchema = {
-    name: "dictionary",
+    name: "City",
     properties: {
         home: "{}"
     }
