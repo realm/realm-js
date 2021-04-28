@@ -32,14 +32,13 @@ const appPaths = {
 };
 
 function determineSpawnParameters(processType) {
-    const serverUrl = process.env.MOCHA_REMOTE_URL; // Set by the mocha-remote CLI
     const platform = process.platform;
     const appPath = path.resolve(appPaths[platform]);
     if (fs.existsSync(appPath)) {
         if (platform === "darwin") {
             return {
                 command: appPath,
-                args: ["--", processType, serverUrl],
+                args: ["--", processType],
             };
         } else {
             throw new Error(`Running tests on ${platform} is not supported yet`);
@@ -48,7 +47,7 @@ function determineSpawnParameters(processType) {
         console.warn("🚧 Running an unpackaged version of the app 🚧");
         return {
             command: require("electron"),
-            args: [".", processType, serverUrl, "--enable-logging"],
+            args: [".", processType, "--enable-logging"],
         };
     }
 }

@@ -34,13 +34,10 @@ let mainWindow;
 app.on("ready", () => {
     console.log("Electron app is ready");
     const processType = process.argv[2];
-    const mochaRemoteServerURL = process.argv[3] || "ws://localhost:8090";
-    global.options = { mochaRemoteServerURL, processType };
     if (processType === "main") {
-        require("./mocha.js")(mochaRemoteServerURL, "main");
+        require("./mocha.js");
     } else if (processType === "renderer") {
         const preload = path.resolve(__dirname, "renderer.js");
-        console.log(preload);
         mainWindow = new BrowserWindow({ 
             show: false,
             webPreferences: {
