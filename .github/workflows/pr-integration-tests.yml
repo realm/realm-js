@@ -32,11 +32,39 @@ jobs:
       - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
       - run: npx lerna bootstrap --scope realm-node-tests --include-dependencies
-      # Lint, build and test the package
+      # Run tests
       - run: npm test --prefix integration-tests/environments/node
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+  electron:
+    name: Electron on Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
+      - run: npm ci --ignore-scripts
+      # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
+      - run: npx lerna bootstrap --scope realm-electron-tests --include-dependencies
+      # Run tests
+      - name: Run tests (Electron / Main)
+        run: npm run test:main --prefix integration-tests/environments/electron
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+      - name: Run tests (Electron / Renderer)
+        run: npm run test:renderer --prefix integration-tests/environments/electron
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   react-native-ios:
+    if: ${{ false }}
     name: React Native on iOS
     runs-on: macos-latest
     steps:
@@ -109,6 +137,7 @@ jobs:
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           HEADLESS_DEBUGGER: true
   react-native-android:
+    if: ${{ false }}
     name: React Native on Android
     runs-on: macos-latest
     steps:
