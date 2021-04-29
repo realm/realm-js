@@ -1225,11 +1225,6 @@ module.exports = {
     },
 
     testListAggregateFunctions: function() {
-        //FIXME: MIXED: fix for JSC
-        if (!isNodeProcess && !isElectronProcess) {
-            return;
-        }
-
         const NullableBasicTypesList = {
             name: 'NullableBasicTypesList',
             properties: {
@@ -1270,11 +1265,6 @@ module.exports = {
     },
 
     testListAggregateFunctionsWithNullColumnValues: function() {
-        //FIXME: MIXED: fix for JSC
-        if (!isNodeProcess && !isElectronProcess) {
-            return;
-        }
-
         const NullableBasicTypesList = {
             name: 'NullableBasicTypesList',
             properties: {
@@ -1336,11 +1326,6 @@ module.exports = {
     },
 
     testPrimitiveListAggregateFunctions: function() {
-        //FIXME: MIXED: fix for JSC
-        if (!isNodeProcess && !isElectronProcess) {
-            return;
-        }
-
         const realm = new Realm({schema: [schemas.PrimitiveArrays]});
         let object;
         realm.write(() => {
