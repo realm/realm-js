@@ -21,6 +21,8 @@
 #include "jsc_types.hpp"
 #include "jsc_string.hpp"
 
+#include "js_mixed.hpp"
+
 namespace realm {
 namespace js {
 
@@ -54,9 +56,7 @@ class ReturnValue<jsc::Types> {
         m_value = JSValueMakeNumber(m_context, number);
     }
     void set(const util::Optional<realm::Mixed>& mixed) {
-        //FIXME: MIXED: fix for JSC
-        //m_value = Value<jsc::Types>::from_mixed(m_context, mixed.value());
-        throw std::runtime_error("Not implemented");
+        m_value = TypeMixed<jsc::Types>::get_instance().wrap(m_context, mixed.value());
     }
     void set_null() {
         m_value = JSValueMakeNull(m_context);
@@ -79,6 +79,6 @@ class ReturnValue<jsc::Types> {
         return m_value;
     }
 };
-    
+
 } // js
 } // realm
