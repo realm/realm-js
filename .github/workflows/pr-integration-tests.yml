@@ -32,6 +32,15 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           registry-url: https://registry.npmjs.org/
+      # The following is a noop on non-windows runners
+      - name: Install Microsoft Visual C++ cmd tools
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Windows Environment setup
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: powershell
+        run: |
+          Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+          Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
@@ -87,11 +96,11 @@ jobs:
 
       # Caches
       - uses: actions/cache@v2
-        name: Restore node_modules
-        id: cache-node-modules
         with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          path: ~/.npm
+          key: npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-
       - uses: actions/cache@v2
         name: Restore iOS build folder from cache
         with:
@@ -119,7 +128,6 @@ jobs:
             cocoapods-
 
       - run: npm ci
-        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
       # Build the iOS xcframework (if cache missed)
       - run: ./scripts/build-ios.sh -c Debug -s
         if: ${{ steps.cache-xcframework.outputs.cache-hit != 'true' }}
