@@ -26,7 +26,7 @@
     "electron-builder": "^22.10.5",
     "mocha-github-actions-reporter": "^0.2.3",
     "mocha-junit-reporter": "^2.0.0",
-    "mocha-remote-cli": "^1.2.0",
+    "mocha-remote-cli": "^1.2.1",
     "realm-app-importer": "*"
   },
   "dependencies": {
