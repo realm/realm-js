@@ -20,10 +20,8 @@
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
-const AppConfig = require('./support/testConfig');
 
 const {Decimal128, ObjectId, UUID} = Realm.BSON;
-
 
 
 const SingleSchema = {
@@ -131,13 +129,13 @@ module.exports = {
 
 
         let realm = new Realm({schema: [SingleSchema, VertexSchema, MixNestedSchema]})
-   
+
         realm.write(() => {
            let r =  realm.create(VertexSchema.name,{a:1, b: 0,  c: 0})
            let r2 = realm.create(VertexSchema.name,{a:0, b: 1,  c: 0})
            let r3 = realm.create(VertexSchema.name,{a:0, b: 0,  c: 1})
 
-           realm.create(SingleSchema.name, { a: r, b: r2, c: r3 } ) 
+           realm.create(SingleSchema.name, { a: r, b: r2, c: r3 } )
         })
 
         let data = realm.objects(SingleSchema.name)[0]
@@ -156,7 +154,7 @@ module.exports = {
         realm.write(() => {
            let r =  realm.create(MixNestedSchema.name,{a:0, b: -1})
            let r1 = realm.create(MixNestedSchema.name,{a:1, b: 0})
-           realm.create(SingleSchema.name, { a: r, b: r1 } ) 
+           realm.create(SingleSchema.name, { a: r, b: r1 } )
         })
 
         data = realm.objects(SingleSchema.name)[1]
@@ -175,62 +173,6 @@ module.exports = {
             () => realm.write(()=> realm.create(SingleSchema.name, { a: Object.create({}) }  ) ),
             new Error('Only Realm instances are supported.') )
     },
-
-    async testMixedSync() {
-        if (!global.enableSyncTests) {
-            return Promise.resolve();
-        }
-        const appConfig = AppConfig.integrationAppConfig;
-        let app = new Realm.App(appConfig);
-        let credentials = Realm.Credentials.anonymous();
-
-        let user = await app.logIn(credentials);
-        const config = {
-            sync: {
-                user,
-                partitionValue: "LoLo",
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            },
-            schema: [{
-                name: "MixedObject",
-                primaryKey: "_id",
-                properties: {
-                    _id: "objectId",
-                    key: "string",
-                    value: "mixed"
-                }
-            }]
-        };
-        let realm = await Realm.open(config);
-        realm.write(() => {
-            realm.deleteAll();
-        });
-
-        realm.write(() => {
-            realm.create("MixedObject", { _id: new ObjectId(), key: "1", value: 1 });
-            realm.create("MixedObject", { _id: new ObjectId(), key: "2", value: "2" });
-            realm.create("MixedObject", { _id: new ObjectId(), key: "3", value: 3.0 });
-            realm.create("MixedObject", { _id: new ObjectId(), key: "4", value: new UUID() });
-        });
-
-        await realm.syncSession.uploadAllLocalChanges();
-        TestCase.assertEqual(realm.objects("MixedObject").length, 4);
-        realm.close();
-
-        Realm.deleteFile(config);
-
-        let realm2 = await Realm.open(config);
-        await realm2.syncSession.downloadAllServerChanges();
-
-        let objects = realm2.objects("MixedObject").sorted("key");
-        TestCase.assertEqual(objects.length, 4);
-        TestCase.assertTrue(typeof objects[0].value, "number");
-        TestCase.assertTrue(typeof objects[1].value, "string");
-        TestCase.assertTrue(typeof objects[2].value, "number");
-        TestCase.assertTrue(objects[3].value instanceof UUID, "UUID");
-
-        realm2.close();
-    }
 }
 
 

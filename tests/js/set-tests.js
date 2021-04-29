@@ -307,11 +307,6 @@ module.exports = {
 
 
     async testSetAggregates() {
-        if (!isNodeProcess) {
-            // aggregate functions only work on node
-            return;
-        }
-
         const intSchema = {
             name: "SetInt",
             properties: {
