@@ -26,11 +26,17 @@ const puppeteerLog = require("./puppeteer-log");
 const IOS_DEVICE_NAME = "realm-js-integration-tests";
 const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 
+const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER } = process.env;
+
+if (typeof PLATFORM !== "string") {
+    throw new Error("Expected a 'PLATFORM' environment variable");
+}
+
 /**
  * Ensure a simulator is created and booted
  */
-function ensureSimulator(platform, deleteExisting = false) {
-    if (platform === "android") {
+function ensureSimulator(deleteExisting = false) {
+    if (PLATFORM === "android") {
         const devices = android.adb.devices();
         const activeDevices = devices.filter(({ state }) => state === "device");
         if (activeDevices.length === 0) {
@@ -39,11 +45,13 @@ function ensureSimulator(platform, deleteExisting = false) {
             );
         } else {
             // Ensure the device can access the mocha remote server
-            android.adb.reverseServerPort(process.env.MOCHA_REMOTE_PORT);
+            if (MOCHA_REMOTE_PORT) {
+                android.adb.reverseServerPort(MOCHA_REMOTE_PORT);
+            }
             // Ensure the Realm App Importer is reachable
             android.adb.reverseServerPort(8091);
         }
-    } else if (platform === "ios") {
+    } else if (PLATFORM === "ios") {
         const version = xcode.xcrun("--version").stdout.trim();
         console.log(`Using ${version}`);
 
@@ -105,31 +113,45 @@ function ensureSimulator(platform, deleteExisting = false) {
         xcode.simctl.bootstatus(deviceId);
         console.log("Simulator is ready 🚀");
     } else {
-        throw new Error(`Unexpected platform: '${platform}'`);
+        throw new Error(`Unexpected platform: '${PLATFORM}'`);
     }
 }
 
-async function run(platform, headless) {
-    // Ensure the simulator is booted and ready for the app to start
-    ensureSimulator(platform);
-
-    // Connect the debugger, right away
-    if (typeof headless === "boolean") {
+async function launchDebugger(headless) {
+    try {
         const browser = await puppeteer.launch({ headless });
         const page = await browser.newPage();
         page.on("console", puppeteerLog.handleConsole);
         await page.goto("http://localhost:8081/debugger-ui/");
+    } catch (err) {
+        if (err.message.startsWith("net::ERR_CONNECTION_REFUSED")) {
+            console.log("Metro was not ready: Retrying in 1s");
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return launchDebugger();
+        } else {
+            throw err;
+        }
+    }
+}
+
+async function run(headless) {
+    // Ensure the simulator is booted and ready for the app to start
+    ensureSimulator();
+
+    // Connect the debugger, right away
+    if (typeof headless === "boolean") {
+        await launchDebugger(headless);
     }
 
     console.log("Starting the app");
-    if (platform === "android") {
+    if (PLATFORM === "android") {
         // Ask React Native to run the android app
         rn.sync("run-android", "--no-packager");
-    } else if (platform === "ios") {
+    } else if (PLATFORM === "ios") {
         // Ask React Native to run the ios app
         rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
     } else {
-        throw new Error(`Unexpected platform: '${platform}'`);
+        throw new Error(`Unexpected platform: '${PLATFORM}'`);
     }
 }
 
@@ -138,9 +160,8 @@ function optionalStringToBoolean(value) {
 }
 
 if (module.parent === null) {
-    const platform = process.env.PLATFORM;
-    const headlessDebugger = optionalStringToBoolean(process.env.HEADLESS_DEBUGGER);
-    run(platform, headlessDebugger).catch(err => {
+    const headlessDebugger = optionalStringToBoolean(HEADLESS_DEBUGGER);
+    run(headlessDebugger).catch(err => {
         console.error(err.stack);
         process.exit(1);
     });
