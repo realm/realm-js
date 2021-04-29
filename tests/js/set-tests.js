@@ -58,7 +58,7 @@ module.exports = {
         const canSchema = canonicalRealm.schema;
         canonicalRealm.close();
 
-        TestCase.assertEqual(shSchema.properties, canSchema.properties, 
+        TestCase.assertEqual(shSchema.properties, canSchema.properties,
             "Canonical and shorthand schemas should have idendical properties");
     },
 
@@ -154,37 +154,36 @@ module.exports = {
 
     //
     // test filtering on object properties
-    async testSetObjectFilter() {
+    testSetObjectFilter() {
         const personSchema = {
             name: "Person",
             properties: {
-                firstName: 'string',
-                age: 'int'
+                firstName: "string",
+                age: "int"
             }
         };
 
         const teamSchema = {
-            name: 'Team',
+            name: "Team",
             properties: {
-                persons: 'Person<>'
+                persons: "Person<>"
             }
         };
 
         const realm = new Realm({ schema: [personSchema, teamSchema] });
-        const schema = realm.schema;
 
         realm.write(() => {
-            // insert two people
+            // insert three people
             realm.create(teamSchema.name, {persons: [
                 {firstName: "Joe",  age: 4},
                 {firstName: "Sue",  age: 53},
-                {firstName: 'Bob', age: 99},
+                {firstName: "Bob", age: 99},
             ]});
         });
 
 
         let teams = realm.objects(teamSchema.name);
-        let filteredSues = teams[0].persons.filtered('firstName = "Sue"');
+        let filteredSues = teams[0].persons.filtered("firstName = \"Sue\"");
         TestCase.assertEqual(filteredSues.length, 1, "There should be only one Sue");
         TestCase.assertEqual(filteredSues[0].age, 53, "Sue's age should be 53");
 
@@ -193,15 +192,15 @@ module.exports = {
         realm.write(() => {
             teams[0].persons.add({firstName: "Sue", age: 35});
         });
-        filteredSues = teams[0].persons.filtered('firstName = "Sue"');
+        filteredSues = teams[0].persons.filtered("firstName = \"Sue\"");
         TestCase.assertEqual(filteredSues.length, 2, "There should be two Sues");
 
         // find people older than 50
-        let olderPersons = teams[0].persons.filtered('age > 50');
+        let olderPersons = teams[0].persons.filtered("age > 50");
         TestCase.assertEqual(olderPersons.length, 2, "There should be two people over 50");
 
 
-        // cross-contamination test:  create another team that also cointains a Sue
+        // cross-contamination test:  create another team that also contains a Sue
         realm.write(() => {
             realm.create(teamSchema.name, {persons: [
                 {firstName: "Sue",  age: 35},
@@ -211,22 +210,25 @@ module.exports = {
         teams = realm.objects(teamSchema.name);
         TestCase.assertEqual(teams.length, 2, "There should be two teams");
 
-        // TODO:  The tests below are waiting for LinkedObj support in Mixed
+        let one = teams[0].persons.get(0);
+        realm.write(() => {
+            teams[0].persons.delete(one);
+        });
+        let people = realm.objects(personSchema.name);
 
-//         let one = people[0].Persons.get(0);
-//         let oij = people[0].Persons.has({FirstName: "Sue",  Age: 53});
+        TestCase.assertEqual(5, people.length, "There should be five 'Persons' entries")
+        TestCase.assertEqual(3, teams[0].persons.size, "Persons Set size should be three");
+        TestCase.assertEqual(1, teams[1].persons.size, "Second team has one member");
 
-//         realm.write(() => {
-//             people = realm.objects(people_schema.name);
-//             people[0].Persons.delete(one);
-// //            people[0].Persons.delete({FirstName: "Sue",  Age: 53});
-//         });
-//         people = realm.objects(people_schema.name);
+        realm.write(() => {
+            let dan = realm.create(personSchema.name, { firstName: "Dan", age: 32 });
+            realm.create(teamSchema.name, { persons: [dan]} );
+        });
 
-//         TestCase.assertEqual(1, people.length, "There should be one 'People' entry")
-//         TestCase.assertEqual(2, people[0].Persons.length, "Persons Set size should be 2");
-
-        // TODO: add another 'People'
+        TestCase.assertEqual(6, people.length, "There should be six 'Persons' entries");
+        TestCase.assertEqual(3, teams.length, "Three teams");
+        TestCase.assertEqual(1, teams[2].persons.size, "Third team has one member");
+        TestCase.assertEqual("Dan", teams[2].persons.get(0).firstName);
     },
 
 
@@ -241,7 +243,6 @@ module.exports = {
         };
 
         const realm = new Realm({ schema: [peopleSchema] });
-//        const schema = realm.schema;
 
         //
         // Set.has() functionality
