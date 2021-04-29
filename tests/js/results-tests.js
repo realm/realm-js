@@ -511,11 +511,6 @@ module.exports = {
     },
 
     testResultsAggregateFunctions: function() {
-        //FIXME: MIXED: fix for JSC
-        if (!isNodeProcess && !isElectronProcess) {
-            return;
-        }
-
         var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
         const N = 50;
         realm.write(() => {
@@ -546,11 +541,6 @@ module.exports = {
     },
 
     testResultsAggregateFunctionsWithNullColumnValues: function() {
-        //FIXME: MIXED: fix for JSC
-        if (!isNodeProcess && !isElectronProcess) {
-            return;
-        }
-
         var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
 
         const N = 50;

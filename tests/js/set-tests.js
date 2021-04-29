@@ -58,7 +58,7 @@ module.exports = {
         const canSchema = canonicalRealm.schema;
         canonicalRealm.close();
 
-        TestCase.assertEqual(shSchema.properties, canSchema.properties, 
+        TestCase.assertEqual(shSchema.properties, canSchema.properties,
             "Canonical and shorthand schemas should have idendical properties");
     },
 
@@ -307,11 +307,6 @@ module.exports = {
 
 
     async testSetAggregates() {
-        if (!isNodeProcess) {
-            // aggregate functions only work on node
-            return;
-        }
-
         const intSchema = {
             name: "SetInt",
             properties: {
