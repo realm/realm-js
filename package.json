@@ -139,6 +139,10 @@
   "engines": {
     "node": ">=10"
   },
+  "config": {
+    "runtime": "napi",
+    "target": 4
+  },
   "binary": {
     "module_name": "realm",
     "host": "https://static.realm.io",
