@@ -88,8 +88,12 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   react-native-ios:
-    name: React Native on iOS
+    name: React Native on iOS (${{ matrix.configuration }})
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Release, Debug]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -140,7 +144,7 @@ jobs:
 
       - run: npm ci
       # Build the iOS xcframework (if cache missed)
-      - run: ./scripts/build-ios.sh -c Debug -s
+      - run: ./scripts/build-ios.sh -c ${{ matrix.configuration }} -s
         if: ${{ steps.cache-xcframework.outputs.cache-hit != 'true' }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
@@ -159,8 +163,12 @@ jobs:
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           HEADLESS_DEBUGGER: true
   react-native-android:
-    name: React Native on Android
+    name: React Native on Android (${{ matrix.configuration }})
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        buildType: [Release, Debug]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -203,7 +211,7 @@ jobs:
       - run: npm ci
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
       # Build the Android shared object file (if cache missed)
-      - run: ANDROID_NDK=$ANDROID_NDK_HOME node scripts/build-android.js --arch=x86 --build-type=Debug
+      - run: ANDROID_NDK=$ANDROID_NDK_HOME node scripts/build-android.js --arch=x86 --build-type=${{ matrix.buildType }}
         if: ${{ steps.cache-android-so.outputs.cache-hit != 'true' }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
