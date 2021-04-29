@@ -107,6 +107,40 @@ module.exports = {
         realm.close();
     },
 
+    testSetMixed() {
+        const mixedSchema = {
+            name: "MixedObject",
+            properties: {
+                s: "mixed<>"
+            }
+        };
+
+        const intSchema = {
+            name: "IntObject",
+            properties: {
+                i: "int"
+            }
+        };
+
+        const realm = new Realm({ schema: [mixedSchema, intSchema] });
+
+        let values = ["Joe", 54, true ];
+        realm.write(() => {
+            let intObject = realm.create(intSchema.name, { i: 41 });
+            values.push(intObject);
+        })
+
+        realm.write(() => {
+            realm.create(mixedSchema.name, { s: values });
+        });
+
+        const objs = realm.objects(mixedSchema.name);
+        TestCase.assertEqual(1, objs.length, "One MixedObject");
+        TestCase.assertEqual(values.length, objs[0].s.size, `${values.length} values in set`);
+        for (let i = 0; i < values.length; i++) {
+            TestCase.assertTrue(objs[0].s.has(values[i]), `${values[i]}`);
+        }
+    },
 
     //
     // test manipulation of Sets of objects
