@@ -8,6 +8,7 @@ jobs:
         name: Build for Node.js on Linux
         runs-on: ubuntu-latest
         strategy:
+            #fail-fast: true
             matrix:
                 os: [linux]
                 arch: [x64]
@@ -25,29 +26,20 @@ jobs:
             # - name: Setup Linux Environment
             #   run: sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
-            # - name: Cache prebuild artifacts
-            #   id: cache-prebuild
-            #   uses: actions/cache@v2
-            #   env:
-            #       cache-name: cache-prebuild-artifacts
-            #   with:
-            #       path: prebuilds
-            #       key: ${{ runner.os }}-prebuild-${{hashFiles(./src)}}
-
-            - name: Cache nodejs build artifacts
-              id: cache-nodejs-build
+            - name: Cache prebuild artifacts
+              id: cache-prebuild
               uses: actions/cache@v2
+              env:
+                  cache-name: cache-prebuild-artifacts
               with:
-                  path: build
-                  key: ${{ matrix.os }}-${{matrix.arch}}-v2-build-nodejs-${{hashFiles('./src/**')}}
-                  restore-keys: |
-                      ${{ matrix.os }}-${{matrix.arch}}-v2-build-nodejs-
+                  path: prebuilds
+                  key: ${{ runner.os }}-${{matrix.arch}}-prebuild-${{hashFiles('./src/**', 'vendor/**')}}
 
-            - name: Setup Ninja
-              uses: ashutoshvarma/setup-ninja@master
-              with:
-                # ninja version to download. Default: 1.10.0
-                version: 1.10.0
+            # - name: Setup Ninja
+            #   uses: ashutoshvarma/setup-ninja@master
+            #   with:
+            #       # ninja version to download. Default: 1.10.0
+            #       version: 1.10.0
 
             # - name: Build with CMake
             #   uses: ashutoshvarma/action-cmake-build@master
@@ -59,14 +51,15 @@ jobs:
             #     build-type: Release
             # Install node dependencies and build the c++ library
             - name: Build
+              if: steps.cache-prebuild.outputs.cache-hit != 'true'
               run: |
                   npm run package
 
-            - name: Setup tmate session
-              uses: mxschmitt/action-tmate@v3
-              with:
-                  limit-access-to-actor: true
-              timeout-minutes: 30
+            # - name: Setup tmate session
+            #   uses: mxschmitt/action-tmate@v3
+            #   with:
+            #       limit-access-to-actor: true
+            #   timeout-minutes: 30
 
             - name: Upload prebuild artifact
               uses: actions/upload-artifact@v2
@@ -78,6 +71,7 @@ jobs:
         name: Build for Node.js on MacOS
         runs-on: macos-latest
         strategy:
+            #fail-fast: true
             matrix:
                 os: [darwin]
                 arch: [x64]
@@ -92,28 +86,29 @@ jobs:
             - name: Setup node version
               uses: actions/setup-node@v1
 
-            # - name: Cache prebuild
-            #   id: cache-prebuild
-            #   uses: actions/cache@v2
-            #   env:
-            #       cache-name: cache-prebuild-artifacts
-            #   with:
-            #       path: prebuilds
-            #       key: ${{ runner.os }}-prebuild-${{hashFiles(./src)}}
-
-            - name: Cache nodejs build artifacts
-              id: cache-nodejs-build
+            - name: Cache prebuild
+              id: cache-prebuild
               uses: actions/cache@v2
               env:
-                  cache-name: cache-nodejs-build
+                  cache-name: cache-prebuild-artifacts
               with:
-                  path: build
-                  key: ${{ matrix.os }}-${{matrix.arch}}-build-nodejs-${{hashFiles('./src/**')}}
-                  restore-keys: |
-                      ${{ matrix.os }}-${{matrix.arch}}-build-nodejs-
+                  path: prebuilds
+                  key: ${{ runner.os }}-${{matrix.arch}}-prebuild-${{hashFiles('./src/**')}}
+
+            # - name: Cache nodejs build artifacts
+            #   id: cache-nodejs-build
+            #   uses: actions/cache@v2
+            #   env:
+            #       cache-name: cache-nodejs-build
+            #   with:
+            #       path: build
+            #       key: ${{ matrix.os }}-${{matrix.arch}}-build-nodejs-${{hashFiles('./src/**')}}
+            #       restore-keys: |
+            #           ${{ matrix.os }}-${{matrix.arch}}-build-nodejs-
 
             # Install node dependencies and build the c++ library
             - name: Build
+              if: steps.cache-prebuild.outputs.cache-hit != 'true'
               run: |
                   npm run package -- --arch=${{matrix.arch}}
 
@@ -126,6 +121,7 @@ jobs:
     build-prebuild-windows:
         name: Build for Node.js on Windows
         strategy:
+            #fail-fast: true
             matrix:
                 os: [windows]
                 arch: [x64, ia32]
@@ -141,38 +137,40 @@ jobs:
             - name: Setup node version
               uses: actions/setup-node@v1
 
-            - name: MSVC Setup
-              uses: ilammy/msvc-dev-cmd@v1
-
-            # - name: Cache prebuild
-            #   id: cache-prebuild
-            #   uses: actions/cache@v2
-            #   env:
-            #       cache-name: cache-prebuild-artifacts
-            #   with:
-            #       path: prebuilds
-            #       key: ${{ runner.os }}-prebuild-${{hashFiles(./src)}}
-            #       restore-keys: |
-            #         ${{ matrix.os }}-prebuild-
-
-            - name: Cache nodejs build artifacts
-              id: cache-nodejs-build
+            - name: Cache prebuild
+              id: cache-prebuild
               uses: actions/cache@v2
               env:
-                  cache-name: cache-nodejs-build
+                  cache-name: cache-prebuild-artifacts
               with:
-                  path: build
-                  key: ${{ matrix.os }}-${{matrix.arch}}-build-nodejs-${{hashFiles('./src/**')}}
-                  restore-keys: |
-                      ${{ matrix.os }}-${{matrix.arch}}-build-nodejs-
+                  path: prebuilds
+                  key: ${{ runner.os }}-${{matrix.arch}}-v2-prebuild-${{hashFiles('./src/**')}}
+
+            # - name: Cache nodejs build artifacts
+            #   id: cache-nodejs-build
+            #   uses: actions/cache@v2
+            #   env:
+            #       cache-name: cache-nodejs-build
+            #   with:
+            #       path: build
+            #       key: ${{ matrix.os }}-${{matrix.arch}}-build-nodejs-${{hashFiles('./src/**')}}
+            #       # vendor
+            #       restore-keys: |
+            #           ${{ matrix.os }}-${{matrix.arch}}-build-nodejs-
+
+            - name: MSVC Setup
+              if: steps.cache-prebuild.outputs.cache-hit != 'true'
+              uses: ilammy/msvc-dev-cmd@v1
 
             - name: Windows Environment setup
+              if: steps.cache-prebuild.outputs.cache-hit != 'true'
               run: |
                   Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
                   Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
               shell: powershell
 
             - name: Build
+              if: steps.cache-prebuild.outputs.cache-hit != 'true'
               run: |
                   npm run package -- --arch=${{matrix.arch}}
 
@@ -202,12 +200,11 @@ jobs:
               env:
                   cache-name: cache-ios-build
               with:
-                  path: react-native/ios/build
-                  key: build-ios-${{hashFiles('./src/**')}}
-                  restore-keys: |
-                      build-ios-
+                  path: react-native/ios/realm-js-ios.xcframework
+                  key: build-ios-v2-${{hashFiles('./src/**')}}
 
             - name: Build xcframework
+              if: steps.cache-ios-build.outputs.cache-hit != 'true'
               run: |
                   ./scripts/build-ios.sh
 
@@ -221,6 +218,7 @@ jobs:
         name: Build for Android
         runs-on: ubuntu-latest
         strategy:
+            #fail-fast: true
             matrix:
                 arch: ["x86", "armeabi-v7a", "arm64-v8a", "x86_64"]
         steps:
@@ -238,30 +236,15 @@ jobs:
               id: cache-android
               uses: actions/cache@v2
               with:
-                  path: build-realm-android.tgz
-                  key: build-android-v3-${{matrix.arch}}-${{ hashFiles('./src/**') }}
+                  path: build-realm-android
+                  key: build-android-${{matrix.arch}}-${{ hashFiles('./src/**') }}
                   restore-keys: |
-                      build-android-v3-${{matrix.arch}}-
-
-            - name: Decompress cached artifacts
-              if: ${{steps.cache-android.outputs.cach-hit}}
-              run: tar xf build-realm-android.tgz
-
-            - name: Setup tmate session
-              if: ${{matrix.arch == 'x86'}}
-              uses: mxschmitt/action-tmate@v3
-              with:
-                  limit-access-to-actor: true
-              timeout-minutes: 30
+                      build-android-${{matrix.arch}}-
 
             - name: Build Android
               run: |
                   npm ci --ignore-scripts
                   node scripts/build-android.js --arch=${{matrix.arch}}
-
-            - name: Compress build artifacts
-              run: |
-                  tar cf build-realm-android.tgz build-realm-android
 
             - name: Upload android artifact
               uses: actions/upload-artifact@v2
@@ -273,13 +256,14 @@ jobs:
         needs:
             [build-prebuild-macos, build-prebuild-linux, build-prebuild-windows]
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
-                os: [ubuntu, macos, windows]
-        runs-on: ${{matrix.os}}-latest
+                system:
+                    - { os: linux, runner: ubuntu-latest }
+                    - { os: darwin, runner: macos-latest }
+                    - { os: windows, runner: windows-latest }
+        runs-on: ${{matrix.system.runner}}
         env:
-            npm_config_target: 4
-            npm_config_runtime: napi
             npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
             REALM_DISABLE_SYNC_TESTS: true
         steps:
@@ -287,10 +271,14 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
+            # This sets node up, and can also pick the version if necessary
+            - name: Setup node version
+              uses: actions/setup-node@v1
+
             - name: Download prebuild artifact
               uses: actions/download-artifact@v2
               with:
-                  name: prebuild-${{matrix.os}}
+                  name: prebuild-${{matrix.system.os}}-x64
                   path: prebuilds
 
             - name: Install project dependencies
@@ -312,13 +300,14 @@ jobs:
         needs:
             [build-prebuild-macos, build-prebuild-windows, build-prebuild-linux]
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
-                os: [ubuntu, macos, windows]
-        runs-on: ${{matrix.os}}-latest
+                system:
+                    - { os: linux, runner: ubuntu-latest }
+                    - { os: darwin, runner: macos-latest }
+                    - { os: windows, runner: windows-latest }
+        runs-on: ${{matrix.system.runner}}
         env:
-            npm_config_target: 4
-            npm_config_runtime: napi
             npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
             REALM_DISABLE_SYNC_TESTS: true
         steps:
@@ -326,50 +315,56 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
+            # This sets node up, and can also pick the version if necessary
+            - name: Setup node version
+              uses: actions/setup-node@v1
+
             - name: Download prebuild artifact
               uses: actions/download-artifact@v2
               with:
-                  name: prebuild-${{matrix.os}}
+                  name: prebuild-${{matrix.system.os}}-x64
                   path: prebuilds
 
-            - name: Install electron test dependencies
-              working-directory: ./tests/electron
-              env:
-                  npm_config_target: 8.1.1
-                  npm_config_runtime: electron
-                  npm_config_disturl: https://atom.io/download/electron
+            - run: ls -R prebuilds
+
+            - name: Install root dependencies
               run: |
-                  npm install
+                  npm ci
+
+            - name: Install test dependencies
+              working-directory: ./tests
+              run: |
+                  npm ci
+
+            - name: Install electron test dependencies
+              if: ${{matrix.system.os != 'linux'}}
+              working-directory: ./tests/electron
+              run: |
+                  npm ci
+
+            - name: Run electron tests
+              if: ${{matrix.system.os != 'linux'}}
+              working-directory: ./tests/electron
+              run: |
+                  npm test -- --process=main
+                  npm test -- --process=render
 
             # This sets up the environment for electron tests.  In linux, electron requires a
             # connected display.  We fake this by giving it a headless environment using xvfb
             # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
             - name: Install electron test dependencies
-              if: ${{matrix.os == 'ubuntu'}}
+              if: ${{matrix.system.os == 'linux'}}
               working-directory: ./tests/electron
-              env:
-                  npm_config_target: 8.1.1
-                  npm_config_runtime: electron
-                  npm_config_disturl: https://atom.io/download/electron
               run: |
                   sudo apt-get install xvfb
-                  npm install
+                  npm ci
 
             - name: Run electron tests
-              if: ${{matrix.os == 'ubuntu'}}
+              if: ${{matrix.system.os == 'linux'}}
               working-directory: ./tests/electron
               run: |
-                  npx install-local
                   xvfb-run --auto-servernum npm test -- --process=main
                   xvfb-run --auto-servernum npm test -- --process=render
-
-            - name: Run electron tests
-              if: ${{matrix.os != 'ubuntu'}}
-              working-directory: ./tests/electron
-              run: |
-                  npx install-local
-                  npm test -- --process=main
-                  npm test -- --process=render
 
     test-react-native-ios:
         name: Test React Native on iOS Simulator
@@ -387,7 +382,7 @@ jobs:
             - name: Download prebuild artifact
               uses: actions/download-artifact@v2
               with:
-                  name: prebuild-macos
+                  name: prebuild-darwin-x64
                   path: prebuilds
 
             - name: Download xcframework artifact
@@ -414,12 +409,12 @@ jobs:
             - name: Install project dependencies
               run: |
                   npm ci
-            # Install the node dependencies in the test folder
+
             - name: Install test dependencies
               working-directory: ./tests
               run: |
                   npm ci
-            # Install the node dependencies in the test folder
+
             - name: Run react native tests
               run: |
                   bash ./scripts/ci-scripts/react-tests.sh
@@ -435,7 +430,6 @@ jobs:
         env:
             REALM_DISABLE_SYNC_TESTS: true
         steps:
-            # This will retrieve the realm-js github repository
             - name: Checkout code
               uses: actions/checkout@v2
               with:
@@ -444,7 +438,7 @@ jobs:
             - name: Download prebuild artifact
               uses: actions/download-artifact@v2
               with:
-                  name: prebuild-macos
+                  name: prebuild-darwin-x64
                   path: prebuilds
 
             - name: Download android artifact
@@ -461,7 +455,6 @@ jobs:
               run: |
                   npm ci
 
-            # Install the node dependencies in the test folder
             - name: Install test dependencies
               working-directory: ./tests
               run: |
