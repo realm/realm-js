@@ -185,7 +185,10 @@ module.exports = {
         TestCase.assertArraysEqual(Object.keys(point), ["x","z","y"], "Should be an equals to: ['x','z','y']")
 
         let {x,y,z} = point
-        TestCase.assertArraysEqual([x,y,z], [1,2,3], "Should be an equals to: [1,3,2]")
+        TestCase.assertEqual(x, 1, "Should be an equals to: [1,3,2]")
+        TestCase.assertEqual(y, 3, "Should be an equals to: [1,3,2]")
+        TestCase.assertEqual(z, 2, "Should be an equals to: [1,3,2]")
+
     },
 
 
