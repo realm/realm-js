@@ -1,4 +1,4 @@
-name: Integration Testing Realm JS (Pull Request)
+name: Integration Tests
 
 on:
   pull_request:
