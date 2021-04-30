@@ -109,7 +109,7 @@ template <typename Context, typename Value, typename Utils>
 class MixedBinary : public MixedWrapper<Context, Value> {
    private:
     // Same as with string, we need to keep this data stored on memory until the
-    // data is commited.
+    // data is committed.
     OwnedBinaryData cache;
 
    public:
