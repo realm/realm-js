@@ -186,8 +186,8 @@ module.exports = {
 
         let {x,y,z} = point
         TestCase.assertEqual(x, 1, "Should be an equals to: [1,3,2]")
-        TestCase.assertEqual(y, 3, "Should be an equals to: [1,3,2]")
-        TestCase.assertEqual(z, 2, "Should be an equals to: [1,3,2]")
+        TestCase.assertEqual(y, 2, "Should be an equals to: [1,3,2]")
+        TestCase.assertEqual(z, 3, "Should be an equals to: [1,3,2]")
 
     },
 
