@@ -24,6 +24,9 @@ to test this first we make a C++ / JS function that will receive a string result
 we can define this assert function like this:
 
 
+> Before you start make sure you go to the Realm core folder and do ``cmake .`` to generate some automatic headers such as ``config.h``.
+
+
 ### Assert Function
 
 ```cpp
