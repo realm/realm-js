@@ -244,7 +244,7 @@ module.exports = {
         teams = realm.objects(teamSchema.name);
         TestCase.assertEqual(teams.length, 2, "There should be two teams");
 
-        let one = teams[0].persons.get(0);
+        let one = teams[0].persons[0];
         realm.write(() => {
             teams[0].persons.delete(one);
         });
@@ -262,7 +262,7 @@ module.exports = {
         TestCase.assertEqual(6, people.length, "There should be six 'Persons' entries");
         TestCase.assertEqual(3, teams.length, "Three teams");
         TestCase.assertEqual(1, teams[2].persons.size, "Third team has one member");
-        TestCase.assertEqual("Dan", teams[2].persons.get(0).firstName);
+        TestCase.assertEqual("Dan", teams[2].persons[0].firstName);
     },
 
 
