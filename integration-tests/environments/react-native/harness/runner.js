@@ -26,7 +26,7 @@ const puppeteerLog = require("./puppeteer-log");
 const IOS_DEVICE_NAME = "realm-js-integration-tests";
 const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 
-const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER } = process.env;
+const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, LOGCAT_ON_EXIT } = process.env;
 
 if (typeof PLATFORM !== "string") {
     throw new Error("Expected a 'PLATFORM' environment variable");
@@ -152,6 +152,22 @@ async function run(headless) {
         rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
     } else {
         throw new Error(`Unexpected platform: '${PLATFORM}'`);
+    }
+
+    // Ask adb to output logs when process gets terminated or interrupted
+    if (PLATFORM === "android" && LOGCAT_ON_EXIT === "true") {
+        function printAndroidLogs() {
+            const pid = android.adb.shell("pidof -s com.realmreactnativetests").trim();
+            const output = android.adb.logcat("-d", "--pid", pid, "-v", "color");
+            console.log(output);
+            process.exit();
+        }
+        process.on("SIGINT", printAndroidLogs);
+        process.on("SIGTERM", printAndroidLogs);
+        // Adding a timer to keep the process alive
+        setInterval(() => {
+            console.log("Awaiting external termination");
+        }, 1000 * 60 * 5);
     }
 }
 

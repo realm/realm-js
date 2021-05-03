@@ -225,6 +225,7 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
+          LOGCAT_ON_EXIT: true
       - name: Run tests (Android / Chrome Debugging)
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -235,3 +236,4 @@ jobs:
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           HEADLESS_DEBUGGER: true
+          LOGCAT_ON_EXIT: true

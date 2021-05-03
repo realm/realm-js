@@ -64,6 +64,12 @@ const adb = {
             return { id, state };
         });
     },
+    logcat(...args) {
+        return adb.exec(["logcat", ...args]);
+    },
+    shell(...args) {
+        return adb.exec(["shell", ...args]);
+    }
 };
 
 const emulator = {
