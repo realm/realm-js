@@ -4,8 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Proactively check the expiry time on the access token and refresh it before attempting to initiate a sync session. This prevents some error logs from appearing on the client such as: `ERROR: Connection[1]: Websocket: Expected HTTP response 101 Switching Protocols, but received: HTTP/1.1 401 Unauthorized`. (since v10.0.0)
+* Fixed a race condition which could result in a skipping notifications failing to skip if several commits using notification skipping were made in succession. (since v6.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -13,9 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v10.6.0 to v10.6.1.
 
 
 10.4.0 Release notes (2021-4-15)
