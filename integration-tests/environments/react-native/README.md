@@ -135,3 +135,56 @@ npm run test:android:chrome
 npm run watch:ios:chrome
 npm run watch:android:chrome
 ```
+
+### Upgrading the React Native version
+
+In an attempt to keep the React Native environment updated, this is a small guide that can be followed to upgrade the app to the latest version of React Native.
+
+First move the existing environment to a backup location that you can copy files from:
+
+```bash
+cd ./environments
+mv react-native react-native-backup
+```
+
+Initialize a new React Native app into the `react-native` directory:
+
+```bash
+npx react-native init RealmReactNativeTests --directory react-native --npm
+```
+
+Clean up unneeded files
+
+```bash
+cd ./environments
+rm -r react-native/__tests__
+rm react-native/App.js react-native/.prettierrc.js
+```
+
+Copy over files related to the test harness
+
+```bash
+cd ./environments
+cp -r react-native-backup/README.md react-native-backup/.eslintrc.js react-native-backup/harness react-native-backup/src react-native-backup/index.js react-native
+```
+
+Install additional dependencies:
+
+```bash
+cd react-native
+npm install mocha mocha-junit-reporter mocha-remote-client react-native-fs path-browserify @react-native-community/art react-native-progress
+npm install mocha-remote-server fs-extra promise-timeout --save-dev
+```
+
+Open the `package.json` of both `react-native` and `react-native-backup`:
+
+1. compare (to see if any dependencies are missing from the list above),
+2. copy over the scripts
+3. copy over the `realm` and `realm-integration-tests` "local dependencies".
+4. delete anything "jest" related.
+
+Install dependencies again to run the `prepare` script (from the root of the repository):
+
+```bash
+npx lerna bootstrap
+```
