@@ -1,0 +1,30 @@
+{
+    "collection": "testDictionary",
+    "database": "test_data",
+    "id": "6079296ee2cbbda018428140",
+    "roles": [
+        {
+            "additional_fields": {
+                "type": "string"
+            },
+            "apply_when": {},
+            "delete": true,
+            "insert": true,
+            "name": "default"
+        }
+    ],
+    "schema": {
+        "additionalProperties": {
+            "type": "string"
+        },
+        "properties": {
+            "_id": {
+                "bsonType": "objectId"
+            } 
+        },
+        "required": [
+            "_id"
+        ],
+        "title": "Dictionary_Test"
+    }
+}
