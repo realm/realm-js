@@ -37,7 +37,7 @@ class NativeAccessor;
 namespace set {
     /**
  * @brief Derive and apply property flags for \ref Set.
- * 
+ *
  * @param object_name Name of the Set object (for error reporting purposes)
  * @param prop (mutable) Property object that will be changed to be correct for \ref Set
  * @exception std::logic_error Thrown if the the prop argument contains an invalid property configuration
@@ -100,11 +100,11 @@ inline static void derive_property_type(StringData const &object_name, Property 
 
 /**
  * @brief Glue class that provides an interface between \ref SetClass and \ref realm::object_store::Set
- * 
+ *
  *  The Set class itself is an internal glue that delegates operations from \ref SetClass to
  *  \ref realm::object_store::Set.  It is used by Realm-JS's object management system, and it
  *  not meant to be instantiated directly.
- * 
+ *
  * @tparam T The type of the elements that the Set will hold.  Inherited from \ref SetClass
  */
 template<typename T>
@@ -119,7 +119,7 @@ class Set : public realm::object_store::Set {
 
 /**
  * @brief Implementation class for JavaScript's [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) class
- * 
+ *
  * @tparam T The type of the elements that the SetClass will hold.
  */
 template<typename T>
@@ -185,7 +185,7 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
          {"optional", {wrap<get_optional>, nullptr}},
      };
 
-     IndexPropertyType<T> const index_accessor = {nullptr, nullptr};
+     IndexPropertyType<T> const index_accessor = {wrap<get_indexed>, nullptr};
 
 private:
     static void validate_value(ContextType, realm::object_store::Set &, ValueType);
@@ -199,10 +199,10 @@ typename T::Object SetClass<T>::create_instance(ContextType ctx, realm::object_s
 
 /**
  * @brief Implements JavaScript Set's `.size` property
- * 
+ *
  *  Returns the number of elements in the SetClass.
  *  See [MDN's reference documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/size)
- * 
+ *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SetClass itself
  * @param return_value \ref ReturnValue wrapping an integer that gives the number of elements in the set to return to the JS context
@@ -216,9 +216,9 @@ void SetClass<T>::get_size(ContextType ctx, ObjectType object, ReturnValue &retu
 
 /**
  * @brief Accessor for elements at a given index in the set.
- * 
+ *
  *  For internal use only!
- * 
+ *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SetClass itself
  * @param index Index of the element to retrieve
@@ -234,7 +234,7 @@ void SetClass<T>::get_indexed(ContextType ctx, ObjectType object, uint32_t index
 
 /**
  * @brief Check whether the Set's element type is marked as optional (`nullable`)
- * 
+ *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SetClass itself
  * @param return_value \ref ReturnValue wrapping a boolean that is true if the Set's element type is nullable, false otherwise
@@ -248,11 +248,11 @@ void SetClass<T>::get_optional(ContextType ctx, ObjectType object, ReturnValue &
 
 /**
  * @brief Implements JavaScript Set's add() method
- * 
+ *
  *  Adds a single element, `A`, of type `T` to the set.  `A` will not be added if it
  *  already exists within the SetClass.
  *  See [MDN's reference documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/add).
- * 
+ *
  * @param ctx JS context
  * @param this_object \ref ObjectType wrapping the SetClass itself
  * @param args \ref Arguments structure containing a single new element of type `T` to add to the Set
@@ -279,10 +279,10 @@ void SetClass<T>::add(ContextType ctx, ObjectType this_object, Arguments &args, 
 
 /**
  * @brief Index-based accessing to the Set
- * 
+ *
  *  Returns a single element found at the given index
  *  For internal use only!
- * 
+ *
  * @param ctx JS context
  * @param this_object \ref ObjectType wrapping the SetClass itself
  * @param args \ref Arguments structure containing a single integer
@@ -311,11 +311,11 @@ void SetClass<T>::get(ContextType ctx, ObjectType this_object, Arguments &args, 
 
 /**
  * @brief Implements JavaScript Set's `clear()` method.  Removes all elements from the set.
- * 
+ *
  *  Empties the set, removing all elements.
  *  Returns `undefined` to the JS context.
  *  See [MDN's reference documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/clear).
- * 
+ *
  * @param ctx JS context
  * @param this_object \ref ObjectType wrapping the SetClass itself
  * @param args Empty \ref Arguments structure
@@ -333,11 +333,11 @@ void SetClass<T>::clear(ContextType ctx, ObjectType this_object, Arguments &args
 
 /**
  * @brief Implements JavaScript Set's `delete()` method.  Removes a single element from the set.
- * 
+ *
  *  Attempts to remove the given element from the set.
  *  Returns `true` if the element was present, `false` otherwise.
  *  See [MDN's reference documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/delete).
- * 
+ *
  * @param ctx JS context
  * @param this_object \ref ObjectType wrapping the SetClass itself
  * @param args \ref Arguments structure containing a single element to remove
@@ -360,11 +360,11 @@ void SetClass<T>::delete_element(ContextType ctx, ObjectType this_object, Argume
 
 /**
  * @brief Implements JavaScript Set's has() method.
- *  
+ *
  *   has() checks whether the given element exists in the set.
  *   Sets return_value to true if the element is found, false otherwise.
  *   See [MDN's reference documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/has).
- * 
+ *
  * @param ctx JS context
  * @param this_object \ref ObjectType wrapping the SetClass itself
  * @param args \ref Arguments structure containing a single element of type `T` to search for
@@ -388,11 +388,11 @@ void SetClass<T>::has(ContextType ctx, ObjectType this_object, Arguments &args, 
 
 /**
  * @brief Creates a \ref ResultClass containing a subset of the set's elements
- * 
+ *
  *  Applies a filter to the elements in the SetClass and returns the elements that match the filter.
  *  Filters are only supported for sets of objects.
  *  Will throw `std::runtime_error` if the Set's element type is not objects.
- * 
+ *
  * @param this_object \ref ObjectType wrapping the SetClass itself
  * @param args \ref Arguments structure containing the filter that will be applied to the SetClass
  * @param return_value \ref ReturnValue wrapping a \ref ResultClass containing matching objects to return to the JS context
@@ -409,7 +409,7 @@ void SetClass<T>::filtered(ContextType ctx, ObjectType this_object, Arguments &a
 
 /**
  * @brief Return a textual description of the value element type for the given set
- * 
+ *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SetClass itself
  * @param return_value \ref ReturnValue wrapping a static `const char *` descriping the set's element type
@@ -423,10 +423,10 @@ void SetClass<T>::get_type(ContextType ctx, ObjectType object, ReturnValue &retu
 
 /**
  * @brief Utility function that validates that elements of a given type is eligible for insertion into the set
- * 
+ *
  *  Checks whether a given value type is legal for the given SetClass.
  *  Throws \ref TypeErrorException if the value is not legal.
- * 
+ *
  * @param ctx JS context
  * @param set \ref realm::object_store::Set that contains the valid value type
  * @param value \ref ValueType that is to be checked whether it is valid for the set
@@ -447,7 +447,7 @@ void SetClass<T>::validate_value(ContextType ctx, realm::object_store::Set &set,
 
 /**
  * @brief Create a snapshot of the Set in the Realm database
- * 
+ *
  * @param ctx JS context
  * @param set \ref realm::object_store::Set that contains the valid value type
  * @param value \ref ValueType that is to be checked whether it is valid for the set
@@ -464,7 +464,7 @@ void SetClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments &a
 
 /**
  * @brief Add a new listener on the Set
- * 
+ *
  * @param ctx JS context
  * @param set \ref realm::object_store::Set that contains the valid value type
  * @param args A single argument containing a callback function
@@ -480,7 +480,7 @@ void SetClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
 
 /**
  * @brief Remove a listener that was previously registered on the Set
- * 
+ *
  * @param ctx JS context
  * @param set \ref realm::object_store::Set that contains the valid value type
  * @param args A single argument containing the callback function of the previously-registered listener
@@ -496,7 +496,7 @@ void SetClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argum
 
 /**
  * @brief Remove all listeners registered on the Set
- * 
+ *
  * @param ctx JS context
  * @param set \ref realm::object_store::Set that contains the valid value type
  * @param args None
