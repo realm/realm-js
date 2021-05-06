@@ -1,21 +1,19 @@
-10.5.0-alpha.16 Release notes (2021-4-22)
+10.5.0-beta.1 Release notes (2021-5-6)
 =============================================================
 NOTE: This is an internal release and SHOULD NOT be used.
 NOTE: Realm file format is likely to break and you CAN NOT revert back to the previous file format - DATA WILL BE LOST!!!!
-NOTE: Sync protocol version 3: CANNOT SYNC WITH MONGODB REALM CLOUD.
+NOTE: Sync protocol version 4: CANNOT SYNC WITH MONGODB REALM CLOUD.
 NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Enhancements
 * Added Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
-* Added support for HTTP proxy.
+* Added support for HTTP proxy and `ssl` option to `Realm.App.Sync` configuration.
 * Added Set type ([#3378](https://github.com/realm/realm-js/issues/3378)).
 * Array of primitive lists will not be `snapshot()`'ed.
-* Added `ssl` option to `Realm.App.Sync` configuration.
 * Added UUID types. ([#3244](https://github.com/realm/realm-js/issues/3244))
 * Adding Dictionaries types. ([#3392](https://github.com/realm/realm-js/issues/3392))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
@@ -26,8 +24,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 ### Internal
 * Bump the Realm Sync protocol version to 4.
 * Bump Realm File Format version to 21.
-* Prebuild the React Native iOS variant and bundle it in the npm tarball. ([#3649](https://github.com/realm/realm-js/pull/3649))
-* Upgraded Realm Core to v11.0.0-beta.3.
+* Upgraded Realm Core to v11.0.0-beta.4.
 
 10.2.0 Release notes (2021-2-5)
 =============================================================
