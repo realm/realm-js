@@ -155,6 +155,7 @@ jobs:
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
       - name: Run tests (iOS / Chrome Debugging)
+        if: ${{ false }}
         run: npm run test:ios:chrome --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
@@ -226,6 +227,7 @@ jobs:
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           SPAWN_LOGCAT: true
       - name: Run tests (Android / Chrome Debugging)
+        if: ${{ false }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
