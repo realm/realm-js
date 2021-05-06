@@ -26,6 +26,7 @@
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
 #include "js_links.hpp"
+#include "dictionary/js_dictionary.hpp"
 
 #if REALM_ENABLE_SYNC
 #include <realm/util/base64.hpp>
@@ -181,8 +182,8 @@ public:
     ValueType box(realm::object_store::Set set) {
         return SetClass<JSEngine>::create_instance(m_ctx, std::move(set));
     }
-    ValueType box(realm::object_store::Dictionary dictionart) {
-        throw std::runtime_error("'Dictionary' type support is not implemented yet");
+    ValueType box(realm::object_store::Dictionary dictionary) {
+        return dictionary_adapter.wrap(m_ctx, dictionary);
     }
 
     bool is_null(ValueType const& value) {
@@ -234,9 +235,15 @@ public:
         }
     }
 
+    // called when creating dictionaries.
     template<typename Fn>
     void enumerate_dictionary(ValueType& value, Fn&& func) {
-        throw std::runtime_error("'Dictionary' type support is not implemented yet");
+        auto js_object = Value::validated_to_object(m_ctx, value);
+        for (auto key : Object::get_property_names(m_ctx, js_object)) {
+            std::string k = key;
+            ValueType val = Object::get_property(m_ctx, js_object, key);
+            func(k, val);
+        }
     }
 
     bool is_same_list(realm::List const& list, ValueType const& value) const noexcept {
@@ -256,7 +263,7 @@ public:
     }
 
     bool is_same_dictionary(realm::object_store::Dictionary const& dictionary, ValueType const& value) const {
-        throw std::runtime_error("'Dictionary' type support is not implemented yet");
+        return false;
     }
 
     bool allow_missing(ValueType const&) const noexcept { return false; }
@@ -270,6 +277,7 @@ public:
 private:
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
+    DictionaryAdapter<JSEngine> dictionary_adapter;
     Obj m_parent;
     const Property* m_property = nullptr;
     const ObjectSchema* m_object_schema;
@@ -413,6 +421,13 @@ struct Unbox<JSEngine, UUID> {
 };
 
 template<typename JSEngine>
+struct Unbox<JSEngine, ObjLink> {
+    static ObjLink call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        throw std::runtime_error("'ObjLink' type support is not implemented yet");
+    }
+};
+
+template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<UUID>> {
     static util::Optional<UUID> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
         return ctx->template unbox_optional<UUID>(value);
@@ -481,12 +496,6 @@ struct Unbox<JSEngine, ObjKey> {
     }
 };
 
-template<typename JSEngine>
-struct Unbox<JSEngine, ObjLink> {
-    static ObjLink call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
-        throw std::runtime_error("ObjLink not implemented");
-    }
-};
 
 } // namespace _impl
 

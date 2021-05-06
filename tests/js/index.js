@@ -45,15 +45,14 @@ var TESTS = {
     EncryptionTests: require("./encryption-tests"),
     AliasTests: require("./alias-tests"),
     BsonTests: require("./bson-tests"),
+    MixedTests: require("./mixed-tests"),
+    DictionaryTest: require("./dictionary-tests"),
     // Garbagecollectiontests: require('./garbage-collection'),
     ArrayBuffer: require("./array-buffer-tests"),
-    SetTests: require("./set-tests")
-};
+    SetTests: require("./set-tests"),
+    MixedTests: require("./mixed-tests"),
 
-//FIXME: MIXED: fix for JSC
-if (isNodeProcess || isElectronProcess) {
-    TESTS.MixedTests= node_require("./mixed-tests");
-}
+};
 
 //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
 if (isNodeProcess) {
@@ -71,6 +70,7 @@ if (global.enableSyncTests) {
         TESTS.UUIDSyncTests= node_require("./uuid-sync-tests");
         TESTS.PartitionValueTests = node_require("./partition-value-tests");
         TESTS.SetSyncTests = node_require("./set-sync-tests");
+        TESTS.MixedSyncTests = node_require("./mixed-sync-tests");
     }
 }
 

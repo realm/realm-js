@@ -15,14 +15,14 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
+#pragma once
 #include <iostream>
 #include <map>
 
 #include "js_types.hpp"
 #include "types.hpp"
 
-#pragma once
+
 
 namespace realm {
 namespace js {
@@ -36,6 +36,12 @@ class GenericTypeDeductionImpl {
         std::map<std::string, types::Type> ret;
         for (auto& [type, key] : realm_to_js_map) {
             ret[key] = type;  // camel_case version.
+            std::string lower_case_key;
+            // in-place lower case, we want to support multiple variation of the
+            // types written names.
+            std::transform(key.begin(), key.end(), key.begin(),
+                           [](unsigned char chr) { return std::tolower(chr); });
+            ret[key] = type;
         }
         return ret;
     }
@@ -125,4 +131,3 @@ struct TypeDeduction : GenericTypeDeductionImpl {};
 
 }  // namespace js
 }  // namespace realm
-
