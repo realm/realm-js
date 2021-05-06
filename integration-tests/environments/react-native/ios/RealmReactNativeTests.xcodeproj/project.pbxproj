@@ -160,8 +160,8 @@
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				52EA2BCABB8D087CEC9471E9 /* [CP] Embed Pods Frameworks */,
 				348C1C31EA2C62CCF8702A60 /* [CP] Copy Pods Resources */,
+				48C1D6258F8E5F2C71C4DDAB /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -183,8 +183,8 @@
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				5BD09DF423D2690D9F8D7D42 /* [CP] Embed Pods Frameworks */,
 				E3FB033A1D95FB1C1D8706EE /* [CP] Copy Pods Resources */,
+				21D6D40D9B1FBEA4F252633B /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -287,6 +287,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		21D6D40D9B1FBEA4F252633B /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-RealmReactNativeTests/Pods-RealmReactNativeTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-RealmReactNativeTests/Pods-RealmReactNativeTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RealmReactNativeTests/Pods-RealmReactNativeTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		348C1C31EA2C62CCF8702A60 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -304,7 +321,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RealmReactNativeTests-RealmReactNativeTestsTests/Pods-RealmReactNativeTests-RealmReactNativeTestsTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		52EA2BCABB8D087CEC9471E9 /* [CP] Embed Pods Frameworks */ = {
+		48C1D6258F8E5F2C71C4DDAB /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -319,23 +336,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RealmReactNativeTests-RealmReactNativeTestsTests/Pods-RealmReactNativeTests-RealmReactNativeTestsTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		5BD09DF423D2690D9F8D7D42 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RealmReactNativeTests/Pods-RealmReactNativeTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RealmReactNativeTests/Pods-RealmReactNativeTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RealmReactNativeTests/Pods-RealmReactNativeTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		7E2B5242FE18D13FDD244FC4 /* [CP] Check Pods Manifest.lock */ = {
