@@ -22,11 +22,12 @@ const rn = require("./react-native-cli");
 const android = require("./android-cli");
 const xcode = require("./xcode-cli");
 const puppeteerLog = require("./puppeteer-log");
+const logcat = require("./logcat");
 
 const IOS_DEVICE_NAME = "realm-js-integration-tests";
 const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 
-const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, LOGCAT_ON_EXIT } = process.env;
+const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, SPAWN_LOGCAT } = process.env;
 
 if (typeof PLATFORM !== "string") {
     throw new Error("Expected a 'PLATFORM' environment variable");
@@ -35,7 +36,7 @@ if (typeof PLATFORM !== "string") {
 /**
  * Ensure a simulator is created and booted
  */
-function ensureSimulator(deleteExisting = false) {
+function ensureSimulator() {
     if (PLATFORM === "android") {
         const devices = android.adb.devices();
         const activeDevices = devices.filter(({ state }) => state === "device");
@@ -67,7 +68,9 @@ function ensureSimulator(deleteExisting = false) {
         }
 
         // Shutdown all booted simulators (as they might interfeer by loading and executing the Metro bundle)
-        xcode.simctl.shutdown("all");
+        // xcode.simctl.shutdown("all");
+        // TODO: Investigate if we have to shut down anything at all
+        // xcode.simctl.shutdown(IOS_DEVICE_NAME);
 
         // Determine if the device exists and has the correct IOS_DEVICE_TYPE_ID and latest runtime
         const { devices: devicesByType } = xcode.simctl.list(
@@ -82,13 +85,7 @@ function ensureSimulator(deleteExisting = false) {
             ({ name }) => name === IOS_DEVICE_NAME,
         );
 
-        if (deleteExisting) {
-            // Delete any existing devices with the expected name
-            for (const device of devices) {
-                console.log(`Deleting simulator (id = ${device.udid})`);
-                xcode.simctl.delete(device.udid);
-            }
-        } else if (devices.length > 0) {
+        if (devices.length > 0) {
             // Use the first device with the expected name
             return devices[0].udid;
         }
@@ -134,7 +131,7 @@ async function launchDebugger(headless) {
     }
 }
 
-async function run(headless) {
+async function run(headless, spawnLogcat) {
     // Ensure the simulator is booted and ready for the app to start
     ensureSimulator();
 
@@ -145,6 +142,10 @@ async function run(headless) {
 
     console.log("Starting the app");
     if (PLATFORM === "android") {
+        // Start the log cat (skipping any initial pid from an old run)
+        if (spawnLogcat) {
+            logcat.start("com.realmreactnativetests", true).catch(console.error);
+        }
         // Ask React Native to run the android app
         rn.sync("run-android", "--no-packager");
     } else if (PLATFORM === "ios") {
@@ -152,22 +153,6 @@ async function run(headless) {
         rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
     } else {
         throw new Error(`Unexpected platform: '${PLATFORM}'`);
-    }
-
-    // Ask adb to output logs when process gets terminated or interrupted
-    if (PLATFORM === "android" && LOGCAT_ON_EXIT === "true") {
-        function printAndroidLogs() {
-            const pid = android.adb.shell("pidof -s com.realmreactnativetests").trim();
-            const output = android.adb.logcat("-d", "--pid", pid, "-v", "color");
-            console.log(output);
-            process.exit();
-        }
-        process.on("SIGINT", printAndroidLogs);
-        process.on("SIGTERM", printAndroidLogs);
-        // Adding a timer to keep the process alive
-        setInterval(() => {
-            console.log("Awaiting external termination");
-        }, 1000 * 60 * 5);
     }
 }
 
@@ -177,7 +162,8 @@ function optionalStringToBoolean(value) {
 
 if (module.parent === null) {
     const headlessDebugger = optionalStringToBoolean(HEADLESS_DEBUGGER);
-    run(headlessDebugger).catch(err => {
+    const spawnLogcat = optionalStringToBoolean(SPAWN_LOGCAT);
+    run(headlessDebugger, spawnLogcat).catch(err => {
         console.error(err.stack);
         process.exit(1);
     });

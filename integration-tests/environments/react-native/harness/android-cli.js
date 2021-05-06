@@ -17,36 +17,36 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const cp = require("child_process");
+const path = require("path");
 
 function getAdbPath() {
     return process.env.ANDROID_HOME
-        ? process.env.ANDROID_HOME + "/platform-tools/adb"
+        ? path.resolve(process.env.ANDROID_HOME, "platform-tools/adb")
         : "adb";
 }
 
 function getEmulatorPath() {
     return process.env.ANDROID_HOME
-        ? process.env.ANDROID_HOME + "/tools/emulator"
+        ? path.resolve(process.env.ANDROID_HOME, "tools/emulator")
         : "emulator";
 }
 
-function execSync(path, args, returnStdOut) {
-    if (returnStdOut) {
-        return cp.execFileSync(path, args, {
-            encoding: "utf8",
-        });
-    } else {
-        cp.execFileSync(path, args, {
-            stdio: ["inherit", "inherit", "inherit"],
-        });
-    }
-}
-
 const adb = {
-    exec(args, returnStdOut = true) {
+    exec(args, returnStdOut = true, verbose = true) {
         const path = getAdbPath();
-        console.log(`Running ${path} ${args.join(" ")}`);
-        return execSync(path, args, returnStdOut);
+        if (verbose) {
+            console.log(`Executing ${path} ${args.join(" ")}`);
+        }
+        return cp.execFileSync(
+            path,
+            args,
+            returnStdOut ? { encoding: "utf8" } : { stdio: "inherit" },
+        );
+    },
+    spawn(args) {
+        const path = getAdbPath();
+        console.log(`Spawning ${path} ${args.join(" ")}`);
+        return cp.spawn(path, args, { stdio: "inherit" });
     },
     reverseServerPort(port) {
         adb.exec(["reverse", `tcp:${port}`, `tcp:${port}`], false);
@@ -65,10 +65,13 @@ const adb = {
         });
     },
     logcat(...args) {
-        return adb.exec(["logcat", ...args]);
+        return adb.spawn(["logcat", ...args]);
     },
     shell(...args) {
         return adb.exec(["shell", ...args]);
+    },
+    shellPidOf(packageName) {
+        return adb.exec(["shell", `pidof -s ${packageName}`], true, false).trim();
     }
 };
 
