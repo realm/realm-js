@@ -5,15 +5,16 @@ Currently this directory consists of:
   - `App.js` a simple component which creates a mocha remote client and displays progress.
   - `index.js` re-exports the `App` component.
 - A test harness in `harness`, where:
+  - `runner.js` starts the metro bundler, starts the app (using `react-native run-android` or `react-native run-ios`) and optionally prints output from logcat (while running an Android application).
   - `android-cli.js` wraps the Android specific `adb` and `emulator` CLIs.
-  - `runner.js` starts a mocha remote server, the metro bundler and starts the app (using `react-native run-android` or `react-native run-android`)
   - `react-native-cli.js` wraps the `react-native` CLI.
   - `xcode-cli.js` wraps the `react-native` CLI.
+  - `puppeteer-log.js` implements a handler for logs used when running Chrome debugging headlessly.
 
 To install this environment, run the following command from the root directory of repository:
 
 ```bash
-npx bootstrap --scope realm-react-native-tests --include-dependencies
+npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
 ```
 
 This will run `install-local` and `pod install` (in `./ios`) for you.
@@ -57,6 +58,10 @@ npm run watch:ios
 ```
 
 This will keep the harness, metro server and mocha-remote servers running and connected to the device. When hot reloading (from an update to Realm JS, the tests or the app itself) the app will re-connect and rerun the tests.
+
+## Environment variables
+
+// TODO: Add a section on environment variables supported by the harness.
 
 ## Weird configurations
 

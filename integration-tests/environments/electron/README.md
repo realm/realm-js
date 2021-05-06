@@ -3,7 +3,7 @@
 To install this environment, run the following command from the root directory of repository:
 
 ```bash
-npx bootstrap --scope realm-electron-tests --include-dependencies
+npx lerna bootstrap --scope realm-electron-tests --include-dependencies
 ```
 
 Currently this directory consists of:
