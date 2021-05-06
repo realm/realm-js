@@ -51,11 +51,10 @@ jobs:
       - name: Prebuild debug binary
         run: npx prebuild --debug
         if: ${{ matrix.type == 'debug' }}
-      # Set the prebuild file path (see https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable)
-      - name: Set prebuilds path
-        run: echo "npm_config_realm_local_prebuilds=$(pwd)/prebuilds" >> $GITHUB_ENV
       # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
       - run: npx lerna bootstrap --scope realm-node-tests --include-dependencies
+        env:
+          npm_config_realm_local_prebuilds: ${{ github.workspace }}/prebuilds
       # Run tests
       - run: npm test --prefix integration-tests/environments/node
         env:
