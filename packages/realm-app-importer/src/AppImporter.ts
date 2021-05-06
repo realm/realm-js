@@ -188,9 +188,7 @@ export class AppImporter {
             for (const relativeFilePath of files) {
                 const filePath = path.resolve(appPath, relativeFilePath);
                 const content = fs.readJSONSync(filePath);
-                console.log("content before", content);
                 const mergedContent = deepmerge(content, replacement);
-                console.log(filePath, mergedContent);
                 fs.writeJSONSync(filePath, mergedContent, { spaces: 2 });
             }
         }

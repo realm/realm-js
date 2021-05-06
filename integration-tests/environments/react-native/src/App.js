@@ -45,8 +45,6 @@ ErrorUtils.setGlobalHandler((err, isFatal) => {
   throw err;
 });
 
-// NativeModules.DevSettings.setIsDebuggingRemotely(false);
-
 const mode =
     typeof DedicatedWorkerGlobalScope === "undefined"
         ? "native"
