@@ -138,7 +138,7 @@ module.exports = {
         TestCase.assertEqual(1, objs.length, "One MixedObject");
         TestCase.assertEqual(values.length, objs[0].s.size, `${values.length} values in set`);
         for (let i = 0; i < values.length; i++) {
-            TestCase.assertTrue(objs[0].s.has(values[i]), `${values[i]}`);
+            TestCase.assertTrue(objs[0].s.has(values[i]), `the set has "${values[i]}"`);
         }
     },
 
