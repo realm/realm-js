@@ -185,7 +185,7 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
          {"optional", {wrap<get_optional>, nullptr}},
      };
 
-     IndexPropertyType<T> const index_accessor = {wrap<get_indexed>, nullptr};
+     IndexPropertyType<T> const index_accessor = {nullptr, nullptr};
 
 private:
     static void validate_value(ContextType, realm::object_store::Set &, ValueType);
