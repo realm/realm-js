@@ -3,7 +3,7 @@ import { App, Credentials, User } from "realm";
 
 import { importApp } from "../../utils/import-app";
 
-describe.skipIf("missingServer", "anonymous credentials", () => {
+describe.skipIf(environment.missingServer, "anonymous credentials", () => {
   let app: App;
   
   before(async function() {
