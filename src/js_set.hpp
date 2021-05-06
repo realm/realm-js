@@ -400,8 +400,6 @@ void SetClass<T>::has(ContextType ctx, ObjectType this_object, Arguments &args, 
  */
 template<typename T>
 void SetClass<T>::filtered(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_maximum(1);
-
     auto const set = get_internal<T, SetClass<T>>(ctx, this_object);
     return_value.set(ResultsClass<T>::create_filtered(ctx, *set, args));
 }
