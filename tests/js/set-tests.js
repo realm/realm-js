@@ -217,7 +217,7 @@ module.exports = {
 
 
         let teams = realm.objects(teamSchema.name);
-        let filteredSues = teams[0].persons.filtered("firstName = \"Sue\"");
+        let filteredSues = teams[0].persons.filtered("firstName = $0", "Sue");
         TestCase.assertEqual(filteredSues.length, 1, "There should be only one Sue");
         TestCase.assertEqual(filteredSues[0].age, 53, "Sue's age should be 53");
 
