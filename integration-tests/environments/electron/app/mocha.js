@@ -36,7 +36,7 @@ return new Client({
         global.fetch = require("node-fetch");
         global.environment = {
             ...context,
-            electron: process.type === "browser" ? "main" : "renderer",
+            electron: processType,
         };
         // Add the integration test suite
         require("realm-integration-tests");
