@@ -12,7 +12,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Set didn't export `objectType` to Realm.schema when it contained scalar types.
 
 ### Compatibility
 * MongoDB Realm Cloud.
