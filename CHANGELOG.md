@@ -16,6 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Added binaries for Apple Silicon (M1). ([#3257](https://github.com/realm/realm-js/issues/3527))
 
 
 10.4.0 Release notes (2021-4-15)
