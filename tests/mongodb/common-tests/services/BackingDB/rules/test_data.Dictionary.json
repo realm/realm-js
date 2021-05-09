@@ -20,7 +20,25 @@
         "properties": {
             "_id": {
                 "bsonType": "objectId"
-            } 
+            },
+            "columnStringDictionary": {
+                "bsonType": "object",
+                "additionalProperties": {
+                    "bsonType": "string"
+                }
+            },
+            "columnIntegerDictionary": {
+                "bsonType": "object",
+                "additionalProperties": {
+                    "bsonType": "long"
+                }
+            },
+            "columnFloatDictionary": {
+                "bsonType": "object",
+                "additionalProperties": {
+                    "bsonType": "float"
+                }
+            }
         },
         "required": [
             "_id"
