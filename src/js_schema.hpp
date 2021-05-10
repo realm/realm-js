@@ -453,7 +453,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     if (property.object_type.size()) {
         Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, property.object_type));
     }
-    else if (is_array(property.type) || is_dictionary(property.type)) {
+    else if (is_array(property.type) || is_dictionary(property.type) || is_set(property.type)) {
         Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, local_string_for_property_type(property.type & ~realm::PropertyType::Flags)));
     }
 
