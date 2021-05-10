@@ -5,7 +5,7 @@ This script creates new nested objects into a new Realm.
 'use strict';
 console.log("nested-list-helper started", JSON.stringify(process.argv));
 const appid = process.argv[2];
-const appurl = process.argv[3];
+const baseUrl = process.argv[3];
 const realmName = process.argv[4];
 const realmModule = process.argv[5];
 
@@ -81,7 +81,7 @@ function createObjects(user) {
 
 const config = {
     id: appid,
-    url: appurl,
+    baseUrl,
     timeout: 1000,
     app: {
         name: 'default',

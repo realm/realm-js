@@ -1,10 +1,10 @@
 /*
 This script creates 3 new objects into a new realm. These are objects are validated to exists by the download api tests.
 */
-'use strict';
+"use strict";
 console.log("download-api-helper started");
 const appId = process.argv[2];
-const appUrl = process.argv[3];
+const baseUrl = process.argv[3];
 const partition = process.argv[4];
 const realmModule = process.argv[5];
 
@@ -71,7 +71,7 @@ function createObjects(user) {
 const credentials = Realm.Credentials.anonymous();
 const appConfig = {
     id: appId,
-    url: appUrl,
+    baseUrl,
     timeout: 1000,
     app: {
         name: "default",
