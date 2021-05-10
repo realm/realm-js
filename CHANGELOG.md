@@ -13,6 +13,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Set didn't export `objectType` to Realm.schema when it contained scalar types.
+* Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
 
 ### Compatibility
 * MongoDB Realm Cloud.
