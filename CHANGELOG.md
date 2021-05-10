@@ -1,4 +1,4 @@
-10.4.1-rc.1 Release notes (2021-5-10)
+10.4.1-rc.2 Release notes (2021-5-10)
 =============================================================
 ### Enhancements
 * None.
@@ -13,7 +13,6 @@
 
 ### Internal
 * Added binaries for Apple Silicon (M1). ([#3257](https://github.com/realm/realm-js/issues/3527))
-
 
 10.4.0 Release notes (2021-4-15)
 =============================================================

@@ -4,7 +4,7 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js'
 
-platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'darwin-arm', 'linux-x64', 'linux-arm']
+platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'darwin-arm64', 'linux-x64', 'linux-arm']
 nodeTestVersion = '12.20.0'
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
@@ -382,7 +382,7 @@ def buildMacOSArm(workerFunction) {
       ]) {
         unstash 'source'
         sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-        workerFunction('darwin-arm')
+        workerFunction('darwin-arm64')
       }
     }
   }
