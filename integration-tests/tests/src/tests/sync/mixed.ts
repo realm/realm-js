@@ -23,7 +23,7 @@ function describeRoundtrip(typeName: string, options: TestOptions) {
     }
   }
 
-  describe(`roundtrip of '${typeName}'`, () => {
+  describe.skipIf(environment.missingServer, `roundtrip of '${typeName}'`, () => {
     openRealmBefore({
       schema: [{
         name: "MixedClass",
