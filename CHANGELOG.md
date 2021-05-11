@@ -4,7 +4,7 @@
 * None.
 
 ### Fixed
-* None.
+* Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
 
 ### Compatibility
 * MongoDB Realm Cloud.
