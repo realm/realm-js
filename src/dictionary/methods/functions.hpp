@@ -84,12 +84,20 @@ class MethodsForDictionary {
         auto context = arguments.context;
         IOCollection *collection = arguments.collection;
 
-        object_keys(context, arguments.get(0, error_msg),
-                    [=](std::string& _key, auto object){
+            object_keys(context, arguments.get(0, error_msg),
+                    [=](std::string& _key, auto object) mutable{
                         auto value = js::Object<T>::get_property(context, object, _key);
                         std::string key = js::Value<T>::validated_to_string(context, value, "Dictionary key");
-                        collection->remove(key);
+
+                        try{
+                            collection->remove(key);
+                        }catch (realm::KeyNotFound& error){
+                            arguments.throw_error("The key: " + key + " doesn't exist in the Dictionary." );
+                        }
                     });
+
+
+
     }
 
 
