@@ -24,6 +24,10 @@ import { IPerson, PersonSchema, DogSchema } from "../schemas/person-and-dogs";
 const RealmAsAny = Realm as any;
 
 describe("Realm#constructor", () => {
+    beforeEach(() => {
+        Realm.clearTestState();
+    });
+
     it("is a function", () => {
         expect(Realm).to.be.a("function");
         expect(Realm instanceof Function).to.equal(true);
@@ -296,6 +300,10 @@ describe("Realm#constructor", () => {
 // Testing static methods
 
 describe("#deleteFile", () => {
+    beforeEach(() => {
+        Realm.clearTestState();
+    });
+
     function expectDeletion(path?: string) {
         // Create the Realm with a schema
         const realm = new Realm({ path, schema: [PersonSchema, DogSchema] });

@@ -32,6 +32,10 @@ describe("Iterating", () => {
     let persons: { [name: string]: IPerson };
 
     beforeEach(() => {
+        Realm.clearTestState();
+    });
+
+    beforeEach(() => {
         // Add linkingObjects to the PersonAndDogs schema
         const PersonWithDogsSchema = {
             ...PersonSchema,
