@@ -1,7 +1,21 @@
 {
   "name": "local-mongodb",
   "type": "mongodb",
-  "config": {},
+  "config": {
+      "sync": {
+          "state": "enabled",
+          "database_name": "test-database",
+          "partition": {
+              "key": "partition",
+              "type": "string",
+              "required": true,
+              "permissions": {
+                  "read": true,
+                  "write": true
+              }
+          }
+      }
+  },
   "secret_config": {
       "uri": "local-mongodb-uri"
   }
