@@ -146,6 +146,8 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * Upgraded Realm Core from v10.6.0 to 10.7.1
 * Switch to unified releases of Realm Core, Realm Sync and Realm Object Store.
 * Upgraded to Realm Core v10.5.4.
+* Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
+* Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
 
 10.2.0 Release notes (2021-2-5)
 =============================================================
