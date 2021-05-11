@@ -74,7 +74,7 @@ class JavascriptObject {
         ObjectObserver *observer = _private->observer;
         IOCollection *collection = _private->collection;
 
-        cb({ctx, observer, collection, argumentCount, _arguments});
+        cb({ctx, observer, collection, argumentCount, _arguments, exception});
         return JSValueMakeUndefined(ctx);
     }
 
