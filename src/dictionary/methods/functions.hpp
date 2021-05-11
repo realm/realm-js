@@ -18,8 +18,6 @@
 
 #pragma once
 #include "common/object/interfaces.hpp"
-
-#include "dictionary/collection/notification.hpp"
 #include "dictionary/methods/subscriber.hpp"
 
 namespace realm {
