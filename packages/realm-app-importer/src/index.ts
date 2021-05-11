@@ -16,4 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { RealmAppImporter } from "./RealmAppImporter";
+export { AppImporter } from "./AppImporter";

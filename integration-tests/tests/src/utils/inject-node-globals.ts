@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2019 Realm Inc.
@@ -18,25 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-"use strict";
+// Require this file to get the Realm constructor injected into the global.
+// This is only useful when we want to run the tests outside of any particular environment
 
-// This script runs a command in every environment
-
-const concurrently = require("concurrently");
-const fs = require("fs");
-const path = require("path");
-
-const environments = fs
-    .readdirSync(__dirname)
-    .map(f => ({ name: f, path: path.resolve(__dirname, f) }))
-    .filter(({ path }) => fs.statSync(path).isDirectory());
-
-const command = process.argv.slice(2).join(" ");
-
-concurrently(environments.map(e => ({
-    command: `cd '${e.path}' && ${command}`,
-    name: e.name,
-})), {
-    prefix: "name",
-    killOthers: ["failure"],
-}).then(undefined, err => process.exit(1));
+global.fs = require("fs-extra");
+global.path = require("path");
+global.title = "Realm JS development-mode";
+global.environment = { node: true };
+global.fetch = require("node-fetch");

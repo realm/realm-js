@@ -16,7 +16,7 @@
 		"noImplicitAny": true
 	},
 	"include": [
-		"src/**/typings.d.ts",
+		"src/typings.d.ts",
 		"src/**/*.ts"
 	]
 }
