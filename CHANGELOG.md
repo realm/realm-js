@@ -1,10 +1,9 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.4.1-rc.3 Release notes (2021-5-10)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
 
 ### Compatibility
@@ -13,10 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
-
+* Added binaries for Apple Silicon (M1). ([#3257](https://github.com/realm/realm-js/issues/3527))
 
 10.4.0 Release notes (2021-4-15)
 =============================================================

@@ -2,7 +2,6 @@
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (both iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
-
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
@@ -88,15 +87,17 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 * The compiled version of the Android module is here: `<project-root>/android`
 
 ### Building for nodejs:
-Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
-For example you can use Homebrew to install it.
-```
-brew install python@2
+You can build for nodejs by running the command:
+
+```sh
+npm run build
 ```
 
-```
-npm install --build-from-source=realm
-```
+If you want to build for Apple Silicon on an Intel based Mac, you can use the following command instead:
+
+```sh
+ npm run build-m1
+ ```
 
 #### Additional steps for Windows
 On Windows you will need to setup the environment for node-gyp:
@@ -239,7 +240,7 @@ Currently the following information is reported:
  * The OS platform and version which is being used.
  * Node.js, v8, libuv, OpenSSL version numbers.
  * An anonymous machine identifier and hashed application path to aggregate the other information on.
- 
+
  ## Known issues
 
 * AWS Lambda is not supported.

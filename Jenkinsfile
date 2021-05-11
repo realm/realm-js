@@ -4,7 +4,7 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js'
 
-platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'linux-x64', 'linux-arm']
+platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'darwin-arm64', 'linux-x64', 'linux-arm']
 nodeTestVersion = '12.20.0'
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
@@ -112,6 +112,8 @@ stage('pretest') {
 stage('build') {
     parallelExecutors = [:]
     parallelExecutors["macOS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
+    parallelExecutors["macOS arm NAPI ${nodeTestVersion}"] = buildMacOSArm { buildCommon(nodeTestVersion, it, '-- --arch=arm64') }
+
     parallelExecutors["Linux x86_64 NAPI ${nodeTestVersion}"] = buildLinux { buildCommon(nodeTestVersion, it) }
     parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
     parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
@@ -370,6 +372,22 @@ def buildMacOS(workerFunction) {
     }
   }
 }
+
+def buildMacOSArm(workerFunction) {
+  return {
+    myNode('osx_vegas') {
+      withEnv([
+        "DEVELOPER_DIR=/Applications/Xcode-12.2.app/Contents/Developer",
+        "NODE_ARCH_ARM=1",
+      ]) {
+        unstash 'source'
+        sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+        workerFunction('darwin-arm64')
+      }
+    }
+  }
+}
+
 
 def buildWindows(nodeVersion, arch) {
   return {
