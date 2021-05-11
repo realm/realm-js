@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
-
 console.log("Loading Realm Integration Tests");
 
 if (!global.fs) {
@@ -40,10 +38,6 @@ if (!global.environment || typeof global.environment !== "object") {
 import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
 global.describe.skipIf = suiteSkipIf;
 global.it.skipIf = testSkipIf;
-
-beforeEach(() => {
-    Realm.clearTestState();
-});
 
 require("./tests/import-app-util");
 require("./tests/realm-constructor");

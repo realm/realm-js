@@ -23,12 +23,3 @@ export async function importApp(name: string, replacements: TemplateReplacements
     throw new Error("Failed to import app");
   }
 }
-
-export function importAppBefore(name: string, replacements: TemplateReplacements = {}) {
-  before(async function() {
-    this.timeout(10000);
-    this.app = await importApp(name, replacements);
-  });
-}
-
-export type TestWithApp = Mocha.Context & { app: App };
