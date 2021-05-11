@@ -45,7 +45,7 @@ module.exports = {
     testInvalidServer() {
         const conf = {
             id: 'smurf',
-            url: 'http://localhost:9999',
+            baseUrl: 'http://localhost:9999',
             timeout: 1000,
             app: {
                 name: 'realm-sdk-integration-tests',

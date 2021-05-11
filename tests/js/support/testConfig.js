@@ -17,7 +17,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+"use strict";
 
 // If the docker instance has imported this stitch config, it will have written the app id
 // back into the config file, so we can read it out again here.
@@ -29,27 +29,28 @@ function nodeRequire(module) {
 }
 
 let pathToStitchJson = "../../../tests/mongodb/stitch.json";
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
 
 if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
     const path = nodeRequire("path");
     console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
-    pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, '../../../../tests/mongodb/stitch.json')
+    pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, "../../../../tests/mongodb/stitch.json")
 }
 console.log("pathToStitchJson " + pathToStitchJson);
 
 const integrationTestsAppId = `${nodeRequire(pathToStitchJson).app_id}`;
-const appUrl = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/\"/g,'') : "http://localhost";
-const appPort = process.env.MONGODB_REALM_PORT || "9090";
-console.log(`tests are using integration tests app id: ${integrationTestsAppId} on ${appUrl}:${appPort}`);
+const baseUrlHostname = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/"/g,"") : "http://localhost";
+const baseUrlPort = process.env.MONGODB_REALM_PORT || "9090";
+const baseUrl = `${baseUrlHostname}:${baseUrlPort}`;
+console.log(`tests are using integration tests app id: ${integrationTestsAppId} on ${baseUrl}`);
 
 const integrationAppConfig = {
     id: integrationTestsAppId,
-    url: `${appUrl}:${appPort}`,
+    baseUrl,
     timeout: 1000,
     app: {
         name: "default",
-        version: '0'
+        version: "0"
     },
 };
 

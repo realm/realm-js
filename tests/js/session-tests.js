@@ -160,7 +160,7 @@ module.exports = {
         let user, config;
         let credentials = Realm.Credentials.anonymous();
         let app = new Realm.App(appConfig);
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.baseUrl, partition, REALM_MODULE_PATH)
             .then(() => { return app.logIn(credentials) })
             .then(u => {
                 user = u;
@@ -188,7 +188,7 @@ module.exports = {
 
         const partition = Utils.genPartition();
 
-        await runOutOfProcess(__dirname + "/download-api-helper.js", appConfig.id, appConfig.url, partition, REALM_MODULE_PATH);
+        await runOutOfProcess(__dirname + "/download-api-helper.js", appConfig.id, appConfig.baseUrl, partition, REALM_MODULE_PATH);
 
         const app = new Realm.App(appConfig);
         const user = await app.logIn(Realm.Credentials.anonymous());
@@ -216,7 +216,7 @@ module.exports = {
         let user, config;
         let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.baseUrl, partition, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
             .then(u => {
                 user = u;
@@ -299,7 +299,7 @@ module.exports = {
         const partition = Utils.genPartition();
         let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/nested-list-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/nested-list-helper.js', appConfig.id, appConfig.baseUrl, partition, REALM_MODULE_PATH)
             .then(() => {
                 return app.logIn(credentials)
             })
@@ -343,7 +343,7 @@ module.exports = {
 
         let app = new Realm.App(appConfig);
         const credentials = Realm.Credentials.anonymous();
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.baseUrl, partition, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
             .then(user => {
                 let config = getSyncConfiguration(user, partition);
@@ -405,7 +405,7 @@ module.exports = {
 
         const credentials = Realm.Credentials.anonymous();
         let app = new Realm.App(appConfig);
-        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.url, partition, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.baseUrl, partition, REALM_MODULE_PATH)
             .then(() => { return app.logIn(credentials) })
             .then(user => {
                 let config = getSyncConfiguration(user, partition);
