@@ -2,4 +2,4 @@ dist/
 
 # Generated during test runs
 imported-apps/
-stitch-config.json
+realm-config
