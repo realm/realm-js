@@ -13,6 +13,7 @@
 
 ### Internal
 * Added binaries for Apple Silicon (M1). ([#3257](https://github.com/realm/realm-js/issues/3527))
+* Throwing a more meaningful error when librealmreact.so loading fails from being loaded in an app using Hermes. ([#3633](https://github.com/realm/realm-js/pull/3633))
 
 10.4.0 Release notes (2021-4-15)
 =============================================================
