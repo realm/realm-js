@@ -1,11 +1,26 @@
-10.4.1-rc.3 Release notes (2021-5-10)
+x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
 * Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
+* `Realm.User.callFunction()` could crash if no arguments were applied. ([#3718](https://github.com/realm/realm-js/issues/3718), since v10.0.0)
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
+### Internal
+* Using Realm Core v10.6.0.
+
+10.4.1-rc.3 Release notes (2021-5-10)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* None.
 ### Compatibility
 * MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.

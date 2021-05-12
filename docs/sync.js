@@ -698,7 +698,7 @@ class User {
     /**
      * Calls the named server function as this user.
      * @param {string} name - name of the function to call
-     * @param {any[]} args - list of arguments to pass
+     * @param {any[]} args - list of arguments to pass, if no arguments are passes, `[]` is used
      * @return {Promise<any>} - resolves when the function terminates.
      */
     callFunction(name, args) { }
