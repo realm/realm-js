@@ -17,8 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import Realm from "realm";
 
-import { IPerson, PersonSchema, DogSchema } from "./schemas/person-and-dogs";
+import { IPerson, PersonSchema, DogSchema } from "../schemas/person-and-dogs";
 
 const RealmAsAny = Realm as any;
 
@@ -313,7 +314,7 @@ describe("#deleteFile", () => {
     // TODO: Fix the issue on Android that prevents this from passing
     // @see https://github.com/realm/realm-js-private/issues/507
 
-    it.skipIf("android", "deletes a Realm with a space in its path", () => {
+    it.skipIf(environment.android, "deletes a Realm with a space in its path", () => {
         expectDeletion("my realm.realm");
     });
 });

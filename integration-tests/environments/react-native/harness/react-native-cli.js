@@ -18,19 +18,18 @@
 
 const cp = require("child_process");
 
-function async(...args) {
-    return cp.spawn(
-        "node",
-        [require.resolve("react-native/local-cli/cli.js"), ...args],
-        { stdio: ["inherit", "inherit", "inherit"] },
-    );
-}
+// Filtering out any npm related environment variables,
+// since they mess up React Natives XCode PhaseScriptExecution
+// Specifically the npm_config_prefix makes it impossible execute the build if "npm --prefix" is used by upstream commands.
+const filteredEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([k]) => !k.startsWith("npm_")),
+);
 
 function sync(...args) {
     const process = cp.spawnSync(
         "node",
         [require.resolve("react-native/local-cli/cli.js"), ...args],
-        { stdio: ["inherit", "inherit", "inherit"] },
+        { stdio: ["inherit", "inherit", "inherit"], env: filteredEnv },
     );
     if (process.status !== 0) {
         throw new Error(`Failed running "react-native ${args.join(" ")}"`);
@@ -38,4 +37,4 @@ function sync(...args) {
     return process;
 }
 
-module.exports = { async, sync };
+module.exports = { sync };
