@@ -436,6 +436,7 @@ module.exports = {
 
         TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
     },
+
     testDictionaryRemove() {
         const DictSchema = {
             name: "Dictionary",
@@ -458,10 +459,42 @@ module.exports = {
         realm.write(()=> {  D.put( {ff:2, pp:'111011'} )  })
 
         TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
-        //TestCase.assertEqual(Object.keys(D).length,2,"We should be able to successfully re-populate a dictionary.")
-       // TestCase.assertEqual(Object.values(D).join(''),[2,'111011'].join(''),"We should be able to successfully re-populate a dictionary.")
-    }
+    },
+    testDictionaryWithNestedModel() {
+        const Child = {
+            name: "Children",
+            properties: {
+                num: "int"
+            }
+        }
 
+        const DictSchema = {
+            name: "Dictionary",
+            properties: {
+                dict: "{}",
+                dict2: "{}"
+            }
+        }
+
+        let realm = new Realm({schema: [DictSchema, Child]})
+
+        realm.write(()=> {
+            let child = realm.create(Child.name, { num: 555 } )
+            let child2 = realm.create(Child.name, { num: 666 } )
+            realm.create(DictSchema.name, {
+                dict: { children1: child, children2: child2 },
+                dict2: { children1: child2, children2: child }
+            })
+        })
+
+        let A = realm.objects(DictSchema.name)[0].dict
+        let B = realm.objects(DictSchema.name)[0].dict2
+
+        TestCase.assertEqual(A.children1.num,  555,"We expect children1#555")
+        TestCase.assertEqual(A.children2.num,  666,"We expect children2#666")
+        TestCase.assertEqual(B.children1.num,  666,"We expect children1#666")
+        TestCase.assertEqual(B.children2.num,  555,"We expect children2#555")
+    }
 
 
     /*TODO Comment this until we merge Mixed->Link code.

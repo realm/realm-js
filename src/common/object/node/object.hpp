@@ -38,6 +38,7 @@ class JavascriptObject {
     template <class T>
     using ObjectAPI = realm::js::Object<T>;
     using Property = realm::js::PropertyAttributes;
+    std::unique_ptr<GetterSetter> gs;
 
     bool remove_key(std::string &key) {
         int index = -1;
@@ -92,15 +93,13 @@ class JavascriptObject {
 
         auto Getter = [=](std::string &key) {
             return [=](const auto &info) mutable {
-                GetterSetter gs{collection};
-                return gs.get(accessor::Arguments{info.Env(), key.c_str()});
+                return gs->get(accessor::Arguments{info.Env(), key.c_str()});
             };
         };
 
         auto Setter = [=](std::string &key) {
             return [=](const auto &info) mutable {
-                GetterSetter gs{collection};
-                gs.set(accessor::Arguments{info.Env(), key.c_str(), info[0]});
+                gs->set(accessor::Arguments{info.Env(), key.c_str(), info[0]});
             };
         };
 
@@ -143,6 +142,10 @@ class JavascriptObject {
     Napi::Object create() {
         // Only necessary to keep compatibility with the JSCore.
         return get();
+    }
+
+    void set_accessor(std::unique_ptr<GetterSetter>&& _gs){
+        gs = std::move(_gs);
     }
 
     ~JavascriptObject() {

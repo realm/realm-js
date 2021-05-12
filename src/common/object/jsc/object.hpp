@@ -32,12 +32,14 @@
 namespace realm {
 namespace common {
 
+template <typename GetterSetter>
 struct PrivateStore {
     void *accessor_data = nullptr;
     ObjectObserver *observer = nullptr;
     IOCollection *collection = nullptr;
     std::function<void()> finalizer = nullptr;
     std::unordered_map<std::string, bool> keys;
+    std::unique_ptr<GetterSetter> getter_setter{nullptr};
 };
 
 template <typename GetterSetter>
@@ -48,7 +50,7 @@ class JavascriptObject {
     JSObjectRef object{nullptr};
     std::vector<JSStaticFunction> methods;
     std::vector<std::string> accessors;
-    PrivateStore *private_object;
+    PrivateStore<GetterSetter> *private_object;
 
     static std::string to_string(JSContextRef context, JSStringRef value) {
         std::string str;
@@ -58,28 +60,15 @@ class JavascriptObject {
         return str;
     }
 
-    static PrivateStore *get_private(JSObjectRef object) {
-        PrivateStore *store =
-            static_cast<PrivateStore *>(JSObjectGetPrivate(object));
+    static PrivateStore<GetterSetter> *get_private(JSObjectRef object) {
+        auto *store =
+            static_cast<PrivateStore<GetterSetter> *>(JSObjectGetPrivate(object));
         return store;
     }
 
-    template <void cb(method::Arguments)>
-    static JSValueRef function_call(JSContextRef ctx, JSObjectRef function,
-                                    JSObjectRef thisObject,
-                                    size_t argumentCount,
-                                    const JSValueRef _arguments[],
-                                    JSValueRef *exception) {
-        PrivateStore *_private = get_private(thisObject);
-        ObjectObserver *observer = _private->observer;
-        IOCollection *collection = _private->collection;
-
-        cb({ctx, observer, collection, argumentCount, _arguments});
-        return JSValueMakeUndefined(ctx);
-    }
 
     static void dispose(JSObjectRef object) {
-        PrivateStore *_private = get_private(object);
+        auto *_private = get_private(object);
         if (_private->finalizer != nullptr) {
             _private->finalizer();
         } else {
@@ -104,6 +93,20 @@ class JavascriptObject {
         }
     }
 
+    template <void cb(method::Arguments)>
+    static JSValueRef function_call(JSContextRef ctx, JSObjectRef function,
+                                    JSObjectRef thisObject,
+                                    size_t argumentCount,
+                                    const JSValueRef _arguments[],
+                                    JSValueRef *exception) {
+        auto *_private = get_private(thisObject);
+        ObjectObserver *observer = _private->observer;
+        IOCollection *collection = _private->collection;
+
+        cb({ctx, observer, collection, argumentCount, _arguments});
+        return JSValueMakeUndefined(ctx);
+    }
+
     static JSValueRef getter(JSContextRef ctx, JSObjectRef object,
                              JSStringRef propertyName, JSValueRef *exception) {
         std::string key = to_string(ctx, propertyName);
@@ -112,10 +115,8 @@ class JavascriptObject {
             return JSValueMakeNull(ctx);
         }
 
-        IOCollection *collection = get_private(object)->collection;
-        GetterSetter gs{collection};
-        return gs.get(
-            accessor::Arguments{ctx, object, key.c_str(), 0, exception});
+        auto getter_setter = get_private(object)->getter_setter.get();
+        return getter_setter->get(accessor::Arguments{ctx, object, key.c_str(), 0, exception});
     }
 
     static bool setter(JSContextRef ctx, JSObjectRef object,
@@ -127,9 +128,8 @@ class JavascriptObject {
             return false;
         }
 
-        IOCollection *collection = get_private(object)->collection;
-        GetterSetter gs{collection};
-        gs.set(accessor::Arguments{ctx, object, key, value, exception});
+        auto getter_setter = get_private(object)->getter_setter.get();
+        getter_setter->set(accessor::Arguments{ctx, object, key, value, exception});
         return true;
     }
 
@@ -166,7 +166,7 @@ class JavascriptObject {
         _class.hasProperty = has_property;
         _class.getPropertyNames = get_property_names;
 
-        private_object = new PrivateStore{nullptr, nullptr, nullptr};
+        private_object = new PrivateStore<GetterSetter>{nullptr, nullptr, nullptr};
     }
 
     void dbg() {
@@ -202,6 +202,10 @@ class JavascriptObject {
 
     void set_observer(ObjectObserver *observer) {
         private_object->observer = observer;
+    }
+
+    void set_accessor(std::unique_ptr<GetterSetter>&& gs){
+        private_object->getter_setter = std::move(gs);
     }
 
     bool is_alive(){

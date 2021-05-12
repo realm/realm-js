@@ -19,33 +19,44 @@
 #pragma once
 #include "realm/dictionary.hpp"
 #include "common/object/interfaces.hpp"
+#include "../methods/accessors.hpp"
 #include "../methods/functions.hpp"
 
 namespace realm {
     namespace js {
 
+        template <typename VM>
         struct DictionaryObjectBuilder {
             using Dictionary = object_store::Dictionary;
-            template<typename VM, typename JSObject>
-            void add_methods(JSObject& object) {
-                using Functions = MethodsForDictionary<VM>;
-                object.template add_method<VM, Functions::add_listener>("addListener");
-                object.template add_method<VM, Functions::remove_listener>("removeListener");
-                object.template add_method<VM, Functions::remove_all_listeners>("removeAllListeners");
-                object.template add_method<VM, Functions::put>("put");
-                object.template add_method<VM, Functions::remove>("remove");
-            }
+            using GettersSetters = DictionaryGetterSetter<VM>;
+            using Methods = MethodsForDictionary<VM>;
+            std::shared_ptr<Realm> realm;
+            DictionaryObjectBuilder(std::shared_ptr<Realm> _realm): realm(_realm) {}
 
             template <class JSObject>
-            void add_accessors(JSObject& js_object,  Dictionary& dictionary) {
+            void setup_object_keys(JSObject& js_object,  Dictionary& dictionary){
                 for (auto entry_pair : dictionary) {
                     auto key = entry_pair.first.get_string().data();
                     js_object.add_key(key);
                 }
             }
 
+            template<typename JSObject>
+            void add_methods(JSObject& object) {
+                object.template add_method<VM, Methods::add_listener>("addListener");
+                object.template add_method<VM, Methods::remove_listener>("removeListener");
+                object.template add_method<VM, Methods::remove_all_listeners>("removeAllListeners");
+                object.template add_method<VM, Methods::put>("put");
+                object.template add_method<VM, Methods::remove>("remove");
+            }
+
             template <class JSObject>
-            void remove_accessors(JSObject& js_object, IOCollection* collection) {
+            void configure_accessor(JSObject& js_object,  IOCollection* collection) {
+                js_object.set_accessor(std::make_unique<GettersSetters>(realm, collection));
+            }
+
+            template <class JSObject>
+            void remove_object_keys(JSObject& js_object, IOCollection* collection) {
                 std::vector<std::string> properties = js_object.get_properties();
                 for (std::string& key: properties) {
                     if (!collection->contains(key)) {

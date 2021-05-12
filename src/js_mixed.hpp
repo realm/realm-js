@@ -168,9 +168,11 @@ class TypeMixed {
         {types::Timestamp, new MixedTimeStamp<Context, Value, Utils>},
     };
 
-    TypeMixed() {}
+
 
    public:
+    TypeMixed() {}
+
     static TypeMixed &get_instance() {
         static TypeMixed<JavascriptEngine> instance;
         return instance;

@@ -20,22 +20,30 @@
 #include "realm/dictionary.hpp"
 #include "dictionary/collection/collection.hpp"
 #include "common/object/interfaces.hpp"
+#include "js_links.hpp"
+
 
 namespace realm {
 namespace js {
 
 template <typename T>
 struct DictionaryGetterSetter{
-    IOCollection *collection;
     using Value = js::Value<T>;
-    using JSMixedAPI = TypeMixed<T>;
+
+    IOCollection *collection;
+    TypeMixed<T> mixed;
+
+    DictionaryGetterSetter(std::shared_ptr<Realm> _realm, IOCollection *_collection):
+    collection{_collection}{
+        mixed.register_strategy(types::Object, new MixedLink<T>{_realm});
+    }
 
     void set(accessor::Arguments args){
         auto context = args.context;
         auto key = args.property_name.c_str();
         try{
-            auto mixed = JSMixedAPI::get_instance().unwrap(context, args.value);
-            collection->set(key, mixed);
+            auto mixed_value = mixed.unwrap(context, args.value);
+            collection->set(key, mixed_value);
         } catch (InvalidTransactionException &error) {
             args.throw_error(error.what());
         }
@@ -44,11 +52,10 @@ struct DictionaryGetterSetter{
     auto get(accessor::Arguments args) {
         auto context = args.context;
         auto key = args.property_name.c_str();
-
         try{
             auto mixed_value = collection->get(key);
-            auto value = JSMixedAPI::get_instance().wrap(context, mixed_value);
-            return value;
+            auto js_value = mixed.wrap(context, mixed_value);
+            return js_value;
         }catch (realm::KeyNotFound& error){}
 
         return Value::from_undefined(context);

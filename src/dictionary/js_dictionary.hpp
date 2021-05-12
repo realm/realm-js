@@ -36,18 +36,18 @@ class DictionaryAdapter {
    private:
     using ContextType = typename T::Context;
     using GetterSetter = DictionaryGetterSetter<T>;
-    using Builder = DictionaryObjectBuilder;
+    using Builder = DictionaryObjectBuilder<T>;
     using JSDictionary = JSObject<T, GetterSetter, Builder, CollectionAdapter>;
 
    public:
-    auto wrap(ContextType context, object_store::Dictionary dictionary) {
+    auto wrap(ContextType context, std::shared_ptr<Realm> realm, object_store::Dictionary dictionary) {
         auto *js_dictionary = new JSDictionary{context, dictionary};
 
         js_dictionary->setup_finalizer([=]() {
             delete js_dictionary;
         });
 
-        return js_dictionary->build();
+        return js_dictionary->build(std::make_unique<Builder>(realm));
     }
 };
 

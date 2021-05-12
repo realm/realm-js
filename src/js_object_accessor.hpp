@@ -183,7 +183,7 @@ public:
         return SetClass<JSEngine>::create_instance(m_ctx, std::move(set));
     }
     ValueType box(realm::object_store::Dictionary dictionary) {
-        return dictionary_adapter.wrap(m_ctx, dictionary);
+        return dictionary_adapter.wrap(m_ctx, m_realm, dictionary);
     }
 
     bool is_null(ValueType const& value) {

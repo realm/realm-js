@@ -50,9 +50,11 @@ struct JSObject : public ObjectObserver {
     template <typename RealmData>
     JSObject(ContextType _context, RealmData _data)
         : context{_context}, javascript_object{_context} {
-        builder = std::make_unique<Builder>();
         collection = std::make_unique<Collection>(_data);
+        listen_for_collection_changes();
+    };
 
+    void listen_for_collection_changes(){
         collection->on_change([=](collection::Notification notification) {
             update(notification);
 
@@ -62,7 +64,7 @@ struct JSObject : public ObjectObserver {
                 notify_subscribers(notification);
             }
         });
-    };
+    }
 
     Collection* get_collection() { return collection.get(); }
 
@@ -107,20 +109,25 @@ struct JSObject : public ObjectObserver {
         // This is to control when JS-VM is shutting down but they are still updates pending by Realm.
         // We basically ignore any update if the object has been disposed.
         if(javascript_object.is_alive()) {
-            builder->add_accessors(javascript_object, collection->data());
-            builder->remove_accessors(javascript_object, collection.get());
+            builder->setup_object_keys(javascript_object, collection->data());
+            builder->remove_object_keys(javascript_object, collection.get());
         }
     }
 
-    ObjectType build() {
-        builder->template add_methods<VM>(javascript_object);
-        builder->add_accessors(javascript_object, collection->data());
+
+    ObjectType build(std::unique_ptr<Builder>&& _builder) {
+        builder = std::move(_builder);
+        builder->add_methods(javascript_object);
+        builder->setup_object_keys(javascript_object, collection->data());
+        builder->configure_accessor(javascript_object, collection.get());
 
         javascript_object.set_collection(collection.get());
         javascript_object.set_observer(this);
 
         return javascript_object.create();
     }
+
+
 
     template <typename CB>
     void setup_finalizer(CB&& cb) {
