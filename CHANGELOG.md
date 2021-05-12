@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.5.0-beta.2 Release notes (2021-5-12)
 =============================================================
 ### Enhancements
 * None.
