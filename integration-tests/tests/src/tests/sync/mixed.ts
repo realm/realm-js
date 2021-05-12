@@ -36,7 +36,7 @@ function describeRoundtrip(typeName: string, value: Value, testValue: ValueTeste
     }
   }
 
-  describe.skipIf(environment.missingServer, `roundtrip of '${typeName}'`, () => {
+  describe(`roundtrip of '${typeName}'`, () => {
     openRealmBefore({
       schema: [{
         name: "MixedClass",
@@ -81,7 +81,7 @@ function describeRoundtrip(typeName: string, value: Value, testValue: ValueTeste
   });
 }
 
-describe("mixed", () => {
+describe.skipIf(environment.missingServer, "mixed", () => {
   importAppBefore("with-db");
   authenticateUserBefore();
   
