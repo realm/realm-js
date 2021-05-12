@@ -214,6 +214,7 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     null_dict->template add_method<int, T1::test_for_null_data_method>("hello");
     null_dict->template add_method<int, T1::test_for_null_data_method>("alo");
     null_dict->set_observer(tnull);
+    null_dict->set_accessor(std::make_unique<MockedGetterSetter>(new MockedCollection(666)));
     null_dict->finalize([=]() {
         /*
          *  Private object should be deallocated just once.
@@ -247,6 +248,7 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
 
     _dict->set_collection(new MockedCollection(666));
     _dict->set_observer(new T1);
+    _dict->set_accessor(std::make_unique<MockedGetterSetter>(new MockedCollection(666)));
     _dict->finalize([=]() {
         /*
          *  Private object should be deallocated just once.
