@@ -13,6 +13,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Set didn't export `objectType` to Realm.schema when it contained scalar types.
+* Add explicity support for Nullable/Undefined values for the Mixed type. ([#3731](https://github.com/realm/realm-js/issues/3731))
 
 ### Compatibility
 * MongoDB Realm Cloud.
