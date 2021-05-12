@@ -75,6 +75,14 @@ class GenericTypeDeductionImpl {
         return realm_to_js_map[value];
     }
 
+    template <typename MixedValue>
+    types::Type from(MixedValue mixed) {
+        if(mixed.is_null()) return types::Type::Null;
+
+        int realm_type = static_cast<int>(mixed.get_type());
+        return static_cast<types::Type>(realm_type);
+    }
+
     types::Type from(DataType data_type) {
         int realm_type = static_cast<int>(data_type);
         return static_cast<types::Type>(realm_type);

@@ -23,7 +23,6 @@ const TestCase = require('./asserts');
 
 const {Decimal128, ObjectId, UUID} = Realm.BSON;
 
-
 const SingleSchema = {
     name: 'mixed',
     properties: {
@@ -173,6 +172,34 @@ module.exports = {
             () => realm.write(()=> realm.create(SingleSchema.name, { a: Object.create({}) }  ) ),
             new Error('Only Realm instances are supported.') )
     },
+
+    testMixedEmptyValues() {
+        const MixedNullableSchema = {
+            name: 'mixed',
+            properties: {
+                nullable: 'mixed',
+                nullable_list: 'mixed[]'
+            }
+        }
+
+        let realm = new Realm({schema: [MixedNullableSchema]});
+        realm.write(()=> realm.create(MixedNullableSchema.name, { nullable: undefined }  ) )
+
+        let value = realm.objects(MixedNullableSchema.name)[0]
+        realm.write(()=> value.nullable = null )
+        realm.write(()=> value.nullable = undefined )
+        
+        realm.write(() => {
+            value.nullable_list = [6, null, undefined, null, 5]
+        });
+        
+        TestCase.assertEqual(value.nullable_list[0],  6, 'Should be equal 6');
+        TestCase.assertEqual(value.nullable_list[1],  null, 'Should be equal null');
+        TestCase.assertEqual(value.nullable_list[2],  null, 'Should be equal null');
+        TestCase.assertEqual(value.nullable_list[3],  null, 'Should be equal null');
+        TestCase.assertEqual(value.nullable_list[4],  5, 'Should be equal 5');
+    },
+
 }
 
 
