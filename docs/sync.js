@@ -675,7 +675,7 @@ class User {
 
     /**
      * Links a user to another credentials. This is useful when linking
-     * different account togteher.
+     * different account together.
      * @param {Realm.Credentials} credentials
      * @returns {Promise<void>} - resolves when the user has been linked with the other credentials.
      */
@@ -698,7 +698,7 @@ class User {
     /**
      * Calls the named server function as this user.
      * @param {string} name - name of the function to call
-     * @param {any[]} args - list of arguments to pass
+     * @param {any[]} args = [] - list of arguments to pass
      * @return {Promise<any>} - resolves when the function terminates.
      */
     callFunction(name, args) { }
