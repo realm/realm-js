@@ -458,12 +458,9 @@ module.exports = {
         realm.write(()=> {  D.put( {ff:2, pp:'111011'} )  })
 
         TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
-        //TestCase.assertEqual(Object.keys(D).length,2,"We should be able to successfully re-populate a dictionary.")
-       // TestCase.assertEqual(Object.values(D).join(''),[2,'111011'].join(''),"We should be able to successfully re-populate a dictionary.")
 
-        let error = new Error("The key: oo doesn't exist in the Dictionary.")
-        TestCase.assertThrowsException(() =>  realm.write(()=> {  D.remove( ['oo', 'y', 'z'] )  }) , error)
-        //
+        let error = new Error("The key: unknown_key doesn't exist in the Dictionary.")
+        TestCase.assertThrowsException(() =>  realm.write(()=> {  D.remove( ['unknown_key'] )  }) , error)
     }
 
 
