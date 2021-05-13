@@ -29,14 +29,15 @@ function nodeRequire(module) {
 }
 
 function makeAppConfig(appId) {
-    const appUrl = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/"/g,"") : "http://localhost";
-    const appPort = process.env.MONGODB_REALM_PORT || "9090";
+    const baseUrlHostname = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/"/g,"") : "http://localhost";
+    const baseUrlPort = process.env.MONGODB_REALM_PORT || "9090";
+    const baseUrl = `${baseUrlHostname}:${baseUrlPort}`;
 
-    console.log(`tests are using integration tests app id: ${appId} on ${appUrl}:${appPort}`);
+    console.log(`tests are using integration tests app id: ${appId} on ${baseUrl}`);
 
     return {
         id: appId,
-        url: `${appUrl}:${appPort}`,
+        baseUrl,
         timeout: 1000,
         app: {
             name: "default",

@@ -80,17 +80,11 @@ const watchman = {
   }
 };
 
-async function run() {
-
-  const options = cla({
-    name: "path", alias: "p",
-  });
-  
-  const dependencyPath = path.resolve(options.path);
+async function run(dependencyPath) {
   // Ensure that a dependency on the "realm" package
   const dependencyPackageJson = readPackageJson(dependencyPath);
   if (Object.keys(dependencyPackageJson.dependencies).includes("realm") === false) {
-    throw new Error(`Expected the package (${dependencyPath}) to be depending on "realm"`);
+    console.warn(`Expected the package (${dependencyPath}) to be depending on "realm"`);
   }
   // Ensure that the "realm" package has already been installed
   const dependencyRealmPath = path.resolve(dependencyPath, "node_modules/realm");
@@ -146,7 +140,16 @@ async function run() {
   });
 }
 
-run().catch(err => {
-  console.error(err.message);
-  process.exit(1);
-});
+if (module.parent === null) {
+
+  const options = cla({
+    name: "path", alias: "p", type: String
+  });
+  
+  const dependencyPath = path.resolve(options.path);
+  
+  run(dependencyPath).catch(err => {
+    console.error(err.message);
+    process.exit(1);
+  });
+}

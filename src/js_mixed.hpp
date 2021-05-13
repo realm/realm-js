@@ -106,6 +106,17 @@ class MixedUUID : public MixedWrapper<Context, Value> {
 };
 
 template <typename Context, typename Value, typename Utils>
+class MixedNullable : public MixedWrapper<Context, Value> {
+    Mixed wrap(Context context, Value const &value) {
+        return Mixed();
+    }
+
+    Value unwrap(Context context, Mixed mixed) {
+        return Utils::from_null(context);
+    }
+};
+
+template <typename Context, typename Value, typename Utils>
 class MixedBinary : public MixedWrapper<Context, Value> {
    private:
     // Same as with string, we need to keep this data stored on memory until the
@@ -166,6 +177,8 @@ class TypeMixed {
         {types::UUID, new MixedUUID<Context, Value, Utils>},
         {types::Binary, new MixedBinary<Context, Value, Utils>},
         {types::Timestamp, new MixedTimeStamp<Context, Value, Utils>},
+        {types::Null, new MixedNullable<Context, Value, Utils>},
+        {types::Undefined, new MixedNullable<Context, Value, Utils>},
     };
 
     TypeMixed() {}
@@ -186,7 +199,7 @@ class TypeMixed {
 
     Value wrap(Context context, Mixed mixed) {
         auto type_deduction = TypeDeduction::get_instance();
-        auto rjs_type = type_deduction.from(mixed.get_type());
+        auto rjs_type = type_deduction.from(mixed);
         auto strategy = strategies[rjs_type];
 
         if (strategy == nullptr) {

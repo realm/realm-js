@@ -125,7 +125,7 @@ inline typename T::Object AppClass<T>::create_instance(ContextType ctx, SharedAp
 template<typename T>
 void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args) {
     static const String config_id = "id";
-    static const String config_url = "url";
+    static const String config_base_url = "baseUrl";
     static const String config_timeout = "timeout";
     static const String config_app = "app";
     static const String config_app_name = "name";
@@ -149,9 +149,9 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
             throw std::runtime_error("App configuration must have an id.");
         }
 
-        ValueType config_url_value = Object::get_property(ctx, config_object, config_url);
-        if (!Value::is_undefined(ctx, config_url_value)) {
-            config.base_url = util::Optional<std::string>(Value::validated_to_string(ctx, config_url_value, "url"));
+        ValueType config_base_url_value = Object::get_property(ctx, config_object, config_base_url);
+        if (!Value::is_undefined(ctx, config_base_url_value)) {
+            config.base_url = util::Optional<std::string>(Value::validated_to_string(ctx, config_base_url_value, "baseUrl"));
         }
 
         ValueType config_timeout_value = Object::get_property(ctx, config_object, config_timeout);

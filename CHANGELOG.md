@@ -14,6 +14,8 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Set didn't export `objectType` to Realm.schema when it contained scalar types.
+* Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
+* Add explicity support for Nullable/Undefined values for the Mixed type. ([#3731](https://github.com/realm/realm-js/issues/3731))
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -24,6 +26,8 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * Bump the Realm Sync protocol version to 4.
 * Bump Realm File Format version to 21.
 * Prebuild the React Native iOS variant and bundle it in the npm tarball. ([#3649](https://github.com/realm/realm-js/pull/3649))
+* Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
+* Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
 
 10.2.0 Release notes (2021-2-5)
 =============================================================
