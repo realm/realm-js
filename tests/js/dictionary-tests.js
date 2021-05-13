@@ -401,9 +401,8 @@ module.exports = {
         }
 
         /*
-            We try to remove listeners that doesn't exist in order to provoke to test out-of-bounds and stability.
+            We try to remove listeners that doesn't exist in order to test out-of-bounds and stability.
          */
-
         fields.removeListener(a)
         fields.removeListener(a)
         fields.removeListener(b)
@@ -460,7 +459,7 @@ module.exports = {
 
         TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
     },
-    testDictionaryWithNestedModel() {
+    testDictionaryWithNestedModels() {
         const Child = {
             name: "Children",
             properties: {

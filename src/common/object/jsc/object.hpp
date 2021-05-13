@@ -28,19 +28,11 @@
 
 #include "common/object/interfaces.hpp"
 #include "realm/object-store/shared_realm.hpp"
+#include "private_store.hpp"
 
 namespace realm {
 namespace common {
 
-template <typename GetterSetter>
-struct PrivateStore {
-    void *accessor_data = nullptr;
-    ObjectObserver *observer = nullptr;
-    IOCollection *collection = nullptr;
-    std::function<void()> finalizer = nullptr;
-    std::unordered_map<std::string, bool> keys;
-    std::unique_ptr<GetterSetter> getter_setter{nullptr};
-};
 
 template <typename GetterSetter>
 class JavascriptObject {
@@ -65,7 +57,6 @@ class JavascriptObject {
             static_cast<PrivateStore<GetterSetter> *>(JSObjectGetPrivate(object));
         return store;
     }
-
 
     static void dispose(JSObjectRef object) {
         auto *_private = get_private(object);
