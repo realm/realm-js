@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#pragma once
 #include <common/mixed_type.hpp>
 #include <common/types.hpp>
 
@@ -26,7 +27,6 @@ namespace js {
 template <typename T>
 class RealmLink {
 private:
-
     using ValueType = typename T::Value;
     using Context = typename T::Context;
     using Object = js::Object<T>;
@@ -72,7 +72,6 @@ class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
     MixedLink(std::shared_ptr<Realm> _realm): realm{_realm} {}
 
     Mixed wrap(Context context, Value const& value) {
-
         RealmLink<T> realm_link {context, value};
 
         if(!realm_link.is_instance() ||
