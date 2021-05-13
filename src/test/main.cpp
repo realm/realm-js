@@ -3,54 +3,13 @@
 
 #include "catch_amalgamated.hpp"
 #include "common/object/interfaces.hpp"
+#include "includes/mocks.h"
 #include "logger.hpp"
 #include "test_bed.hpp"
 
 using Catch::Matchers::Contains;
 using namespace std;
 using namespace realm;
-
-
-struct MockedCollection: public IOCollection{
-    double N = 1000;
-    MockedCollection(double start): N{start} {}
-    realm::Mixed get(std::string) override{
-        return realm::Mixed(N);
-    }
-
-    void set(std::string key, realm::Mixed val) override{
-        N = val.get_double();
-    }
-
-    void remove(std::string key) override {
-        N = 0;
-    }
-
-    bool contains(std::string key) override {
-        return true;
-    }
-};
-
-struct MockedGetterSetter {
-    IOCollection *collection{nullptr};
-
-    MockedGetterSetter(IOCollection *_collection): collection{_collection}{}
-
-    void set(accessor::Arguments args) {
-        double N = JSValueToNumber(args.context, args.value, nullptr);
-        collection->set("N", realm::Mixed(N));
-
-        if(N == -1){
-            args.throw_error("Error: No Negative Number Please.");
-        }
-    }
-
-    JSValueRef get(accessor::Arguments args) {
-        return JSValueMakeNumber(args.context, collection->get(args.property_name).get_double());
-    }
-
-    ~MockedGetterSetter(){}
-};
 
 struct TNull : public ObjectObserver {
     IOCollection* get_collection() { return nullptr; }

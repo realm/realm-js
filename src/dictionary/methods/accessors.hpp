@@ -21,7 +21,7 @@
 #include "dictionary/collection/collection.hpp"
 #include "common/object/interfaces.hpp"
 #include "js_links.hpp"
-
+#include "common/utils.h"
 
 namespace realm {
 namespace js {
@@ -41,22 +41,28 @@ struct DictionaryGetterSetter{
     void set(accessor::Arguments args){
         auto context = args.context;
         auto key = args.property_name.c_str();
+        utils::Logs::info("DictionaryGetterSetter", "Set: " + args.property_name);
         try{
             auto mixed_value = mixed.unwrap(context, args.value);
             collection->set(key, mixed_value);
         } catch (InvalidTransactionException &error) {
+            utils::Logs::info("DictionaryGetterSetter", "Set Error-> InvalidTransaction \n For property: " + args.property_name);
             args.throw_error(error.what());
         }
     }
 
     auto get(accessor::Arguments args) {
+
         auto context = args.context;
         auto key = args.property_name.c_str();
+        utils::Logs::info("DictionaryGetterSetter", "Get: " + args.property_name);
         try{
             auto mixed_value = collection->get(key);
             auto js_value = mixed.wrap(context, mixed_value);
             return js_value;
-        }catch (realm::KeyNotFound& error){}
+        }catch (realm::KeyNotFound& error){
+            utils::Logs::info("DictionaryGetterSetter", "Get Error-> KeyNotFound \n For property: " + args.property_name);
+        }
 
         return Value::from_undefined(context);
     }

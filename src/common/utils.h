@@ -18,12 +18,28 @@
 
 #pragma once
 
-template <typename GetterSetter>
-struct PrivateStore {
-    void *accessor_data = nullptr;
-    ObjectObserver *observer = nullptr;
-    IOCollection *collection = nullptr;
-    std::function<void()> finalizer = nullptr;
-    std::unordered_map<std::string, bool> keys;
-    std::unique_ptr<GetterSetter> getter_setter;
-};
+#if REALM_ANDROID
+#include <android/log.h>
+#else
+#include <iostream>
+#endif
+
+namespace realm {
+    namespace js {
+        namespace utils {
+            struct Logs{
+#if REALM_ANDROID
+                static void info(std::string&& title, std::string &&message){
+                    __android_log_print(ANDROID_LOG_INFO, title.c_str(), "%s",
+                                        message.c_str());
+                }
+#else
+                static void info(std::string&& title, std::string &&message){
+                    std::cout << title << ": " << message << "\n";
+                }
+#endif
+            };
+
+        }
+    }
+}
