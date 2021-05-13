@@ -18,8 +18,7 @@
 
 #pragma once
 #include <exception>
-
-#include "dictionary/collection/notification.hpp"
+#include "realm/object-store/dictionary.hpp"
 #include "common/collection.hpp"
 #include "js_mixed.hpp"
 

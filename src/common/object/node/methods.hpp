@@ -42,6 +42,10 @@ namespace method {
 
             return callback(index);
         }
+
+        void throw_error(std::string&& message){
+            throw Napi::Error::New(context, message);
+        }
     };
 }
 
