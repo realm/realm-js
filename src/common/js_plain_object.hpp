@@ -21,8 +21,6 @@
 #include "object/interfaces.hpp"
 #include "object/strategies.hpp"
 
-
-
 namespace realm {
 namespace js {
 

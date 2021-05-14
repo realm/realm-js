@@ -9,15 +9,15 @@ interface path {
 
 type Require = (id: string) => any;
 
-type Environment = { [key: string]: string };
+type Environment = Record<string, unknown>;
 
 interface Global extends NodeJS.Global {
-    Realm: Realm;
     title: string;
     fs: fs;
     path: path;
     environment: Environment;
     require: Require;
+    fetch: typeof fetch;
 }
 
 declare var global: Global;
@@ -28,8 +28,11 @@ declare var environment: Environment;
 
 // Extend the mocha test function with the skipIf that we patch in from index.ts
 declare namespace Mocha {
+    interface SuiteFunction {
+        skipIf: (condition: unknown, title: string, fn: (this: Suite) => void) => Mocha.Suite | void;
+    }
     interface TestFunction {
-        skipIf: (env: Environment | string[] | string, title: string, callback: Mocha.AsyncFunc | Mocha.Func) => void;
+        skipIf: (condition: unknown, title: string, callback: Mocha.AsyncFunc | Mocha.Func) => void;
     }
 }
 

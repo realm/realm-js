@@ -146,6 +146,12 @@ void TestingExceptionMessage(std::string& str_param) {
     }
 }
 
+void TestingObjectValues(double value) {
+
+    SECTION("We expect our Object.values(dict).length => 4") {
+        REQUIRE(value == 4);
+    }
+}
 
 TEST_CASE("Testing Object creation on JavascriptCore.") {
     JSC_VM jsc_vm;
@@ -160,6 +166,7 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     jsc_vm.make_gbl_fn("test_accessor", &TestingGetterSetter);
     jsc_vm.make_gbl_fn("assert_enumerate", &TestTools::SimpleJSStringFunction<TestingEnumeration>);
     jsc_vm.make_gbl_fn("assert_exception", &TestTools::SimpleJSStringFunction<TestingExceptionMessage>);
+    jsc_vm.make_gbl_fn("verify_object_fields", &TestTools::JSCAssertFunction<TestingObjectValues>);
 
     /*
      *  JavascriptObject Instantiation and configuration into JSC.

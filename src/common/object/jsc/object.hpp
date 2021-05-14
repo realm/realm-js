@@ -44,7 +44,7 @@ class JavascriptObject {
     std::vector<std::string> accessors;
     PrivateStore<GetterSetter> *private_object;
 
-    static std::string to_string(JSContextRef context, JSStringRef value) {
+    static std::string to_string(JSStringRef value) {
         std::string str;
         size_t sizeUTF8 = JSStringGetMaximumUTF8CStringSize(value);
         str.reserve(sizeUTF8);
@@ -67,7 +67,7 @@ class JavascriptObject {
         }
     }
 
-    static bool contains_key(JSContextRef ctx, JSObjectRef object,
+    static bool contains_key(JSObjectRef object,
                              std::string key) {
         auto keys = get_private(object)->keys;
         return keys[key.c_str()] == true;
@@ -85,7 +85,7 @@ class JavascriptObject {
     }
 
     template <void cb(method::Arguments)>
-    static JSValueRef function_call(JSContextRef ctx, JSObjectRef function,
+    static JSValueRef function_call(JSContextRef ctx, JSObjectRef,
                                     JSObjectRef thisObject,
                                     size_t argumentCount,
                                     const JSValueRef _arguments[],
@@ -94,15 +94,15 @@ class JavascriptObject {
         ObjectObserver *observer = _private->observer;
         IOCollection *collection = _private->collection;
 
-        cb({ctx, observer, collection, argumentCount, _arguments});
+        cb({ctx, observer, collection, argumentCount, _arguments, exception});
         return JSValueMakeUndefined(ctx);
     }
 
     static JSValueRef getter(JSContextRef ctx, JSObjectRef object,
                              JSStringRef propertyName, JSValueRef *exception) {
-        std::string key = to_string(ctx, propertyName);
+        std::string key = to_string(propertyName);
 
-        if (!contains_key(ctx, object, key)) {
+        if (!contains_key(object, key)) {
             return JSValueMakeNull(ctx);
         }
 
@@ -113,9 +113,9 @@ class JavascriptObject {
     static bool setter(JSContextRef ctx, JSObjectRef object,
                        JSStringRef propertyName, JSValueRef value,
                        JSValueRef *exception) {
-        std::string key = to_string(ctx, propertyName);
+        std::string key = to_string(propertyName);
 
-        if (!contains_key(ctx, object, key)) {
+        if (!contains_key(object, key)) {
             return false;
         }
 
@@ -126,8 +126,8 @@ class JavascriptObject {
 
     static bool has_property(JSContextRef ctx, JSObjectRef object,
                              JSStringRef propertyName) {
-        auto key = to_string(ctx, propertyName);
-        return contains_key(ctx, object, key);
+        auto key = to_string(propertyName);
+        return contains_key(object, key);
     }
 
     JSClassRef make_class() {
@@ -211,7 +211,7 @@ class JavascriptObject {
     }
 
     template <typename RemovalCallback>
-    void finalize(RemovalCallback &&callback, void *_unused = nullptr) {
+    void finalize(RemovalCallback &&callback, void * unused = nullptr) {
         /*
          *  JSObject and Self only apply for NodeJS.
          */

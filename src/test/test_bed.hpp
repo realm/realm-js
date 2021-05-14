@@ -122,6 +122,24 @@ struct TestTools{
         return JSValueMakeUndefined(ctx);
     }
 
+    template <void callback(bool)>
+    static JSValueRef JSCAssertFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
+                                             size_t argumentCount, const JSValueRef arguments[],
+                                             JSValueRef* exception) {
+
+        callback(JSValueToBoolean(ctx, arguments[0]));
+        return JSValueMakeUndefined(ctx);
+    }
+
+    template <void callback(double)>
+    static JSValueRef JSCAssertFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
+                                        size_t argumentCount, const JSValueRef arguments[],
+                                        JSValueRef* exception) {
+
+        double ret = JSValueToNumber(ctx, arguments[0], exception);
+        callback(ret);
+        return JSValueMakeUndefined(ctx);
+    }
 };
 
 

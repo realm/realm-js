@@ -22,6 +22,16 @@
 #include "common/object/observer.hpp"
 #include "common/collection.hpp"
 
+namespace JSCUtil {
+    struct Error{
+        static JSValueRef handle(JSContextRef context, std::string&& message){
+            JSStringRef _str = JSStringCreateWithUTF8CString(message.c_str());
+            JSValueRef msg = JSValueMakeString(context, _str);
+            return JSObjectMakeError(context, 1, &msg, NULL);
+        }
+    };
+};
+
 namespace method{
     struct Arguments {
         JSContextRef context;
@@ -29,6 +39,7 @@ namespace method{
         IOCollection *collection = nullptr;
         size_t argumentCount;
         const JSValueRef *values{nullptr};
+        JSValueRef *exception;
 
         JSValueRef get(int index,
                        std::string msg = "Missing argument for method call.") {
@@ -38,7 +49,10 @@ namespace method{
 
             return values[index];
         }
-        
+
+        void throw_error(std::string&& message){
+            *exception = JSCUtil::Error::handle(context, std::move(message));
+        }
     };
 
 };
@@ -52,9 +66,7 @@ namespace accessor{
         JSValueRef *exception;
 
         void throw_error(std::string&& message){
-            JSStringRef _str = JSStringCreateWithUTF8CString(message.c_str());
-            JSValueRef msg = JSValueMakeString(context, _str);
-            *exception = JSObjectMakeError(context, 1, &msg, NULL);
+            *exception = JSCUtil::Error::handle(context, std::move(message));
         }
     };
 };

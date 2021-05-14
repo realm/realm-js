@@ -16,12 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
-const fs = require('fs');
-const { arch } = require('os');
-const path = require('path');
-const exec = require('child_process').execFileSync;
-const compareVersions = require('compare-versions');
+"use strict";
+
+const commandLineArgs = require("command-line-args");
+const fs = require("fs");
+const { arch } = require("os");
+const path = require("path");
+const exec = require("child_process").execFileSync;
+const compareVersions = require("compare-versions");
 
 //simple validation of current directory.
 const rnDir = path.resolve(process.cwd(), "react-native");
@@ -34,26 +36,28 @@ const copyOutputPath = path.resolve(process.cwd(), "react-native", "android", "s
 const buildTypes = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"];
 let architectures = ["x86", "armeabi-v7a", "arm64-v8a", "x86_64"];
 const optionDefinitions = [
-    { name: 'arch', type: validateArchitectures, multiple: false, description: "Build only for a single architecture" },
-    { name: 'changes', type: Boolean, defaultValue: false, multiple: false, description: "Build changes only" },
-    { name: 'buildType', type: validateBuildType, defaultValue: "Release", multiple: false, description: "CMAKE_BUILD_TYPE: Debug, Release, RelWithDebInfo, MinSizeRel" },
+    { name: "arch", type: validateArchitectures, multiple: false, description: "Build only for a single architecture" },
+    { name: "changes", type: Boolean, defaultValue: false, multiple: false, description: "Build changes only" },
+    { name: "build-type", type: validateBuildType, defaultValue: "Release", multiple: false, description: "CMAKE_BUILD_TYPE: Debug, Release, RelWithDebInfo, MinSizeRel" },
 ];
-const options = require('command-line-args')(optionDefinitions);
+const options = commandLineArgs(optionDefinitions, { camelCase: true });
 
 if (options.arch) {
     architectures = [options.arch];
 }
 
-if (!"ANDROID_NDK" in process.env) {
+const buildType = options.buildType;
+
+const ndkPath = process.env["ANDROID_NDK"];
+if (!ndkPath) {
     throw Error("ANDROID_NDK environment variable not set");
 }
-const ndkPath = process.env["ANDROID_NDK"];
 
 const sdkPath = getAndroidSdkPath();
 const cmakePath = getCmakePath(sdkPath);
 const cmakeVersion = getCmakeVersion(sdkPath);
 
-const buildPath = path.resolve(process.cwd(), 'build-realm-android');
+const buildPath = path.resolve(process.cwd(), "build-realm-android");
 if (!options.changes) {
     if (fs.existsSync(buildPath)) {
         fs.rmdirSync(buildPath, { recursive: true });
@@ -65,7 +69,7 @@ if (!options.changes) {
 const jscDir = path.resolve(buildPath, "jsc-android");
 
 for (const arch of architectures) {
-    console.log(`\nBuilding Realm JS Android for ${arch}`);
+    console.log(`\nBuilding Realm JS Android for ${arch} (${buildType})`);
     console.log("=======================================");
     //create a build dir per architecture
     const archBuildDir = path.resolve(buildPath, arch);
@@ -82,16 +86,16 @@ for (const arch of architectures) {
         `-DCMAKE_TOOLCHAIN_FILE=${ndkPath}/build/cmake/android.toolchain.cmake`,
         "-DANDROID_TOOLCHAIN=clang",
         "-DANDROID_NATIVE_API_LEVEL=16",
-        `-DCMAKE_BUILD_TYPE=${options.buildType}`,
+        `-DCMAKE_BUILD_TYPE=${buildType}`,
         "-DANDROID_STL=c++_static",
         `-DJSC_ROOT_DIR=${jscDir}`,
         process.cwd()
     ];
-    exec(cmakePath, args, { cwd: archBuildDir, stdio: 'inherit' });
+    exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 
     //cwd is the archBuildDir here, hence build the current dir with "--build ."
     args = ["--build", "."];
-    exec(cmakePath, args, { cwd: archBuildDir, stdio: 'inherit' });
+    exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 
     copyOutput(arch, archBuildDir);
 }
@@ -145,6 +149,11 @@ function copyOutput(arch, buildDir) {
 }
 
 function getAndroidSdkPath() {
+    if ("ANDROID_SDK_ROOT" in process.env) {
+        console.log("Using ANDROID_SDK_ROOT env variable");
+        return process.env["ANDROID_SDK_ROOT"];
+    }
+
     if ("ANDROID_SDK" in process.env) {
         console.log("Using ANDROID_SDK env variable");
         return process.env["ANDROID_SDK"];
@@ -153,11 +162,6 @@ function getAndroidSdkPath() {
     if ("ANDROID_HOME" in process.env) {
         console.log("Using ANDROID_HOME env variable");
         return process.env["ANDROID_HOME"];
-    }
-
-    if ("ANDROID_SDK_ROOT" in process.env) {
-        console.log("Using ANDROID_SDK_ROOT env variable");
-        return process.env["ANDROID_SDK_ROOT"];
     }
 
     throw new Error("Android SDK not found. ANDROID_SDK or ANDROID_HOME or ANDROID_SDK_ROOT needs to be set");
@@ -169,7 +173,7 @@ function getCmakePath(sdkPath) {
         return process.env["CMAKE_PATH"];
     }
 
-    return process.platform === 'win32' ? 'cmake.exe' : 'cmake';
+    return process.platform === "win32" ? "cmake.exe" : "cmake";
 }
 
 function getCmakeVersion(sdkPath) {
