@@ -28,28 +28,27 @@ namespace realm {
     namespace js {
         namespace utils {
             struct NoLogs{
-                static void info(std::string&& title, std::string &&message){
+                static void info(std::string title, std::string message){
                     //By leaving this empty the compiler is allowed to retire this completely.
                 }
             };
 
 #if REALM_ANDROID
             struct AndroidLogs{
-                static void info(std::string&& title, std::string &&message){
+                static void info(std::string title, std::string message){
                     __android_log_print(ANDROID_LOG_INFO, title.c_str(), "%s",
                                         message.c_str());
                 }
             };
 #else
             struct IOSLogs{
-                static void info(std::string&& title, std::string &&message){
-                    std::cout << title << ": " << message << "\n";
+                static void info(std::string title, std::string message){
+                    std::cout << title.c_str() << ": " << message.c_str() << "\n";
                 }
             };
 #endif
 
             struct Logs: public NoLogs {};
-
         }
     }
 }
