@@ -480,8 +480,8 @@ module.exports = {
         let realm = new Realm({schema: [DictSchema, Child]})
         
         realm.write(()=> {
-                    let child = realm.create(Child.name, { num: 555 } )
-                    let child2 = realm.create(Child.name, { num: 666 } )
+                    var child = realm.create(Child.name, { num: 555 } )
+                    var child2 = realm.create(Child.name, { num: 666 } )
                     realm.create(DictSchema.name, {
                                  dict: { children1: child, children2: child2 },
                                  dict2: { children1: child2, children2: child }
