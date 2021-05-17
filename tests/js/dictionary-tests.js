@@ -493,8 +493,11 @@ module.exports = {
         let dict_1 = realm.objects(DictSchema.name)[0].dict
         let dict_2 = realm.objects(DictSchema.name)[0].dict2
 
-       // console.log(l, 'len: ->', realm.objects(DictSchema.name).length)
+        console.log('dict_1 keys -> ', Object.keys(dict_1))
+        console.log('dict_2 keys -> ', Object.keys(dict_2))
 
+        TestCase.assertTrue(dict_1 !== undefined,"Children1 should be defined.")
+        TestCase.assertTrue(dict_2 !== undefined,"Children2 should be defined.")
         TestCase.assertTrue(dict_1.children1 !== undefined,"Children1 should be defined.")
         TestCase.assertTrue(dict_1.children2 !== undefined,"Children2 should be defined.")
         TestCase.assertTrue(dict_2.children1 !== undefined,"Children2 should be defined.")
