@@ -485,17 +485,63 @@ module.exports = {
                     realm.create(DictSchema.name, {
                                  dict: { children1: child, children2: child2 },
                                  dict2: { children1: child2, children2: child }
-                                 })
                     })
-        
+        })
+
+        TestCase.assertEqual(realm.objects(DictSchema.name).length, 1, "A new field have to be inserted.")
+
         let dict_1 = realm.objects(DictSchema.name)[0].dict
         let dict_2 = realm.objects(DictSchema.name)[0].dict2
 
        // console.log(l, 'len: ->', realm.objects(DictSchema.name).length)
+
+        TestCase.assertTrue(dict_1.children1 !== undefined,"Children1 should be defined.")
+        TestCase.assertTrue(dict_1.children2 !== undefined,"Children2 should be defined.")
+        TestCase.assertTrue(dict_2.children1 !== undefined,"Children2 should be defined.")
+        TestCase.assertTrue(dict_2.children2 !== undefined,"Children2 should be defined.")
         TestCase.assertEqual(dict_1.children1.num,  555,"We expect children1#555")
         TestCase.assertEqual(dict_1.children2.num,  666,"We expect children2#666")
         TestCase.assertEqual(dict_2.children1.num,  666,"We expect children1#666")
         TestCase.assertEqual(dict_2.children2.num,  555,"We expect children2#555")
+    },
+
+    ttt_DictionaryUpdatingWithNestedModels() {
+        const Child = {
+            name: "Children",
+            properties: {
+                num: "int"
+            }
+        }
+
+        const DictSchema = {
+            name: "Dictionary",
+            properties: {
+                dict: "{}",
+                dict2: "{}"
+            }
+        }
+
+        let realm = new Realm({schema: [DictSchema, Child]})
+        realm.write(()=> {
+            realm.create(DictSchema.name, {
+                dict: {children1: 'x', children2: 'y'},
+                dict2: {children1: 'y', children2: 'y'}
+            })
+        })
+
+        let dict_1 = realm.objects(DictSchema.name)[0].dict
+
+        realm.write(()=> {
+            let child = realm.create(Child.name, { num: 555 } )
+            let child2 = realm.create(Child.name, { num: 666 } )
+            dict_1.put({child, child2})
+        })
+
+        // console.log(l, 'len: ->', realm.objects(DictSchema.name).length)
+        TestCase.assertEqual(dict_1.children1.num,  555,"We expect children1#555")
+        TestCase.assertEqual(dict_1.children2.num,  666,"We expect children2#666")
+        // TestCase.assertEqual(dict_2.children1.num,  666,"We expect children1#666")
+        // TestCase.assertEqual(dict_2.children2.num,  555,"We expect children2#555")
     },
 
     /*TODO Comment this until we merge Mixed->Link code.
