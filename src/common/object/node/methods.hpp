@@ -69,5 +69,6 @@ namespace accessor{
     struct IAccessor {
         virtual void set(Arguments args) = 0;
         virtual Napi::Value get(Arguments args) = 0;
+        virtual ~IAccessor() {};
     };
 };
