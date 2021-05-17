@@ -488,14 +488,14 @@ module.exports = {
                                  })
                     })
         
-        let l = realm.objects(DictSchema.name)[0].dict
-        //let dict_2 = realm.objects(DictSchema.name)[0].dict2
+        let dict_1 = realm.objects(DictSchema.name)[0].dict
+        let dict_2 = realm.objects(DictSchema.name)[0].dict2
 
-        console.log(l, 'len: ->', realm.objects(DictSchema.name).length)
-       // TestCase.assertEqual(l.children1.num,  555,"We expect children1#555")
-        //TestCase.assertEqual(l.children2.num,  666,"We expect children2#666")
-        // TestCase.assertEqual(dict_2.children1.num,  666,"We expect children1#666")
-        // TestCase.assertEqual(dict_2.children2.num,  555,"We expect children2#555")
+       // console.log(l, 'len: ->', realm.objects(DictSchema.name).length)
+        TestCase.assertEqual(dict_1.children1.num,  555,"We expect children1#555")
+        TestCase.assertEqual(dict_1.children2.num,  666,"We expect children2#666")
+        TestCase.assertEqual(dict_2.children1.num,  666,"We expect children1#666")
+        TestCase.assertEqual(dict_2.children2.num,  555,"We expect children2#555")
     },
 
     /*TODO Comment this until we merge Mixed->Link code.
