@@ -29,6 +29,7 @@
 #include "common/object/interfaces.hpp"
 #include "realm/object-store/shared_realm.hpp"
 #include "private_store.hpp"
+#include "common/utils.h"
 
 namespace realm {
 namespace common {
@@ -41,6 +42,8 @@ class JavascriptObject {
     JSContextRef context;
     JSObjectRef object{nullptr};
     std::vector<JSStaticFunction> methods;
+    std::vector<JSStaticValue> values;
+
     std::vector<std::string> accessors;
     PrivateStore<GetterSetter> *private_object;
 
@@ -63,7 +66,7 @@ class JavascriptObject {
         if (_private->finalizer != nullptr) {
             _private->finalizer();
         } else {
-            std::cout << "Warning: No finalizer was specified.";
+            js::utility::Logs::_info("Object::finalize", "%s", "Warning: No finalizer was specified.");
         }
     }
 
@@ -80,11 +83,12 @@ class JavascriptObject {
             if (pair.second) {
                 auto entry = JSStringCreateWithUTF8CString(pair.first.c_str());
                 JSPropertyNameAccumulatorAddName(propertyNames, entry);
+                js::utility::Logs::info("Object::get_property_names::accumulator ", pair.first);
             }
         }
     }
 
-    template <void cb(method::Arguments)>
+    template <void callback(method::Arguments, accessor::IAccessor*)>
     static JSValueRef function_call(JSContextRef ctx, JSObjectRef,
                                     JSObjectRef thisObject,
                                     size_t argumentCount,
@@ -93,8 +97,9 @@ class JavascriptObject {
         auto *_private = get_private(thisObject);
         ObjectObserver *observer = _private->observer;
         IOCollection *collection = _private->collection;
+        accessor::IAccessor *accessor = _private->getter_setter.get();
 
-        cb({ctx, observer, collection, argumentCount, _arguments, exception});
+        callback({ctx, observer, collection, argumentCount, _arguments, exception}, accessor);
         return JSValueMakeUndefined(ctx);
     }
 
@@ -106,8 +111,9 @@ class JavascriptObject {
             return JSValueMakeNull(ctx);
         }
 
-        auto getter_setter = get_private(object)->getter_setter.get();
-        return getter_setter->get(accessor::Arguments{ctx, object, key.c_str(), 0, exception});
+        js::utility::Logs::info("Object::Get", key);
+        auto accessor = get_private(object)->getter_setter.get();
+        return accessor->get(accessor::Arguments{ctx, object, key.c_str(), 0, exception});
     }
 
     static bool setter(JSContextRef ctx, JSObjectRef object,
@@ -118,15 +124,16 @@ class JavascriptObject {
         if (!contains_key(object, key)) {
             return false;
         }
-
-        auto getter_setter = get_private(object)->getter_setter.get();
-        getter_setter->set(accessor::Arguments{ctx, object, key, value, exception});
+        js::utility::Logs::info("Object::Set", key);
+        auto accessor = get_private(object)->getter_setter.get();
+        accessor->set(accessor::Arguments{ctx, object, key, value, exception});
         return true;
     }
 
     static bool has_property(JSContextRef ctx, JSObjectRef object,
                              JSStringRef propertyName) {
         auto key = to_string(propertyName);
+        js::utility::Logs::_info("Object::Has", "%s -> %s", key.c_str(), contains_key(object, key)?"true":"false");
         return contains_key(object, key);
     }
 
@@ -150,6 +157,7 @@ class JavascriptObject {
     JavascriptObject(JSContextRef _ctx, std::string name = "js_object")
         : context{_ctx} {
         _class = kJSClassDefinitionEmpty;
+        _class.attributes = kJSClassAttributeNone;
         _class.className = name.c_str();
         _class.finalize = dispose;
         _class.getProperty = getter;
@@ -165,7 +173,7 @@ class JavascriptObject {
         std::cout << "accessors size: " << accessors.size() << " \n";
     }
 
-    template <class VM, void callback(method::Arguments)>
+    template <class VM, void callback(method::Arguments, accessor::IAccessor*)>
     void add_method(std::string &&name) {
         std::string *leak = new std::string{name};
 
@@ -178,6 +186,7 @@ class JavascriptObject {
 
     void add_key(std::string name) {
         private_object->keys[name.c_str()] = true;
+        values.push_back({name.c_str(), getter, setter, kJSPropertyAttributeNone});
         accessors.push_back(name);
     }
 

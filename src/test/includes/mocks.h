@@ -20,18 +20,20 @@
 #include "common/object/interfaces.hpp"
 
 struct MockedCollection: public IOCollection{
-        double N = 1000;
-        MockedCollection(double start): N{start} {}
+        realm::Mixed mixed;
+        MockedCollection(double start): mixed{start} {}
         realm::Mixed get(std::string) override{
-            return realm::Mixed(N);
+            
+            //printf("Collection::Get-> %f \n", ret);
+            return mixed;
         }
 
         void set(std::string key, realm::Mixed val) override{
-            N = val.get_double();
+           mixed = val;
         }
 
         void remove(std::string key) override {
-            N = 0;
+            printf("calling remove...");
         }
 
         bool contains(std::string key) override {
@@ -39,7 +41,7 @@ struct MockedCollection: public IOCollection{
         }
 };
 
-struct MockedGetterSetter {
+struct MockedGetterSetter: public accessor::IAccessor{
     IOCollection *collection{nullptr};
 
     MockedGetterSetter(IOCollection *_collection): collection{_collection}{}

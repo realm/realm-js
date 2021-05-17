@@ -55,8 +55,19 @@ namespace accessor{
         std::string property_name;
         Napi::Value value;
 
+        Arguments(Napi::Env ctx, std::string name, Napi::Value _value = {}):
+                context{ctx}, property_name(name), value{_value} {}
+
+        Arguments(const method::Arguments& args, std::string _property_name, Napi::Value _value ):
+                context{args.context}, property_name(_property_name), value{_value} {}
+
         void throw_error(std::string&& message){
             throw Napi::Error::New(context, message);
         }
+    };
+
+    struct IAccessor {
+        virtual void set(Arguments args) = 0;
+        virtual Napi::Value get(Arguments args) = 0;
     };
 };

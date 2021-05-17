@@ -34,8 +34,8 @@ class MethodsForDictionary {
 
    public:
     template <typename Fn>
-    static void object_keys(ContextType& context, ValueType _object, Fn&& fn){
-        auto obj =  js::Value<T>::validated_to_object(context, _object);
+    static void object_keys(ContextType& context, ValueType _object, Fn&& fn) {
+        auto obj = js::Value<T>::validated_to_object(context, _object);
         auto keys = js::Object<T>::get_property_names(context, obj);
 
         for (auto index = 0; index < keys.size(); index++) {
@@ -44,63 +44,67 @@ class MethodsForDictionary {
         }
     }
 
-    static void add_listener(method::Arguments arguments) {
+    static void add_listener(method::Arguments arguments,
+                             accessor::IAccessor*) {
         ContextType context = arguments.context;
-        ObjectObserver *observer = arguments.observer;
-        std::string error_msg =  "A callback function is required.";
+        ObjectObserver* observer = arguments.observer;
+        std::string error_msg = "A callback function is required.";
 
-        auto callback = js::Value<T>::validated_to_function(context, arguments.get(0, error_msg));
+        auto callback = js::Value<T>::validated_to_function(
+            context, arguments.get(0, error_msg));
         observer->subscribe(std::make_unique<Subscriber>(context, callback));
     }
 
-    static void remove_listener(method::Arguments arguments) {
+    static void remove_listener(method::Arguments arguments,
+                                accessor::IAccessor*) {
         ContextType context = arguments.context;
         ObjectObserver* observer = arguments.observer;
-        std::string error_msg =  "A callback function is required.";
+        std::string error_msg = "A callback function is required.";
 
-        auto callback = js::Value<T>::validated_to_function(context,  arguments.get(0, error_msg));
-        observer->remove_subscription(std::make_unique<Subscriber>(context, callback));
+        auto callback = js::Value<T>::validated_to_function(
+            context, arguments.get(0, error_msg));
+        observer->remove_subscription(
+            std::make_unique<Subscriber>(context, callback));
     }
 
-    static void remove_all_listeners(method::Arguments arguments) {
+    static void remove_all_listeners(method::Arguments arguments,
+                                     accessor::IAccessor*) {
         arguments.observer->unsubscribe_all();
     }
 
-    static void put(method::Arguments arguments) {
-        std::string error_msg =  "This method cannot be empty.";
+    static void put(method::Arguments arguments,
+                    accessor::IAccessor* accessor) {
+        std::string error_msg = "This method cannot be empty.";
         auto context = arguments.context;
-        IOCollection *collection = arguments.collection;
 
-        object_keys(context, arguments.get(0, error_msg),
-                    [=](std::string& key, auto object){
-            auto value = js::Object<T>::get_property(context, object, key);
-            auto mixed = JSMixedAPI::get_instance().unwrap(context, value);
-            collection->set(key, mixed);
-        });
+        object_keys(
+            context, arguments.get(0, error_msg),
+            [=](std::string& key, auto object) {
+                auto value = js::Object<T>::get_property(context, object, key);
+                accessor->set(accessor::Arguments(arguments, key, value));
+            });
     }
 
-    static void remove(method::Arguments arguments) {
-        std::string error_msg =  "This method cannot be empty.";
+    static void remove(method::Arguments arguments, accessor::IAccessor*) {
+        std::string error_msg = "This method cannot be empty.";
         auto context = arguments.context;
-        IOCollection *collection = arguments.collection;
+        IOCollection* collection = arguments.collection;
 
-            object_keys(context, arguments.get(0, error_msg),
-                    [=](std::string& _key, auto object) mutable{
-                        auto value = js::Object<T>::get_property(context, object, _key);
-                        std::string key = js::Value<T>::validated_to_string(context, value, "Dictionary key");
+        object_keys(
+            context, arguments.get(0, error_msg),
+            [=](std::string& _key, auto object) mutable {
+                auto value = js::Object<T>::get_property(context, object, _key);
+                std::string key = js::Value<T>::validated_to_string(
+                    context, value, "Dictionary key");
 
-                        try{
-                            collection->remove(key);
-                        }catch (realm::KeyNotFound& error){
-                            arguments.throw_error("The key: " + key + " doesn't exist in the Dictionary." );
-                        }
-                    });
-
-
-
+                try {
+                    collection->remove(key);
+                } catch (realm::KeyNotFound& error) {
+                    arguments.throw_error("The key: " + key +
+                                          " doesn't exist in the Dictionary.");
+                }
+            });
     }
-
-
 };
 
 }  // namespace js

@@ -63,13 +63,13 @@ class JavascriptObject {
 
     void set_observer(ObjectObserver *_observer) { observer = _observer; }
 
-    template <class VM, void callback(method::Arguments)>
+    template <class VM, void callback(method::Arguments, accessor::IAccessor*)>
     void add_method(std::string &&name) {
         auto object = get();
 
         auto method = [=](const auto &info) {
             callback({info.Env(), observer, collection, info.Length(),
-                      NodeCallbackWrapper(info)});
+                      NodeCallbackWrapper(info)}, gs.get());
         };
 
         auto method_function = Napi::Function::New(context, method, name);

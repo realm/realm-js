@@ -10,13 +10,17 @@ assert_true(dict.X !== undefined && dict.doSomething !== undefined);  // Testing
 /*
     It seems that Object.values(dict) is not supported on JSC for non-static fields, it would be interesting to
     review this in the future.
-    verify_object_fields(Object.values(dict).length)
+    verify_object_values(Object.entries(dict).length)
  */
 
+
+
 // eslint-disable-next-line no-undef
-verify_object_fields(Object.keys(dict).length)
+verify_object_keys(Object.keys(dict).length)
 
 
+
+//
 null_dict.hello(true);  // Testing method call from object.
 null_dict.alo(true); // Testing method call from object <again>.
 

@@ -9,7 +9,6 @@ clang++ -g -std=c++17 -Wall -I catch.hpp -I test_bed.hpp -I ../ \
     $(find ../../build -name "librealm-dbg.a") \
     $(find ../../build -name "librealm-sync-dbg.a") \
     $(find ../../build -name "librealm-object-store-dbg.a") \
- #   && 
 
 #./testing.o  
 # missing realm::ConstLstIf

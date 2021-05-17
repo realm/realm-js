@@ -27,7 +27,7 @@ struct T1 : public ObjectObserver {
     }
     void unsubscribe_all() { call_count++; }
 
-    static void test_for_null_data_method(method::Arguments arguments) {
+    static void test_for_null_data_method(method::Arguments arguments, accessor::IAccessor*) {
         SECTION(
             "This callback should have null values for observer and "
             "collection.") {
@@ -41,7 +41,7 @@ struct T1 : public ObjectObserver {
 
     }
 
-    static void methods(method::Arguments args) {
+    static void methods(method::Arguments args,accessor::IAccessor*) {
         SECTION(
             "This callback should have non-null values for observer and "
             "collection.") {
@@ -148,10 +148,18 @@ void TestingExceptionMessage(std::string& str_param) {
 
 void TestingObjectValues(double value) {
 
-    SECTION("We expect our Object.values(dict).length => 4") {
+    SECTION("We expect our Object.values(dict).length == 4") {
         REQUIRE(value == 4);
     }
 }
+
+void TestingObjectKeys(double value) {
+
+    SECTION("We expect our Object.keys(dict).length == 4") {
+        REQUIRE(value == 4);
+    }
+}
+
 
 TEST_CASE("Testing Object creation on JavascriptCore.") {
     JSC_VM jsc_vm;
@@ -166,7 +174,8 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     jsc_vm.make_gbl_fn("test_accessor", &TestingGetterSetter);
     jsc_vm.make_gbl_fn("assert_enumerate", &TestTools::SimpleJSStringFunction<TestingEnumeration>);
     jsc_vm.make_gbl_fn("assert_exception", &TestTools::SimpleJSStringFunction<TestingExceptionMessage>);
-    jsc_vm.make_gbl_fn("verify_object_fields", &TestTools::JSCAssertFunction<TestingObjectValues>);
+    jsc_vm.make_gbl_fn("verify_object_values", &TestTools::JSCAssertFunction<TestingObjectValues>);
+    jsc_vm.make_gbl_fn("verify_object_keys", &TestTools::JSCAssertFunction<TestingObjectKeys>);
 
     /*
      *  JavascriptObject Instantiation and configuration into JSC.

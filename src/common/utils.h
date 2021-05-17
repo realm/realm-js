@@ -25,30 +25,40 @@
 #endif
 
 namespace realm {
-    namespace js {
-        namespace utils {
-            struct NoLogs{
-                static void info(std::string title, std::string message){
-                    //By leaving this empty the compiler is allowed to retire this completely.
-                }
-            };
+namespace js {
+namespace utility {
+/*
+ * By leaving this empty the compiler is allowed to retire this
+ * completely.
+ */
+struct NoLogs {
+    static void info(std::string title, std::string message) {}
+    template <typename... Args>
+    static void _info(std::string title, std::string fmt, Args... args) {}
+};
 
 #if REALM_ANDROID
-            struct AndroidLogs{
-                static void info(std::string title, std::string message){
-                    __android_log_print(ANDROID_LOG_INFO, title.c_str(), "%s",
-                                        message.c_str());
-                }
-            };
+struct AndroidLogs {
+    static void info(std::string title, std::string message) {
+        __android_log_print(ANDROID_LOG_INFO, title.c_str(), "%s",
+                            message.c_str());
+    }
+};
 #else
-            struct IOSLogs{
-                static void info(std::string title, std::string message){
-                    std::cout << title.c_str() << ": " << message.c_str() << "\n";
-                }
-            };
+struct IOSLogs {
+    static void info(std::string title, std::string message) {
+        std::cout << title.c_str() << ": " << message.c_str() << "\n";
+    }
+    template <typename... Args>
+    static void _info(std::string title, std::string fmt, Args... args) {
+        printf("%s: ", title.c_str());
+        printf(fmt.c_str(), args...);
+        printf("\n");
+    }
+};
 #endif
 
-            struct Logs: public NoLogs {};
-        }
-    }
-}
+struct Logs : public NoLogs {};
+}  // namespace utility
+}  // namespace js
+}  // namespace realm
