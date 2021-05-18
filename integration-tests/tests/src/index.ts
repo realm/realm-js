@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
-
 console.log("Loading Realm Integration Tests");
 
 if (!global.fs) {
@@ -41,10 +39,6 @@ import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
 global.describe.skipIf = suiteSkipIf;
 global.it.skipIf = testSkipIf;
 
-beforeEach(() => {
-    Realm.clearTestState();
-});
-
 require("./tests/import-app-util");
 require("./tests/realm-constructor");
 require("./tests/serialization");
@@ -53,3 +47,4 @@ require("./tests/iterators");
 require("./tests/dynamic-schema-updates");
 require("./tests/bson");
 require("./tests/credentials/anonymous");
+require("./tests/sync/mixed");

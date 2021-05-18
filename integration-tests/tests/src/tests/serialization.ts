@@ -446,6 +446,10 @@ const cacheIdTestSetups: ICacheIdTestSetup[] = [
 ];
 
 describe("JSON serialization", () => {
+    beforeEach(() => {
+        Realm.clearTestState();
+    });
+
     describe(`Internal cache id check for types: ${cacheIdTestSetups
         .map((t) => t.type)
         .join(" / ")}`, () => {

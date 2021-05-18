@@ -22,6 +22,10 @@ import Realm from "realm";
 import { PersonSchema, DogSchema } from "../schemas/person-and-dogs";
 
 describe("realm._updateSchema", () => {
+    beforeEach(() => {
+        Realm.clearTestState();
+    });
+
     it("is a function", () => {
         const realm = new Realm({ schema: [PersonSchema, DogSchema] });
         expect(realm.schema).to.be.an("array");

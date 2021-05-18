@@ -387,6 +387,11 @@ declare namespace Realm {
         readonly prototype: Results<any>;
     };
 
+    /**
+     * A primitive value, a BSON value or an object link.
+     */
+    type Mixed = unknown;
+
     interface UserMap {
         [identity: string]: User
     }

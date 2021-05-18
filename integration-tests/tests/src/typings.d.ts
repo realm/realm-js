@@ -36,6 +36,11 @@ declare namespace Mocha {
     }
 }
 
+// Mocha contexts made available by hooks
+type AppContext = { app: Realm.App } & Mocha.Context;
+type UserContext = { user: Realm.User } & Mocha.Context;
+type RealmContext = { realm: Realm, config: Realm.Configuration } & Mocha.Context;
+
 interface Console {
     error(message?: any, ...optionalParams: any[]): void;
     log(message?: any, ...optionalParams: any[]): void;
