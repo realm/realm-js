@@ -533,6 +533,8 @@ module.exports = {
          })
     
          let dict_1 = realm.objects(DictSchema.name)[0].dict
+
+         console.log("typeof: ", typeof dict_1)
     
          realm.write(()=> {
              let child = realm.create(Child.name, { num: 555 } )
@@ -544,16 +546,5 @@ module.exports = {
          TestCase.assertEqual(dict_1.child2.num,  666,"We expect children2#666")
          // TestCase.assertEqual(dict_2.children1.num,  666,"We expect children1#666")
          // TestCase.assertEqual(dict_2.children2.num,  555,"We expect children2#555")
-     },
-
-    /*TODO Comment this until we merge Mixed->Link code.
-    testDictionaryErrorHandling(){
-        let realm = new Realm({schema: [DictSchema]})
-        let err = new Error('Mixed conversion not possible for type: object')
-        //TestCase.assertThrowsException(() => realm.write(() => realm.create(DictSchema.name, {a: {x: {} }})) , err)
-        realm.write(() => realm.create(DictSchema.name, { a: { x: null } }))
-        let data = realm.objects(DictSchema.name)[0].a
-        TestCase.assertEqual(data.x, null, 'Should be an equals to mutable.x = null');
-
-    } */
+     }
 }
