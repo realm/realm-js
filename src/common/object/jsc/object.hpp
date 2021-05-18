@@ -66,7 +66,7 @@ class JavascriptObject {
         if (_private->finalizer != nullptr) {
             _private->finalizer();
         } else {
-            js::utility::Logs::_info("Object::finalize", "%s", "Warning: No finalizer was specified.");
+            js::utility::Logs::info("Object::finalize", "%s", "Warning: No finalizer was specified.");
         }
     }
 
@@ -133,7 +133,7 @@ class JavascriptObject {
     static bool has_property(JSContextRef ctx, JSObjectRef object,
                              JSStringRef propertyName) {
         auto key = to_string(propertyName);
-        js::utility::Logs::_info("Object::Has", "%s -> %s", key.c_str(), contains_key(object, key)?"true":"false");
+        js::utility::Logs::info("Object::Has", "%s -> %s", key.c_str(), contains_key(object, key)?"true":"false");
         return contains_key(object, key);
     }
 
