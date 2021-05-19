@@ -16,6 +16,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * Set didn't export `objectType` to Realm.schema when it contained scalar types.
 * Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
 * Add explicity support for Nullable/Undefined values for the Mixed type. ([#3731](https://github.com/realm/realm-js/issues/3731))
+* Fixed `Realm not defined` error experienced when using `Realm.Set` iterators under Jest
 
 ### Compatibility
 * MongoDB Realm Cloud.
