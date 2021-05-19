@@ -84,10 +84,35 @@ module.exports = {
         TestCase.assertEqual(typeof data.a.x, "undefined", "Should be deleted.");
         TestCase.assertEqual(typeof data.a.y, "undefined", "Should be deleted.");
         TestCase.assertEqual(typeof data.a.z, "undefined", "Should be deleted.");
-
     },
 
-   testDictionaryWithTypedValues(){
+    testDictionaryUpdatingUsingIndex() {
+        const DictSchema = {
+            name: "Dictionary",
+            properties: {
+                dict: "{}"
+            }
+        }
+        let realm = new Realm({schema: [DictSchema]})
+
+        realm.write(() => realm.create(DictSchema.name, {dict: {oo: 2, y: 2, z: 2}}))
+
+        let D = realm.objects(DictSchema.name)[0].dict
+
+        realm.write(() => { D.oo = 100 })
+        TestCase.assertEqual(D.oo, 100, "Should be equal to 100.");
+
+        realm.write(() => {
+            D.oo = 200
+            D['oo'] += 200
+        })
+        TestCase.assertEqual(D.oo, 400, "Should be equal to 200.");
+
+        let ZZ = realm.objects(DictSchema.name)[0].dict
+        TestCase.assertEqual(ZZ.oo, 400, "Should be equal to 200.");
+    },
+
+    testDictionaryWithTypedValues(){
        const DictIntSchema = {
            name: "Dictionary",
            properties: {
@@ -544,16 +569,5 @@ module.exports = {
          TestCase.assertEqual(dict_1.child2.num,  666,"We expect children2#666")
          // TestCase.assertEqual(dict_2.children1.num,  666,"We expect children1#666")
          // TestCase.assertEqual(dict_2.children2.num,  555,"We expect children2#555")
-     },
-
-    /*TODO Comment this until we merge Mixed->Link code.
-    testDictionaryErrorHandling(){
-        let realm = new Realm({schema: [DictSchema]})
-        let err = new Error('Mixed conversion not possible for type: object')
-        //TestCase.assertThrowsException(() => realm.write(() => realm.create(DictSchema.name, {a: {x: {} }})) , err)
-        realm.write(() => realm.create(DictSchema.name, { a: { x: null } }))
-        let data = realm.objects(DictSchema.name)[0].a
-        TestCase.assertEqual(data.x, null, 'Should be an equals to mutable.x = null');
-
-    } */
+     }
 }

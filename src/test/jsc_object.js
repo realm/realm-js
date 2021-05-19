@@ -28,7 +28,8 @@ null_dict.alo(true); // Testing method call from object <again>.
 dict.doSomething(28850);
 
 /* Testing accessors. */
-dict.X=666;
+dict['X'] = 333
+dict.X += 333
 
 // eslint-disable-next-line no-undef
 test_accessor(dict, 'X', 666);
