@@ -228,6 +228,12 @@ declare namespace Realm {
     type SortDescriptor = [string] | [string, boolean];
 
     /**
+     * Dictionary
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Dictionary.html }
+     */
+    interface Dictionary<T = unknown> { [key: string]: T };
+
+    /**
      * Collection
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html }
      */
