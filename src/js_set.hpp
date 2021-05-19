@@ -138,9 +138,9 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
 
     // properties
     static void get_size(ContextType, ObjectType, ReturnValue &);
-     static void get_optional(ContextType, ObjectType, ReturnValue &);
-     static void get_indexed(ContextType, ObjectType, uint32_t, ReturnValue &);
-     static void get_type(ContextType, ObjectType, ReturnValue &);
+    static void get_optional(ContextType, ObjectType, ReturnValue &);
+    static void get_indexed(ContextType, ObjectType, uint32_t, ReturnValue &);
+    static void get_type(ContextType, ObjectType, ReturnValue &);
 
     // methods
     static void add(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -158,34 +158,34 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
     static void remove_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void remove_all_listeners(ContextType, ObjectType, Arguments &, ReturnValue &);
 
-     std::string const name = "Set";
+    std::string const name = "Set";
 
-     MethodMap<T> const methods = {
-        {"add", wrap<add>},
-        {"clear", wrap<clear>},
-        {"delete", wrap<delete_element>},
-        {"has", wrap<has>},
-        {"filtered", wrap<filtered>},
+    MethodMap<T> const methods = {
+       {"add", wrap<add>},
+       {"clear", wrap<clear>},
+       {"delete", wrap<delete_element>},
+       {"has", wrap<has>},
+       {"filtered", wrap<filtered>},
 
-        {"min", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Min>>},
-        {"max", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Max>>},
-        {"sum", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Sum>>},
-        {"avg", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Avg>>},
+       {"min", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Min>>},
+       {"max", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Max>>},
+       {"sum", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Sum>>},
+       {"avg", wrap<compute_aggregate_on_collection<SetClass<T>, AggregateFunc::Avg>>},
 
 
-        {"snapshot", wrap<snapshot>},
-        {"addListener", wrap<add_listener>},
-        {"removeListener", wrap<remove_listener>},
-        {"removeAllListeners", wrap<remove_all_listeners>},
-     };
+       {"snapshot", wrap<snapshot>},
+       {"addListener", wrap<add_listener>},
+       {"removeListener", wrap<remove_listener>},
+       {"removeAllListeners", wrap<remove_all_listeners>},
+    };
 
-     PropertyMap<T> const properties = {
-         {"size", {wrap<get_size>, nullptr}},
-         {"type", {wrap<get_type>, nullptr}},
-         {"optional", {wrap<get_optional>, nullptr}},
-     };
+    PropertyMap<T> const properties = {
+        {"size", {wrap<get_size>, nullptr}},
+        {"type", {wrap<get_type>, nullptr}},
+        {"optional", {wrap<get_optional>, nullptr}},
+    };
 
-     IndexPropertyType<T> const index_accessor = {nullptr, nullptr};
+    IndexPropertyType<T> const index_accessor = {nullptr, nullptr};
 
 private:
     static void validate_value(ContextType, realm::object_store::Set &, ValueType);
