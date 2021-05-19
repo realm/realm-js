@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* A warning to polyfill `crypto.getRandomValues` was triggered prematurely ([#3714](https://github.com/realm/realm-js/issues/3714), since v10.4.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
