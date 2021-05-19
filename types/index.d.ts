@@ -231,7 +231,7 @@ declare namespace Realm {
      * Dictionary
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Dictionary.html }
      */
-    interface Dictionary<T = unknown> { [key: string]: T };
+    interface Dictionary<T = unknown> { [key: string]: T }
 
     /**
      * Collection
@@ -535,6 +535,7 @@ interface ProgressPromise extends Promise<Realm> {
     cancel(): void;
     progress(callback: Realm.ProgressNotificationCallback): Promise<Realm>;
 }
+
 /**
  * Extracts an intersection of keys from T, where the value extends the given PropType.
  */
@@ -543,19 +544,19 @@ type ExtractPropertyNamesOfType<T, PropType> = {
 }[keyof T];
 
 /**
- * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
+ * Exchanges properties defined as From<Model> (e.g. Realm.List<Model>) with an optional To<Model | RealmInsertionModel<Model>> (e.g. Array<Model | RealmInsertionModel<Model>>).
  */
-type RealmListsRemappedModelPart<T> = {
-    [K in keyof T]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
+type RealmCollectionRemappedModelPart<T> = {
+    [K in keyof T]?: T[K] extends Realm.Collection<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
 }
 
 /**
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
- * with only the keys which value extends Realm.List, remapped as Arrays.
+ * with only the keys which value extends Realm.List or Realm.Set, remapped as Arrays.
  */
 type RealmInsertionModel<T> =
-    Omit<Omit<Omit<T, ExtractPropertyNamesOfType<T, Function>>, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
-    & RealmListsRemappedModelPart<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
+    Omit<Omit<Omit<T, ExtractPropertyNamesOfType<T, Function>>, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<unknown>>>
+    & RealmCollectionRemappedModelPart<Pick<T, ExtractPropertyNamesOfType<T, Realm.Collection<unknown>>>>
 
 declare class Realm {
     static defaultPath: string;
