@@ -68,7 +68,7 @@ namespace accessor{
         Arguments(JSContextRef ctx, JSObjectRef obj, std::string name, JSValueRef _value,JSValueRef *_exception):
         context{ctx}, object{obj}, property_name(name), value{_value}, exception{_exception} {}
 
-        Arguments(method::Arguments& args, std::string _property_name, JSValueRef _value ):
+        Arguments(const method::Arguments& args, std::string _property_name, JSValueRef _value ):
         context{args.context}, object{0}, property_name(_property_name), value{_value}, exception{args.exception} {}
 
         void throw_error(std::string&& message){

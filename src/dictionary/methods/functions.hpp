@@ -26,10 +26,8 @@ namespace js {
 template <typename T>
 class MethodsForDictionary {
    private:
-    using ObjectType = typename T::Object;
     using ContextType = typename T::Context;
     using ValueType = typename T::Value;
-    using JSMixedAPI = TypeMixed<T>;
     using Subscriber = DictionaryChangesSubscriber<T>;
 
    public:
@@ -81,7 +79,9 @@ class MethodsForDictionary {
             context, arguments.get(0, error_msg),
             [=](std::string& key, auto object) {
                 auto value = js::Object<T>::get_property(context, object, key);
+              //  utility::Logs::info("Dictionary::put", "setting %s->", key.c_str());
                 accessor->set(accessor::Arguments(arguments, key, value));
+               // utility::Logs::info("Dictionary::put", "setting %s->", "true");
             });
     }
 
@@ -100,6 +100,7 @@ class MethodsForDictionary {
                 try {
                     collection->remove(key);
                 } catch (realm::KeyNotFound& error) {
+                    utility::Logs::info("Dictionary::remove", "%s->", key.c_str());
                     arguments.throw_error("The key: " + key +
                                           " doesn't exist in the Dictionary.");
                 }

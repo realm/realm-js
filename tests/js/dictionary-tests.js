@@ -521,12 +521,12 @@ module.exports = {
         console.log('dict_1 keys -> ', Object.keys(dict_1))
         console.log('dict_2 keys -> ', Object.keys(dict_2))
 
-        TestCase.assertTrue(dict_1 !== undefined,"Children1 should be defined.")
-        TestCase.assertTrue(dict_2 !== undefined,"Children2 should be defined.")
-        TestCase.assertTrue(dict_1.children1 !== undefined,"Children1 should be defined.")
-        TestCase.assertTrue(dict_1.children2 !== undefined,"Children2 should be defined.")
-        TestCase.assertTrue(dict_2.children1 !== undefined,"Children2 should be defined.")
-        TestCase.assertTrue(dict_2.children2 !== undefined,"Children2 should be defined.")
+        TestCase.assertTrue(dict_1 !== undefined,"dict_1 should be defined.")
+        TestCase.assertTrue(dict_2 !== undefined,"dict_2 should be defined.")
+        TestCase.assertTrue(dict_1.children1 !== undefined,"dict_1.Children1 should be defined.")
+        TestCase.assertTrue(dict_1.children2 !== undefined,"dict_1.Children2 should be defined.")
+        TestCase.assertTrue(dict_2.children1 !== undefined,"dict_2.children1 should be defined.")
+        TestCase.assertTrue(dict_2.children2 !== undefined,"dict_2.Children2 should be defined.")
         TestCase.assertEqual(dict_1.children1.num,  555,"We expect children1#555")
         TestCase.assertEqual(dict_1.children2.num,  666,"We expect children2#666")
         TestCase.assertEqual(dict_2.children1.num,  666,"We expect children1#666")
@@ -558,6 +558,8 @@ module.exports = {
          })
     
          let dict_1 = realm.objects(DictSchema.name)[0].dict
+
+         console.log("typeof: ", typeof dict_1)
     
          realm.write(()=> {
              let child = realm.create(Child.name, { num: 555 } )

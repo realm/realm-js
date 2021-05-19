@@ -34,7 +34,7 @@ namespace utility {
 struct NoLogs {
     static void info(std::string title, std::string message) {}
     template <typename... Args>
-    static void _info(std::string title, std::string fmt, Args... args) {}
+    static void info(std::string title, std::string fmt, Args... args) {}
 };
 
 #if REALM_ANDROID
@@ -43,6 +43,11 @@ struct AndroidLogs {
         __android_log_print(ANDROID_LOG_INFO, title.c_str(), "%s",
                             message.c_str());
     }
+    template <typename... Args>
+    static void info(std::string title, std::string fmt, Args... args) {
+        __android_log_print(ANDROID_LOG_INFO, title.c_str(), fmt.c_str(),
+                            args...);
+    }
 };
 #else
 struct IOSLogs {
@@ -50,7 +55,7 @@ struct IOSLogs {
         std::cout << title.c_str() << ": " << message.c_str() << "\n";
     }
     template <typename... Args>
-    static void _info(std::string title, std::string fmt, Args... args) {
+    static void info(std::string title, std::string fmt, Args... args) {
         printf("%s: ", title.c_str());
         printf(fmt.c_str(), args...);
         printf("\n");
