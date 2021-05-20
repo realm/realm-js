@@ -72,7 +72,7 @@
   },
   "dependencies": {
     "bindings": "^1.5.0",
-    "bson": "^4.2.0",
+    "bson": "^4.4.0",
     "command-line-args": "^4.0.6",
     "deepmerge": "2.1.0",
     "deprecated-react-native-listview": "0.0.6",
