@@ -891,7 +891,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
         config.schema_mode = SchemaMode::AdditiveExplicit;
-        config.path = user->sync_manager()->path_for_realm(*(config.sync_config));
+        config.path = user->sync_manager().path_for_realm(*(config.sync_config));
     }
 }
 
