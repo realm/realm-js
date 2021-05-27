@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * A warning to polyfill `crypto.getRandomValues` was triggered prematurely ([#3714](https://github.com/realm/realm-js/issues/3714), since v10.4.0)
+* App login function to not hang after React-Native environment was reloaded ([#3668](https://github.com/realm/realm-js/issues/3668))
 
 ### Compatibility
 * MongoDB Realm Cloud.
