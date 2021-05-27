@@ -50,6 +50,11 @@ export interface AppConfiguration extends Realm.AppConfiguration {
      * Used when persisting app state, such as tokens of authenticated users.
      */
     storage?: Storage;
+    /**
+     * Skips requesting a location URL via the baseUrl and use the `baseUrl` as the url prefixed for any requests initiated by this app.
+     * This can useful when connecting to a server through a reverse proxy, to avoid the location request to make the client "break out" and start requesting another server.
+     */
+    skipLocationRequest?: boolean;
 }
 
 /**
@@ -150,6 +155,10 @@ export class App<
             throw new Error("Missing a MongoDB Realm app-id");
         }
         this.baseUrl = configuration.baseUrl || DEFAULT_BASE_URL;
+        if (configuration.skipLocationRequest) {
+            // Use the base url directly, instead of requesting a location URL from the server
+            this._locationUrl = Promise.resolve(this.baseUrl);
+        }
         this.localApp = configuration.app;
         const {
             storage,
