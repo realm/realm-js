@@ -5,7 +5,7 @@
 * None
 
 ### Enhancements
-* Added a configuration parameter (`disableLocationRequest`) to disable requesting a location URL via the baseUrl and use the `baseUrl` as the url prefixed for any requests initiated by this app. This can useful when connecting to a server through a reverse proxy, to avoid the location request to make the client "break out" and start requesting another server. ([#3759](https://github.com/realm/realm-js/pull/3759))
+* Added a configuration parameter (`skipLocationRequest`) to skip requesting a location URL via the baseUrl and use the `baseUrl` as the url prefixed for any requests initiated by this app. This can useful when connecting to a server through a reverse proxy, to avoid the location request to make the client "break out" and start requesting another server. ([#3759](https://github.com/realm/realm-js/pull/3759))
 
 
 ### Fixed
