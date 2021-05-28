@@ -426,6 +426,7 @@ module.exports = {
         });
         TestCase.assertTrue(isSameInts, "dbInts.values() should contain the same elements as myInts");
 
+        // check the type of Set's `entries` iterator
         const intsEntries = Array.from(dbInts.entries());
         const sameEntries = intsEntries.map((value, index) => {
             return value[0] == myInts[index] && value[1] == myInts[index];
@@ -435,6 +436,137 @@ module.exports = {
         });
         TestCase.assertTrue(isCorrect, "dbInts.entries() should contain the elements of type [myInts[x], myInts[x]]");
 
+        // test mutability of iterated Sets
+        // - Sets should be mutable while iterating through them, but changes should
+        // not be reflected by the database
+
+        const preIntsInDb = dbInts.size;
+        let purgeFlipFlop = true;
+        let visitedElements = 0;
+
+        // iterate through the ints from the DB and delete every second one
+        // - we expect to iterate through preIntsInDb elements, and find preIntsInDb/2 
+        // elements in the DB afterward
+        realm.write(() => {
+            dbInts.forEach((element) => {
+                if (purgeFlipFlop) {
+                    dbInts.delete(element);
+                }
+
+                purgeFlipFlop = !purgeFlipFlop;
+                visitedElements = visitedElements + 1;
+            });
+        });
+
+        const postIntsInDb = dbInts.size;
+
+        TestCase.assertEqual(visitedElements, preIntsInDb, "preIntdInDb elements should be visited");
+        TestCase.assertEqual(postIntsInDb, Math.floor(preIntsInDb/2), "postIntsInDb should be preIntsInDb/2");
+
+        realm.close();
+    },
+
+    async testSetIteratorMutability() {
+        const monthsSchema = {
+            name: "Months",
+            properties: {
+                monthsSet: "string<>",
+            }
+        };
+
+        let realm = new Realm({ schema: [monthsSchema] });
+        const myMonths = ["January", "February", "March", "April", "May", "June",
+                          "July", "August", "September", "October", "November", "December"];
+
+        realm.write(() => {
+            realm.create(monthsSchema.name, {
+                monthsSet: myMonths,
+            });
+        });
+
+        // test mutability of iterated Sets
+        // - Sets should be mutable while iterating through them, but changes should
+        // not be reflected by the database
+
+        let dbMonths = realm.objects(monthsSchema.name)[0].monthsSet;
+        const preMonthsInDb = dbMonths.size;
+        let purgeFlipFlop = true;
+        let visitedElements = 0;
+
+        // iterate through the ints from the DB and delete every second one
+        // - we expect to iterate through preIntsInDb elements, and find preIntsInDb/2 
+        // elements in the DB afterward
+        realm.write(() => {
+            dbMonths.forEach((element) => {
+                if (purgeFlipFlop) {
+                    dbMonths.delete(element);
+                }
+
+                purgeFlipFlop = !purgeFlipFlop;
+                visitedElements = visitedElements + 1;
+            });
+        });
+
+        const postMonthsInDb = dbMonths.size;
+        TestCase.assertEqual(visitedElements, preMonthsInDb, "preMonthsInDb elements should be visited");
+        TestCase.assertEqual(postMonthsInDb, Math.floor(preMonthsInDb/2), "postMonthsInDb should be preMonthsInDb/2");
+        realm.close();
+
+
+        //
+        // perform the same tests as above, but with objects
+        // - Set's iterators are created differently depending on whether
+        // the Set contains objects or primitive types
+
+        const personSchema = {
+            name: "Person",
+            properties: {
+                firstName: "string",
+                age: "int"
+            }
+        };
+
+        const teamSchema = {
+            name: "Team",
+            properties: {
+                persons: "Person<>"
+            }
+        };
+
+        realm = new Realm({ schema: [personSchema, teamSchema] });
+        realm.write(() => {
+            // insert three people
+            realm.create(teamSchema.name, {persons: [
+                {firstName: "Louise",  age: 9},
+                {firstName: "Gene",  age: 11},
+                {firstName: "Tina", age: 13},
+                {firstName: "Bob", age: 46},
+                {firstName: "Linda", age: 43}                
+            ]});
+        });
+
+        const theBelchers = realm.objects(teamSchema.name)[0].persons;
+        const preTeamSizeInDb = theBelchers.size;
+        purgeFlipFlop = true;
+        visitedElements = 0;
+
+        // iterate through the ints from the DB and delete every second one
+        // - we expect to iterate through preIntsInDb elements, and find preIntsInDb/2 
+        // elements in the DB afterward
+        realm.write(() => {
+            theBelchers.forEach((element) => {
+                if (purgeFlipFlop) {
+                    theBelchers.delete(element);
+                }
+
+                purgeFlipFlop = !purgeFlipFlop;
+                visitedElements = visitedElements + 1;
+            });
+        });
+
+        const postTeamSizeInDb = theBelchers.size;
+        TestCase.assertEqual(visitedElements, preTeamSizeInDb, "preTeamSizesInDb elements should be visited");
+        TestCase.assertEqual(postTeamSizeInDb, Math.floor(preTeamSizeInDb/2), "postTeamSizeInDb should be preTeamSizeInDb/2");
         realm.close();
     },
 
