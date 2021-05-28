@@ -494,7 +494,7 @@ module.exports = {
         let visitedElements = 0;
 
         // iterate through the ints from the DB and delete every second one
-        // - we expect to iterate through preIntsInDb elements, and find preIntsInDb/2 
+        // - we expect to iterate through preMonthsInDb elements, and find preMonthsInDb/2 
         // elements in the DB afterward
         realm.write(() => {
             dbMonths.forEach((element) => {
