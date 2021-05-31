@@ -29,6 +29,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
 * Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
 * Upgraded to Realm Core v11.0.0-beta.5.
+* Added npm script to generate internal Doxygen documentation.
 
 10.2.0 Release notes (2021-2-5)
 =============================================================
