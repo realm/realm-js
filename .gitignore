@@ -21,6 +21,9 @@ vendor/realm-*
 # jsdoc
 /docs/output
 
+# doxygen
+/contrib/docs/output
+
 # XCode
 *.bak
 xcuserdata/
