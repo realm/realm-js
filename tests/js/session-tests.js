@@ -149,6 +149,37 @@ module.exports = {
         TestCase.assertNull(realm.syncSession);
     },
 
+    async testRealmInvalidSyncConfiguration1() {
+        const config = {
+            sync: true,
+            inMemory: true,
+        };
+
+        return new Promise((resolve, reject) => {
+            return Realm.open(config)
+                .then(_ => reject())
+                .catch(_ => resolve());
+        });
+    },
+
+    async testRealmInvalidSyncConfiguration2() {
+        const partition = Utils.genPartition();
+        let credentials = Realm.Credentials.anonymous();
+        let app = new Realm.App(appConfig);
+
+
+        return new Promise((resolve, reject) => {
+            return app.logIn(credentials)
+                .then(user => {
+                    let config = getSyncConfiguration(user, partition);
+                    config.migration = (_) => { /* empty function */ };
+                    return Realm.open(config)
+                        .then(_ => reject())
+                        .catch(_ => resolve());
+                });
+        });
+    },
+
     testRealmOpen() {
         if (!isNodeProcess) {
             return;

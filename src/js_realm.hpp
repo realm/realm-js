@@ -570,6 +570,9 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             static const String in_memory_string = "inMemory";
             ValueType in_memory_value = Object::get_property(ctx, object, in_memory_string);
             if (!Value::is_undefined(ctx, in_memory_value) && Value::validated_to_boolean(ctx, in_memory_value, "inMemory")) {
+                if (config.force_sync_history || config.sync_config) {
+                    throw std::invalid_argument("Options 'inMemory' and 'sync' are mutual exclusive.");
+                }
                 config.in_memory = true;
             }
 
@@ -624,6 +627,10 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             static const String migration_string = "migration";
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {
+                if (config.force_sync_history || config.sync_config) {
+                    throw std::invalid_argument("Options 'migration' and 'sync' are mutual exclusive.");
+                }
+
                 FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
 
                 if (config.schema_mode == SchemaMode::ResetFile) {

@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * A warning to polyfill `crypto.getRandomValues` was triggered prematurely ([#3714](https://github.com/realm/realm-js/issues/3714), since v10.4.0)
+* Mutual exclusive configuration options (`sync`/`inMemory` and `sync`/`migration`) could lead to a crash. ([#3771](https://github.com/realm/realm-js/issues/3771), since v1.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -3569,8 +3570,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
   callback would produce incorrect results.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.0.1 Release notes (2017-10-23)
@@ -3585,8 +3584,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * None.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Sync 2.1.0.
 
 2.0.0 Release notes (2017-10-17)
