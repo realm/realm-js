@@ -509,7 +509,7 @@ class EmailPasswordAuth {
      * @param {string} email - The email address of the user.
      * @param {string} password - The desired new password.
      * @param {Array<BSON>} args - Arguments passed onto the function.
-     * @return {Promose<void>}
+     * @return {Promise<void>}
      */
     callResetPasswordFunction(email, password, ...args) { }
 }
