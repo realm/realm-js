@@ -95,7 +95,6 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
         {"objectSchema", wrap<get_object_schema>},
         {"linkingObjects", wrap<linking_objects>},
         {"linkingObjectsCount", wrap<linking_objects_count>},
-        {"_objectId", wrap<get_object_id>},
         {"_isSameObject", wrap<is_same_object>},
         {"_setLink", wrap<set_link>},
         {"addListener", wrap<add_listener>},
@@ -138,7 +137,7 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 
     try {
         if (!delegate || !delegate->m_constructors.count(name)) {
-            #ifdef REALM_PLATFORM_NODE 
+            #ifdef REALM_PLATFORM_NODE
                 FunctionType constructor;
             #else
                 FunctionType constructor = nullptr;
@@ -283,20 +282,6 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
 }
 
 template<typename T>
-void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Arguments &args, ReturnValue& return_value) {
-    args.validate_maximum(0);
-
-    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
-    if (!realm_object) {
-        throw std::runtime_error("Invalid 'this' object");
-    }
-
-    const Obj& obj = realm_object->obj();
-    auto obj_id = obj.get_object_id();
-    return_value.set(obj_id.to_string());
-}
-
-template<typename T>
 void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arguments &args, ReturnValue& return_value) {
     args.validate_count(1);
 
@@ -417,7 +402,7 @@ void RealmObjectClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_
     if (!realm_object) {
         throw std::runtime_error("Invalid 'this' object");
     }
-    
+
     realm_object->m_notification_tokens.clear();
 }
 
