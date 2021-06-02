@@ -54,11 +54,6 @@ var TESTS = {
 
 };
 
-//TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
-if (isNodeProcess) {
-    TESTS.ObjectIDTests = require("./object-id-tests");
-}
-
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
     //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists

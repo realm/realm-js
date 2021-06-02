@@ -22,6 +22,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
 * Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.0-beta.6.
 * Added npm script to generate internal Doxygen documentation.
+* Removed private methods `Realm._objectForObjectId()` and `Realm.Object._objectId()`.
 
 10.5.0-beta.2 Release notes (2021-5-12)
 =============================================================
