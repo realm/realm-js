@@ -1,6 +1,5 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
-NOTE: Realm file format is likely to break and you CAN NOT revert back to the previous file format - DATA WILL BE LOST!!!!
 NOTE: Sync protocol version 4: CANNOT SYNC WITH MONGODB REALM CLOUD.
 NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 
@@ -8,7 +7,6 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * None.
 
 ### Fixed
-
 * Performance regression for some scenarios of writing/creating objects with a primary key. ([realm/realm-core#4522](https://github.com/realm/realm-core/issues/4522))
 * Observing a dictionary holding links to objects would crash. ([realm/realm-core#4711](https://github.com/realm/realm-core/issues/4711), since v11.0.0-beta.1)
 
