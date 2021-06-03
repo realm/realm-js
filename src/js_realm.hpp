@@ -385,7 +385,6 @@ public:
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"_updateSchema", wrap<update_schema>},
-        {"_objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
 
@@ -1278,24 +1277,6 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
     auto encryption_key = Value::validated_to_binary(ctx, encryption_key_arg);
 
     realm->write_copy(path, encryption_key.get());
-}
-
-template<typename T>
-void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
-    args.validate_count(2);
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
-
-    auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
-    std::string object_id_string = Value::validated_to_string(ctx, args[1]);
-
-    const Group& group = realm->read_group();
-    auto table = ObjectStore::table_for_object_type(group, object_schema.name);
-    auto object_id = GlobalKey::from_string(object_id_string);
-    auto object_key = table->get_objkey(object_id);
-
-    if (object_key) {
-        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, object_key)));
-    }
 }
 
 template<typename T>
