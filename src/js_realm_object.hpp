@@ -96,6 +96,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
         {"linkingObjects", wrap<linking_objects>},
         {"linkingObjectsCount", wrap<linking_objects_count>},
         {"_isSameObject", wrap<is_same_object>},
+        {"_objectId", wrap<get_object_id>},
         {"_setLink", wrap<set_link>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
@@ -279,6 +280,20 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
     }
 
     return names;
+}
+
+template<typename T>
+void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Arguments &args, ReturnValue& return_value) {
+    args.validate_maximum(0);
+
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+
+    const Obj& obj = realm_object->obj();
+    auto obj_id = obj.get_object_id();
+    return_value.set(obj_id.to_string());
 }
 
 template<typename T>
