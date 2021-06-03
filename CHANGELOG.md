@@ -1,10 +1,14 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.5.0-beta.3 Release notes (2021-6-3)
 =============================================================
+NOTE: This is an internal release and SHOULD NOT be used.
+NOTE: Realm file format is likely to break and you CAN NOT revert back to the previous file format - DATA WILL BE LOST!!!!
+NOTE: Sync protocol version 4: CANNOT SYNC WITH MONGODB REALM CLOUD.
+NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
+
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
