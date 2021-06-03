@@ -9,6 +9,10 @@ import {
 } from "../schemas/person-and-dog-with-object-ids";
 
 describe("Realm objects", () => {
+    beforeEach(() => {
+        Realm.clearTestState();
+    });
+    
     describe("Interface & object literal", () => {
         it("can be created", () => {
             const realm = new Realm({ schema: [PersonSchema] });

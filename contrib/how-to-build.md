@@ -54,3 +54,11 @@ In order to debug the binary we need to tell the compiler to add debug symbols i
 npx cmake-js <build/rebuild> --debug
 ```
 > Now you can use tools like lldb to debug the native module.
+
+## Build Documentation
+The internal API of Realm-JS comes with Doxygen documentation.
+To generate the documentation, run the npm `doxygen` from the root of the repository:
+```sh
+npm run doxygen
+```
+The Doxygen output will be generated in `contrib/docs/output/realm/<Realm-JS version>`.

@@ -93,7 +93,8 @@ Tests will have access to the following globals:
 - `path` the lowest common denominator of the Node.js path interface and a [node-independent implementation of Node's path](https://www.npmjs.com/package/path-browserify) module.
 - `it.skipIf` and `describe.skipIf` skips tests based on the environment, see `tests/src/utils/skip-if.js` for a detailed explanation.
 
-There is no need to close or clean up Realms accessed during tests, as the `Realm.clearTestState` is called after each test, which closes and removes all Realm files in the default directory.
+Remember to close or clean up Realms accessed during tests.
+The `Realm.clearTestState` can be called after each test, which closes and removes all Realm files in the default directory.
 
 ### Current limitations
 

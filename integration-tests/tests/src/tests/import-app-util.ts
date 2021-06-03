@@ -10,7 +10,7 @@ describe.skipIf(environment.missingServer, "importApp utility", function() {
     const app = await importApp("simple");
     expect(app).instanceOf(App);
     expect(app.id.startsWith("simple")).equals(true);
-  });
+  }).timeout(10000);
 
   it("throws on unexpected app names", async () => {
     let threw = false;

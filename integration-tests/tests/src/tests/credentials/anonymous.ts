@@ -1,18 +1,14 @@
 import { expect } from "chai";
-import { App, Credentials, User } from "realm";
+import { Credentials, User } from "realm";
 
-import { importApp } from "../../utils/import-app";
+import { importAppBefore } from "../../hooks";
 
 describe.skipIf(environment.missingServer, "anonymous credentials", () => {
-  let app: App;
-  
-  before(async function() {
-    app = await importApp("simple");
-  });
+  importAppBefore("simple");
 
-  it.skip("authenticates", async function() {
+  it("authenticates", async function(this: AppContext) {
     const credentials = Credentials.anonymous();
-    const user = await app.logIn(credentials);
+    const user = await this.app.logIn(credentials);
     expect(user).instanceOf(User);
   });
 });

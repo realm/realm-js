@@ -1,3 +1,23 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
+* Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
+* Upgraded to Realm Core v11.0.0-beta.5.
+* Added npm script to generate internal Doxygen documentation.
+
 10.5.0-beta.2 Release notes (2021-5-12)
 =============================================================
 ### Enhancements
@@ -31,6 +51,7 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * Array of primitive lists will not be `snapshot()`'ed.
 * Added UUID types. ([#3244](https://github.com/realm/realm-js/issues/3244))
 * Adding Dictionaries types. ([#3392](https://github.com/realm/realm-js/issues/3392))
+* Fixing exception handling when calling Dictionary methods.
 
 ### Fixed
 * None.

@@ -195,7 +195,8 @@ export class AppImporter {
     }
 
     private realmCli(...args: string[]) {
-        cp.spawnSync("realm-cli", args, { stdio: "inherit" });
+        const cliPath = require.resolve("mongodb-realm-cli/wrapper.js");
+        cp.execFileSync(cliPath, args, { stdio: "inherit" });
     }
 
     private async logIn() {
