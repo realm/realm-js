@@ -30,6 +30,14 @@ class String<jsc::Types> {
     JSStringRef m_str;
 
   public:
+    static bson::Bson to_bson(StringType stringified_ejson) {
+        return bson::parse(std::string(stringified_ejson));
+    }
+
+    static String from_bson(const bson::Bson& bson) {
+        return String(bson.to_string());
+    }
+
     String(const char *s) : m_str(JSStringCreateWithUTF8CString(s)) {}
     String(const JSStringRef &s) : m_str(JSStringRetain(s)) {}
     String(StringData str) : String(str.data()) {}

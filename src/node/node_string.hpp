@@ -27,9 +27,19 @@ namespace js {
 
 template<>
 class String<node::Types> {
+    using StringType = String<node::Types>;
+
     std::string m_str;
 
   public:
+    static bson::Bson to_bson(StringType stringified_ejson) {
+        return bson::parse(std::string(stringified_ejson));
+    }
+
+    static String from_bson(const bson::Bson& bson) {
+        return String(bson.to_string());
+    }
+
     String(const char* s) : m_str(s) {}
     String(const std::string& s) : m_str(s) {}
     String(const Napi::String& s);

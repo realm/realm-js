@@ -51,7 +51,6 @@ var TESTS = {
     ArrayBuffer: require("./array-buffer-tests"),
     SetTests: require("./set-tests"),
     MixedTests: require("./mixed-tests"),
-
 };
 
 //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
@@ -71,6 +70,7 @@ if (global.enableSyncTests) {
         TESTS.PartitionValueTests = node_require("./partition-value-tests");
         TESTS.SetSyncTests = node_require("./set-sync-tests");
         TESTS.MixedSyncTests = node_require("./mixed-sync-tests");
+        TESTS.AnalyticsTests = require('./analytics-tests');
     }
 }
 

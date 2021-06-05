@@ -20,7 +20,6 @@
 
 #include <realm/keys.hpp>
 
-#include "js_mixed.hpp"
 #include "js_list.hpp"
 #include "js_set.hpp"
 #include "js_realm_object.hpp"
@@ -146,7 +145,6 @@ public:
 
     template<typename T>
     ValueType box(util::Optional<T> v) { return v ? box(*v) : null_value(); }
-
     ValueType box(bool boolean)      { return Value::from_boolean(m_ctx, boolean); }
     ValueType box(int64_t number)    { return Value::from_number(m_ctx, number); }
     ValueType box(float number)      { return Value::from_number(m_ctx, number); }
@@ -189,8 +187,8 @@ public:
     bool is_null(ValueType const& value) {
         return Value::is_null(m_ctx, value) || Value::is_undefined(m_ctx, value);
     }
-    DataType get_type_of(ValueType const& value)
-    {
+
+    DataType get_type_of(ValueType const& value) {
         if (Value::is_number(m_ctx, value)) {
             return type_Double;
         }
@@ -408,8 +406,8 @@ struct Unbox<JSEngine, BinaryData> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
-    static Mixed call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        return TypeMixed<JSEngine>::get_instance().unwrap(native_accessor->m_ctx, value);
+    static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        return TypeMixed<JSEngine>::get_instance().unwrap(ctx->m_ctx, value);
     }
 };
 

@@ -20,6 +20,7 @@
 #include <common/types.hpp>
 
 #include "js_realm_object.hpp"
+#include "js_mixed.hpp"
 
 namespace realm {
 namespace js {
@@ -49,7 +50,8 @@ public:
     }
 
     bool belongs_to_realm(std::shared_ptr<Realm> realm){
-        return is_instance() && get_os_object()->realm() == realm;
+        auto os_object = get_os_object();
+        return is_instance() && !os_object && os_object->realm() == realm;
     }
 
     bool is_read_only(realm::CreatePolicy policy) {

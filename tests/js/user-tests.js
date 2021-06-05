@@ -144,6 +144,16 @@ module.exports = {
     });
   },
 
+  async testCustomData() {
+    let app = new Realm.App(appConfig);
+    await logOutExistingUsers(app);
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+    const customData = user.customData;
+    // TODO: Enable custom user data in the app to test this e2e
+    TestCase.assertType(customData, 'object');
+  },
+
   async testEmailPasswordAuth() {
     let app = new Realm.App(appConfig);
     let provider = app.emailPasswordAuth;
@@ -220,15 +230,18 @@ module.exports = {
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
+    TestCase.assertEqual(await user.callFunction('sumFunc'), 0);
     TestCase.assertEqual(await user.callFunction('sumFunc', [123]), 123);
     TestCase.assertEqual(await user.functions.sumFunc(123), 123);
     TestCase.assertEqual(await user.functions['sumFunc'](123), 123);
 
     // Test method stashing / that `this` is bound correctly.
     const sumFunc = user.functions.sumFunc;
+    TestCase.assertEqual(await sumFunc(), 0);
     TestCase.assertEqual(await sumFunc(123), 123);
     TestCase.assertEqual(await sumFunc(123), 123); // Not just one-shot
 
+    TestCase.assertEqual(await user.functions.sumFunc(), 0);
     TestCase.assertEqual(await user.functions.sumFunc(1, 2, 3), 6);
 
     const err = await TestCase.assertThrowsAsync(async() => await user.functions.error());
@@ -323,7 +336,7 @@ module.exports = {
       throw err;
   },
 
-  
+
   async testPush() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
@@ -340,7 +353,7 @@ module.exports = {
     const err = await TestCase.assertThrowsAsync(async() => await user.push('nonesuch').register('hello'))
     TestCase.assertEqual(err.message, "service not found: 'nonesuch'");
   },
- 
+
 
   async testAllWithAnonymous() {
     let app = new Realm.App(appConfig);

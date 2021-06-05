@@ -26,12 +26,16 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
+
+// Using Realm.BSON instead of require("bson") to ensure the same package is used (which the symlinked "realm" package breaks)
 const { ObjectId, UUID } = Realm.BSON;
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
 const AppConfig = require('./support/testConfig');
+
+const REALM_MODULE_PATH = require.resolve("realm");
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
@@ -877,23 +881,5 @@ module.exports = {
             });
             realm.close();
         });
-    },
-
-    async testAnalyticsSubmission() {
-        const context = node_require('realm/package.json');
-        const analytics = node_require('realm/lib/submit-analytics');
-
-        const payload = await analytics.fetchPlatformData(context, 'TestEvent');
-
-        TestCase.assertDefined(payload.webHook);
-        TestCase.assertType(payload.webHook.event, 'string');
-        TestCase.assertDefined(payload.webHook.properties);
-        TestCase.assertType(payload.webHook.properties.Binding, 'string');
-        TestCase.assertDefined(payload.mixPanel);
-        TestCase.assertType(payload.mixPanel.event, 'string');
-        TestCase.assertDefined(payload.mixPanel.properties);
-        TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
-
-        await analytics.submitStageAnalytics('TestEvent');
     }
 };

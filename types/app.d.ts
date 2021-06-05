@@ -342,7 +342,7 @@ declare namespace Realm {
         switchUser(user: User<FunctionsFactoryType, CustomDataType>): void;
 
         /**
-         * Logs out and removes a user from the app.
+         * Logs out and removes a user from the client.
          *
          * @returns A promise that resolves once the user has been logged out and removed from the app.
          */

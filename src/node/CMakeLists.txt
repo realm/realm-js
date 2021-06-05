@@ -4,9 +4,9 @@ add_library(realm-js SHARED
     ${CMAKE_JS_SRC}
 )
 
-set_target_properties(realm-js PROPERTIES 
+set_target_properties(realm-js PROPERTIES
     OUTPUT_NAME "realm"
-    PREFIX "" 
+    PREFIX ""
     SUFFIX ".node"
 )
 

@@ -30,7 +30,7 @@
 #include <realm/util/to_string.hpp>
 #include <realm/util/optional.hpp>
 #include <realm/util/base64.hpp>
-
+#include <realm/mixed.hpp>
 
 #include <realm/object-store/util/bson/bson.hpp>
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
@@ -75,9 +75,14 @@ inline PropertyAttributes operator|(PropertyAttributes a, PropertyAttributes b) 
 
 template<typename T>
 struct String {
+    using ContextType = typename T::Context;
     using StringType = typename T::String;
 
-  public:
+    /** Build a BSON structure from a stringified EJSON representation */
+    static bson::Bson to_bson(String);
+    /** Build a stringified EJSON representation of a BSON structure */
+    static String from_bson(const bson::Bson &);
+
     String(const char *);
     String(const StringType &);
     String(StringType &&);
@@ -159,6 +164,7 @@ struct Value {
     static ValueType from_nonnull_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
     static ValueType from_timestamp(ContextType, Timestamp);
+    static ValueType from_mixed(ContextType, const Mixed &);
     static ValueType from_uuid(ContextType, const UUID&);
     static ValueType from_objkey(ContextType, const ObjKey&);
     static ValueType from_objlink(ContextType, const ObjLink&);
@@ -178,7 +184,6 @@ struct Value {
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, ValueType);
     static bson::Bson to_bson(ContextType, ValueType);
-
 
 #define VALIDATED(return_t, type) \
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
@@ -580,6 +585,44 @@ inline typename T::Value Object<T>::create_from_optional_app_error(ContextType c
 }
 
 template<typename T>
+inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const Mixed& mixed) {
+    if (mixed.is_null()) {
+        return from_undefined(ctx);
+    }
+
+    switch (mixed.get_type()) {
+    case type_Bool:
+        return from_boolean(ctx, mixed.get<bool>());
+    case type_Int:
+        return from_number(ctx, static_cast<double>(mixed.get<int64_t>()));
+    case type_Float:
+        return from_number(ctx, mixed.get<float>());
+    case type_Double:
+        return from_number(ctx, mixed.get<double>());
+    case type_Decimal:
+        return from_decimal128(ctx, mixed.get<Decimal128>());
+    case type_ObjectId:
+        return from_object_id(ctx, mixed.get<ObjectId>());
+    case type_Timestamp:
+        return from_timestamp(ctx, mixed.get<Timestamp>());
+    case type_String:
+        return from_string(ctx, mixed.get<StringData>().data());
+    case type_Binary:
+        return from_binary(ctx, mixed.get<BinaryData>());
+    case type_UUID:
+        return from_uuid(ctx, mixed.get<UUID>());
+    case type_Link:
+        return from_objkey(ctx, mixed.get<ObjKey>());
+    case type_TypedLink:
+        return from_objlink(ctx, mixed.get<ObjLink>());
+    case type_LinkList:
+    case type_Mixed:
+        break;
+    }
+    throw std::invalid_argument("Value not convertible.");
+}
+
+template<typename T>
 inline typename T::Value Value<T>::from_objkey(typename T::Context ctx, const ObjKey& value) {
     throw std::runtime_error("'Mixed' type support is not implemented yet");
 }
@@ -690,7 +733,7 @@ inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value) {
     // For now going through the bson.EJSON.stringify() since it will correctly handle the special JS types.
     // Consider directly converting to Bson if we need more control or there are performance issues.
     auto realm = Value::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
+    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
     auto ejson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, bson, "EJSON"));
     auto call_args_json = Object<T>::call_method(ctx, ejson, "stringify", {
         value,

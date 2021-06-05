@@ -51,7 +51,7 @@ Options:
                          into        [string] [default: "http://localhost:9090"]
   --username             Username of an adminstrative user
                                     [string] [default: "unique_user@domain.com"]
-  --password             Password of an adminstrative user
+  --password             Password of an administrative user
                                                   [string] [default: "password"]
   --config               Path for the realm-cli configuration to temporarily
                          store credentials    [string] [default: "realm-config"]

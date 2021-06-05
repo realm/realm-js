@@ -342,7 +342,6 @@ public:
     static void copy_bundled_realm_files(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void delete_file(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void realm_file_exists(ContextType, ObjectType, Arguments &, ReturnValue &);
-
     static void bson_parse_json(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // static properties
@@ -1030,6 +1029,13 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
     ObjectType object = Value::validated_to_object(ctx, args[1], "properties");
     if (Value::is_array(ctx, args[1])) {
         object = Schema<T>::dict_for_property_array(ctx, object_schema, object);
+    }
+
+    if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
+        auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+        if (!realm_object) {
+            throw std::runtime_error("Cannot create an object from a detached Realm.Object instance");
+        }
     }
 
     NativeAccessor accessor(ctx, realm, object_schema);
