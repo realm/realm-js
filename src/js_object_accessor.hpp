@@ -20,6 +20,7 @@
 
 #include <realm/keys.hpp>
 
+#include "js_mixed.hpp"
 #include "js_list.hpp"
 #include "js_set.hpp"
 #include "js_realm_object.hpp"

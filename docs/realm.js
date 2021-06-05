@@ -343,9 +343,9 @@ class Realm {
 }
 /**
  * This describes the different options used to create a {@link Realm} instance.
- * 
+ *
  * See {@tutorial http-proxy} for details on how use an HTTP forward proxy with this library.
- * 
+ *
  * @typedef Realm~Configuration
  * @type {Object}
  * @property {ArrayBuffer|ArrayBufferView} [encryptionKey] - The 512-bit (64-byte) encryption
@@ -425,7 +425,7 @@ class Realm {
  *         linkToObject: 'MyClass',
  *         listOfObjects: 'MyClass[]', // or {type: 'list', objectType: 'MyClass'}
  *         objectsLinkingToThisObject: {type: 'linkingObjects', objectType: 'MyClass', property: 'linkToObject'}
- * 
+ *
  *         setOfStrings: 'string<>',
  *         setOfOptionalStrings: 'string?<>', // or {type: 'set', objectType: 'string'}
  *     }
@@ -472,7 +472,7 @@ class Realm {
  * Given a type, _T_, the following postfix operators may be used:
  *  * _T_ `[]` indicates that the property is a {@linkplain Realm.List} of values with of type _T_
  *  * _T_ `<>` indicated that the property is a {@linkplain Realm.Set} of values with type _T_
- * 
+ *
  * For example, `optionalIntList: 'int?[]'` declares a property which is a list of
  * nullable integers, while `optionalStringSet: 'string?<>'` declares a set of nullable strings.
  * The property types reported by {@linkplain Realm.Collection collections} and in a Realm's schema will never
@@ -481,6 +481,7 @@ class Realm {
  * @typedef Realm~PropertyType
  * @type {("bool"|"int"|"float"|"double"|"string"|"decimal128"|"objectId"|"date"|"data"|"list"|"set"|"linkingObjects"|"<ObjectType>")}
  *
+ * @property {Mixed} "mixed" - Property value that allow any of the following types (`"bool","int","float","double","string","decimal128","objectId","date","data"`), this type is nullable by default.
  * @property {boolean} "bool" - Property value may either be `true` or `false`.
  * @property {number} "int" - Property may be assigned any number, but will be stored as a
  *   round integer, meaning anything after the decimal will be truncated.
