@@ -1,26 +1,25 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
-NOTE: Realm file format is likely to break and you CAN NOT revert back to the previous file format - DATA WILL BE LOST!!!!
-NOTE: Sync protocol version 4: CANNOT SYNC WITH MONGODB REALM CLOUD.
-NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
+NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Enhancements
 * None.
 
 ### Fixed
-
 * Performance regression for some scenarios of writing/creating objects with a primary key. ([realm/realm-core#4522](https://github.com/realm/realm-core/issues/4522))
 * Observing a dictionary holding links to objects would crash. ([realm/realm-core#4711](https://github.com/realm/realm-core/issues/4711), since v11.0.0-beta.1)
+* Better support for Android 12. ([realm/realm-core#4666](https://github.com/realm/realm-core/issues/4666))
 
 ### Compatibility
 * MongoDB Realm Cloud.
-* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
-* File format: generates Realms with format 21 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format 22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
 * Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
 * Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
-* Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.0-beta.6.
+* Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.1.
 * Added npm script to generate internal Doxygen documentation.
 * Removed private methods `Realm._objectForObjectId()` and `Realm.Object._objectId()`.
 
