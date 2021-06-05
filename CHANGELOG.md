@@ -3,7 +3,7 @@ x.x.x Release notes (yyyy-MM-dd)
 NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Enhancements
-* None.
+* Change listener for dictionary is not key based.
 
 ### Fixed
 * Performance regression for some scenarios of writing/creating objects with a primary key. ([realm/realm-core#4522](https://github.com/realm/realm-core/issues/4522))
@@ -19,7 +19,7 @@ NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 ### Internal
 * Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
 * Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
-* Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.1.
+* Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.1. ([#3785](https://github.com/realm/realm-js/issues/3785))
 * Added npm script to generate internal Doxygen documentation.
 * Removed private methods `Realm._objectForObjectId()` and `Realm.Object._objectId()`.
 
