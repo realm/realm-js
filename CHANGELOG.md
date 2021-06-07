@@ -20,6 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 10.14.0 Release notes (2022-3-24)
 =============================================================
+
 ### Enhancements
 * `Realm.writeCopyTo()` can now be invoked with a `Realm.Configuration` as parameter, which will create a copy of the Realm that conforms to the given configuration -- this allows for a much wider range of conversions between synced/local Realms and encrypted/non-encrypted Realms. ([#3146](https://github.com/realm/realm-js/issues/4136))
 * Added `Realm.Configuration.onFirstOpen` to populate a new Realm with initial data.
@@ -301,6 +302,16 @@ const config = {
 * Upgraded Realm Core from v11.3.1 to v11.4.1. ([#3942](https://github.com/realm/realm-js/issues/3942))
 * Extend Jest test runner to cover opening and closing of a Realm.
 * Disable analytics if the `CI` environment variable is set to some value.
+
+10.20.0-alpha.0 Release notes (2021-9-1)
+=============================================================
+NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
+NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
+
+Based on Realm JS v10.7.0: See changelog below for detailes on enhancements and fixes introduced by that version.
+
+### Enhancements
+- Adding support for Hermes (iOS only).
 
 10.7.0 Release notes (2021-8-30)
 =============================================================
