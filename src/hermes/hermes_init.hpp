@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,21 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <Foundation/Foundation.h>
+#pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "hermes_string.hpp"
+#include "hermes_protected.hpp"
+#include "hermes_function.hpp"
+#include "hermes_value.hpp"
+#include "hermes_object.hpp"
+#include "hermes_return_value.hpp"
+#include "hermes_class.hpp"
 
-typedef void (^RealmReactEventHandler)(id message);
-
-@interface RealmReact : NSObject
-
-- (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;
-- (void)removeListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;
-
-@end
-
-#ifdef __cplusplus
-}
-#endif
+// FIXME: js_object_accessor.hpp includes js_list.hpp which includes js_object_accessor.hpp.
+#include "js_object_accessor.hpp"
