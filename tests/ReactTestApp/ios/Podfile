@@ -9,7 +9,7 @@ target 'ReactTestApp' do
   use_react_native!(
     :path => config[:reactNativePath],
     # to enable hermes on iOS, change `false` to `true` and then install pods
-    :hermes_enabled => false
+    :hermes_enabled => true
   )
 
   # Since this is a project within RealmJS, we need to add the pod manually.
