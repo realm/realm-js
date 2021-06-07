@@ -12,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Omitting zlib when building for Windows, to avoid clashing with the zlib provided by the platform (Node.js / Electron). (backport of [#3787](https://github.com/realm/realm-js/pull/3787))
+* Omitting zlib when building for Node.js on Windows, since this is no longer provided by the platform. (backport of [#3787](https://github.com/realm/realm-js/pull/3787))
 
 10.4.1 Release notes (2021-5-13)
 =============================================================
