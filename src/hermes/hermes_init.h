@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <Foundation/Foundation.h>
+#pragma once
+
+#import "jsi/jsi.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef void (^RealmReactEventHandler)(id message);
-
-@interface RealmReact : NSObject
-
-- (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;
-- (void)removeListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;
-
-@end
+namespace jsi = facebook::jsi;
+void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports);
 
 #ifdef __cplusplus
 }

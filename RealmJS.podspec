@@ -43,7 +43,7 @@ Pod::Spec.new do |s|
 
   s.source_files           = 'react-native/ios/RealmReact/*.mm'
 
-  s.frameworks             = uses_frameworks ? ['JavaScriptCore', 'React'] : ['JavaScriptCore']
+  s.frameworks             = uses_frameworks ? ['React'] : []
 
   s.library                = 'c++', 'z'
 
@@ -57,6 +57,8 @@ Pod::Spec.new do |s|
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
                                   '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
+                                  '"$(PODS_TARGET_SRCROOT)/src/"',
+                                  '"$(PODS_TARGET_SRCROOT)/src/hermes/"',
                                   '"$(PODS_ROOT)/Headers/Public/React-Core/"'
                                   #"'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting
                                 ].join(' ')
@@ -67,5 +69,5 @@ Pod::Spec.new do |s|
 
   s.dependency 'React'
   # TODO: Ensure the same version of GCDWebServer is used for Android
-  s.dependency 'GCDWebServer'
+  # s.dependency 'GCDWebServer'
 end
