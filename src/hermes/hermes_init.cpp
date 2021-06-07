@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,21 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <Foundation/Foundation.h>
 
-#ifdef __cplusplus
-extern "C" {
+#include "hermes_init.hpp"
+
+#if !REALM_ENABLE_SYNC
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "crypt32")
 #endif
 
-typedef void (^RealmReactEventHandler)(id message);
+#include "js_realm.hpp"
 
-@interface RealmReact : NSObject
-
-- (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;
-- (void)removeListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;
-
-@end
-
-#ifdef __cplusplus
+namespace realm::js::hermes {
+extern "C" void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports)
+{
+    auto env = JsiEnv(rt);
+    jsi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
+    auto name = realm_constructor.getProperty(env, "name").asString(env);
+    exports.setProperty(env, std::move(name), std::move(realm_constructor));
 }
-#endif
+} // namespace realm::js::hermes
+
+// TODO hook up as TurboModule
