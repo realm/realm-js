@@ -443,7 +443,7 @@ void SetClass<T>::filtered(ContextType ctx, ObjectType this_object, Arguments& a
 template <typename T>
 void SetClass<T>::get_type(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
-    auto const set = get_internal<T, ListClass<T>>(ctx, object);
+    auto const set = get_internal<T, SetClass<T>>(ctx, object);
     return_value.set(local_string_for_property_type(set->get_type() & ~realm::PropertyType::Flags));
 }
 
