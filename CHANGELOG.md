@@ -3,18 +3,18 @@ x.x.x Release notes (yyyy-MM-dd)
 NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Enhancements
-* Change listener for dictionary is not key based.
+* Change listeneris for dictionary are now key based. The change set will contain arrays of created, modified, and deleted keys.
 
 ### Fixed
 * Performance regression for some scenarios of writing/creating objects with a primary key. ([realm/realm-core#4522](https://github.com/realm/realm-core/issues/4522))
 * Observing a dictionary holding links to objects would crash. ([realm/realm-core#4711](https://github.com/realm/realm-core/issues/4711), since v11.0.0-beta.1)
-* Better support for Android 12. ([realm/realm-core#4666](https://github.com/realm/realm-core/issues/4666))
+* Async callbacks not triggered on Android 12 emulator. ([realm/realm-core#4666](https://github.com/realm/realm-core/issues/4666))
 
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
-* File format: generates Realms with format 22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+* File format: generates Realms with format 22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
 * Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
