@@ -1,5 +1,9 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.20.0-alpha.0 Release notes (2021-9-1)
 =============================================================
+NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
+NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
+
+
 ### Enhancements
 * Support arithmetic operations (+, -, *, /) in queries. Operands can be properties and/or constants of numeric types (`int`, `float`, `double` or `Decimal128`). You can now say something like `(age + 5) * 2 > child.age`.
 
