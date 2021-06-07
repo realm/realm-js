@@ -114,7 +114,7 @@ JSValueRef jsc::Value::from_uuid(JSContextRef ctx, const UUID& value)
 }
 
 template<>
-OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, const JSValueRef &value)
+OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, const JSValueRef& value)
 {
     static jsc::String s_array_buffer = "ArrayBuffer";
     static jsc::String s_buffer = "buffer";
