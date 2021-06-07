@@ -279,8 +279,8 @@ struct Object {
     static void set_property(ContextType ctx, ObjectType&& obj, const String<T>& field, const ValueType& val, PropertyAttributes attributes = None) {
         set_property(ctx, obj, field, val, attributes);
     }
-    static void set_property(ContextType ctx, ObjectType&& obj, uint32_t field, const ValueType& val, PropertyAttributes attributes = None) {
-        set_property(ctx, obj, field, val, attributes);
+    static void set_property(ContextType ctx, ObjectType&& obj, uint32_t field, const ValueType& val) {
+        set_property(ctx, obj, field, val);
     }
     static void set_property(ContextType, ObjectType &, const String<T> &, const ValueType &, PropertyAttributes attributes = None);
     static void set_property(ContextType, ObjectType &, uint32_t, const ValueType &);
