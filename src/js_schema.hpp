@@ -419,6 +419,7 @@ template <typename T>
 typename T::Object Schema<T>::object_for_schema(ContextType ctx, const realm::Schema& schema)
 {
     ObjectType object = Object::create_array(ctx);
+    Object::set_property(ctx, object, "length", Value::from_number(ctx, double(schema.size())));
     uint32_t count = 0;
     for (auto& object_schema : schema) {
         Object::set_property(ctx, object, count++, object_for_object_schema(ctx, object_schema));
