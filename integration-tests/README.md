@@ -95,6 +95,11 @@ In order to debug the tests with `lldb` attached to debug C++, you can use the V
 
 This bypasses the usual startup script (as this spawns a child process for the tests, which stops `lldb` working), so you need to have the app importer running separately when doing this: `npm run app-importer` from the `integration-tests/tests` directory.
 
+### Environment variables
+
+// TODO: Provide an explanation of the environment variables.
+// In particular `MOCHA_REMOTE_CONTEXT=missingServer` to run tests without a test server.
+
 ---
 
 ## Maintaining the tests
@@ -116,7 +121,7 @@ Tests will have access to the following globals:
 - [the Mocha hook globals](https://mochajs.org/#hooks) (describe, it, after, before, etc.).
 - `fs` the lowest common denominator of the [`fs-extra`](https://www.npmjs.com/package/fs-extra) and [`react-native-fs`](https://www.npmjs.com/package/react-native-fs) APIs.
 - `path` the lowest common denominator of the Node.js path interface and a [node-independent implementation of Node's path](https://www.npmjs.com/package/path-browserify) module.
-- `it.skipIf` and `describe.skipIf` skips tests based on the environment, see `tests/src/utils/skip-if.js` for a detailed explanation.
+- `it.skipIf` and `describe.skipIf` skips tests based on the environment, see `tests/src/utils/skip-if.ts` for a detailed explanation.
 
 Remember to close or clean up Realms accessed during tests.
 The `Realm.clearTestState` can be called after each test, which closes and removes all Realm files in the default directory.
