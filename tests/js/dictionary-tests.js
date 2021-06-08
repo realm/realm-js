@@ -270,9 +270,9 @@ module.exports = {
                 let keys = Object.keys(obj);
                 TestCase.assertTrue(obj.x2 !== undefined,"This field should be equal x2");
                 TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
-                TestCase.assertArraysEqual(changeset.deletions.sort(), ["field1", "field3", "filed2"], "deletions");
-                TestCase.assertArraysEqual(changeset.insertions.sort(), ["x1","x2"], "insertions");
-                TestCase.assertArraysEqual(changeset.modifications, [], "modifications");
+                TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
+                TestCase.assertArrayLength(changeset.insertions, 2, "insertions");
+                TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
             }
 
             if(cnt === 2){
@@ -280,17 +280,17 @@ module.exports = {
                 TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
                 TestCase.assertTrue(obj.x5 !== undefined,"This field should be equal x5");
                 TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
-                TestCase.assertArraysEqual(changeset.deletions.sort(), ["x1", "x2"], "deletions");
-                TestCase.assertArraysEqual(changeset.insertions.sort(), ["x1","x3","x5"], "insertions");
-                TestCase.assertArraysEqual(changeset.modifications, [], "modifications");
+                TestCase.assertArrayLength(changeset.deletions, 2, "deletions");
+                TestCase.assertArrayLength(changeset.insertions, 3, "insertions");
+                TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
             }
             if(cnt === 3){
                 let keys = Object.keys(obj)
                 TestCase.assertEqual(keys[0], "x1", "First field should be equal x1");
                 TestCase.assertEqual(obj.x1, "hello", "x1 should be equals to \"hello\"");
-                TestCase.assertArraysEqual(changeset.deletions.sort(), ["x1","x3","x5"], "deletions");
-                TestCase.assertArraysEqual(changeset.insertions, ["x1"], "insertions");
-                TestCase.assertArraysEqual(changeset.modifications, [], "modifications");
+                TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
+                TestCase.assertArrayLength(changeset.insertions, 1, "insertions");
+                TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
             }
             cnt++
         }
