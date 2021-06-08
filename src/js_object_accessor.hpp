@@ -399,7 +399,7 @@ struct Unbox<JSEngine, Timestamp> {
         if (ctx->is_null(value)) {
             return Timestamp();
         }
-        typename JSEngine::Value date;
+        std::optional<typename JSEngine::Value> date;
         if (js::Value<JSEngine>::is_string(ctx->m_ctx, value)) {
             // the incoming value might be a date string, so let the Date constructor have at it
             date = js::Value<JSEngine>::to_date(ctx->m_ctx, value);
@@ -407,7 +407,7 @@ struct Unbox<JSEngine, Timestamp> {
             date = js::Value<JSEngine>::validated_to_date(ctx->m_ctx, value);
         }
 
-        double milliseconds = js::Value<JSEngine>::to_number(ctx->m_ctx, date);
+        double milliseconds = js::Value<JSEngine>::to_number(ctx->m_ctx, *date);
         int64_t seconds = milliseconds / 1000;
         int32_t nanoseconds = ((int64_t)milliseconds % 1000) * 1000000;
         return Timestamp(seconds, nanoseconds);
