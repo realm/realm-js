@@ -177,7 +177,7 @@ struct Value {
     static ObjectId to_object_id(ContextType, const ValueType &);
     static ObjectType to_object(ContextType, const ValueType &);
     static String<T> to_string(ContextType, const ValueType &);
-    static OwnedBinaryData to_binary(ContextType, ValueType);
+    static OwnedBinaryData to_binary(ContextType, const ValueType&);
     static bson::Bson to_bson(ContextType, ValueType);
 
 #define VALIDATED(return_t, type) \
@@ -211,8 +211,14 @@ struct Function {
     using ValueType = typename T::Value;
 
     static ValueType callback(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
-    static ValueType callback(ContextType ctx, const FunctionType & f, const ObjectType& o,  std::initializer_list<ValueType> args) {
+    static ValueType callback(ContextType ctx, const FunctionType & f, const ObjectType& o, std::initializer_list<ValueType> args) {
         return callback(ctx, f, o, args.size(), args.begin());
+    }
+    static ValueType callback(ContextType ctx, const FunctionType& f, size_t count, const ValueType args[]) {
+        return callback(ctx, f, {}, count, args);
+    }
+    static ValueType callback(ContextType ctx, const FunctionType & f, std::initializer_list<ValueType> args) {
+        return callback(ctx, f, args.size(), args.begin());
     }
     static ValueType call(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
     template<size_t N> static ValueType call(ContextType ctx, const FunctionType &function,
@@ -270,8 +276,14 @@ struct Object {
     static ValueType get_property(ContextType c, const ObjectType &o, const std::string &s) { return get_property(c, o, StringData(s)); }
     static ValueType get_property(ContextType, const ObjectType &, const String<T> &);
     static ValueType get_property(ContextType, const ObjectType &, uint32_t);
-    static void set_property(ContextType, const ObjectType &, const String<T> &, const ValueType &, PropertyAttributes attributes = None);
-    static void set_property(ContextType, const ObjectType &, uint32_t, const ValueType &);
+    static void set_property(ContextType ctx, ObjectType&& obj, const String<T>& field, const ValueType& val, PropertyAttributes attributes = None) {
+        set_property(ctx, obj, field, val, attributes);
+    }
+    static void set_property(ContextType ctx, ObjectType&& obj, uint32_t field, const ValueType& val) {
+        set_property(ctx, obj, field, val);
+    }
+    static void set_property(ContextType, ObjectType &, const String<T> &, const ValueType &, PropertyAttributes attributes = None);
+    static void set_property(ContextType, ObjectType &, uint32_t, const ValueType &);
     static std::vector<String<T>> get_property_names(ContextType, const ObjectType &);
 
     static void set_global(ContextType, const String<T> &, const ValueType &);
@@ -362,6 +374,9 @@ struct Object {
     static ObjectType create_instance_by_schema(ContextType, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal*);
 
     template<typename ClassType>
+    static ObjectType create_instance_by_schema(ContextType, const realm::ObjectSchema& schema, typename ClassType::Internal*);
+
+    template<typename ClassType>
     static bool is_instance(ContextType, const ObjectType &);
 
     template<typename ClassType>
@@ -445,6 +460,11 @@ REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, typena
 template<typename T, typename ClassType>
 REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context ctx, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr) {
     return Object<T>::template create_instance_by_schema<ClassType>(ctx, constructor, schema, internal);
+}
+
+template<typename T, typename ClassType>
+REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context ctx, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr) {
+    return Object<T>::template create_instance_by_schema<ClassType>(ctx, schema, internal);
 }
 
 template<typename T, typename ClassType>

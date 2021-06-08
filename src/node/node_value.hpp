@@ -213,7 +213,7 @@ inline double node::Value::to_number(Napi::Env env, const Napi::Value& value) {
 }
 
 template<>
-inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value value) {
+inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value& value) {
 
     NodeBinary *node_binary = nullptr;
     

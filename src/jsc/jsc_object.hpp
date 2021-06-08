@@ -49,7 +49,7 @@ inline JSValueRef jsc::Object::get_property(JSContextRef ctx, const JSObjectRef 
 }
 
 template<>
-inline void jsc::Object::set_property(JSContextRef ctx, const JSObjectRef &object, const jsc::String &key, const JSValueRef &value, PropertyAttributes attributes) {
+inline void jsc::Object::set_property(JSContextRef ctx, JSObjectRef &object, const jsc::String &key, const JSValueRef &value, PropertyAttributes attributes) {
     JSValueRef exception = nullptr;
     JSObjectSetProperty(ctx, object, key, value, attributes << 1, &exception);
     if (exception) {
@@ -58,7 +58,7 @@ inline void jsc::Object::set_property(JSContextRef ctx, const JSObjectRef &objec
 }
 
 template<>
-inline void jsc::Object::set_property(JSContextRef ctx, const JSObjectRef &object, uint32_t index, const JSValueRef &value) {
+inline void jsc::Object::set_property(JSContextRef ctx, JSObjectRef &object, uint32_t index, const JSValueRef &value) {
     JSValueRef exception = nullptr;
     JSObjectSetPropertyAtIndex(ctx, object, index, value, &exception);
     if (exception) {
@@ -123,6 +123,12 @@ template<>
 template<typename ClassType>
 inline JSObjectRef jsc::Object::create_instance_by_schema(JSContextRef ctx, JSObjectRef& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
 	return jsc::ObjectWrap<ClassType>::create_instance_by_schema(ctx, constructor, schema, internal);
+}
+
+template<>
+template<typename ClassType>
+inline JSObjectRef jsc::Object::create_instance_by_schema(JSContextRef ctx, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
+	return jsc::ObjectWrap<ClassType>::create_instance_by_schema(ctx, schema, internal);
 }
 
 template<typename ClassType>
