@@ -15,10 +15,10 @@ For these reasons we cannot rely on a simple `npm link` but have to copy files f
 
 ## The `watch-from-dependency` script
 
-The script is located in `scripts/watch-from-dependency.js` (relative to the root of this repository) and it takes a single runtime option `-p` the path of the React Native application package that depends on the `realm` package.
+The script is located in `scripts/watch-from-dependency.js` (relative to the root of this repository) and it takes a single runtime option: The path of the React Native application package that depends on the `realm` package.
 
 ```
-./scripts/watch-from-dependency.js -p ~/Projects/my-awesome-app
+./scripts/watch-from-dependency.js ~/Projects/my-awesome-app
 ```
 
 In the example above we're setting up a project-wide watch of our Realm JS repository and registering a subscription on all files exported by the Realm JS `package.json` which will execute an "rsync" command to ultimately, incrementally (not a full copy every time) synchronize changes made our Realm JS repository into the app's `node_modules/realm` directory.
