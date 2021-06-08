@@ -18,7 +18,7 @@ if(DEFINED CMAKE_JS_VERSION)
     elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
         add_link_options(-fuse-ld=gold)
         add_link_options(-Wl,-z,noexecstack)
-	add_link_options(-Wl,--warn-execstack)
+	  add_link_options(-Wl,--warn-execstack)
     endif()
 endif()
 
