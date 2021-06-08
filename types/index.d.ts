@@ -156,9 +156,6 @@ declare namespace Realm {
 
     type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
 
-    interface PartialConfiguration extends Partial<Realm.Configuration> {
-    }
-
     /**
      * Object
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
