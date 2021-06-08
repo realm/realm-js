@@ -107,7 +107,7 @@ declare namespace Realm {
         error?: ErrorCallback;
     }
 
-    interface ConfigurationWithSync {
+    interface BaseConfiguration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
         schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
@@ -115,19 +115,20 @@ declare namespace Realm {
         path?: string;
         fifoFilesFallbackPath?: string;
         readOnly?: boolean;
-        sync: SyncConfiguration;
     }
 
-    interface ConfigurationWithoutSync {
-        encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
+    interface ConfigurationWithSync extends BaseConfiguration {
+        sync: SyncConfiguration,
+        migration?: never,
+        inMemory?: never,
+        deleteRealmIfMigrationNeeded?: never,
+        disableFormatUpgrade?: never
+    }
+
+    interface ConfigurationWithoutSync extends BaseConfiguration {
+        sync?: never,
         migration?: MigrationCallback;
-        shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
-        path?: string;
-        fifoFilesFallbackPath?: string;
-        readOnly?: boolean;
         inMemory?: boolean;
-        schema?: (ObjectClass | ObjectSchema)[];
-        schemaVersion?: number;
         deleteRealmIfMigrationNeeded?: boolean;
         disableFormatUpgrade?: boolean;
     }
@@ -137,7 +138,6 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
      */
     type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
-
 
     /**
      * realm configuration used for overriding default configuration values.
