@@ -81,6 +81,10 @@ struct IndexPropertyType {
 
     typename T::IndexPropertyGetterCallback getter;
     typename T::IndexPropertySetterCallback setter;
+
+    explicit operator bool() const {
+        return getter || setter;
+    }
 };
 
 template<typename T>

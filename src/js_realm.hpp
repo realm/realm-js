@@ -53,6 +53,7 @@
 #include <realm/global_key.hpp>
 #include <realm/util/file.hpp>
 #include <realm/util/scope_exit.hpp>
+#include <realm/sync/config.hpp>
 
 #include <cctype>
 #include <list>
@@ -242,7 +243,7 @@ public:
 
         const int argc = 2;
         typename T::Value arguments[argc] = { Value<T>::from_number(this_object->m_ctx, total_bytes), Value<T>::from_number(this_object->m_ctx, used_bytes) };
-        typename T::Value ret_val = Function<T>::callback(this_object->m_ctx, this_object->m_func, typename T::Object(), argc, arguments);
+        typename T::Value ret_val = Function<T>::callback(this_object->m_ctx, this_object->m_func, Object<T>::create_empty(this_object->m_ctx), argc, arguments);
         this_object->m_should_compact_on_launch = Value<T>::validated_to_boolean(this_object->m_ctx, ret_val);
         this_object->m_ready = true;
         this_object->m_cond_var->notify_one();
@@ -906,8 +907,9 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                              Value::from_string(protected_ctx, "Cannot asynchronously open synced Realm because the associated session previously experienced a fatal error"));
         Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
-        ValueType callback_arguments[1];
-        callback_arguments[0] = object;
+        ValueType callback_arguments[] = {
+            object,
+        };
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
     }
 
@@ -926,9 +928,10 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                 Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
                 Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
-                ValueType callback_arguments[2];
-                callback_arguments[0] = Value::from_undefined(protected_ctx);
-                callback_arguments[1] = object;
+                ValueType callback_arguments[2] =  {
+                    Value::from_undefined(protected_ctx), 
+                    object,
+                };
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
                 return;
             }
@@ -940,10 +943,11 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         set_binding_context(protected_ctx, realm, schema_updated, std::move(def), std::move(ctor));
         ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
 
-        ValueType callback_arguments[2];
-        callback_arguments[0] = object;
-        callback_arguments[1] = Value::from_null(protected_ctx);
-        Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+        ValueType callback_arguments[2] = {
+            object, 
+            Value::from_null(protected_ctx),
+        };
+        Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
     });
 
     task->start(callback_handler);
@@ -1396,10 +1400,11 @@ void AsyncOpenTaskClass<T>::add_download_notification(ContextType ctx, ObjectTyp
 
     realm::util::EventLoopDispatcher<SyncProgressHandler> callback_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) mutable {
         HANDLESCOPE(protected_ctx)
-        ValueType callback_arguments[2];
-        callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
-        callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
-        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+        ValueType callback_arguments[2] = {
+            Value::from_number(protected_ctx, transferred_bytes),
+            Value::from_number(protected_ctx, transferrable_bytes),
+        };
+        Function::callback(protected_ctx, protected_callback, 2, callback_arguments);
     });
 
     std::shared_ptr<AsyncOpenTask> task = *get_internal<T, AsyncOpenTaskClass<T>>(ctx, this_object);

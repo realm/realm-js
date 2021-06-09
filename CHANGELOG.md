@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * A warning to polyfill `crypto.getRandomValues` was triggered prematurely ([#3714](https://github.com/realm/realm-js/issues/3714), since v10.4.0)
 * Disabled executable stack on Linux. ([#3752](https://github.com/realm/realm-js/issues/3752), since v10.2.0)
+* Don't hang when using the network after hot-reloading an RN app. ([#3668](https://github.com/realm/realm-js/issues/3668))
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -13,9 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Omitting zlib when building for Node.js on Windows, since this is no longer provided by the platform. (backport of [#3787](https://github.com/realm/realm-js/pull/3787))
 
 10.4.1 Release notes (2021-5-13)
 =============================================================

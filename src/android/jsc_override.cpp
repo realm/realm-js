@@ -134,7 +134,7 @@ static JSGlobalContextRef create_context(JSContextGroupRef group, JSClassRef glo
     swap_function();
 
     // Clear cache from previous instances.
-    realm::_impl::RealmCoordinator::clear_all_caches();
+    RJSInvalidateCaches();
 
     RJSInitializeInContext(ctx);
     realmContextInjected = true;
