@@ -21,7 +21,6 @@
 "use strict";
 
 const cp = require("child_process");
-const cla = require("command-line-args");
 const path = require("path");
 const fs = require("fs");
 const Watchman = require("fb-watchman");
@@ -80,17 +79,11 @@ const watchman = {
   }
 };
 
-async function run() {
-
-  const options = cla({
-    name: "path", alias: "p",
-  });
-  
-  const dependencyPath = path.resolve(options.path);
+async function run(dependencyPath) {
   // Ensure that a dependency on the "realm" package
   const dependencyPackageJson = readPackageJson(dependencyPath);
   if (Object.keys(dependencyPackageJson.dependencies).includes("realm") === false) {
-    throw new Error(`Expected the package (${dependencyPath}) to be depending on "realm"`);
+    console.warn(`Expected the package (${dependencyPath}) to be depending on "realm"`);
   }
   // Ensure that the "realm" package has already been installed
   const dependencyRealmPath = path.resolve(dependencyPath, "node_modules/realm");
@@ -146,7 +139,14 @@ async function run() {
   });
 }
 
-run().catch(err => {
-  console.error(err.message);
-  process.exit(1);
-});
+if (module.parent === null) {
+  if (process.argv.length < 3) {
+    throw new Error("Expected path to a dependent package");
+  }
+  const lastArg = process.argv[process.argv.length-1];
+  const dependencyPath = path.resolve(lastArg);
+  run(dependencyPath).catch(err => {
+    console.error(err.message);
+    process.exit(1);
+  });
+}
