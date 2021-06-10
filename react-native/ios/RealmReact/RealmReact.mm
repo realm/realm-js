@@ -19,8 +19,6 @@
 #import "RealmReact.h"
 #import "RealmAnalytics.h"
 
-#import <realm-js-ios/jsc_init.h>
-
 #import <React/RCTBridge+Private.h>
 #import <React/RCTJavaScriptExecutor.h>
 
@@ -30,17 +28,12 @@
 #import <netdb.h>
 #import <net/if.h>
 
-#if DEBUG
-#include <realm-js-ios/rpc.hpp>
-#import "GCDWebServer.h"
-#import "GCDWebServerDataRequest.h"
-#import "GCDWebServerDataResponse.h"
-#import "GCDWebServerErrorResponse.h"
+#include <iostream>
+#import "jsi/jsi.h"
+//#import "hermes_init.hpp"
 
-#define WEB_SERVER_PORT 8083
-
-using namespace realm::rpc;
-#endif
+namespace jsi = facebook::jsi;
+extern "C" void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports);
 
 @interface NSObject ()
 - (instancetype)initWithJSContext:(JSContext *)context;
@@ -84,11 +77,6 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
 
 @implementation RealmReact {
     NSMutableDictionary *_eventHandlers;
-
-#if DEBUG
-    GCDWebServer *_webServer;
-    std::unique_ptr<RPCServer> _rpcServer;
-#endif
 }
 
 @synthesize bridge = _bridge;
@@ -120,20 +108,7 @@ RCT_EXPORT_MODULE(Realm)
 }
 
 - (NSDictionary *)constantsToExport {
-#if DEBUG
-#if TARGET_IPHONE_SIMULATOR
-    NSArray *hosts = @[@"localhost"];
-#else
-    NSArray *hosts = [self getIPAddresses];
-#endif
-
-    return @{
-        @"debugHosts": hosts,
-        @"debugPort": @(WEB_SERVER_PORT),
-    };
-#else
     return @{};
-#endif
 }
 
 - (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler {
@@ -155,120 +130,8 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
     }
 }
 
-#if DEBUG
-- (NSArray *)getIPAddresses {
-    static const char * const wifiInterface = "en0";
-
-    struct ifaddrs *ifaddrs;
-    if (getifaddrs(&ifaddrs)) {
-        NSLog(@"Failed to get interface addresses: %s", strerror(errno));
-        return @[];
-    }
-
-    NSMutableArray *ipAddresses = [[NSMutableArray alloc] init];
-    char host[INET6_ADDRSTRLEN];
-
-    for (struct ifaddrs *ifaddr = ifaddrs; ifaddr; ifaddr = ifaddr->ifa_next) {
-        if ((ifaddr->ifa_flags & IFF_LOOPBACK) || !(ifaddr->ifa_flags & IFF_UP)) {
-            // Ignore loopbacks and interfaces that aren't up.
-            continue;
-        }
-
-        struct sockaddr *addr = ifaddr->ifa_addr;
-        if (addr->sa_family == AF_INET) {
-            // Ignore link-local ipv4 addresses.
-            in_addr_t sin_addr = ((struct sockaddr_in *)addr)->sin_addr.s_addr;
-            if (IN_LOOPBACK(sin_addr) || IN_LINKLOCAL(sin_addr) || IN_ZERONET(sin_addr)) {
-                continue;
-            }
-        }
-        else if (addr->sa_family == AF_INET6) {
-            // Ignore link-local ipv6 addresses.
-            struct in6_addr *sin6_addr = &((struct sockaddr_in6 *)addr)->sin6_addr;
-            if (IN6_IS_ADDR_LOOPBACK(sin6_addr) || IN6_IS_ADDR_LINKLOCAL(sin6_addr) || IN6_IS_ADDR_UNSPECIFIED(sin6_addr)) {
-                continue;
-            }
-        }
-        else {
-            // Ignore addresses that are not ipv4 or ipv6.
-            continue;
-        }
-
-        if (strcmp(ifaddr->ifa_name, wifiInterface)) {
-            // Ignore non-wifi addresses.
-            continue;
-        }
-        if (int error = getnameinfo(addr, addr->sa_len, host, sizeof(host), NULL, 0, NI_NUMERICHOST)) {
-            NSLog(@"Couldn't resolve host name for address: %s", gai_strerror(error));
-            continue;
-        }
-
-        [ipAddresses addObject:@(host)];
-    }
-    
-    freeifaddrs(ifaddrs);
-    return [ipAddresses copy];
-}
-
-- (void)startRPC {
-    [GCDWebServer setLogLevel:3];
-    _webServer = [[GCDWebServer alloc] init];
-    _rpcServer = std::make_unique<RPCServer>();
-    __weak __typeof__(self) weakSelf = self;
-
-    // Add a handler to respond to POST requests on any URL
-    [_webServer addDefaultHandlerForMethod:@"POST"
-                              requestClass:[GCDWebServerDataRequest class]
-                              processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
-        __typeof__(self) self = weakSelf;
-        RPCServer *rpcServer = self ? self->_rpcServer.get() : nullptr;
-        GCDWebServerResponse *response;
-
-        try {
-            NSData *responseData;
-
-            if (rpcServer) {
-                std::string args = [[(GCDWebServerDataRequest *)request text] UTF8String];
-                std::string responseText = rpcServer->perform_request(request.path.UTF8String, args);
-
-                responseData = [NSData dataWithBytes:responseText.c_str() length:responseText.length()];
-            }
-            else {
-                // we have been deallocated
-                responseData = [NSData data];
-            }
-
-            response = [[GCDWebServerDataResponse alloc] initWithData:responseData contentType:@"application/json"];
-        }
-        catch(std::exception &ex) {
-            NSLog(@"Invalid RPC request - %@", [(GCDWebServerDataRequest *)request text]);
-            response = [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_UnprocessableEntity
-                                                          underlyingError:nil
-                                                                  message:@"Invalid RPC request"];
-        }
-
-        [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
-        return response;
-    }];
-
-    [_webServer startWithPort:WEB_SERVER_PORT bonjourName:nil];
-    return;
-}
-
-- (void)shutdownRPC {
-    [_webServer stop];
-    [_webServer removeAllHandlers];
-    _webServer = nil;
-    _rpcServer.reset();
-}
-#endif
-
 - (void)invalidate {
-    RJSInvalidateCaches();
-#if DEBUG
-    // shutdown rpc if in chrome debug mode
-    [self shutdownRPC];
-#endif
+    // RJSInvalidateCaches();
 }
 
 - (void)dealloc {
@@ -284,8 +147,10 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
         [NSThread sleepForTimeInterval:0.1];
     }
     s_currentJSThread = [NSThread currentThread];
+    
+    jsContextExtractor();
 
-    RJSInitializeInContext(jsContextExtractor());
+    // RJSInitializeInContext(jsContextExtractor());
 }
 
 - (void)setBridge:(RCTBridge *)bridge {
@@ -296,17 +161,22 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
     s_currentModule = self;
 
     if (objc_lookUpClass("RCTWebSocketExecutor") && [bridge executorClass] == objc_lookUpClass("RCTWebSocketExecutor")) {
-#if DEBUG
-        [self startRPC];
-#else
-        @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported in Release builds" userInfo:nil];
-#endif
+        @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported" userInfo:nil];
     } else if ([bridge isKindOfClass:objc_lookUpClass("RCTCxxBridge")] || [NSStringFromClass([bridge class]) isEqual: @"RCTCxxBridge"]) {
         // probe for the new C++ bridge in React Native 0.45+
+        
+        // auto& rt = *static_cast<facebook::jsi::Runtime*>(bridge.runtime);
+        // auto exports = jsi::Object(rt);
+        // realm_hermes_init(rt, exports);
 
         __weak __typeof__(self) weakSelf = self;
         __weak __typeof__(bridge) weakBridge = bridge;
-
+        
+        // probe for the new C++ bridge in React Native 0.45+
+        auto& rt = *static_cast<facebook::jsi::Runtime*>(bridge.runtime);
+        auto exports = jsi::Object(rt);
+        realm_hermes_init(rt, exports);
+        
         [bridge dispatchBlock:^{
             __typeof__(self) self = weakSelf;
             __typeof__(bridge) bridge = weakBridge;
@@ -315,6 +185,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
             }
 
             _initializeOnJSThread(^{
+                
                 // RN < 0.58 has a private method that returns the js context
                 if ([bridge respondsToSelector:@selector(jsContextRef)]) {
                     return [bridge jsContextRef];

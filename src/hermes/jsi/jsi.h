@@ -212,7 +212,7 @@ class JSI_EXPORT Runtime {
   /// different behaviors and limitations imposed by different VMs and APIs. By
   /// the time this is written, An implementation may swallow exceptions (JSC),
   /// may not pause (V8), and may not support bounded executions.
-  virtual bool drainMicrotasks(int maxMicrotasksHint = -1) = 0;
+  //virtual bool drainMicrotasks(int maxMicrotasksHint = -1) = 0;
 
   /// \return the global object
   virtual Object global() = 0;
