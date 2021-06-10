@@ -107,24 +107,37 @@ declare namespace Realm {
         error?: ErrorCallback;
     }
 
-    /**
-     * realm configuration
-     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
-     */
-    interface Configuration {
+    interface BaseConfiguration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
-        migration?: MigrationCallback;
+        schema?: (ObjectClass | ObjectSchema)[];
+        schemaVersion?: number;
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         fifoFilesFallbackPath?: string;
         readOnly?: boolean;
+    }
+
+    interface ConfigurationWithSync extends BaseConfiguration {
+        sync: SyncConfiguration;
+        migration?: never;
+        inMemory?: never;
+        deleteRealmIfMigrationNeeded?: never;
+        disableFormatUpgrade?: never;
+    }
+
+    interface ConfigurationWithoutSync extends BaseConfiguration {
+        sync?: never;
+        migration?: MigrationCallback;
         inMemory?: boolean;
-        schema?: (ObjectClass | ObjectSchema)[];
-        schemaVersion?: number;
-        sync?: SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
         disableFormatUpgrade?: boolean;
     }
+
+    /**
+     * realm configuration
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
+     */
+    type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
 
     /**
      * realm configuration used for overriding default configuration values.
@@ -142,9 +155,6 @@ declare namespace Realm {
     }
 
     type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
-
-    interface PartialConfiguration extends Partial<Realm.Configuration> {
-    }
 
     /**
      * Object
