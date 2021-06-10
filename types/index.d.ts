@@ -118,15 +118,15 @@ declare namespace Realm {
     }
 
     interface ConfigurationWithSync extends BaseConfiguration {
-        sync: SyncConfiguration,
-        migration?: never,
-        inMemory?: never,
-        deleteRealmIfMigrationNeeded?: never,
-        disableFormatUpgrade?: never
+        sync: SyncConfiguration;
+        migration?: never;
+        inMemory?: never;
+        deleteRealmIfMigrationNeeded?: never;
+        disableFormatUpgrade?: never;
     }
 
     interface ConfigurationWithoutSync extends BaseConfiguration {
-        sync?: never,
+        sync?: never;
         migration?: MigrationCallback;
         inMemory?: boolean;
         deleteRealmIfMigrationNeeded?: boolean;
