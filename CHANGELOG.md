@@ -1,10 +1,10 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.4.2 Release notes (2021-6-10)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* A warning to polyfill `crypto.getRandomValues` was triggered prematurely ([#3714](https://github.com/realm/realm-js/issues/3714), since v10.4.0)
+* A warning to polyfill `crypto.getRandomValues` was triggered prematurely. ([#3714](https://github.com/realm/realm-js/issues/3714), since v10.4.0)
 * Mutual exclusive configuration options (`sync`/`inMemory` and `sync`/`migration`) could lead to a crash. ([#3771](https://github.com/realm/realm-js/issues/3771), since v1.0.0)
 * Disabled executable stack on Linux. ([#3752](https://github.com/realm/realm-js/issues/3752), since v10.2.0)
 * Don't hang when using the network after hot-reloading an RN app. ([#3668](https://github.com/realm/realm-js/issues/3668))
