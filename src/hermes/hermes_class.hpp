@@ -227,7 +227,7 @@ public:
                   "nativeFunc",
                   util::format(R"(
                       return function %1(...args) {
-                          "use strict";
+                         //"use strict";
                           if (!nativeFunc)
                               throw TypeError("%1() cannot be constructed directly from javascript");
                           if (!new.target)
@@ -295,7 +295,7 @@ public:
                                 if (typeof(property) != 'string' || !isNumber.test(property))
                                     return Reflect.get(target, property, receiver);
                                 return getter(target, Number(property))
-                            }
+                            },
                             set(target, property, receiver, val) {
                                 if (typeof(property) != 'string' || !isNumber.test(property))
                                     return Reflect.set(target, property, receiver, val);
