@@ -407,7 +407,7 @@ struct Unbox<JSEngine, BinaryData> {
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
     static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        TypeMixed<JSEngine>::get_instance().unwrap(ctx->m_ctx, value);
+        return TypeMixed<JSEngine>::get_instance().unwrap(ctx->m_ctx, value);
     }
 };
 
