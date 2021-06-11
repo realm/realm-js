@@ -407,7 +407,7 @@ struct Unbox<JSEngine, BinaryData> {
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
     static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        throw std::runtime_error("'Mixed' type support is not implemented yet");
+        TypeMixed<JSEngine>::get_instance().unwrap(ctx->m_ctx, value);
     }
 };
 
