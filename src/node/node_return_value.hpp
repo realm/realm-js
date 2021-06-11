@@ -64,21 +64,21 @@ class ReturnValue<node::Types> {
     void set(bool boolean) {
 		m_value = Napi::Value::From(m_env, boolean);
     }
-    
+
 	void set(double number) {
 		m_value = Napi::Value::From(m_env, number);
     }
-    
+
 	void set(int32_t number) {
 		m_value = Napi::Value::From(m_env, number);
     }
-    
+
 	void set(uint32_t number) {
 		m_value = Napi::Value::From(m_env, number);
     }
 
     void set(realm::Mixed mixed) {
-        m_value = TypeMixed<node::Types>::get_instance().wrap(m_env, mixed);
+		m_value = TypeMixed<node::Types>::get_instance().wrap(m_env, mixed);
     }
 
     void set_null() {
@@ -100,6 +100,6 @@ class ReturnValue<node::Types> {
         }
     }
 };
-    
+
 } // js
 } // realm

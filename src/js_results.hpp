@@ -160,6 +160,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
 
     auto const &realm = collection.get_realm();
     auto const &object_schema = collection.get_object_schema();
+
     query_parser::KeyPathMapping mapping;
     realm::populate_keypath_mapping(mapping, *realm);
     NativeAccessor<T> accessor(ctx, realm, object_schema);

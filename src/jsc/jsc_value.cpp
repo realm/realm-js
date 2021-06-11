@@ -168,7 +168,7 @@ Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, const JSValueRef& value)
     auto object = to_object(ctx, value);
     // EJSON input supported (in RN only) for enabling debugging of synced realms.
     auto ejson_property = jsc::Object::get_property(ctx, object, "$numberDecimal");
-    
+
     if (is_undefined(ctx, ejson_property)) {
         static jsc::String s_to_string = "toString";
         JSValueRef args[] = {};

@@ -28,7 +28,7 @@ const Worker = require('./worker');
 function createNotificationTest(config, getObservable, addListener, removeListener, messages, expectedCount) {
     let realm = new Realm(config);
     let observable = getObservable(realm);
-    let worker = new Worker(__dirname + '/worker-tests-script.js', [REALM_MODULE_PATH]); // eslint-disable-line no-undef
+    let worker = new Worker(__dirname + '/worker-tests-script.js', [require.resolve("realm")]); // eslint-disable-line no-undef
 
     return new Promise((resolve, reject) => {
         // Test will fail if it does not receive a change event within a second.

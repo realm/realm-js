@@ -309,7 +309,7 @@ inline JSObjectRef jsc::Value::to_function(JSContextRef ctx, const JSValueRef &v
 }
 
 template<>
-OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, JSValueRef value);
+OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, const JSValueRef& value);
 
 template<>
 Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, const JSValueRef& value);

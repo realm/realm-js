@@ -407,7 +407,7 @@ case "$TARGET" in
   cleanup
   echo "********* TESTS COMPLETED *********";
 
-  if $TESTS_FAILED; then
+  if [ $TESTS_FAILED = 'TRUE' ]; then
     exit 20
   fi
   ;;

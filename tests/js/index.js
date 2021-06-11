@@ -71,6 +71,7 @@ if (global.enableSyncTests) {
         TESTS.PartitionValueTests = node_require("./partition-value-tests");
         TESTS.SetSyncTests = node_require("./set-sync-tests");
         TESTS.MixedSyncTests = node_require("./mixed-sync-tests");
+        TESTS.AnalyticsTests = require('./analytics-tests');
     }
 }
 

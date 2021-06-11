@@ -33,6 +33,8 @@ const Utils = require('./test-utils');
 let schemas = require('./schemas');
 const AppConfig = require('./support/testConfig');
 
+const REALM_MODULE_PATH = require.resolve("realm");
+
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
 
@@ -143,6 +145,37 @@ module.exports = {
     testLocalRealmHasNoSession() {
         let realm = new Realm();
         TestCase.assertNull(realm.syncSession);
+    },
+
+    async testRealmInvalidSyncConfiguration1() {
+        const config = {
+            sync: true,
+            inMemory: true,
+        };
+
+        return new Promise((resolve, reject) => {
+            return Realm.open(config)
+                .then(_ => reject())
+                .catch(_ => resolve());
+        });
+    },
+
+    async testRealmInvalidSyncConfiguration2() {
+        const partition = Utils.genPartition();
+        let credentials = Realm.Credentials.anonymous();
+        let app = new Realm.App(appConfig);
+
+
+        return new Promise((resolve, reject) => {
+            return app.logIn(credentials)
+                .then(user => {
+                    let config = getSyncConfiguration(user, partition);
+                    config.migration = (_) => { /* empty function */ };
+                    return Realm.open(config)
+                        .then(_ => reject())
+                        .catch(_ => resolve());
+                });
+        });
     },
 
     testRealmOpen() {
@@ -877,23 +910,5 @@ module.exports = {
             });
             realm.close();
         });
-    },
-
-    async testAnalyticsSubmission() {
-        const context = node_require('realm/package.json');
-        const analytics = node_require('realm/lib/submit-analytics');
-
-        const payload = await analytics.fetchPlatformData(context, 'TestEvent');
-
-        TestCase.assertDefined(payload.webHook);
-        TestCase.assertType(payload.webHook.event, 'string');
-        TestCase.assertDefined(payload.webHook.properties);
-        TestCase.assertType(payload.webHook.properties.Binding, 'string');
-        TestCase.assertDefined(payload.mixPanel);
-        TestCase.assertType(payload.mixPanel.event, 'string');
-        TestCase.assertDefined(payload.mixPanel.properties);
-        TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
-
-        await analytics.submitStageAnalytics('TestEvent');
     }
 };

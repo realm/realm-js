@@ -1,4 +1,4 @@
-# Realm JS tests running in an Electron enviroment
+# Realm JS tests running in an Electron environment
 
 Currently this directory consists of:
 - An electron app in `tests/electron/app` which has

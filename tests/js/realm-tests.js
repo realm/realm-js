@@ -716,7 +716,7 @@ module.exports = {
             // Create Initial object
             realm.create('AllPrimaryTypesObject', Object.assign(template, {
                 primaryCol: '35',
-                dataCol: new ArrayBuffer(1), 
+                dataCol: new ArrayBuffer(1),
                 boolCol: false,
             }));
             realm.create('AllPrimaryTypesObject', Object.assign(template, {
@@ -2005,7 +2005,7 @@ module.exports = {
 
         for (let i = 0; i < values.length; i++) {
             let oid2 = objects[i]["id"];
-            TestCase.assertTrue(oid2 instanceof ObjectId, "instaceof");
+            TestCase.assertTrue(oid2 instanceof ObjectId, "instanceof");
             TestCase.assertTrue(oids[i].equals(oid2), "equal");
             TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
         }
@@ -2046,7 +2046,7 @@ module.exports = {
         // Check schema
         TestCase.assertEqual(realm.schema.length, 1);
         TestCase.assertEqual(realm.schema[0].properties["id"].type, "uuid");
-        
+
         // Auto-generate checks
         const uuid = new UUID();
         realm.write(() => {

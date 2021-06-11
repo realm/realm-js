@@ -116,6 +116,36 @@ describe("App", () => {
         ]);
     });
 
+    it("skips fetching the location if asked to", async () => {
+        const transport = new MockNetworkTransport([
+            {
+                user_id: "totally-valid-user-id",
+                access_token: "deadbeef",
+                refresh_token: "very-refreshing",
+            },
+        ]);
+        const app = new App({
+            id: "my-mocked-app",
+            storage: new MemoryStorage(),
+            transport,
+            baseUrl: "http://localhost:1234",
+            skipLocationRequest: true,
+        });
+        const credentials = Credentials.anonymous();
+        await app.logIn(credentials, false);
+        // Expect only a single request made via the transport
+        expect(transport.requests).deep.equals([
+            {
+                method: "POST",
+                url: `http://localhost:1234/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
+                body: {
+                    options: DEFAULT_AUTH_OPTIONS,
+                },
+                headers: SENDING_JSON_HEADERS,
+            },
+        ]);
+    });
+
     it("can log in a user", async () => {
         const storage = new MemoryStorage();
         const transport = new MockNetworkTransport([
