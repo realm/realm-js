@@ -20,7 +20,6 @@
 
 const Realm = require("realm");
 let TestCase = require("./asserts");
-let {Decimal128, ObjectId, UUID} = require("bson")
 
 const DictSchema = {
     name: "Dictionary",
@@ -521,8 +520,23 @@ module.exports = {
         TestCase.assertThrowsException(() =>  realm.write(()=> {  D.remove( ['unknown_key'] )  }) , error)
 
         realm.close();
-    }
+    },
 
+    testDictionaryToJSON() {
+        //Shouldn't throw
+        let realm = new Realm({ schema: [DictSchema] });
+        realm.write(() =>
+            realm.create(DictSchema.name, { a: { x: 1, y: 2, z: 3 } }),
+        );
+
+        let data = realm.objects(DictSchema.name);
+
+        TestCase.assertEqual(
+            JSON.stringify(data.toJSON()),
+            '[{"a":{"x":1,"z":3,"y":2}}]',
+            "toJSON should return the correct result",
+        );
+    },
 
 
     /*TODO Comment this until we merge Mixed->Link code.
