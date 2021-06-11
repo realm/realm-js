@@ -3,12 +3,13 @@ x.x.x Release notes (yyyy-MM-dd)
 NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Enhancements
-* Change listeneris for dictionary are now key based. The change set will contain arrays of created, modified, and deleted keys.
+* Change listeners for dictionary are now key based. The change set will contain arrays of created, modified, and deleted keys.
 
 ### Fixed
 * Performance regression for some scenarios of writing/creating objects with a primary key. ([realm/realm-core#4522](https://github.com/realm/realm-core/issues/4522))
 * Observing a dictionary holding links to objects would crash. ([realm/realm-core#4711](https://github.com/realm/realm-core/issues/4711), since v11.0.0-beta.1)
 * Async callbacks not triggered on Android 12 emulator. ([realm/realm-core#4666](https://github.com/realm/realm-core/issues/4666))
+* Fixed the string based query parser not supporting integer constants above 32 bits on a 32 bit platform. ([#3773](https://github.com/realm/realm-js/issues/3773), since v10.4.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -17,14 +18,15 @@ NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 * File format: generates Realms with format 22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Known Issues
- * Set iterators do not work under Jest (#3788).
+* Set iterators do not work under Jest (#3788).
 
 ### Internal
 * Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
 * Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
-* Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.1. ([#3785](https://github.com/realm/realm-js/issues/3785))
+* Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.2. ([#3785](https://github.com/realm/realm-js/issues/3785))
 * Added npm script to generate internal Doxygen documentation.
 * Removed private methods `Realm._objectForObjectId()` and `Realm.Object._objectId()`.
+* Refactor the string formatting logic for logging, reducing the compiled size of the library.
 
 10.5.0-beta.2 Release notes (2021-5-12)
 =============================================================
