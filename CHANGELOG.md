@@ -27,6 +27,7 @@ NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 * Added npm script to generate internal Doxygen documentation.
 * Removed private methods `Realm._objectForObjectId()` and `Realm.Object._objectId()`.
 * Refactor the string formatting logic for logging, reducing the compiled size of the library.
+* Omitting zlib when building for Node.js on Windows, since this is no longer provided by the platform. ([#3787](https://github.com/realm/realm-js/pull/3787))
 
 10.5.0-beta.2 Release notes (2021-5-12)
 =============================================================
