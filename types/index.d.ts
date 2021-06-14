@@ -231,7 +231,35 @@ declare namespace Realm {
      * Dictionary
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Dictionary.html }
      */
-    interface Dictionary<T = unknown> { [key: string]: T }
+
+     //interface Dictionary<T = unknown> { [key: string]: T }
+
+
+     interface Dictionary{
+        /**
+         * @returns An object for JSON serialization.
+         */
+        toJSON(): Array<any>;
+
+        /**
+         * @returns Adds given element to the dictionary
+         */
+        put(element:{[key:string]:any}): void;
+
+        /**
+         * @returns Removes given element from the dictionary
+         */
+        remove(element:{[key:string]:any}): void;
+
+        /**
+         * @returns void
+         */
+         addListener(callback: ObjectChangeCallback): void;
+
+         removeListener(callback: ObjectChangeCallback): void;
+ 
+         removeAllListeners(): void;
+    }
 
     /**
      * Collection
