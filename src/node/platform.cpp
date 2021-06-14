@@ -126,9 +126,9 @@ void remove_realm_files_from_directory(const std::string &dir_path)
             static std::string realm_extension(".realm");
             static std::string realm_note_extension(".realm.note");
             static std::string realm_lock_extension(".realm.lock");
-            static std::string realm_log_extention(".realm.log");
-            static std::string realm_log_a_extention(".realm.log_a"); // legacy
-            static std::string realm_log_b_extention(".realm.log_b"); // legacy
+            static std::string realm_log_extension(".realm.log");
+            static std::string realm_log_a_extension(".realm.log_a"); // legacy
+            static std::string realm_log_b_extension(".realm.log_b"); // legacy
             if (ends_with(path, realm_extension) || ends_with(path, realm_note_extension)
                 || ends_with(path, realm_lock_extension) || ends_with(path, realm_log_extension)
                 || ends_with(path, realm_log_a_extension) || ends_with(path, realm_log_b_extension)) {

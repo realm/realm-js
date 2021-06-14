@@ -23,7 +23,7 @@ NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 ### Internal
 * Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
 * Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
-* Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.2. ([#3785](https://github.com/realm/realm-js/issues/3785))
+* Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.3. ([#3785](https://github.com/realm/realm-js/issues/3785))
 * Added npm script to generate internal Doxygen documentation.
 * Removed private methods `Realm._objectForObjectId()` and `Realm.Object._objectId()`.
 * Refactor the string formatting logic for logging, reducing the compiled size of the library.

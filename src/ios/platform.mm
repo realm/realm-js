@@ -119,7 +119,7 @@ void remove_realm_files_from_directory(const std::string &directory)
         for (NSString *path in [manager enumeratorAtPath:fileDir]) {
             if (![path.pathExtension isEqualToString:@"realm"] && ![path.pathExtension isEqualToString:@"realm.lock"]
                 && ![path.pathExtension isEqualToString:@"realm.management"] && ![path.pathExtension isEqualToString:@"realm.note"]
-                && ![path.pathExtension isEqualToString:"@realm.log"] && ![path.pathExtension isEqualToString:"@realm.log_a"] && ![path.pathExtension isEqualToString:"@realm.log_b"]) {
+                && ![path.pathExtension isEqualToString:@"realm.log"] && ![path.pathExtension isEqualToString:@"realm.log_a"] && ![path.pathExtension isEqualToString:@"realm.log_b"]) {
                 continue;
             }
             NSError *error = nil;
