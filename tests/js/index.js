@@ -50,8 +50,6 @@ var TESTS = {
     // Garbagecollectiontests: require('./garbage-collection'),
     ArrayBuffer: require("./array-buffer-tests"),
     SetTests: require("./set-tests"),
-    MixedTests: require("./mixed-tests"),
-
 };
 
 // If sync is enabled, run the sync tests

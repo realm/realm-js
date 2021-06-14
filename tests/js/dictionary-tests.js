@@ -222,7 +222,7 @@ module.exports = {
         TestCase.assertEqual(seventy.length, 30, "We expect only 30 items, matching for field x >= 70.");
     },*/
 
-    testDictionaryNotificationObjectFieldUpdate() {
+    DictionaryNotificationObjectFieldUpdate() {
         const UPDATES = 5;
         const DictSchema = {
             name: "Dictionary",
@@ -308,6 +308,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             setTimeout(() =>{
                 TestCase.assertEqual(cnt, 4, "Counter should be four")
+                ff.fields.removeAllListeners();
                 resolve()
             }, 1000)
         })
@@ -388,6 +389,7 @@ module.exports = {
 
         realm.write(() => { fields.field1=1 } )
         TestCase.assertTrue(called,"Function c should be called")
+        fields.removeAllListeners();
     },
 
     testDictionaryUnsubscribingOnEmptyListener() {
@@ -426,6 +428,7 @@ module.exports = {
         })
         realm.write(() => { fields.field1=1 } )
         TestCase.assertTrue(correct,"This is expected to work.")
+        fields.removeAllListeners();
     },
     testDictionaryPut() {
         const DictSchema = {
