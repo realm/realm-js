@@ -31,7 +31,7 @@ const isElectronProcess = typeof process === "object" && process.versions && pro
 const require_method = require;
 function node_require(module) { return require_method(module); }
 
-const pathDelimiter = "/";
+let pathDelimiter = "/";
 
 if (isNodeProcess && process.platform === "win32") {
     global.enableSyncTests = false;
