@@ -26,7 +26,7 @@
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
 #include "js_links.hpp"
-#include "dictionary/js_dictionary.hpp"
+#include "js_dictionary.hpp"
 
 #if REALM_ENABLE_SYNC
 #include <realm/util/base64.hpp>
@@ -183,7 +183,7 @@ public:
         return SetClass<JSEngine>::create_instance(m_ctx, std::move(set));
     }
     ValueType box(realm::object_store::Dictionary dictionary) {
-        return dictionary_adapter.wrap(m_ctx, dictionary);
+        return DictionaryClass<JSEngine>::create_instance(m_ctx, std::move(dictionary));
     }
 
     bool is_null(ValueType const& value) {
@@ -263,6 +263,10 @@ public:
     }
 
     bool is_same_dictionary(realm::object_store::Dictionary const& dictionary, ValueType const& value) const {
+        auto object = Value::validated_to_object(m_ctx, value);
+        if (js::Object<JSEngine>::template is_instance<DictionaryClass<JSEngine>>(m_ctx, object)) {
+            return dictionary == *get_internal<JSEngine, DictionaryClass<JSEngine>>(m_ctx, object);
+        }
         return false;
     }
 
@@ -277,7 +281,6 @@ public:
 private:
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
-    DictionaryAdapter<JSEngine> dictionary_adapter;
     Obj m_parent;
     const Property* m_property = nullptr;
     const ObjectSchema* m_object_schema;

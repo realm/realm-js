@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <iostream>
 
 #include <realm/binary_data.hpp>
 #include <realm/string_data.hpp>
@@ -58,6 +59,9 @@ struct ListClass;
 
 template<typename>
 struct SetClass;
+
+template<typename>
+struct DictionaryClass;
 
 enum PropertyAttributes : unsigned {
     None       = 0,
@@ -364,6 +368,9 @@ struct Object {
     static ObjectType create_instance_by_schema(ContextType, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal*);
 
     template<typename ClassType>
+    static ObjectType create_instance_by_keys(ContextType, typename T::Function& constructor, std::vector<std::string> keys, typename ClassType::Internal*);
+
+    template<typename ClassType>
     static bool is_instance(ContextType, const ObjectType &);
 
     template<typename ClassType>
@@ -449,6 +456,11 @@ REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, typena
 template<typename T, typename ClassType>
 REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context ctx, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr) {
     return Object<T>::template create_instance_by_schema<ClassType>(ctx, constructor, schema, internal);
+}
+
+template<typename T, typename ClassType>
+REALM_JS_INLINE typename T::Object create_instance_by_keys(typename T::Context ctx, typename T::Function& constructor, std::vector<std::string> keys, typename ClassType::Internal* internal = nullptr) {
+    return Object<T>::template create_instance_by_keys<ClassType>(ctx, constructor, keys, internal);
 }
 
 template<typename T, typename ClassType>
