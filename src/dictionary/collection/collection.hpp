@@ -89,6 +89,11 @@ public:
     CollectionAdapter(object_store::Dictionary _dict)
         : dictionary{_dict} {}
 
+    ~CollectionAdapter() {
+        listening = false;
+        token = {};
+    }
+
     /*
      * Makes the contents of this collection compatible with the existing
      * mechanisms.

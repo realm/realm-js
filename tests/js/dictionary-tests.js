@@ -20,7 +20,7 @@
 
 const Realm = require("realm");
 let TestCase = require("./asserts");
-let {Decimal128, ObjectId} = require("bson")
+let {Decimal128, ObjectId, UUID} = require("bson")
 
 const DictSchema = {
     name: "Dictionary",
@@ -113,6 +113,7 @@ module.exports = {
 
        realm.close();
    },
+
     testDictionaryHandlingSchemaParsingError(){
         const DictWrongSchema = {
             name: "Dictionary",
@@ -210,7 +211,6 @@ module.exports = {
         realm.close();
     },
 
-
     //TODO A change in core has mess up with the query engine fix.
     /*
     testDictionaryQuery(){
@@ -267,10 +267,9 @@ module.exports = {
                 fields.removeAllListeners();
                 realm.close();
                 resolve()
-            }, 1000)
+            }, 10000)
         })
     },
-
 
     testDictionaryUserShouldNotDeleteFields() {
         const DictSchema = {
@@ -290,7 +289,13 @@ module.exports = {
         TestCase.assertEqual(Object.keys(ff.fields)[0], "x2", "Should contain x2 field")
         TestCase.assertEqual(Object.keys(ff.fields)[1], "x1", "Should contain x1 field")
 
-        realm.close();
+
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                realm.close();
+                resolve();
+            }, 1000);
+        });
     },
 
     testDictionaryNotificationObjectFieldInsertion() {
