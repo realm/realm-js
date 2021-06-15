@@ -162,7 +162,7 @@ inline T& unwrap(JsiEnv env, const jsi::Object& wrapper) {
 
 template <typename T>
 inline T& unwrap(JsiEnv env, const jsi::Value& wrapper) {
-    return unwrap<T>(env, wrapper.getObject(env));
+    return unwrap<T>(env, wrapper.asObject(env));
 }
 
 template <typename T>
@@ -228,10 +228,12 @@ public:
                   util::format(R"(
                       return function %1(...args) {
                          //"use strict";
-                          if (!nativeFunc)
+                          if (!nativeFunc && false) // XXX only disable for Realm.Object
                               throw TypeError("%1() cannot be constructed directly from javascript");
-                          if (!new.target)
+                          if (!new.target && false) { // XXX find another way to detect this correctly
                               throw TypeError("%1() must be called as a constructor");
+                          }
+                          if (nativeFunc)
                           nativeFunc(this, ...args); 
 
                           if ('_proxyWrapper' in %1)
@@ -278,6 +280,19 @@ public:
             defineProperty(env, proto, name, desc);
         }
 
+        if constexpr (!std::is_void_v<ParentClassType>) {
+            REALM_ASSERT_RELEASE(ObjectWrap<ParentClassType>::s_ctor);
+            JsiFunc parentCtor = *ObjectWrap<ParentClassType>::s_ctor;
+
+            auto parentProto = parentCtor->getProperty(env, "prototype");
+            if (parentProto.isUndefined()) {
+                throw std::runtime_error("undefined 'prototype' on parent constructor");
+            }
+
+            ObjectSetPrototypeOf(env, jsi::Value(env, proto), jsi::Value(std::move(parentProto)));
+            ObjectSetPrototypeOf(env, jsi::Value(env, *s_ctor), jsi::Value(std::move(parentCtor.get())));
+        }
+        
         if (s_type.index_accessor) {
             // Code below assumes getter is present, and it doesn't make sense to have setter without one.
             REALM_ASSERT_RELEASE(s_type.index_accessor.getter);
@@ -291,17 +306,35 @@ public:
                 globalType(env, "Function").call(env, "getter", "setter", R"(
                         const isNumber = /^[-+]?\d+$/;
                         const handler = {
-                            get(target, property, receiver) {
-                                if (typeof(property) != 'string' || !isNumber.test(property))
-                                    return Reflect.get(target, property, receiver);
-                                return getter(target, Number(property))
+                            ownKeys(target) {
+                                const out = Reflect.ownKeys(target)
+                                const end = target.length
+                                for (let i = 0; i < end; i++) {
+                                    out.push(String(i));
+                                }
+                                return out;
                             },
-                            set(target, property, receiver, val) {
-                                if (typeof(property) != 'string' || !isNumber.test(property))
-                                    return Reflect.set(target, property, receiver, val);
+                            getOwnPropertyDescriptor(target, prop) {
+                                if (typeof(prop) != 'string' || !isNumber.test(prop))
+                                    return Reflect.getOwnPropertyDescriptor(target, prop)
+                                const index =  Number(prop);
+                                if (index >= 0 && index < target.length)
+                                    return {
+                                        configurable: true,
+                                        enumerable: true,
+                                    };
+                            },
+                            get(target, prop, receiver) {
+                                if (typeof(prop) != 'string' || !isNumber.test(prop))
+                                    return Reflect.get(target, prop, receiver);
+                                return getter(target, Number(prop))
+                            },
+                            set(target, prop, receiver, val) {
+                                if (typeof(prop) != 'string' || !isNumber.test(prop))
+                                    return Reflect.set(target, prop, receiver, val);
                                 if (!setter)
                                     return false;
-                                return setter(target, Number(property), val)
+                                return setter(target, Number(prop), val)
                             }
                         }
                         return (obj) => new Proxy(obj, handler);
@@ -346,17 +379,29 @@ public:
     }
 
     static Internal* get_internal(JsiEnv env, const JsiObj& object) {
-        return unwrapUnique<Internal>(env, object->getProperty(env, g_internal_field));
+        if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
+            throw jsi::JSError(env, "calling method on wrong type of object");
+        }
+        auto internal = object->getProperty(env, g_internal_field);
+        if (internal.isUndefined()) {
+            if constexpr (std::is_same_v<T, RealmObjectClass<hermes::Types>>) // XXX comment why
+                return nullptr;
+            throw jsi::JSError(env, "no internal field");
+        }
+        return unwrapUnique<Internal>(env, std::move(internal));
     }
     static void set_internal(JsiEnv env, const JsiObj& object, Internal* data) {
-        env(object)->setProperty(env, g_internal_field, wrapUnique(env, data));
+        auto desc = jsi::Object(env);
+        desc.setProperty(env, "value", wrapUnique(env, data));
+        desc.setProperty(env, "configurable", true);
+        defineProperty(env, object, g_internal_field, desc);
     }
 
 private:
     static jsi::Value funcVal(JsiEnv env, const std::string& name, size_t args, jsi::HostFunctionType&& func) {
         if (!func)
             return jsi::Value();
-        return jsi::Value(jsi::Function::createFromHostFunction(env, propName(env, name), args, std::move(func)));
+        return jsi::Value(jsi::Function::createFromHostFunction(env, propName(env, name), uint32_t(args), std::move(func)));
     };
 
     static void defineSchemaProperties(JsiEnv env, const jsi::Object& constructorPrototype, const realm::ObjectSchema& schema, bool redefine) {
@@ -364,8 +409,9 @@ private:
         auto loopBody = [&] (const Property& property) {
             const auto& name = property.public_name.empty() ? property.name : property.public_name;
             // TODO should this use hasOwnProperty?
-            if (!redefine && !constructorPrototype.hasProperty(env, str(env, name)))
+            if (!redefine && constructorPrototype.hasProperty(env, str(env, name))) {
                 return;
+            }
 
             auto desc = jsi::Object(env);
             desc.setProperty(env, "enumerable", true);
@@ -422,6 +468,7 @@ private:
                 //2.Create the constructor
 
                 //create the RealmObject function by name
+                // XXX May need to escape/sanitize schema.name to avoid code injection
                 auto schemaObjectConstructor =
                     globalType(env, "Function")
                             .callAsConstructor(env, "return function " + schema.name + "() {}")
