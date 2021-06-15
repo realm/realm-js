@@ -113,7 +113,7 @@ public:
     }
 
     friend bool operator==(const JsiWrap& a, const JsiWrap& b) {
-        REALM_ASSERT_RELEASE(&a.env() == &b.env());
+        REALM_ASSERT_RELEASE(&a.env().get() == &b.env().get());
         return T::strictEquals(a.env(), a.get(), b.get());
     }
     
