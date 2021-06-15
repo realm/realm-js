@@ -32,9 +32,6 @@ extern "C" void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports) {
     jsi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
     auto name = realm_constructor.getProperty(env, "name").asString(env);
     exports.setProperty(env, std::move(name), std::move(realm_constructor));
-
-    // Only calling to populate static cache. Eventually this should be stored somewhere non-static.
-    (void)js::ObjectWrap<Types, js::RealmObjectClass<Types>>::create_constructor(env);
 }
 }
 
