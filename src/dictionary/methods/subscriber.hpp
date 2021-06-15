@@ -62,9 +62,8 @@ struct DictionaryChangesSubscriber : public Subscriber {
 
     ObjectType build_changeset_object(DictionaryChangeSet &change_set) const {
         ObjectType object = Object::create_empty(context);
-        int deleted_fields_size = change_set.deletions.size();
         Object::set_property(context, object, "deletions",
-                             Value::from_number(context, deleted_fields_size));
+                             build_array(change_set.deletions));
         Object::set_property(context, object, "insertions",
                              build_array(change_set.insertions));
         Object::set_property(context, object, "modifications",
