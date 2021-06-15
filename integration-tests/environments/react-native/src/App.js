@@ -49,6 +49,7 @@ const mode =
     typeof DedicatedWorkerGlobalScope === "undefined"
         ? "native"
         : "chrome-debugging";
+const engine = global.HermesInternal ? "hermes" : "jsc";
 
 export class App extends Component {
     state = { status: "disconnected" };
@@ -178,7 +179,7 @@ export class App extends Component {
     prepareTests() {
         this.client = new Client({
             id: Platform.OS,
-            title: `React-Native on ${Platform.OS} (${mode})`,
+            title: `React-Native on ${Platform.OS} (${mode} using ${engine})`,
             tests: context => {
                 /* eslint-env mocha */
                 if (typeof context.mode === "string" && context.mode !== mode) {

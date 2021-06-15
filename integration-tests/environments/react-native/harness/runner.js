@@ -27,7 +27,7 @@ const logcat = require("./logcat");
 const IOS_DEVICE_NAME = "realm-js-integration-tests";
 const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 
-const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, SPAWN_LOGCAT } = process.env;
+const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, SPAWN_LOGCAT, SKIP_RUNNER } = process.env;
 
 if (typeof PLATFORM !== "string") {
     throw new Error("Expected a 'PLATFORM' environment variable");
@@ -161,6 +161,10 @@ function optionalStringToBoolean(value) {
 }
 
 if (module.parent === null) {
+    if (SKIP_RUNNER === "true") {
+        console.log("Skipping the runner - you're on your own");
+        process.exit(0);
+    }
     const headlessDebugger = optionalStringToBoolean(HEADLESS_DEBUGGER);
     const spawnLogcat = optionalStringToBoolean(SPAWN_LOGCAT);
     run(headlessDebugger, spawnLogcat).catch(err => {
