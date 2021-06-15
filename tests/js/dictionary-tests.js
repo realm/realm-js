@@ -20,7 +20,7 @@
 
 const Realm = require("realm");
 let TestCase = require("./asserts");
-let {Decimal128, ObjectId} = require("bson")
+let {Decimal128, ObjectId, UUID} = require("bson")
 
 const DictSchema = {
     name: "Dictionary",
@@ -35,10 +35,13 @@ module.exports = {
         let realm = new Realm({schema: [DictSchema]})
         realm.write(()=> realm.create(DictSchema.name, { a: {x:1, y:2, z:"hey"} } ))
         let data = realm.objects(DictSchema.name)[0]
+
         TestCase.assertTrue(data.a.addListener !== undefined, "addListener should be an method of Dictionary");
         TestCase.assertTrue(data.a.removeAllListeners !== undefined, "removeAllListeners should be an method of Dictionary");
         TestCase.assertTrue(data.a.removeListener !== undefined, "removeListener should be an method of Dictionary");
         TestCase.assertTrue(data.a.put !== undefined, "put should be an method of Dictionary");
+
+        realm.close();
     },
 
     testDictionaryAddingObject() {
@@ -56,6 +59,8 @@ module.exports = {
         o.forEach(k => {
             TestCase.assertNotEqual(["x", "y", "z"].indexOf(k), -1, "Should contain all the keys");
         })
+
+        realm.close();
     },
 
     testDictionaryUpdating() {
@@ -85,6 +90,7 @@ module.exports = {
         TestCase.assertEqual(typeof data.a.y, "undefined", "Should be deleted.");
         TestCase.assertEqual(typeof data.a.z, "undefined", "Should be deleted.");
 
+        realm.close();
     },
 
    testDictionaryWithTypedValues(){
@@ -104,7 +110,10 @@ module.exports = {
        let err = new Error("Property must be of type 'number', got (error)")
        TestCase.assertThrowsException(() =>realm.write(() => realm.create(DictIntSchema.name, {a: { c:"error" }})), err)
        TestCase.assertThrowsException(() =>realm.write(() => data.a = "cc"), new Error("Dictionary.a must be of type 'number{}', got 'string' ('cc')"))
+
+       realm.close();
    },
+
     testDictionaryHandlingSchemaParsingError(){
         const DictWrongSchema = {
             name: "Dictionary",
@@ -147,6 +156,8 @@ module.exports = {
         TestCase.assertEqual(mutable.x, 3, "Should be an equals to mutable.x = 3");
         TestCase.assertEqual(mutable.y, 2, "Should be an equals to mutable.y = 2");
         TestCase.assertEqual(mutable.z, 1, "Should be an equals to mutable.z = 1");
+
+        realm.close();
     },
 
     testDictionaryDifferentBackend(){
@@ -173,6 +184,8 @@ module.exports = {
         TestCase.assertEqual(typeof person, "object", "Should also being an object");
         TestCase.assertEqual(person.name, "Caesar", "Should be an equals to Caesar");
         TestCase.assertEqual(person.second, "August", "Should be an equals to August");
+
+        realm.close();
     },
 
     testDictionary_Javascript_Object_Features() {
@@ -195,8 +208,8 @@ module.exports = {
         TestCase.assertEqual(y, 2, "Should be an equals to: [1,3,2]")
         TestCase.assertEqual(z, 3, "Should be an equals to: [1,3,2]")
 
+        realm.close();
     },
-
 
     //TODO A change in core has mess up with the query engine fix.
     /*
@@ -222,7 +235,7 @@ module.exports = {
         TestCase.assertEqual(seventy.length, 30, "We expect only 30 items, matching for field x >= 70.");
     },*/
 
-    testDictionaryNotificationObjectFieldUpdate() {
+    DictionaryNotificationObjectFieldUpdate() {
         const UPDATES = 5;
         const DictSchema = {
             name: "Dictionary",
@@ -249,58 +262,12 @@ module.exports = {
             realm.write(() => { fields.field1=i } )
         }
 
-        TestCase.assertEqual(cnt,UPDATES,`We expect ${UPDATES} updates.`)
-    },
-
-    testDictionaryNotificationObjectFieldInsertion() {
-        const DictSchema = {
-            name: "Dictionary",
-            properties: {
-                fields: "{}"
-            }
-        }
-
-        let realm = new Realm({schema: [DictSchema]})
-        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
-        let ff = realm.objects(DictSchema.name)[0]
-        let cnt=0
-
-        let a = (obj, changeset ) => {
-            if(cnt === 1){
-                let keys = Object.keys(obj)
-                TestCase.assertTrue(obj.x2 !== undefined,"This field should be equal x2")
-                TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1")
-            }
-
-            if(cnt === 2){
-                let keys = Object.keys(obj)
-                TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1")
-                TestCase.assertTrue(obj.x5 !== undefined,"This field should be equal x5")
-                TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1")
-            }
-            if(cnt === 3){
-                let keys = Object.keys(obj)
-                TestCase.assertEqual(keys[0], "x1", "First field should be equal x1")
-                TestCase.assertEqual(obj.x1, "hello", "x1 should be equals to \"hello\"")
-            }
-            cnt++
-        }
-        ff.fields.addListener(a)
-
-        // total object mutation.
-        realm.write(() => { ff.fields = {x1: 1, x2: 2} } )
-
-        // partial object mutation.
-        realm.write(() => { ff.fields = {x1: 1, x3: 2, x5: 5} } )
-
-        // deleting all but one field.
-        realm.write(() => { ff.fields = {x1: "hello"} } )
-
         return new Promise((resolve, reject) => {
             setTimeout(() =>{
-                TestCase.assertEqual(cnt, 4, "Counter should be four")
+                fields.removeAllListeners();
+                realm.close();
                 resolve()
-            }, 1000)
+            }, 10000)
         })
     },
 
@@ -321,6 +288,77 @@ module.exports = {
 
         TestCase.assertEqual(Object.keys(ff.fields)[0], "x2", "Should contain x2 field")
         TestCase.assertEqual(Object.keys(ff.fields)[1], "x1", "Should contain x1 field")
+
+
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                realm.close();
+                resolve();
+            }, 1000);
+        });
+    },
+
+    testDictionaryNotificationObjectFieldInsertion() {
+        const DictSchema = {
+            name: "Dictionary",
+            properties: {
+                fields: "{}"
+            }
+        }
+
+        let realm = new Realm({schema: [DictSchema]})
+        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
+        let ff = realm.objects(DictSchema.name)[0]
+        let cnt=0
+
+        let a = (obj, changeset ) => {
+            if(cnt === 1){
+                let keys = Object.keys(obj);
+                TestCase.assertTrue(obj.x2 !== undefined,"This field should be equal x2");
+                TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
+                TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
+                TestCase.assertArrayLength(changeset.insertions, 2, "insertions");
+                TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
+            }
+
+            if(cnt === 2){
+                let keys = Object.keys(obj)
+                TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
+                TestCase.assertTrue(obj.x5 !== undefined,"This field should be equal x5");
+                TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
+                TestCase.assertArrayLength(changeset.deletions, 2, "deletions");
+                TestCase.assertArrayLength(changeset.insertions, 3, "insertions");
+                TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
+            }
+            if(cnt === 3){
+                let keys = Object.keys(obj)
+                TestCase.assertEqual(keys[0], "x1", "First field should be equal x1");
+                TestCase.assertEqual(obj.x1, "hello", "x1 should be equals to \"hello\"");
+                TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
+                TestCase.assertArrayLength(changeset.insertions, 1, "insertions");
+                TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
+            }
+            cnt++
+        }
+        ff.fields.addListener(a)
+
+        // total object mutation.
+        realm.write(() => { ff.fields = {x1: 1, x2: 2} } )
+
+        // partial object mutation.
+        realm.write(() => { ff.fields = {x1: 1, x3: 2, x5: 5} } )
+
+        // deleting all but one field.
+        realm.write(() => { ff.fields = {x1: "hello"} } )
+
+        return new Promise((resolve, reject) => {
+            setTimeout(() =>{
+                TestCase.assertEqual(cnt, 4, "Counter should be four")
+                ff.fields.removeAllListeners();
+                realm.close();
+                resolve()
+            }, 1000)
+        })
     },
 
     testDictionaryEventListenerRemoveAll() {
@@ -336,6 +374,7 @@ module.exports = {
 
         point.removeAllListeners()
         realm.write(() => point.x=10 )
+        realm.close()
     },
 
     testDictionaryRemoveCallback() {
@@ -379,6 +418,14 @@ module.exports = {
 
         realm.write(() => { fields.field1=1 } )
         TestCase.assertTrue(called,"Function c should be called")
+        fields.removeAllListeners();
+        return new Promise((resolve, _) => {
+            setTimeout(() => {
+                fields.removeAllListeners();
+                realm.close();
+                resolve();
+            }, 1000);
+        });
     },
 
     testDictionaryUnsubscribingOnEmptyListener() {
@@ -416,8 +463,17 @@ module.exports = {
             correct = true
         })
         realm.write(() => { fields.field1=1 } )
-        TestCase.assertTrue(correct,"This is expected to work.")
+
+        return new Promise((resolve, _) => {
+            setTimeout(() => {
+                TestCase.assertTrue(correct,"This is expected to work.")
+                fields.removeAllListeners();
+                realm.close();
+                resolve();
+            });
+        });
     },
+
     testDictionaryPut() {
         const DictSchema = {
             name: "Dictionary",
@@ -435,7 +491,9 @@ module.exports = {
         realm.write(()=> {  D.put( {ff:2, pp:4} )  })
 
         TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
+        realm.close();
     },
+
     testDictionaryRemove() {
         const DictSchema = {
             name: "Dictionary",
@@ -461,6 +519,8 @@ module.exports = {
 
         let error = new Error("The key: unknown_key doesn't exist in the Dictionary.")
         TestCase.assertThrowsException(() =>  realm.write(()=> {  D.remove( ['unknown_key'] )  }) , error)
+
+        realm.close();
     }
 
 
