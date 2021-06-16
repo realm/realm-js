@@ -231,34 +231,28 @@ declare namespace Realm {
      * Dictionary
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Dictionary.html }
      */
+    
+    type Dictionary<ValueType = Mixed> = DictionaryBase<ValueType> & {
+        [key: string]: ValueType;
+    }
 
-     //interface Dictionary<T = unknown> { [key: string]: T }
-
-
-     interface Dictionary{
-        /**
-         * @returns An object for JSON serialization.
-         */
-        toJSON(): Array<any>;
-
+    interface DictionaryBase<ValueType = Mixed> {
         /**
          * @returns Adds given element to the dictionary
          */
-        put(element:{[key:string]:any}): void;
+        put(element:{[key:string]: ValueType}): void;
 
         /**
          * @returns Removes given element from the dictionary
          */
-        remove(element:{[key:string]:any}): void;
+        remove(element:{[key:string]: ValueType}): void;
 
         /**
          * @returns void
          */
-         addListener(callback: ObjectChangeCallback): void;
-
-         removeListener(callback: ObjectChangeCallback): void;
- 
-         removeAllListeners(): void;
+        addListener(callback: ObjectChangeCallback): void;
+        removeListener(callback: ObjectChangeCallback): void;
+        removeAllListeners(): void;
     }
 
     /**
@@ -572,20 +566,37 @@ type ExtractPropertyNamesOfType<T, PropType> = {
 }[keyof T];
 
 /**
- * Exchanges properties defined as From<Model> (e.g. Realm.List<Model>) with an optional To<Model | RealmInsertionModel<Model>> (e.g. Array<Model | RealmInsertionModel<Model>>).
+ * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
  */
-type RealmCollectionRemappedModelPart<T> = {
-    [K in keyof T]?: T[K] extends Realm.Collection<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
+type RealmListsRemappedModelPart<T> = {
+    [K in ExtractPropertyNamesOfType<T, Realm.List<any>>]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
 }
 
 /**
- * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
- * with only the keys which value extends Realm.List or Realm.Set, remapped as Arrays.
- */
-type RealmInsertionModel<T> =
-    Omit<Omit<Omit<T, ExtractPropertyNamesOfType<T, Function>>, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<unknown>>>
-    & RealmCollectionRemappedModelPart<Pick<T, ExtractPropertyNamesOfType<T, Realm.Collection<unknown>>>>
+* Exchanges properties defined as Realm.Dicionary<Model> with an optional key to mixed value object.
+*/
+type RealmDictionaryRemappedModelPart<T> = {
+    [K in ExtractPropertyNamesOfType<T, Realm.Dictionary>]?: T[K] extends Realm.Dictionary<infer ValueType> ? { [key: string]: ValueType } : never
+}
 
+/** Omits all properties of a model which are not defined by the schema */ 
+type OmittedRealmTypes<T> = Omit<T,
+    keyof Realm.Object |
+    ExtractPropertyNamesOfType<T, Function> |
+    ExtractPropertyNamesOfType<T, Realm.Collection<any>> |
+    ExtractPropertyNamesOfType<T, Realm.Dictionary>
+>;
+
+/** Remaps realm types to "simpler" types (arrays and objects) */
+type RemappedRealmTypes<T> =
+    RealmListsRemappedModelPart<T> &
+    RealmDictionaryRemappedModelPart<T>;
+
+/**
+ * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
+ * with only the keys which value extends Realm.List, remapped as Arrays.
+ */
+type RealmInsertionModel<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;
 declare class Realm {
     static defaultPath: string;
 
