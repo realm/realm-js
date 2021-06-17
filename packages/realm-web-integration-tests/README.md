@@ -47,7 +47,7 @@ Currently, these are only available when running in a browser.
 
 Before running tests which depends on a specific authentication provider:
 1. Run once to import the app,
-2. Go to http://localhost:9090 (or whereever your MongoDB Realm server is listening)
+2. Go to http://localhost:9090 (or wherever your MongoDB Realm server is listening)
 3. Setup the appropriate authentication providers.
 
 To enable testing credentials that require interaction, run with DEV_TOOLS and TEST_CREDENTIALS set to a comma-separated list of credentials.

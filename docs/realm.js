@@ -343,16 +343,16 @@ class Realm {
 }
 /**
  * This describes the different options used to create a {@link Realm} instance.
- * 
+ *
  * See {@tutorial http-proxy} for details on how use an HTTP forward proxy with this library.
- * 
+ *
  * @typedef Realm~Configuration
  * @type {Object}
  * @property {ArrayBuffer|ArrayBufferView} [encryptionKey] - The 512-bit (64-byte) encryption
  *   key used to encrypt and decrypt all data in the Realm.
  * @property {callback(Realm, Realm)} [migration] - The function to run if a migration is needed.
  *   This function should provide all the logic for converting data models from previous schemas
- *   to the new schema.
+ *   to the new schema. This option is incompatible with `sync`.
  *   This function takes two arguments:
  *   - `oldRealm` - The Realm before migration is performed.
  *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
@@ -378,7 +378,7 @@ class Realm {
  *    still requires a path (can be the default path) to identify the Realm so other processes can
  *    open the same Realm. The file will also be used as swap space if the Realm becomes bigger than
  *    what fits in memory, but it is not persistent and will be removed when the last instance
- *    is closed.
+ *    is closed. This option is incompatible with `sync`.
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
  * @property {boolean} [disableFormatUpgrade=false] - Specifies if this Realm's file format should
  *    be automatically upgraded if it was created with an older version of the Realm library.
@@ -481,7 +481,6 @@ class Realm {
  * @typedef Realm~PropertyType
  * @type {("bool"|"int"|"float"|"double"|"string"|"decimal128"|"objectId"|"date"|"data"|"list"|"set"|"linkingObjects"|"<ObjectType>")}
  *
- * @property {Mixed} "mixed" - Property value that allow any of the following types (`"bool","int","float","double","string","decimal128","objectId","date","data"`), this type is nullable by default.
  * @property {boolean} "bool" - Property value may either be `true` or `false`.
  * @property {number} "int" - Property may be assigned any number, but will be stored as a
  *   round integer, meaning anything after the decimal will be truncated.

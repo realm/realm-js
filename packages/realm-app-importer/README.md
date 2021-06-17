@@ -47,11 +47,17 @@ Positionals:
 Options:
   --version              Show version number                           [boolean]
   --help                 Show help                                     [boolean]
+<<<<<<< HEAD
   --base-url             Base url of the MongoDB Realm server to import the app
                          into        [string] [default: "http://localhost:9090"]
   --username             Username of an adminstrative user
+=======
+  --base-url             Base url of the stitch server to import the app into
+                                     [string] [default: "http://localhost:9090"]
+  --username             Username of an administrative user
+>>>>>>> 0fa02c0e3cdaf7bfd13b91762b83d31fae48bf3b
                                     [string] [default: "unique_user@domain.com"]
-  --password             Password of an adminstrative user
+  --password             Password of an administrative user
                                                   [string] [default: "password"]
   --config               Path for the realm-cli configuration to temporarily
                          store credentials    [string] [default: "realm-config"]
@@ -63,7 +69,11 @@ Options:
                                                        [boolean] [default: true]
 ```
 
+<<<<<<< HEAD
 Besides the `<template-path>` the CLI takes a few optional runtime parameters, most of which should be self-explanatory and set to defaults that should ease the use-case of integration tests agains local deployments.
+=======
+Besides the `<template-path>` the CLI takes a few optional runtime parameters, most of which should be self-explainatory and set to defaults that should ease the usecase of integration tests against local deployments.
+>>>>>>> 0fa02c0e3cdaf7bfd13b91762b83d31fae48bf3b
 
 When using the `import` command, a consuming integration test can to get a hold of the id of the app, in a couple of ways:
 

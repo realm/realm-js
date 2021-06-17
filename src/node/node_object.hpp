@@ -74,7 +74,7 @@ inline Napi::Value node::Object::get_property(Napi::Env env, const Napi::Object&
 }
 
 template<>
-inline void node::Object::set_property(Napi::Env env, const Napi::Object& object, const node::String& key, const Napi::Value& value, PropertyAttributes attributes) {
+inline void node::Object::set_property(Napi::Env env, Napi::Object& object, const node::String& key, const Napi::Value& value, PropertyAttributes attributes) {
 	try {
 		Napi::Object obj = object;
 		if (attributes) {
@@ -93,7 +93,7 @@ inline void node::Object::set_property(Napi::Env env, const Napi::Object& object
 }
 
 template<>
-inline void node::Object::set_property(Napi::Env env, const Napi::Object& object, uint32_t index, const Napi::Value& value) {
+inline void node::Object::set_property(Napi::Env env, Napi::Object& object, uint32_t index, const Napi::Value& value) {
 	try {
 		Napi::Object obj = object;
 		obj.Set(index, value);
@@ -174,6 +174,12 @@ template<>
 template<typename ClassType>
 inline Napi::Object node::Object::create_instance_by_schema(Napi::Env env, Napi::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
 	return node::ObjectWrap<ClassType>::create_instance_by_schema(env, constructor, schema, internal);
+}
+
+template<>
+template<typename ClassType>
+inline Napi::Object node::Object::create_instance_by_schema(Napi::Env env, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
+	return node::ObjectWrap<ClassType>::create_instance_by_schema(env, schema, internal);
 }
 
 template<typename ClassType>

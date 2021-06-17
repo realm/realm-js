@@ -43,9 +43,9 @@ describe("OAuth2Helper", () => {
             return null;
         });
 
-        const credentials = Credentials.google<
-            Realm.Credentials.OAuth2RedirectPayload
-        >("http://localhost:1337/callback");
+        const credentials = Credentials.google<Realm.Credentials.OAuth2RedirectPayload>(
+            "http://localhost:1337/callback",
+        );
         expect(typeof credentials.payload.redirectUrl).equals("string");
 
         const state = helper.generateState();

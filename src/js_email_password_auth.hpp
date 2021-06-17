@@ -32,6 +32,7 @@ class EmailPasswordAuthClass : public ClassDefinition<T, app::App::UsernamePassw
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using StringType = typename T::String;
     using String = js::String<T>;
     using Object = js::Object<T>;
     using Value = js::Value<T>;
@@ -149,17 +150,12 @@ void EmailPasswordAuthClass<T>::call_reset_password_function(ContextType ctx, Ob
 
     auto email = Value::validated_to_string(ctx, args[0], "email");
     auto password = Value::validated_to_string(ctx, args[1], "password");
-    auto call_args_js = Value::validated_to_array(ctx, args[2], "args");
+    auto stringified_ejson_args = Value::validated_to_string(ctx, args[2], "args");
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
+    
+    auto bson_args = String::to_bson(stringified_ejson_args);
 
-    bson::BsonArray call_args_bson;
-    uint32_t length = Object::validated_get_length(ctx, call_args_js);
-    for (uint32_t index = 0; index < length; ++index) {
-        auto obj = Object::get_property(ctx, call_args_js, index);
-        call_args_bson.push_back(Value::to_bson(ctx, obj));
-    }
-
-    client.call_reset_password_function(email, password, call_args_bson, Function::wrap_void_callback(ctx, this_object, callback));
+    client.call_reset_password_function(email, password, bson_args.operator const bson::BsonArray &(), Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 }

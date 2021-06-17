@@ -30,7 +30,8 @@ This repository is a Lerna mono-repository, meaning that individual packages are
 npx lerna bootstrap
 ```
 
-This will install all sub-packages, including the integration test suite and all environments. Use the [`--scope`](https://github.com/lerna/lerna/tree/main/core/filter-options#--scope-glob) (and [`--include-dependencies`](https://github.com/lerna/lerna/tree/main/core/filter-options#--include-dependencies)) parameter to limit what packages are installed.
+It's advised to have two terminals open, one occasionally running `npm run build-changes` (from the project root directory) when changes are made to the C++ source-code of Realm JS and another running `npm start` (from the `./tests` directory) to continuously run the integration tests when code change.
+The tests will re-run when the test suite changes and it has Realm JS installed as a symbolic link and will therefore run the latest Realm JS javascript code when the tests run. To reload the native module, you will however need to kill and restart the process running in the second terminal.
 
 ## Running the tests across all environments
 

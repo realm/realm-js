@@ -1,8 +1,7 @@
 ![Realm](https://github.com/realm/realm-js/raw/master/logo.png)
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
-This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (both iOS & Android), Node.js and Electron (on Windows, MacOS and Linux)
-
+This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (both iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
@@ -40,10 +39,10 @@ Prerequisites:
 * Android SDK 23+
 * [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
     - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.
-    - From the command-line: ```$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
+    - From the command-line: ```$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
 * [Android CMake](https://developer.android.com/ndk/guides/cmake)
     - Available via the SDK Manager in Android Studio **Tools > SDK Manager**
-    - From the command-line  ```$ANDROID_HOME/tools/bin/sdkmanager --install "cmake;3.18.1"````
+    - From the command-line  ```$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "cmake;3.18.1"````
 
 Clone RealmJS repository:
 
@@ -88,15 +87,17 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 * The compiled version of the Android module is here: `<project-root>/android`
 
 ### Building for nodejs:
-Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
-For example you can use Homebrew to install it.
-```
-brew install python@2
+You can build for nodejs by running the command:
+
+```sh
+npm run build
 ```
 
-```
-npm install --build-from-source=realm
-```
+If you want to build for Apple Silicon on an Intel based Mac, you can use the following command instead:
+
+```sh
+ npm run build-m1
+ ```
 
 #### Additional steps for Windows
 On Windows you will need to setup the environment for node-gyp:
@@ -168,7 +169,7 @@ Some users have reported the Chrome debugging being too slow to use after integr
 
 ## Running the tests
 
-The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your prefered shell setup:
+The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your preferred shell setup:
 
 ```
 export NVM_DIR="$HOME/.nvm"
@@ -213,6 +214,36 @@ You can attach a debugger to react-native tests by passing "Debug" to the `test.
 Using Visual Studio Code
 
 You can debug node tests using Visual Studio Code. Just use one of the launch configurations.
+
+## Analytics
+
+Asynchronously submits install information to Realm.
+
+Why are we doing this? In short, because it helps us build a better product
+for you. None of the data personally identifies you, your employer or your
+app, but it *will* help us understand what language you use, what Node.js
+versions you target, etc. Having this info will help prioritizing our time,
+adding new features and deprecating old features. Collecting an anonymized
+application path & anonymized machine identifier is the only way for us to
+count actual usage of the other metrics accurately. If we don’t have a way to
+deduplicate the info reported, it will be useless, as a single developer
+`npm install`-ing the same app 10 times would report 10 times more than another
+developer that only installs once, making the data all but useless.
+No one likes sharing data unless it’s necessary, we get it, and we’ve
+debated adding this for a long long time. If you truly, absolutely
+feel compelled to not send this data back to Realm, then you can set an env
+variable named `REALM_DISABLE_ANALYTICS`.
+
+Currently the following information is reported:
+
+ * What version of Realm is being installed.
+ * The OS platform and version which is being used.
+ * Node.js, v8, libuv, OpenSSL version numbers.
+ * An anonymous machine identifier and hashed application path to aggregate the other information on.
+
+ ## Known issues
+
+* AWS Lambda is not supported.
 
 ## Code of Conduct
 

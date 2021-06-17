@@ -114,7 +114,7 @@ JSValueRef jsc::Value::from_uuid(JSContextRef ctx, const UUID& value)
 }
 
 template<>
-OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, JSValueRef value)
+OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, const JSValueRef &value)
 {
     static jsc::String s_array_buffer = "ArrayBuffer";
     static jsc::String s_buffer = "buffer";
@@ -168,7 +168,7 @@ Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, const JSValueRef& value)
     auto object = to_object(ctx, value);
     // EJSON input supported (in RN only) for enabling debugging of synced realms.
     auto ejson_property = jsc::Object::get_property(ctx, object, "$numberDecimal");
-    
+
     if (is_undefined(ctx, ejson_property)) {
         static jsc::String s_to_string = "toString";
         JSValueRef args[] = {};
