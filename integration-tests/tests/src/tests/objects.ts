@@ -244,5 +244,20 @@ describe("Realm objects", () => {
             const persons = realm.objects(PersonWithId);
             expect(persons.length).equals(1);
         });
+        it("can be transmitted to JSON", () => {
+            const realm = new Realm({ schema: [PersonSchema] });
+            let john: Person;
+
+            realm.write(() => {
+                john = realm.create<Person>(PersonSchema.name, {
+                    name: "John Doe",
+                    age: 42,
+                });
+            });
+
+            const jsonObject = john.toJSON()
+
+            expect(JSON.stringify(jsonObject)).equals('{"age":42,"name":"John Doe","friends":[]}')
+        })
     });
 });
