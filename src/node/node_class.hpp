@@ -179,7 +179,8 @@ Napi::Reference<Napi::External<typename ClassType::Internal>> WrappedObject<Clas
 
 
 struct SchemaObjectType {
-    Napi::FunctionReference constructor;
+    Napi::FunctionReference factory;     // Use this to construct the object via Call() not New()
+    Napi::FunctionReference constructor; // Use this to check if the constructor is the same.
 };
 
 template <typename ClassType>
@@ -222,6 +223,11 @@ private:
 
     static Napi::Function init_class(Napi::Env env);
 
+    static const Napi::FunctionReference& get_or_create_realm_object_factory(Napi::Env env,
+                                                                             Napi::Function& constructor,
+                                                                             const realm::ObjectSchema& schema,
+                                                                             const SharedRealm& realm);
+
     static Napi::ClassPropertyDescriptor<WrappedObject<ClassType>>
     setup_method(Napi::Env env, const std::string& name, node::Types::FunctionCallback callback);
     static Napi::ClassPropertyDescriptor<WrappedObject<ClassType>>
@@ -235,7 +241,7 @@ private:
     static void property_setter(const Napi::CallbackInfo& info);
     static std::vector<Napi::PropertyDescriptor>
     create_napi_property_descriptors(Napi::Env env, const Napi::Object& constructorPrototype,
-                                     const realm::ObjectSchema& schema, bool redefine = true);
+                                     const realm::ObjectSchema& schema, Napi::Array& ownKeys, bool redefine = true);
 };
 
 template <>
@@ -312,7 +318,7 @@ inline auto& ObjectWrap<ClassType>::get_nativeMethods()
 template <typename ClassType>
 inline auto& ObjectWrap<ClassType>::get_schemaObjectTypes()
 {
-    static std::unordered_map<std::string, std::unordered_map<std::string, SchemaObjectType*>*> s_schemaObjectTypes;
+    static std::unordered_map<std::string, std::unordered_map<std::string, SchemaObjectType>> s_schemaObjectTypes;
     return s_schemaObjectTypes;
 }
 
@@ -1146,8 +1152,6 @@ Napi::Object ObjectWrap<ClassType>::create_instance(Napi::Env env, Internal* int
     return scope.Escape(factory).As<Napi::Object>();
 }
 
-inline static void schema_object_type_constructor(const Napi::CallbackInfo& info) {}
-
 template <typename ClassType>
 void ObjectWrap<ClassType>::internal_finalizer(Napi::Env, typename ClassType::Internal* internal)
 {
@@ -1157,27 +1161,14 @@ void ObjectWrap<ClassType>::internal_finalizer(Napi::Env, typename ClassType::In
     }
 }
 
-static inline void remove_schema_object(std::unordered_map<std::string, SchemaObjectType*>* schemaObjects,
-                                        const std::string& schemaName)
-{
-    bool schemaExists = schemaObjects->count(schemaName);
-    if (!schemaExists) {
-        return;
-    }
-
-    SchemaObjectType* schemaObjectType = schemaObjects->at(schemaName);
-    schemaObjects->erase(schemaName);
-    schemaObjectType->constructor.Reset();
-    delete schemaObjectType;
-}
-
 template <typename ClassType>
 inline std::vector<Napi::PropertyDescriptor>
 ObjectWrap<ClassType>::create_napi_property_descriptors(Napi::Env env, const Napi::Object& constructorPrototype,
-                                                        const realm::ObjectSchema& schema, bool redefine)
+                                                        const realm::ObjectSchema& schema, Napi::Array& ownKeys,
+                                                        bool redefine)
 {
     std::vector<Napi::PropertyDescriptor> properties;
-
+    uint32_t index = 0;
     for (auto& property : schema.persisted_properties) {
         std::string propName = property.public_name.empty() ? property.name : property.public_name;
         if (redefine || !constructorPrototype.HasOwnProperty(propName)) {
@@ -1185,6 +1176,7 @@ ObjectWrap<ClassType>::create_napi_property_descriptors(Napi::Env env, const Nap
             auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(
                 name->ToString(env), napi_enumerable, (void*)name);
             properties.push_back(descriptor);
+            ownKeys.Set(index++, Napi::String::New(env, propName));
         }
     }
 
@@ -1195,6 +1187,7 @@ ObjectWrap<ClassType>::create_napi_property_descriptors(Napi::Env env, const Nap
             auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(
                 name->ToString(env), napi_enumerable, (void*)name);
             properties.push_back(descriptor);
+            // XXX should computed properties be reported as enumerable own keys?
         }
     }
 
@@ -1202,116 +1195,79 @@ ObjectWrap<ClassType>::create_napi_property_descriptors(Napi::Env env, const Nap
 }
 
 template <typename ClassType>
-Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Napi::Function& constructor,
-                                                              const realm::ObjectSchema& schema, Internal* internal)
+const Napi::FunctionReference&
+ObjectWrap<ClassType>::get_or_create_realm_object_factory(Napi::Env env, Napi::Function& constructor,
+                                                          const realm::ObjectSchema& schema, const SharedRealm& realm)
 {
-    Napi::EscapableHandleScope scope(env);
+    static_assert(std::is_same_v<ClassType, realm::js::RealmObjectClass<realm::node::Types>>);
+
     auto& s_schemaObjectTypes = get_schemaObjectTypes();
     auto& s_class = get_class();
 
-    bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
-    if (!isRealmObjectClass) {
-        throw Napi::Error::New(env, "Creating instances by schema is supported for RealmObjectClass only");
-    }
+    std::string path = realm->config().path;
+    std::string schemaName = schema.name + ":" + std::to_string(realm->schema_version());
 
-    if (isRealmObjectClass && !internal) {
-        throw Napi::Error::New(
-            env, "RealmObjectClass requires an internal realm object when creating instances by schema");
-    }
+    auto& schemaObjects = s_schemaObjectTypes[path];
+    auto& schemaObject = schemaObjects[schemaName];
 
-    Napi::Object instance;
-    auto config = internal->realm()->config();
-    std::string path = config.path;
-    auto version = internal->realm()->schema_version();
-    std::string schemaName = schema.name + ":" + std::to_string(version);
 
-    std::unordered_map<std::string, SchemaObjectType*>* schemaObjects = nullptr;
-    if (!s_schemaObjectTypes.count(path)) {
-        // std::map<std::string, std::map<std::string, SchemaObjectType*>>
-        schemaObjects = new std::unordered_map<std::string, SchemaObjectType*>();
-        s_schemaObjectTypes.emplace(path, schemaObjects);
-    }
-    else {
-        schemaObjects = s_schemaObjectTypes.at(path);
-    }
-
+    auto ownKeys = Napi::Array::New(env);
     Napi::Function schemaObjectConstructor;
-    Napi::Symbol externalSymbol = ExternalSymbol;
+
     // if we are creating a RealmObject from schema with no user defined constructor
     if (constructor.IsEmpty()) {
-        // 1.Check by name if the constructor is already created for this RealmObject
-        if (!schemaObjects->count(schemaName)) {
+        // 1.Check by name if the factory is already created for this RealmObject
+        //  XXX should we also check if `constructor` is empty?
+        if (!schemaObject.factory.IsEmpty())
+            return schemaObject.factory;
 
-            // 2.Create the constructor
 
-            // get or create the RealmObjectClass<T> constructor
+        // 2.Create the constructor
 
-            // create the RealmObject function by name
-            schemaObjectConstructor = Napi::Function::New(env, schema_object_type_constructor, schema.name);
+        // Create the RealmObject function.
+        // Weird syntax is the simplest way to make a function with the `name` property set to the value of a
+        // passed-in variable. This avoids the risk of users injecting code via the scema name.
+        schemaObjectConstructor = env.Global()
+                                      .Get("Function")
+                                      .As<Napi::Function>()
+                                      .New({
+                                          Napi::String::New(env, "name"), // argument name
+                                          Napi::String::New(env, "return {[name]: function () {}}[name];") // body
+                                      })
+                                      .As<Napi::Function>()
+                                      .Call({Napi::String::New(env, schema.name)})
+                                      .As<Napi::Function>();
 
-            Napi::Function realmObjectClassConstructor = ObjectWrap<ClassType>::create_constructor(env);
-            auto parentCtorPrototypeProperty = realmObjectClassConstructor.Get("prototype");
-            auto childPrototypeProperty = schemaObjectConstructor.Get("prototype").As<Napi::Object>();
-            ObjectSetPrototypeOf.Call({childPrototypeProperty, parentCtorPrototypeProperty});
-            ObjectSetPrototypeOf.Call({schemaObjectConstructor, realmObjectClassConstructor});
+        Napi::Function realmObjectClassConstructor = ObjectWrap<ClassType>::create_constructor(env);
+        auto parentCtorPrototypeProperty = realmObjectClassConstructor.Get("prototype");
+        auto childPrototypeProperty = schemaObjectConstructor.Get("prototype").As<Napi::Object>();
+        ObjectSetPrototypeOf.Call({childPrototypeProperty, parentCtorPrototypeProperty});
+        ObjectSetPrototypeOf.Call({schemaObjectConstructor, realmObjectClassConstructor});
 
-            // get all properties from the schema
-            std::vector<Napi::PropertyDescriptor> properties =
-                create_napi_property_descriptors(env, childPrototypeProperty, schema, true /*redefine*/);
+        // get all properties from the schema
+        std::vector<Napi::PropertyDescriptor> properties =
+            create_napi_property_descriptors(env, childPrototypeProperty, schema, ownKeys, true /*redefine*/);
 
-            // define the properties on the prototype of the schema object constructor
-            childPrototypeProperty.DefineProperties(properties);
-
-            SchemaObjectType* schemaObjectType = new SchemaObjectType();
-            schemaObjects->emplace(schemaName, schemaObjectType);
-            schemaObjectType->constructor = Napi::Persistent(schemaObjectConstructor);
-            schemaObjectType->constructor.SuppressDestruct();
-        }
-        else {
-            // hot path. The constructor for this schema object is already cached. use it and return a new instance
-            SchemaObjectType* schemaObjectType = schemaObjects->at(schemaName);
-            schemaObjectConstructor = schemaObjectType->constructor.Value();
-        }
-
-        Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internal_finalizer);
-        instance = schemaObjectConstructor.New({});
-        instance.Set(externalSymbol, externalValue);
+        // define the properties on the prototype of the schema object constructor
+        childPrototypeProperty.DefineProperties(properties);
     }
     else {
         // creating a RealmObject with user defined constructor
 
-        bool schemaExists = schemaObjects->count(schemaName);
-        SchemaObjectType* schemaObjectType;
-        if (schemaExists) {
-            schemaObjectType = schemaObjects->at(schemaName);
-            schemaObjectConstructor = schemaObjectType->constructor.Value();
-
+        if (!schemaObject.factory.IsEmpty()) {
             // check if constructors have changed for the same schema object and name
-            if (!schemaObjectConstructor.StrictEquals(constructor)) {
-                schemaExists = false;
-                remove_schema_object(schemaObjects, schemaName);
+            if (constructor.StrictEquals(schemaObject.constructor.Value())) {
+                return schemaObject.factory;
             }
-        }
-
-        // hot path. The constructor for this schema object is already cached. use it and return a new instance
-        if (schemaExists) {
-            schemaObjectType = schemaObjects->at(schemaName);
-            schemaObjectConstructor = schemaObjectType->constructor.Value();
-
-            instance = schemaObjectConstructor.New({});
-
-            Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internal_finalizer);
-            instance.Set(externalSymbol, externalValue);
-
-            return scope.Escape(instance).As<Napi::Object>();
         }
 
         schemaObjectConstructor = constructor;
         Napi::Object constructorPrototype = constructor.Get("prototype").As<Napi::Object>();
 
         // get all properties from the schema
+        auto ownKeys = Napi::Array::New(env);
         std::vector<Napi::PropertyDescriptor> properties =
-            create_napi_property_descriptors(env, constructorPrototype, schema, false /*redefine*/);
+            create_napi_property_descriptors(env, constructorPrototype, schema, ownKeys, false /*redefine*/);
 
         Napi::Function realmObjectClassConstructor = ObjectWrap<ClassType>::create_constructor(env);
         bool isInstanceOfRealmObjectClass = constructorPrototype.InstanceOf(realmObjectClassConstructor);
@@ -1349,41 +1305,85 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
             constructorPrototype.DefineProperties(properties);
         }
 
-        instance = schemaObjectConstructor.New({});
-        if (!instance.InstanceOf(schemaObjectConstructor)) {
-            throw Napi::Error::New(env, "Realm object constructor must not return another value");
-        }
-
-        Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internal_finalizer);
-        instance.Set(externalSymbol, externalValue);
-
-        schemaObjectType = new SchemaObjectType();
-        schemaObjects->emplace(schemaName, schemaObjectType);
-        schemaObjectType->constructor = Napi::Persistent(schemaObjectConstructor);
-        schemaObjectType->constructor.SuppressDestruct();
+        schemaObject.constructor = Napi::Persistent(schemaObjectConstructor);
+        schemaObject.constructor.SuppressDestruct();
     }
 
-    return scope.Escape(instance).As<Napi::Object>();
+    schemaObject.factory = Persistent(env.Global()
+                                          .Get("Function")
+                                          .As<Napi::Function>()
+                                          .New({// Arguments
+                                                Napi::String::New(env, "ownKeysList"), Napi::String::New(env, "Type"),
+                                                // Body
+                                                Napi::String::New(env, R"(
+				const ownKeysSet = new Set(ownKeysList);
+				const handler = {
+					ownKeys(target) {
+						let directKeys = Reflect.ownKeys(target)
+						if (directKeys.length == 0)
+							return ownKeysList;
+						return [...ownKeysList, ...directKeys.filter(k => !ownKeysSet.has(k))];
+					},
+					getOwnPropertyDescriptor(target, prop) {
+						let direct = Reflect.getOwnPropertyDescriptor(target, prop);
+						if (direct)
+							return direct;
+						if (ownKeysSet.has(prop))
+							return {enumerable: true, configurable: true};
+
+					}
+				};
+				return function factory() {
+					const obj = new Type();
+					if (!(obj instanceof Type))
+						throw new Error("Realm object constructor must not return another value");
+
+					// Note: we could allow user to opt-out of Proxy by returning obj here, if the
+					// perf overhead is too high for them. Perhaps using some bool on the constructor?
+
+					return new Proxy(obj, handler);
+				}
+			)")})
+                                          .As<Napi::Function>()
+                                          .Call({ownKeys, schemaObjectConstructor})
+                                          .As<Napi::Function>());
+    schemaObject.factory.SuppressDestruct();
+
+    return schemaObject.factory;
+}
+
+template <typename ClassType>
+Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Napi::Function& constructor,
+                                                              const realm::ObjectSchema& schema, Internal* internal)
+{
+    static_assert(std::is_same_v<ClassType, realm::js::RealmObjectClass<realm::node::Types>>,
+                  "Creating instances by schema is supported for RealmObjectClass only");
+
+    if (!internal) {
+        throw Napi::Error::New(
+            env, "RealmObjectClass requires an internal realm object when creating instances by schema");
+    }
+
+    const auto& factory = get_or_create_realm_object_factory(env, constructor, schema, internal->realm());
+    auto instance = factory.Call({}).template As<Napi::Object>();
+    instance.Set(ExternalSymbol, Napi::External<Internal>::New(env, internal, internal_finalizer));
+    return instance;
 }
 
 template <typename ClassType>
 inline void ObjectWrap<ClassType>::on_context_destroy(Napi::Env env, std::string realmPath)
 {
-    std::unordered_map<std::string, SchemaObjectType*>* schemaObjects = nullptr;
     auto& s_schemaObjectTypes = get_schemaObjectTypes();
-    if (!s_schemaObjectTypes.count(realmPath)) {
+    auto outerIt = s_schemaObjectTypes.find(realmPath);
+    if (outerIt == s_schemaObjectTypes.end()) {
         return;
     }
 
-    schemaObjects = s_schemaObjectTypes.at(realmPath);
-    for (auto it = schemaObjects->begin(); it != schemaObjects->end(); ++it) {
-        it->second->constructor.Reset();
-        SchemaObjectType* schemaObjecttype = it->second;
-        delete schemaObjecttype;
+    auto& schemaObjects = outerIt->second;
+    for (auto it = schemaObjects.begin(); it != schemaObjects.end(); ++it) {
+        it->second.constructor.Reset();
     }
-    s_schemaObjectTypes.erase(realmPath);
-
-    delete schemaObjects;
+    s_schemaObjectTypes.erase(outerIt);
 }
 
 template <typename ClassType>
