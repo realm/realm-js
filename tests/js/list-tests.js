@@ -1782,11 +1782,11 @@ module.exports = {
                 name: 'MyTodoList'
             })
 
-            TestCase.assertThrows(() => {
+            TestCase.assertThrowsContaining(() => {
                 list.items.push(new TodoItem("Fix that bug"))
-            }, "Cannot reference a detached instance of Realm.Object")
+            }, "Cannot reference a detached instance of Realm.Object");
 
-            TestCase.assertThrows(() => {
+            TestCase.assertThrowsContaining(() => {
                 realm.create(TodoItem, new TodoItem("Fix that bug"))
             }, "Cannot create an object from a detached Realm.Object instance")
         })

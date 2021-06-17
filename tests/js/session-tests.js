@@ -234,7 +234,7 @@ module.exports = {
             "The following changes cannot be made in additive-only schema mode:");
     },
 
-    testRealmOpenWithExistingLocalRealm() {
+    async testRealmOpenWithExistingLocalRealm() {
         if (!platformSupported) {
             return;
         }
@@ -247,7 +247,7 @@ module.exports = {
         const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.baseUrl, partition, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
-            .then(u => {
+            .then(async u => {
                 user = u;
                 config = getSyncConfiguration(user, partition);
                 config.schemaVersion = 1;
@@ -259,7 +259,8 @@ module.exports = {
                 realm.close();
 
                 config.schemaVersion = 2;
-                return Realm.open(config)
+                const realm2 = await Realm.open(config);
+                return realm2;
             }).then(realm => {
                 let actualObjectsCount = realm.objects('Dog').length;
                 TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
@@ -838,10 +839,16 @@ module.exports = {
 
             const spv = realm.syncSession.config.partitionValue;
 
+            console.log(spv);
+
             // BSON types have their own 'equals' comparer
-            if (spv instanceof ObjectId || spv instanceof UUID) {
+            if (spv instanceof ObjectId) {
+                console.log("a");
                 TestCase.assertTrue(spv.equals(partitionValue));
+            } else if (spv && spv.toUUID !== undefined) {
+                TestCase.assertTrue(spv.toUUID().equals(partitionValue));
             } else {
+                console.log("b");
                 TestCase.assertEqual(spv, partitionValue);
             }
 

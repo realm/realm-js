@@ -420,6 +420,7 @@ module.exports = {
 
         // try to open the same realm in persistent mode (should fail as you cannot mix modes)
         TestCase.assertThrowsContaining(() => new Realm({}), 'already opened with different inMemory settings.');
+        realm3.close();
     },
 
     testRealmConstructorReadOnly: function() {
@@ -443,6 +444,7 @@ module.exports = {
         realm = new Realm({readOnly: true});
         TestCase.assertEqual(realm.schema.length, 1);
         TestCase.assertEqual(realm.readOnly, true);
+        realm.close();
     },
 
     testRealmExists: function() {
@@ -453,6 +455,7 @@ module.exports = {
 
         // Local Realms
         let config = {schema: [schemas.TestObject]};
+
         TestCase.assertFalse(Realm.exists(config));
         new Realm(config).close();
         TestCase.assertTrue(Realm.exists(config));

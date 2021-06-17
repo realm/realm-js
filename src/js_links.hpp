@@ -32,7 +32,7 @@ private:
     using Context = typename T::Context;
     using Object = js::Object<T>;
     using ObjectType =  typename Object::ObjectType;
-    using RealmObjectClass =  RealmObjectClass<T>;
+    using RealmObjClass =  RealmObjectClass<T>;
     using Value =  js::Value<T>;
 
     Context context;
@@ -43,15 +43,14 @@ public:
         js_object = Value::validated_to_object(context, value);
     }
 
-    realm::Object* get_os_object(){ return get_internal<T, RealmObjectClass>(context, js_object); }
+    realm::Object* get_os_object(){ return get_internal<T, RealmObjClass>(context, js_object); }
 
     bool is_instance() {
-        return Object::template is_instance<RealmObjectClass>(context, js_object);
+        return Object::template is_instance<RealmObjClass>(context, js_object);
     }
 
     bool belongs_to_realm(std::shared_ptr<Realm> realm){
         auto os_object = get_os_object();
-        auto ii = is_instance();
         return is_instance() && os_object && os_object->realm() == realm;
     }
 
