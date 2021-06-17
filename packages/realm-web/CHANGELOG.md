@@ -1,4 +1,20 @@
-?.?.? Release notes (2020-??-??)
+1.3.0 Release notes (2021-05-27)
+=============================================================
+
+### Breaking Changes
+* None
+
+### Enhancements
+* Added a configuration parameter (`skipLocationRequest`) to skip requesting a location URL via the baseUrl and use the `baseUrl` as the url prefixed for any requests initiated by this app. This can useful when connecting to a server through a reverse proxy, to avoid the location request to make the client "break out" and start requesting another server. ([#3759](https://github.com/realm/realm-js/pull/3759))
+
+
+### Fixed
+* None
+
+### Internal
+* None
+
+1.2.1 Release notes (2021-02-17)
 =============================================================
 
 ### Breaking Changes
@@ -33,6 +49,17 @@
 * None
 
 1.1.0 Release notes (2020-12-08)
+=============================================================	
+
+### Breaking Changes	
+* None	
+
+### Enhancements	
+* Added support of OpenID Connect credential for the Google authentication provider. ([#3383](https://github.com/realm/realm-js/issues/3383))	
+
+### Fixed	
+* Fixed the type returned by `getApp` and `App.getApp`, such that an `app.currentUser` will match the `User` exported by the package. ([#3420](https://github.com/realm/realm-js/pull/3420), since v1.0.0-rc.1)	
+
 ### Internal
 * None
 

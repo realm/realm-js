@@ -116,7 +116,7 @@ template<typename T>
 void CredentialsClass<T>::google(ContextType ctx, ObjectType this_object, Arguments& arguments, ReturnValue& return_value) {
     arguments.validate_maximum(1);
 
-    auto decode_arg = [=](ValueType arg) {
+    auto decode_arg = [&](ValueType arg) {
         // the bare string is deprecated but we keep it until next major version
         // auth_code begins with "4/" while we assume all other cases are id_tokens
         if (Value::is_string(ctx, arguments[0])) {

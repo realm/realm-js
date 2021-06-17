@@ -21,7 +21,6 @@
 "use strict";
 
 const cp = require("child_process");
-const cla = require("command-line-args");
 const path = require("path");
 const fs = require("fs");
 const Watchman = require("fb-watchman");
@@ -141,13 +140,11 @@ async function run(dependencyPath) {
 }
 
 if (module.parent === null) {
-
-  const options = cla({
-    name: "path", alias: "p", type: String
-  });
-  
-  const dependencyPath = path.resolve(options.path);
-  
+  if (process.argv.length < 3) {
+    throw new Error("Expected path to a dependent package");
+  }
+  const lastArg = process.argv[process.argv.length-1];
+  const dependencyPath = path.resolve(lastArg);
   run(dependencyPath).catch(err => {
     console.error(err.message);
     process.exit(1);

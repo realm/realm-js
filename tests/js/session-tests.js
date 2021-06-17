@@ -33,6 +33,8 @@ const Utils = require('./test-utils');
 let schemas = require('./schemas');
 const AppConfig = require('./support/testConfig');
 
+const REALM_MODULE_PATH = require.resolve("realm");
+
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
 
@@ -145,6 +147,37 @@ module.exports = {
         TestCase.assertNull(realm.syncSession);
     },
 
+    async testRealmInvalidSyncConfiguration1() {
+        const config = {
+            sync: true,
+            inMemory: true,
+        };
+
+        return new Promise((resolve, reject) => {
+            return Realm.open(config)
+                .then(_ => reject())
+                .catch(_ => resolve());
+        });
+    },
+
+    async testRealmInvalidSyncConfiguration2() {
+        const partition = Utils.genPartition();
+        let credentials = Realm.Credentials.anonymous();
+        let app = new Realm.App(appConfig);
+
+
+        return new Promise((resolve, reject) => {
+            return app.logIn(credentials)
+                .then(user => {
+                    let config = getSyncConfiguration(user, partition);
+                    config.migration = (_) => { /* empty function */ };
+                    return Realm.open(config)
+                        .then(_ => reject())
+                        .catch(_ => resolve());
+                });
+        });
+    },
+
     testRealmOpen() {
         if (!isNodeProcess) {
             return;
@@ -201,7 +234,7 @@ module.exports = {
             "The following changes cannot be made in additive-only schema mode:");
     },
 
-    testRealmOpenWithExistingLocalRealm() {
+    async testRealmOpenWithExistingLocalRealm() {
         if (!platformSupported) {
             return;
         }
@@ -214,7 +247,7 @@ module.exports = {
         const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.baseUrl, partition, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
-            .then(u => {
+            .then(async u => {
                 user = u;
                 config = getSyncConfiguration(user, partition);
                 config.schemaVersion = 1;
@@ -226,7 +259,8 @@ module.exports = {
                 realm.close();
 
                 config.schemaVersion = 2;
-                return Realm.open(config)
+                const realm2 = await Realm.open(config);
+                return realm2;
             }).then(realm => {
                 let actualObjectsCount = realm.objects('Dog').length;
                 TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
@@ -805,10 +839,16 @@ module.exports = {
 
             const spv = realm.syncSession.config.partitionValue;
 
+            console.log(spv);
+
             // BSON types have their own 'equals' comparer
-            if (spv instanceof ObjectId || spv instanceof UUID) {
+            if (spv instanceof ObjectId) {
+                console.log("a");
                 TestCase.assertTrue(spv.equals(partitionValue));
+            } else if (spv && spv.toUUID !== undefined) {
+                TestCase.assertTrue(spv.toUUID().equals(partitionValue));
             } else {
+                console.log("b");
                 TestCase.assertEqual(spv, partitionValue);
             }
 
@@ -877,23 +917,5 @@ module.exports = {
             });
             realm.close();
         });
-    },
-
-    async testAnalyticsSubmission() {
-        const context = node_require('realm/package.json');
-        const analytics = node_require('realm/lib/submit-analytics');
-
-        const payload = await analytics.fetchPlatformData(context, 'TestEvent');
-
-        TestCase.assertDefined(payload.webHook);
-        TestCase.assertType(payload.webHook.event, 'string');
-        TestCase.assertDefined(payload.webHook.properties);
-        TestCase.assertType(payload.webHook.properties.Binding, 'string');
-        TestCase.assertDefined(payload.mixPanel);
-        TestCase.assertType(payload.mixPanel.event, 'string');
-        TestCase.assertDefined(payload.mixPanel.properties);
-        TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
-
-        await analytics.submitStageAnalytics('TestEvent');
     }
 };

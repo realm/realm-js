@@ -420,6 +420,7 @@ module.exports = {
 
         // try to open the same realm in persistent mode (should fail as you cannot mix modes)
         TestCase.assertThrowsContaining(() => new Realm({}), 'already opened with different inMemory settings.');
+        realm3.close();
     },
 
     testRealmConstructorReadOnly: function() {
@@ -443,6 +444,7 @@ module.exports = {
         realm = new Realm({readOnly: true});
         TestCase.assertEqual(realm.schema.length, 1);
         TestCase.assertEqual(realm.readOnly, true);
+        realm.close();
     },
 
     testRealmExists: function() {
@@ -453,6 +455,7 @@ module.exports = {
 
         // Local Realms
         let config = {schema: [schemas.TestObject]};
+
         TestCase.assertFalse(Realm.exists(config));
         new Realm(config).close();
         TestCase.assertTrue(Realm.exists(config));
@@ -716,7 +719,7 @@ module.exports = {
             // Create Initial object
             realm.create('AllPrimaryTypesObject', Object.assign(template, {
                 primaryCol: '35',
-                dataCol: new ArrayBuffer(1), 
+                dataCol: new ArrayBuffer(1),
                 boolCol: false,
             }));
             realm.create('AllPrimaryTypesObject', Object.assign(template, {
@@ -2005,7 +2008,7 @@ module.exports = {
 
         for (let i = 0; i < values.length; i++) {
             let oid2 = objects[i]["id"];
-            TestCase.assertTrue(oid2 instanceof ObjectId, "instaceof");
+            TestCase.assertTrue(oid2 instanceof ObjectId, "instanceof");
             TestCase.assertTrue(oids[i].equals(oid2), "equal");
             TestCase.assertEqual(oid2.toHexString(), oids[i].toHexString());
         }
@@ -2046,7 +2049,7 @@ module.exports = {
         // Check schema
         TestCase.assertEqual(realm.schema.length, 1);
         TestCase.assertEqual(realm.schema[0].properties["id"].type, "uuid");
-        
+
         // Auto-generate checks
         const uuid = new UUID();
         realm.write(() => {
