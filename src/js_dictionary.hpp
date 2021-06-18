@@ -71,17 +71,10 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>> {
 
     static ObjectType create_instance(ContextType, realm::object_store::Dictionary);
 
-    // accessors
-    static void get_property(ContextType, ObjectType, const String &, ReturnValue &);
-    static bool set_property(ContextType, ObjectType, const String &, ValueType);
-    static std::vector<String> get_keys(ContextType, ObjectType);
-
-    static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
-
     // methods
-    static void put(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void getter(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void setter(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void remove(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void get(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // observables
     static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -92,17 +85,11 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>> {
     static ValueType create_dictionary_change_set(ContextType, DictionaryChangeSet const &);
     static void validate_value(ContextType, realm::object_store::Dictionary &, ValueType);
 
-    std::string const name = "Dictionary";
-
-    const StringPropertyType<T> string_accessor = {
-        wrap<get_property>,
-        wrap<set_property>,
-        wrap<get_keys>
-    };
+    std::string const name = "_Dictionary";
 
     MethodMap<T> const methods = {
-        {"put", wrap<put>},
-        {"get", wrap<get>},
+        {"setter", wrap<setter>},
+        {"getter", wrap<getter>},
         {"remove", wrap<remove>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
@@ -112,18 +99,11 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>> {
 
 template<typename T>
 typename T::Object DictionaryClass<T>::create_instance(ContextType ctx, realm::object_store::Dictionary dictionary) {
-    // return create_object<T, DictionaryClass<T>>(ctx, new realm::js::Dictionary<T>(std::move(dictionary)));
-    std::vector<std::string> keys;
+    auto object = create_object<T, DictionaryClass<T>>(ctx, new realm::js::Dictionary<T>(std::move(dictionary)));
 
-    for (auto i = 0; i < dictionary.get_keys().size(); ++i) {
-        std::string key = dictionary.get_keys().get<StringData>(i);
-        keys.push_back(key);
-    }
-
-    auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
-    FunctionType constructor = Value::to_function(ctx, Object::get_property(ctx, realm_constructor, "Dictionary"));
-    auto object = create_instance_by_keys<T, DictionaryClass<T>>(ctx, constructor, keys, new realm::js::Dictionary<T>(std::move(dictionary)));
-    return object;
+    ObjectType realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+    FunctionType realm_dictionary_constructor = Value::to_constructor(ctx, Object::get_property(ctx, realm_constructor, "Dictionary"));
+    return Function<T>::construct(ctx, realm_dictionary_constructor, { object });
 }
 
 template<typename T>
@@ -139,41 +119,7 @@ void DictionaryClass<T>::validate_value(ContextType ctx, realm::object_store::Di
 }
 
 template<typename T>
-void DictionaryClass<T>::get_property(ContextType ctx, ObjectType this_object, const String &property_name, ReturnValue &return_value) {
-    std::string key = property_name;
-    std::cout << "FISK 1:" << key << "\n";
-    auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
-
-    if (dictionary->contains(key)) {
-        std::cout << "FISK 2\n";
-        NativeAccessor<T> accessor(ctx, *dictionary);
-        return_value.set(dictionary->get(accessor, key));
-    }
-    else {
-        std::cout << "FISK 3\n";
-        return_value.set(Value::from_undefined(ctx));
-    }
-}
-
-template<typename T>
-bool DictionaryClass<T>::set_property(ContextType ctx, ObjectType this_object, const String &property_name, ValueType value) {
-    std::string key = property_name;
-    auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
-
-    validate_value(ctx, *dictionary, value);
-    NativeAccessor<T> accessor(ctx, *dictionary);
-    dictionary->insert(accessor, key, value);
-    return true;
-}
-
-template<typename T>
-std::vector<String<T>> DictionaryClass<T>::get_keys(ContextType ctx, ObjectType object) {
-    std::vector<String> names;
-    return names;
-}
-
-template<typename T>
-void DictionaryClass<T>::put(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void DictionaryClass<T>::setter(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
@@ -188,7 +134,7 @@ void DictionaryClass<T>::put(ContextType ctx, ObjectType this_object, Arguments 
 }
 
 template<typename T>
-void DictionaryClass<T>::get(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void DictionaryClass<T>::getter(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);

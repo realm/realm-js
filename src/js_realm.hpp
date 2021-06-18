@@ -491,7 +491,7 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Set", set_constructor, attributes);
-    Object::set_property(ctx, realm_constructor, "Dictionary", dictionary_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "_Dictionary", dictionary_constructor, attributes); // wrap as a proxy object
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 

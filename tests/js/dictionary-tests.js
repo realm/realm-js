@@ -49,14 +49,8 @@ module.exports = {
         let data = realm.objects(DictSchema.name)[0]
 
         TestCase.assertEqual(typeof data.a, "object", "Should be an object");
-        console.log("FISK 1")
         let a = data.a
-        console.log("FISK 2")
         TestCase.assertTrue(data.a instanceof(Realm.Dictionary), "Should be a dictionary");
-
-        // TestCase.assertEqual(data.a.get("x"), 1, "Should be an equals to a.get('x') = 1");
-        // TestCase.assertEqual(data.a.get("y"), 2, "Should be an equals to a.get('y') = 2");
-        // TestCase.assertEqual(data.a.get("z"), "hey", "Should be an equals to a.get('z') = 'hey'");
 
         TestCase.assertEqual(data.a.x, 1, "Should be an equals to a.x = 1");
         TestCase.assertEqual(data.a.y, 2, "Should be an equals to a.y = 2");
