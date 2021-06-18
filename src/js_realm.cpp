@@ -104,21 +104,31 @@ std::string TypeErrorException::type_string(Property const& prop)
         case PropertyType::ObjectId:
             ret = "objectId";
             break;
+        case PropertyType::UUID:
+            ret = "uuid";
+            break;
         case PropertyType::LinkingObjects:
         case PropertyType::Object:
             ret = prop.object_type;
             break;
         case PropertyType::Mixed:
-            throw std::runtime_error("'Mixed' type support is not implemented yet");
+            ret = "mixed";
+            break;
         default:
             REALM_UNREACHABLE();
     }
 
-    if (realm::is_nullable(prop.type)) {
+    if (realm::is_nullable(prop.type) && !realm::is_dictionary(prop.type)) {
         ret += "?";
     }
     if (realm::is_array(prop.type)) {
         ret += "[]";
+    }
+    if (realm::is_dictionary(prop.type)) {
+        ret += "{}";
+    }
+    if (realm::is_set(prop.type)) {
+        ret += "<>";
     }
     return ret;
 }

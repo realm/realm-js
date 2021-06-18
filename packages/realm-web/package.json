@@ -73,6 +73,6 @@
     "rollup-plugin-dts": "^1.4.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "ts-node": "^8.8.2",
-    "typescript": "^4.0.2"
+    "typescript": "^4.2.4"
   }
 }

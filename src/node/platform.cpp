@@ -51,7 +51,7 @@ std::string default_realm_file_directory()
 #else
   char buf[PATH_MAX];
 #endif
-    
+
     size_t cwd_len = sizeof(buf);
     int err = uv_cwd(buf, &cwd_len);
     if (err) {
@@ -126,7 +126,12 @@ void remove_realm_files_from_directory(const std::string &dir_path)
             static std::string realm_extension(".realm");
             static std::string realm_note_extension(".realm.note");
             static std::string realm_lock_extension(".realm.lock");
-            if (ends_with(path, realm_extension) || ends_with(path, realm_note_extension) || ends_with(path, realm_lock_extension)) {
+            static std::string realm_log_extension(".realm.log");
+            static std::string realm_log_a_extension(".realm.log_a"); // legacy
+            static std::string realm_log_b_extension(".realm.log_b"); // legacy
+            if (ends_with(path, realm_extension) || ends_with(path, realm_note_extension)
+                || ends_with(path, realm_lock_extension) || ends_with(path, realm_log_extension)
+                || ends_with(path, realm_log_a_extension) || ends_with(path, realm_log_b_extension)) {
                 FileSystemRequest delete_req;
                 if (uv_fs_unlink(uv_default_loop(), &delete_req, path.c_str(), nullptr) != 0) {
                     throw UVException(static_cast<uv_errno_t>(delete_req.result));

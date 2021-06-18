@@ -1,6 +1,6 @@
 add_library(realm-js-shared OBJECT
     js_realm.cpp
-)
+        common/object/strategies.hpp common/object/node/methods.hpp)
 
 target_link_libraries(realm-js-shared PUBLIC Realm::ObjectStore)
 target_include_directories(realm-js-shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

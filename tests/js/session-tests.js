@@ -26,9 +26,7 @@
 
 const debug = require('debug')('tests:session');
 const Realm = require('realm');
-
-// Using Realm.BSON instead of require("bson") to ensure the same package is used (which the symlinked "realm" package breaks)
-const { ObjectId } = Realm.BSON;
+const { ObjectId, UUID } = Realm.BSON;
 
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
@@ -72,7 +70,7 @@ function getSyncConfiguration(user, partition) {
             name: 'Dog',
             primaryKey: '_id',
             properties: {
-                _id: 'objectId?',
+                _id: 'objectId',
                 breed: 'string?',
                 name: 'string',
                 realm_id: 'string?',
@@ -236,7 +234,7 @@ module.exports = {
             "The following changes cannot be made in additive-only schema mode:");
     },
 
-    testRealmOpenWithExistingLocalRealm() {
+    async testRealmOpenWithExistingLocalRealm() {
         if (!platformSupported) {
             return;
         }
@@ -249,7 +247,7 @@ module.exports = {
         const credentials = Realm.Credentials.anonymous();
         return runOutOfProcess(__dirname + '/download-api-helper.js', appConfig.id, appConfig.baseUrl, partition, REALM_MODULE_PATH)
             .then(() => app.logIn(credentials))
-            .then(u => {
+            .then(async u => {
                 user = u;
                 config = getSyncConfiguration(user, partition);
                 config.schemaVersion = 1;
@@ -261,7 +259,8 @@ module.exports = {
                 realm.close();
 
                 config.schemaVersion = 2;
-                return Realm.open(config)
+                const realm2 = await Realm.open(config);
+                return realm2;
             }).then(realm => {
                 let actualObjectsCount = realm.objects('Dog').length;
                 TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
@@ -820,19 +819,21 @@ module.exports = {
             -12342908,
             -7482937500235834,
             -Number.MAX_SAFE_INTEGER,
-            new ObjectId(),
+            new ObjectId("603fa0af4caa9c90ff6e126c"),
+            new UUID("f3287217-d1a2-445b-a4f7-af0520413b2a"),
             null
         ];
 
         for (const partitionValue of testPartitionValues) {
-            console.log('>partitionValue', partitionValue)
             const app = new Realm.App(appConfig);
 
-            const user = await app.logIn(Realm.Credentials.anonymous())
+            const user = await app.logIn(Realm.Credentials.anonymous());
 
             const config = getSyncConfiguration(user, partitionValue);
             TestCase.assertEqual(partitionValue, config.sync.partitionValue);
 
+            // TODO: Update docker testing-setup to allow for multiple apps and test each type on a supported App.
+            // Note: This does NOT await errors from the server, as we currently have limitations in the docker-server-setup. All tests with with non-string fails server-side.
             const realm = new Realm(config);
             TestCase.assertDefined(realm);
 
@@ -841,6 +842,8 @@ module.exports = {
             // BSON types have their own 'equals' comparer
             if (spv instanceof ObjectId) {
                 TestCase.assertTrue(spv.equals(partitionValue));
+            } else if (spv && spv.toUUID !== undefined) {
+                TestCase.assertTrue(spv.toUUID().equals(partitionValue));
             } else {
                 TestCase.assertEqual(spv, partitionValue);
             }
@@ -867,6 +870,7 @@ module.exports = {
             const user = await app.logIn(Realm.Credentials.anonymous())
 
             const config = getSyncConfiguration(user, partitionValue);
+            // Note: We do not test with Realm.open() as we do not care about server errors (these tests MUST fail before hitting the server).
             TestCase.assertThrows(() => new Realm(config));
         }
     },

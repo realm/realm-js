@@ -1,7 +1,7 @@
 'use strict';
 
 const Realm = require('realm');
-const bson = require('bson');
+const bson = Realm.BSON;
 const {assertEqual, assertNotEqual} = require('./asserts');
 
 function bson_parse(json) {

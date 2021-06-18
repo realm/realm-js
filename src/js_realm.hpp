@@ -23,6 +23,7 @@
 #include "js_util.hpp"
 #include "js_realm_object.hpp"
 #include "js_list.hpp"
+#include "js_set.hpp"
 #include "js_results.hpp"
 #include "js_schema.hpp"
 #include "js_observable.hpp"
@@ -343,6 +344,8 @@ public:
     static void delete_file(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void realm_file_exists(ContextType, ObjectType, Arguments &, ReturnValue &);
 
+    static void bson_parse_json(ContextType, ObjectType, Arguments &, ReturnValue &);
+
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
     static void set_default_path(ContextType, ObjectType, ValueType value);
@@ -355,6 +358,7 @@ public:
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
         {"deleteFile", wrap<delete_file>},
         {"exists", wrap<realm_file_exists>},
+        {"_bsonParseJsonForTest", wrap<bson_parse_json>},
 #if REALM_ENABLE_SYNC
         {"_asyncOpen", wrap<async_open_realm>},
 #endif
@@ -382,7 +386,6 @@ public:
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"_updateSchema", wrap<update_schema>},
-        {"_objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
 
@@ -479,12 +482,14 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
     FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
+    FunctionType set_constructor = ObjectWrap<T, SetClass<T>>::create_constructor(ctx);
     FunctionType realm_object_constructor = ObjectWrap<T, RealmObjectClass<T>>::create_constructor(ctx);
     FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "Set", set_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 
@@ -939,7 +944,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                 Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
                 ValueType callback_arguments[2] =  {
-                    Value::from_undefined(protected_ctx), 
+                    Value::from_undefined(protected_ctx),
                     object,
                 };
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
@@ -954,7 +959,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
 
         ValueType callback_arguments[2] = {
-            object, 
+            object,
             Value::from_null(protected_ctx),
         };
         Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
@@ -1296,24 +1301,6 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 }
 
 template<typename T>
-void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
-    args.validate_count(2);
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
-
-    auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
-    std::string object_id_string = Value::validated_to_string(ctx, args[1]);
-
-    const Group& group = realm->read_group();
-    auto table = ObjectStore::table_for_object_type(group, object_schema.name);
-    auto object_id = GlobalKey::from_string(object_id_string);
-    auto object_key = table->get_objkey(object_id);
-
-    if (object_key) {
-        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, object_key)));
-    }
-}
-
-template<typename T>
 void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
     args.validate_count(1);
 
@@ -1354,6 +1341,14 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
         nullptr,
         true
     );
+}
+
+template<typename T>
+void RealmClass<T>::bson_parse_json(ContextType ctx, ObjectType, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(1);
+    auto json = std::string(Value::validated_to_string(ctx, args[0]));
+    auto parsed = bson::parse(json);
+    return_value.set(Value::from_bson(ctx, parsed));
 }
 
 #if REALM_ENABLE_SYNC
