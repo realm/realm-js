@@ -18,7 +18,7 @@ NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 * File format: generates Realms with format 22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Known Issues
-* Set iterators do not work under Jest (#3788).
+* Set iterators do not work under Jest ([#3788](https://github.com/realm/realm-js/issues/3788)).
 
 ### Internal
 * Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
@@ -81,60 +81,6 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * Removed private methods `Realm._objectForObjectId()` and `Realm.Object._objectId()`.
 * Omitting zlib when building for Node.js on Windows, since this is no longer provided by the platform. ([#3787](https://github.com/realm/realm-js/pull/3787))
 
-10.5.0-beta.2 Release notes (2021-5-12)
-=============================================================
-NOTE: Realm file format is likely to break and you CAN NOT revert back to the previous file format - DATA WILL BE LOST!!!!
-NOTE: Sync protocol version 4: CANNOT SYNC WITH MONGODB REALM CLOUD.
-NOTE: Bump file format version to 20. NO DOWNGRADE PATH IS AVAILABLE.
-
-### Enhancements
-* None.
-
-### Fixed
-* Set didn't export `objectType` to Realm.schema when it contained scalar types.
-* Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
-* Add explicitly support for Nullable/Undefined values for the Mixed type. ([#3731](https://github.com/realm/realm-js/issues/3731))
-
-### Compatibility
-* MongoDB Realm Cloud.
-* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
-* File format: generates Realms with format v21 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
-
-### Internal
-* Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
-* Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
-* Upgraded to Realm Core v11.0.0-beta.5.
-
-10.5.0-beta.1 Release notes (2021-5-6)
-=============================================================
-NOTE: This is an internal release and SHOULD NOT be used.
-NOTE: Realm file format is likely to break and you CAN NOT revert back to the previous file format - DATA WILL BE LOST!!!!
-NOTE: Sync protocol version 4: CANNOT SYNC WITH MONGODB REALM CLOUD.
-NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
-
-### Enhancements
-=======
-* Added Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
-* Added support for HTTP proxy and `ssl` option to `Realm.App.Sync` configuration.
-* Added Set type ([#3378](https://github.com/realm/realm-js/issues/3378)).
-* Array of primitive lists will not be `snapshot()`'ed.
-* Added UUID types. ([#3244](https://github.com/realm/realm-js/issues/3244))
-* Adding Dictionaries types. ([#3392](https://github.com/realm/realm-js/issues/3392))
-* Fixing exception handling when calling Dictionary methods.
-
-### Fixed
-* None.
-
-### Compatibility
-* MongoDB Realm Cloud.
-* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
-* File format: generates Realms with format 21.
-
-### Internal
-* Bump the Realm Sync protocol version to 4.
-* Bump Realm File Format version to 21.
-* Upgraded Realm Core to v11.0.0-beta.4.
-* Prebuild the React Native iOS variant and bundle it in the npm tarball. ([#3649](https://github.com/realm/realm-js/pull/3649))
 
 10.4.2 Release notes (2021-6-10)
 =============================================================
