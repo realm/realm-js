@@ -6,5 +6,6 @@
     "integration-tests/tests",
     "integration-tests/environments/*"
   ],
-  "version": "independent"
+  "version": "independent",
+  "forceLocal": true
 }
