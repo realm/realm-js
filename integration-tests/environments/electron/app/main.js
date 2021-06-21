@@ -26,6 +26,7 @@ const { app, BrowserWindow } = electron;
 // app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096');
 
 const path = require("path");
+const url = require("url");
 
 // Keep a global reference of the window object, if you don´t, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -34,19 +35,24 @@ let mainWindow;
 app.on("ready", () => {
     console.log("Electron app is ready");
     const processType = process.argv[2];
+    const mochaRemoteServerURL = process.argv[3] || "ws://localhost:8090";
+    global.options = { mochaRemoteServerURL, processType };
     if (processType === "main") {
-        require("./mocha.js");
+        require("./mocha.js")(mochaRemoteServerURL, "main");
     } else if (processType === "renderer") {
-        const preload = path.resolve(__dirname, "renderer.js");
         mainWindow = new BrowserWindow({ 
-            show: false,
+            show: false, 
             webPreferences: {
-                enableRemoteModule: true,
-                preload,
+                nodeIntegration: true
             }
         });
-
-        mainWindow.loadFile(path.join(__dirname, "index.html"));
+        
+        // Load the index.html of the app.
+        mainWindow.loadURL(url.format({
+            pathname: path.join(__dirname, "index.html"),
+            protocol: "file:",
+            slashes: true,
+        }));
     } else {
         console.error("Expected a process runtime argument");
         process.exit(1);

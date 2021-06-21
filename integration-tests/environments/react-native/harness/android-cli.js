@@ -17,42 +17,45 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const cp = require("child_process");
-const path = require("path");
 
 function getAdbPath() {
     return process.env.ANDROID_HOME
-        ? path.resolve(process.env.ANDROID_HOME, "platform-tools/adb")
+        ? process.env.ANDROID_HOME + "/platform-tools/adb"
         : "adb";
 }
 
 function getEmulatorPath() {
     return process.env.ANDROID_HOME
-        ? path.resolve(process.env.ANDROID_HOME, "tools/emulator")
+        ? process.env.ANDROID_HOME + "/tools/emulator"
         : "emulator";
 }
 
+function execSync(path, args, returnStdOut) {
+    if (returnStdOut) {
+        return cp.execFileSync(path, args, {
+            encoding: "utf8",
+        });
+    } else {
+        cp.execFileSync(path, args, {
+            stdio: ["inherit", "inherit", "inherit"],
+        });
+    }
+}
+
 const adb = {
-    exec(args, returnStdOut = true, verbose = true) {
+    exec(args, returnStdOut = true) {
         const path = getAdbPath();
-        if (verbose) {
-            console.log(`Executing ${path} ${args.join(" ")}`);
-        }
-        return cp.execFileSync(
-            path,
-            args,
-            returnStdOut ? { encoding: "utf8" } : { stdio: "inherit" },
-        );
-    },
-    spawn(args) {
-        const path = getAdbPath();
-        console.log(`Spawning ${path} ${args.join(" ")}`);
-        return cp.spawn(path, args, { stdio: "inherit" });
+        console.log(`Running ${path} ${args.join(" ")}`);
+        return execSync(path, args, returnStdOut);
     },
     reverseServerPort(port) {
         adb.exec(["reverse", `tcp:${port}`, `tcp:${port}`], false);
     },
     devices() {
-        const output = adb.exec(["devices"]).trim().split("\n");
+        const output = adb
+            .exec(["devices"])
+            .trim()
+            .split("\n");
         // Remove the "List of devices attached"
         const [intro, ...lines] = output;
         if (intro !== "List of devices attached") {
@@ -64,15 +67,6 @@ const adb = {
             return { id, state };
         });
     },
-    logcat(...args) {
-        return adb.spawn(["logcat", ...args]);
-    },
-    shell(...args) {
-        return adb.exec(["shell", ...args]);
-    },
-    shellPidOf(packageName) {
-        return adb.exec(["shell", `pidof -s ${packageName}`], true, false).trim();
-    }
 };
 
 const emulator = {
@@ -82,7 +76,10 @@ const emulator = {
         return execSync(path, args, returnStdOut);
     },
     devices() {
-        return emulator.exec(["-list-avds"]).trim().split("\n");
+        return emulator
+            .exec(["-list-avds"])
+            .trim()
+            .split("\n");
     },
     start(avd) {
         const path = getEmulatorPath();

@@ -16,9 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+if (!global.Realm) {
+    throw new Error("Expected 'Realm' to be available as a global");
+}
 
-console.log("Loading Realm Integration Tests");
+if (!global.title) {
+    throw new Error("Expected 'title' to be available as a global");
+}
 
 if (!global.fs) {
     throw new Error("Expected 'fs' to be available as a global");
@@ -28,28 +32,23 @@ if (!global.path) {
     throw new Error("Expected 'path' to be available as a global");
 }
 
-if (!global.fetch) {
-    throw new Error("Expected 'fetch' to be available as a global");
-}
-
 if (!global.environment || typeof global.environment !== "object") {
     throw new Error("Expected 'environment' to be available as a global");
 }
 
 // Patch in a function that can skip running tests in specific environments
-import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
-global.describe.skipIf = suiteSkipIf;
-global.it.skipIf = testSkipIf;
+import { skipIf } from "./utils/skip-if";
+global.it.skipIf = skipIf;
+
+describe(global.title, () => {
+    require("./realm-constructor");
+    require("./serialization");
+    require("./objects");
+    require("./iterators");
+    require("./dynamic-schema-updates");
+    require("./bson");
+});
 
 beforeEach(() => {
     Realm.clearTestState();
 });
-
-require("./tests/import-app-util");
-require("./tests/realm-constructor");
-require("./tests/serialization");
-require("./tests/objects");
-require("./tests/iterators");
-require("./tests/dynamic-schema-updates");
-require("./tests/bson");
-require("./tests/credentials/anonymous");

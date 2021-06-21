@@ -11,7 +11,7 @@
 			"yargs"
 		],
 		"lib": [
-			"es2019"
+			"ES2015"
 		]
 	},
 	"include": [

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2019 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,16 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-"use strict";
+// Require this file to get the Realm constructor injected into the global.
+// This is useful when we want to run the tests outside of any particular environment
 
-import Collection, { createCollection } from "./collections";
-
-export default class Set extends Collection {
-    constructor() {
-        throw new Error("Sets are not yet supported in Chrome debugging mode");
-    }
-}
-
-export function createSet(realmId, info) {
-    return createCollection(Set.prototype, realmId, info, true);
-}
+global.fs = require("fs-extra");
+global.path = require("path");
+global.Realm = require("realm");
+global.title = "Realm JS development-mode";
+global.environment = { node: true };

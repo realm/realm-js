@@ -25,5 +25,9 @@ const remote = require("electron").remote;
 
 // Use the main process console when logging
 global.console = remote.getGlobal("console");
+// Get the options available for the renderer
+const { mochaRemoteServerURL, processType } = remote.getGlobal("options");
 // If we're supposed to run in the renderer, start the mocha remote client
-require("./mocha.js");
+if (processType === "renderer") {
+    require("./mocha.js")(mochaRemoteServerURL, "renderer");
+}

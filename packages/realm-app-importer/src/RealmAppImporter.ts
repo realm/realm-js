@@ -20,31 +20,22 @@ import cp from "child_process";
 import fetch from "node-fetch";
 import path from "path";
 import fs from "fs-extra";
-import glob from "glob";
-import deepmerge from "deepmerge";
-
-/**
- * First level keys are file globs and the values are objects that are spread over the content of the files matching the glob.
- * @example { "config.json": { name: "overridden-name" }, "services/local-mongodb/rules/*.json": { database: "another-database" } }
- */
-export type TemplateReplacements = Record<string, Record<string, unknown>>;
 
 /* eslint-disable no-console */
 
-export interface AppImporterOptions {
+export interface RealmAppImporterOptions {
     baseUrl: string;
     username: string;
     password: string;
-    realmConfigPath: string;
+    stitchConfigPath: string;
     appsDirectoryPath: string;
-    cleanUp?: boolean;
 }
 
-export class AppImporter {
+export class RealmAppImporter {
     private readonly baseUrl: string;
     private readonly username: string;
     private readonly password: string;
-    private readonly realmConfigPath: string;
+    private readonly stitchConfigPath: string;
     private readonly appsDirectoryPath: string;
 
     private accessToken: string | undefined;
@@ -53,43 +44,34 @@ export class AppImporter {
         baseUrl,
         username,
         password,
-        realmConfigPath,
+        stitchConfigPath,
         appsDirectoryPath,
-        cleanUp = true,
-    }: AppImporterOptions) {
+    }: RealmAppImporterOptions) {
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
-        this.realmConfigPath = realmConfigPath;
+        this.stitchConfigPath = stitchConfigPath;
         this.appsDirectoryPath = appsDirectoryPath;
 
-        if (cleanUp) {
-            process.on("exit", () => {
-                // Remove any stitch configuration
-                if (fs.existsSync(this.realmConfigPath)) {
-                    console.log(`Deleting ${this.realmConfigPath}`);
-                    fs.removeSync(this.realmConfigPath);
-                }
-                // If there is nothing the the apps directory, lets delete it
-                if (fs.existsSync(this.appsDirectoryPath)) {
-                    console.log(`Deleting ${this.appsDirectoryPath}`);
-                    fs.removeSync(this.appsDirectoryPath);
-                }
-            });
-        }
+        process.on("exit", () => {
+            // Remove any stitch configuration
+            if (fs.existsSync(this.stitchConfigPath)) {
+                console.log(`Deleting ${this.stitchConfigPath}`);
+                fs.removeSync(this.stitchConfigPath);
+            }
+            // If there is nothing the the apps directory, lets delete it
+            if (fs.existsSync(this.appsDirectoryPath)) {
+                console.log(`Deleting ${this.appsDirectoryPath}`);
+                fs.removeSync(this.appsDirectoryPath);
+            }
+        });
     }
 
-    /**
-     * @param appTemplatePath The path to a template directory containing the configuration files needed to import the app.
-     * @param replacements An object with file globs as keys and a replacement object as values. Allows for just-in-time replacements of configuration parameters.
-     * @returns A promise of an object containing the app id.
-     */
     public async importApp(
         appTemplatePath: string,
-        replacements: TemplateReplacements = {},
     ): Promise<{ appId: string }> {
-        const { name: appName } = this.loadAppConfigJson(appTemplatePath);
-        await this.logIn();
+        const { name: appName } = this.loadStichJson(appTemplatePath);
+        await this.login();
         const groupId = await this.getGroupId();
 
         // Get or create an application
@@ -112,14 +94,12 @@ export class AppImporter {
         const appPath = path.resolve(this.appsDirectoryPath, appId);
         // Copy over the app template
         this.copyAppTemplate(appPath, appTemplatePath);
-        // Apply any replacements to the files before importing from them
-        this.applyReplacements(appPath, replacements);
 
         // Import
-        this.realmCli(
+        this.stitchCli(
             "import",
             "--config-path",
-            this.realmConfigPath,
+            this.stitchConfigPath,
             "--base-url",
             this.baseUrl,
             "--app-name",
@@ -139,10 +119,6 @@ export class AppImporter {
         return { appId };
     }
 
-    private get apiUrl() {
-        return `${this.baseUrl}/api/admin/v3.0`;
-    }
-
     private loadJson(filePath: string) {
         try {
             const content = fs.readFileSync(filePath, "utf8");
@@ -154,15 +130,15 @@ export class AppImporter {
         }
     }
 
-    private loadAppConfigJson(appTemplatePath: string) {
-        const configJsonPath = path.resolve(appTemplatePath, "config.json");
-        return this.loadJson(configJsonPath);
+    private loadStichJson(appTemplatePath: string) {
+        const stitchJsonPath = path.resolve(appTemplatePath, "stitch.json");
+        return this.loadJson(stitchJsonPath);
     }
 
     private loadSecretsJson(appTemplatePath: string) {
-        const secretsJsonPath = path.resolve(appTemplatePath, "secrets.json");
-        if (fs.existsSync(secretsJsonPath)) {
-            return this.loadJson(secretsJsonPath);
+        const stitchJsonPath = path.resolve(appTemplatePath, "secrets.json");
+        if (fs.existsSync(stitchJsonPath)) {
+            return this.loadJson(stitchJsonPath);
         } else {
             return {};
         }
@@ -178,35 +154,20 @@ export class AppImporter {
         }
     }
 
-    private applyReplacements(
-        appPath: string,
-        replacements: TemplateReplacements,
-    ) {
-        for (const [fileGlob, replacement] of Object.entries(replacements)) {
-            console.log(`Applying replacements to ${fileGlob}`);
-            const files = glob.sync(fileGlob, { cwd: appPath });
-            for (const relativeFilePath of files) {
-                const filePath = path.resolve(appPath, relativeFilePath);
-                const content = fs.readJSONSync(filePath);
-                const mergedContent = deepmerge(content, replacement);
-                fs.writeJSONSync(filePath, mergedContent, { spaces: 2 });
-            }
-        }
+    private stitchCli(...args: string[]) {
+        cp.spawnSync("stitch-cli", args, { stdio: "inherit" });
     }
 
-    private realmCli(...args: string[]) {
-        cp.spawnSync("realm-cli", args, { stdio: "inherit" });
-    }
-
-    private async logIn() {
-        const url = `${this.apiUrl}/auth/providers/local-userpass/login`;
+    private async login() {
+        const url = `${this.baseUrl}/api/admin/v3.0/auth/providers/local-userpass/login`;
+        const body = JSON.stringify({
+            username: this.username,
+            password: this.password,
+        });
         const response = await fetch(url, {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-                username: this.username,
-                password: this.password,
-            }),
+            body,
         });
         // Store the access and refresh tokens
         const responseBody = await response.json();
@@ -225,12 +186,16 @@ export class AppImporter {
         refreshToken: string,
         accessToken: string,
     ) {
-        const realmConfig = [
+        const stitchConfig = [
             `public_api_key: ${username}`,
             `refresh_token: ${refreshToken}`,
             `access_token: ${accessToken}`,
         ];
-        fs.writeFileSync(this.realmConfigPath, realmConfig.join("\n"), "utf8");
+        fs.writeFileSync(
+            this.stitchConfigPath,
+            stitchConfig.join("\n"),
+            "utf8",
+        );
     }
 
     private async getProfile() {

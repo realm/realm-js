@@ -18,7 +18,7 @@
 
 import path from "path";
 
-import { AppImporter } from "realm-app-importer";
+import { RealmAppImporter } from "realm-app-importer";
 
 const MDB_REALM_BASE_URL =
     process.env.MDB_REALM_BASE_URL || "http://localhost:9090";
@@ -27,8 +27,6 @@ const MDB_REALM_USERNAME =
 const MDB_REALM_PASSWORD = process.env.MDB_REALM_PASSWORD || "password";
 
 const MDB_REALM_APP_ID = process.env.MDB_REALM_APP_ID;
-
-const MDB_REALM_SKIP_CLEANUP = process.env.MDB_REALM_SKIP_CLEANUP === "true";
 
 export async function importRealmApp() {
     // Create a new MongoDBRealmService
@@ -39,13 +37,12 @@ export async function importRealmApp() {
         );
         return { appId: MDB_REALM_APP_ID, baseUrl };
     } else {
-        const importer = new AppImporter({
+        const importer = new RealmAppImporter({
             baseUrl,
             username: MDB_REALM_USERNAME,
             password: MDB_REALM_PASSWORD,
             appsDirectoryPath: path.resolve(__dirname, "../imported-apps"),
-            realmConfigPath: path.resolve(__dirname, "../realm-config"),
-            cleanUp: !MDB_REALM_SKIP_CLEANUP,
+            stitchConfigPath: path.resolve(__dirname, "../stitch-config.json"),
         });
         const appTemplatePath = path.resolve(
             __dirname,

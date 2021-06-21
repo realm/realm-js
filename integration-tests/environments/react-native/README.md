@@ -5,32 +5,37 @@ Currently this directory consists of:
   - `App.js` a simple component which creates a mocha remote client and displays progress.
   - `index.js` re-exports the `App` component.
 - A test harness in `harness`, where:
-  - `runner.js` starts the metro bundler, starts the app (using `react-native run-android` or `react-native run-ios`) and optionally prints output from logcat (while running an Android application).
   - `android-cli.js` wraps the Android specific `adb` and `emulator` CLIs.
   - `react-native-cli.js` wraps the `react-native` CLI.
-  - `xcode-cli.js` wraps the `react-native` CLI.
-  - `puppeteer-log.js` implements a handler for logs used when running Chrome debugging headlessly.
+  - `runner.js` starts a mocha remote server, the metro bundler and starts the app (using `react-native run-android` or `react-native run-android`)
 
-To install this environment, run the following command from the root directory of repository:
+To install this environment, simply run:
 
 ```bash
-npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
+npm install
 ```
 
-This will run `install-local` and `pod install` (in `./ios`) for you.
+Before building for iOS ensure you've run `pod install` in the `./ios` directory
+
+```bash
+cd ios
+pod install
+```
+
+To avoid integrity checks failing when NPM compares the SHA of the `realm` and `realm-integration-tests` archives with SHA in the package-lock.json we `npm install` the archives on `preinstall`.
 
 ## Running the tests
 
 To run tests on Android, start an emulator and run:
 
 ```bash
-npm run test:android
+npm run test/android
 ```
 
 To run tests on iOS:
 
 ```bash
-npm run test:ios
+npm run test/ios
 ```
 
 To run tests in both processes in sequence, start an Android emulator and run:
@@ -43,153 +48,26 @@ npm test
 
 When making rapid iterations on the tests or Realm JS, its important to shorten the latency from change to feedback.
 
-To run the tests in watch mode, use the `watch:*` scripts:
+To run the tests in watch mode, prepend the `--watch` runtime option when starting the tests:
 
 On Android
 
 ```bash
-npm run watch:android
+npm run test/android -- --watch
 ```
 
 On iOS
 
 ```bash
-npm run watch:ios
+npm run test/ios -- --watch
 ```
 
 This will keep the harness, metro server and mocha-remote servers running and connected to the device. When hot reloading (from an update to Realm JS, the tests or the app itself) the app will re-connect and rerun the tests.
 
-## Environment variables
-
-// TODO: Add a section on environment variables supported by the harness.
-
-## Weird configurations
-
-In an attempt to lower the time from change to the Realm JS source-code or the integration test suite, to a test being run, this React Native app has a couple of weird configurations.
-
-Because we're not listing `realm` as a `dependency` of our `package.json` we can't rely on React Native auto-linking.
-This gives us an opportunity to manually link to the root project, removing the need to reinstall the `realm` package or link build artifacts into the `node_modules/realm` directory.
-
-### Metro bundler configuration
-
-- Watch the Realm library and the integration test suite packages.
-- Block any loading of packages from `node_modules` in the two packages.
-- Use `install-local` install the dependencies of our two packages into the app.
-
-### Android configuration
-
-We've declared the project to the [settings.gradle](./android/settings.gradle):
-
-```gradle
-// [...]
-// Manually linking the Realm package to the root project
-include ':realm'
-project(':realm').projectDir = new File(settingsDir, '../../../../react-native/android')
-```
-
-We're loading the project manually in the App's [build.gradle](./android/app/build.gradle):
-
-```gradle
-dependencies {
-    // [...]
-    implementation project(":realm")
-    // [...]
-}
-```
-
-We're manually loading the Realm package into the [MainApplication.java](./android/app/src/main/java/com/realmreactnativetests/MainApplication.java):
-
-```java
-// [...]
-import io.realm.react.RealmReactPackage;
-
-public class MainApplication extends Application implements ReactApplication {
-  // [...]
-  private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
-    // [...]
-    protected List<ReactPackage> getPackages() {
-      // [...]
-      packages.add(new RealmReactPackage());
-      // [...]
-    }
-  }
-}
-```
-
-### iOS Configuration
-
-We're manually linking from the [Podfile](./ios/Podfile):
-
-```ruby
-# [...]
-target 'RealmReactNativeTests' do
-  # [...]
-  pod 'RealmJS', :path => '../../../..'
-  # [...]
-end
-```
-
-### Automating setting app to run in debugging mode
-
-Running in chrome debugging vs native mode can be switched manually in the app or alternatively via a Mocha Remote context parameter.
-The package defines a couple of scripts for convenience:
-
-```
-npm run test:ios:chrome
-npm run test:android:chrome
-npm run watch:ios:chrome
-npm run watch:android:chrome
-```
-
-### Upgrading the React Native version
-
-In an attempt to keep the React Native environment updated, this is a small guide that can be followed to upgrade the app to the latest version of React Native.
-
-First move the existing environment to a backup location that you can copy files from:
+While in watch mode, you can rebuild, repackage and reinstall the tests by running
 
 ```bash
-cd ./environments
-mv react-native react-native-backup
+npm run update-tests
 ```
 
-Initialize a new React Native app into the `react-native` directory:
-
-```bash
-npx react-native init RealmReactNativeTests --directory react-native --npm
-```
-
-Clean up unneeded files
-
-```bash
-cd ./environments
-rm -r react-native/__tests__
-rm react-native/App.js react-native/.prettierrc.js
-```
-
-Copy over files related to the test harness
-
-```bash
-cd ./environments
-cp -r react-native-backup/README.md react-native-backup/.eslintrc.js react-native-backup/harness react-native-backup/src react-native-backup/index.js react-native
-```
-
-Install additional dependencies:
-
-```bash
-cd react-native
-npm install mocha mocha-junit-reporter mocha-remote-client react-native-fs path-browserify @react-native-community/art react-native-progress
-npm install mocha-remote-server fs-extra promise-timeout --save-dev
-```
-
-Open the `package.json` of both `react-native` and `react-native-backup`:
-
-1. compare (to see if any dependencies are missing from the list above),
-2. copy over the scripts
-3. copy over the `realm` and `realm-integration-tests` "local dependencies".
-4. delete anything "jest" related.
-
-Install dependencies again to run the `prepare` script (from the root of the repository):
-
-```bash
-npx lerna bootstrap
-```
+Because of https://github.com/facebook/metro/issues/1 we need this extra repackaging step.

@@ -1,10 +1,6 @@
 {
   "packages": [
-    ".",
-    "packages/*",
-    "integration-tests",
-    "integration-tests/tests",
-    "integration-tests/environments/*"
+    "packages/*"
   ],
   "version": "independent"
 }

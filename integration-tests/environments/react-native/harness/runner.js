@@ -16,28 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const puppeteer = require("puppeteer");
+const { MochaRemoteServer } = require("mocha-remote-server");
+const { timeout, TimeoutError } = require("promise-timeout");
+const Yargs = require("yargs");
+const path = require("path");
 
 const rn = require("./react-native-cli");
 const android = require("./android-cli");
 const xcode = require("./xcode-cli");
-const puppeteerLog = require("./puppeteer-log");
-const logcat = require("./logcat");
 
 const IOS_DEVICE_NAME = "realm-js-integration-tests";
 const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 
-const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, SPAWN_LOGCAT, SKIP_RUNNER } = process.env;
-
-if (typeof PLATFORM !== "string") {
-    throw new Error("Expected a 'PLATFORM' environment variable");
-}
-
 /**
  * Ensure a simulator is created and booted
  */
-function ensureSimulator() {
-    if (PLATFORM === "android") {
+function ensureSimulator(platform, deleteExisting = false) {
+    if (platform === "android") {
         const devices = android.adb.devices();
         const activeDevices = devices.filter(({ state }) => state === "device");
         if (activeDevices.length === 0) {
@@ -46,13 +41,11 @@ function ensureSimulator() {
             );
         } else {
             // Ensure the device can access the mocha remote server
-            if (MOCHA_REMOTE_PORT) {
-                android.adb.reverseServerPort(MOCHA_REMOTE_PORT);
-            }
-            // Ensure the Realm App Importer is reachable
-            android.adb.reverseServerPort(8091);
+            android.adb.reverseServerPort(
+                MochaRemoteServer.DEFAULT_CONFIG.port,
+            );
         }
-    } else if (PLATFORM === "ios") {
+    } else if (platform === "ios") {
         const version = xcode.xcrun("--version").stdout.trim();
         console.log(`Using ${version}`);
 
@@ -68,9 +61,7 @@ function ensureSimulator() {
         }
 
         // Shutdown all booted simulators (as they might interfeer by loading and executing the Metro bundle)
-        // xcode.simctl.shutdown("all");
-        // TODO: Investigate if we have to shut down anything at all
-        // xcode.simctl.shutdown(IOS_DEVICE_NAME);
+        xcode.simctl.shutdown("all");
 
         // Determine if the device exists and has the correct IOS_DEVICE_TYPE_ID and latest runtime
         const { devices: devicesByType } = xcode.simctl.list(
@@ -85,7 +76,13 @@ function ensureSimulator() {
             ({ name }) => name === IOS_DEVICE_NAME,
         );
 
-        if (devices.length > 0) {
+        if (deleteExisting) {
+            // Delete any existing devices with the expected name
+            for (const device of devices) {
+                console.log(`Deleting simulator (id = ${device.udid})`);
+                xcode.simctl.delete(device.udid);
+            }
+        } else if (devices.length > 0) {
             // Use the first device with the expected name
             return devices[0].udid;
         }
@@ -110,65 +107,124 @@ function ensureSimulator() {
         xcode.simctl.bootstatus(deviceId);
         console.log("Simulator is ready 🚀");
     } else {
-        throw new Error(`Unexpected platform: '${PLATFORM}'`);
+        throw new Error(`Unexpected platform: '${platform}'`);
     }
 }
 
-async function launchDebugger(headless) {
-    try {
-        const browser = await puppeteer.launch({ headless });
-        const page = await browser.newPage();
-        page.on("console", puppeteerLog.handleConsole);
-        await page.goto("http://localhost:8081/debugger-ui/");
-    } catch (err) {
-        if (err.message.startsWith("net::ERR_CONNECTION_REFUSED")) {
-            console.log("Metro was not ready: Retrying in 1s");
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return launchDebugger();
-        } else {
-            throw err;
+async function runApp(platform, junitFilePath, isWatching) {
+    if (isWatching) {
+        console.log("Running in watch-mode");
+    }
+
+    const mochaConfig = {};
+
+    // Check if an argument for junit path was requested
+    if (junitFilePath) {
+        mochaConfig.reporter = "mocha-junit-reporter";
+        mochaConfig.reporterOptions = {
+            mochaFile: junitFilePath,
+        };
+    }
+
+    // Create and start a server
+    const server = new MochaRemoteServer(mochaConfig, {
+        // Accept connections only from the expected platform, to prevent cross-talk when both emulators are open
+        id: platform,
+        runOnConnection: isWatching,
+    });
+    await server.start();
+
+    // Spawn a react-native metro server
+    const metro = rn.async("start", "--reset-cache" /*, "--verbose"*/);
+    // Kill metro when the process is killed
+    process.on("exit", code => {
+        metro.kill("SIGHUP");
+    });
+    // Close the runner if metro closes unexpectedly
+    metro.on("close", code => {
+        console.error(`Metro server closed (code = ${code})`);
+        if (code !== 0) {
+            process.exit(code);
         }
-    }
-}
+    });
 
-async function run(headless, spawnLogcat) {
     // Ensure the simulator is booted and ready for the app to start
-    ensureSimulator();
-
-    // Connect the debugger, right away
-    if (typeof headless === "boolean") {
-        await launchDebugger(headless);
-    }
+    ensureSimulator(platform);
 
     console.log("Starting the app");
-    if (PLATFORM === "android") {
-        // Start the log cat (skipping any initial pid from an old run)
-        if (spawnLogcat) {
-            logcat.start("com.realmreactnativetests", true).catch(console.error);
-        }
+    if (platform === "android") {
         // Ask React Native to run the android app
         rn.sync("run-android", "--no-packager");
-    } else if (PLATFORM === "ios") {
+    } else if (platform === "ios") {
         // Ask React Native to run the ios app
         rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
     } else {
-        throw new Error(`Unexpected platform: '${PLATFORM}'`);
+        throw new Error(`Unexpected platform: '${platform}'`);
+    }
+
+    // Set an interval that calls "react-native run-ios" every minute to make it refetch the bundle if it fails
+    const retryInterval = setInterval(() => {
+        if (platform === "ios") {
+            console.log("Retrying starting the iOS app");
+            // Ask React Native to re-run the ios app
+            rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
+        }
+    }, 60000);
+
+    if (isWatching) {
+        clearInterval(retryInterval);
+    } else {
+        // Run tests with a 5 minute timeout
+        return timeout(
+            new Promise(resolve => {
+                console.log("Running tests 🏃‍");
+                server.run(resolve);
+            }),
+            60000 * 5,
+        ).finally(() => {
+            clearInterval(retryInterval);
+        });
     }
 }
 
-function optionalStringToBoolean(value) {
-    return typeof value === "string" ? value === "true" : value;
-}
-
-if (module.parent === null) {
-    if (SKIP_RUNNER === "true") {
-        console.log("Skipping the runner - you're on your own");
-        process.exit(0);
-    }
-    const headlessDebugger = optionalStringToBoolean(HEADLESS_DEBUGGER);
-    const spawnLogcat = optionalStringToBoolean(SPAWN_LOGCAT);
-    run(headlessDebugger, spawnLogcat).catch(err => {
-        console.error(err.stack);
-        process.exit(1);
-    });
-}
+Yargs.command(
+    "$0 <platform>",
+    "Run the integration tests",
+    yargs => {
+        return yargs
+            .positional("platform", {
+                type: "string",
+                choices: ["ios", "android"],
+            })
+            .option("junit-output-path", {
+                type: "string",
+                coerce: path.resolve,
+            })
+            .option("watch", {
+                alias: "w",
+                type: "boolean",
+            });
+    },
+    args => {
+        const isWatching = args.watch;
+        runApp(args.platform, args["junit-output-path"], isWatching).then(
+            failures => {
+                if (isWatching) {
+                    console.log("Waiting for mocha-remote-client to connect");
+                } else {
+                    console.log(`Completed running (${failures} failures)`);
+                    // Exit with a non-zero code if we had failures
+                    process.exit(failures > 0 ? 1 : 0);
+                }
+            },
+            err => {
+                if (err instanceof TimeoutError) {
+                    console.error("Timed out running tests");
+                } else {
+                    console.error(err.stack);
+                }
+                process.exit(2);
+            },
+        );
+    },
+).help().argv;

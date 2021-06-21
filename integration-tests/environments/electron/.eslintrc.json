@@ -1,6 +1,3 @@
 {
-    "extends": "../../../.eslintrc.json",
-    "parserOptions": {
-        "ecmaVersion": 2018
-    }
+    "extends": "../../../.eslintrc.json"
 }
