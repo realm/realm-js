@@ -17,13 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import Realm from "realm";
 
 import {
     DogSchema,
     IDog,
     IPerson,
     PersonSchema
-} from "./schemas/person-and-dogs";
+} from "../schemas/person-and-dogs";
 
 describe("Iterating", () => {
     let realm: Realm;

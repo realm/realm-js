@@ -3,7 +3,6 @@
     "node_modules",
     "react-native/node_modules",
     "packages",
-    "integration-tests",
     "tests"
   ]
 }

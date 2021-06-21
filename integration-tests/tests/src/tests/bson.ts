@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import Realm from "realm";
 
 describe("BSON", () => {
   it("gets exported", () => {

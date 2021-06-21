@@ -24,9 +24,32 @@
  * @flow
  */
 
+import { Client } from "mocha-remote-client";
 import React, { Component } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
-import { MochaRemoteClient } from "mocha-remote-client";
+import {
+    Button,
+    Platform,
+    StyleSheet,
+    Text,
+    View,
+    NativeModules,
+} from "react-native";
+import { Circle } from "react-native-progress";
+
+// Registering an error handler that always throw unhandled exceptions
+// This is to enable the remote-mocha-cli to exit on uncaught errors
+const originalHandler = ErrorUtils.getGlobalHandler();
+ErrorUtils.setGlobalHandler((err, isFatal) => {
+  // Calling the original handler to show the error visually too
+  originalHandler(err, isFatal);
+  throw err;
+});
+
+const mode =
+    typeof DedicatedWorkerGlobalScope === "undefined"
+        ? "native"
+        : "chrome-debugging";
+const engine = global.HermesInternal ? "hermes" : "jsc";
 
 export class App extends Component {
     state = { status: "disconnected" };
@@ -43,15 +66,65 @@ export class App extends Component {
     }
 
     render() {
+        const { totalTests, currentTestIndex, status } = this.state;
+        const progress = totalTests > 0 ? currentTestIndex / totalTests : 0;
         return (
             <View style={styles.container}>
-                <Text style={styles.status}>{this.getStatusMessage()}</Text>
-                <Text style={styles.details}>{this.getStatusDetails()}</Text>
+                <Text style={styles.mode}>{this.modeMessage}</Text>
+                <Text style={styles.status}>{this.statusMessage}</Text>
+                <Circle
+                    showsText
+                    size={100}
+                    indeterminate={status !== "running" && status !== "ended"}
+                    progress={progress}
+                    animated={status !== "ended"}
+                    disabled={status === "ended"}
+                    color={this.statusColor}
+                    textColor={this.statusColor}
+                />
+                <Text style={styles.details}>{this.statusDetails}</Text>
+                <Button
+                    title="Run tests natively"
+                    disabled={status === "running"}
+                    onPress={this.handleRerunNative}
+                />
+                <Button
+                    title="Run tests in Chrome debugging mode"
+                    disabled={status === "running"}
+                    onPress={this.handleRerunChromeDebugging}
+                />
+                <Button
+                    title="Abort running the tests"
+                    disabled={status !== "running"}
+                    onPress={this.handleAbort}
+                />
             </View>
         );
     }
 
-    getStatusMessage() {
+    handleRerunNative = () => {
+        if (mode === "native") {
+            NativeModules.DevSettings.reload();
+        } else {
+            NativeModules.DevSettings.setIsDebuggingRemotely(false);
+        }
+    };
+
+    handleRerunChromeDebugging = () => {
+        if (mode === "chrome-debugging") {
+            NativeModules.DevSettings.reload();
+        } else {
+            NativeModules.DevSettings.setIsDebuggingRemotely(true);
+        }
+    };
+
+    handleAbort = () => {
+        if (this.runner) {
+            this.runner.abort();
+        }
+    };
+
+    get statusMessage() {
         if (this.state.status === "disconnected") {
             return "Disconnected from mocha-remote-server";
         } else if (this.state.status === "waiting") {
@@ -65,75 +138,110 @@ export class App extends Component {
         }
     }
 
-    getStatusDetails() {
+    get statusDetails() {
         const {
             status,
-            totalTests,
-            currentTestIndex,
             currentTest,
+            currentTestIndex,
             failures,
             reason,
         } = this.state;
         if (status === "running") {
-            const progress = `${currentTestIndex + 1}/${totalTests}`;
-            return `${progress}: ${currentTest}`;
+            return currentTest;
         } else if (typeof reason === "string") {
             return reason;
         } else if (typeof failures === "number") {
-            return `Ran ${totalTests} tests, with ${failures} failures`;
+            return `Ran ${currentTestIndex + 1} tests (${failures} failures)`;
         } else {
             return null;
         }
     }
 
+    get modeMessage() {
+        if (mode === "native") {
+            return "Running natively on device";
+        } else if (mode === "chrome-debugging") {
+            return "Running in Chrome debugging mode";
+        } else {
+            return "Unknown mode";
+        }
+    }
+
+    get statusColor() {
+        const { status, failures } = this.state;
+        if (status === "ended") {
+            return failures > 0 ? "red" : "green";
+        } else {
+            return undefined;
+        }
+    }
+
     prepareTests() {
-        this.client = new MochaRemoteClient({
+        this.client = new Client({
             id: Platform.OS,
-            onConnected: () => {
-                console.log("Connected to mocha-remote-server");
-                this.setState({ status: "waiting" });
-            },
-            onDisconnected: ({ reason }) => {
-                console.error(`Disconnected: ${reason}`);
-                this.setState({ status: "disconnected", reason });
-            },
-            onInstrumented: mocha => {
-                // Setting the title of the root suite
-                global.title = `React-Native on ${Platform.OS}`;
-                // Provide the global Realm constructor to the tests
-                // Simply requiring Realm will set the global for us ...
-                // global.Realm = require('realm');
+            title: `React-Native on ${Platform.OS} (${mode} using ${engine})`,
+            tests: context => {
+                /* eslint-env mocha */
+                if (typeof context.mode === "string" && context.mode !== mode) {
+                    this.client.disconnect();
+                    NativeModules.DevSettings.setIsDebuggingRemotely(context.mode === "chrome-debugging");
+                    console.log(`Switching mode to '${context.mode}'`);
+                    return;
+                }
+                // Quick sanity check that "realm" is loadable at all
                 require("realm");
+                // Adding an async hook before each test to allow the UI to update
+                beforeEach(() => {
+                    return new Promise(resolve => setTimeout(resolve, 0));
+                });
                 global.fs = require("react-native-fs");
                 global.path = require("path-browserify");
                 global.environment = {
+                    ...context,
                     reactNative: Platform.OS,
                     android: Platform.OS === "android",
                     ios: Platform.OS === "ios",
+                    chromeDebugging: mode === "chrome-debugging",
                 };
-                // Make all test related modules reinitialize
+                // Make the tests reinitializable, to allow test running on changes to the "realm" package
                 const modules = require.getModules();
                 for (const [_id, m] of Object.entries(modules)) {
-                    if (
-                        m.verboseName.indexOf("realm-integration-tests") !== -1
-                    ) {
+                    if (m.verboseName.startsWith("../../tests/")) {
                         m.isInitialized = false;
                     }
                 }
                 // Require in the integration tests
                 require("realm-integration-tests");
-                /* global beforeEach */
-                beforeEach(() => {
-                    // Adding an async task before each, allowing the UI to update
-                    return new Promise(resolve => setTimeout(resolve, 0));
-                });
             },
-            onRunning: runner => {
-                this.setState({
-                    status: "running",
-                    failures: 0,
-                    currentTestIndex: 0,
-                });
+        });
+
+        this.client
+            .on("connected", () => {
+                console.log("Connected to mocha-remote-server");
+                this.setState({ status: "waiting" });
+            })
+            .on("disconnected", ({ reason = "No reason" }) => {
+                console.error(`Disconnected: ${reason}`);
+                this.setState({ status: "disconnected", reason });
+            })
+            .on("running", runner => {
+                // Store the active runner on the App
+                this.runner = runner;
+                // Check if the tests were loaded correctly
+                if (runner.total > 0) {
+                    this.setState({
+                        status: "running",
+                        failures: 0,
+                        currentTestIndex: 0,
+                        totalTests: runner.total,
+                    });
+                } else {
+                    this.setState({
+                        status: "ended",
+                        reason: "No tests were loaded",
+                    });
+                }
+
                 runner.on("test", test => {
                     // Compute the current test index - incrementing it if we're running
                     // Set the state to update the UI
@@ -144,17 +252,16 @@ export class App extends Component {
                         totalTests: runner.total,
                     });
                 });
+
                 runner.on("end", () => {
                     this.setState({
                         status: "ended",
                         failures: runner.failures,
                     });
-                    // Stop trying to connect to the remote server
-                    this.client.disconnect();
                     delete this.client;
+                    delete this.runner;
                 });
-            },
-        });
+            });
     }
 }
 
@@ -165,14 +272,20 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#F5FCFF",
     },
+    mode: {
+        fontSize: 14,
+        margin: 10,
+        color: "dimgray",
+    },
     status: {
         fontSize: 20,
-        textAlign: "center",
         margin: 10,
     },
     details: {
         fontSize: 14,
+        padding: 10,
+        width: "100%",
         textAlign: "center",
-        margin: 10,
+        height: 100,
     },
 });
