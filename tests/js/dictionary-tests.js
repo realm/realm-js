@@ -283,15 +283,15 @@ module.exports = {
             properties: {
                 fields: "{}"
             }
-        }
+        };
 
-        let realm = new Realm({schema: [DictSchema]})
-        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
-        let ff = realm.objects(DictSchema.name)[0]
-        let cnt=0
+        let realm = new Realm({schema: [DictSchema]});
+        realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}));
+        let ff = realm.objects(DictSchema.name)[0];
+        let cnt = 0;
 
-        let a = (obj, changeset ) => {
-            if(cnt === 1){
+        let a = (obj, changeset) => {
+            if (cnt === 1) {
                 let keys = Object.keys(obj);
                 TestCase.assertTrue(obj.x2 !== undefined,"This field should be equal x2");
                 TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
@@ -300,8 +300,8 @@ module.exports = {
                 TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
             }
 
-            if(cnt === 2){
-                let keys = Object.keys(obj)
+            if (cnt === 2) {
+                let keys = Object.keys(obj);
                 TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
                 TestCase.assertTrue(obj.x5 !== undefined,"This field should be equal x5");
                 TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
@@ -309,34 +309,35 @@ module.exports = {
                 TestCase.assertArrayLength(changeset.insertions, 3, "insertions");
                 TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
             }
-            if(cnt === 3){
-                let keys = Object.keys(obj)
+
+            if (cnt === 3) {
+                let keys = Object.keys(obj);
                 TestCase.assertEqual(keys[0], "x1", "First field should be equal x1");
                 TestCase.assertEqual(obj.x1, "hello", "x1 should be equals to \"hello\"");
                 TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
                 TestCase.assertArrayLength(changeset.insertions, 1, "insertions");
                 TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
             }
-            cnt++
+            cnt++;
         }
-        ff.fields.addListener(a)
+        ff.fields.addListener(a);
 
         // total object mutation.
-        realm.write(() => { ff.fields = {x1: 1, x2: 2} } )
+        realm.write(() => { ff.fields = {x1: 1, x2: 2} } );
 
         // partial object mutation.
-        realm.write(() => { ff.fields = {x1: 1, x3: 2, x5: 5} } )
+        realm.write(() => { ff.fields = {x1: 1, x3: 2, x5: 5} } );
 
         // deleting all but one field.
-        realm.write(() => { ff.fields = {x1: "hello"} } )
+        realm.write(() => { ff.fields = {x1: "hello"} } );
 
         return new Promise((resolve, reject) => {
-            setTimeout(() =>{
-                TestCase.assertEqual(cnt, 4, "Counter should be four")
+            setTimeout(() => {
+                TestCase.assertEqual(cnt, 4, "Counter should be four");
                 ff.fields.removeAllListeners();
                 realm.close();
-                resolve()
-            }, 1000)
+                resolve();
+            }, 1000);
         })
     },
 
@@ -458,18 +459,19 @@ module.exports = {
         realm.write(() => { fields.field1=1 } )
 
         let correct = false;
-        fields.addListener(() => {
+        fields.addListener((obj, chg) => {
             correct = true
         })
         realm.write(() => { fields.field1=2 } )
 
         return new Promise((resolve, _) => {
             setTimeout(() => {
+                TestCase.assertEqual(fields.field1, 2);
                 TestCase.assertTrue(correct,"This is expected to work.")
                 fields.removeAllListeners();
                 realm.close();
                 resolve();
-            });
+            }, 1000);
         });
     },
 

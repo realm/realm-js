@@ -55,7 +55,7 @@ public:
 };
 
 template<typename T>
-struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>> {
+struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>, CollectionClass<T>> {
     using Type = T;
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
@@ -259,7 +259,6 @@ void DictionaryClass<T>::add_listener(ContextType ctx, ObjectType this_object, A
             static_cast<ObjectType>(protected_this),
             DictionaryClass<T>::create_dictionary_change_set(protected_ctx, change_set)
         };
-
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
     dictionary.m_notification_tokens.emplace_back(protected_callback, std::move(token));
