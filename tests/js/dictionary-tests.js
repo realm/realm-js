@@ -92,6 +92,7 @@ module.exports = {
         TestCase.assertEqual(typeof data.a.x, "undefined", "Should be deleted.");
         TestCase.assertEqual(typeof data.a.y, "undefined", "Should be deleted.");
         TestCase.assertEqual(typeof data.a.z, "undefined", "Should be deleted.");
+        TestCase.assertEqual(data.a.p, 1, "p is 1");
 
         realm.close();
     },

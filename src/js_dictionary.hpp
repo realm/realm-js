@@ -146,8 +146,13 @@ void DictionaryClass<T>::getter(ContextType ctx, ObjectType this_object, Argumen
 
     std::string key = Value::validated_to_string(ctx, args[0]);
 
-    NativeAccessor<T> accessor(ctx, *dictionary);
-    return_value.set(dictionary->get(accessor, key));
+    if (dictionary->contains(key)) {
+        NativeAccessor<T> accessor(ctx, *dictionary);
+        return_value.set(dictionary->get(accessor, key));
+    }
+    else {
+        return_value.set_undefined();
+    }
 }
 
 template<typename T>
