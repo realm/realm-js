@@ -183,7 +183,6 @@ class ObjectWrap {
 
 	static Napi::Object create_instance(Napi::Env env, Internal* = nullptr);
 	static Napi::Object create_instance_by_schema(Napi::Env env, Napi::Function& constructor, const realm::ObjectSchema& schema, Internal* internal = nullptr);
-	static Napi::Object create_instance_by_keys(Napi::Env env, Napi::Function& constructor, std::vector<std::string> keys, Internal* internal = nullptr);
 	static void internal_finalizer(Napi::Env, typename ClassType::Internal* internal);
 
 	static void on_context_destroy(Napi::Env env, std::string realmPath);
@@ -957,11 +956,10 @@ Napi::Function ObjectWrap<ClassType>::init_class(Napi::Env env) {
 	}
 
 	bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
-	bool isDictionaryClass = std::is_same<ClassType, realm::js::DictionaryClass<realm::node::Types>>::value;
 
 	std::vector<Napi::ClassPropertyDescriptor<WrappedObject<ClassType>>> properties;
 
-	if (!isRealmObjectClass && !isDictionaryClass) {
+	if (!isRealmObjectClass) {
 		//setup properties and accessors on the class
 		for (auto& pair : s_class.static_properties) {
 			Napi::ClassPropertyDescriptor<WrappedObject<ClassType>> statc_property = setup_static_property(env, pair.first, pair.second);
@@ -1007,7 +1005,7 @@ Napi::Function ObjectWrap<ClassType>::init_class(Napi::Env env) {
 	}
 
 	//use PropertyDescriptors instead of ClassPropertyDescriptors, since ClassPropertyDescriptors requires the JS instance members callbacks to be instance members of the WrappedObject<ClassType> class
-	if (isRealmObjectClass || isDictionaryClass) {
+	if (isRealmObjectClass) {
 		std::vector<Napi::PropertyDescriptor> properties;
 		auto ctorPrototype = ctor.Get("prototype").As<Napi::Object>();
 		for (auto& pair : s_class.methods) {
@@ -1095,34 +1093,6 @@ inline std::vector<Napi::PropertyDescriptor> ObjectWrap<ClassType>::create_napi_
 	}
 
 	return properties;
-}
-
-template<typename ClassType>
-Napi::Object ObjectWrap<ClassType>::create_instance_by_keys(Napi::Env env, Napi::Function& constructor, std::vector<std::string> keys, Internal* internal) {
-	Napi::EscapableHandleScope scope(env);
-
-	bool isDictionaryClass = std::is_same<ClassType, realm::js::DictionaryClass<realm::node::Types>>::value;
-	if (!isDictionaryClass) {
-		throw Napi::Error::New(env, "Creating instances by keys is supported for DictionaryClass only");
-	}
-
-	if (isDictionaryClass && !internal) {
-		throw Napi::Error::New(env, "DictionaryClass requires an internal realm object when creating instances by keys");
-	}
-
-	auto prototype = constructor.Get("prototype").As<Napi::Object>();
-
-	for (auto key: keys) {
-		auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter, property_setter>(Napi::String::New(env, key), napi_enumerable);
-		prototype.DefineProperty(descriptor);
-	}
-
-	auto instance = constructor.New({});
-	Napi::Symbol externalSymbol = ExternalSymbol;
-	Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internal_finalizer);
-	instance.Set(externalSymbol, externalValue);
-
-	return scope.Escape(instance).As<Napi::Object>();
 }
 
 template<typename ClassType>
@@ -1345,9 +1315,8 @@ Napi::Value ObjectWrap<ClassType>::constructor_callback(const Napi::CallbackInfo
 	}
 	else {
 		bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
-		bool isDictionaryClass = std::is_same<ClassType, realm::js::DictionaryClass<realm::node::Types>>::value;
 
-		if (isRealmObjectClass || isDictionaryClass) {
+		if (isRealmObjectClass) {
 			return scope.Escape(env.Null()); //return a value to comply with Napi::FunctionCallback
 		}
 
