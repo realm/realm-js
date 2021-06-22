@@ -143,10 +143,10 @@ public:
 
     // TODO: add app or appId property
     PropertyMap<T> const properties = {
-        {"config", {wrap<get_config>, nullptr}},
         {"user", {wrap<get_user>, nullptr}},
         {"state", {wrap<get_state>, nullptr}},
         {"connectionState", {wrap<get_connection_state>, nullptr}},
+        {"_config", {wrap<get_config>, nullptr}},
     };
 
     MethodMap<T> const methods = {
@@ -205,11 +205,12 @@ public:
         }
         Object<T>::set_property(m_ctx, error_object, "userInfo", user_info);
 
-        typename T::Value arguments[2];
-        arguments[0] = create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session));
-        arguments[1] = error_object;
+        typename T::Value arguments[] = {
+            create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session)),
+            error_object,
+        };
 
-        Function<T>::callback(m_ctx, m_func, typename T::Object(), 2, arguments);
+        Function<T>::callback(m_ctx, m_func, 2, arguments);
     }
 private:
     const Protected<typename T::GlobalContext> m_ctx;
@@ -279,7 +280,7 @@ public:
 
         const int argc = 1;
         typename T::Value arguments[argc] = { ssl_certificate_object };
-        typename T::Value ret_val = Function<T>::callback(ctx, this_object->m_func, typename T::Object(), 1, arguments);
+        typename T::Value ret_val = Function<T>::callback(ctx, this_object->m_func, 1, arguments);
         bool ret_val_bool = Value<T>::to_boolean(ctx, ret_val);
 
         {
@@ -333,7 +334,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
         // TODO: add app id
         bson::Bson partition_value_bson = bson::parse(session->config().partition_value);
-        Object::set_property(ctx, config, "partitionValue", Value::from_bson(ctx, partition_value_bson));
+        Object::set_property(ctx, config, "partitionValue", Value::from_string(ctx, String::from_bson(partition_value_bson)));
         if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());
@@ -447,11 +448,12 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
 
         util::EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
             HANDLESCOPE(protected_ctx)
-            ValueType callback_arguments[2];
-            callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
-            callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
+            ValueType callback_arguments[2] = {
+                Value::from_number(protected_ctx, transferred_bytes),
+                Value::from_number(protected_ctx, transferrable_bytes), 
+            };
 
-            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+            Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
         });
 
         progressFunc = std::move(progress_handler);
@@ -495,10 +497,11 @@ void SessionClass<T>::add_connection_notification(ContextType ctx, ObjectType th
 
         util::EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
             HANDLESCOPE(protected_ctx)
-            ValueType callback_arguments[2];
-            callback_arguments[0] = Value::from_string(protected_ctx, get_connection_state_value(new_state));
-            callback_arguments[1] = Value::from_string(protected_ctx, get_connection_state_value(old_state));
-            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+            ValueType callback_arguments[2] = {
+                Value::from_string(protected_ctx, get_connection_state_value(new_state)),
+                Value::from_string(protected_ctx, get_connection_state_value(old_state)),
+            };
+            Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
         });
 
         connectionFunc = std::move(connection_handler);
@@ -588,7 +591,7 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
             callback=Protected(ctx, callback)
         ](std::error_code error) {
             HANDLESCOPE(ctx);
-            Function<T>::callback(ctx, callback, typename T::Object(), {
+            Function<T>::callback(ctx, callback, {
                 !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
                     {"message", Value::from_string(ctx, error.message())},
                     {"errorCode", Value::from_number(ctx, error.value())},
@@ -751,7 +754,7 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
             Value::from_string(protected_ctx, message)
         };
 
-        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, arguments);
+        Function::callback(protected_ctx, protected_callback, 2, arguments);
     };
 
     auto sync_logger = common::logger::Logger::build_sync_logger(show_logs);
@@ -891,7 +894,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
         config.schema_mode = SchemaMode::AdditiveExplicit;
-        config.path = user->sync_manager().path_for_realm(*(config.sync_config));
+        config.path = user->sync_manager()->path_for_realm(*(config.sync_config));
     }
 }
 

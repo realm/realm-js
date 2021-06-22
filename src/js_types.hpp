@@ -31,7 +31,7 @@
 #include <realm/util/to_string.hpp>
 #include <realm/util/optional.hpp>
 #include <realm/util/base64.hpp>
-
+#include <realm/mixed.hpp>
 
 #include <realm/object-store/util/bson/bson.hpp>
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
@@ -79,9 +79,14 @@ inline PropertyAttributes operator|(PropertyAttributes a, PropertyAttributes b) 
 
 template<typename T>
 struct String {
+    using ContextType = typename T::Context;
     using StringType = typename T::String;
 
-  public:
+    /** Build a BSON structure from a stringified EJSON representation */
+    static bson::Bson to_bson(String);
+    /** Build a stringified EJSON representation of a BSON structure */
+    static String from_bson(const bson::Bson &);
+
     String(const char *);
     String(const StringType &);
     String(StringType &&);
@@ -163,6 +168,7 @@ struct Value {
     static ValueType from_nonnull_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
     static ValueType from_timestamp(ContextType, Timestamp);
+    static ValueType from_mixed(ContextType, const Mixed &);
     static ValueType from_uuid(ContextType, const UUID&);
     static ValueType from_objkey(ContextType, const ObjKey&);
     static ValueType from_objlink(ContextType, const ObjLink&);
@@ -180,9 +186,8 @@ struct Value {
     static UUID to_uuid(ContextType, const ValueType &);
     static ObjectType to_object(ContextType, const ValueType &);
     static String<T> to_string(ContextType, const ValueType &);
-    static OwnedBinaryData to_binary(ContextType, ValueType);
+    static OwnedBinaryData to_binary(ContextType, const ValueType&);
     static bson::Bson to_bson(ContextType, ValueType);
-
 
 #define VALIDATED(return_t, type) \
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
@@ -216,8 +221,14 @@ struct Function {
     using ValueType = typename T::Value;
 
     static ValueType callback(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
-    static ValueType callback(ContextType ctx, const FunctionType & f, const ObjectType& o,  std::initializer_list<ValueType> args) {
+    static ValueType callback(ContextType ctx, const FunctionType & f, const ObjectType& o, std::initializer_list<ValueType> args) {
         return callback(ctx, f, o, args.size(), args.begin());
+    }
+    static ValueType callback(ContextType ctx, const FunctionType& f, size_t count, const ValueType args[]) {
+        return callback(ctx, f, {}, count, args);
+    }
+    static ValueType callback(ContextType ctx, const FunctionType & f, std::initializer_list<ValueType> args) {
+        return callback(ctx, f, args.size(), args.begin());
     }
     static ValueType call(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
     template<size_t N> static ValueType call(ContextType ctx, const FunctionType &function,
@@ -275,8 +286,14 @@ struct Object {
     static ValueType get_property(ContextType c, const ObjectType &o, const std::string &s) { return get_property(c, o, StringData(s)); }
     static ValueType get_property(ContextType, const ObjectType &, const String<T> &);
     static ValueType get_property(ContextType, const ObjectType &, uint32_t);
-    static void set_property(ContextType, const ObjectType &, const String<T> &, const ValueType &, PropertyAttributes attributes = None);
-    static void set_property(ContextType, const ObjectType &, uint32_t, const ValueType &);
+    static void set_property(ContextType ctx, ObjectType&& obj, const String<T>& field, const ValueType& val, PropertyAttributes attributes = None) {
+        set_property(ctx, obj, field, val, attributes);
+    }
+    static void set_property(ContextType ctx, ObjectType&& obj, uint32_t field, const ValueType& val) {
+        set_property(ctx, obj, field, val);
+    }
+    static void set_property(ContextType, ObjectType &, const String<T> &, const ValueType &, PropertyAttributes attributes = None);
+    static void set_property(ContextType, ObjectType &, uint32_t, const ValueType &);
     static std::vector<String<T>> get_property_names(ContextType, const ObjectType &);
 
     static void set_global(ContextType, const String<T> &, const ValueType &);
@@ -364,11 +381,13 @@ struct Object {
     template<typename ClassType>
     static ObjectType create_instance(ContextType, typename ClassType::Internal*);
 
+    static ObjectType create_bson_type(ContextType, StringData type, std::initializer_list<ValueType> args);
+
     template<typename ClassType>
     static ObjectType create_instance_by_schema(ContextType, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal*);
 
     template<typename ClassType>
-    static ObjectType create_instance_by_keys(ContextType, typename T::Function& constructor, std::vector<std::string> keys, typename ClassType::Internal*);
+    static ObjectType create_instance_by_schema(ContextType, const realm::ObjectSchema& schema, typename ClassType::Internal*);
 
     template<typename ClassType>
     static bool is_instance(ContextType, const ObjectType &);
@@ -381,8 +400,6 @@ struct Object {
 
     template<typename ClassType>
     static void set_internal(ContextType ctx, const ObjectType &, typename ClassType::Internal*);
-
-    static ObjectType create_bson_type(ContextType, StringData type, std::initializer_list<ValueType> args);
 
     static ObjectType create_from_app_error(ContextType, const app::AppError&);
     static ValueType create_from_optional_app_error(ContextType, const util::Optional<app::AppError>&);
@@ -459,8 +476,8 @@ REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context
 }
 
 template<typename T, typename ClassType>
-REALM_JS_INLINE typename T::Object create_instance_by_keys(typename T::Context ctx, typename T::Function& constructor, std::vector<std::string> keys, typename ClassType::Internal* internal = nullptr) {
-    return Object<T>::template create_instance_by_keys<ClassType>(ctx, constructor, keys, internal);
+REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context ctx, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr) {
+    return Object<T>::template create_instance_by_schema<ClassType>(ctx, schema, internal);
 }
 
 template<typename T, typename ClassType>
@@ -569,19 +586,19 @@ inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Times
 }
 
 template<typename T>
-inline typename T::Object Object<T>::create_bson_type(ContextType ctx, StringData type, std::initializer_list<ValueType> args) {
-    auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
-    auto ctor = Value<T>::to_constructor(ctx, Object<T>::get_property(ctx, bson, type));
-    return Function<T>::construct(ctx, ctor, args);
-}
-
-template<typename T>
 inline typename T::Object Object<T>::create_from_app_error(ContextType ctx, const app::AppError& error) {
     return Object::create_obj(ctx, {
         {"message", Value<T>::from_string(ctx, error.message)},
         {"code", Value<T>::from_number(ctx, error.error_code.value())},
     });
+}
+
+template<typename T>
+inline typename T::Object Object<T>::create_bson_type(ContextType ctx, StringData type, std::initializer_list<ValueType> args) {
+    auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
+    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
+    auto ctor = Value<T>::to_constructor(ctx, Object<T>::get_property(ctx, bson, type));
+    return Function<T>::construct(ctx, ctor, args);
 }
 
 template<typename T>
@@ -702,7 +719,7 @@ inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value) {
     // For now going through the bson.EJSON.stringify() since it will correctly handle the special JS types.
     // Consider directly converting to Bson if we need more control or there are performance issues.
     auto realm = Value::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
+    auto bson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "_bson"));
     auto ejson = Value::validated_to_object(ctx, Object<T>::get_property(ctx, bson, "EJSON"));
     auto call_args_json = Object<T>::call_method(ctx, ejson, "stringify", {
         value,

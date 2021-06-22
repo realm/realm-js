@@ -219,36 +219,36 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, String
     Property prop;
     prop.name = std::move(property_name);
 
-    ObjectType property_object = {};
+    std::optional<ObjectType> property_object = {};
     std::string type;
 
     using realm::PropertyType;
 
     if (Value::is_object(ctx, attributes)) {
         property_object = Value::validated_to_object(ctx, attributes);
-        std::string property_type = Object::validated_get_string(ctx, property_object, type_string);
-        ValueType object_type_value = Object::get_property(ctx, property_object, object_type_string);
+        std::string property_type = Object::validated_get_string(ctx, *property_object, type_string);
+        ValueType object_type_value = Object::get_property(ctx, *property_object, object_type_string);
         if (!Value::is_undefined(ctx, object_type_value)) {
             prop.object_type = Value::validated_to_string(ctx, object_type_value, "objectType");
         }
         parse_property_type(object_name, prop, property_type);
 
-        ValueType optional_value = Object::get_property(ctx, property_object, optional_string);
+        ValueType optional_value = Object::get_property(ctx, *property_object, optional_string);
         if (!Value::is_undefined(ctx, optional_value) && Value::validated_to_boolean(ctx, optional_value, "optional")) {
             prop.type |= PropertyType::Nullable;
         }
 
-        ValueType default_value = Object::get_property(ctx, property_object, default_string);
+        ValueType default_value = Object::get_property(ctx, *property_object, default_string);
         if (!Value::is_undefined(ctx, default_value)) {
             object_defaults.emplace(prop.name, Protected<ValueType>(ctx, default_value));
         }
 
-        ValueType indexed_value = Object::get_property(ctx, property_object, indexed_string);
+        ValueType indexed_value = Object::get_property(ctx, *property_object, indexed_string);
         if (!Value::is_undefined(ctx, indexed_value)) {
             prop.is_indexed = Value::validated_to_boolean(ctx, indexed_value);
         }
 
-        ValueType internal_name_value = Object::get_property(ctx, property_object, internal_name_string);
+        ValueType internal_name_value = Object::get_property(ctx, *property_object, internal_name_string);
         if (!Value::is_undefined(ctx, internal_name_value)) {
             std::string internal_name = Value::validated_to_string(ctx, internal_name_value);
             if (internal_name != prop.name) {
@@ -263,20 +263,20 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, String
     }
 
     if (prop.type == PropertyType::Object && prop.object_type.empty()) {
-        if (!Value::is_valid(property_object)) {
+        if (!property_object) {
             throw std::logic_error(util::format("%1 property %2.%3 must specify 'objectType'",
                                                 is_array(prop.type) ? "List" : "Object", object_name, prop.name));
         }
-        prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
+        prop.object_type = Object::validated_get_string(ctx, *property_object, object_type_string);
     }
 
     if (prop.type == PropertyType::LinkingObjects) {
-        if (!Value::is_valid(property_object)) {
+        if (!property_object) {
             throw std::logic_error(util::format("Linking objects property %1.%2 must specify 'objectType'",
                                                 object_name, prop.name));
         }
-        prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
-        prop.link_origin_property_name = Object::validated_get_string(ctx, property_object, property_string);
+        prop.object_type = Object::validated_get_string(ctx, *property_object, object_type_string);
+        prop.link_origin_property_name = Object::validated_get_string(ctx, *property_object, property_string);
     }
 
     return prop;
@@ -290,10 +290,10 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
     static const String schema_string = "schema";
     static const String embedded_string = "embedded";
 
-    FunctionType object_constructor = {};
+    std::optional<FunctionType> object_constructor = {};
     if (Value::is_constructor(ctx, object_schema_object)) {
         object_constructor = Value::to_constructor(ctx, object_schema_object);
-        object_schema_object = Object::validated_get_object(ctx, object_constructor, schema_string, "Realm object constructor must have a 'schema' property.");
+        object_schema_object = Object::validated_get_object(ctx, *object_constructor, schema_string, "Realm object constructor must have a 'schema' property.");
     }
 
     ObjectDefaults object_defaults;
@@ -364,8 +364,8 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
     }
 
     // Store prototype so that objects of this type will have their prototype set to this prototype object.
-    if (Value::is_valid(object_constructor)) {
-        constructors.emplace(object_schema.name, Protected<FunctionType>(ctx, object_constructor));
+    if (object_constructor) {
+        constructors.emplace(object_schema.name, Protected<FunctionType>(ctx, *object_constructor));
     }
 
     defaults.emplace(object_schema.name, std::move(object_defaults));

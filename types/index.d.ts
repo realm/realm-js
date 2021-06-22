@@ -124,24 +124,37 @@ declare namespace Realm {
         error?: ErrorCallback;
     }
 
-    /**
-     * realm configuration
-     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
-     */
-    interface Configuration {
+    interface BaseConfiguration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
-        migration?: MigrationCallback;
+        schema?: (ObjectClass | ObjectSchema)[];
+        schemaVersion?: number;
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         fifoFilesFallbackPath?: string;
         readOnly?: boolean;
+    }
+
+    interface ConfigurationWithSync extends BaseConfiguration {
+        sync: SyncConfiguration;
+        migration?: never;
+        inMemory?: never;
+        deleteRealmIfMigrationNeeded?: never;
+        disableFormatUpgrade?: never;
+    }
+
+    interface ConfigurationWithoutSync extends BaseConfiguration {
+        sync?: never;
+        migration?: MigrationCallback;
         inMemory?: boolean;
-        schema?: (ObjectClass | ObjectSchema)[];
-        schemaVersion?: number;
-        sync?: SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
         disableFormatUpgrade?: boolean;
     }
+
+    /**
+     * realm configuration
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
+     */
+    type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
 
     /**
      * realm configuration used for overriding default configuration values.
@@ -159,9 +172,6 @@ declare namespace Realm {
     }
 
     type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
-
-    interface PartialConfiguration extends Partial<Realm.Configuration> {
-    }
 
     /**
      * Object
@@ -226,6 +236,34 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
      */
     type SortDescriptor = [string] | [string, boolean];
+
+    /**
+     * Dictionary
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Dictionary.html }
+     */
+    
+    type Dictionary<ValueType = Mixed> = DictionaryBase<ValueType> & {
+        [key: string]: ValueType;
+    }
+
+    interface DictionaryBase<ValueType = Mixed> {
+        /**
+         * @returns Adds given element to the dictionary
+         */
+        put(element:{[key:string]: ValueType}): void;
+
+        /**
+         * @returns Removes given element from the dictionary
+         */
+        remove(element:{[key:string]: ValueType}): void;
+
+        /**
+         * @returns void
+         */
+        addListener(callback: ObjectChangeCallback): void;
+        removeListener(callback: ObjectChangeCallback): void;
+        removeAllListeners(): void;
+    }
 
     /**
      * Collection
@@ -529,6 +567,7 @@ interface ProgressPromise extends Promise<Realm> {
     cancel(): void;
     progress(callback: Realm.ProgressNotificationCallback): Promise<Realm>;
 }
+
 /**
  * Extracts an intersection of keys from T, where the value extends the given PropType.
  */
@@ -540,17 +579,34 @@ type ExtractPropertyNamesOfType<T, PropType> = {
  * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
  */
 type RealmListsRemappedModelPart<T> = {
-    [K in keyof T]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
+    [K in ExtractPropertyNamesOfType<T, Realm.List<any>>]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
 }
+
+/**
+* Exchanges properties defined as Realm.Dicionary<Model> with an optional key to mixed value object.
+*/
+type RealmDictionaryRemappedModelPart<T> = {
+    [K in ExtractPropertyNamesOfType<T, Realm.Dictionary>]?: T[K] extends Realm.Dictionary<infer ValueType> ? { [key: string]: ValueType } : never
+}
+
+/** Omits all properties of a model which are not defined by the schema */ 
+type OmittedRealmTypes<T> = Omit<T,
+    keyof Realm.Object |
+    ExtractPropertyNamesOfType<T, Function> |
+    ExtractPropertyNamesOfType<T, Realm.Collection<any>> |
+    ExtractPropertyNamesOfType<T, Realm.Dictionary>
+>;
+
+/** Remaps realm types to "simpler" types (arrays and objects) */
+type RemappedRealmTypes<T> =
+    RealmListsRemappedModelPart<T> &
+    RealmDictionaryRemappedModelPart<T>;
 
 /**
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
  * with only the keys which value extends Realm.List, remapped as Arrays.
  */
-type RealmInsertionModel<T> =
-    Omit<Omit<Omit<T, ExtractPropertyNamesOfType<T, Function>>, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
-    & RealmListsRemappedModelPart<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
-
+type RealmInsertionModel<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;
 declare class Realm {
     static defaultPath: string;
 

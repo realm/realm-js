@@ -183,6 +183,10 @@ class ObjectWrap {
 
 	static Napi::Object create_instance(Napi::Env env, Internal* = nullptr);
 	static Napi::Object create_instance_by_schema(Napi::Env env, Napi::Function& constructor, const realm::ObjectSchema& schema, Internal* internal = nullptr);
+	static Napi::Object create_instance_by_schema(Napi::Env env, const realm::ObjectSchema& schema, Internal* internal = nullptr) {
+            Napi::Function constructor;
+            return create_instance_by_schema(env, constructor, schema, internal);
+        }
 	static void internal_finalizer(Napi::Env, typename ClassType::Internal* internal);
 
 	static void on_context_destroy(Napi::Env env, std::string realmPath);

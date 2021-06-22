@@ -20,7 +20,6 @@
 
 #include <realm/keys.hpp>
 
-#include "js_mixed.hpp"
 #include "js_list.hpp"
 #include "js_set.hpp"
 #include "js_realm_object.hpp"
@@ -146,7 +145,6 @@ public:
 
     template<typename T>
     ValueType box(util::Optional<T> v) { return v ? box(*v) : null_value(); }
-
     ValueType box(bool boolean)      { return Value::from_boolean(m_ctx, boolean); }
     ValueType box(int64_t number)    { return Value::from_number(m_ctx, number); }
     ValueType box(float number)      { return Value::from_number(m_ctx, number); }
@@ -189,8 +187,8 @@ public:
     bool is_null(ValueType const& value) {
         return Value::is_null(m_ctx, value) || Value::is_undefined(m_ctx, value);
     }
-    DataType get_type_of(ValueType const& value)
-    {
+
+    DataType get_type_of(ValueType const& value) {
         if (Value::is_number(m_ctx, value)) {
             return type_Double;
         }
@@ -411,8 +409,8 @@ struct Unbox<JSEngine, BinaryData> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
-    static Mixed call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        return TypeMixed<JSEngine>::get_instance().unwrap(native_accessor->m_ctx, value);
+    static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
+        return TypeMixed<JSEngine>::get_instance().unwrap(ctx->m_ctx, value);
     }
 };
 
@@ -443,7 +441,7 @@ struct Unbox<JSEngine, Timestamp> {
         if (ctx->is_null(value)) {
             return Timestamp();
         }
-        typename JSEngine::Value date;
+        std::optional<typename JSEngine::Value> date;
         if (js::Value<JSEngine>::is_string(ctx->m_ctx, value)) {
             // the incoming value might be a date string, so let the Date constructor have at it
             date = js::Value<JSEngine>::to_date(ctx->m_ctx, value);
@@ -451,7 +449,7 @@ struct Unbox<JSEngine, Timestamp> {
             date = js::Value<JSEngine>::validated_to_date(ctx->m_ctx, value);
         }
 
-        double milliseconds = js::Value<JSEngine>::to_number(ctx->m_ctx, date);
+        double milliseconds = js::Value<JSEngine>::to_number(ctx->m_ctx, *date);
         int64_t seconds = milliseconds / 1000;
         int32_t nanoseconds = ((int64_t)milliseconds % 1000) * 1000000;
         return Timestamp(seconds, nanoseconds);
@@ -471,8 +469,14 @@ struct Unbox<JSEngine, Obj> {
             return realm_link.get_realm_object();
         }
 
-        if(realm_link.is_instance() && realm_link.is_read_only(policy)){
+        if(realm_link.is_instance() && realm_link.is_read_only(policy)) {
             throw std::runtime_error("Realm object is from another Realm");
+        }
+
+        // if our RealmObject isn't in ObjectStore, it's a detached object 
+        // (not in to database), and we can't add it
+        if (realm_link.is_instance() && !realm_link.get_os_object()) {
+            throw std::runtime_error("Cannot reference a detached instance of Realm.Object");
         }
 
         if (!policy.create) {

@@ -2,7 +2,7 @@
 
 In an attempt to ensure that this package remains usable across multiple runtimes (Node.js and modern web-browsers), the TypeScript configurations are a bit more restrictive than they need to be in other packages.
 
-Specifically, the source code (`./src`) is seperated into four parts:
+Specifically, the source code (`./src`) is separated into four parts:
 
 ### The runtime independent library code
 

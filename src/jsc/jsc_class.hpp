@@ -90,6 +90,10 @@ class ObjectWrap {
         return JSObjectMake(ctx, get_class(), new ObjectWrap<ClassType>(internal));
     }
 
+    static JSObjectRef create_instance_by_schema(JSContextRef ctx, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr) {
+        JSObjectRef constructor = nullptr;
+        return create_instance_by_schema(ctx, constructor, schema, internal);
+    }
     static JSObjectRef create_instance_by_schema(JSContextRef ctx, JSObjectRef& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal = nullptr);
 
     static JSObjectRef create_constructor(JSContextRef ctx) {
