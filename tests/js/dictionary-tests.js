@@ -468,32 +468,27 @@ module.exports = {
         let T = D
         realm.write(()=> {  D.remove( ['oo', 'y', 'z'] )  })
 
-        // FIXME: JSON.stringify(D)
-        // TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
+        TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
         TestCase.assertEqual(Object.keys(D).length,  0,"We should have an empty object.")
 
         realm.write(()=> {  D.put( {ff:2, pp:'111011'} )  })
 
-        // TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
+        TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
 
         let error = new Error("The key 'unknown_key' doesn't exist in the dictionary")
         TestCase.assertThrowsException(() =>  realm.write(()=> {  D.remove( ['unknown_key'] )  }) , error)
     },
 
     testDictionaryToJSON() {
-        //Shouldn't throw
         let realm = new Realm({ schema: [DictSchema] });
         realm.write(() =>
             realm.create(DictSchema.name, { a: { x: 1, y: 2, z: 3 } }),
         );
 
         let data = realm.objects(DictSchema.name);
+        TestCase.assertEqual(JSON.stringify(data.toJSON()), '[{"a":{"x":1,"z":3,"y":2}}]', "toJSON should return the correct result");
 
-        TestCase.assertEqual(
-            JSON.stringify(data.toJSON()),
-            '[{"a":{"x":1,"z":3,"y":2}}]',
-            "toJSON should return the correct result",
-        );
+        realm.close();
     },
 
     /*TODO Comment this until we merge Mixed->Link code.
