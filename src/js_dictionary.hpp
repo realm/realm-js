@@ -75,6 +75,10 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>> {
     static void getter(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void setter(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void remove(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void has(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void keys(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void put(ContextType, ObjectType, Arguments &, ReturnValue &);
+
 
     // observables
     static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -91,6 +95,9 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>> {
         {"setter", wrap<setter>},
         {"getter", wrap<getter>},
         {"remove", wrap<remove>},
+        {"_has", wrap<has>},
+        {"_keys", wrap<keys>},
+        {"put", wrap<put>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
@@ -145,14 +152,70 @@ void DictionaryClass<T>::getter(ContextType ctx, ObjectType this_object, Argumen
     return_value.set(dictionary->get(accessor, key));
 }
 
+template<typename T>
+void DictionaryClass<T>::put(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+
+    auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
+
+    NativeAccessor<T> accessor(ctx, *dictionary);
+    dictionary->assign(accessor, Value::validated_to_object(ctx, args[0]));
+
+    return_value.set(this_object);
+}
 
 template<typename T>
 void DictionaryClass<T>::remove(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
-    std::string key = Value::validated_to_string(ctx, args[0]);
-    dictionary->erase(key);
+    if (Value::is_string(ctx, args[0])) {
+        std::string key = Value::validated_to_string(ctx, args[0]);
+        if (!dictionary->contains(key)) {
+            throw std::invalid_argument(util::format("The key '%1' doesn't exist in the dictionary", key));
+        }
+        dictionary->erase(key);
+    }
+    else if (Value::is_array(ctx, args[0])) {
+        auto keys_as_array = Value::to_array(ctx, args[0]);
+        uint32_t length = Object::validated_get_length(ctx, keys_as_array);
+        for (uint32_t i = 0; i < length; i++) {
+            auto key_as_value = Object::get_property(ctx, keys_as_array, i);
+            std::string key = Value::validated_to_string(ctx, key_as_value);
+            if (!dictionary->contains(key)) {
+                throw std::invalid_argument(util::format("The key '%1' doesn't exist in the dictionary", key));
+            }
+            dictionary->erase(key);
+        }
+    }
+    else {
+        throw std::invalid_argument("Argument must be string or array of strings");
+    }
+
     return_value.set(this_object);
+}
+
+template<typename T>
+void DictionaryClass<T>::has(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+    auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
+    std::string key = Value::validated_to_string(ctx, args[0]);
+    return_value.set(dictionary->contains(key));
+}
+
+template<typename T>
+void DictionaryClass<T>::keys(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+    auto dictionary = *get_internal<T, DictionaryClass<T>>(ctx, this_object);
+
+    std::vector<ValueType> key_vector;
+    key_vector.reserve(dictionary.size());
+
+    for (auto it: dictionary) {
+        key_vector.push_back(Value::from_string(ctx, it.first.get_string()));
+    }
+
+    auto keys = Object::create_array(ctx, key_vector);
+    return_value.set(keys);
 }
 
 template<typename T>
