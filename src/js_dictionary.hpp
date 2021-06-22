@@ -251,13 +251,15 @@ void DictionaryClass<T>::add_listener(ContextType ctx, ObjectType this_object, A
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     auto token = dictionary.add_key_based_notification_callback([=](DictionaryChangeSet const& change_set, std::exception_ptr exception) {
-            HANDLESCOPE(protected_ctx)
-            ValueType arguments[] {
-                static_cast<ObjectType>(protected_this),
-                DictionaryClass<T>::create_dictionary_change_set(protected_ctx, change_set)
-            };
-            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
-        });
+        HANDLESCOPE(protected_ctx)
+
+        ValueType arguments[] {
+            static_cast<ObjectType>(protected_this),
+            DictionaryClass<T>::create_dictionary_change_set(protected_ctx, change_set)
+        };
+
+        Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+    });
     dictionary.m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
 
