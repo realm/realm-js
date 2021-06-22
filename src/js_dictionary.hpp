@@ -51,8 +51,6 @@ public:
     Dictionary& operator=(Dictionary&&) = default;
     Dictionary& operator=(Dictionary const&) = default;
 
-    SharedRealm realm() { return this->get_realm(); }
-
     std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
 };
 
@@ -232,8 +230,7 @@ typename T::Value DictionaryClass<T>::create_dictionary_change_set(ContextType c
         return Object::create_array(ctx, scratch);
     };
 
-    int deleted_fields_size = static_cast<int>(change_set.deletions.size());
-    Object::set_property(ctx, object, "deletions", Value::from_number(ctx, deleted_fields_size));
+    Object::set_property(ctx, object, "deletions", make_object_array(change_set.deletions));
     Object::set_property(ctx, object, "insertions", make_object_array(change_set.insertions));
     Object::set_property(ctx, object, "modifications", make_object_array(change_set.modifications));
 

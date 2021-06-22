@@ -473,7 +473,7 @@ struct Unbox<JSEngine, Obj> {
             throw std::runtime_error("Realm object is from another Realm");
         }
 
-        // if our RealmObject isn't in ObjectStore, it's a detached object 
+        // if our RealmObject isn't in ObjectStore, it's a detached object
         // (not in to database), and we can't add it
         if (realm_link.is_instance() && !realm_link.get_os_object()) {
             throw std::runtime_error("Cannot reference a detached instance of Realm.Object");
