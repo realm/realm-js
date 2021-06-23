@@ -240,7 +240,7 @@ module.exports = {
         TestCase.assertEqual(seventy.length, 30, "We expect only 30 items, matching for field x >= 70.");
     },*/
 
-    DictionaryNotificationObjectFieldUpdate() {
+    testDictionaryNotificationObjectFieldUpdate() {
         const UPDATES = 5;
         const DictSchema = {
             name: "Dictionary",
