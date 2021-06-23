@@ -41,7 +41,10 @@ Pod::Spec.new do |s|
   # @see https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#platform-ios
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
-  s.source_files           = 'react-native/ios/RealmReact/*.mm'
+  s.source_files           = {
+                                'react-native/ios/RealmReact/*.mm'
+                                'react-native/ios/RealmReact/*.h'
+                             }
 
   s.frameworks             = uses_frameworks ? ['JavaScriptCore', 'React'] : ['JavaScriptCore']
 

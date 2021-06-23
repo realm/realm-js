@@ -67,7 +67,7 @@ del src
 del vendor
 mklink /j "src" "../../../../../src/"
 mklink /j "vendor" "../../../../../vendor"
-cd realm-js\tests\react-test-app\android\app\src\main
+cd realm-js\tests\ReactTestApp\android\app\src\main
 #remove assets file
 del assets
 mklink /j assets "../../../../../data"
@@ -192,7 +192,7 @@ You will need yarn installed on the machine.
  * node - runs all tests for node
  * test-runners - checks supported tests runners are working correctly
 
-If you modify or add a test, please remove `tests/react-test-app/node_modules/realm-tests` before running `test.sh` (of course, only if you are testing with React Native).
+If you modify or add a test, please remove `tests/ReactTestApp/node_modules/realm-tests` before running `test.sh` (of course, only if you are testing with React Native).
 
 ### Testing on Windows
 

@@ -162,7 +162,7 @@ start_packager() {
   ./node_modules/react-native/scripts/packager.sh --reset-cache | tee "$PACKAGER_OUT" &
 
   while :; do
-    if grep -Fxq "Loading dependency graph, done." "$PACKAGER_OUT"; then
+    if grep -Fxq "To open developer menu press \"d\"" "$PACKAGER_OUT"; then
       break
     else
       echo "Waiting for packager."
@@ -311,7 +311,7 @@ case "$TARGET" in
   set_nvm_default
   start_server
 
-  pushd tests/react-test-app
+  pushd tests/ReactTestApp
   npm ci --no-optional
   ./node_modules/.bin/install-local
   open_chrome
@@ -355,27 +355,28 @@ case "$TARGET" in
   node scripts/build-android.js --arch=x86
 
   # pack realm package manually since install-local does not allow passing --ignore-scripts
-  echo "manually packing realm package"
-  npm pack .
-  rm -rf realm.tgz
-  mv realm-*.*.*.tgz realm.tgz
+  # echo "manually packing realm package"
+  # npm pack .
+  # rm -rf realm.tgz
+  # mv realm-*.*.*.tgz realm.tgz
 
-  echo "manually packing realm tests package"
-  pushd tests/js
-  npm pack .
-  rm -rf realm-tests.tgz
-  mv realm-tests-*.*.*.tgz realm-tests.tgz
-  popd
+  # echo "manually packing realm tests package"
+  # pushd tests/js
+  # npm pack .
+  # rm -rf realm-tests.tgz
+  # mv realm-tests-*.*.*.tgz realm-tests.tgz
+  # popd
 
-  pushd tests/react-test-app
-  echo "installing react-test-app dependencies"
+  pushd tests/ReactTestApp
+  echo "installing ReactTestApp dependencies"
   npm ci --no-optional
+  npx install-local
 
-  echo "installing manually packed realm package"
-  npm install --save-optional  --ignore-scripts ../../realm.tgz
+  # echo "installing manually packed realm package"
+  # npm install --save-optional  --ignore-scripts ../../realm.tgz
 
-  echo "installing manually packed realm tests package"
-  npm install --save-optional ../js/realm-tests.tgz
+  # echo "installing manually packed realm tests package"
+  # npm install --save-optional ../js/realm-tests.tgz
 
   echo "Adb devices"
   adb devices

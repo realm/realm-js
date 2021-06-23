@@ -19,8 +19,7 @@
 "use strict";
 
 const commandLineArgs = require("command-line-args");
-const fs = require("fs");
-const { arch } = require("os");
+const fs = require("fs-extra");
 const path = require("path");
 const exec = require("child_process").execFileSync;
 const compareVersions = require("compare-versions");
@@ -37,7 +36,7 @@ const buildTypes = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"];
 let architectures = ["x86", "armeabi-v7a", "arm64-v8a", "x86_64"];
 const optionDefinitions = [
     { name: "arch", type: validateArchitectures, multiple: false, description: "Build only for a single architecture" },
-    { name: "changes", type: Boolean, defaultValue: false, multiple: false, description: "Build changes only" },
+    { name: "clean", type: Boolean, defaultValue: false, multiple: false, description: "Rebuild from scratch" },
     { name: "build-type", type: validateBuildType, defaultValue: "Release", multiple: false, description: "CMAKE_BUILD_TYPE: Debug, Release, RelWithDebInfo, MinSizeRel" },
 ];
 const options = commandLineArgs(optionDefinitions, { camelCase: true });
@@ -58,13 +57,15 @@ const cmakePath = getCmakePath(sdkPath);
 const cmakeVersion = getCmakeVersion(sdkPath);
 
 const buildPath = path.resolve(process.cwd(), "build-realm-android");
-if (!options.changes) {
+if (options.clean) {
     if (fs.existsSync(buildPath)) {
-        fs.rmdirSync(buildPath, { recursive: true });
+        fs.removeSync(buildPath);
     }
-    fs.mkdirSync(buildPath);
 }
 
+if (!fs.existsSync(buildPath)) {
+    fs.mkdirSync(buildPath);
+}
 //shared root dir to download jsc once for all architectures
 const jscDir = path.resolve(buildPath, "jsc-android");
 
