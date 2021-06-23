@@ -254,7 +254,7 @@ module.exports = {
         let fields = realm.objects(DictSchema.name)[0].fields
         let cnt=0
 
-        let t = fields.addListener((obj, changeset ) => {
+        fields.addListener((obj, changeset ) => {
             TestCase.assertEqual(fields.field1, cnt,`fields.field1: ${fields.field1} should be equals to: cnt -> ${cnt}`)
             // We ignore the first as it just reflect the creation in the line above.
             if(cnt > 0) {
@@ -269,7 +269,8 @@ module.exports = {
 
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                TestCase.assertEqual(cnt,UPDATES,`We expect ${UPDATES} updates.`);
+                TestCase.assertEqual(realm.objects(DictSchema.name)[0].fields.field1, 5);
+                TestCase.assertEqual(cnt,UPDATES+1,`We expect ${UPDATES+1} updates.`);
                 fields.removeAllListeners();
                 realm.close();
                 resolve();
@@ -290,9 +291,8 @@ module.exports = {
         let ff = realm.objects(DictSchema.name)[0];
         let cnt = 0;
 
-        let a = (obj, changeset) => {
+        let a = function (obj, changeset) {
             if (cnt === 1) {
-                let keys = Object.keys(obj);
                 TestCase.assertTrue(obj.x2 !== undefined,"This field should be equal x2");
                 TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
                 TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
@@ -301,10 +301,9 @@ module.exports = {
             }
 
             if (cnt === 2) {
-                let keys = Object.keys(obj);
                 TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
                 TestCase.assertTrue(obj.x5 !== undefined,"This field should be equal x5");
-                TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
+                TestCase.assertTrue(obj.x3 !== undefined,"This field should be equal x3");
                 TestCase.assertArrayLength(changeset.deletions, 2, "deletions");
                 TestCase.assertArrayLength(changeset.insertions, 3, "insertions");
                 TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
@@ -366,15 +365,23 @@ module.exports = {
         realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}}))
         let point = realm.objects(DictSchema.name)[0].a
 
+        let cnt = 0;
         for(let i=0; i<10; i++) {
-            point.addListener((fn, changeset) => {
-                TestCase.assertEqual(0, 1, "This function should never be call")
+            point.addListener(function (obj, changeset) {
+                cnt++;
             })
         }
 
         point.removeAllListeners()
         realm.write(() => point.x=10 )
-        realm.close()
+
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                TestCase.assertEqual(cnt, 0);
+                realm.close();
+                resolve();
+            }, 1000);
+        });
     },
 
     testDictionaryRemoveCallback() {
@@ -385,23 +392,32 @@ module.exports = {
             }
         }
 
+        let called = {
+            a: 0,
+            b: 0,
+            c: 0,
+            d: 0
+        };
+
         let realm = new Realm({schema: [DictSchemaFields]})
         realm.write(() => realm.create(DictSchemaFields.name, {fields: {field1: 0, filed2: 2, field3: 3}}))
         let fields = realm.objects(DictSchemaFields.name)[0].fields
 
-        let a = (obj, chg) => {
-            TestCase.assertTrue(false,"Function a should be unsubscribed.")
-        }
-        let b = (obj, chg) => {
-            TestCase.assertTrue(false,"Function b should be unsubscribed.")
-        }
-        let called = false
-        let c = (obj, chg) => {
-            called = true
-        }
-        let d = (obj, chg) => {
-            TestCase.assertTrue(false,"Function d should be unsubscribed.")
-        }
+        let a = function (obj, chg) {
+            called.a++;
+        };
+
+        let b = function (obj, chg) {
+            called.b++;
+        };
+
+        let c = function (obj, chg) {
+            called.c++;
+        };
+
+        let d = function (obj, chg) {
+            called.d++;
+        };
 
         fields.addListener(a)
         fields.addListener(b)
@@ -420,7 +436,10 @@ module.exports = {
 
         return new Promise((resolve, _) => {
             setTimeout(() => {
-                TestCase.assertTrue(called,"Function c should be called");
+                TestCase.assertEqual(called.a, 0, "Function a");
+                TestCase.assertEqual(called.b, 0, "Function b");
+                TestCase.assertEqual(called.c, 2, "Function c");
+                TestCase.assertEqual(called.d, 0, "Function d");
                 fields.removeAllListeners();
                 realm.close();
                 resolve();

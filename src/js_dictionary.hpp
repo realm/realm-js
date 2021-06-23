@@ -244,37 +244,39 @@ typename T::Value DictionaryClass<T>::create_dictionary_change_set(ContextType c
 
 template<typename T>
 void DictionaryClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto dictionary = *get_internal<T, DictionaryClass<T>>(ctx, this_object);
+    auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
     args.validate_maximum(1);
     auto callback = Value::validated_to_function(ctx, args[0]);
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-
-    auto token = dictionary.add_key_based_notification_callback([=](DictionaryChangeSet const& change_set, std::exception_ptr exception) {
+    auto token = dictionary->add_key_based_notification_callback([=](DictionaryChangeSet const& change_set, std::exception_ptr exception) {
         HANDLESCOPE(protected_ctx)
 
         ValueType arguments[] {
-            static_cast<ObjectType>(protected_this),
+            DictionaryClass<T>::create_instance(protected_ctx, *dictionary),
             DictionaryClass<T>::create_dictionary_change_set(protected_ctx, change_set)
         };
+
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
-    dictionary.m_notification_tokens.emplace_back(protected_callback, std::move(token));
+    dictionary->m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
 
 template<typename T>
 void DictionaryClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto dictionary = *get_internal<T, DictionaryClass<T>>(ctx, this_object);
+    auto& dictionary = *get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
     args.validate_maximum(1);
     auto callback = Value::validated_to_function(ctx, args[0]);
     auto protected_function = Protected<FunctionType>(ctx, callback);
 
     auto& tokens = dictionary.m_notification_tokens;
-    auto compare = [&](auto&& token) {
-        return typename Protected<FunctionType>::Comparator()(token.first, protected_function);
+    auto compare = [&](auto&& func_and_tok) {
+        //auto func = FunctionType(func_and_tok.first);
+        //std::cout << "func in vec: " <<
+        return typename Protected<FunctionType>::Comparator()(func_and_tok.first, protected_function);
     };
     tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
 }
@@ -282,10 +284,10 @@ void DictionaryClass<T>::remove_listener(ContextType ctx, ObjectType this_object
 
 template<typename T>
 void DictionaryClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto dictionary = *get_internal<T, DictionaryClass<T>>(ctx, this_object);
+    auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
     args.validate_maximum(0);
-    dictionary.m_notification_tokens.clear();
+    dictionary->m_notification_tokens.clear();
 }
 
 } // js
