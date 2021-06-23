@@ -235,12 +235,12 @@ public:
 
     // called when creating dictionaries.
     template<typename Fn>
-    void enumerate_dictionary(ValueType& value, Fn&& func) {
+    void enumerate_dictionary(ValueType value, Fn&& func) {
         auto js_object = Value::validated_to_object(m_ctx, value);
         for (auto key : Object::get_property_names(m_ctx, js_object)) {
             std::string k = key;
             ValueType val = Object::get_property(m_ctx, js_object, key);
-            func(k, val);
+            func(StringData(k), val);
         }
     }
 
