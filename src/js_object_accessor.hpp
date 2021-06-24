@@ -181,6 +181,7 @@ public:
         return SetClass<JSEngine>::create_instance(m_ctx, std::move(set));
     }
     ValueType box(realm::object_store::Dictionary dictionary) {
+        throw std::runtime_error("Dictionaries are not yet supported");
         return dictionary_adapter.wrap(m_ctx, dictionary);
     }
 

@@ -536,3 +536,9 @@ module.exports = {
 
     } */
 }
+
+module.exports = {
+    disabledDictionaryTests() {
+        console.log("Dictionary tests have been disabled");
+    }
+};

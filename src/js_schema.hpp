@@ -92,6 +92,7 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     DictionarySchema dictionary {type};
 
     if(dictionary.is_dictionary()){
+        throw std::runtime_error(util::format("The dictionary type are not yet supported: Change the type of '%1.%2'", object_name, prop.name));
         prop.type |= dictionary.schema();
         prop.object_type = "";
         return;

@@ -19,6 +19,7 @@ NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Known Issues
 * Set iterators do not work under Jest ([#3788](https://github.com/realm/realm-js/issues/3788)).
+* Properties of type dictionary is temporarily disabled and will be reintroduced.
 
 ### Internal
 * Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
