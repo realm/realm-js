@@ -1,15 +1,19 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.5.0 Release notes (2021-6-24)
 =============================================================
 NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Enhancements
-* Change listeners for dictionary are now key based. The change set will contain arrays of created, modified, and deleted keys.
+* Added UUID types. ([#3244](https://github.com/realm/realm-js/issues/3244))
+* Added Set type ([#3378](https://github.com/realm/realm-js/issues/3378)).
+* Adding Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
+* Added `ssl` option to `Realm.App.Sync` configuration.
 
 ### Fixed
 * Performance regression for some scenarios of writing/creating objects with a primary key. ([realm/realm-core#4522](https://github.com/realm/realm-core/issues/4522))
-* Observing a dictionary holding links to objects would crash. ([realm/realm-core#4711](https://github.com/realm/realm-core/issues/4711), since v11.0.0-beta.1)
 * Async callbacks not triggered on Android 12 emulator. ([realm/realm-core#4666](https://github.com/realm/realm-core/issues/4666))
 * Fixed the string based query parser not supporting integer constants above 32 bits on a 32 bit platform. ([#3773](https://github.com/realm/realm-js/issues/3773), since v10.4.0)
+* Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
+
 
 ### Compatibility
 * MongoDB Realm Cloud.
