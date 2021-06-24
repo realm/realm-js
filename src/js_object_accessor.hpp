@@ -25,7 +25,6 @@
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
 #include "js_links.hpp"
-#include "dictionary/js_dictionary.hpp"
 
 #if REALM_ENABLE_SYNC
 #include <realm/util/base64.hpp>
@@ -182,7 +181,6 @@ public:
     }
     ValueType box(realm::object_store::Dictionary dictionary) {
         throw std::runtime_error("Dictionaries are not yet supported");
-        return dictionary_adapter.wrap(m_ctx, dictionary);
     }
 
     bool is_null(ValueType const& value) {
@@ -276,7 +274,6 @@ public:
 private:
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
-    DictionaryAdapter<JSEngine> dictionary_adapter;
     Obj m_parent;
     const Property* m_property = nullptr;
     const ObjectSchema* m_object_schema;
