@@ -19,7 +19,6 @@
 #pragma once
 
 #include <map>
-#include "dictionary/dictionary_schema.hpp"
 #include "js_types.hpp"
 #include <realm/object-store/schema.hpp>
 
@@ -89,13 +88,9 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         prop.type |= PropertyType::Nullable;
         type = type.substr(0, type.size() - 1);
     }
-    DictionarySchema dictionary {type};
 
-    if(dictionary.is_dictionary()){
+    if (type.ends_with("{}")) {
         throw std::runtime_error(util::format("The dictionary type are not yet supported: Change the type of '%1.%2'", object_name, prop.name));
-        prop.type |= dictionary.schema();
-        prop.object_type = "";
-        return;
     }
 
     if (type == "bool") {
