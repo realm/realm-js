@@ -1,0 +1,8 @@
+rootProject.name = 'ReactTestApp'
+apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
+
+// We need to add realm manually, because it is not in the package.json
+include ':realm'
+project(':realm').projectDir = new File(settingsDir, '../../../react-native/android')
+
+include ':app'
