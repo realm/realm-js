@@ -66,11 +66,11 @@ void RealmClass<T>::crashOnStart(ContextType ctx, FunctionType, ObjectType this_
 
 Testing is important, and in `tests/js/realm-tests.js` you can add the tests you need.
 
-Note: If your new API and/or test cases are not getting picked up when running the Android or iOS tests, remove the corresponding installed package from react-test-app and try again.
+Note: If your new API and/or test cases are not getting picked up when running the Android or iOS tests, remove the corresponding installed package from ReactTestApp and try again.
 
 ```
-rm -rf  tests/react-test-app/node_modules/realm
-rm -rf  tests/react-test-app/node_modules/realm-tests
+rm -rf  tests/ReactTestApp/node_modules/realm
+rm -rf  tests/ReactTestApp/node_modules/realm-tests
 ```
 
 #### Wrap the function
@@ -162,15 +162,15 @@ Debugging and working with the unit tests in an iterative mannner is done the fo
 
 1. Run `./scripts/test.sh react-tests` to install all the dependencies.
 2. Run `npm run ros-start` in one terminal window.
-3. `cd tests/react-test-app && npm start` in another terminal window
-4. Open `tests/react-test-app/ios/ReactTests.xcworkspace` (note: not the xcodeproj) in Xcode.
+3. `cd tests/ReactTestApp && npm start` in another terminal window
+4. Open `tests/ReactTestApp/ios/ReactTests.xcworkspace` (note: not the xcodeproj) in Xcode.
 5. Hit Cmd-U to run the tests.
 
-If you want to modify the Javascript in an iterative manner or enable break points you need to do it on the files located in `tests/react-test-app/node_modules/realm-tests`. These files are a copy of the original files located in `tests/js` so any changes must manually be copied back. The reason for this is that the React Native Metro Bundler doesn't support symlinks.
+If you want to modify the Javascript in an iterative manner or enable break points you need to do it on the files located in `tests/ReactTestApp/node_modules/realm-tests`. These files are a copy of the original files located in `tests/js` so any changes must manually be copied back. The reason for this is that the React Native Metro Bundler doesn't support symlinks.
 
 The Javascript tests are run twice: once directly in the simulator, and once in Chrome, talking to the simulator via the RPC bridge used for Chrome debugging. When running the Chrome tests you can open the Chrome Developer Tools on the tab that they open to debug the tests themselves. The JS engine running inside the simulator (for both the RPC server and the tests themselves in the non-Chrome test suite) can be debugged using the Safari developer tools.
 
-Note that it isn't possible to easily run a single unit test from Xcode. Instead you should disable the tests manually by modifying `tests/react-test-app/node_modules/realm-tests/index.js`.
+Note that it isn't possible to easily run a single unit test from Xcode. Instead you should disable the tests manually by modifying `tests/ReactTestApp/node_modules/realm-tests/index.js`.
 
 ### How To: Debug React Native Podspec
 
