@@ -492,7 +492,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**",
-					"$(SRCROOT)/../../tests/react-test-app/ios/Pods/Headers/Public/React",
+					"$(SRCROOT)/../../tests/ReactTestApp/ios/Pods/Headers/Public/React",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 				);
 				LIBRARY_SEARCH_PATHS = (
@@ -511,7 +511,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**",
-					"$(SRCROOT)/../../tests/react-test-app/ios/Pods/Headers/Public/React",
+					"$(SRCROOT)/../../tests/ReactTestApp/ios/Pods/Headers/Public/React",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 				);
 				LIBRARY_SEARCH_PATHS = (
