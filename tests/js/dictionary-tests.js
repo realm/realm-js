@@ -216,29 +216,30 @@ module.exports = {
         realm.close();
     },
 
-    //TODO A change in core has mess up with the query engine fix.
-    /*
-    testDictionaryQuery(){
+    testDictionaryQuery() {
         const DictSchema = {
             name: "Dictionary",
             properties: {
                 a: "{}"
             }
-        }
-        let realm = new Realm({schema: [DictSchema]})
-        const N = 100
+        };
+
+        let realm = new Realm({schema: [DictSchema]});
+        const N = 100;
         for(let i=0; i<N; i++) {
-            realm.write(() => realm.create(DictSchema.name, {a: {x: i, y: 2, z: 3}}))
+            realm.write(() => realm.create(DictSchema.name, {a: {x: i, y: 2, z: 3}}));
         }
 
-        let data = realm.objects(DictSchema.name)
-        //console.log("Fields -> " , Object.keys(data[0].a))
+        let data = realm.objects(DictSchema.name);
+        TestCase.assertEqual(data.length, N, `We expect ${N} objects.`);
 
-        let half = data.filtered("a.x >= 50")
-        let seventy = data.filtered("a.x >= $0", 70)
+        let half = data.filtered("a['x'] >= 50");
+        let seventy = data.filtered("a['x'] >= $0", 70);
         TestCase.assertEqual(half.length, N/2, "We expect only 50 items, matching for field x.");
         TestCase.assertEqual(seventy.length, 30, "We expect only 30 items, matching for field x >= 70.");
-    },*/
+
+        realm.close();
+    },
 
     testDictionaryNotificationObjectFieldUpdate() {
         const UPDATES = 5;
