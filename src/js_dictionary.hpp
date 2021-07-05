@@ -18,13 +18,6 @@
 
 #pragma once
 
-namespace realm {
-namespace js {
-    template<typename> struct DictionaryClass;
-}
-}
-
-
 #include "js_class.hpp"
 #include "js_collection.hpp"
 #include "js_object_accessor.hpp"
