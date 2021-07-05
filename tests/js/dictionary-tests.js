@@ -481,7 +481,7 @@ module.exports = {
         fields.addListener((obj, chg) => {
             correct = true
         })
-        realm.write(() => { fields.field1=2 } )
+        realm.write(() => { fields.field1 = 2 } )
 
         return new Promise((resolve, _) => {
             setTimeout(() => {
