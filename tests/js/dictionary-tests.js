@@ -439,7 +439,7 @@ module.exports = {
             setTimeout(() => {
                 TestCase.assertEqual(called.a, 0, "Function a");
                 TestCase.assertEqual(called.b, 0, "Function b");
-                TestCase.assertEqual(called.c, 2, "Function c");
+                TestCase.assertEqual(called.c, 2, "Function c"); // the first write() will also trigger a call
                 TestCase.assertEqual(called.d, 0, "Function d");
                 fields.removeAllListeners();
                 realm.close();
@@ -641,14 +641,13 @@ module.exports = {
          realm.close();
      },
 
-    /*TODO Comment this until we merge Mixed->Link code.
-    testDictionaryErrorHandling(){
-        let realm = new Realm({schema: [DictSchema]})
-        let err = new Error('Mixed conversion not possible for type: object')
-        //TestCase.assertThrowsException(() => realm.write(() => realm.create(DictSchema.name, {a: {x: {} }})) , err)
-        realm.write(() => realm.create(DictSchema.name, { a: { x: null } }))
-        let data = realm.objects(DictSchema.name)[0].a
-        TestCase.assertEqual(data.x, null, 'Should be an equals to mutable.x = null');
-
-    } */
+    testDictionaryErrorHandling() {
+        let realm = new Realm({schema: [DictSchema]});
+        let err = new Error("Only Realm instances are supported.");
+        TestCase.assertThrowsException(() => realm.write(() => realm.create(DictSchema.name, {a: {x: {} }})) , err);
+        realm.write(() => realm.create(DictSchema.name, { a: { x: null } }));
+        let data = realm.objects(DictSchema.name)[0].a;
+        TestCase.assertEqual(data.x, null, "Should be an equals to mutable.x = null");
+        realm.close();
+    }
 }
