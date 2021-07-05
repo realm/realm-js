@@ -1,15 +1,39 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Enhancements
+* Dictionary support has been enabled.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* <Either mention core version or upgrade>
+* <Using Realm Core vX.Y.Z>
+* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+
+10.5.0 Release notes (2021-6-24)
+=============================================================
 NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Enhancements
-* Change listeners for dictionary are now key based. The change set will contain arrays of created, modified, and deleted keys.
+* Added UUID types. ([#3244](https://github.com/realm/realm-js/issues/3244))
+* Added Set type ([#3378](https://github.com/realm/realm-js/issues/3378)).
+* Adding Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
+* Added `ssl` option to `Realm.App.Sync` configuration.
 
 ### Fixed
 * Performance regression for some scenarios of writing/creating objects with a primary key. ([realm/realm-core#4522](https://github.com/realm/realm-core/issues/4522))
-* Observing a dictionary holding links to objects would crash. ([realm/realm-core#4711](https://github.com/realm/realm-core/issues/4711), since v11.0.0-beta.1)
 * Async callbacks not triggered on Android 12 emulator. ([realm/realm-core#4666](https://github.com/realm/realm-core/issues/4666))
 * Fixed the string based query parser not supporting integer constants above 32 bits on a 32 bit platform. ([#3773](https://github.com/realm/realm-js/issues/3773), since v10.4.0)
+* Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
+
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -19,6 +43,7 @@ NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
 
 ### Known Issues
 * Set iterators do not work under Jest ([#3788](https://github.com/realm/realm-js/issues/3788)).
+* Properties of type dictionary is temporarily disabled and will be reintroduced.
 
 ### Internal
 * Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))

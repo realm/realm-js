@@ -651,3 +651,9 @@ module.exports = {
         realm.close();
     }
 }
+
+module.exports = {
+    disabledDictionaryTests() {
+        console.log("Dictionary tests have been disabled");
+    }
+};
