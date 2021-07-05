@@ -4,8 +4,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed a recursive loop which would eventually crash trying to refresh a user app token when it had been revoked by an admin. Now this situation logs the user out and reports an error. ([realm/realm-core#4745](https://github.com/realm/realm-core/issues/4745), since v10.0.0)
+* Fixed a crash after clearing a list or set of Mixed containing links to objects. ([realm/realm-core#4774](https://github.com/realm/realm-core/issues/4774), since the beginning of v11)
+* Fixed an endless recursive loop that could cause a stack overflow when computing changes on a set of objects which contained cycles. ([#4770](https://github.com/realm/realm-core/pull/4770), since the beginning of v11)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -14,9 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.0.3 to v11.0.4.
 
 10.5.0 Release notes (2021-6-24)
 =============================================================
