@@ -25,7 +25,6 @@
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
 #include "js_links.hpp"
-#include "js_dictionary.hpp"
 
 #if REALM_ENABLE_SYNC
 #include <realm/util/base64.hpp>
