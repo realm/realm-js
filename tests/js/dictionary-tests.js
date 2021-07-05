@@ -198,20 +198,20 @@ module.exports = {
             properties: {
                 a: "{}"
             }
-        }
-        let realm = new Realm({schema: [DictSchema]})
-        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}}))
-        let point = realm.objects(DictSchema.name)[0].a
+        };
 
-        // FIXME: JSON.stringify()
-        // TestCase.assertEqual(JSON.stringify(point), "{\"x\":1,\"z\":3,\"y\":2}", "Should be an equals to: {\"x\":1,\"z\":3,\"y\":2}")
-        TestCase.assertArraysEqual(Object.values(point), [1,3,2], "Should be an equals to: [1,3,2]")
-        TestCase.assertArraysEqual(Object.keys(point), ["x","z","y"], "Should be an equals to: ['x','z','y']")
+        let realm = new Realm({schema: [DictSchema]});
+        realm.write(() => realm.create(DictSchema.name, {a: {x: 1, y: 2, z: 3}}));
+        let point = realm.objects(DictSchema.name)[0].a;
 
-        let {x,y,z} = point
-        TestCase.assertEqual(x, 1, "Should be an equals to: [1,3,2]")
-        TestCase.assertEqual(y, 2, "Should be an equals to: [1,3,2]")
-        TestCase.assertEqual(z, 3, "Should be an equals to: [1,3,2]")
+        TestCase.assertEqual(JSON.stringify(point), "{\"x\":1,\"z\":3,\"y\":2}", "Should be an equals to: {\"x\":1,\"z\":3,\"y\":2}");
+        TestCase.assertArraysEqual(Object.values(point), [1,3,2], "Should be an equals to: [1,3,2]");
+        TestCase.assertArraysEqual(Object.keys(point), ["x","z","y"], "Should be an equals to: ['x','z','y']");
+
+        let {x,y,z} = point;
+        TestCase.assertEqual(x, 1, "Should be an equals to: [1,3,2]");
+        TestCase.assertEqual(y, 2, "Should be an equals to: [1,3,2]");
+        TestCase.assertEqual(z, 3, "Should be an equals to: [1,3,2]");
 
         realm.close();
     },
