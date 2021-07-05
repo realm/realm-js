@@ -11,6 +11,7 @@
     "test:github": "ts-node harness/github.ts"
   },
   "dependencies": {
+    "@vue/reactivity": "^3.1.2",
     "chai": "^4.2.0",
     "js-base64": "^3.4.5",
     "jwt-encode": "^1.0.1",

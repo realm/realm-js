@@ -375,7 +375,8 @@ export class App<
                 providerType,
             });
             this.users.unshift(user);
-            return user;
+            // return user;
+            return this.users[0];
         }
     }
 
