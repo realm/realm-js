@@ -67,6 +67,7 @@ if (global.enableSyncTests) {
         TESTS.UUIDSyncTests= node_require("./uuid-sync-tests");
         TESTS.PartitionValueTests = node_require("./partition-value-tests");
         TESTS.SetSyncTests = node_require("./set-sync-tests");
+        // TESTS.DictionarySyncTests = node_require("./dictionary-sync-tests");
         TESTS.MixedSyncTests = node_require("./mixed-sync-tests");
         TESTS.AnalyticsTests = require('./analytics-tests');
     }
