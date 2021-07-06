@@ -69,8 +69,6 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>, Collection
     static void has(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void keys(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void put(ContextType, ObjectType, Arguments &, ReturnValue &);
-
-
     // observables
     static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void remove_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -100,8 +98,8 @@ typename T::Object DictionaryClass<T>::create_instance(ContextType ctx, realm::o
     auto object = create_object<T, DictionaryClass<T>>(ctx, new realm::js::Dictionary<T>(std::move(dictionary)));
 
     ObjectType realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
-    FunctionType realm_dictionary_constructor = Value::to_constructor(ctx, Object::get_property(ctx, realm_constructor, "Dictionary"));
-    return Function<T>::construct(ctx, realm_dictionary_constructor, { object });
+    FunctionType realm_dictionary_wrapper = Value::to_function(ctx, Object::get_property(ctx, realm_constructor, "Dictionary"));
+    return Function<T>::call(ctx, realm_dictionary_wrapper, { object });
 }
 
 template<typename T>
@@ -150,7 +148,7 @@ void DictionaryClass<T>::getter(ContextType ctx, ObjectType this_object, Argumen
 
 template<typename T>
 void DictionaryClass<T>::put(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_maximum(1);
+    args.validate_count(1);
 
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
@@ -206,8 +204,8 @@ void DictionaryClass<T>::keys(ContextType ctx, ObjectType this_object, Arguments
     std::vector<ValueType> key_vector;
     key_vector.reserve(dictionary.size());
 
-    for (auto it: dictionary) {
-        key_vector.push_back(Value::from_string(ctx, it.first.get_string()));
+    for (auto&& [k, v] : dictionary) {
+        key_vector.push_back(Value::from_string(ctx, k.get_string()));
     }
 
     auto keys = Object::create_array(ctx, key_vector);
@@ -263,12 +261,10 @@ void DictionaryClass<T>::remove_listener(ContextType ctx, ObjectType this_object
 
     args.validate_maximum(1);
     auto callback = Value::validated_to_function(ctx, args[0]);
-    auto protected_function = Protected<FunctionType>(ctx, callback);
+    auto protected_function = Protected<FunctionType>(ctx, callback); // Protecting for comparison, not to extend lifetime.
 
     auto& tokens = dictionary.m_notification_tokens;
     auto compare = [&](auto&& func_and_tok) {
-        //auto func = FunctionType(func_and_tok.first);
-        //std::cout << "func in vec: " <<
         return typename Protected<FunctionType>::Comparator()(func_and_tok.first, protected_function);
     };
     tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
