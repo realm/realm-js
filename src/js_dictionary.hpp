@@ -99,7 +99,8 @@ typename T::Object DictionaryClass<T>::create_instance(ContextType ctx, realm::o
 
     ObjectType realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
     FunctionType realm_dictionary_wrapper = Value::to_function(ctx, Object::get_property(ctx, realm_constructor, "Dictionary"));
-    return Function<T>::call(ctx, realm_dictionary_wrapper, { object });
+    ValueType arguments [] = { object };
+    return Value::to_object(ctx, Function<T>::call(ctx, realm_dictionary_wrapper, 1, arguments));
 }
 
 template<typename T>
