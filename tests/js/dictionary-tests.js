@@ -39,16 +39,16 @@ module.exports = {
         TestCase.assertTrue(data.a.addListener !== undefined, "addListener should be an method of Dictionary");
         TestCase.assertTrue(data.a.removeAllListeners !== undefined, "removeAllListeners should be an method of Dictionary");
         TestCase.assertTrue(data.a.removeListener !== undefined, "removeListener should be an method of Dictionary");
-        TestCase.assertTrue(data.a.put !== undefined, "put should be an method of Dictionary");
+        TestCase.assertTrue(data.a.set !== undefined, "set should be an method of Dictionary");
 
         realm.close();
     },
 
     testDictionaryAddingObject() {
         let realm = new Realm({schema: [DictSchema]})
-        realm.write(()=> realm.create(DictSchema.name, { a: {x:1, y:2, z:"hey"} } ))
+        realm.write(() => realm.create(DictSchema.name, { a: {x:1, y:2, z:"hey"} } ));
 
-        let data = realm.objects(DictSchema.name)[0]
+        let data = realm.objects(DictSchema.name)[0];
 
         TestCase.assertEqual(typeof data.a, "object", "Should be an object");
         let a = data.a
@@ -58,7 +58,7 @@ module.exports = {
         TestCase.assertEqual(data.a.y, 2, "Should be an equals to a.y = 2");
         TestCase.assertEqual(data.a.z, "hey", "Should be an equals to a.z = hey");
 
-        let o = Object.keys(data.a)
+        let o = Object.keys(data.a);
         o.forEach(k => {
             TestCase.assertNotEqual(["x", "y", "z"].indexOf(k), -1, "Should contain all the keys");
         })
@@ -213,6 +213,8 @@ module.exports = {
         TestCase.assertEqual(y, 2, "Should be an equals to: [1,3,2]");
         TestCase.assertEqual(z, 3, "Should be an equals to: [1,3,2]");
 
+        TestCase.assertEqual(point[Symbol.for("x")], 1, "Should work with symbols");
+
         realm.close();
     },
 
@@ -354,7 +356,9 @@ module.exports = {
         let ff = realm.objects(DictSchema.name)[0]
 
         realm.write(() => {
-            delete ff.fields.x2;
+            TestCase.assertTrue(delete ff.fields.x2);
+            TestCase.assertTrue(delete ff.fields.x3); // true if it doesn't exist
+            TestCase.assertTrue(delete ff.fields.set);
         });
 
         TestCase.assertEqual(Object.keys(ff.fields).length, 1);
@@ -495,23 +499,23 @@ module.exports = {
         });
     },
 
-    testDictionaryPut() {
+    testDictionarySet() {
         const DictSchema = {
             name: "Dictionary",
             properties: {
                 dict: "{}"
             }
-        }
-        let realm = new Realm({schema: [DictSchema]})
+        };
 
-        realm.write(()=> realm.create(DictSchema.name, { dict: {oo:2, y:2, z:2} } ))
+        let realm = new Realm({schema: [DictSchema]});
+        realm.write(()=> realm.create(DictSchema.name, { dict: {oo:2, y:2, z:2} } ));
 
-        let D = realm.objects(DictSchema.name)[0].dict
-        let T = D
+        let D = realm.objects(DictSchema.name)[0].dict;
+        let T = D;
 
-        realm.write(()=> {  D.put( {ff:2, pp:4} )  })
+        realm.write(() => {  D.set( {ff:2, pp:4} )  });
 
-        TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
+        TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T), "Objects need to mutate when fields on the dictionary change.");
         realm.close();
     },
 
@@ -533,12 +537,12 @@ module.exports = {
         TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
         TestCase.assertEqual(Object.keys(D).length,  0,"We should have an empty object.")
 
-        realm.write(()=> {  D.put( {ff:2, pp:'111011'} )  })
+        realm.write(()=> {  D.set( {ff:2, pp:'111011'} )  })
 
         TestCase.assertTrue(JSON.stringify(D) === JSON.stringify(T),"Objects need to mutate when fields on the dictionary change.")
 
-        let error = new Error("The key 'unknown_key' doesn't exist in the dictionary")
-        TestCase.assertThrowsException(() =>  realm.write(()=> {  D.remove( ['unknown_key'] )  }) , error)
+        // remove an unknown key is not an error
+        realm.write(()=> {  D.remove( ['unknown_key'] )  })
         realm.close();
     },
 
@@ -630,7 +634,7 @@ module.exports = {
          realm.write(() => {
              let child1 = realm.create(Child.name, { num: 555 });
              let child2 = realm.create(Child.name, { num: 666 });
-             dict_1.put({children1: child1, children2: child2});
+             dict_1.set({children1: child1, children2: child2});
          });
 
          TestCase.assertEqual(dict_1.children1.num, 555, "We expect children1#555");
@@ -649,11 +653,5 @@ module.exports = {
         let data = realm.objects(DictSchema.name)[0].a;
         TestCase.assertEqual(data.x, null, "Should be an equals to mutable.x = null");
         realm.close();
-    }
-}
-
-module.exports = {
-    disabledDictionaryTests() {
-        console.log("Dictionary tests have been disabled");
     }
 };

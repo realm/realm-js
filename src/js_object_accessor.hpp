@@ -236,10 +236,9 @@ public:
     template<typename Fn>
     void enumerate_dictionary(ValueType value, Fn&& func) {
         auto js_object = Value::validated_to_object(m_ctx, value);
-        for (auto key : Object::get_property_names(m_ctx, js_object)) {
-            std::string k = key;
+        for (auto&& key : Object::get_property_names(m_ctx, js_object)) {
             ValueType val = Object::get_property(m_ctx, js_object, key);
-            func(StringData(k), val);
+            func(std::string(key), val);
         }
     }
 

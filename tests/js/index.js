@@ -19,7 +19,6 @@
 "use strict";
 
 const Realm = require("realm");
-const BSON = require("bson");
 
 if (typeof Realm.App !== "undefined" && Realm.App !== null) {
     global.WARNING = "global is not available in React Native. Use it only in tests";
@@ -30,13 +29,6 @@ const isNodeProcess = typeof process === "object" && process + "" === "[object p
 const isElectronProcess = typeof process === "object" && process.versions && process.versions.electron;
 const require_method = require;
 function node_require(module) { return require_method(module); }
-
-let pathDelimiter = "/";
-
-if (isNodeProcess && process.platform === "win32") {
-    global.enableSyncTests = false;
-    pathDelimiter = "\\";
-}
 
 var TESTS = {
     ListTests: require("./list-tests"),

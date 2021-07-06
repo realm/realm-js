@@ -44,7 +44,7 @@ public:
     Dictionary& operator=(Dictionary&&) = default;
     Dictionary& operator=(Dictionary const&) = default;
 
-    std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
+    std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_listeners;
 };
 
 template<typename T>
@@ -68,7 +68,7 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>, Collection
     static void remove(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void has(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void keys(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void put(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void set(ContextType, ObjectType, Arguments &, ReturnValue &);
     // observables
     static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void remove_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -76,9 +76,9 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>, Collection
 
     // helpers
     static ValueType create_dictionary_change_set(ContextType, DictionaryChangeSet const &);
-    static void validate_value(ContextType, realm::object_store::Dictionary &, ValueType);
+    static void validate_value(ContextType, const realm::object_store::Dictionary &, ValueType);
 
-    std::string const name = "_Dictionary";
+    std::string const name = "Dictionary";
 
     MethodMap<T> const methods = {
         {"setter", wrap<setter>},
@@ -86,7 +86,7 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>, Collection
         {"remove", wrap<remove>},
         {"_has", wrap<has>},
         {"_keys", wrap<keys>},
-        {"put", wrap<put>},
+        {"set", wrap<set>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
@@ -98,13 +98,13 @@ typename T::Object DictionaryClass<T>::create_instance(ContextType ctx, realm::o
     auto object = create_object<T, DictionaryClass<T>>(ctx, new realm::js::Dictionary<T>(std::move(dictionary)));
 
     ObjectType realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
-    FunctionType realm_dictionary_wrapper = Value::to_function(ctx, Object::get_property(ctx, realm_constructor, "Dictionary"));
+    FunctionType realm_dictionary_proxy = Value::to_function(ctx, Object::get_property(ctx, realm_constructor, "DictionaryProxy"));
     ValueType arguments [] = { object };
-    return Value::to_object(ctx, Function<T>::call(ctx, realm_dictionary_wrapper, 1, arguments));
+    return Value::to_object(ctx, Function<T>::call(ctx, realm_dictionary_proxy, 1, arguments));
 }
 
 template<typename T>
-void DictionaryClass<T>::validate_value(ContextType ctx, realm::object_store::Dictionary &dictionary, ValueType value) {
+void DictionaryClass<T>::validate_value(ContextType ctx, const realm::object_store::Dictionary &dictionary, ValueType value) {
     auto type = dictionary.get_type();
     StringData object_type;
     if (type == realm::PropertyType::Object) {
@@ -148,7 +148,7 @@ void DictionaryClass<T>::getter(ContextType ctx, ObjectType this_object, Argumen
 }
 
 template<typename T>
-void DictionaryClass<T>::put(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void DictionaryClass<T>::set(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
 
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
@@ -164,11 +164,10 @@ void DictionaryClass<T>::remove(ContextType ctx, ObjectType this_object, Argumen
     args.validate_maximum(1);
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
     if (Value::is_string(ctx, args[0])) {
-        std::string key = Value::validated_to_string(ctx, args[0]);
-        if (!dictionary->contains(key)) {
-            throw std::invalid_argument(util::format("The key '%1' doesn't exist in the dictionary", key));
+        std::string key = Value::to_string(ctx, args[0]);
+        if (dictionary->contains(key)) {
+            dictionary->erase(key);
         }
-        dictionary->erase(key);
     }
     else if (Value::is_array(ctx, args[0])) {
         auto keys_as_array = Value::to_array(ctx, args[0]);
@@ -176,10 +175,9 @@ void DictionaryClass<T>::remove(ContextType ctx, ObjectType this_object, Argumen
         for (uint32_t i = 0; i < length; i++) {
             auto key_as_value = Object::get_property(ctx, keys_as_array, i);
             std::string key = Value::validated_to_string(ctx, key_as_value);
-            if (!dictionary->contains(key)) {
-                throw std::invalid_argument(util::format("The key '%1' doesn't exist in the dictionary", key));
+            if (dictionary->contains(key)) {
+                dictionary->erase(key);
             }
-            dictionary->erase(key);
         }
     }
     else {
@@ -218,20 +216,20 @@ typename T::Value DictionaryClass<T>::create_dictionary_change_set(ContextType c
     ObjectType object = Object::create_empty(ctx);
     std::vector<ValueType> scratch;
 
+    scratch.reserve(std::max({change_set.deletions.size(), change_set.insertions.size(), change_set.modifications.size()}));
     auto make_object_array = [&](auto const& keys) {
         scratch.clear();
-        scratch.reserve(keys.size());
         for (auto mixed_item : keys) {
             scratch.push_back(TypeMixed<T>::get_instance().wrap(ctx, mixed_item));
         }
         return Object::create_array(ctx, scratch);
     };
 
-    Object::set_property(ctx, object, "deletions", make_object_array(change_set.deletions));
-    Object::set_property(ctx, object, "insertions", make_object_array(change_set.insertions));
-    Object::set_property(ctx, object, "modifications", make_object_array(change_set.modifications));
-
-    return object;
+    return Object::create_obj(ctx, {
+        {"deletions", make_object_array(change_set.deletions)},
+        {"insertions", make_object_array(change_set.insertions)},
+        {"modifications", make_object_array(change_set.modifications)},
+    });
 }
 
 template<typename T>
@@ -253,22 +251,22 @@ void DictionaryClass<T>::add_listener(ContextType ctx, ObjectType this_object, A
 
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
-    dictionary->m_notification_tokens.emplace_back(protected_callback, std::move(token));
+    dictionary->m_listeners.emplace_back(protected_callback, std::move(token));
 }
 
 template<typename T>
 void DictionaryClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    auto& dictionary = *get_internal<T, DictionaryClass<T>>(ctx, this_object);
+    auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
     args.validate_maximum(1);
     auto callback = Value::validated_to_function(ctx, args[0]);
     auto protected_function = Protected<FunctionType>(ctx, callback); // Protecting for comparison, not to extend lifetime.
 
-    auto& tokens = dictionary.m_notification_tokens;
+    auto& listeners = dictionary->m_listeners;
     auto compare = [&](auto&& func_and_tok) {
         return typename Protected<FunctionType>::Comparator()(func_and_tok.first, protected_function);
     };
-    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
+    listeners.erase(std::remove_if(listeners.begin(), listeners.end(), compare), listeners.end());
 }
 
 
@@ -277,7 +275,7 @@ void DictionaryClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_o
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
     args.validate_maximum(0);
-    dictionary->m_notification_tokens.clear();
+    dictionary->m_listeners.clear();
 }
 
 } // js
