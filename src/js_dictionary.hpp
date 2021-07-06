@@ -133,7 +133,7 @@ void DictionaryClass<T>::setter(ContextType ctx, ObjectType this_object, Argumen
 
 template<typename T>
 void DictionaryClass<T>::getter(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_maximum(1);
+    args.validate_count(1);
 
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
