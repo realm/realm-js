@@ -261,7 +261,7 @@ public:
 
     bool is_same_dictionary(realm::object_store::Dictionary const& dictionary, ValueType const& value) const {
         auto object = Value::validated_to_object(m_ctx, value);
-        if (js::Object<JSEngine>::template is_instance<DictionaryClass<JSEngine>>(m_ctx, object)) {
+        if (Object::template is_instance<DictionaryClass<JSEngine>>(m_ctx, object)) {
             return dictionary == *get_internal<JSEngine, DictionaryClass<JSEngine>>(m_ctx, object);
         }
         return false;

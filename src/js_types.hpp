@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include <iostream>
 
 #include <realm/binary_data.hpp>
 #include <realm/string_data.hpp>
