@@ -118,7 +118,7 @@ void DictionaryClass<T>::validate_value(ContextType ctx, realm::object_store::Di
 
 template<typename T>
 void DictionaryClass<T>::setter(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_maximum(2);
+    args.validate_count(2);
 
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
