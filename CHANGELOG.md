@@ -16,6 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgraded Realm Core from v11.0.3 to v11.0.4.
+* Upgraded test app to RN 0.64.1
 
 10.5.0 Release notes (2021-6-24)
 =============================================================
