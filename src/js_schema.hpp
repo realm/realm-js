@@ -90,12 +90,22 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         type = type.substr(0, type.size() - 1);
     }
 
-    DictionarySchema dictionary {type};
     if (type.ends_with("{}")) {
-        prop.type |= dictionary.schema();
-        prop.object_type = "";
-        return;
+        prop.type |= PropertyType::Dictionary | PropertyType::Nullable;
+        type = type.substr(0, type.size() - 2);
+
+        if (type == "") {
+            prop.type |= PropertyType::Mixed;
+            return;
+        }
     }
+
+    // DictionarySchema dictionary {type};
+    // if (dictionary.is_dictionary()) {
+    //     prop.type |= dictionary.schema();
+    //     prop.object_type = "";
+    //     return;
+    // }
 
     if (type == "bool") {
         prop.type |= PropertyType::Bool;

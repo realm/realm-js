@@ -57,11 +57,7 @@ const cmakePath = getCmakePath(sdkPath);
 const cmakeVersion = getCmakeVersion(sdkPath);
 
 const buildPath = path.resolve(process.cwd(), "build-realm-android");
-<<<<<<< HEAD
-if (!options.changes) {
-=======
 if (options.clean) {
->>>>>>> master
     if (fs.existsSync(buildPath)) {
         fs.removeSync(buildPath);
     }

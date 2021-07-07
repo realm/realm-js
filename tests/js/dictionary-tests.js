@@ -125,7 +125,7 @@ module.exports = {
                 a: "wwwww{}"
             }
         }
-        let err = new Error("Schema type: wwwww not supported for Dictionary.")
+        let err = new Error("Schema validation failed due to the following errors:\n- Property 'Dictionary.a' of type 'dictionary' has unknown object type 'wwwww'");
         let _defer = () => { let r = new Realm({schema: [DictWrongSchema]}) }
         TestCase.assertThrowsException(_defer, err)
     },
