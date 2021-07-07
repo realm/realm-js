@@ -5,7 +5,7 @@
       location = "group:react-native/ios/RealmReact.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:tests/react-test-app/ios/ReactTests.xcodeproj">
+      location = "group:tests/ReactTestApp/ios/ReactTests.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:examples/ReactExample/ios/ReactExample.xcodeproj">

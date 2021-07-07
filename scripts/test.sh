@@ -162,7 +162,9 @@ start_packager() {
   ./node_modules/react-native/scripts/packager.sh --reset-cache | tee "$PACKAGER_OUT" &
 
   while :; do
-    if grep -Fxq "Loading dependency graph, done." "$PACKAGER_OUT"; then
+    if grep "Welcome to Metro!" "$PACKAGER_OUT"; then
+      break
+    elif grep -Fxq "Loading dependency graph, done." "$PACKAGER_OUT"; then
       break
     else
       echo "Waiting for packager."
@@ -190,7 +192,7 @@ xctest() {
       exit $EXITCODE
   }
 
-  echo "Shuttting down ${SIM_DEVICE_NAME} simulator. (device is not deleted. you can use it to debug the app)"
+  echo "Shutting down ${SIM_DEVICE_NAME} simulator. (device is not deleted. you can use it to debug the app)"
   shutdown_ios_simulator
 
   check_test_results $1
@@ -311,7 +313,7 @@ case "$TARGET" in
   set_nvm_default
   start_server
 
-  pushd tests/react-test-app
+  pushd tests/ReactTestApp
   npm ci --no-optional
   ./node_modules/.bin/install-local
   open_chrome
@@ -319,7 +321,7 @@ case "$TARGET" in
 
   pushd ios
   pod install
-  xctest ReactTests
+  xctest ReactTestApp
   stop_server
   ;;
 "react-example")
@@ -354,28 +356,10 @@ case "$TARGET" in
   echo "building android binaries"
   node scripts/build-android.js --arch=x86
 
-  # pack realm package manually since install-local does not allow passing --ignore-scripts
-  echo "manually packing realm package"
-  npm pack .
-  rm -rf realm.tgz
-  mv realm-*.*.*.tgz realm.tgz
-
-  echo "manually packing realm tests package"
-  pushd tests/js
-  npm pack .
-  rm -rf realm-tests.tgz
-  mv realm-tests-*.*.*.tgz realm-tests.tgz
-  popd
-
-  pushd tests/react-test-app
-  echo "installing react-test-app dependencies"
+  pushd tests/ReactTestApp
+  echo "installing ReactTestApp dependencies"
   npm ci --no-optional
-
-  echo "installing manually packed realm package"
-  npm install --save-optional  --ignore-scripts ../../realm.tgz
-
-  echo "installing manually packed realm tests package"
-  npm install --save-optional ../js/realm-tests.tgz
+  npx install-local
 
   echo "Adb devices"
   adb devices
