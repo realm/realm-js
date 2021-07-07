@@ -53,7 +53,8 @@ export type ProviderType =
  * Instances of this class can be passed to the `app.logIn` method to authenticate an end-user.
  */
 export class Credentials<PayloadType extends object = any>
-    implements Realm.Credentials<PayloadType> {
+    implements Realm.Credentials<PayloadType>
+{
     /**
      * Creates credentials that logs in using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
      *
@@ -165,7 +166,7 @@ export class Credentials<PayloadType extends object = any>
      * @returns A payload object based on the string.
      */
     private static derivePayload<
-        P extends object = OAuth2RedirectPayload | GooglePayload
+        P extends object = OAuth2RedirectPayload | GooglePayload,
     >(payload: string | GoogleOptions): P {
         if (typeof payload === "string") {
             if (payload.includes("://")) {
@@ -204,7 +205,7 @@ export class Credentials<PayloadType extends object = any>
      * @returns The credentials instance, which can be passed to `app.logIn`.
      */
     static facebook<
-        PayloadType extends object = OAuth2RedirectPayload | FacebookPayload
+        PayloadType extends object = OAuth2RedirectPayload | FacebookPayload,
     >(redirectUrlOrAccessToken: string) {
         return new Credentials<PayloadType>(
             "oauth2-facebook",
@@ -222,7 +223,7 @@ export class Credentials<PayloadType extends object = any>
      * @returns The credentials instance, which can be passed to `app.logIn`.
      */
     static apple<
-        PayloadType extends object = OAuth2RedirectPayload | ApplePayload
+        PayloadType extends object = OAuth2RedirectPayload | ApplePayload,
     >(redirectUrlOrIdToken: string) {
         return new Credentials<PayloadType>(
             "oauth2-apple",

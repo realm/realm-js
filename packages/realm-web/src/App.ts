@@ -62,8 +62,9 @@ export interface AppConfiguration extends Realm.AppConfiguration {
  */
 export class App<
     FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
-    CustomDataType extends object = any
-> implements Realm.App<FunctionsFactoryType, CustomDataType> {
+    CustomDataType extends object = any,
+> implements Realm.App<FunctionsFactoryType, CustomDataType>
+{
     /**
      * A map of app instances returned from calling getApp.
      */
@@ -160,10 +161,8 @@ export class App<
             this._locationUrl = Promise.resolve(this.baseUrl);
         }
         this.localApp = configuration.app;
-        const {
-            storage,
-            transport = new DefaultNetworkTransport(),
-        } = configuration;
+        const { storage, transport = new DefaultNetworkTransport() } =
+            configuration;
         // Construct a fetcher wrapping the network transport
         this.fetcher = new Fetcher({
             appId: this.id,

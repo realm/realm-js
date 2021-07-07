@@ -105,7 +105,7 @@ export class FunctionsFactory {
      * @returns The newly created factory of functions.
      */
     public static create<
-        FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory
+        FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
     >(
         fetcher: Fetcher,
         config: FunctionsFactoryConfiguration = {},

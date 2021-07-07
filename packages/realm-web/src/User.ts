@@ -75,9 +75,10 @@ export enum UserType {
 export class User<
     FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory,
     CustomDataType extends object = any,
-    UserProfileDataType = Realm.DefaultUserProfileData
+    UserProfileDataType = Realm.DefaultUserProfileData,
 > implements
-        Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType> {
+        Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType>
+{
     /**
      * The app that this user is associated with.
      */
