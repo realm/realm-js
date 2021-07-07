@@ -505,8 +505,7 @@ describe("App", () => {
             },
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "foo", arguments: [{ bar: "baz" }] },
                 headers: {
                     ...SENDING_JSON_HEADERS,
@@ -523,8 +522,7 @@ describe("App", () => {
             },
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "foo", arguments: [{ bar: "baz" }] },
                 headers: {
                     ...SENDING_JSON_HEADERS,
@@ -576,8 +574,7 @@ describe("App", () => {
             },
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "foo", arguments: [{ bar: "baz" }] },
                 headers: {
                     ...SENDING_JSON_HEADERS,
@@ -629,8 +626,7 @@ describe("App", () => {
             },
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/my-mocked-app/functions/call",
                 body: { name: "hello", arguments: [] },
                 headers: {
                     Authorization: "Bearer deadbeef",

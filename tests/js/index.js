@@ -19,6 +19,7 @@
 "use strict";
 
 const Realm = require("realm");
+const BSON = require("bson");
 
 if (typeof Realm.App !== "undefined" && Realm.App !== null) {
     global.WARNING = "global is not available in React Native. Use it only in tests";
@@ -30,8 +31,11 @@ const isElectronProcess = typeof process === "object" && process.versions && pro
 const require_method = require;
 function node_require(module) { return require_method(module); }
 
+let pathDelimiter = "/";
+
 if (isNodeProcess && process.platform === "win32") {
     global.enableSyncTests = false;
+    pathDelimiter = "\\";
 }
 
 var TESTS = {
@@ -44,14 +48,13 @@ var TESTS = {
     MigrationTests: require("./migration-tests"),
     EncryptionTests: require("./encryption-tests"),
     AliasTests: require("./alias-tests"),
-    ArrayBuffer: require("./array-buffer-tests")
+    BsonTests: require("./bson-tests"),
+    MixedTests: require("./mixed-tests"),
+    DictionaryTest: require("./dictionary-tests"),
     // Garbagecollectiontests: require('./garbage-collection'),
+    ArrayBuffer: require("./array-buffer-tests"),
+    SetTests: require("./set-tests"),
 };
-
-//TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
-if (isNodeProcess) {
-    TESTS.ObjectIDTests = require("./object-id-tests");
-}
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
@@ -61,6 +64,10 @@ if (global.enableSyncTests) {
         TESTS.OpenBehaviorTests = require("./open-behavior-tests");
         TESTS.UserTests = require("./user-tests");
         TESTS.SessionTests = require("./session-tests");
+        TESTS.UUIDSyncTests= node_require("./uuid-sync-tests");
+        TESTS.PartitionValueTests = node_require("./partition-value-tests");
+        TESTS.SetSyncTests = node_require("./set-sync-tests");
+        TESTS.MixedSyncTests = node_require("./mixed-sync-tests");
         TESTS.AnalyticsTests = require('./analytics-tests');
     }
 }
@@ -105,7 +112,13 @@ exports.runTest = function(suiteName, testName) {
 
     if (testMethod) {
         Realm.clearTestState();
-        console.log("Starting test " + testName);
+        const oldPath = Realm.defaultPath;
+        let fullPath = oldPath.split(pathDelimiter);
+        let path = fullPath.slice(0, fullPath.length-1);
+        path.push(`${new BSON.UUID()}.realm`);
+        Realm.defaultPath = path.join(pathDelimiter);
+
+        console.log("Starting test " + testName + " - defaultPath " + Realm.defaultPath);
         var result = testMethod.call(testSuite);
 
         //make sure v8 GC can collect garbage after each test and does not fail

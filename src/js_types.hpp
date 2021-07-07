@@ -56,6 +56,9 @@ struct ResultsClass;
 template<typename>
 struct ListClass;
 
+template<typename>
+struct SetClass;
+
 enum PropertyAttributes : unsigned {
     None       = 0,
     ReadOnly   = 1 << 0,
@@ -143,6 +146,7 @@ struct Value {
     static bool is_binary(ContextType, const ValueType &);
     static bool is_valid(const ValueType &);
     static bool is_bson(ContextType, const ValueType &);
+    static bool is_uuid(ContextType, const ValueType &);
 
     static bool is_valid_for_property(ContextType, const ValueType&, const Property&);
     static bool is_valid_for_property_type(ContextType, const ValueType&, realm::PropertyType type, StringData object_type);
@@ -175,6 +179,7 @@ struct Value {
     static double to_number(ContextType, const ValueType &);
     static Decimal128 to_decimal128(ContextType, const ValueType &);
     static ObjectId to_object_id(ContextType, const ValueType &);
+    static UUID to_uuid(ContextType, const ValueType &);
     static ObjectType to_object(ContextType, const ValueType &);
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, const ValueType&);
@@ -199,6 +204,7 @@ struct Value {
     VALIDATED(OwnedBinaryData, binary)
     VALIDATED(Decimal128, decimal128)
     VALIDATED(ObjectId, object_id)
+    VALIDATED(UUID, uuid)
 
 #undef VALIDATED
 };
@@ -331,6 +337,7 @@ struct Object {
     VALIDATED(ObjectType, object)
     VALIDATED(String<T>, string)
     VALIDATED(ObjectType, ObjectId)
+    VALIDATED(ObjectType, UUID)
 
 #undef VALIDATED
 
@@ -369,6 +376,8 @@ struct Object {
 
     template<typename ClassType>
     static ObjectType create_instance(ContextType, typename ClassType::Internal*);
+
+    static ObjectType create_bson_type(ContextType, StringData type, std::initializer_list<ValueType> args);
 
     template<typename ClassType>
     static ObjectType create_instance_by_schema(ContextType, typename T::Function& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal*);
@@ -491,6 +500,7 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
         if (is_nullable(type) && (is_null(context, value) || is_undefined(context, value))) {
             return true;
         }
+
         switch (type & ~PropertyType::Flags) {
             case PropertyType::Int:
             case PropertyType::Float:
@@ -511,9 +521,9 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
             case PropertyType::Object:
                 return true;
             case PropertyType::Mixed:
-                throw std::runtime_error("'Mixed' type support is not implemented yet");
+                return true;
             case PropertyType::UUID:
-                throw std::runtime_error("'UUID' type support is not implemented yet");
+                return is_uuid(context, value);
             default:
                 REALM_UNREACHABLE();
         }
@@ -526,7 +536,8 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
             && (type != PropertyType::Object || list->get_object_schema().name == object_type);
     };
 
-    if (!realm::is_array(type)) {
+
+    if (!realm::is_array(type) && !realm::is_set(type) && !realm::is_dictionary(type)) {
         return check_value(value);
     }
 
@@ -538,7 +549,12 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
         if (Object<T>::template is_instance<ListClass<T>>(context, object)) {
             return check_collection_type(get_internal<T, ListClass<T>>(context, object));
         }
-        //TODO: add checks for sets and dictionaries
+        if (Object<T>::template is_instance<SetClass<T>>(context, object)) {
+            return check_collection_type(get_internal<T, SetClass<T>>(context, object));
+        }
+        if (realm::is_dictionary(type)) { // FIXME: check type of `value`
+            return true; // dictionary place-holder
+        }
     }
 
     if (type == PropertyType::Object) {
@@ -574,53 +590,18 @@ inline typename T::Object Object<T>::create_from_app_error(ContextType ctx, cons
 }
 
 template<typename T>
+inline typename T::Object Object<T>::create_bson_type(ContextType ctx, StringData type, std::initializer_list<ValueType> args) {
+    auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
+    auto bson = Value<T>::validated_to_object(ctx, Object<T>::get_property(ctx, realm, "BSON"));
+    auto ctor = Value<T>::to_constructor(ctx, Object<T>::get_property(ctx, bson, type));
+    return Function<T>::construct(ctx, ctor, args);
+}
+
+template<typename T>
 inline typename T::Value Object<T>::create_from_optional_app_error(ContextType ctx, const util::Optional<app::AppError>& error) {
     if (!error)
         return Value<T>::from_undefined(ctx);
     return create_from_app_error(ctx, *error);
-}
-
-template<typename T>
-inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const Mixed& mixed) {
-    if (mixed.is_null()) {
-        return from_undefined(ctx);
-    }
-
-    switch (mixed.get_type()) {
-    case type_Bool:
-        return from_boolean(ctx, mixed.get<bool>());
-    case type_Int:
-        return from_number(ctx, static_cast<double>(mixed.get<int64_t>()));
-    case type_Float:
-        return from_number(ctx, mixed.get<float>());
-    case type_Double:
-        return from_number(ctx, mixed.get<double>());
-    case type_Decimal:
-        return from_decimal128(ctx, mixed.get<Decimal128>());
-    case type_ObjectId:
-        return from_object_id(ctx, mixed.get<ObjectId>());
-    case type_Timestamp:
-        return from_timestamp(ctx, mixed.get<Timestamp>());
-    case type_String:
-        return from_string(ctx, mixed.get<StringData>().data());
-    case type_Binary:
-        return from_binary(ctx, mixed.get<BinaryData>());
-    case type_UUID:
-        return from_uuid(ctx, mixed.get<UUID>());
-    case type_Link:
-        return from_objkey(ctx, mixed.get<ObjKey>());
-    case type_TypedLink:
-        return from_objlink(ctx, mixed.get<ObjLink>());
-    case type_LinkList:
-    case type_Mixed:
-        break;
-    }
-    throw std::invalid_argument("Value not convertible.");
-}
-
-template<typename T>
-inline typename T::Value Value<T>::from_uuid(typename T::Context ctx, const UUID& value) {
-    throw std::runtime_error("'UUID' type support is not implemented yet");
 }
 
 template<typename T>
@@ -639,7 +620,7 @@ inline typename T::Value Value<T>::from_bson(typename T::Context ctx, const bson
 
     switch (value.type()) {
     case Type::Uuid:
-         throw std::runtime_error("'UUID' type support is not implemented yet");
+        return from_uuid(ctx, value.operator UUID());
     case Type::MinKey:
         return Object<T>::create_bson_type(ctx, "MinKey", {});
     case Type::MaxKey:

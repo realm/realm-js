@@ -54,8 +54,7 @@ describe("FunctionsFactory", () => {
         expect(message).equals("hello friendly world!");
         expect(fetcher.requests).deep.equals([
             {
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 method: "POST",
                 body: {
                     name: "hello",
@@ -78,8 +77,7 @@ describe("FunctionsFactory", () => {
         expect(message).equals("hello friendly world!");
         expect(fetcher.requests).deep.equals([
             {
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 method: "POST",
                 body: {
                     name: "hello",

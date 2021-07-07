@@ -40,6 +40,7 @@ function trySetElectronVersion() {
 trySetElectronVersion();
 
 const Realm = require(process.argv[2]);
+Realm.defaultPath = process.argv[3];
 
 process.on('message', (message) => {
     process.send(handleMessage(message));

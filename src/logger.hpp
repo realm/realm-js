@@ -21,6 +21,7 @@
 #include <memory>
 #include <queue>
 
+#include <realm/util/logger.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>  // SyncLoggerFactory
 #include <realm/object-store/util/scheduler.hpp>     // realm::util::Scheduler
 
@@ -73,7 +74,7 @@ class IOSLogger {
 };
 #endif
 
-class SyncLoggerDelegator : public realm::util::RootLogger {
+class SyncLoggerDelegator : public util::RootLogger {
    public:
     void delegate(Delegated& delegate) {
         m_scheduler->set_notify_callback([this, delegate] {
@@ -92,7 +93,7 @@ class SyncLoggerDelegator : public realm::util::RootLogger {
     }
 
    protected:
-    void do_log(LoggerLevel level, std::string message) {
+    void do_log(LoggerLevel level, const std::string& message) {
         std::lock_guard<std::mutex> lock(m_mutex);
 
         // TODO we are coupling core with JS here, change to string use hashmap

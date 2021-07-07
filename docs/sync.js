@@ -35,9 +35,10 @@
  */
 
 /**
- * This describes the different options used to create a {@link Realm} instance with Realm Cloud synchronization.
+ * This describes the different options used to create a {@link Realm} instance with MongoDB Realm synchronization.
  * @typedef {Object} Realm.App.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
+ * @property {Realm.App.Sync~SSLConfiguration} [ssl] - SSL configuration.
  * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key.
  * @property {callback(session, syncError)} [error] - A callback function which is called in error situations.
  *    The callback is passed two arguments: `session` and `syncError`. If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set
@@ -48,6 +49,14 @@
        If not set, the Realm will be downloaded before opened.
  * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
  *    file to complete and then open. If not set, the Realm will be downloaded before opened.
+ */
+
+ /**
+ * This describes the different options used to create a {@link Realm} instance with MongoDB Realm synchronization.
+ * @typedef {Object} Realm.App.Sync~SSLConfiguration
+ * @property {boolean} validate - Indicating if SSL certificates must be validated. Default is `true`.
+ * @property {string} certificatePath - A path where to find trusted SSL certificates.
+ * @property {Realm.Sync~sslValidateCallback} validateCallback - A callback function used to accept or reject the server's SSL certificate.
  */
 
 /**

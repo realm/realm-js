@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "10.4.2",
+  "version": "10.5.0",
   "license": "See the actual license in the file LICENSE",
   "homepage": "https://realm.io",
   "keywords": [
@@ -47,10 +47,10 @@
   "scripts": {
     "get-version": "node -p process.env.npm_package_version",
     "set-version": "scripts/set-version.sh",
-    "lint": "eslint",
+    "lint": "eslint .",
     "test": "scripts/test.sh",
     "package": "npm ci --ignore-scripts && prebuild",
-    "install": "prebuild-install -r napi || cmake-js rebuild",
+    "install": "prebuild-install -r napi || cmake-js build",
     "rebuild": "npm run rebuild-changes",
     "build": "npm run build-changes",
     "build:arm": "npm run build-changes:arm",
@@ -61,6 +61,8 @@
     "license-check": "npm install && license-checker --exclude \"MIT,ISC,BSD,Apache-2.0,BSD-2-Clause,BSD-3-Clause,WTFPL,Unlicense,(MIT AND CC-BY-3.0)\" | node scripts/handle-license-check.js",
     "jsdoc:clean": "rimraf ./docs/output",
     "jsdoc": "npm install --ignore-scripts && npm run jsdoc:clean && jsdoc -u docs/tutorials -p package.json -c docs/conf.json",
+    "doxygen:clean": "rm -rf contrib/docs/output/realm/*",
+    "doxygen": "REALM_JS_VERSION=$npm_package_version npm run doxygen:clean && doxygen contrib/docs/doxygen.cfg",
     "prenode-tests": "npm install --build-from-source && cd tests && npm install",
     "node-tests": "cd tests && npm run test && cd ..",
     "test-runner:ava": "cd tests/test-runners/ava && npm install --build-from-source=realm && npm test",
@@ -73,7 +75,7 @@
   "dependencies": {
     "bindings": "^1.5.0",
     "bson": "^4.4.0",
-    "command-line-args": "^4.0.6",
+    "command-line-args": "^5.1.1",
     "deepmerge": "2.1.0",
     "deprecated-react-native-listview": "0.0.6",
     "fs-extra": "^4.0.3",
@@ -92,14 +94,23 @@
     "tar": "^6.0.1",
     "url-parse": "^1.4.4"
   },
+  "peerDependencies": {
+    "react-native": ">=0.60"
+  },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@react-native-community/eslint-config": "^2.0.0",
     "@types/node": "^4.9.1",
     "@typescript-eslint/eslint-plugin": "^2.28.0",
     "@typescript-eslint/parser": "^2.28.0",
     "babel-eslint": "^8.2.6",
     "cmake-js": "^6.1.0",
     "compare-versions": "^3.6.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.23.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-flowtype": "^4.7.0",
     "eslint-plugin-header": "^3.0.0",
@@ -114,7 +125,7 @@
     "jasmine-console-reporter": "^3.1.0",
     "jasmine-xml-reporter": "^1.2.1",
     "jsdoc": "3.6.3",
-    "lerna": "^3.20.2",
+    "lerna": "^4.0.0",
     "license-checker": "^8.0.3",
     "mockery": "^2.0.0",
     "prebuild": "^10.0.1",
@@ -131,6 +142,10 @@
   },
   "engines": {
     "node": ">=10"
+  },
+  "config": {
+    "runtime": "napi",
+    "target": 4
   },
   "binary": {
     "module_name": "realm",

@@ -29,7 +29,7 @@ const PROVIDER_TYPE_STORAGE_KEY = "providerType";
  * Storage specific to the app.
  */
 export class UserStorage<
-    UserProfileDataType = Realm.DefaultUserProfileData
+    UserProfileDataType = Realm.DefaultUserProfileData,
 > extends PrefixedStorage {
     /**
      * Construct a storage for a `User`.

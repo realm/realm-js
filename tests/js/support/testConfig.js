@@ -28,32 +28,56 @@ function nodeRequire(module) {
     return require_method(module);
 }
 
-let pathToStitchJson = "../../../tests/mongodb/stitch.json";
-const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
+function makeAppConfig(appId) {
+    const baseUrlHostname = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/"/g,"") : "http://localhost";
+    const baseUrlPort = process.env.MONGODB_REALM_PORT || "9090";
+    const baseUrl = `${baseUrlHostname}:${baseUrlPort}`;
 
-if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
-    const path = nodeRequire("path");
-    console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
-    pathToStitchJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, "../../../../tests/mongodb/stitch.json")
+    console.log(`tests are using integration tests app id: ${appId} on ${baseUrl}`);
+
+    return {
+        id: appId,
+        baseUrl,
+        timeout: 1000,
+        app: {
+            name: "default",
+            version: "0"
+        }
+    };
 }
-console.log("pathToStitchJson " + pathToStitchJson);
 
-const integrationTestsAppId = `${nodeRequire(pathToStitchJson).app_id}`;
-const baseUrlHostname = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/"/g,"") : "http://localhost";
-const baseUrlPort = process.env.MONGODB_REALM_PORT || "9090";
-const baseUrl = `${baseUrlHostname}:${baseUrlPort}`;
-console.log(`tests are using integration tests app id: ${integrationTestsAppId} on ${baseUrl}`);
+function getConfigPath(testName) {
+    let pathToJson = `../../mongodb/${testName}/config.json`;
+    const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
 
-const integrationAppConfig = {
-    id: integrationTestsAppId,
-    baseUrl,
-    timeout: 1000,
-    app: {
-        name: "default",
-        version: "0"
-    },
-};
+    if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
+        const path = nodeRequire("path");
+        console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
+        pathToJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, `../${pathToJson}`);
+    }
+    return pathToJson;
+}
+
+const pathToStitchJson = getConfigPath("common-tests");
+const integrationTestsAppId = nodeRequire(pathToStitchJson).app_id;
+const integrationAppConfig = makeAppConfig(integrationTestsAppId);
+
+const pathToPvIntJSON = getConfigPath("pv-int-tests");
+const pvIntTestsAppId = nodeRequire(pathToPvIntJSON).app_id;
+const pvIntAppConfig = makeAppConfig(pvIntTestsAppId);
+
+const pathToPvStringJSON = getConfigPath("pv-string-tests");
+const pvStringTestsAppId = nodeRequire(pathToPvStringJSON).app_id;
+const pvStringAppConfig = makeAppConfig(pvStringTestsAppId);
+
+const pathToPvUuidJSON = getConfigPath("pv-uuid-tests");
+const pvUuidTestsAppId = nodeRequire(pathToPvUuidJSON).app_id;
+const pvUuidAppConfig = makeAppConfig(pvUuidTestsAppId);
+
+const pathToPvObjectidJSON = getConfigPath("pv-objectid-tests");
+const pvObjectidTestsAppId = nodeRequire(pathToPvObjectidJSON).app_id;
+const pvObjectidAppConfig = makeAppConfig(pvObjectidTestsAppId);
 
 module.exports = {
-    integrationAppConfig
+    integrationAppConfig, pvIntAppConfig, pvStringAppConfig, pvUuidAppConfig, pvObjectidAppConfig
 }

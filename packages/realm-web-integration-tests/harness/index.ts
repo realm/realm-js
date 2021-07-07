@@ -100,7 +100,7 @@ export async function run(devtools = false) {
         contentBasePublicPath: "/realm-web",
     });
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         devServer.listen(8080, "localhost", err => {
             if (err) {
                 reject(err);
