@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.6.0 Release notes (2021-7-8)
 =============================================================
 ### Enhancements
 * Dictionary support has been enabled.
