@@ -254,6 +254,11 @@ declare namespace Realm {
 
     type DictionaryChangeCallback = (dict: Dictionary, changes: DictionaryChangeSet) => void;
 
+    const Dictionary: {
+        new(): never; // This type isn't supposed to be constructed manually by end users.
+        readonly prototype: Dictionary;
+    };
+
     interface DictionaryBase<ValueType = Mixed> {
         /**
          * Adds given element to the dictionary
@@ -340,6 +345,7 @@ declare namespace Realm {
     }
 
     const Collection: {
+        new(): never; // This type isn't supposed to be constructed manually by end users.
         readonly prototype: Collection<any>;
     };
 
@@ -375,6 +381,7 @@ declare namespace Realm {
     }
 
     const List: {
+        new(): never; // This type isn't supposed to be constructed manually by end users.
         readonly prototype: List<any>;
     };
 
@@ -414,6 +421,7 @@ declare namespace Realm {
     }
 
     const Set: {
+        new(): never; // This type isn't supposed to be constructed manually by end users.
         readonly prototype: Set<any>;
     };
 
@@ -432,6 +440,7 @@ declare namespace Realm {
     }
 
     const Results: {
+        new(): never; // This type isn't supposed to be constructed manually by end users.
         readonly prototype: Results<any>;
     };
 
