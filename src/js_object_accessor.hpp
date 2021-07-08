@@ -180,7 +180,7 @@ public:
         return SetClass<JSEngine>::create_instance(m_ctx, std::move(set));
     }
     ValueType box(realm::object_store::Dictionary dictionary) {
-        throw std::runtime_error("Dictionaries are not yet supported");
+        return DictionaryClass<JSEngine>::create_instance(m_ctx, std::move(dictionary));
     }
 
     bool is_null(ValueType const& value) {
@@ -234,12 +234,11 @@ public:
 
     // called when creating dictionaries.
     template<typename Fn>
-    void enumerate_dictionary(ValueType& value, Fn&& func) {
+    void enumerate_dictionary(ValueType value, Fn&& func) {
         auto js_object = Value::validated_to_object(m_ctx, value);
-        for (auto key : Object::get_property_names(m_ctx, js_object)) {
-            std::string k = key;
+        for (auto&& key : Object::get_property_names(m_ctx, js_object)) {
             ValueType val = Object::get_property(m_ctx, js_object, key);
-            func(k, val);
+            func(std::string(key), val);
         }
     }
 
@@ -260,6 +259,10 @@ public:
     }
 
     bool is_same_dictionary(realm::object_store::Dictionary const& dictionary, ValueType const& value) const {
+        auto object = Value::validated_to_object(m_ctx, value);
+        if (Object::template is_instance<DictionaryClass<JSEngine>>(m_ctx, object)) {
+            return dictionary == *get_internal<JSEngine, DictionaryClass<JSEngine>>(m_ctx, object);
+        }
         return false;
     }
 
@@ -468,7 +471,7 @@ struct Unbox<JSEngine, Obj> {
             throw std::runtime_error("Realm object is from another Realm");
         }
 
-        // if our RealmObject isn't in ObjectStore, it's a detached object 
+        // if our RealmObject isn't in ObjectStore, it's a detached object
         // (not in to database), and we can't add it
         if (realm_link.is_instance() && !realm_link.get_os_object()) {
             throw std::runtime_error("Cannot reference a detached instance of Realm.Object");

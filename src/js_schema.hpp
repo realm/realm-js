@@ -20,6 +20,7 @@
 
 #include <map>
 #include "js_types.hpp"
+#include "dictionary_schema.hpp"
 #include <realm/object-store/schema.hpp>
 
 namespace realm {
@@ -90,7 +91,13 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     }
 
     if (type.ends_with("{}")) {
-        throw std::runtime_error(util::format("The dictionary type are not yet supported: Change the type of '%1.%2'", object_name, prop.name));
+        prop.type |= PropertyType::Dictionary | PropertyType::Nullable;
+        type = type.substr(0, type.size() - 2);
+
+        if (type == "") {
+            prop.type |= PropertyType::Mixed;
+            return;
+        }
     }
 
     if (type == "bool") {

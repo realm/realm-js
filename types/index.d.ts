@@ -241,16 +241,24 @@ declare namespace Realm {
      * Dictionary
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Dictionary.html }
      */
-    
+
     type Dictionary<ValueType = Mixed> = DictionaryBase<ValueType> & {
         [key: string]: ValueType;
     }
+
+    interface DictionaryChangeSet {
+        deletions: string[],
+        modifications: string[],
+        insertions: string[]
+    }
+
+    type DictionaryChangeCallback = (dict: Dictionary, changes: DictionaryChangeSet) => void;
 
     interface DictionaryBase<ValueType = Mixed> {
         /**
          * @returns Adds given element to the dictionary
          */
-        put(element:{[key:string]: ValueType}): void;
+        set(element:{[key:string]: ValueType}): void;
 
         /**
          * @returns Removes given element from the dictionary
@@ -260,8 +268,8 @@ declare namespace Realm {
         /**
          * @returns void
          */
-        addListener(callback: ObjectChangeCallback): void;
-        removeListener(callback: ObjectChangeCallback): void;
+        addListener(callback: DictionaryChangeCallback): void;
+        removeListener(callback: DictionaryChangeCallback): void;
         removeAllListeners(): void;
     }
 
@@ -589,7 +597,7 @@ type RealmDictionaryRemappedModelPart<T> = {
     [K in ExtractPropertyNamesOfType<T, Realm.Dictionary>]?: T[K] extends Realm.Dictionary<infer ValueType> ? { [key: string]: ValueType } : never
 }
 
-/** Omits all properties of a model which are not defined by the schema */ 
+/** Omits all properties of a model which are not defined by the schema */
 type OmittedRealmTypes<T> = Omit<T,
     keyof Realm.Object |
     ExtractPropertyNamesOfType<T, Function> |

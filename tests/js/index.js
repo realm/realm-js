@@ -31,11 +31,8 @@ const isElectronProcess = typeof process === "object" && process.versions && pro
 const require_method = require;
 function node_require(module) { return require_method(module); }
 
-let pathDelimiter = "/";
-
 if (isNodeProcess && process.platform === "win32") {
     global.enableSyncTests = false;
-    pathDelimiter = "\\";
 }
 
 var TESTS = {
@@ -112,13 +109,6 @@ exports.runTest = function(suiteName, testName) {
 
     if (testMethod) {
         Realm.clearTestState();
-        const oldPath = Realm.defaultPath;
-        let fullPath = oldPath.split(pathDelimiter);
-        let path = fullPath.slice(0, fullPath.length-1);
-        path.push(`${new BSON.UUID()}.realm`);
-        Realm.defaultPath = path.join(pathDelimiter);
-
-        console.log("Starting test " + testName + " - defaultPath " + Realm.defaultPath);
         var result = testMethod.call(testSuite);
 
         //make sure v8 GC can collect garbage after each test and does not fail

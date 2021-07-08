@@ -59,6 +59,9 @@ struct ListClass;
 template<typename>
 struct SetClass;
 
+template<typename>
+struct DictionaryClass;
+
 enum PropertyAttributes : unsigned {
     None       = 0,
     ReadOnly   = 1 << 0,
