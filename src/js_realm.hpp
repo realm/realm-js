@@ -684,9 +684,6 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             static const String disable_format_upgrade_string = "disableFormatUpgrade";
             ValueType disable_format_upgrade_value = Object::get_property(ctx, object, disable_format_upgrade_string);
             if (!Value::is_undefined(ctx, disable_format_upgrade_value)) {
-                if (config.force_sync_history || config.sync_config) {
-                    throw std::invalid_argument("Options 'disableFormatUpgrade' and 'sync' are mutual exclusive.");
-                }
                 config.disable_format_upgrade = Value::validated_to_boolean(ctx, disable_format_upgrade_value, "disableFormatUpgrade");
             }
         }

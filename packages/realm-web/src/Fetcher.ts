@@ -303,7 +303,7 @@ export class Fetcher implements LocationUrlContext {
      */
     public async fetchJSON<
         RequestBody extends object = any,
-        ResponseBody extends object = any
+        ResponseBody extends object = any,
     >(request: AuthenticatedRequest<RequestBody>): Promise<ResponseBody> {
         const { body } = request;
         const serializedBody = Fetcher.buildBody(body);
@@ -322,7 +322,7 @@ export class Fetcher implements LocationUrlContext {
             const responseBody = await response.json();
             return deserialize<ResponseBody>(responseBody);
         } else if (contentType === null) {
-            return (null as unknown) as ResponseBody;
+            return null as unknown as ResponseBody;
         } else {
             throw new Error(`Expected JSON response, got "${contentType}"`);
         }

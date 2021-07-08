@@ -80,8 +80,7 @@ describe("MongoDB Remote service", () => {
                         },
                     ],
                 },
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 headers: DEFAULT_HEADERS,
             },
         ]);
@@ -138,8 +137,7 @@ describe("MongoDB Remote service", () => {
                         },
                     ],
                 },
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 headers: DEFAULT_HEADERS,
             },
         ]);
@@ -194,8 +192,7 @@ describe("MongoDB Remote service", () => {
                         },
                     ],
                 },
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 headers: DEFAULT_HEADERS,
             },
         ]);
@@ -267,8 +264,7 @@ describe("MongoDB Remote service", () => {
                         },
                     ],
                 },
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 headers: DEFAULT_HEADERS,
             },
         ]);
@@ -297,8 +293,7 @@ describe("MongoDB Remote service", () => {
                         },
                     ],
                 },
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 headers: DEFAULT_HEADERS,
             },
         ]);

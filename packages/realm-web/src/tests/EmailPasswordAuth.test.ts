@@ -53,8 +53,7 @@ describe("EmailPasswordAuth", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/register",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/register",
                 body: {
                     email: "gilfoyle@testing.mongodb.com",
                     password: "s3cr3t",
@@ -71,8 +70,7 @@ describe("EmailPasswordAuth", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/confirm",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/confirm",
                 body: {
                     token: "token-value",
                     tokenId: "token-id-value",
@@ -89,8 +87,7 @@ describe("EmailPasswordAuth", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/confirm/send",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/confirm/send",
                 body: {
                     email: "gilfoyle@testing.mongodb.com",
                 },
@@ -110,8 +107,7 @@ describe("EmailPasswordAuth", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset",
                 body: {
                     token: "token-value",
                     tokenId: "token-id-value",
@@ -129,8 +125,7 @@ describe("EmailPasswordAuth", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset/send",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset/send",
                 body: {
                     email: "gilfoyle@testing.mongodb.com",
                 },
@@ -154,8 +149,7 @@ describe("EmailPasswordAuth", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset/call",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset/call",
                 body: {
                     email: "gilfoyle@testing.mongodb.com",
                     password: "my-new-password",

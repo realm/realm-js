@@ -426,7 +426,6 @@ module.exports = {
         let d = function (obj, chg) {
             called.d++;
         };
-
         fields.addListener(a)
         fields.addListener(b)
         fields.addListener(c)

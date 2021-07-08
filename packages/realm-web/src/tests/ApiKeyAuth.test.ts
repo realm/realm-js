@@ -84,8 +84,7 @@ describe("ApiKeyAuth", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "GET",
-                url:
-                    "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef",
+                url: "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef",
                 headers: ACCEPT_JSON_HEADERS,
             },
         ]);
@@ -144,8 +143,7 @@ describe("ApiKeyAuth", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "DELETE",
-                url:
-                    "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef",
+                url: "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef",
                 headers: {
                     ...ACCEPT_JSON_HEADERS,
                     Authorization: "Bearer very-refreshing",
@@ -165,8 +163,7 @@ describe("ApiKeyAuth", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "PUT",
-                url:
-                    "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef/enable",
+                url: "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef/enable",
                 headers: {
                     ...ACCEPT_JSON_HEADERS,
                     Authorization: "Bearer very-refreshing",
@@ -186,8 +183,7 @@ describe("ApiKeyAuth", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "PUT",
-                url:
-                    "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef/disable",
+                url: "http://localhost:1337/api/client/v2.0/auth/api_keys/deadbeefdeadbeefdeadbeef/disable",
                 headers: {
                     ...ACCEPT_JSON_HEADERS,
                     Authorization: "Bearer very-refreshing",

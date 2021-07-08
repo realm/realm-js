@@ -100,13 +100,6 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         }
     }
 
-    // DictionarySchema dictionary {type};
-    // if (dictionary.is_dictionary()) {
-    //     prop.type |= dictionary.schema();
-    //     prop.object_type = "";
-    //     return;
-    // }
-
     if (type == "bool") {
         prop.type |= PropertyType::Bool;
     }

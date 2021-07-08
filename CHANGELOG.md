@@ -4,6 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Dictionary support has been enabled.
 
 ### Fixed
+* Fixed an issue preventing opening a Realm with `disableFormatUpgrade` and a `sync` configuration, reverting part of [#3772](https://github.com/realm/realm-js/pull/3772). ([#3830](https://github.com/realm/realm-js/pull/3830), since v10.4.2)
 * Fixed a recursive loop which would eventually crash trying to refresh a user app token when it had been revoked by an admin. Now this situation logs the user out and reports an error. ([realm/realm-core#4745](https://github.com/realm/realm-core/issues/4745), since v10.0.0)
 * Fixed a crash after clearing a list or set of Mixed containing links to objects. ([realm/realm-core#4774](https://github.com/realm/realm-core/issues/4774), since the beginning of v11)
 * Fixed an endless recursive loop that could cause a stack overflow when computing changes on a set of objects which contained cycles. ([#4770](https://github.com/realm/realm-core/pull/4770), since the beginning of v11)
@@ -17,6 +18,95 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Upgraded Realm Core from v11.0.3 to v11.0.4.
 * Upgraded test app to RN 0.64.1
+
+10.5.0 Release notes (2021-6-24)
+=============================================================
+NOTE: Bump file format version to 22. NO DOWNGRADE PATH IS AVAILABLE.
+
+### Enhancements
+* Added UUID types. ([#3244](https://github.com/realm/realm-js/issues/3244))
+* Added Set type ([#3378](https://github.com/realm/realm-js/issues/3378)).
+* Adding Mixed types. ([#3389](https://github.com/realm/realm-js/issues/3389))
+* Added `ssl` option to `Realm.App.Sync` configuration.
+
+### Fixed
+* Performance regression for some scenarios of writing/creating objects with a primary key. ([realm/realm-core#4522](https://github.com/realm/realm-core/issues/4522))
+* Async callbacks not triggered on Android 12 emulator. ([realm/realm-core#4666](https://github.com/realm/realm-core/issues/4666))
+* Fixed the string based query parser not supporting integer constants above 32 bits on a 32 bit platform. ([#3773](https://github.com/realm/realm-js/issues/3773), since v10.4.0)
+* Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
+
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format 22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Known Issues
+* Set iterators do not work under Jest ([#3788](https://github.com/realm/realm-js/issues/3788)).
+* Properties of type dictionary is temporarily disabled and will be reintroduced.
+
+### Internal
+* Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
+* Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
+* Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.3. ([#3785](https://github.com/realm/realm-js/issues/3785))
+* Added npm script to generate internal Doxygen documentation.
+* Removed private methods `Realm._objectForObjectId()` and `Realm.Object._objectId()`.
+* Refactor the string formatting logic for logging, reducing the compiled size of the library.
+* Omitting zlib when building for Node.js on Windows, since this is no longer provided by the platform. ([#3787](https://github.com/realm/realm-js/pull/3787))
+
+10.5.0-beta.2 Release notes (2021-5-12)
+=============================================================
+NOTE: Realm file format is likely to break and you CAN NOT revert back to the previous file format - DATA WILL BE LOST!!!!
+NOTE: Sync protocol version 4: CANNOT SYNC WITH MONGODB REALM CLOUD.
+NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
+
+### Enhancements
+* None.
+
+### Fixed
+* Set didn't export `objectType` to Realm.schema when it contained scalar types.
+* Fixed the naming of `url` (now `baseUrl`) property on an app config to match the TypeScript declaration and other SDKs. ([#3612](https://github.com/realm/realm-js/issues/3612))
+* Add explicitly support for Nullable/Undefined values for the Mixed type. ([#3731](https://github.com/realm/realm-js/issues/3731))
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v21 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
+* Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
+* Upgraded to Realm Core v11.0.0-beta.5.
+
+10.5.0-beta.1 Release notes (2021-5-6)
+=============================================================
+NOTE: This is an internal release and SHOULD NOT be used.
+NOTE: Realm file format is likely to break and you CAN NOT revert back to the previous file format - DATA WILL BE LOST!!!!
+NOTE: Sync protocol version 4: CANNOT SYNC WITH MONGODB REALM CLOUD.
+NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
+
+### Enhancements
+* None.
+
+### Fixed
+
+* Performance regression for some scenarios of writing/creating objects with a primary key. ([realm/realm-core#4522](https://github.com/realm/realm-core/issues/4522))
+* Observing a dictionary holding links to objects would crash. ([realm/realm-core#4711](https://github.com/realm/realm-core/issues/4711), since v11.0.0-beta.1)
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format 21 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Improved the integration test harness to increase developer experience, enable tests needing a server and importing Realm apps on demand. ([#3690](https://github.com/realm/realm-js/pull/3690))
+* Migrated integration tests to GitHub Actions. ([#3690](https://github.com/realm/realm-js/pull/3690))
+* Upgraded to Realm Core from v11.0.0-beta.5 to v11.0.0-beta.6.
+* Added npm script to generate internal Doxygen documentation.
+* Removed private methods `Realm._objectForObjectId()` and `Realm.Object._objectId()`.
+* Omitting zlib when building for Node.js on Windows, since this is no longer provided by the platform. ([#3787](https://github.com/realm/realm-js/pull/3787))
+
 
 10.5.0 Release notes (2021-6-24)
 =============================================================

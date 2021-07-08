@@ -37,8 +37,7 @@ describe("HTTP service", () => {
         expect(fetcher.requests).deep.equals([
             {
                 method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
+                url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/functions/call",
                 body: {
                     name: "get",
                     service: "my-http-service",

@@ -29,7 +29,8 @@ type ChangeEvent<T extends Document> = Realm.Services.MongoDB.ChangeEvent<T>;
  * A remote collection of documents.
  */
 export class MongoDBCollection<T extends Document>
-    implements Realm.Services.MongoDB.MongoDBCollection<T> {
+    implements Realm.Services.MongoDB.MongoDBCollection<T>
+{
     /**
      * The function factory to use when sending requests to the service.
      */
