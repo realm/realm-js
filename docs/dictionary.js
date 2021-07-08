@@ -28,14 +28,6 @@
  */
 
  class Dictionary {
-    /**
-     * The number of keys.
-     * @type {number}
-     * @readonly
-     * @since 10.6.0
-     */
-    get length() { }
-
      /**
       * Remove a key from the dictionary. It is also possible to use the keyword `delete`.
       * @param {string} key The key to be removed.
@@ -52,21 +44,6 @@
       * @since 10.6.0
      */
      set(key, value) { }
-
-     /**
-      * Get the keys. It is also possible to use `Object.keys()`.
-      * @returns {Array} An array of keys
-      * @since 10.6.0
-      */
-     keys() { }
-
-     /**
-      * Check if a key exists.
-      * @return {boolean} True if key exists, otherwise false
-      * @param {*} key
-      * @since 10.6.0
-      */
-     has(key) { }
 
    /**
      * Add a listener `callback`.
