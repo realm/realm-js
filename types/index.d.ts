@@ -246,6 +246,14 @@ declare namespace Realm {
         [key: string]: ValueType;
     }
 
+    interface DictionaryChangeSet {
+        deletions: string[],
+        modifications: string[],
+        insertions: string[]
+    }
+
+    type DictionaryChangeCallback = (dict: Dictionary, changes: DictionaryChangeSet) => void;
+
     interface DictionaryBase<ValueType = Mixed> {
         /**
          * @returns Adds given element to the dictionary
@@ -260,8 +268,8 @@ declare namespace Realm {
         /**
          * @returns void
          */
-        addListener(callback: ObjectChangeCallback): void;
-        removeListener(callback: ObjectChangeCallback): void;
+        addListener(callback: DictionaryChangeCallback): void;
+        removeListener(callback: DictionaryChangeCallback): void;
         removeAllListeners(): void;
     }
 
