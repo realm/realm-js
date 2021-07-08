@@ -136,13 +136,15 @@ void DictionaryClass<T>::getter(ContextType ctx, ObjectType this_object, Argumen
 
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
-    std::string key = Value::validated_to_string(ctx, args[0]);
-
-    if (dictionary->contains(key)) {
-        NativeAccessor<T> accessor(ctx, *dictionary);
-        return_value.set(dictionary->get(accessor, key));
-    }
-    else {
+    if (Value::is_string(ctx, args[0])) {
+        std::string key = Value::to_string(ctx, args[0]);
+        if (dictionary->contains(key)) {
+            NativeAccessor<T> accessor(ctx, *dictionary);
+            return_value.set(dictionary->get(accessor, key));
+        } else {
+            return_value.set_undefined();
+        }
+    } else {
         return_value.set_undefined();
     }
 }
