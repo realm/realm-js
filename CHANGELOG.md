@@ -2,6 +2,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Dictionary support has been enabled.
+* Support for Catalyst. ([#3750](https://github.com/realm/realm-js/issues/3750))
 
 ### Fixed
 * Fixed an issue preventing opening a Realm with `disableFormatUpgrade` and a `sync` configuration, reverting part of [#3772](https://github.com/realm/realm-js/pull/3772). ([#3830](https://github.com/realm/realm-js/pull/3830), since v10.4.2)
@@ -19,7 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.0.3 to v11.0.4.
+* Using Realm Core v11.4.0 @ commit [be69223](https://github.com/realm/realm-core/commit/be6922394a57077d90723eba60c98ae9b2aa0eae) for Catalyst support
 * Upgraded test app to RN 0.64.1
 
 10.5.0 Release notes (2021-6-24)
@@ -109,7 +110,6 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * Added npm script to generate internal Doxygen documentation.
 * Removed private methods `Realm._objectForObjectId()` and `Realm.Object._objectId()`.
 * Omitting zlib when building for Node.js on Windows, since this is no longer provided by the platform. ([#3787](https://github.com/realm/realm-js/pull/3787))
-
 
 10.5.0 Release notes (2021-6-24)
 =============================================================
@@ -276,16 +276,12 @@ ealm/realm-core#4573](https://github.com/realm/realm-core/pull/4573), since v6.0
 ### Compatibility
 * MongoDB Realm Cloud.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
-==== BASE ====
 * File format: generates Realms with format 21.
-==== BASE ====
 
 ### Internal
-==== BASE ====
 * Bump the Realm Sync protocol version to 3.
 * Bump Realm File Format version to 21.
 * Prebuild the React Native iOS variant and bundle it in the npm tarball. ([#3649](https://github.com/realm/realm-js/pull/3649))
-==== BASE ====
 
 10.2.0 Release notes (2021-2-5)
 =============================================================

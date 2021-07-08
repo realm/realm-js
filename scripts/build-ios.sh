@@ -37,18 +37,21 @@ pushd build
 # Configure CMake project
 cmake "$PROJECT_ROOT" -GXcode \
     -DCMAKE_TOOLCHAIN_FILE="$PROJECT_ROOT/cmake/ios.toolchain.cmake" \
-    -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$(pwd)/out/$<CONFIG>\$EFFECTIVE_PLATFORM_NAME"
+    -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$(pwd)/out/$<CONFIG>\$EFFECTIVE_PLATFORM_NAME" \
 
 destinations=(-destination 'generic/platform=iOS Simulator')
 [[ -z $SIMULATOR_ONLY ]] && destinations+=(-destination 'generic/platform=iOS')
+destinations+=(-destination 'platform=macOS,arch=x86_64,variant=Mac Catalyst')
 
 xcodebuild build \
     -scheme realm-js-ios \
     "${destinations[@]}" \
     -configuration $CONFIGURATION \
     ONLY_ACTIVE_ARCH=NO \
-    BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+    SUPPORTS_MACCATALYST=YES
 
+xcrun libtool -static -o ./out/$CONFIGURATION-maccatalyst/librealm-js-ios.a ./out/$CONFIGURATION-maccatalyst/*.a
 [[ -z $SIMULATOR_ONLY ]] && xcrun libtool -static -o ./out/$CONFIGURATION-iphoneos/librealm-js-ios.a ./out/$CONFIGURATION-iphoneos/*.a
 xcrun libtool -static -o ./out/$CONFIGURATION-iphonesimulator/librealm-js-ios.a ./out/$CONFIGURATION-iphonesimulator/*.a
 
@@ -56,7 +59,8 @@ mkdir -p _include/realm-js-ios
 cp "$PROJECT_ROOT"/src/jsc/{jsc_init.h,rpc.hpp} _include/realm-js-ios/
 
 rm -rf ../realm-js-ios.xcframework
-libraries=(-library ./out/$CONFIGURATION-iphonesimulator/librealm-js-ios.a -headers ./_include)
+libraries=(-library ./out/$CONFIGURATION-maccatalyst/librealm-js-ios.a -headers ./_include)
+libraries+=(-library ./out/$CONFIGURATION-iphonesimulator/librealm-js-ios.a -headers ./_include)
 [[ -z $SIMULATOR_ONLY ]] && libraries+=(-library ./out/$CONFIGURATION-iphoneos/librealm-js-ios.a -headers ./_include)
 xcodebuild -create-xcframework \
     "${libraries[@]}" \
