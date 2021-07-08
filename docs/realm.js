@@ -425,7 +425,7 @@ class Realm {
  *         linkToObject: 'MyClass',
  *         listOfObjects: 'MyClass[]', // or {type: 'list', objectType: 'MyClass'}
  *         objectsLinkingToThisObject: {type: 'linkingObjects', objectType: 'MyClass', property: 'linkToObject'}
- * 
+ *
  *         setOfStrings: 'string<>',
  *         setOfOptionalStrings: 'string?<>', // or {type: 'set', objectType: 'string'}
  *     }
@@ -436,15 +436,15 @@ class Realm {
  * @typedef Realm~ObjectSchemaProperty
  * @type {Object}
  * @property {Realm~PropertyType} type - The type of this property.
- * @property {Realm~PropertyType} [objectType] - **Required**  when `type` is `"list"`, `"set"` or `"linkingObjects"`,
- *   and must match the type of an object in the same schema, or, for `"list"` or `"set"`,
+ * @property {Realm~PropertyType} [objectType] - **Required**  when `type` is `"list"`, `"set"`, `"dictionary"` or `"linkingObjects"`,
+ *   and must match the type of an object in the same schema, or, for `"list"`, `"set"` or `"dictionary"`,
  *   other type which may be stored as a Realm property.
  * @property {string} [property] - **Required** when `type` is `"linkingObjects"`, and must match
  *   the name of a property on the type specified in `objectType` that links to the type this property belongs to.
  * @property {any} [default] - The default value for this property on creation when not
  *   otherwise specified.
  * @property {boolean} [optional] - Signals if this property may be assigned `null` or `undefined`.
- *   For `"list"` or `"set"` properties of non-object types, this instead signals whether the values inside the list may be assigned `null` or `undefined`.
+ *   For `"list"`, `"dictionary"` or `"set"` properties of non-object types, this instead signals whether the values inside the list may be assigned `null` or `undefined`.
  *   This is not supported for `"list"` or `"set"` properties of object types and `"linkingObjects"` properties.
  * @property {boolean} [indexed] - Signals if this property should be indexed. Only supported for
  *   `"string"`, `"int"`, and `"bool"` properties.
@@ -472,7 +472,7 @@ class Realm {
  * Given a type, _T_, the following postfix operators may be used:
  *  * _T_ `[]` indicates that the property is a {@linkplain Realm.List} of values with of type _T_
  *  * _T_ `<>` indicated that the property is a {@linkplain Realm.Set} of values with type _T_
- * 
+ *
  * For example, `optionalIntList: 'int?[]'` declares a property which is a list of
  * nullable integers, while `optionalStringSet: 'string?<>'` declares a set of nullable strings.
  * The property types reported by {@linkplain Realm.Collection collections} and in a Realm's schema will never
@@ -500,6 +500,7 @@ class Realm {
  *   `objectType` specified in the {@link Realm~ObjectSchemaProperty ObjectSchemaProperty}.
  * @property {Realm.Set} "set" - Property may be assigned an array (e.g., `Array`) of objects all matching the
  *   `objectType` specified in the {@link Realm~ObjectSchemaProperty ObjectSchemaProperty}.
+ * @property {Realm.Dictionary} "dictionary" - Properties may be assigned to a key/value pair.
  * @property {Realm.Results} "linkingObjects" - Property is read-only and always returns a {@link Realm.Results}
  *   of all the objects matching the `objectType` that are linking to the current object
  *   through the `property` relationship specified in {@link Realm~ObjectSchemaProperty ObjectSchemaProperty}.
