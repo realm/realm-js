@@ -24,8 +24,8 @@ type SyncedConfiguration = Omit<Realm.Configuration, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
-export function openRealmBefore(config: LocalConfiguration | SyncedConfiguration = {}): void {
-  before(async function (this: Partial<RealmContext> & Mocha.Context) {
+export function openRealmHook(config: LocalConfiguration | SyncedConfiguration = {}) {
+  return async function openRealm(this: Partial<RealmContext> & Mocha.Context): Promise<void> {
     const nonce = new Realm.BSON.ObjectID().toHexString();
     const path = `temp-${nonce}.realm`;
     if (this.realm) {
@@ -48,23 +48,32 @@ export function openRealmBefore(config: LocalConfiguration | SyncedConfiguration
       // Upload the schema, ensuring a valid connection
       await this.realm.syncSession.uploadAllLocalChanges();
     }
-  });
+  };
+}
 
-  // Clean up afterwards
-  after(function (this: RealmContext) {
-    if (this.realm) {
-      this.realm.close();
-      delete this.realm;
-    } else {
-      throw new Error("Expected a 'realm' in the context");
-    }
-    if (this.config) {
-      Realm.deleteFile(this.config);
-      delete this.config;
-    } else {
-      throw new Error("Expected a 'config' in the context");
-    }
-    // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
-    Realm.clearTestState();
-  });
+export function closeRealm(this: RealmContext): void {
+  if (this.realm) {
+    this.realm.close();
+    delete this.realm;
+  } else {
+    throw new Error("Expected a 'realm' in the context");
+  }
+  if (this.config) {
+    Realm.deleteFile(this.config);
+    delete this.config;
+  } else {
+    throw new Error("Expected a 'config' in the context");
+  }
+  // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
+  Realm.clearTestState();
+}
+
+export function openRealmBeforeEach(config: LocalConfiguration | SyncedConfiguration = {}): void {
+  beforeEach(openRealmHook(config));
+  afterEach(closeRealm);
+}
+
+export function openRealmBefore(config: LocalConfiguration | SyncedConfiguration = {}): void {
+  before(openRealmHook(config));
+  after(closeRealm);
 }
