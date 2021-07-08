@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Support for Catalyst. ([#3750](https://github.com/realm/realm-js/issues/3750))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -15,9 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgraded test app to RN 0.64.1
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Using Realm Core v11.4.0 @ commit [be69223](https://github.com/realm/realm-core/commit/be6922394a57077d90723eba60c98ae9b2aa0eae) for Catalyst support
 
 10.5.0 Release notes (2021-6-24)
 =============================================================
