@@ -272,7 +272,7 @@ PODS:
     - React-perflogger (= 0.64.2)
   - ReactNativeExceptionHandler (2.10.10):
     - React-Core
-  - RealmJS (10.5.0):
+  - RealmJS (10.6.0):
     - GCDWebServer
     - React
   - RNExitApp (1.1.0):
@@ -392,7 +392,7 @@ SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: af3a95458cbf1b6d186b3e7139de93d0e5595efa
+  FBReactNativeSpec: 142e00b7ccd0610fefa7f10470bc5dff19cbdfa9
   GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   RCT-Folly: ec7a233ccc97cc556cf7237f0db1ff65b986f27c
@@ -419,11 +419,11 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: a9904c6d0218fb9f8b19d6dd88607225927668f9
   ReactCommon: 149906e01aa51142707a10665185db879898e966
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
-  RealmJS: 858897c8500406ca4a3084565fb3d7d0417e8af9
+  RealmJS: c903034b0d767fcef11dc8207e91b6f07e60d7b8
   RNExitApp: c4e052df2568b43bec8a37c7cd61194d4cfee2c3
   RNFS: 3ab21fa6c56d65566d1fb26c2228e2b6132e5e32
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
-PODFILE CHECKSUM: 20f3e11b7e2533d0d5843a012b3c13dc68bfd089
+PODFILE CHECKSUM: 6ed07a8f55b39235ed01cb9ca708e235d1b6b451
 
 COCOAPODS: 1.10.1
