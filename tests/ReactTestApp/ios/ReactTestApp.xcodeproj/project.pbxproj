@@ -43,6 +43,7 @@
 		3825D936865AF110136BE73D /* Pods-ReactTestApp-ReactTestAppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactTestApp-ReactTestAppTests.debug.xcconfig"; path = "Target Support Files/Pods-ReactTestApp-ReactTestAppTests/Pods-ReactTestApp-ReactTestAppTests.debug.xcconfig"; sourceTree = "<group>"; };
 		6D763AAEED7DA9046D599D2F /* Pods-ReactTestApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactTestApp.release.xcconfig"; path = "Target Support Files/Pods-ReactTestApp/Pods-ReactTestApp.release.xcconfig"; sourceTree = "<group>"; };
 		71254FD62694DB3400E30FE7 /* ReactTestApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = ReactTestApp.entitlements; path = ReactTestApp/ReactTestApp.entitlements; sourceTree = "<group>"; };
+		71254FDD269843D900E30FE7 /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../../../src; sourceTree = "<group>"; };
 		7151BD202685CE0D00F1B75D /* RealmTestEventEmitter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RealmTestEventEmitter.h; sourceTree = "<group>"; };
 		7151BD212685CE3600F1B75D /* RealmTestEventEmitter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RealmTestEventEmitter.m; sourceTree = "<group>"; };
 		7151BE96268C959A00F1B75D /* realm-bundle.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "realm-bundle.realm"; sourceTree = "<group>"; };
@@ -151,6 +152,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				71254FDD269843D900E30FE7 /* src */,
 				7151BE95268C959A00F1B75D /* data */,
 				13B07FAE1A68108700A75B9A /* ReactTestApp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
