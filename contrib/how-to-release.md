@@ -21,7 +21,7 @@ The procedure is:
 * Build Android binaries: `node ./scripts/build-android.js`
 * Build iOS binaries: `./scripts/build-ios.sh`
 * Publish the package: `npm publish`
-* Add the changelog template: `./scripts/change-header.sh`
+* Add the changelog template: `./scripts/changelog-header.sh`
 * Add the template: `npm add CHANGELOG.md`
 * Commit the template: `npm commit -m "Adding changelog template"`
 * Push the template: `npm push origin master` (if you are releasing from another than, use that instead of `master`)
