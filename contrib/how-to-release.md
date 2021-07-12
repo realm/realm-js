@@ -1,6 +1,6 @@
 # How to release Realm JavaScript
 
-In order to release Realm JavaScript, you need to be added a collaborator at [npm](https://npmjs.com) and you need to log in when publishing the package. Moreover, you will need to be member of the [Realm organization at Github](https://github.com/realm).
+In order to release Realm JavaScript, you need to be added as a collaborator at [npm](https://npmjs.com) and you need to log in when publishing the package. Moreover, you will need to be member of the [Realm organization at Github](https://github.com/realm).
 
 You will have to build locally for Android and iOS since we are distributing binaries for these platforms within the [`realm`](https://www.npmjs.com/package/realm) package.
 
@@ -16,12 +16,12 @@ The procedure is:
 * Add changes: `git add CHANGELOG.md package.lock package-lock.json dependencies.list react-native/ios/RealmReact.xcodeproj/project.pbxproj`
 * Tag the commit: `git tag vX.Y.Z`
 * Commit the changes: `git commit -m "[X.Y.Z] Bump version"`
-* Push the changes: `git push origin --tag master` (if you are releasing from another than, use that instead of `master`)
+* Push the changes: `git push origin --tag master` (if you are releasing from another branch, then use that instead of `master`)
 * Our CI system will build and push binaries for node.js. You can follow the progress at https://ci.realm.io. Once the "Publish" stage is completed, the binaries are uploaded.
 * Build Android binaries: `node ./scripts/build-android.js`
 * Build iOS binaries: `./scripts/build-ios.sh`
 * Publish the package: `npm publish`
-* Add the changelog template: `./scripts/changelog-header.sh`
-* Add the template: `npm add CHANGELOG.md`
-* Commit the template: `npm commit -m "Adding changelog template"`
-* Push the template: `npm push origin master` (if you are releasing from another than, use that instead of `master`)
+* Apply the changelog template: `./scripts/changelog-header.sh`
+* Stage the template: `git add CHANGELOG.md`
+* Commit the template: `git commit -m "Adding changelog template"`
+* Push the template: `npm push origin master` (if you are releasing from another branch, then use that instead of `master`)
