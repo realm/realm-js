@@ -59,7 +59,8 @@ tests/mongodb-realm/
 packager_out.txt
 build.log.*
 realm-object-server/
-tests/react-test-app/ios/out.txt
+tests/ReactTestApp/ios/out.txt
+tests/ReactTestApp/ios/Podfile.lock
 *.iml
 crash.log
 examples/ReactExample/ios/Pods/

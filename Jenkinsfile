@@ -142,6 +142,7 @@ stage('test') {
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
+  parallelExecutors["React Native Catalyst Release"] = testMacOS('catalyst-tests Release')
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
 
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')

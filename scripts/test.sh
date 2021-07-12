@@ -198,6 +198,26 @@ xctest() {
   check_test_results $1
 }
 
+catalystTest() {
+  # - Run the build and test
+  echo "Building application"
+  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -destination 'platform=macOS,variant=Mac Catalyst' -derivedDataPath ./build build-for-testing || {
+      EXITCODE=$?
+      echo "*** Failure (exit code $EXITCODE). ***"
+      exit $EXITCODE
+  }
+
+  log_temp="$(pwd)/build/out.txt"
+  echo "Launching tests. (output is in ${log_temp})"
+  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -destination 'platform=macOS,variant=Mac Catalyst' -derivedDataPath ./build test-without-building 2>&1 | tee "$log_temp" || {
+      EXITCODE=$?
+      echo "*** Failure (exit code $EXITCODE). ***"
+      exit $EXITCODE
+  }
+
+  check_test_results $1
+}
+
 check_test_results() {
   echo "Checking tests results"
   if grep -q "REALM_FAILING_TESTS" $(pwd)/build/out.txt; then
@@ -308,7 +328,7 @@ case "$TARGET" in
   npm run check-environment
 
   echo "building iOS binaries"
-  ./scripts/build-ios.sh -s -c $CONFIGURATION
+  ./scripts/build-ios.sh -c $CONFIGURATION simulator
 
   set_nvm_default
   start_server
@@ -324,12 +344,33 @@ case "$TARGET" in
   xctest ReactTestApp
   stop_server
   ;;
+"catalyst-tests")
+  npm ci --ignore-scripts
+  npm run check-environment
+
+  echo "building catalyst binaries"
+  ./scripts/build-ios.sh -c $CONFIGURATION catalyst
+
+  set_nvm_default
+  start_server
+
+  pushd tests/ReactTestApp
+  npm ci --no-optional
+  ./node_modules/.bin/install-local
+  open_chrome
+  start_packager
+
+  pushd ios
+  pod install
+  catalystTest ReactTestApp
+  stop_server
+  ;;
 "react-example")
   npm ci --ignore-scripts
   npm run check-environment
 
   echo "building iOS binaries"
-  ./scripts/build-ios.sh -s -c $CONFIGURATION
+  ./scripts/build-ios.sh -c $CONFIGURATION simulator
 
   set_nvm_default
 
