@@ -328,7 +328,7 @@ case "$TARGET" in
   npm run check-environment
 
   echo "building iOS binaries"
-  ./scripts/build-ios.sh -s -c $CONFIGURATION
+  ./scripts/build-ios.sh -c $CONFIGURATION simulator
 
   set_nvm_default
   start_server
@@ -348,8 +348,8 @@ case "$TARGET" in
   npm ci --ignore-scripts
   npm run check-environment
 
-  echo "building iOS binaries"
-  ./scripts/build-ios.sh -s -c $CONFIGURATION
+  echo "building catalyst binaries"
+  ./scripts/build-ios.sh -c $CONFIGURATION catalyst
 
   set_nvm_default
   start_server
@@ -370,7 +370,7 @@ case "$TARGET" in
   npm run check-environment
 
   echo "building iOS binaries"
-  ./scripts/build-ios.sh -s -c $CONFIGURATION
+  ./scripts/build-ios.sh -c $CONFIGURATION simulator
 
   set_nvm_default
 
