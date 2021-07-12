@@ -196,4 +196,30 @@ module.exports = {
     TestCase.assertEqual(value.nullable_list[3], null, "Should be equal null");
     TestCase.assertEqual(value.nullable_list[4], 5, "Should be equal 5");
   },
+
+  testMixedValuesAsArray() {
+    const MixedSchema = {
+      name: "MixedClass",
+      properties: { value: "mixed" },
+    };
+
+    const realm = new Realm({ schema: [MixedSchema] });
+
+    let objectsBefore = realm.objects(MixedSchema.name);
+    TestCase.assertEqual(objectsBefore.length, 0);
+
+    // check if the understandable error message is thrown
+    let error = new Error("A mixed property cannot contain an array of values.");
+    TestCase.assertThrowsException(() => {
+      realm.write(() => {
+        realm.create("MixedClass", { value: [123, false, "hello"] });
+      });
+    }, error);
+
+    //  verify that the transaction has been rolled back
+    let objectsAfter = realm.objects(MixedSchema.name);
+    TestCase.assertEqual(objectsAfter.length, 0);
+
+    realm.close();
+  },
 };
