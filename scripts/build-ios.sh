@@ -99,7 +99,7 @@ xcodebuild build \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
     SUPPORTS_MACCATALYST=YES
 
-for cmd in "${BUILD_LIB_CMDS}"; do
+for cmd in "${BUILD_LIB_CMDS[@]}"; do
     eval "${cmd}"
 done
 
