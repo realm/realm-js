@@ -8,6 +8,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed issue when opening a synced Realm is prevented by assertion "m_state == SyncUser::State::LoggedIn". ([realm/realm-core#4875](https://github.com/realm/realm-core/issues/4875), since v10.0.0)
 * Fixed slow teardown of Realm by which interfered with Jest. ([#3620](https://github.com/realm/realm-js/issues/3620) and [#2993](https://github.com/realm/realm-js/issues/2993), since v1.0.0)
 * If an object with a null primary key was deleted by another sync client, the exception `KeyNotFound: No such object` could be triggered. ([realm/realm-core#4885](https://github.com/realm/realm-core/issues/4885), since v10.0.0)
+* When opening a synced Realm with a `Realm.Dictionary` property, an exception similar to `Property 'Dictionary.columnFloatDictionary' has been made optional` might be thrown. (since v10.6.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.

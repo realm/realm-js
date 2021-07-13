@@ -91,11 +91,11 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     }
 
     if (type.ends_with("{}")) {
-        prop.type |= PropertyType::Dictionary | PropertyType::Nullable;
+        prop.type |= PropertyType::Dictionary;
         type = type.substr(0, type.size() - 2);
 
         if (type == "") {
-            prop.type |= PropertyType::Mixed;
+            prop.type |= PropertyType::Mixed | PropertyType::Nullable;
             return;
         }
     }
@@ -202,8 +202,10 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     }
 
     // Object properties are implicitly optional
-    if (prop.type == PropertyType::Object && !is_array(prop.type) && !is_set(prop.type)) {
-        prop.type |= PropertyType::Nullable;
+    if (!is_array(prop.type) && !is_set(prop.type) && !is_dictionary(prop.type)) {
+        if (prop.type == PropertyType::Object) {
+            prop.type |= PropertyType::Nullable;
+        }
     }
 }
 
