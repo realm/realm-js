@@ -45,9 +45,11 @@
     "CMakeLists.txt"
   ],
   "scripts": {
+    "lerna:bootstrap": "lerna bootstrap",
+    "lerna:lint": "lerna run lint",
+    "lint": "eslint .",
     "get-version": "node -p process.env.npm_package_version",
     "set-version": "scripts/set-version.sh",
-    "lint": "eslint .",
     "test": "scripts/test.sh",
     "package": "npm ci --ignore-scripts && prebuild",
     "install": "prebuild-install -r napi || cmake-js build",
@@ -57,7 +59,6 @@
     "build-changes": "cmake-js build --debug",
     "build-changes:arm": "NODE_ARCH_ARM=1 cmake-js build --debug",
     "rebuild-changes": "cmake-js rebuild --debug && cd tests && npm install",
-    "eslint": "npm install --ignore-scripts && npm run lint .",
     "license-check": "npm install && license-checker --exclude \"MIT,ISC,BSD,Apache-2.0,BSD-2-Clause,BSD-3-Clause,WTFPL,Unlicense,(MIT AND CC-BY-3.0)\" | node scripts/handle-license-check.js",
     "jsdoc:clean": "rimraf ./docs/output",
     "jsdoc": "npm install --ignore-scripts && npm run jsdoc:clean && jsdoc -u docs/tutorials -p package.json -c docs/conf.json",
@@ -69,7 +70,6 @@
     "test-runner:mocha": "cd tests/test-runners/mocha && npm install --build-from-source=realm && npm test",
     "test-runner:jest": "cd tests/test-runners/jest && npm install --build-from-source=realm && npm test",
     "test-runners": "npm run test-runner:ava && npm run test-runner:mocha && npm run test-runner:jest",
-    "isWin": "node -p \"if (process.platform == 'win32') { process.exit(0); } else { process.exit(-1); }\"",
     "check-environment": "node scripts/check-environment.js"
   },
   "dependencies": {
