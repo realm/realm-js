@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint-env node */
+
 exports = function (sentence, languages) {
     if (languages === "fr_en") {
         if (sentence === "bonjour") {

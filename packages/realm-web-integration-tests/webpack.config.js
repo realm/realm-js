@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint-env node */
 // var-requires are needed as webpack configs are running in a node process
 /* eslint-disable @typescript-eslint/no-var-requires */
 
