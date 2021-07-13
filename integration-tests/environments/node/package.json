@@ -4,8 +4,9 @@
   "description": "Realm JS tests running in a Node.js environment",
   "private": true,
   "scripts": {
-    "test": "mocha-remote -- concurrently npm:app-importer npm:start",
     "start": "node index.js",
+    "test": "mocha-remote -- concurrently npm:app-importer npm:start",
+    "lint": "eslint .",
     "app-importer": "realm-app-importer serve ../../realm-apps"
   },
   "dependencies": {

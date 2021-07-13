@@ -10,6 +10,7 @@
   "private": true,
   "main": "app/main.js",
   "scripts": {
+    "lint": "eslint .",
     "package": "electron-builder --dir",
     "runner:main": "node runner.js main",
     "runner:renderer": "node runner.js renderer",

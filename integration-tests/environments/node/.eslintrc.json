@@ -1,6 +1,9 @@
 {
     "root": true,
     "extends": "../../../.eslintrc.json",
+    "parserOptions": {
+        "ecmaVersion": 2018
+    },
     "env": {
         "mocha": true
     }
