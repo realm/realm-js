@@ -13,3 +13,4 @@ vendor/
 # The sub-packages have their own linting
 /integration-tests/
 /packages/
+/examples/
