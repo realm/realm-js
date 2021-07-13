@@ -32,9 +32,6 @@
   "bugs": {
     "url": "https://github.com/realm/realm-js/issues"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "body-parser": "^1.19.0",
