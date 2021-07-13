@@ -1,0 +1,26 @@
+name: Linting (Pull Request)
+
+on:
+  pull_request:
+    paths:
+      # No need to run when updating documentation
+      - '!**.md'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
+      - run: npm ci --ignore-scripts
+        name: Install root package dependencies
+      - run: npm run lerna:bootstrap
+        name: Install subpackages dependencies
+      - run: npm run lerna:lint -- --no-bail --concurrency 1 --stream --no-prefix
+        name: Run linting of subpackages
