@@ -261,9 +261,10 @@ declare namespace Realm {
         set(element:{[key:string]: ValueType}): void;
 
         /**
-         * @returns Removes given element from the dictionary
+         * Removes given element from the dictionary
+         * @returns The dictionary
          */
-        remove(element:{[key:string]: ValueType}): void;
+        remove(key:string|string[]): DictionaryBase<ValueType>;
 
         /**
          * @returns void
