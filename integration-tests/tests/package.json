@@ -22,7 +22,6 @@
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.6",
     "concurrently": "^6.0.2",
-    "eslint": "^7.30.0",
     "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
     "node-fetch": "^2.6.1",
