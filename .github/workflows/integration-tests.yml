@@ -147,7 +147,7 @@ jobs:
 
       - run: npm ci
       # Build the iOS xcframework (if cache missed)
-      - run: ./scripts/build-ios.sh -c ${{ matrix.type }} -s
+      - run: ./scripts/build-ios.sh -c ${{ matrix.type }} simulator
         if: ${{ steps.cache-xcframework.outputs.cache-hit != 'true' }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
