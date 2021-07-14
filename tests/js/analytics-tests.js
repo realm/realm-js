@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+'use strict';
+
 const TestCase = require('./asserts');
 
 const require_method = require;
@@ -34,10 +36,6 @@ module.exports = {
         TestCase.assertType(payload.webHook.event, 'string');
         TestCase.assertDefined(payload.webHook.properties);
         TestCase.assertType(payload.webHook.properties.Binding, 'string');
-        TestCase.assertDefined(payload.mixPanel);
-        TestCase.assertType(payload.mixPanel.event, 'string');
-        TestCase.assertDefined(payload.mixPanel.properties);
-        TestCase.assertType(payload.mixPanel.properties.Binding, 'string');
 
         await analytics.submitStageAnalytics('TestEvent');
     }

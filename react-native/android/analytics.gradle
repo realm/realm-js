@@ -67,9 +67,8 @@ class SendAnalyticsTask extends DefaultTask {
     //TODO replace with properties
     private static final int READ_TIMEOUT = 2000
     private static final int CONNECT_TIMEOUT = 4000
-    private static final String ADDRESS_PREFIX = "https://api.mixpanel.com/track/?data="
-    private static final String ADDRESS_SUFFIX = "&ip=1"
-    private static final String TOKEN = "ce0fac19508f6c8f20066d345d360fd0"
+    private static final String ADDRESS_PREFIX = "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric?ip=1&data="
+    private static final String TOKEN = "aab85907a13e1ff44a95be539d9942a9"
     private static final String EVENT_NAME = "Run"
     private static final String JSON_TEMPLATE = '''
             {
@@ -92,7 +91,7 @@ class SendAnalyticsTask extends DefaultTask {
 
     void send() {
           // MixPanel requires padded Base64 encoding
-          def url = (ADDRESS_PREFIX + generateJson().bytes.encodeBase64().toString() + ADDRESS_SUFFIX).toURL()
+          def url = (ADDRESS_PREFIX + generateJson().bytes.encodeBase64().toString()).toURL()
           def connection = url.openConnection()
           connection.setConnectTimeout(CONNECT_TIMEOUT);
           connection.setReadTimeout(READ_TIMEOUT);
