@@ -1,5 +1,6 @@
 {
   "extends": [
-    "@react-native-community"
+    "@react-native-community",
+    "../.."
   ]
 }
