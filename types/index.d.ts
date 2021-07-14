@@ -256,14 +256,16 @@ declare namespace Realm {
 
     interface DictionaryBase<ValueType = Mixed> {
         /**
-         * @returns Adds given element to the dictionary
+         * Adds given element to the dictionary
+         * @returns The dictionary
          */
-        set(element:{[key:string]: ValueType}): void;
+        set(element:{[key:string]: ValueType}): DictionaryBase<ValueType>;
 
         /**
-         * @returns Removes given element from the dictionary
+         * Removes given element from the dictionary
+         * @returns The dictionary
          */
-        remove(element:{[key:string]: ValueType}): void;
+        remove(key:string|string[]): DictionaryBase<ValueType>;
 
         /**
          * @returns void
