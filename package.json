@@ -141,7 +141,8 @@
     "typescript": "^3.8.2"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=10",
+    "npm": ">=7"
   },
   "config": {
     "runtime": "napi",
