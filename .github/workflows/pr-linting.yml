@@ -18,9 +18,9 @@ jobs:
           node-version: 14
           registry-url: https://registry.npmjs.org/
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
-      - run: npm ci --ignore-scripts
-        name: Install root package dependencies
-      - run: npm run lerna:bootstrap
-        name: Install subpackages dependencies
-      - run: npm run lerna:lint -- --no-bail --concurrency 1 --stream --no-prefix
-        name: Run linting of subpackages
+      - name: Install root package dependencies
+        run: npm ci --ignore-scripts
+      - name: Install subpackages dependencies
+        run: npm run lerna:bootstrap
+      - name: Run linting of subpackages
+        run: npm run lerna:lint -- --no-bail --concurrency 1 --stream --no-prefix
