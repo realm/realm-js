@@ -95,7 +95,7 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   react-native-ios:
-    name: React Native on iOS (${{ matrix.type }})
+    name: React Native on iOS ${{matrix.platform}} (${{ matrix.type }})
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -103,6 +103,7 @@ jobs:
         #TODO: Reactivate debug when builds are optimized
         #type: [Release, Debug]
         type: [Release]
+        platform: [simulator, catalyst]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -160,15 +161,15 @@ jobs:
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests
-      - name: Run tests (iOS / Native)
-        run: npm run test:ios --prefix integration-tests/environments/react-native
+      - name: Run tests (${{matrix.platform}}/ Native)
+        run: npm run test:${{matrix.platform}} --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
-      - name: Run tests (iOS / Chrome Debugging)
+      - name: Run tests (${{matrix.platform}} / Chrome Debugging)
         if: ${{ false }}
-        run: npm run test:ios:chrome --prefix integration-tests/environments/react-native
+        run: npm run test:${{matrix.platform}}:chrome --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter

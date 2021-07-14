@@ -153,7 +153,6 @@ export class App extends Component {
 
   prepareTests() {
     this.client = new Client({
-      id: Platform.OS,
       title: `React-Native on ${Platform.OS} (${mode})`,
       tests: (context) => {
         /* eslint-env mocha */

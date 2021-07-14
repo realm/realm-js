@@ -29,10 +29,15 @@ target 'RealmReactNativeTests' do
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
   # you should disable the next line.
-  # use_flipper!()
+  # To disable Flipper, set the environment variable `DISABLE_FLIPPER` to 'true'
+  if ENV['CI'] != 'true' && ENV['DISABLE_FLIPPER'] != 'true'
+    use_flipper!()
+  end
 
   post_install do |installer|
     react_native_post_install(installer)
+    # TODO: The following is a workaround for a bug in CocoaPods when using Catalyst  
+    # https://github.com/CocoaPods/CocoaPods/issues/8891
     # Fix bundle targets' 'Signing Certificate' to 'Sign to Run Locally'
     installer.pods_project.targets.each do |target|
       if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"
