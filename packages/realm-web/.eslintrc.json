@@ -1,16 +1,7 @@
 {
-    "root": true,
     "parser": "@typescript-eslint/parser",
-    "plugins": [
-        "@typescript-eslint",
-        "jsdoc",
-        "prettier",
-        "header"
-    ],
     "extends": [
-        "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:prettier/recommended",
         "plugin:jsdoc/recommended"
     ],
     "rules": {
@@ -37,10 +28,6 @@
                     "ExportNamedDeclaration[declaration.type=TSTypeAliasDeclaration] TSPropertySignature"
                 ]
             }
-        ],
-        "header/header": [
-            2,
-            "../../header.js"
         ]
     },
     "settings": {
