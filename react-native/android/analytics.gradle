@@ -90,7 +90,6 @@ class SendAnalyticsTask extends DefaultTask {
             }'''
 
     void send() {
-          // MixPanel requires padded Base64 encoding
           def url = (ADDRESS_PREFIX + generateJson().bytes.encodeBase64().toString()).toURL()
           def connection = url.openConnection()
           connection.setConnectTimeout(CONNECT_TIMEOUT);
