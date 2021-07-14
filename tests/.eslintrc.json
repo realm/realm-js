@@ -1,4 +1,5 @@
 {
+  "extends": "plugin:jasmine/recommended",
   "env": {
     "node": true,
     "jasmine": true
@@ -6,7 +7,6 @@
   "plugins": [
     "jasmine"
   ],
-  "extends": "plugin:jasmine/recommended",
   "globals": {
     "ArrayBuffer": false,
     "DataView": false,

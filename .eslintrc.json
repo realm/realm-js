@@ -8,6 +8,9 @@
   "env": {
     "es2017": true
   },
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
   "settings": {
     "react": {
       "version": "16.6.3"
