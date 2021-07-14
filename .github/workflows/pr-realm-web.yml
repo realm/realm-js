@@ -11,8 +11,8 @@ on:
       - '!**.md'
 
 jobs:
-  test-build-and-publish:
-    name: Test, lint and build
+  job:
+    name: Build & test
     runs-on: ubuntu-latest
     
     steps:
