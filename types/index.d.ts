@@ -258,7 +258,7 @@ declare namespace Realm {
         /**
          * @returns Adds given element to the dictionary
          */
-        set(element:{[key:string]: ValueType}): void;
+        set(element:{[key:string]: ValueType}): DictionaryBase<ValueType>;
 
         /**
          * Removes given element from the dictionary
