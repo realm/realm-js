@@ -13,7 +13,7 @@ npm run build
 Building the native module (xcframework) for the iOS simulator in debug mode:
 
 ```bash
-./scripts/build-ios.sh -c Debug -s
+./scripts/build-ios.sh -c Debug simulator
 ```
 
 Building the native module (.so) for the Android simulator in debug mode:
