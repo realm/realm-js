@@ -27,9 +27,7 @@ jobs:
       - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages
       - run: npx lerna bootstrap --scope realm-web-integration-tests --include-dependencies
-      # Lint, build and test the package
-      - run: npm run lint
-        working-directory: packages/realm-web
+      # Build and test the package
       - run: npm run build
         working-directory: packages/realm-web
       - name: Run unit tests
