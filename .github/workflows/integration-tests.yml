@@ -36,9 +36,9 @@ jobs:
           node-version: ${{ matrix.node }}
           registry-url: https://registry.npmjs.org/
       - name: Install npm v7
-        run: npm install -g npm@7
         # TODO: Remove the following line once we've found a workaround for https://github.com/dotnet/msbuild/issues/5726
         if: ${{ matrix.os != 'windows-latest' }}
+        run: npm install -g npm@7
       # The following is a noop on non-windows runners
       - name: Install Microsoft Visual C++ cmd tools
         uses: ilammy/msvc-dev-cmd@v1
