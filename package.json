@@ -119,7 +119,6 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.24.0",
     "eslint-plugin-react-native": "^3.11.0",
-    "eslint-visitor-keys": "^3.0.0",
     "fb-watchman": "^2.0.1",
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
