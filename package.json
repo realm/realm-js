@@ -103,10 +103,10 @@
     }
   },
   "devDependencies": {
-    "@react-native-community/eslint-config": "^2.0.0",
+    "@react-native-community/eslint-config": "^3.0.0",
     "@types/node": "^4.9.1",
-    "@typescript-eslint/eslint-plugin": "^4.28.2",
-    "@typescript-eslint/parser": "^4.28.2",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
     "babel-eslint": "^8.2.6",
     "cmake-js": "^6.1.0",
     "compare-versions": "^3.6.0",
@@ -134,10 +134,6 @@
     "semver": "^5.6.0",
     "shelljs": "^0.7.7",
     "shx": "^0.2.2",
-    "tslint": "^6.0.0",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-eslint-rules": "^5.4.0",
-    "tslint-plugin-prettier": "^2.1.0",
     "typescript": "^3.8.2"
   },
   "engines": {
