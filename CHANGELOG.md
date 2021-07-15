@@ -275,7 +275,6 @@ NOTE: Bump file format version to 21. NO DOWNGRADE PATH IS AVAILABLE.
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
 * Upgraded Realm Core from v10.6.0 to 10.7.1
 * Added binaries for Apple Silicon (M1). ([#3257](https://github.com/realm/realm-js/issues/3527))
 
@@ -303,6 +302,52 @@ ealm/realm-core#4573](https://github.com/realm/realm-core/pull/4573), since v6.0
 * Bump the Realm Sync protocol version to 3.
 * Bump Realm File Format version to 21.
 * Prebuild the React Native iOS variant and bundle it in the npm tarball. ([#3649](https://github.com/realm/realm-js/pull/3649))
+
+10.3.0 Release notes (2021-3-30)
+=============================================================
+NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complete changelog, please see v10.3.0-rc.1.
+
+### Enhancements
+* None.
+
+### Fixed
+* Classes names `class_class_...` were not handled correctly in queries. ([realm/realm-core#4480](https://github.com/realm/realm-core/issues/4480))
+* Syncing large `Decimal128` values will cause `Assertion failed: cx.w[1] == 0`. ([realm/realm-core#4519[(https://github.com/realm/realm-core/issues/4519)], since v10.0.0)
+* Avoid race condition leading to possible hangs on Windows. ([realm/realm-dotnet#2245](https://github.com/realm/realm-dotnet/issues/2245))
+* During integration of a large amount of data from the MongoDB Realm, you may get `Assertion failed: !fields.has_missing_parent_update()`. ([realm/realm-core#4497](https://github.com/realm/realm-core/issues/4497), since v6.0.0)
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Upgraded Realm Core from v10.5.4 to v10.5.6.
+
+10.3.0-rc.1 Release notes (2021-3-19)
+=============================================================
+### Enhancements
+* Added support for comparing numbers to boolean values in queries.
+
+### Fixes
+* On 32 bit devices you may get exception with `No such object` when upgrading from v6.x to v10.x ([realm/realm-java#7314](https://github.com/realm/realm-java#7314), since v10.0.0)
+* Restore support for upgrading files from file format 5 (Realm JavaScript 1.x). ([realm/realm-cocoa#7089](https://github.com/realm/realm-cocoa/issues/7089), since v6.0.0)
+* Fixed a bug that prevented an object type with incoming links from being marked as embedded during migrations. ([realm/realm-core#4414](https://github.com/realm/realm-core#4414))
+* During synchronization you might experience crash with `Assertion failed: ref + size <= next->first`. ([realm/realm-core#4388](https://github.com/realm/realm-core#4388))
+* There seems to be a few issues regarding class support in realm-js. We are currently coming up with strategies to better support this in the future. In the meantime, the following fixes have been applied to help avoid crashes and failures.
+  * When creating a class that extends Realm.Object and pushing the instantiated object to a list, a segmentation fault would occur. This has been fixed by a null check and throwing an exception.
+  * Creating an object from an instance of Realm.Object that was manually constructed (detached from Realm) would fail the second time. Now we throw a meaningful exception the first time.
+* Removed a delay when running in node.js. It could make testing using Jest to fail. ([#3608](https://github.com/realm/realm-js/issues/3608), since v2.0.0)
+
+### Compatibility
+* MongoDB Realm Cloud.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.x.y series.
+* File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
+
+### Internal
+* Switch to unified releases of Realm Core, Realm Sync and Realm Object Store.
+* Upgraded to Realm Core v10.5.4.
+
 
 10.2.0 Release notes (2021-2-5)
 =============================================================
@@ -444,10 +489,46 @@ ealm/realm-core#4573](https://github.com/realm/realm-core/pull/4573), since v6.0
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Core from v10.0.0 to v10.1.3
 * Upgraded to Realm Sync from v10.0.0 to v10.1.3
+
+6.1.7 Release notes (2021-3-13)
+=============================================================
+### Enhancements
+* None.
+
+### Fixes
+* There seems to be a few issues regarding class support in realm-js. We are currently coming up with strategies to better support this in the future. In the meantime, the following fixes have been applied to help avoid crashes and failures.
+  * When creating a class that extends Realm.Object and pushing the instantiated object to a list, a segmentation fault would occur. This has been fixed by a null check and throwing an exception.
+  * Creating an object from an instance of Realm.Object that was manually constructed (detached from Realm) would fail the second time. Now we throw a meaningful exception the first time.
+* Removed a delay when running in node.js. It could make testing using Jest to fail. ([#3608](https://github.com/realm/realm-js/issues/3608), since v2.0.0)
+* Support upgrading from file format 5. ([realm/realm-cocoa#7089](https://github.com/realm/realm-cocoa/issues/7089), since v6.0.0)
+* During integration of a large amount of data from the server, you may get `Assertion failed: !fields.has_missing_parent_update()`. ([realm/realm-core#4497](https://github.com/realm/realm-core/issues/4497), since v6.0.0)
+* Fixed queries for constant null across links to an indexed property not returning matches when the link was null. ([realm/realm-core#4460](https://github.com/realm/realm-core/pull/4460), since v3.5.0).
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 6.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5).
+
+6.1.6 Release notes (2021-2-15)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed an issue where creating an object after file format upgrade may fail with error message `Assertion failed: lo() <= std::numeric_limits<uint32_t>::max()`. ([realm/realm-core#4295](https://github.com/realm/realm-core/issues/4295), since v6.0.0)
+* Due to an upcoming WebKit update (currently accessible through Xcode beta simulators), apps would throw `Attempting to change configurable attribute of unconfigurable property` at runtime. ([#3557](https://github.com/realm/realm-js/issues/3557))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 6.x.y series.
+* File format: generates Realms with format v11 (reads and upgrades file format v5).
+
+### Internal
+* Upgraded Realm Core from v6.2.0 to v6.2.3.
+* Upgraded Realm Sync from v5.0.30 to v5.0.32.
+* Implemented webhook analytics integration.
 
 6.1.5 Release notes (2020-11-4)
 =============================================================
@@ -467,8 +548,6 @@ ealm/realm-core#4573](https://github.com/realm/realm-core/pull/4573), since v6.0
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v6.1.4 to v6.2.0.
 * Upgraded Realm Sync from v5.0.29 to v5.0.30.
 
@@ -494,8 +573,6 @@ NOTE: This version uses the Realm file format to version 20. It is not possible 
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None
 
 10.0.0 Release notes (2020-10-14)
@@ -540,8 +617,6 @@ NOTE: Deprecated methods have been removed.
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Core v10.0.0
 * Upgraded to Realm Sync v10.0.0
 
@@ -572,8 +647,6 @@ NOTE: This version uses the Realm file format to version 20. It is not possible 
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Changed CI to abort if changes are exclusively made to the /packages directory. ([#3298](https://github.com/realm/realm-js/pull/3298)) & ([#3307](https://github.com/realm/realm-js/pull/3307))
 * Publish binaries for Raspberry Pi. ([#3272](https://github.com/realm/realm-js/issues/3272), since v10.0.0-beta.13)
 
@@ -592,8 +665,6 @@ NOTE: This version uses the Realm file format to version 20. It is not possible 
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v6.1.3 to v6.1.4.
 * Upgraded Realm Sync from v5.0.28 to v5.0.29.
 * Upgraded Realm Object Store to commit 301642fe90212c379f550656a7234f41db158ddf.
@@ -618,8 +689,6 @@ NOTE: This version uses the Realm file format to version 20. It is not possible 
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v6.0.26 to v6.1.3.
 * Upgraded Realm Sync from v5.0.23 to v5.0.28.
 * Improved performance of queries of the form `NOT (prop == 1 || prop == 2 || ...)`. ([realm/realm-cocoa#4564](https://github.com/realm/realm-cocoa/issues/4564))
@@ -653,8 +722,6 @@ NOTE: This version uses the Realm file format to version 20. It is not possible 
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v10.0.0-beta.8 to v10.0.0-beta.9.
 * Upgraded Realm Sync from v10.0.0-beta.12 to v10.0.0-beta.14.
 
@@ -698,8 +765,6 @@ NOTE: This version bumps the Realm file format to version 20. It is not possible
 * Stopped building binary releases for Node.js 11
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Realm JS now uses a single pre-build native binary for every Node.js and Electron version per platform (Windows, Linux, MacOS) and architecture (ia32, x64). Switching Node.js and Electron versions after Realm JS is installed will not require re-building or re-downloading of the Realm JS native binary.
 * Upgraded Realm Core from v10.0.0-beta.6 to v10.0.0-beta.8.
 * Upgraded Realm Sync from v10.0.0-beta.10 to v10.0.0-beta.12.
@@ -723,8 +788,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded from Realm Core v10.0.0-beta.5 to v10.0.0-beta.6.
 * Upgraded from Realm Sync v10.0.0-beta.8 to v10.0.0-beta.10.
 
@@ -744,8 +807,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Realm JS now uses a single pre-build native binary for every Node.js and Electron version per platform (Windows, Linux, MacOS) and architecture (ia32, x64). Switching Node.js and Electron versions after Realm JS is installed will not require re-building or re-downloading of the Realm JS native binary.
 * Upgraded Realm Core from v6.0.25 to v6.0.26.
 * Upgraded Realm Sync from v5.0.22 to v5.0.23.
@@ -769,8 +830,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v6.0.21 to v6.0.25.
 * Upgraded Realm Sync from v5.0.18 to v5.0.22.
 
@@ -793,8 +852,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None
 
 6.1.0 Release notes (2020-08-27)
@@ -817,8 +874,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v6.0.19 to v6.0.21.
 * Upgraded Realm Sync from v5.0.16 to v5.0.18
 
@@ -860,8 +915,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Realm Object Store updated to commit 9c80160881f2af76d99c356a9d6017c88c9b7e52
 * Upgraded Realm Core from v10.0.0-beta.4 to v10.0.0-beta.5
 * Upgraded Realm Sync from v10.0.0-beta.6 to v10.0.0-beta.8
@@ -885,8 +938,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v6.0.14 to v6.0.19.
 * Upgraded Realm Sync from v5.0.14 to v5.0.16.
 
@@ -907,8 +958,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v6.0.9 to v6.0.14.
 * Upgraded Realm Sync from v5.0.8 to v5.0.14.
 
@@ -930,8 +979,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v6.0.6 to v6.0.9.
 * Upgraded Realm Sync from v5.0.5 to v5.0.8.
 
@@ -971,8 +1018,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 10.0.0-beta.8 Release notes (2020-7-07)
@@ -996,8 +1041,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 10.0.0-beta.7 Release notes (2020-6-26)
@@ -1021,8 +1064,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Now linking against OpenSSL 1.1 on Windows.
 
 10.0.0-beta.6 Release notes (2020-6-9)
@@ -1043,8 +1084,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Reverted back to rely on Realm.App's default URL in Realm Object Store.
 * Updated Realm Object Store to commit c02707bc28e1886970c5da29ef481dc0cb6c3dd8.
 
@@ -1075,8 +1114,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * TypeScript definitions for `Realm.objectForPrimaryKey()` and the `Realm.App` constructor are inconsistent. (https://github.com/realm/realm-js/issues/2940)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated Realm Object Store to commit c50be4dd178ef7e11d453f61a5ac2afa8c1c10bf.
 
 10.0.0-beta.4 Release notes (2020-6-7)
@@ -1094,8 +1131,6 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 10.0.0-beta.3 Release notes (2020-6-6)
@@ -1114,9 +1149,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
-* Updated Realm Sync from vv10.0.0-beta.1 to Realm Sync v10.0.0-beta.2.
+* Updated Realm Sync from v10.0.0-beta.1 to Realm Sync v10.0.0-beta.2.
 * Updated Realm Object Store to commit c6b7e35544ce9514ceb7ff5fc0280b93c073c659.
 
 10.0.0-beta.1 Release notes (2020-6-4)
@@ -1156,12 +1189,10 @@ NOTE: Deprecated methods have been removed.
 * File format: generates Realms with format v11 (reads and upgrades file format v5 or later).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated Realm Core from v6.0.5 to Realm Core v10.0.0-beta.1.
 * Updated Realm Sync from v5.0.5 to Realm Sync v10.0.0-beta.1.
 * Updated Realm Object Store to commit 6d081a53377514f9b77736cb03051a03d829da92.
-* Created a package named "realm-app-importer", to be used by integration tests (ideally by other SDKs too).
+* Created a package named `realm-app-importer`, to be used by integration tests (ideally by other SDKs too).
 
 6.0.2 Release notes (2020-06-02)
 =============================================================
@@ -1179,9 +1210,7 @@ NOTE: Deprecated methods have been removed.
 * File format: Generates Realms with format v10 (reads and upgrades previous file format).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
-* Fixed compiling without Realm Sync
+* Fixed compiling without Realm Sync.
 
 6.0.1 Release notes (2020-5-18)
 =============================================================
@@ -1198,8 +1227,6 @@ NOTE: Deprecated methods have been removed.
 * File format: Generates Realms with format v10 (reads and upgrades previous formats).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 6.0.0 Release notes (2020-5-6)
@@ -1225,8 +1252,6 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * File format: Generates Realms with format v10 (reads and upgrades previous formats).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated Realm Core from v5.23.8 to v6.0.4.
 * Updated Realm Sync from v4.9.5 to v5.0.3.
 * Updated Realm Object Store to commit dc03607585fd27cf5afa8060a2d17120e47b9b3e.
@@ -1248,8 +1273,6 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Added a platform independent way of printing to stdout on iOS & Node.js and the log on Android. ([#2789](https://github.com/realm/realm-js/pull/2789))
 * Added node 14 (ABI v83) to CI and as a prebuild target.
 * Added Electron 7.2.x as a prebuild target. Thanks to @rajivshah3. ([#2833](https://github.com/realm/realm-js/pull/2833))
@@ -1269,8 +1292,6 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 5.0.2 Release notes (2020-3-21)
@@ -1287,8 +1308,6 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 5.0.1 Release notes (2020-3-20)
@@ -1305,8 +1324,6 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 5.0.0 Release notes (2020-3-18)
@@ -1332,8 +1349,6 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 * File format: Generates Realms with format v9 (reads and upgrades all previous formats).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Complete rewrite of Realm JavaScript for Node.js on top of [Node.js N-API](https://nodejs.org/api/n-api.html)
 * Realm JavaScript is now binary compatible between Node.js versions (due to NAPI API stability and backward compatibility).
 
@@ -1351,8 +1366,6 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Fixed a bug which prevent session multiplexing if sync log level is set. ([HELP-14004](https://jira.mongodb.org/browse/HELP-14004)
 
 3.6.4 Release notes (2020-2-14)
@@ -1370,8 +1383,6 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated Realm Object Store to commit 49458da2447499c370da0000c3b47c76e9ce9421.
 * Updated Realm Sync from v4.9.4 to v4.9.5.
 
@@ -1391,8 +1402,6 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated Realm Sync from v4.9.3 to v4.9.4.
 
 3.6.2 Release notes (2020-1-16)
@@ -1411,8 +1420,6 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v5.23.7 to v5.23.8.
 * Upgraded Realm Sync from v4.9.1 to v4.9.3.
 
@@ -1432,8 +1439,6 @@ NOTE: This version has been pre-released as v3.7.0-alpha.0 and v3.7.0-alpha.2. W
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Fixed download URLs to make it possible to build without sync. ([RJS-355](https://jira.mongodb.org/browse/RJS-355))
 * Now explicitly (deleting and re-)creating a "realm-js-integration-tests" simulator when running the React Native iOS integration tests.
 * Updated Realm Core from v5.23.6 to v5.23.7.
@@ -1456,8 +1461,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Added a test to verify that an exception is thrown when an object schema has no properties.
 * Added a test to verify that `Realm.close()` is idempotent.
 * Upgraded the React Native integration tests app (now using RN v0.61.3). ([#2603](https://github.com/realm/realm-js/pull/2603) & [#2609](https://github.com/realm/realm-js/pull/2609))
@@ -1479,8 +1482,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Added a test to verify that an exception is thrown when an object schema has no properties.
 * Added a test to verify that `Realm.close()` is idempotent.
 * Upgraded the React Native integration tests app (now using RN v0.61.3). ([#2603](https://github.com/realm/realm-js/pull/2603) & [#2609](https://github.com/realm/realm-js/pull/2609))
@@ -1501,8 +1502,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgrade from Realm Sync v4.8.2 to v4.8.3.
 * Fixed a bug in debug mode which could occasionally lead to the assertion `Assertion failed: m_ct_history->size() == m_ct_history_size`. ([RSYNC-71](https://jira.mongodb.org/browse/RSYNC-71), since v2.0.0)
 
@@ -1520,8 +1519,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgrade from Realm Sync v4.7.12 to v4.8.2.
 
 3.4.0 Release notes (2019-11-11)
@@ -1541,8 +1538,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated from Realm Core v5.23.5 to v5.23.6.
 * Updated from Realm Sync v4.7.10 to v4.7.12.
 * Fixed an out-of-range bug in Windows builds. In debug mode, the exception `can't dereference out of range vector iterator` would be thrown and the process would terminate. ([realm/realm-object-store#832](https://github.com/realm/realm-object-store/issues/832))
@@ -1565,8 +1560,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Cleaned up the console output produced by `./tests`. ([#2548](https://github.com/realm/realm-js/pull/2548))
 * Added a `README.md` to the React Test App directory. ([#2561](https://github.com/realm/realm-js/pull/2561))
 * Using the 'deprecated-react-native-listview' instead of `ListView` from the 'react-native' package. Thanks to @Kevin-Lev. ([#2568](https://github.com/realm/realm-js/pull/2568))
@@ -1588,8 +1581,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Core v5.23.5.
 * Updated to Realm Sync v4.7.8.
 
@@ -1608,8 +1599,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -1635,8 +1624,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Core v5.23.2.
 * Updated to Realm Sync v4.7.4.
 * Add support for direct access to sync workers on Cloud, bypassing the Sync Proxy. [RJS-6](https://jira.mongodb.org/browse/RJS-6)
@@ -1657,8 +1644,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Added support for Electron v4.2. ([#2452](https://github.com/realm/realm-js/issues/2452))
 * Upgraded to Realm Sync v4.7.3.
 
@@ -1678,8 +1663,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Core v5.23.1.
 * Updated to Realm Sync v4.6.3.
 
@@ -1701,8 +1684,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Object Store commit: 8cd7b40eb294c4292726a6215339742eea5107c9
 * Updated to Realm Core v5.23.0
 * Updated to Realm Sync v4.6.2
@@ -1722,8 +1703,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -1745,8 +1724,6 @@ NOTE: Including changes from v3.5.0-alpha.1.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -1779,8 +1756,6 @@ Changes since v2.26.1 (including v2.27.0-rc.2 and v2.27.0-rc.3):
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Core v5.19.1.
 * Updated to Realm Sync v4.4.2.
 * Updated to Object Store commit 3e48b69764c0a2aaaa7a3b947d6d0dae215f9a09.
@@ -1809,9 +1784,7 @@ NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
-* Updated to Relm Sync 4.4.2.
+* Updated to Realm Sync 4.4.2.
 * Updated to Object Store commit b96cd7ae5ff531a94fd759bdef9a5bb9e329a332
 
 2.27.0-rc.2 Release notes (2019-5-8)
@@ -1834,8 +1807,6 @@ NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Building for node.js using Xcode 10.x supported.
 * Fixed the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286) and [#2320](https://github.com/realm/realm-js/pull/2320))
 * Added `Realm.Sync.Adapter` implemetation.
@@ -1857,8 +1828,6 @@ NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.26.0 Release notes (2019-4-4)
@@ -1887,8 +1856,6 @@ NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Object Store commit: ab91c2bb4a915c0f159291f08caf1dc13e717573
 * Fixed adding a property to an existing object schema using the internal `realm._updateSchema`. ([#2283](https://github.com/realm/realm-js/pull/2283), since v2.24.0)
 
@@ -1906,8 +1873,6 @@ NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Added `Realm.Sync.SyncConfiguration._sessionStopPolicy` for setting the behaviour of the sync session.
 * Added `Realm.Sync._hasExistingSessions()` which returns `true` if Realm has a reference to any sync session regardless of its state. ([#2248](https://github.com/realm/realm-js/issues/2248))
 * Implemented the integration tests using TypeScript.
@@ -1930,8 +1895,6 @@ NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Add integration tests running in various environments (Node.js on MacOS and Linux, React Native on iOS and Android & Electron main and renderer processes on Linux). Existing tests should eventually be migrated to this to ensure they pass in all relevant environments. ([#2227](https://github.com/realm/realm-js/pull/2227))
 * Add the method `realm._updateSchema` to perform schema manipulation on an open Realm. Specifically creating an object schema and a property on an existing object schema are tested. It's undocumented as it's not fully tested and the API is subject to change. (partly solving [#2216](https://github.com/realm/realm-js/issues/2216))
 
@@ -1955,8 +1918,6 @@ NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Object Store commit: 0f2f8347cb32afddef1753a018f70f65972a4679
 * Upgraded to Realm Core v5.14.0.
 * Upgraded to Realm Sync v3.15.0.
@@ -1987,8 +1948,6 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Core v5.12.7.
 * Upgraded to Realm Sync v3.14.12.
 * Upgraded to https://github.com/nlohmann/json 3.4
@@ -2004,8 +1963,6 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to https://github.com/nlohmann/json 3.4
 
 2.22.0-beta.1 Release notes (2018-12-15)
@@ -2024,8 +1981,6 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Core v5.12.6 (`posix_fallocate()` fallback).
 * Upgraded to Realm Sync v3.14.6.
 
@@ -2047,8 +2002,6 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Core v5.12.5 (hanging on Windows).
 * Upgraded to Realm Sync v3.14.3.
 
@@ -2070,8 +2023,6 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Core v5.12.3 (releasing decrypted pages).
 * Upgraded to Realm Sync v3.14.1 (`LIMIT` and out-of-range).
 
@@ -2089,8 +2040,6 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.20.0 Release notes (2018-11-22)
@@ -2112,8 +2061,6 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgrades to Object Store commit: 66eea3994f598a388a775b93acb1c13603cc65c3
 * Aligns better with Node 10 by not using deprecated calls. ([#2107](https://github.com/realm/realm-js/issues/2107), since v2.19.0)
 
@@ -2134,8 +2081,6 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Introduces 100 ms delay before submitting analytics so that an app may disable it after importing Realm. ([#2108](https://github.com/realm/realm-js/pull/2108))
 * Distinguish between node.js and electron in the `BindingType` field when submitting analytics. ([#2108](https://github.com/realm/realm-js/pull/2108))
 * Adds a package to compute the Windows analytics identifier rather than returning `null` which likely accounts for the disproportionally large number of unique Windows users. ([#2108](https://github.com/realm/realm-js/pull/2108))
@@ -2167,8 +2112,6 @@ This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgrades to Realm Core v5.12.0.
 * Upgrades to Realm Sync v3.13.1.
 * Updates to `package.json` and `README.md`. Thanks to @hyandell.
@@ -2188,8 +2131,6 @@ This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Building for iOS can now use the `n` node version manager. Thanks to @SandyChapman! ([#2078](https://github.com/realm/realm-js/pull/2078))
 * Upgrading to Realm Core v5.12.0.
 * Upgrading to Realm Sync v3.13.1.
@@ -2209,8 +2150,6 @@ This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updates to `package.json` and `README.md`. Thanks to @hyandell.
 
 2.19.0-rc.3 Release notes (2018-10-16)
@@ -2227,8 +2166,6 @@ This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.19.0-rc.2 Release notes (2018-10-10)
@@ -2246,8 +2183,6 @@ This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
  ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.19.0-rc.1 Release notes (2018-10-9)
@@ -2265,8 +2200,6 @@ This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
  ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.18.0 Release notes (2018-10-4)
@@ -2285,8 +2218,6 @@ This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
  ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.17.0 Release notes (2018-9-28)
@@ -2304,8 +2235,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
  ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.17.0-rc.1 Release notes (2018-9-25)
@@ -2320,8 +2249,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Core v5.11.1.
 * Upgraded to Realm Sync v3.10.0 (with new protocol version 25).
 
@@ -2340,8 +2267,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.16.1 Release notes (2018-9-21)
@@ -2358,8 +2283,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.16.0 Release notes (2018-9-19)
@@ -2420,8 +2343,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * File format: ver 9. (upgrades from previous formats automatically)
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Core v5.10.0.
 * Upgraded to Realm Sync v3.9.9.
 
@@ -2444,8 +2365,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * Fixed a bug if `fullSynchronization` is not defined in the configuration used for opening a synced Realm. This could lead to an exception when opening a synced Realm (#1989).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Realm Core v5.7.2.
 * Realm Sync v3.9.1.
 
@@ -2467,8 +2386,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * Fixed a bug that would cause the Global Notifier to crash with the following error message: `A schema version must be specified when the schema is specified`.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Realm Core v5.7.2.
 * Realm Sync v3.9.1.
 
@@ -2495,12 +2412,10 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * [Sync] Fixed a crash in subscription listeners (#1926).
 * [Sync] Classes used by the Object-level permission system are now automatically part of the schema for Query-based Realms (#1966).
 * [Sync] Fixed distinct queries with query-based sync (broken since v2.11.0).
-* Support parallel run of muliple iOS builds with React Native on the same CI machine (contributed by @mandrigin).
-* [Sync] Fixed a bug in the client where a session was not properly discarded after a deactivation process ending with the reception of an ERROR message. When this happened, it would lead to corruption of the client's internal datastructures.
+* Support parallel run of multiple iOS builds with React Native on the same CI machine (contributed by @mandrigin).
+* [Sync] Fixed a bug in the client where a session was not properly discarded after a deactivation process ending with the reception of an ERROR message. When this happened, it would lead to corruption of the client's internal data structures.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1s
 * Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b
 * Updated external packages with help from `npm audit`.
 * Upgraded to Realm Sync v3.9.1 (to match the devtoolset-6 upgrade).
@@ -2525,8 +2440,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * [Sync] Fixed a potential memory corruption.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Realm Core v5.7.2.
 * Upgraded to Realm Sync v3.8.8.
 
@@ -2549,8 +2462,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * [Sync] The schema definition for `permissionsSchema.Class` defined a `class_name` property instead of `name` (#1942).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1s
 * Upgraded to Realm Core v5.7.2.
 * Upgraded to Realm Sync v3.8.7.
 
@@ -2572,8 +2483,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * [Sync] Various bugfixes.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1s
 * Upgraded to Realm Core v5.7.2.
 * Upgraded to Realm Sync v3.8.3.
 
@@ -2596,8 +2505,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * Fixed a bug in RN Android which prevented apps to specify `minSdkVersion`, etc. (#1914).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1s
 * Upgraded to Realm Core v5.7.1.
 * Upgraded to Realm Sync v3.8.0.
 
@@ -2622,8 +2529,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * Fixed a bug which caused RN Android to fail loading (#1904).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1s
 * Upgraded to Realm Core v5.6.5.
 * Upgraded to Realm Sync v3.7.0.
 
@@ -2648,8 +2553,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * [RN Android] Ported workaround for crashes in `memmove`/`memcpy` on some old Android devices (#1163 and #1895).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1s
 * Upgraded to Realm Core v5.6.3.
 * Upgraded to Realm Sync v3.5.8.
 * Added properties of `Realm.Sync.User` to debugger support.
@@ -2675,8 +2578,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * [Sync] Fixed a bug which could potentially flood Realm Object Server with PING messages.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1s
 * Upgraded to Realm Sync v3.5.6.
 * Realm Core v5.6.2.
 
@@ -2699,8 +2600,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * Fix incorrect documentation of the `shouldCompactOnLaunch` parameters.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1s
 * Realm Core v5.6.2.
 * Realm Sync v3.5.5.
 
@@ -2723,8 +2622,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * [Sync] Fixed a bug that could result in a crash with the message "bad changeset error".
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1s
 * Upgraded to Realm Sync v3.5.5.
 * Realm Core v5.6.2.
 
@@ -2747,8 +2644,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * Fixed a potential corruption.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1s
 * Upgraded to Realm Core v5.6.2.
 * Upgraded to Realm Sync v3.5.4.
 
@@ -2772,8 +2667,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * Added a more readable error message in the query parser when requesting an a bad argument (#1808).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Core v5.6.1.
 * Upgraded to Realm Sync v3.5.3.
 
@@ -2796,8 +2689,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * [Sync] Fixed a problem which would sometimes cause `bad permission object` and `bad changeset` errors.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Sync v3.5.2.
 * Realm Core v5.6.0.
 
@@ -2820,8 +2711,6 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * [Sync] Fixed a bug which crash query-based Realms. A bug in gcc's optimizer will generate code which in some case will lead to a memory violation and eventually a segmentation fault.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Changed download URL for Linux binaries (`scripts/download-realm.js`).
 * Upgraded to Realm Sync v3.5.1.
 * Realm Core v5.6.0.
@@ -2854,8 +2743,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed TypeScript definition of `Realm.objects()` and `Realm.objectForPrimaryKey()` (#1803).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * [Sync] `Realm.Configuration.SyncConfig._disablePartialSyncUrlChecks` has been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
 * Realm Sync v3.3.0.
 * Realm Core v5.6.0.
@@ -2879,8 +2766,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed a segfault when the object schema is unknown (realm-js-private #454).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Realm Sync v3.3.0.
 * Realm Core v5.6.0.
 
@@ -2903,8 +2788,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed a crash when invalid schema cache is used to look up a property (realm-js-private #452).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Realm Sync v3.3.0.
 * Realm Core v5.6.0.
 
@@ -2929,8 +2812,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed a bug in `Realm.open()` to work without passing a config.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Realm Sync v3.3.0.
 * Realm Core v5.6.0.
 
@@ -2955,8 +2836,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fix a crash when attempting to use the data adaptor or sync event listener introduced in 2.4.1.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Realm Sync v3.3.0.
 * Realm Core v5.6.0.
 
@@ -2978,8 +2857,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Building React Native Android projects using Java version 9 used deprecated API's (#1779).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -3001,8 +2878,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed TypeScript defintion for `open_ssl_verify_callback` configuration option (#1652).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Relm Sync 3.3.0.
 * Updated to Realm Core 5.6.0.
 
@@ -3028,8 +2903,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed call to `logout()` when debugging React Native apps (#1744).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated `scripts/test.sh` so it doesn't hang forever when the React tests fail to start (#1764).
 
 
@@ -3052,8 +2925,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed a bug when refreshing admin token due to network errors (realm-js-private #433).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.3.3 Release notes (2018-3-23)
@@ -3074,8 +2945,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed a bug where leaking Realms when an error occurs within an event handler (#1725).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Added trace logging to the global notifier (realm-js-private #426).
 
 2.3.2 Release notes (2018-3-21)
@@ -3093,8 +2962,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Added `Realm.Sync.Subscription.removeAllListeners()`.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Tested with Realm Object Server 3.0.0.
 
 2.3.1 Release notes (2018-3-16)
@@ -3115,8 +2982,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Avoid hammering the ROS authentication service when large numbers of Realms are opened at once.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Tested with Realm Object Server 3.0.0-rc.1.
 
 
@@ -3155,8 +3020,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed usage of disk space preallocation which would occasionally fail on recent MacOS running with the APFS filesystem (Realm Core #3005).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Core 5.4.0.
 * Updated to Realm Sync 3.0.0.
 * Tested against Realm Object Server 3.0.0-alpha.8.
@@ -3175,8 +3038,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * None.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.2.17
 
 
@@ -3192,8 +3053,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Avoid crashing if partial Realms find their way into the admin Realm when using Realm Object Server v3.0.0 or later (realm-js-private #430).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -3209,8 +3068,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed a bug where leaking Realms when an error occurs within an event handler (#1725).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Added trace logging to the global notifier (realm-js-private #426).
 
 
@@ -3226,8 +3083,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Do a better job of not opening the notifier pipe file for global notifier realms.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -3243,8 +3098,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Avoid hammering the ROS authentication service when large numbers of Realms are opened at once.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -3260,8 +3113,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed a bug that could result in notifications from the global notifier being delayed or not delivered at all when multiple Realms change at once.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -3277,8 +3128,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Fixed race condition in handling of session bootstrapping in client.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.2.15.
 
 
@@ -3294,8 +3143,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Fixed handling of SSL certificates for the sync client.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.2.14.
 
 
@@ -3311,8 +3158,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Validate that a given type appears at most once in the schema.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -3328,8 +3173,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] A use-after-free bug was fixed which could cause arrays of primitives to behave unexpectedly.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.2.12.
 
 
@@ -3345,8 +3188,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Improved root certificate checking.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.2.11.
 
 
@@ -3362,8 +3203,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * None.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.2.10.
 
 
@@ -3380,8 +3219,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Fixed a bug causing use-after-free crashes in Global Notifier (realm-js-private #405).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -3397,8 +3234,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Fixed a bug where arguments were not transferred when debugging.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.2.5 Release notes (2018-1-25)
@@ -3415,8 +3250,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Electron] Fixed a `dlopen` error related to OpenSSL that prevented using realm-js on Linux (#1636).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.2.4 Release notes (2018-1-18)
@@ -3432,8 +3265,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Added `_getExitingUser` to the Chrome debugging support library.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.2.3 Release notes (2018-1-17)
@@ -3449,8 +3280,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Fixed a bug where any errors which occurred when trying to sync the admin Realm were ignored, which made attempting to add a listener with an invalid admin user silently do nothing.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.2.2 Release notes (2018-1-16)
@@ -3465,8 +3294,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Added missing `Realm.Sync` listener functions.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 
@@ -3482,8 +3309,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Fixed a bug preventing opening Realms with an admin token without a working ROS directory service (#1615).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.2.0 Release notes (2018-1-12)
@@ -3503,8 +3328,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Increased request timeout for token refresh requests to 10 seconds. This should help with failing token refreshes on a loaded server (#1586).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.2.9.
 * Updated to Realm Core 5.1.2 (see "Enhancements").
 * Explicitly send `register: false` when logging in with `Realm.Sync.User.login` to avoid creating the user if they don't exist.
@@ -3521,8 +3344,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Fixed a bug where long reconnection happens when a proxy in front of the sync worker returns one of those.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * [Sync] Updated to Realm Object Server v2.2.0 for testing.
 * Updated to Realm Sync 2.1.10 (see "Bug fixes").
 
@@ -3540,8 +3361,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * None.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to React Native 0.50.4 (test and example apps).
 
 2.0.13 Release notes (2017-12-8)
@@ -3556,8 +3375,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] When authentication fails due to a misbehaving server, a proper error is thrown.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * [Sync] Strings can now be assigned to Date columns. When that happens the JavaScript Date constructor will be invoked to parse the string.
 * [Sync] Base64 strings can now be assigned to Data columns.
 
@@ -3573,8 +3390,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixed a bug in 3rd party JSON parser: `localeconv()` does not exist on Android API < 21 and should not be called.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Fixed issues in unit tests (`addListener` hangs on Android).
 * Upgraded to Realm Sync 2.1.8 (no external effects).
 
@@ -3591,8 +3406,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Fixed a bug in outward partial sync is changed to ensure convergence of partial sync in the case where the client creates a primary key object, that is already present on the server, and subscribes to it in the same transaction.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.1.7 (see under "Bug fixes").
 
 2.0.10 Release notes (2017-11-21)
@@ -3607,8 +3420,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fix json parsing in RN debugger.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.0.9 Release notes (2017-11-20)
@@ -3623,8 +3434,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Reenable Realm for RN Android (#1506), which was disabled only in 2.0.8 by mistake.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.0.8 Release notes (2017-11-17)
@@ -3639,8 +3448,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * [Sync] Changesets over 16MB in size are now handled correctly.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.1.6.
 * Updated to JSON for Modern C++ 2.1.1.
 
@@ -3656,8 +3463,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Fixes Realm.open hangs in React Native debugger for iOS and Android
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.1.4.
 
 
@@ -3675,8 +3480,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
   Realm opened using an admin token user would fail.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.0.5 Release notes (2017-11-9)
@@ -3691,8 +3494,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * None.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Added support for object IDs.
 * Updated to Realm Sync 2.1.2.
 
@@ -3709,8 +3510,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * None.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Updated to Realm Sync 2.1.1.
 
 
@@ -3729,8 +3528,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * Removed argument in documentation of `Realm.Sync.Adapter.realmAtPath()`.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * None.
 
 2.0.2 Release notes (2017-10-30)
@@ -3788,8 +3585,6 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 * An issue where access tokens were not refreshed correctly has been addressed.
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * OpenSSL for Android is distributed in a separate package, and the build system needed updates to accommendate this.
 * Added `-fvisibility=hidden` to Android builds (reduces size of `.so` file).
 * Add `Session._overrideServer` to force an existing session to connect to a different server.
