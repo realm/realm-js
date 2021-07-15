@@ -146,7 +146,7 @@ static NSString *RLMMACAddress() {
     // sockaddr_dl struct is immediately after the if_msghdr struct in the buffer
     auto sockaddr = reinterpret_cast<sockaddr_dl *>(static_cast<if_msghdr *>(buffer.get()) + 1);
     auto mac = reinterpret_cast<const unsigned char *>(sockaddr->sdl_data + sockaddr->sdl_nlen);
-    
+
     return RLMHashData(mac, 6);
 }
 
@@ -195,8 +195,8 @@ static NSDictionary *RLMAnalyticsPayload() {
     return @{
         @"event": @"Run",
         @"properties": @{
-            // MixPanel properties
-            @"token": @"ce0fac19508f6c8f20066d345d360fd0",
+            // webhooks properties
+            @"token": @"aab85907a13e1ff44a95be539d9942a9",
 
             // Anonymous identifiers to deduplicate events
             @"distinct_id": hashedMACAddress ?: kUnknownString,
@@ -232,7 +232,8 @@ void RLMSendAnalytics() {
     }
 
     NSData *payload = [NSJSONSerialization dataWithJSONObject:RLMAnalyticsPayload() options:0 error:nil];
-    NSString *url = [NSString stringWithFormat:@"https://api.mixpanel.com/track/?data=%@&ip=1", [payload base64EncodedStringWithOptions:0]];
+    NSString *url = [NSString stringWithFormat:@"https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric?ip=1&data=",
+        [payload base64EncodedStringWithOptions:0]];
 
     // No error handling or anything because logging errors annoyed people for no
     // real benefit, and it's not clear what else we could do
