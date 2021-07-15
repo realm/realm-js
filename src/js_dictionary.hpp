@@ -35,6 +35,75 @@ namespace js {
 template<typename JSEngine>
 class NativeAccessor;
 
+namespace dictionary {
+    /**
+ * @brief Derive and apply property flags for \ref Dictionary.
+ *
+ * @param object_name Name of the Dictionary object (for error reporting purposes)
+ * @param prop (mutable) Property object that will be changed to be correct for \ref Dictionary
+ * @exception std::logic_error Thrown if the the prop argument contains an invalid property configuration
+ */
+inline static void derive_property_type(StringData const &object_name, Property &prop) {
+    using realm::PropertyType;
+
+    if (prop.object_type == "bool") {
+        prop.type |= PropertyType::Bool | PropertyType::Dictionary;
+        prop.object_type = "";
+    }
+    else if (prop.object_type == "int") {
+        prop.type |= PropertyType::Int | PropertyType::Dictionary;
+        prop.object_type = "";
+    }
+    else if (prop.object_type == "float") {
+        prop.type |= PropertyType::Float | PropertyType::Dictionary;
+        prop.object_type = "";
+    }
+    else if (prop.object_type == "double") {
+        prop.type |= PropertyType::Double | PropertyType::Dictionary;
+        prop.object_type = "";
+    }
+    else if (prop.object_type == "string") {
+        prop.type |= PropertyType::String | PropertyType::Dictionary;
+        prop.object_type = "";
+    }
+    else if (prop.object_type == "date") {
+        prop.type |= PropertyType::Date | PropertyType::Dictionary;
+        prop.object_type = "";
+    }
+    else if (prop.object_type == "data") {
+        prop.type |= PropertyType::Data | PropertyType::Dictionary;
+        prop.object_type = "";
+    }
+    else if (prop.object_type == "decimal128") {
+        prop.type |= PropertyType::Decimal | PropertyType::Dictionary;
+        prop.object_type = "";
+    }
+    else if (prop.object_type == "objectId") {
+        prop.type |= PropertyType::ObjectId | PropertyType::Dictionary;
+        prop.object_type = "";
+    }
+    else if (prop.object_type == "uuid") {
+        prop.type |= PropertyType::UUID | PropertyType::Dictionary;
+        prop.object_type = "";
+    }
+    else if (prop.object_type == "mixed") {
+        prop.type |= PropertyType::Mixed | PropertyType::Nullable;
+        prop.object_type = "";
+    }
+    else {
+        if (is_nullable(prop.type)) {
+            throw std::logic_error(util::format("Dictionary property '%1.%2' cannot be optional", object_name, prop.name));
+        }
+        if (is_array(prop.type)) {
+            throw std::logic_error(util::format("Dictionary property '%1.%2' must have a non-list value type", object_name, prop.name));
+        }
+        prop.type = PropertyType::Object | PropertyType::Dictionary;
+    }
+}  // validated_property_type()
+
+};  // dictionary namespace
+
+
 template<typename T>
 class Dictionary : public realm::object_store::Dictionary {
 public:

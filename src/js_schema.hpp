@@ -75,6 +75,7 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     if (!type || !type.size()) {
         throw std::logic_error(util::format("Property '%1.%2' must have a non-empty type", object_name, prop.name));
     }
+
     if (type.ends_with("[]")) {
         prop.type |= PropertyType::Array;
         type = type.substr(0, type.size() - 2);
@@ -189,6 +190,10 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         // apply the correct properties for sets
         realm::js::set::derive_property_type(object_name, prop);  // may throw std::logic_error
     }
+    else if (type == "dictionary") {
+        // apply the correct properties for dictionaries
+        realm::js::dictionary::derive_property_type(object_name, prop);  // may throw std::logic_error
+    }
     else if (type == "linkingObjects") {
         prop.type |= PropertyType::LinkingObjects | PropertyType::Array;
     }
@@ -201,11 +206,9 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         prop.object_type = type;
     }
 
-    // Object properties are implicitly optional
-    if (!is_array(prop.type) && !is_set(prop.type) && !is_dictionary(prop.type)) {
-        if (prop.type == PropertyType::Object) {
-            prop.type |= PropertyType::Nullable;
-        }
+    // Only Object properties are implicitly optional
+    if (prop.type == PropertyType::Object && !is_array(prop.type) && !is_set(prop.type) && !is_dictionary(prop.type)) {
+        prop.type |= PropertyType::Nullable;
     }
 }
 
