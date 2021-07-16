@@ -77,7 +77,7 @@ class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
     Mixed wrap(Context context, ValueType const& value) {
 
         if (Value::is_array(context, value)) {
-            throw std::runtime_error("An array cannot be converted to Mixed.");
+            throw std::runtime_error("A mixed property cannot contain an array of values.");
         }
 
         RealmLink<T> realm_link {context, value};

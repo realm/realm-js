@@ -16,10 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+<<<<<<< HEAD
 const Realm = require("realm");
 const TestCase = require("./asserts");
 
 const { Decimal128, ObjectId, UUID } = Realm.BSON;
+=======
+"use strict";
+
+const Realm = require("realm");
+const TestCase = require("./asserts");
+
+const {Decimal128, ObjectId, UUID} = Realm.BSON;
+>>>>>>> 8dc61b6a (PR feedback)
 
 const SingleSchema = {
   name: "mixed",
