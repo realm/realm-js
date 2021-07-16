@@ -306,15 +306,6 @@ case "$TARGET" in
 "check-environment")
   npm run check-environment
   ;;
-"eslint")
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm run eslint
-  ;;
-"eslint-ci")
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm ci --ignore-scripts
-  ./node_modules/.bin/eslint -f checkstyle . > eslint.xml || true
-  ;;
 "license-check")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm run license-check
@@ -485,7 +476,7 @@ case "$TARGET" in
   ;;
 "all")
   # Run all tests that must pass before publishing.
-  for test in eslint license-check react-example react-tests-android react-tests; do
+  for test in license-check react-example react-tests-android react-tests; do
     for configuration in Debug Release; do
       echo "RUNNING TEST: $test ($configuration)"
       echo '----------------------------------------'

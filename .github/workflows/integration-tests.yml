@@ -35,6 +35,10 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           registry-url: https://registry.npmjs.org/
+      - name: Install npm v7
+        # TODO: Remove the following line once we've found a workaround for https://github.com/dotnet/msbuild/issues/5726
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: npm install -g npm@7
       # The following is a noop on non-windows runners
       - name: Install Microsoft Visual C++ cmd tools
         uses: ilammy/msvc-dev-cmd@v1
@@ -71,8 +75,10 @@ jobs:
           submodules: 'recursive'
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 14
           registry-url: https://registry.npmjs.org/
+      - name: Install npm v7
+        run: npm install -g npm@7
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
@@ -103,8 +109,10 @@ jobs:
           submodules: 'recursive'
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 14
           registry-url: https://registry.npmjs.org/
+      - name: Install npm v7
+        run: npm install -g npm@7
       # Setup tools
       - name: Install tools
         run: brew install watchman
@@ -181,8 +189,10 @@ jobs:
           submodules: 'recursive'
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 14
           registry-url: https://registry.npmjs.org/
+      - name: Install npm v7
+        run: npm install -g npm@7
       # Setup tools
       - name: Install tools
         run: brew install watchman

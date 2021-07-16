@@ -84,18 +84,6 @@ if (packagesExclusivelyChanged) {
 
 stage('pretest') {
   parallelExecutors = [:]
-    parallelExecutors["eslint"] = testLinux("eslint-ci Release ${nodeTestVersion}", { // "Release" is not used
-    step([
-      $class: 'CheckStylePublisher',
-      canComputeNew: false,
-      canRunOnFailed: true,
-      defaultEncoding: '',
-      healthy: '',
-      pattern: 'eslint.xml',
-      unHealthy: '',
-      maxWarnings: 0,
-      ignoreFailures: false])
-  })
     parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
     publishHTML([
       allowMissing: false,
