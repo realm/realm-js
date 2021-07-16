@@ -656,5 +656,59 @@ module.exports = {
         let data = realm.objects(DictSchema.name)[0].a;
         TestCase.assertEqual(data.x, null, "Should be an equals to mutable.x = null");
         realm.close();
+    },
+
+    testDictionaryEmbeddedObject() {
+        const Child = {
+            name: "Children",
+            embedded: true,
+            properties: {
+                num: "int"
+            }
+        };
+
+        const DictTypedSchema = {
+            name: "TypedDictionary",
+            properties: {
+                dict1: "Children{}",
+                dict2: "Children{}"
+            }
+        };
+
+        const DictMixedSchema = {
+            name: "MixedDictionary",
+            properties: {
+                dict1: "{}",
+                dict2: "{}"
+            }
+        };
+
+        let realm = new Realm({schema: [DictTypedSchema, DictMixedSchema, Child]})
+        realm.write(() => {
+            realm.create(DictTypedSchema.name, {
+                dict1: {children1: { num: 2 }, children2: { num: 3 }},
+                dict2: {children1: { num: 4 }, children2: { num: 5 }}
+            });
+        });
+
+        realm.write(() => {
+            const error = new Error("Only Realm instances are supported.");
+            TestCase.assertThrows(() => {
+                realm.create(DictMixedSchema.name, {
+                    dict1: {children1: { num: 2 }, children2: { num: 3 }},
+                    dict2: {children1: { num: 4 }, children2: { num: 5 }}
+                });
+            }, error);
+        });
+
+        let dict_1 = realm.objects(DictTypedSchema.name)[0].dict1;
+        let dict_2 = realm.objects(DictTypedSchema.name)[0].dict2;
+
+        TestCase.assertEqual(dict_1.children1.num, 2, "We expect children1#2");
+        TestCase.assertEqual(dict_1.children2.num, 3, "We expect children2#3");
+        TestCase.assertEqual(dict_2.children1.num, 4, "We expect children1#4");
+        TestCase.assertEqual(dict_2.children2.num, 5, "We expect children2#5");
+
+        realm.close();
     }
 };
