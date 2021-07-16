@@ -59,15 +59,17 @@ function list(type, searchterm, asJson = true) {
 function getMyMacDeviceId() {
   const p = xcrun("xctrace", "list", "devices");
 
+  // For some reason, xctrace outputs to stderr in github actions
+  const result = p.stdout === "" ? p.stderr : p.stdout;
+
   // The machine running this command will always be displayed as the second item
-  const outputLines = p.stdout.split("\n");
+  const outputLines = result.split("\n");
   const myMac = outputLines[1];
   const idMatcher = /\(([\S]+)\)/;
   const searchResult = myMac.match(idMatcher);
 
   if (searchResult) {
     const myMacDeviceId = searchResult[1];
-    console.log(myMacDeviceId);
     return myMacDeviceId;
   }
 

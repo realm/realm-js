@@ -95,7 +95,7 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   react-native-ios:
-    name: React Native on iOS ${{matrix.platform}} (${{ matrix.type }})
+    name: React Native on iOS ${{matrix.platform.name}} (${{ matrix.type }})
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -103,7 +103,7 @@ jobs:
         #TODO: Reactivate debug when builds are optimized
         #type: [Release, Debug]
         type: [Release]
-        platform: [simulator, catalyst]
+        platform: [{name: ios, build-configuration: simulator}, {name: catalyst, build-configuration: catalyst}]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -117,6 +117,10 @@ jobs:
       # Setup tools
       - name: Install tools
         run: brew install watchman
+      - name: Install ios-deploy
+        run: npm install -g ios-deploy
+        if: ${{matrix.platform.name == 'catalyst'}}
+
       # TODO: Expose a way to skip building the Node.js native module
       - name: Patch package.json to avoid building Node.js native module
         run: cat <<< $(jq '.scripts.install = "echo skipping building Node.js binary"' < package.json) > package.json
@@ -156,20 +160,20 @@ jobs:
 
       - run: npm ci
       # Build the iOS xcframework (if cache missed)
-      - run: ./scripts/build-ios.sh -c ${{ matrix.type }} simulator
+      - run: ./scripts/build-ios.sh -c ${{ matrix.type }} ${{matrix.platform.build-configuration}}
         if: ${{ steps.cache-xcframework.outputs.cache-hit != 'true' }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests
-      - name: Run tests (${{matrix.platform}}/ Native)
-        run: npm run test:${{matrix.platform}} --prefix integration-tests/environments/react-native
+      - name: Run tests (${{matrix.platform.name}}/ Native)
+        run: npm run test:${{matrix.platform.name}} --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
-      - name: Run tests (${{matrix.platform}} / Chrome Debugging)
+      - name: Run tests (${{matrix.platform.name}} / Chrome Debugging)
         if: ${{ false }}
-        run: npm run test:${{matrix.platform}}:chrome --prefix integration-tests/environments/react-native
+        run: npm run test:${{matrix.platform.name}}:chrome --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
