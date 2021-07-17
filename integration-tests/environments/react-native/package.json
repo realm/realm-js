@@ -20,7 +20,7 @@
     "runner": "node harness/runner.js",
     "prepare": "npm run install-local && npm run pod-install",
     "install-local": "npm_config_ignore_scripts=true install-local",
-    "pod-install": "cd ios && pod install"
+    "pod-install": "npx pod-install"
   },
   "dependencies": {
     "@react-native-community/art": "^1.2.0",
