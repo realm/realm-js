@@ -3,5 +3,6 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "gitlens.advanced.blame.customArguments": ["--ignore-revs-file", ".gitignore-revs"]
 }
