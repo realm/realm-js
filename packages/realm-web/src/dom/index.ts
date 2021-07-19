@@ -19,7 +19,7 @@
 import { detect } from "detect-browser";
 
 declare global {
-    type TimerHandle = ReturnType<typeof setTimeout>;
+  type TimerHandle = ReturnType<typeof setTimeout>;
 }
 
 export * from "../index";
@@ -33,13 +33,13 @@ export { LocalStorage };
 const browser = detect();
 
 const environment: Environment = {
-    defaultStorage: new LocalStorage().prefix("realm-web"),
-    openWindow: url => window.open(url),
+  defaultStorage: new LocalStorage().prefix("realm-web"),
+  openWindow: (url) => window.open(url),
 
-    platform: browser?.name || "web",
-    platformVersion: browser?.version || "0.0.0",
+  platform: browser?.name || "web",
+  platformVersion: browser?.version || "0.0.0",
 
-    TextDecoder,
+  TextDecoder,
 };
 
 setEnvironment(environment);
@@ -50,15 +50,12 @@ setEnvironment(environment);
  * @param location An optional location to use (defaults to the windows current location).
  * @param storage Optional storage used to save any results from the location.
  */
-export function handleAuthRedirect(
-    location = window.location,
-    storage = environment.defaultStorage,
-) {
-    try {
-        const queryString = location.hash.substr(1); // Strip the initial # from the hash
-        OAuth2Helper.handleRedirect(queryString, storage);
-    } catch (err) {
-        // Ensure calling this never throws: It should not interrupt a users flow.
-        console.warn(err);
-    }
+export function handleAuthRedirect(location = window.location, storage = environment.defaultStorage) {
+  try {
+    const queryString = location.hash.substr(1); // Strip the initial # from the hash
+    OAuth2Helper.handleRedirect(queryString, storage);
+  } catch (err) {
+    // Ensure calling this never throws: It should not interrupt a users flow.
+    console.warn(err);
+  }
 }

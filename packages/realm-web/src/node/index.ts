@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 declare global {
-    type TimerHandle = ReturnType<typeof setTimeout>;
+  type TimerHandle = ReturnType<typeof setTimeout>;
 }
 
 import { setEnvironment, Environment } from "../environment";
@@ -25,16 +25,16 @@ import { MemoryStorage } from "../storage";
 import { TextDecoder } from "util";
 
 const environment: Environment = {
-    defaultStorage: new MemoryStorage(),
-    openWindow: url => {
-        console.log(`Please open this URL: ${url}`);
-        return null;
-    },
+  defaultStorage: new MemoryStorage(),
+  openWindow: (url) => {
+    console.log(`Please open this URL: ${url}`);
+    return null;
+  },
 
-    platform: process.release.name || "node",
-    platformVersion: process.versions.node,
+  platform: process.release.name || "node",
+  platformVersion: process.versions.node,
 
-    TextDecoder,
+  TextDecoder,
 };
 
 setEnvironment(environment);
@@ -43,9 +43,7 @@ setEnvironment(environment);
  * Handle an OAuth 2.0 redirect.
  */
 export function handleAuthRedirect() {
-    throw new Error(
-        "Handling OAuth 2.0 redirects is not supported outside a browser",
-    );
+  throw new Error("Handling OAuth 2.0 redirects is not supported outside a browser");
 }
 
 // Export here to avoid getting the enviroment before its been sat (since this will be translated to commonjs)

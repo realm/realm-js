@@ -18,353 +18,370 @@
 
 /* eslint-env es6, node */
 
-'use strict';
-
-const Realm = require('realm');
-const TestCase = require('./asserts');
-const schemas = require('./schemas');
-const Worker = require('./worker');
+const Realm = require("realm");
+const TestCase = require("./asserts");
+const schemas = require("./schemas");
+const Worker = require("./worker");
 
 function createNotificationTest(config, getObservable, addListener, removeListener, messages, expectedCount) {
-    let realm = new Realm(config);
-    let observable = getObservable(realm);
-    let worker = new Worker(__dirname + '/worker-tests-script.js', [require.resolve("realm"), Realm.defaultPath]); // eslint-disable-line no-undef
+  let realm = new Realm(config);
+  let observable = getObservable(realm);
+  let worker = new Worker(__dirname + "/worker-tests-script.js", [require.resolve("realm"), Realm.defaultPath]); // eslint-disable-line no-undef
 
-    return new Promise((resolve, reject) => {
-        // Test will fail if it does not receive a change event within a second.
-        let timer = setTimeout(() => {
-            reject(new Error('Timed out waiting for change notification'));
-        }, 5000);
+  return new Promise((resolve, reject) => {
+    // Test will fail if it does not receive a change event within a second.
+    let timer = setTimeout(() => {
+      reject(new Error("Timed out waiting for change notification"));
+    }, 5000);
 
-        let cleanup = (cb) => {
-            clearTimeout(timer);
-            worker.terminate(cb);
-        };
+    let cleanup = (cb) => {
+      clearTimeout(timer);
+      worker.terminate(cb);
+    };
 
-        messages.push(['echo', 'resolve']);
-        let messageIndex = 0;
-        let send = () => {
-            worker.postMessage(messages[messageIndex++]);
-        };
+    messages.push(["echo", "resolve"]);
+    let messageIndex = 0;
+    let send = () => {
+      worker.postMessage(messages[messageIndex++]);
+    };
 
-        let count = 0;
-        let listener = addListener(observable, () => { send(); return count++; }, resolve, reject, cleanup);
+    let count = 0;
+    let listener = addListener(
+      observable,
+      () => {
+        send();
+        return count++;
+      },
+      resolve,
+      reject,
+      cleanup,
+    );
 
-        let removedListener = false;
-        worker.onmessage = (message) => {
-            if (message.error) {
-                cleanup(() => reject(message.error));
-            }
-            else if (message.result == 'resolve') {
-                cleanup(() => {
-                    if (count !== expectedCount) {
-                        reject('Notification count ' + count + ' not equal to expected count ' + expectedCount);
-                    }
-                    else {
-                        resolve();
-                    }
-                });
-            }
-            else if (message.result == 'removeListener') {
-                removeListener(observable, listener);
-                removedListener = true;
-                send();
-            }
-            else if (removedListener) {
-                send();
-            }
-            else {
-                // Send the next message in increment() after getting the notification for the
-                // thing we just did
-            }
-        };
-    });
+    let removedListener = false;
+    worker.onmessage = (message) => {
+      if (message.error) {
+        cleanup(() => reject(message.error));
+      } else if (message.result == "resolve") {
+        cleanup(() => {
+          if (count !== expectedCount) {
+            reject("Notification count " + count + " not equal to expected count " + expectedCount);
+          } else {
+            resolve();
+          }
+        });
+      } else if (message.result == "removeListener") {
+        removeListener(observable, listener);
+        removedListener = true;
+        send();
+      } else if (removedListener) {
+        send();
+      } else {
+        // Send the next message in increment() after getting the notification for the
+        // thing we just did
+      }
+    };
+  });
 }
 
 function createCollectionChangeTest(config, createCollection, messages, expected, removeAll) {
-    return createNotificationTest(
-        config,
-        createCollection,
-        (collection, increment, resolve, reject, cleanup) => {
-            var listener = (object, changes) => {
-                try {
-                    var notificationCount = increment();
-                    TestCase.assertArraysEqual(changes.insertions, expected[notificationCount][0]);
-                    TestCase.assertArraysEqual(changes.deletions, expected[notificationCount][1]);
-                    TestCase.assertArraysEqual(changes.modifications, expected[notificationCount][2]);
-                } catch (e) {
-                    reject(e);
-                    cleanup();
-                }
-            };
-            collection.addListener(listener);
-            return listener;
-        },
-        removeAll ? (observable) => observable.removeAllListeners() :
-                    (observable, listener) => observable.removeListener(listener),
-        messages,
-        expected.length
-    );
+  return createNotificationTest(
+    config,
+    createCollection,
+    (collection, increment, resolve, reject, cleanup) => {
+      var listener = (object, changes) => {
+        try {
+          var notificationCount = increment();
+          TestCase.assertArraysEqual(changes.insertions, expected[notificationCount][0]);
+          TestCase.assertArraysEqual(changes.deletions, expected[notificationCount][1]);
+          TestCase.assertArraysEqual(changes.modifications, expected[notificationCount][2]);
+        } catch (e) {
+          reject(e);
+          cleanup();
+        }
+      };
+      collection.addListener(listener);
+      return listener;
+    },
+    removeAll
+      ? (observable) => observable.removeAllListeners()
+      : (observable, listener) => observable.removeListener(listener),
+    messages,
+    expected.length,
+  );
 }
 
 const ListObject = {
-    name: 'ListObject',
-    properties: {
-        list: {type: 'list', objectType: 'TestObject'},
-    }
+  name: "ListObject",
+  properties: {
+    list: { type: "list", objectType: "TestObject" },
+  },
 };
 
 const PrimaryListObject = {
-    name: 'PrimaryListObject',
-    properties: {
-        list: {type: 'list', objectType: 'IntPrimaryObject'},
-    }
+  name: "PrimaryListObject",
+  properties: {
+    list: { type: "list", objectType: "IntPrimaryObject" },
+  },
 };
 
 module.exports = {
-    testChangeNotifications() {
-        var config = { schema: [schemas.TestObject] };
-        return createNotificationTest(
-            config, (realm) => realm,
-            (realm, increment, resolve, reject, cleanup) => {
-                realm.addListener('change', () => {
-                    try {
-                        var objects = realm.objects('TestObject');
-                        TestCase.assertEqual(objects.length, 1);
-                        TestCase.assertEqual(objects[0].doubleCol, 42);
-                        increment();
-                    } catch (e) {
-                        reject(e);
-                        cleanup();
-                    }
-                });
-                increment();
-            },
-            undefined,
-            [[config, 'create', 'TestObject', [{doubleCol: 42}]]],
-            2
-        );
-    },
+  testChangeNotifications() {
+    var config = { schema: [schemas.TestObject] };
+    return createNotificationTest(
+      config,
+      (realm) => realm,
+      (realm, increment, resolve, reject, cleanup) => {
+        realm.addListener("change", () => {
+          try {
+            var objects = realm.objects("TestObject");
+            TestCase.assertEqual(objects.length, 1);
+            TestCase.assertEqual(objects[0].doubleCol, 42);
+            increment();
+          } catch (e) {
+            reject(e);
+            cleanup();
+          }
+        });
+        increment();
+      },
+      undefined,
+      [[config, "create", "TestObject", [{ doubleCol: 42 }]]],
+      2,
+    );
+  },
 
-    testResultsAddNotifications() {
-        var config = { schema: [schemas.TestObject] };
-        return createCollectionChangeTest(
-            config,
-            (realm) => realm.objects('TestObject'),
-            [
-                [config, 'create', 'TestObject', [{ doubleCol: 1 }]],
-                [config, 'create', 'TestObject', [{ doubleCol: 2 }, { doubleCol: 3 }]]
-            ],
-            [
-                [[], [], []],
-                [[0], [], []],
-                [[1, 2], [], []],
-            ]
-        );
-    },
+  testResultsAddNotifications() {
+    var config = { schema: [schemas.TestObject] };
+    return createCollectionChangeTest(
+      config,
+      (realm) => realm.objects("TestObject"),
+      [
+        [config, "create", "TestObject", [{ doubleCol: 1 }]],
+        [config, "create", "TestObject", [{ doubleCol: 2 }, { doubleCol: 3 }]],
+      ],
+      [
+        [[], [], []],
+        [[0], [], []],
+        [[1, 2], [], []],
+      ],
+    );
+  },
 
-    testResultsRemoveNotifications() {
-        var config = { schema: [schemas.TestObject] };
-        return createCollectionChangeTest(
-            config,
-            (realm) => realm.objects('TestObject'),
-            [
-                [config, 'create', 'TestObject', [{ doubleCol: 1 }]],
-                ['echo', 'removeListener'],
-                [config, 'create', 'TestObject', [{ doubleCol: 2 }, { doubleCol: 3 }]]
-            ],
-            [
-                [[], [], []],
-                [[0], [], []],
-            ]
-        );
-    },
+  testResultsRemoveNotifications() {
+    var config = { schema: [schemas.TestObject] };
+    return createCollectionChangeTest(
+      config,
+      (realm) => realm.objects("TestObject"),
+      [
+        [config, "create", "TestObject", [{ doubleCol: 1 }]],
+        ["echo", "removeListener"],
+        [config, "create", "TestObject", [{ doubleCol: 2 }, { doubleCol: 3 }]],
+      ],
+      [
+        [[], [], []],
+        [[0], [], []],
+      ],
+    );
+  },
 
-    testResultsRemoveAllNotifications() {
-        var config = { schema: [schemas.TestObject] };
-        return createCollectionChangeTest(
-            config,
-            (realm) => realm.objects('TestObject'),
-            [
-                [config, 'create', 'TestObject', [{ doubleCol: 1 }]],
-                ['echo', 'removeListener'],
-                [config, 'create', 'TestObject', [{ doubleCol: 2 }, { doubleCol: 3 }]]
-            ],
-            [
-                [[], [], []],
-                [[0], [], []],
-            ],
-            true
-        );
-    },
+  testResultsRemoveAllNotifications() {
+    var config = { schema: [schemas.TestObject] };
+    return createCollectionChangeTest(
+      config,
+      (realm) => realm.objects("TestObject"),
+      [
+        [config, "create", "TestObject", [{ doubleCol: 1 }]],
+        ["echo", "removeListener"],
+        [config, "create", "TestObject", [{ doubleCol: 2 }, { doubleCol: 3 }]],
+      ],
+      [
+        [[], [], []],
+        [[0], [], []],
+      ],
+      true,
+    );
+  },
 
-    testResultsDeleteNotifications() {
-        var config = { schema: [schemas.TestObject] };
-        return createCollectionChangeTest(
-            config,
-            function(realm) {
-                return realm.objects('TestObject');
-            },
-            [
-                [config, 'create', 'TestObject', [[0], [1], [2], [3], [4]]],
-                [config, 'delete', 'TestObject', [4]],
-                [config, 'delete', 'TestObject', [0, 2]]
-            ],
-            [
-                [[], [], []],
-                [[0, 1, 2, 3, 4], [], []],
-                [[], [4], []],
-                [[], [0, 2], []]
-            ]
-        );
-    },
+  testResultsDeleteNotifications() {
+    var config = { schema: [schemas.TestObject] };
+    return createCollectionChangeTest(
+      config,
+      function (realm) {
+        return realm.objects("TestObject");
+      },
+      [
+        [config, "create", "TestObject", [[0], [1], [2], [3], [4]]],
+        [config, "delete", "TestObject", [4]],
+        [config, "delete", "TestObject", [0, 2]],
+      ],
+      [
+        [[], [], []],
+        [[0, 1, 2, 3, 4], [], []],
+        [[], [4], []],
+        [[], [0, 2], []],
+      ],
+    );
+  },
 
-    testResultsUpdateNotifications() {
-        var config = { schema: [schemas.IntPrimary] };
-        return createCollectionChangeTest(
-            config,
-            (realm) => realm.objects('IntPrimaryObject'),
-            [
-                [config, 'create', 'IntPrimaryObject', [[0, '0'], [1, '1'], [2, '2']]],
-                [config, 'update', 'IntPrimaryObject', [[0, '00'], [2, '22']]]
-            ],
-            [
-                [[], [], []],
-                [[0, 1, 2], [], []],
-                [[], [], [0, 2]]
-            ]
-        );
-    },
+  testResultsUpdateNotifications() {
+    var config = { schema: [schemas.IntPrimary] };
+    return createCollectionChangeTest(
+      config,
+      (realm) => realm.objects("IntPrimaryObject"),
+      [
+        [
+          config,
+          "create",
+          "IntPrimaryObject",
+          [
+            [0, "0"],
+            [1, "1"],
+            [2, "2"],
+          ],
+        ],
+        [
+          config,
+          "update",
+          "IntPrimaryObject",
+          [
+            [0, "00"],
+            [2, "22"],
+          ],
+        ],
+      ],
+      [
+        [[], [], []],
+        [[0, 1, 2], [], []],
+        [[], [], [0, 2]],
+      ],
+    );
+  },
 
-    testListAddNotifications() {
-        var config = { schema: [schemas.TestObject, ListObject] };
-        return createCollectionChangeTest(
-            config,
-            function(realm) {
-                let listObject;
-                realm.write(() => {
-                    listObject = realm.create('ListObject', {list: []})
-                });
-                return listObject.list;
-            },
-            [
-                [config, 'list_method', 'ListObject', 'list', 'push', {doubleCol: 0}, {doubleCol: 1}]
-            ],
-            [
-                [[], [], []],
-                [[0, 1], [], []]
-            ]
-        );
-    },
+  testListAddNotifications() {
+    var config = { schema: [schemas.TestObject, ListObject] };
+    return createCollectionChangeTest(
+      config,
+      function (realm) {
+        let listObject;
+        realm.write(() => {
+          listObject = realm.create("ListObject", { list: [] });
+        });
+        return listObject.list;
+      },
+      [[config, "list_method", "ListObject", "list", "push", { doubleCol: 0 }, { doubleCol: 1 }]],
+      [
+        [[], [], []],
+        [[0, 1], [], []],
+      ],
+    );
+  },
 
-    testListRemoveNotifications() {
-        var config = { schema: [schemas.TestObject, ListObject] };
-        return createCollectionChangeTest(
-            config,
-            function(realm) {
-                let listObject;
-                realm.write(() => {
-                    listObject = realm.create('ListObject', {list: []})
-                });
-                return listObject.list;
-            },
-            [
-                [config, 'list_method', 'ListObject', 'list', 'push', {doubleCol: 0}, {doubleCol: 1}],
-                ['echo', 'removeListener'],
-                [config, 'list_method', 'ListObject', 'list', 'push', {doubleCol: 0}, {doubleCol: 1}],
-            ],
-            [
-                [[], [], []],
-                [[0, 1], [], []]
-            ]
-        );
-    },
+  testListRemoveNotifications() {
+    var config = { schema: [schemas.TestObject, ListObject] };
+    return createCollectionChangeTest(
+      config,
+      function (realm) {
+        let listObject;
+        realm.write(() => {
+          listObject = realm.create("ListObject", { list: [] });
+        });
+        return listObject.list;
+      },
+      [
+        [config, "list_method", "ListObject", "list", "push", { doubleCol: 0 }, { doubleCol: 1 }],
+        ["echo", "removeListener"],
+        [config, "list_method", "ListObject", "list", "push", { doubleCol: 0 }, { doubleCol: 1 }],
+      ],
+      [
+        [[], [], []],
+        [[0, 1], [], []],
+      ],
+    );
+  },
 
-    testListRemoveAllNotifications() {
-        var config = { schema: [schemas.TestObject, ListObject] };
-        return createCollectionChangeTest(
-            config,
-            function(realm) {
-                let listObject;
-                realm.write(() => {
-                    listObject = realm.create('ListObject', {list: []})
-                });
-                return listObject.list;
-            },
-            [
-                [config, 'list_method', 'ListObject', 'list', 'push', {doubleCol: 0}, {doubleCol: 1}],
-                ['echo', 'removeListener'],
-                [config, 'list_method', 'ListObject', 'list', 'push', {doubleCol: 0}, {doubleCol: 1}],
-            ],
-            [
-                [[], [], []],
-                [[0, 1], [], []]
-            ],
-            true
-        );
-    },
+  testListRemoveAllNotifications() {
+    var config = { schema: [schemas.TestObject, ListObject] };
+    return createCollectionChangeTest(
+      config,
+      function (realm) {
+        let listObject;
+        realm.write(() => {
+          listObject = realm.create("ListObject", { list: [] });
+        });
+        return listObject.list;
+      },
+      [
+        [config, "list_method", "ListObject", "list", "push", { doubleCol: 0 }, { doubleCol: 1 }],
+        ["echo", "removeListener"],
+        [config, "list_method", "ListObject", "list", "push", { doubleCol: 0 }, { doubleCol: 1 }],
+      ],
+      [
+        [[], [], []],
+        [[0, 1], [], []],
+      ],
+      true,
+    );
+  },
 
-    testListDeleteNotifications() {
-        var config = { schema: [schemas.TestObject, ListObject] };
-        return createCollectionChangeTest(
-            config,
-            function(realm) {
-                let listObject;
-                realm.write(() => {
-                    listObject = realm.create('ListObject', {list: [[0], [1], [2]]})
-                });
-                return listObject.list;
-            },
-            [
-                [config, 'list_method', 'ListObject', 'list', 'splice', 1, 2]
-            ],
-            [
-                [[], [], []],
-                [[], [1, 2], []]
-            ]
-        );
-    },
+  testListDeleteNotifications() {
+    var config = { schema: [schemas.TestObject, ListObject] };
+    return createCollectionChangeTest(
+      config,
+      function (realm) {
+        let listObject;
+        realm.write(() => {
+          listObject = realm.create("ListObject", { list: [[0], [1], [2]] });
+        });
+        return listObject.list;
+      },
+      [[config, "list_method", "ListObject", "list", "splice", 1, 2]],
+      [
+        [[], [], []],
+        [[], [1, 2], []],
+      ],
+    );
+  },
 
-    testListSpliceNotifications() {
-        var config = { schema: [schemas.TestObject, ListObject] };
-        return createCollectionChangeTest(
-            config,
-            function(realm) {
-                let listObject;
-                realm.write(() => {
-                    listObject = realm.create('ListObject', {list: [[0], [1], [2]]})
-                });
-                return listObject.list;
-            },
-            [
-                [config, 'list_method', 'ListObject', 'list', 'splice', 1, 1, [2]]
-            ],
-            [
-                [[], [], []],
-                [[1], [1], []]
-            ]
-        );
-    },
+  testListSpliceNotifications() {
+    var config = { schema: [schemas.TestObject, ListObject] };
+    return createCollectionChangeTest(
+      config,
+      function (realm) {
+        let listObject;
+        realm.write(() => {
+          listObject = realm.create("ListObject", { list: [[0], [1], [2]] });
+        });
+        return listObject.list;
+      },
+      [[config, "list_method", "ListObject", "list", "splice", 1, 1, [2]]],
+      [
+        [[], [], []],
+        [[1], [1], []],
+      ],
+    );
+  },
 
-    testListUpdateNotifications() {
-        var config = { schema: [schemas.IntPrimary, PrimaryListObject] };
-        return createCollectionChangeTest(
-            config,
-            function(realm) {
-                let listObject;
-                realm.write(() => {
-                    listObject = realm.create('PrimaryListObject', {list: [[0, '0'], [1, '1']]})
-                });
-                return listObject.list;
-            },
-            [
-                [config, 'update', 'IntPrimaryObject', [[1, '11']]]
+  testListUpdateNotifications() {
+    var config = { schema: [schemas.IntPrimary, PrimaryListObject] };
+    return createCollectionChangeTest(
+      config,
+      function (realm) {
+        let listObject;
+        realm.write(() => {
+          listObject = realm.create("PrimaryListObject", {
+            list: [
+              [0, "0"],
+              [1, "1"],
             ],
-            [
-                [[], [], []],
-                [[], [], [1]]
-            ]
-        );
-    },
+          });
+        });
+        return listObject.list;
+      },
+      [[config, "update", "IntPrimaryObject", [[1, "11"]]]],
+      [
+        [[], [], []],
+        [[], [], [1]],
+      ],
+    );
+  },
 };
-

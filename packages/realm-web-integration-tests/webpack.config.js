@@ -24,34 +24,34 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 
 module.exports = {
-    entry: "./src/index.ts",
-    devtool: "eval-source-map",
-    module: {
-        rules: [
-            {
-                test: /\.ts$/,
-                exclude: /node_modules/,
-                loader: "ts-loader",
-                options: {
-                    configFile: "tsconfig.web.json",
-                },
-            },
-        ],
-    },
-    node: {
-        fs: "empty",
-    },
-    resolve: {
-        extensions: [".ts", ".js"],
-    },
-    output: {
-        filename: "bundle.js",
-        path: path.resolve(__dirname, "dist"),
-    },
-    plugins: [
-        new HtmlWebpackPlugin({
-            // To prevent an error being logged to the console
-            favicon: path.resolve(__dirname, "harness/favicon.ico"),
-        }),
+  entry: "./src/index.ts",
+  devtool: "eval-source-map",
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        exclude: /node_modules/,
+        loader: "ts-loader",
+        options: {
+          configFile: "tsconfig.web.json",
+        },
+      },
     ],
+  },
+  node: {
+    fs: "empty",
+  },
+  resolve: {
+    extensions: [".ts", ".js"],
+  },
+  output: {
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "dist"),
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      // To prevent an error being logged to the console
+      favicon: path.resolve(__dirname, "harness/favicon.ico"),
+    }),
+  ],
 };

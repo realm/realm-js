@@ -17,15 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 declare module "jwt-encode" {
-    type Options = { alg: "HS256"; typ: "JWT"; [key: string]: any };
-    /**
-     * Create a very basic JWT signature.
-     *
-     * @param data The data object you want to have signed.
-     * @param secret Secret to use to sign token with.
-     * @param options JWT header options.
-     * @returns The signed JSON Web Token.
-     */
-    function sign(data: object, secret: string, options?: Options): string;
-    export = sign;
+  type Options = { alg: "HS256"; typ: "JWT"; [key: string]: any };
+  /**
+   * Create a very basic JWT signature.
+   *
+   * @param data The data object you want to have signed.
+   * @param secret Secret to use to sign token with.
+   * @param options JWT header options.
+   * @returns The signed JSON Web Token.
+   */
+  function sign(data: Record<string, unknown>, secret: string, options?: Options): string;
+  export = sign;
 }

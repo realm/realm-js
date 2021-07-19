@@ -24,10 +24,8 @@
  * @see https://github.com/electron/electron/issues/2601#issuecomment-135258750
  */
 
-'use strict';
-
-const Realm = require('realm');
-const TestCase = require('./asserts');
+const Realm = require("realm");
+const TestCase = require("./asserts");
 
 const NUMBER_OF_OBJECTS = 1000;
 const BUFFER_LENGTH = 1024;
@@ -35,21 +33,20 @@ const READ_CYCLES = 10;
 
 module.exports = {
   testPropertiesOfData: () => {
-
     const TestingSchema = {
-      name: 'Testing',
+      name: "Testing",
       properties: {
-        n: 'int',
-        someData: 'data'
-      }
+        n: "int",
+        someData: "data",
+      },
     };
 
     // Create a new realm
-    const realm = new Realm({schema: [TestingSchema]});
+    const realm = new Realm({ schema: [TestingSchema] });
     // Add a bunch of objects, with "data" to it
     realm.write(() => {
-      for(let i = 0; i < NUMBER_OF_OBJECTS; i++) {
-        realm.create('Testing', {
+      for (let i = 0; i < NUMBER_OF_OBJECTS; i++) {
+        realm.create("Testing", {
           n: i,
           someData: new ArrayBuffer(BUFFER_LENGTH),
         });
@@ -57,7 +54,7 @@ module.exports = {
     });
 
     for (let readCycle = 0; readCycle < READ_CYCLES; readCycle++) {
-      let allObjects = realm.objects('Testing');
+      let allObjects = realm.objects("Testing");
       let totalBytes = 0;
       for (let object of allObjects) {
         let toBeFreed = object.someData;
@@ -66,5 +63,5 @@ module.exports = {
       }
       // console.log(`Read a total of ${totalBytes} bytes.`);
     }
-  }
+  },
 };

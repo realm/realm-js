@@ -20,22 +20,22 @@ import { expect } from "chai";
 import { BSON } from "realm-web";
 
 describe("BSON", () => {
-    it("gets exported", () => {
-        expect(typeof BSON).equals("object");
-    });
+  it("gets exported", () => {
+    expect(typeof BSON).equals("object");
+  });
 
-    it("can construct an ObjectId", () => {
-        const objectId = new BSON.ObjectId();
-        expect(objectId).instanceOf(BSON.ObjectId);
-        expect(typeof objectId.toHexString()).equals("string");
-    });
+  it("can construct an ObjectId", () => {
+    const objectId = new BSON.ObjectId();
+    expect(objectId).instanceOf(BSON.ObjectId);
+    expect(typeof objectId.toHexString()).equals("string");
+  });
 
-    it("can parse EJSON", () => {
-        const result = BSON.EJSON.parse('{ "int32": { "$numberInt": "10" } }', {
-            relaxed: false,
-        }) as { int32: BSON.Int32 };
-        expect(typeof result).equals("object");
-        expect(typeof result.int32).equals("object");
-        expect(result.int32).instanceOf(BSON.Int32);
-    });
+  it("can parse EJSON", () => {
+    const result = BSON.EJSON.parse('{ "int32": { "$numberInt": "10" } }', {
+      relaxed: false,
+    }) as { int32: BSON.Int32 };
+    expect(typeof result).equals("object");
+    expect(typeof result.int32).equals("object");
+    expect(result.int32).instanceOf(BSON.Int32);
+  });
 });

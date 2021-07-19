@@ -24,7 +24,7 @@ import { Credentials } from "realm-web";
 import { createApp } from "./utils";
 
 if (typeof GOOGLE_CLIENT_ID !== "string") {
-    throw new Error("Missing the GOOGLE_CLIENT_ID environment variable");
+  throw new Error("Missing the GOOGLE_CLIENT_ID environment variable");
 }
 
 const app = createApp();
@@ -33,38 +33,38 @@ const app = createApp();
 // https://developers.google.com/identity/sign-in/web/build-button
 
 function onSuccess(googleUser: any) {
-    const response = googleUser.getAuthResponse();
-    const idToken = response.id_token;
-    // Try authenticating with MongoDB Realm
-    const credentials = Credentials.google(idToken);
-    app.logIn(credentials).then(
-        user => {
-            console.log("Successfully authenticated as", user);
-            document.body.style.backgroundColor = "#ccffcc";
-        },
-        err => {
-            document.body.style.backgroundColor = "#ffcccc";
-            alert(err);
-            console.error(err);
-        },
-    );
+  const response = googleUser.getAuthResponse();
+  const idToken = response.id_token;
+  // Try authenticating with MongoDB Realm
+  const credentials = Credentials.google(idToken);
+  app.logIn(credentials).then(
+    (user) => {
+      console.log("Successfully authenticated as", user);
+      document.body.style.backgroundColor = "#ccffcc";
+    },
+    (err) => {
+      document.body.style.backgroundColor = "#ffcccc";
+      alert(err);
+      console.error(err);
+    },
+  );
 }
 
 function onFailure(err: Error) {
-    document.body.style.backgroundColor = "#ffeeee";
-    const details = err.message || JSON.stringify(err);
-    alert(`Failed to authenticate with Google: ${details}`);
-    console.error("Failed to authenticate with Google", err);
+  document.body.style.backgroundColor = "#ffeeee";
+  const details = err.message || JSON.stringify(err);
+  alert(`Failed to authenticate with Google: ${details}`);
+  console.error("Failed to authenticate with Google", err);
 }
 
 declare const gapi: any;
 function renderButton() {
-    gapi.signin2.render("google-signin-button", {
-        scope: "profile email",
-        longtitle: true,
-        onsuccess: onSuccess,
-        onfailure: onFailure,
-    });
+  gapi.signin2.render("google-signin-button", {
+    scope: "profile email",
+    longtitle: true,
+    onsuccess: onSuccess,
+    onfailure: onFailure,
+  });
 }
 
 // Add the client id to the head-tag

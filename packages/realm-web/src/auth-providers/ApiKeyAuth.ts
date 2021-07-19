@@ -21,73 +21,73 @@ import routes from "../routes";
 
 /** @inheritdoc */
 export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
-    /**
-     * The fetcher used to send requests to services.
-     */
-    private readonly fetcher: Fetcher;
+  /**
+   * The fetcher used to send requests to services.
+   */
+  private readonly fetcher: Fetcher;
 
-    /**
-     * Construct an interface to the API-key authentication provider.
-     *
-     * @param fetcher The fetcher used to send requests to services.
-     * @param providerName Optional custom name of the authentication provider.
-     */
-    constructor(fetcher: Fetcher, providerName = "api-key") {
-        this.fetcher = fetcher;
-    }
+  /**
+   * Construct an interface to the API-key authentication provider.
+   *
+   * @param fetcher The fetcher used to send requests to services.
+   * @param providerName Optional custom name of the authentication provider.
+   */
+  constructor(fetcher: Fetcher, providerName = "api-key") {
+    this.fetcher = fetcher;
+  }
 
-    /** @inheritdoc */
-    create(name: string): Promise<Realm.Auth.ApiKey> {
-        return this.fetcher.fetchJSON({
-            method: "POST",
-            body: { name },
-            path: routes.api().auth().apiKeys().path,
-            tokenType: "refresh",
-        });
-    }
+  /** @inheritdoc */
+  create(name: string): Promise<Realm.Auth.ApiKey> {
+    return this.fetcher.fetchJSON({
+      method: "POST",
+      body: { name },
+      path: routes.api().auth().apiKeys().path,
+      tokenType: "refresh",
+    });
+  }
 
-    /** @inheritdoc */
-    fetch(keyId: string): Promise<Realm.Auth.ApiKey> {
-        return this.fetcher.fetchJSON({
-            method: "GET",
-            path: routes.api().auth().apiKeys().key(keyId).path,
-            tokenType: "refresh",
-        });
-    }
+  /** @inheritdoc */
+  fetch(keyId: string): Promise<Realm.Auth.ApiKey> {
+    return this.fetcher.fetchJSON({
+      method: "GET",
+      path: routes.api().auth().apiKeys().key(keyId).path,
+      tokenType: "refresh",
+    });
+  }
 
-    /** @inheritdoc */
-    fetchAll(): Promise<Realm.Auth.ApiKey[]> {
-        return this.fetcher.fetchJSON({
-            method: "GET",
-            tokenType: "refresh",
-            path: routes.api().auth().apiKeys().path,
-        });
-    }
+  /** @inheritdoc */
+  fetchAll(): Promise<Realm.Auth.ApiKey[]> {
+    return this.fetcher.fetchJSON({
+      method: "GET",
+      tokenType: "refresh",
+      path: routes.api().auth().apiKeys().path,
+    });
+  }
 
-    /** @inheritdoc */
-    async delete(keyId: string): Promise<void> {
-        await this.fetcher.fetchJSON({
-            method: "DELETE",
-            path: routes.api().auth().apiKeys().key(keyId).path,
-            tokenType: "refresh",
-        });
-    }
+  /** @inheritdoc */
+  async delete(keyId: string): Promise<void> {
+    await this.fetcher.fetchJSON({
+      method: "DELETE",
+      path: routes.api().auth().apiKeys().key(keyId).path,
+      tokenType: "refresh",
+    });
+  }
 
-    /** @inheritdoc */
-    async enable(keyId: string): Promise<void> {
-        await this.fetcher.fetchJSON({
-            method: "PUT",
-            path: routes.api().auth().apiKeys().key(keyId).enable().path,
-            tokenType: "refresh",
-        });
-    }
+  /** @inheritdoc */
+  async enable(keyId: string): Promise<void> {
+    await this.fetcher.fetchJSON({
+      method: "PUT",
+      path: routes.api().auth().apiKeys().key(keyId).enable().path,
+      tokenType: "refresh",
+    });
+  }
 
-    /** @inheritdoc */
-    async disable(keyId: string): Promise<void> {
-        await this.fetcher.fetchJSON({
-            method: "PUT",
-            path: routes.api().auth().apiKeys().key(keyId).disable().path,
-            tokenType: "refresh",
-        });
-    }
+  /** @inheritdoc */
+  async disable(keyId: string): Promise<void> {
+    await this.fetcher.fetchJSON({
+      method: "PUT",
+      path: routes.api().auth().apiKeys().key(keyId).disable().path,
+      tokenType: "refresh",
+    });
+  }
 }

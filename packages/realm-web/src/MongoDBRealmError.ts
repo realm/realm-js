@@ -24,92 +24,80 @@ import { Method, FetchResponse, Request } from "realm-network-transport";
  * An error produced while communicating with the MongoDB Realm server.
  */
 export class MongoDBRealmError extends Error {
-    /**
-     * The method used when requesting.
-     */
-    public readonly method: Method;
-    /**
-     * The URL of the resource which got fetched.
-     */
-    public readonly url: string;
-    /**
-     * The HTTP status code of the response.
-     */
-    public readonly statusCode: number;
-    /**
-     * A human readable version of the HTTP status.
-     */
-    public readonly statusText: string;
-    /**
-     * Any application-level error message.
-     */
-    public readonly error: string | undefined;
-    /**
-     * Any application-level error code.
-     */
-    public readonly errorCode: string | undefined;
-    /**
-     * Any application-level (URL) link containing details about the error.
-     */
-    public readonly link: string | undefined;
+  /**
+   * The method used when requesting.
+   */
+  public readonly method: Method;
+  /**
+   * The URL of the resource which got fetched.
+   */
+  public readonly url: string;
+  /**
+   * The HTTP status code of the response.
+   */
+  public readonly statusCode: number;
+  /**
+   * A human readable version of the HTTP status.
+   */
+  public readonly statusText: string;
+  /**
+   * Any application-level error message.
+   */
+  public readonly error: string | undefined;
+  /**
+   * Any application-level error code.
+   */
+  public readonly errorCode: string | undefined;
+  /**
+   * Any application-level (URL) link containing details about the error.
+   */
+  public readonly link: string | undefined;
 
-    /**
-     * Constructs and returns an error from a request and a response.
-     * Note: The caller must throw this error themselves.
-     *
-     * @param request The request sent to the server.
-     * @param response A raw response, as returned from the server.
-     */
-    public static async fromRequestAndResponse(
-        request: Request<unknown>,
-        response: FetchResponse,
-    ): Promise<MongoDBRealmError> {
-        const { url, method } = request;
-        const { status, statusText } = response;
-        if (
-            response.headers.get("content-type")?.startsWith("application/json")
-        ) {
-            const body = await response.json();
-            const error = body.error || "No message";
-            const errorCode = body.error_code;
-            const link = body.link;
-            return new MongoDBRealmError(
-                method,
-                url,
-                status,
-                statusText,
-                error,
-                errorCode,
-                link,
-            );
-        } else {
-            return new MongoDBRealmError(method, url, status, statusText);
-        }
+  /**
+   * Constructs and returns an error from a request and a response.
+   * Note: The caller must throw this error themselves.
+   *
+   * @param request The request sent to the server.
+   * @param response A raw response, as returned from the server.
+   */
+  public static async fromRequestAndResponse(
+    request: Request<unknown>,
+    response: FetchResponse,
+  ): Promise<MongoDBRealmError> {
+    const { url, method } = request;
+    const { status, statusText } = response;
+    if (response.headers.get("content-type")?.startsWith("application/json")) {
+      const body = await response.json();
+      const error = body.error || "No message";
+      const errorCode = body.error_code;
+      const link = body.link;
+      return new MongoDBRealmError(method, url, status, statusText, error, errorCode, link);
+    } else {
+      return new MongoDBRealmError(method, url, status, statusText);
     }
+  }
 
-    constructor(
-        method: Method,
-        url: string,
-        statusCode: number,
-        statusText: string,
-        error?: string,
-        errorCode?: string,
-        link?: string,
-    ) {
-        const summary = statusText
-            ? `status ${statusCode} ${statusText}`
-            : `status ${statusCode}`;
-        if (typeof error === "string") {
-            super(`Request failed (${method} ${url}): ${error} (${summary})`);
-        } else {
-            super(`Request failed (${method} ${url}): (${summary})`);
-        }
-        this.method = method;
-        this.url = url;
-        this.statusText = statusText;
-        this.statusCode = statusCode;
-        this.error = error;
-        this.errorCode = errorCode;
-        this.link = link;
+  constructor(
+    method: Method,
+    url: string,
+    statusCode: number,
+    statusText: string,
+    error?: string,
+    errorCode?: string,
+    link?: string,
+  ) {
+    const summary = statusText ? `status ${statusCode} ${statusText}` : `status ${statusCode}`;
+    if (typeof error === "string") {
+      super(`Request failed (${method} ${url}): ${error} (${summary})`);
+    } else {
+      super(`Request failed (${method} ${url}): (${summary})`);
     }
+    this.method = method;
+    this.url = url;
+    this.statusText = statusText;
+    this.statusCode = statusCode;
+    this.error = error;
+    this.errorCode = errorCode;
+    this.link = link;
+  }
 }

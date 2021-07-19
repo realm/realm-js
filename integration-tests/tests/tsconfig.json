@@ -6,6 +6,9 @@
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
 		"outDir": "dist",
+		"lib": [
+			"es2018"
+		],
 		"types": [
 			"realm",
 			"bson",

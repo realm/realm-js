@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint-disable @typescript-eslint/no-var-requires */
+
 // Require this file to get the Realm constructor injected into the global.
 // This is only useful when we want to run the tests outside of any particular environment
 
-global.fs = require("fs-extra");
-global.path = require("path");
+global.fs = require("fs-extra") as typeof global.fs;
+global.path = require("path") as typeof global.path;
 global.title = "Realm JS development-mode";
 global.environment = { node: true };
-global.fetch = require("node-fetch");
+global.fetch = require("node-fetch") as typeof global.fetch;

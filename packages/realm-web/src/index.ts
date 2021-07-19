@@ -28,7 +28,7 @@ import { App } from "./App";
  * @returns The Realm App instance.
  */
 export function getApp(id: string) {
-    return App.getApp(id);
+  return App.getApp(id);
 }
 
 export * from "./App";

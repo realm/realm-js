@@ -1,10 +1,31 @@
-import { assert, expect } from "chai";
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2020 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+import { expect } from "chai";
 
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
 
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 
-type MixedClass = { _id: Realm.BSON.ObjectId, value: Realm.Mixed, list: Realm.List<Realm.Mixed> };
+type MixedClass = {
+  _id: Realm.BSON.ObjectId;
+  value: Realm.Mixed;
+  list: Realm.List<Realm.Mixed>;
+};
 type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed);
 type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void | boolean;
 
@@ -25,8 +46,8 @@ function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed) {
  * - Deletes the Realm locally
  * - Reopens and downloads the Realm
  * - Performs a test to ensure the downloaded value match the value created locally.
- * @param typeName 
- * @param options 
+ * @param typeName
+ * @param options
  */
 function describeRoundtrip(typeName: string, value: Value, testValue: ValueTester = defaultTester) {
   function performTest(actual: Realm.Mixed, inserted: Realm.Mixed) {
@@ -38,19 +59,21 @@ function describeRoundtrip(typeName: string, value: Value, testValue: ValueTeste
 
   describe(`roundtrip of '${typeName}'`, () => {
     openRealmBefore({
-      schema: [{
-        name: "MixedClass",
-        primaryKey: "_id",
-        properties: {
-          _id: "objectId",
-          value: "mixed?",
-          list: "mixed[]",
+      schema: [
+        {
+          name: "MixedClass",
+          primaryKey: "_id",
+          properties: {
+            _id: "objectId",
+            value: "mixed?",
+            list: "mixed[]",
+          },
         },
-      }],
+      ],
       sync: { partitionValue: "mixed-test" },
     });
 
-    it("writes", function(this: RealmContext) {
+    it("writes", function (this: RealmContext) {
       this._id = new Realm.BSON.ObjectId();
       this.realm.write(() => {
         this.value = typeof value === "function" ? value(this.realm) : value;
@@ -62,10 +85,10 @@ function describeRoundtrip(typeName: string, value: Value, testValue: ValueTeste
         });
       });
     });
-  
+
     itUploadsDeletesAndDownloads();
-  
-    it("reads", function(this: RealmContext) {
+
+    it("reads", function (this: RealmContext) {
       const obj = this.realm.objectForPrimaryKey<MixedClass>("MixedClass", this._id);
       expect(typeof obj).equals("object");
       // Test the single value
@@ -84,47 +107,50 @@ function describeRoundtrip(typeName: string, value: Value, testValue: ValueTeste
 describe.skipIf(environment.missingServer, "mixed", () => {
   importAppBefore("with-db");
   authenticateUserBefore();
-  
+
   describeRoundtrip("null", null);
 
   // TODO: Provide an API to speficy storing this as an int
   describeRoundtrip("int", 123);
-  
+
   // TODO: Provide an API to specify which of these to store
   describeRoundtrip("float / double", 123.456);
-  
+
   describeRoundtrip("bool (true)", true);
   describeRoundtrip("bool (false)", false);
-  
+
   describeRoundtrip("string", "test-string");
 
   // Unsupported:
   // describeSimpleRoundtrip("undefined", undefined);
-  
-  const buffer = new Uint8Array([ 4, 8, 12, 16 ]).buffer;
+
+  const buffer = new Uint8Array([4, 8, 12, 16]).buffer;
   describeRoundtrip("data", buffer, (value: ArrayBuffer) => {
     expect(value.byteLength).equals(4);
-    expect([...new Uint8Array(value)]).deep.equals([ 4, 8, 12, 16 ]);
+    expect([...new Uint8Array(value)]).deep.equals([4, 8, 12, 16]);
   });
-  
+
   const date = new Date(1620768552979);
   describeRoundtrip("date", date, (value: Date) => value.getTime() === date.getTime());
-  
+
   const objectId = new Realm.BSON.ObjectId("609afc1290a3c1818f04635e");
   describeRoundtrip("ObjectId", objectId, (value: Realm.BSON.ObjectId) => objectId.equals(value));
-  
+
   const uuid = new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875");
   describeRoundtrip("UUID", uuid, (value: Realm.BSON.UUID) => uuid.equals(value));
-  
+
   const decimal128 = Realm.BSON.Decimal128.fromString("1234.5678");
   describeRoundtrip("Decimal128", decimal128, (value: Realm.BSON.Decimal128) => decimal128.bytes.equals(value.bytes));
-  
+
   const recursiveObjectId = new Realm.BSON.ObjectId();
   describeRoundtrip(
-    "object link", 
+    "object link",
     (realm: Realm) => {
       // Create an object
-      const result = realm.create<MixedClass>("MixedClass", { _id: recursiveObjectId, value: null });
+      const result = realm.create<MixedClass>("MixedClass", {
+        _id: recursiveObjectId,
+        value: null,
+      });
       // Make it recursive
       result.value = result;
       return result;

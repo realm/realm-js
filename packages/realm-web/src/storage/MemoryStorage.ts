@@ -23,70 +23,70 @@ import { PrefixedStorage } from "./PrefixedStorage";
  * In-memory storage that will not be persisted.
  */
 export class MemoryStorage implements Storage {
-    /**
-     * Internal state of the storage.
-     */
-    private readonly storage: { [key: string]: string } = {};
+  /**
+   * Internal state of the storage.
+   */
+  private readonly storage: { [key: string]: string } = {};
 
-    /**
-     * A set of listners.
-     */
-    private readonly listeners: Set<StorageChangeListener> = new Set();
+  /**
+   * A set of listners.
+   */
+  private readonly listeners: Set<StorageChangeListener> = new Set();
 
-    /** @inheritdoc */
-    public get(key: string): string | null {
-        if (key in this.storage) {
-            return this.storage[key];
-        } else {
-            return null;
-        }
+  /** @inheritdoc */
+  public get(key: string): string | null {
+    if (key in this.storage) {
+      return this.storage[key];
+    } else {
+      return null;
     }
+  }
 
-    /** @inheritdoc */
-    public set(key: string, value: string) {
-        this.storage[key] = value;
-        // Fire the listeners
-        this.fireListeners();
-    }
+  /** @inheritdoc */
+  public set(key: string, value: string) {
+    this.storage[key] = value;
+    // Fire the listeners
+    this.fireListeners();
+  }
 
-    /** @inheritdoc */
-    public remove(key: string) {
+  /** @inheritdoc */
+  public remove(key: string) {
+    delete this.storage[key];
+    // Fire the listeners
+    this.fireListeners();
+  }
+
+  /** @inheritdoc */
+  public prefix(keyPart: string): Storage {
+    return new PrefixedStorage(this, keyPart);
+  }
+
+  /** @inheritdoc */
+  public clear(prefix?: string) {
+    // Iterate all keys and delete their values if they have a matching prefix
+    for (const key of Object.keys(this.storage)) {
+      if (!prefix || key.startsWith(prefix)) {
         delete this.storage[key];
-        // Fire the listeners
-        this.fireListeners();
+      }
     }
+    // Fire the listeners
+    this.fireListeners();
+  }
 
-    /** @inheritdoc */
-    public prefix(keyPart: string): Storage {
-        return new PrefixedStorage(this, keyPart);
-    }
+  /** @inheritdoc */
+  public addListener(listener: StorageChangeListener) {
+    return this.listeners.add(listener);
+  }
 
-    /** @inheritdoc */
-    public clear(prefix?: string) {
-        // Iterate all keys and delete their values if they have a matching prefix
-        for (const key of Object.keys(this.storage)) {
-            if (!prefix || key.startsWith(prefix)) {
-                delete this.storage[key];
-            }
-        }
-        // Fire the listeners
-        this.fireListeners();
-    }
+  /** @inheritdoc */
+  public removeListener(listener: StorageChangeListener) {
+    return this.listeners.delete(listener);
+  }
 
-    /** @inheritdoc */
-    public addListener(listener: StorageChangeListener) {
-        return this.listeners.add(listener);
-    }
-
-    /** @inheritdoc */
-    public removeListener(listener: StorageChangeListener) {
-        return this.listeners.delete(listener);
-    }
-
-    /**
-     * Tell the listeners that a change occurred.
-     */
-    private fireListeners() {
-        this.listeners.forEach(listener => listener());
-    }
+  /**
+   * Tell the listeners that a change occurred.
+   */
+  private fireListeners() {
+    this.listeners.forEach((listener) => listener());
+  }
 }

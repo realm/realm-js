@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,29 +21,21 @@ import { AsyncFunc, Func, Test, Suite } from "mocha";
 /**
  * Skips the test if the `condition` argument is truely.
  */
-export function testSkipIf(
-    condition: unknown,
-    title: string,
-    callback: Func | AsyncFunc
-): Test {
-    if (condition) {
-        return it.skip(title, callback);
-    } else {
-        return it(title, callback);
-    }
+export function testSkipIf(condition: unknown, title: string, callback: Func | AsyncFunc): Test {
+  if (condition) {
+    return it.skip(title, callback);
+  } else {
+    return it(title, callback);
+  }
 }
 
 /**
  * Skips the suite if the `condition` argument is truely.
  */
-export function suiteSkipIf(
-    condition: unknown,
-    title: string,
-    callback: (this: Suite) => void
-): Suite | void {
-    if (condition) {
-        return describe.skip(title, callback);
-    } else {
-        return describe(title, callback);
-    }
+export function suiteSkipIf(condition: unknown, title: string, callback: (this: Suite) => void): Suite | void {
+  if (condition) {
+    return describe.skip(title, callback);
+  } else {
+    return describe(title, callback);
+  }
 }

@@ -25,31 +25,31 @@ import { MockNetworkTransport } from "./MockNetworkTransport";
  * An App using the MockTransport
  */
 export class MockApp extends App<any> {
-    /**
-     * The mock network transport created when creating this mock app.
-     */
-    public readonly mockTransport: MockNetworkTransport;
+  /**
+   * The mock network transport created when creating this mock app.
+   */
+  public readonly mockTransport: MockNetworkTransport;
 
-    /**
-     * Create mocked App, useful when testing.
-     *
-     * @param id The id of the app.
-     * @param requests An array of requests returned by the underlying mocked network transport.
-     */
-    constructor(id = "my-mocked-app", requests: object[] = []) {
-        const transport = new MockNetworkTransport(requests);
-        const storage = new MemoryStorage();
-        super({
-            id,
-            baseUrl: "http://localhost:1234",
-            storage,
-            transport,
-        });
-        this.mockTransport = transport;
-    }
+  /**
+   * Create mocked App, useful when testing.
+   *
+   * @param id The id of the app.
+   * @param requests An array of requests returned by the underlying mocked network transport.
+   */
+  constructor(id = "my-mocked-app", requests: unknown[] = []) {
+    const transport = new MockNetworkTransport(requests);
+    const storage = new MemoryStorage();
+    super({
+      id,
+      baseUrl: "http://localhost:1234",
+      storage,
+      transport,
+    });
+    this.mockTransport = transport;
+  }
 
-    /** @returns All the requests issued via this mocked app. */
-    get requests() {
-        return this.mockTransport.requests;
-    }
+  /** @returns All the requests issued via this mocked app. */
+  get requests() {
+    return this.mockTransport.requests;
+  }
 }

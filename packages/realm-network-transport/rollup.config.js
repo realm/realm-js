@@ -24,51 +24,51 @@ import dts from "rollup-plugin-dts";
 import pkg from "./package.json";
 
 export default [
-    {
-        input: "src/node/index.ts",
-        output: [
-            {
-                file: pkg.main,
-                format: "cjs",
-            },
-            {
-                file: pkg.module,
-                format: "es",
-            },
-        ],
-        plugins: [
-            commonjs(),
-            typescript({
-                tsconfig: "src/node/tsconfig.json",
-            }),
-        ],
-        external: ["abort-controller", "node-fetch"],
+  {
+    input: "src/node/index.ts",
+    output: [
+      {
+        file: pkg.main,
+        format: "cjs",
+      },
+      {
+        file: pkg.module,
+        format: "es",
+      },
+    ],
+    plugins: [
+      commonjs(),
+      typescript({
+        tsconfig: "src/node/tsconfig.json",
+      }),
+    ],
+    external: ["abort-controller", "node-fetch"],
+  },
+  {
+    input: "src/dom/index.ts",
+    output: [
+      {
+        file: pkg.browser[pkg.main],
+        format: "cjs",
+      },
+      {
+        file: pkg.browser[pkg.module],
+        format: "es",
+      },
+    ],
+    plugins: [
+      typescript({
+        tsconfig: "src/dom/tsconfig.json",
+      }),
+      nodeResolve(),
+    ],
+  },
+  {
+    input: "types/generated/index.d.ts",
+    output: {
+      file: "dist/bundle.d.ts",
+      format: "es",
     },
-    {
-        input: "src/dom/index.ts",
-        output: [
-            {
-                file: pkg.browser[pkg.main],
-                format: "cjs",
-            },
-            {
-                file: pkg.browser[pkg.module],
-                format: "es",
-            },
-        ],
-        plugins: [
-            typescript({
-                tsconfig: "src/dom/tsconfig.json",
-            }),
-            nodeResolve(),
-        ],
-    },
-    {
-        input: "types/generated/index.d.ts",
-        output: {
-            file: "dist/bundle.d.ts",
-            format: "es",
-        },
-        plugins: [dts(), nodeResolve()],
-    },
+    plugins: [dts(), nodeResolve()],
+  },
 ];

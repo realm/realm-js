@@ -16,12 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-"use strict";
-
 const os = require("os");
 const { Client } = require("mocha-remote-client");
 
-const client = new Client({
+global.client = new Client({
   title: `Node.js v${process.versions.node} on ${os.platform()}`,
   tests(context) {
     // Exposing the Realm constructor as a global
@@ -32,7 +30,7 @@ const client = new Client({
 
     // Require the tests
     require("realm-integration-tests");
-  }
+  },
 });
- 
+
 // TODO: Setup a watch to re-run when the tests change

@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2020 Realm Inc.
@@ -17,45 +16,45 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-"use strict";
-
 // If the docker instance has imported this stitch config, it will have written the app id
 // back into the config file, so we can read it out again here.
 
 // Prevent React Native packager from seeing modules required with this
 const require_method = require;
 function nodeRequire(module) {
-    return require_method(module);
+  return require_method(module);
 }
 
 function makeAppConfig(appId) {
-    const baseUrlHostname = process.env.MONGODB_REALM_ENDPOINT ? process.env.MONGODB_REALM_ENDPOINT.replace(/"/g,"") : "http://localhost";
-    const baseUrlPort = process.env.MONGODB_REALM_PORT || "9090";
-    const baseUrl = `${baseUrlHostname}:${baseUrlPort}`;
+  const baseUrlHostname = process.env.MONGODB_REALM_ENDPOINT
+    ? process.env.MONGODB_REALM_ENDPOINT.replace(/"/g, "")
+    : "http://localhost";
+  const baseUrlPort = process.env.MONGODB_REALM_PORT || "9090";
+  const baseUrl = `${baseUrlHostname}:${baseUrlPort}`;
 
-    console.log(`tests are using integration tests app id: ${appId} on ${baseUrl}`);
+  console.log(`tests are using integration tests app id: ${appId} on ${baseUrl}`);
 
-    return {
-        id: appId,
-        baseUrl,
-        timeout: 1000,
-        app: {
-            name: "default",
-            version: "0"
-        }
-    };
+  return {
+    id: appId,
+    baseUrl,
+    timeout: 1000,
+    app: {
+      name: "default",
+      version: "0",
+    },
+  };
 }
 
 function getConfigPath(testName) {
-    let pathToJson = `../../mongodb/${testName}/config.json`;
-    const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
+  let pathToJson = `../../mongodb/${testName}/config.json`;
+  const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
 
-    if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
-        const path = nodeRequire("path");
-        console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
-        pathToJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, `../${pathToJson}`);
-    }
-    return pathToJson;
+  if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
+    const path = nodeRequire("path");
+    console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
+    pathToJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, `../${pathToJson}`);
+  }
+  return pathToJson;
 }
 
 const pathToStitchJson = getConfigPath("common-tests");
@@ -79,5 +78,9 @@ const pvObjectidTestsAppId = nodeRequire(pathToPvObjectidJSON).app_id;
 const pvObjectidAppConfig = makeAppConfig(pvObjectidTestsAppId);
 
 module.exports = {
-    integrationAppConfig, pvIntAppConfig, pvStringAppConfig, pvUuidAppConfig, pvObjectidAppConfig
-}
+  integrationAppConfig,
+  pvIntAppConfig,
+  pvStringAppConfig,
+  pvUuidAppConfig,
+  pvObjectidAppConfig,
+};

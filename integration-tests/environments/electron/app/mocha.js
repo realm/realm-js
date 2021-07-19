@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-"use strict";
-
 const { Client } = require("mocha-remote-client");
 const { platform } = require("os");
 
@@ -26,19 +24,19 @@ const processType = process.type === "browser" ? "main" : process.type;
 console.log("Required Mocha client");
 
 return new Client({
-    id: processType,
-    title: `Electron v${process.versions.electron} ${processType} process on ${platform()}`,
-    tests(context) {
-        console.log("Loading tests!");
-        // Set the Realm global for the tests to use
-        global.fs = require("fs-extra");
-        global.path = require("path");
-        global.fetch = require("node-fetch");
-        global.environment = {
-            ...context,
-            electron: processType,
-        };
-        // Add the integration test suite
-        require("realm-integration-tests");
-    },
+  id: processType,
+  title: `Electron v${process.versions.electron} ${processType} process on ${platform()}`,
+  tests(context) {
+    console.log("Loading tests!");
+    // Set the Realm global for the tests to use
+    global.fs = require("fs-extra");
+    global.path = require("path");
+    global.fetch = require("node-fetch");
+    global.environment = {
+      ...context,
+      electron: processType,
+    };
+    // Add the integration test suite
+    require("realm-integration-tests");
+  },
 });

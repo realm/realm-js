@@ -31,86 +31,86 @@ type Response = Realm.Services.HTTP.Response;
  * @see https://docs.mongodb.com/stitch/services/http/
  */
 export class HTTPService implements HTTP {
-    /**
-     * The functions factory interface to use when sending requests.
-     */
-    private readonly functions: Realm.DefaultFunctionsFactory;
+  /**
+   * The functions factory interface to use when sending requests.
+   */
+  private readonly functions: Realm.DefaultFunctionsFactory;
 
-    /**
-     * Construct an HTTP Service.
-     *
-     * @param fetcher The underlying fetcher.
-     * @param serviceName An optional service name.
-     */
-    constructor(fetcher: Fetcher, serviceName = "http") {
-        this.functions = FunctionsFactory.create(fetcher, { serviceName });
-    }
+  /**
+   * Construct an HTTP Service.
+   *
+   * @param fetcher The underlying fetcher.
+   * @param serviceName An optional service name.
+   */
+  constructor(fetcher: Fetcher, serviceName = "http") {
+    this.functions = FunctionsFactory.create(fetcher, { serviceName });
+  }
 
-    /**
-     * Sends an HTTP GET request to the specified URL.
-     *
-     * @param url The URL to send the request to.
-     * @param options Options related to the request.
-     * @returns The response.
-     */
-    get(url: string, options: RequestOptions = {}): Promise<Response> {
-        return this.functions.get({ url, ...options });
-    }
+  /**
+   * Sends an HTTP GET request to the specified URL.
+   *
+   * @param url The URL to send the request to.
+   * @param options Options related to the request.
+   * @returns The response.
+   */
+  get(url: string, options: RequestOptions = {}): Promise<Response> {
+    return this.functions.get({ url, ...options });
+  }
 
-    /**
-     * Sends an HTTP POST request to the specified URL.
-     *
-     * @param url The URL to send the request to.
-     * @param options Options related to the request.
-     * @returns The response.
-     */
-    post(url: string, options: RequestOptions = {}): Promise<Response> {
-        return this.functions.post({ url, ...options });
-    }
+  /**
+   * Sends an HTTP POST request to the specified URL.
+   *
+   * @param url The URL to send the request to.
+   * @param options Options related to the request.
+   * @returns The response.
+   */
+  post(url: string, options: RequestOptions = {}): Promise<Response> {
+    return this.functions.post({ url, ...options });
+  }
 
-    /**
-     * Sends an HTTP PUT request to the specified URL.
-     *
-     * @param url The URL to send the request to.
-     * @param options Options related to the request.
-     * @returns The response.
-     */
-    put(url: string, options: RequestOptions = {}): Promise<Response> {
-        return this.functions.put({ url, ...options });
-    }
+  /**
+   * Sends an HTTP PUT request to the specified URL.
+   *
+   * @param url The URL to send the request to.
+   * @param options Options related to the request.
+   * @returns The response.
+   */
+  put(url: string, options: RequestOptions = {}): Promise<Response> {
+    return this.functions.put({ url, ...options });
+  }
 
-    /**
-     * Sends an HTTP DELETE request to the specified URL.
-     *
-     * @param url The URL to send the request to.
-     * @param options Options related to the request.
-     * @returns The response.
-     */
-    delete(url: string, options: RequestOptions = {}): Promise<Response> {
-        return this.functions.delete({ url, ...options });
-    }
+  /**
+   * Sends an HTTP DELETE request to the specified URL.
+   *
+   * @param url The URL to send the request to.
+   * @param options Options related to the request.
+   * @returns The response.
+   */
+  delete(url: string, options: RequestOptions = {}): Promise<Response> {
+    return this.functions.delete({ url, ...options });
+  }
 
-    /**
-     * Sends an HTTP HEAD request to the specified URL.
-     *
-     * @param url The URL to send the request to.
-     * @param options Options related to the request.
-     * @returns The response.
-     */
-    head(url: string, options: RequestOptions = {}): Promise<Response> {
-        return this.functions.head({ url, ...options });
-    }
+  /**
+   * Sends an HTTP HEAD request to the specified URL.
+   *
+   * @param url The URL to send the request to.
+   * @param options Options related to the request.
+   * @returns The response.
+   */
+  head(url: string, options: RequestOptions = {}): Promise<Response> {
+    return this.functions.head({ url, ...options });
+  }
 
-    /**
-     * Sends an HTTP PATCH request to the specified URL.
-     *
-     * @param url The URL to send the request to.
-     * @param options Options related to the request.
-     * @returns The response.
-     */
-    patch(url: string, options: RequestOptions = {}): Promise<Response> {
-        return this.functions.patch({ url, ...options });
-    }
+  /**
+   * Sends an HTTP PATCH request to the specified URL.
+   *
+   * @param url The URL to send the request to.
+   * @param options Options related to the request.
+   * @returns The response.
+   */
+  patch(url: string, options: RequestOptions = {}): Promise<Response> {
+    return this.functions.patch({ url, ...options });
+  }
 }
 
 /**
@@ -122,5 +122,5 @@ export class HTTPService implements HTTP {
  * @returns The new HTTP Service.
  */
 export function createService(fetcher: Fetcher, serviceName = "http") {
-    return new HTTPService(fetcher, serviceName);
+  return new HTTPService(fetcher, serviceName);
 }

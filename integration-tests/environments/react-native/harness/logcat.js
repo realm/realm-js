@@ -31,7 +31,7 @@ async function start(packageName, skipInitialPid = false) {
   let logCatProcess = null;
   let currentPid = skipInitialPid ? getProcessId(packageName) : undefined;
   console.log(`Waiting for a ${packageName} to start`);
-  while (true) {
+  for (;;) {
     const pid = getProcessId(packageName);
     if (pid && !currentPid) {
       console.log(`The ${packageName} process booted (pid = ${pid})`);
@@ -55,7 +55,7 @@ async function start(packageName, skipInitialPid = false) {
       }
     }
     // Wait a sec ...
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 

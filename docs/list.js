@@ -29,60 +29,60 @@
  * @memberof Realm
  */
 class List extends Collection {
-    /**
-     * Remove the **last** value from the list and return it.
-     * @throws {Error} If not inside a write transaction.
-     * @returns {T|undefined} if the list is empty.
-     */
-    pop() { }
+  /**
+   * Remove the **last** value from the list and return it.
+   * @throws {Error} If not inside a write transaction.
+   * @returns {T|undefined} if the list is empty.
+   */
+  pop() {}
 
-    /**
-     * Add one or more values to the _end_ of the list.
-     *
-     * @param {...T} value - Values to add to the list.
-     * @throws {TypeError} If a `value` is not of a type which can be stored in
-     *   the list, or if an object being added to the list does not match the
-     *   {@linkcode Realm~ObjectSchema object schema} for the list.
-     *
-     * @throws {Error} If not inside a write transaction.
-     * @returns {number} equal to the new {@link Realm.List#length length} of
-     *          the list after adding the values.
-     */
-    push(...value) { }
+  /**
+   * Add one or more values to the _end_ of the list.
+   *
+   * @param {...T} value - Values to add to the list.
+   * @throws {TypeError} If a `value` is not of a type which can be stored in
+   *   the list, or if an object being added to the list does not match the
+   *   {@linkcode Realm~ObjectSchema object schema} for the list.
+   *
+   * @throws {Error} If not inside a write transaction.
+   * @returns {number} equal to the new {@link Realm.List#length length} of
+   *          the list after adding the values.
+   */
+  push(...value) {}
 
-    /**
-     * Remove the **first** value from the list and return it.
-     * @throws {Error} If not inside a write transaction.
-     * @returns {T|undefined} if the list is empty.
-     */
-    shift() { }
+  /**
+   * Remove the **first** value from the list and return it.
+   * @throws {Error} If not inside a write transaction.
+   * @returns {T|undefined} if the list is empty.
+   */
+  shift() {}
 
-    /**
-     * Changes the contents of the list by removing value and/or inserting new value.
-     *
-     * @see {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
-     * @param {number} index - The start index. If greater than the length of the list,
-     *   the start index will be set to the length instead. If negative, then the start index
-     *   will be counted from the end of the list (e.g. `list.length - index`).
-     * @param {number} [count] - The number of values to remove from the list.
-     *   If not provided, then all values from the start index through the end of
-     *   the list will be removed.
-     * @param {...T} [value] - Values to insert into the list starting at `index`.
-     * @returns {T[]} containing the value that were removed from the list. The
-     *   array is empty if no value were removed.
-     */
-    splice(index, count, ...object) { }
+  /**
+   * Changes the contents of the list by removing value and/or inserting new value.
+   *
+   * @see {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
+   * @param {number} index - The start index. If greater than the length of the list,
+   *   the start index will be set to the length instead. If negative, then the start index
+   *   will be counted from the end of the list (e.g. `list.length - index`).
+   * @param {number} [count] - The number of values to remove from the list.
+   *   If not provided, then all values from the start index through the end of
+   *   the list will be removed.
+   * @param {...T} [value] - Values to insert into the list starting at `index`.
+   * @returns {T[]} containing the value that were removed from the list. The
+   *   array is empty if no value were removed.
+   */
+  splice(index, count, ...object) {}
 
-    /**
-     * Add one or more values to the _beginning_ of the list.
-     *
-     * @param {...T} value - Values to add to the list.
-     * @throws {TypeError} If a `value` is not of a type which can be stored in
-     *   the list, or if an object being added to the list does not match the
-     *   {@linkcode Realm~ObjectSchema object schema} for the list.
-     * @throws {Error} If not inside a write transaction.
-     * @returns {number} equal to the new {@link Realm.List#length length} of
-     *          the list after adding the values.
-     */
-    unshift(...object) { }
+  /**
+   * Add one or more values to the _beginning_ of the list.
+   *
+   * @param {...T} value - Values to add to the list.
+   * @throws {TypeError} If a `value` is not of a type which can be stored in
+   *   the list, or if an object being added to the list does not match the
+   *   {@linkcode Realm~ObjectSchema object schema} for the list.
+   * @throws {Error} If not inside a write transaction.
+   * @returns {number} equal to the new {@link Realm.List#length length} of
+   *          the list after adding the values.
+   */
+  unshift(...object) {}
 }

@@ -16,17 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+"use strict";
 
 //FIX: Remove this when test app is upgraded to RN >= 0.60:
-//RN version < 0.60 does not have an AbortController implementation. Define an empty one so require('realm') does not throw 
+//RN version < 0.60 does not have an AbortController implementation. Define an empty one so require('realm') does not throw
 //////////////
 if (global && global.window && !global.window.AbortController) {
-    global.window.AbortController = { 
-        signal: {},
-        abort : () => {}
-    }
+  global.window.AbortController = {
+    signal: {},
+    abort: () => {},
+  };
 }
 ////////////
 
-require('./main');
+require("./main");

@@ -27,50 +27,49 @@
  * @memberof Realm
  */
 
- class Dictionary {
-     /**
-      * Remove a key from the dictionary. It is also possible to use the keyword `delete`.
-      * @param {string} key The key to be removed.
-      * @throws {Error} If not inside a write transaction
-      * @since 10.6.0
-      */
-     remove(key) { }
+class Dictionary {
+  /**
+   * Remove a key from the dictionary. It is also possible to use the keyword `delete`.
+   * @param {string} key The key to be removed.
+   * @throws {Error} If not inside a write transaction
+   * @since 10.6.0
+   */
+  remove(key) {}
 
-     /**
-      * Add a key with a value or update value if key exists.
-      * @param {string} key The key to be added or set
-      * @throws {Error} If not inside a write transaction or if value violates type constraints
-      * @param {} value The value
-      * @since 10.6.0
-     */
-     set(key, value) { }
+  /**
+   * Add a key with a value or update value if key exists.
+   * @param {string} key The key to be added or set
+   * @throws {Error} If not inside a write transaction or if value violates type constraints
+   * @param {} value The value
+   * @since 10.6.0
+   */
+  set(key, value) {}
 
-   /**
-     * Add a listener `callback`.
-     * @param {callback(dictionary, changeset)} callback - Function to be called when a change event occurs.
-     *   Each callback will only be called once per event, regardless of the number of times
-     *   it was added.
-     * The callback has two arguments:
-     * - dictionary: the dictionary instance that changed
-     * - changeset: an object of array of keys changed (`deletions`, `insertions`, and `modifications`)
-     * @throws {Error} If `callback` is not a function.
-     * @since 10.6.0
-     */
-    addListener(callback) { }
+  /**
+   * Add a listener `callback`.
+   * @param {callback(dictionary, changeset)} callback - Function to be called when a change event occurs.
+   *   Each callback will only be called once per event, regardless of the number of times
+   *   it was added.
+   * The callback has two arguments:
+   * - dictionary: the dictionary instance that changed
+   * - changeset: an object of array of keys changed (`deletions`, `insertions`, and `modifications`)
+   * @throws {Error} If `callback` is not a function.
+   * @since 10.6.0
+   */
+  addListener(callback) {}
 
-    /**
-     * Remove the listener `callback`.
-     * @param {callback(Realm.Dictionary, Realm.Dictionary.Changeset)} callback - Function that was previously added as a
-     *   listener through the {@link Realm.Dictionary#addListener addListener} method.
-     * @throws {Error} If `callback` is not a function.
-     * @since 10.6.0
-     */
-    removeListener(callback) { }
+  /**
+   * Remove the listener `callback`.
+   * @param {callback(Realm.Dictionary, Realm.Dictionary.Changeset)} callback - Function that was previously added as a
+   *   listener through the {@link Realm.Dictionary#addListener addListener} method.
+   * @throws {Error} If `callback` is not a function.
+   * @since 10.6.0
+   */
+  removeListener(callback) {}
 
-    /**
-     * Remove all event listeners.
-     * @since 10.6.0
-     */
-    removeAllListeners() { }
-
- }
+  /**
+   * Remove all event listeners.
+   * @since 10.6.0
+   */
+  removeAllListeners() {}
+}

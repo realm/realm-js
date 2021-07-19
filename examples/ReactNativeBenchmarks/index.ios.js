@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+"use strict";
 
-import { AppRegistry } from 'react-native';
-import ReactNativeBenchmarks from './benchmarks';
+import { AppRegistry } from "react-native";
+import ReactNativeBenchmarks from "./benchmarks";
 
-AppRegistry.registerComponent('ReactNativeBenchmarks', () => ReactNativeBenchmarks);
+AppRegistry.registerComponent("ReactNativeBenchmarks", () => ReactNativeBenchmarks);

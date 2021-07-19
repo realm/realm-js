@@ -1,5 +1,3 @@
-"use strict";
-
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2019 Realm Inc.
@@ -32,23 +30,23 @@ const path = require("path");
 let mainWindow;
 
 app.on("ready", () => {
-    console.log("Electron app is ready");
-    const processType = process.argv[2];
-    if (processType === "main") {
-        require("./mocha.js");
-    } else if (processType === "renderer") {
-        const preload = path.resolve(__dirname, "renderer.js");
-        mainWindow = new BrowserWindow({ 
-            show: false,
-            webPreferences: {
-                enableRemoteModule: true,
-                preload,
-            }
-        });
+  console.log("Electron app is ready");
+  const processType = process.argv[2];
+  if (processType === "main") {
+    require("./mocha.js");
+  } else if (processType === "renderer") {
+    const preload = path.resolve(__dirname, "renderer.js");
+    mainWindow = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        enableRemoteModule: true,
+        preload,
+      },
+    });
 
-        mainWindow.loadFile(path.join(__dirname, "index.html"));
-    } else {
-        console.error("Expected a process runtime argument");
-        process.exit(1);
-    }
+    mainWindow.loadFile(path.join(__dirname, "index.html"));
+  } else {
+    console.error("Expected a process runtime argument");
+    process.exit(1);
+  }
 });

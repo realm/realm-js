@@ -16,72 +16,71 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-"use strict";
 const AppConfig = require("./support/testConfig");
 
 // Prevent React Native packager from seeing modules required with this
 const require_method = require;
 function nodeRequire(module) {
-    return require_method(module);
+  return require_method(module);
 }
 
-const Realm = require('realm');
-const TestCase = require('./asserts');
+const Realm = require("realm");
+const TestCase = require("./asserts");
 
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
-const fs = isNodeProcess ? nodeRequire('fs-extra') : require('react-native-fs');
+const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
+const isElectronProcess = typeof process === "object" && process.versions && process.versions.electron;
+const fs = isNodeProcess ? nodeRequire("fs-extra") : require("react-native-fs");
 
 module.exports = {
-    async testDictionarySync() {
-        // test that we can create a synced realm with a Set
-        // that isn't required
-        if (!global.enableSyncTests) return;
+  async testDictionarySync() {
+    // test that we can create a synced realm with a Set
+    // that isn't required
+    if (!global.enableSyncTests) return;
 
-        const schema = {
-            name: "Dictionary",
-            primaryKey: "_id",
-            properties: {
-                _id: "int",
-                columnStringDictionary: "string{}",
-                columnIntegerDictionary: "int{}",
-                columnFloatDictionary: "float{}"
-            }
-        };
+    const schema = {
+      name: "Dictionary",
+      primaryKey: "_id",
+      properties: {
+        _id: "int",
+        columnStringDictionary: "string{}",
+        columnIntegerDictionary: "int{}",
+        columnFloatDictionary: "float{}",
+      },
+    };
 
-        const appConfig = AppConfig.integrationAppConfig;
-        const app = new Realm.App(appConfig);
-        const credentials = Realm.Credentials.anonymous();
+    const appConfig = AppConfig.integrationAppConfig;
+    const app = new Realm.App(appConfig);
+    const credentials = Realm.Credentials.anonymous();
 
-        const user = await app.logIn(credentials);
-        const config = {
-            sync: {
-                user,
-                partitionValue: "_id",
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            },
-            schema: [schema]
-        };
+    const user = await app.logIn(credentials);
+    const config = {
+      sync: {
+        user,
+        partitionValue: "_id",
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+      },
+      schema: [schema],
+    };
 
-        const realm = await Realm.open(config);
-        realm.write(() => {
-            realm.deleteAll();
-        });
+    const realm = await Realm.open(config);
+    realm.write(() => {
+      realm.deleteAll();
+    });
 
-        realm.write(() => {
-            realm.create(schema.name, {
-                _id: 1,
-                columnStringDictionary: { foo: "bar" },
-                columnIntegerDictionary: { n: 3 },
-                columnFloatDictionary: { x: 3.14 }
-            });
-        });
+    realm.write(() => {
+      realm.create(schema.name, {
+        _id: 1,
+        columnStringDictionary: { foo: "bar" },
+        columnIntegerDictionary: { n: 3 },
+        columnFloatDictionary: { x: 3.14 },
+      });
+    });
 
-        await realm.syncSession.uploadAllLocalChanges();
+    await realm.syncSession.uploadAllLocalChanges();
 
-        let objects = realm.objects(schema.name);
-        TestCase.assertEqual(objects.length, 1, "There should be 1 object");
+    let objects = realm.objects(schema.name);
+    TestCase.assertEqual(objects.length, 1, "There should be 1 object");
 
-        realm.close();
-    }
+    realm.close();
+  },
 };
