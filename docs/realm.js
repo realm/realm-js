@@ -27,319 +27,319 @@
  *
  */
 class Realm {
-    /**
-     * Indicates if this Realm contains any objects.
-     * @type {boolean}
-     * @readonly
-     * @since 1.10.0
-     */
-    get empty() { }
+  /**
+   * Indicates if this Realm contains any objects.
+   * @type {boolean}
+   * @readonly
+   * @since 1.10.0
+   */
+  get empty() {}
 
-    /**
-     * The path to the file where this Realm is stored.
-     * @type {string}
-     * @readonly
-     * @since 0.12.0
-     */
-    get path() { }
+  /**
+   * The path to the file where this Realm is stored.
+   * @type {string}
+   * @readonly
+   * @since 0.12.0
+   */
+  get path() {}
 
-    /**
-     * Indicates if this Realm was opened as read-only.
-     * @type {boolean}
-     * @readonly
-     * @since 0.12.0
-     */
-    get readOnly() { }
+  /**
+   * Indicates if this Realm was opened as read-only.
+   * @type {boolean}
+   * @readonly
+   * @since 0.12.0
+   */
+  get readOnly() {}
 
-    /**
-     * A normalized representation of the schema provided in the
-     * {@link Realm~Configuration Configuration} when this Realm was constructed.
-     * @type {Realm~ObjectSchema[]}
-     * @readonly
-     * @since 0.12.0
-     */
-    get schema() { }
+  /**
+   * A normalized representation of the schema provided in the
+   * {@link Realm~Configuration Configuration} when this Realm was constructed.
+   * @type {Realm~ObjectSchema[]}
+   * @readonly
+   * @since 0.12.0
+   */
+  get schema() {}
 
-    /**
-     * The current schema version of this Realm.
-     * @type {number}
-     * @readonly
-     * @since 0.12.0
-     */
-    get schemaVersion() { }
+  /**
+   * The current schema version of this Realm.
+   * @type {number}
+   * @readonly
+   * @since 0.12.0
+   */
+  get schemaVersion() {}
 
-    /**
-     * Indicates if this Realm is in a write transaction.
-     * @type {boolean}
-     * @readonly
-     * @since 1.10.3
-     */
-    get isInTransaction() { }
+  /**
+   * Indicates if this Realm is in a write transaction.
+   * @type {boolean}
+   * @readonly
+   * @since 1.10.3
+   */
+  get isInTransaction() {}
 
-    /**
-     * Indicates if this Realm has been closed.
-     * @type {boolean}
-     * @readonly
-     * @since 2.1.0
-     */
-    get isClosed() { }
+  /**
+   * Indicates if this Realm has been closed.
+   * @type {boolean}
+   * @readonly
+   * @since 2.1.0
+   */
+  get isClosed() {}
 
-    /**
-     * Gets the sync session if this is a synced Realm
-     * @type {Session}
-     */
-    get syncSession() { }
+  /**
+   * Gets the sync session if this is a synced Realm
+   * @type {Session}
+   */
+  get syncSession() {}
 
-    /**
-     * Create a new `Realm` instance using the provided `config`. If a Realm does not yet exist
-     * at `config.path` (or {@link Realm.defaultPath} if not provided), then this constructor
-     * will create it with the provided `config.schema` (which is _required_ in this case).
-     * Otherwise, the instance will access the existing Realm from the file at that path.
-     * In this case, `config.schema` is _optional_ or not have changed, unless
-     * `config.schemaVersion` is incremented, in which case the Realm will be automatically
-     * migrated to use the new schema.
-     * In the case of query-based sync, `config.schema` is required. An exception will be
-     * thrown if `config.schema` is not defined.
-     * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
-     * @throws {Error} If anything in the provided `config` is invalid.
-     * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
-     */
-    constructor(config) { }
+  /**
+   * Create a new `Realm` instance using the provided `config`. If a Realm does not yet exist
+   * at `config.path` (or {@link Realm.defaultPath} if not provided), then this constructor
+   * will create it with the provided `config.schema` (which is _required_ in this case).
+   * Otherwise, the instance will access the existing Realm from the file at that path.
+   * In this case, `config.schema` is _optional_ or not have changed, unless
+   * `config.schemaVersion` is incremented, in which case the Realm will be automatically
+   * migrated to use the new schema.
+   * In the case of query-based sync, `config.schema` is required. An exception will be
+   * thrown if `config.schema` is not defined.
+   * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
+   * @throws {Error} If anything in the provided `config` is invalid.
+   * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
+   */
+  constructor(config) {}
 
-    /**
-     * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
-     * synchronized before it is available.
-     * In the case of query-based sync, `config.schema` is required. An exception will be
-     * thrown if `config.schema` is not defined.
-     * @param {Realm~Configuration} config - if no config is defined, it will open the default realm
-     * @returns {ProgressPromise} - a promise that will be resolved with the Realm instance when it's available.
-     * @throws {Error} If anything in the provided `config` is invalid.
-     */
-    static open(config) { }
+  /**
+   * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
+   * synchronized before it is available.
+   * In the case of query-based sync, `config.schema` is required. An exception will be
+   * thrown if `config.schema` is not defined.
+   * @param {Realm~Configuration} config - if no config is defined, it will open the default realm
+   * @returns {ProgressPromise} - a promise that will be resolved with the Realm instance when it's available.
+   * @throws {Error} If anything in the provided `config` is invalid.
+   */
+  static open(config) {}
 
-    /**
-     * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
-     * the URL for the synced Realm. If no user is supplied, the current user will be used.
-     * @param {Realm.User} - an optional sync user
-     * @throws {Error} if zero or multiple users are logged in
-     * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
-     * @since 2.3.0
-     * @deprecated use {@link Sync.User.createConfiguration()} instead.
-     */
-    static automaticSyncConfiguration(user) { }
+  /**
+   * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
+   * the URL for the synced Realm. If no user is supplied, the current user will be used.
+   * @param {Realm.User} - an optional sync user
+   * @throws {Error} if zero or multiple users are logged in
+   * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
+   * @since 2.3.0
+   * @deprecated use {@link Sync.User.createConfiguration()} instead.
+   */
+  static automaticSyncConfiguration(user) {}
 
-    /**
-     * Creates a template object for a Realm model class where all optional fields are `undefined` and all required
-     * fields have the default value for the given data type, either the value set by the `default` property in the
-     * schema or the default value for the datatype if the schema doesn't specify one, i.e. `0`, false and `""`.
-     *
-     * @param {Realm~ObjectSchema} schema object describing the class
-     */
-    static createTemplateObject(objectSchema) { }
+  /**
+   * Creates a template object for a Realm model class where all optional fields are `undefined` and all required
+   * fields have the default value for the given data type, either the value set by the `default` property in the
+   * schema or the default value for the datatype if the schema doesn't specify one, i.e. `0`, false and `""`.
+   *
+   * @param {Realm~ObjectSchema} schema object describing the class
+   */
+  static createTemplateObject(objectSchema) {}
 
-    /**
-     * Closes this Realm so it may be re-opened with a newer schema version.
-     * All objects and collections from this Realm are no longer valid after calling this method.
-     * The method is idempotent.
-     */
-    close() { }
+  /**
+   * Closes this Realm so it may be re-opened with a newer schema version.
+   * All objects and collections from this Realm are no longer valid after calling this method.
+   * The method is idempotent.
+   */
+  close() {}
 
-    /**
-     * Create a new Realm object of the given type and with the specified properties.
-     * @param {Realm~ObjectType} type - The type of Realm object to create.
-     * @param {Object} properties - Property values for all required properties without a
-     *   default value.
-     * @param {boolean|string} [updateMode='never'] - Optional update mode. It can be one of the following values
-     *     - 'never': Objects are only created. If an existing object exists, an exception is thrown. This is the
-     *       default value.
-     *     - 'all': If an existing object is found, all properties provided will be updated, any other properties will
-     *       remain unchanged.
-     *     - 'modified': If an existing object exists, only properties where the value has actually changed will be
-     *       updated. This improves notifications and server side performance but also have implications for how changes
-     *       across devices are merged. For most use cases, the behaviour will match the intuitive behaviour of how
-     *       changes should be merged, but if updating an entire object is considered an atomic operation, this mode
-     *       should not be used.
-     * @returns {Realm.Object}
-     */
-    create(type, properties, updateMode) {}
+  /**
+   * Create a new Realm object of the given type and with the specified properties.
+   * @param {Realm~ObjectType} type - The type of Realm object to create.
+   * @param {Object} properties - Property values for all required properties without a
+   *   default value.
+   * @param {boolean|string} [updateMode='never'] - Optional update mode. It can be one of the following values
+   *     - 'never': Objects are only created. If an existing object exists, an exception is thrown. This is the
+   *       default value.
+   *     - 'all': If an existing object is found, all properties provided will be updated, any other properties will
+   *       remain unchanged.
+   *     - 'modified': If an existing object exists, only properties where the value has actually changed will be
+   *       updated. This improves notifications and server side performance but also have implications for how changes
+   *       across devices are merged. For most use cases, the behaviour will match the intuitive behaviour of how
+   *       changes should be merged, but if updating an entire object is considered an atomic operation, this mode
+   *       should not be used.
+   * @returns {Realm.Object}
+   */
+  create(type, properties, updateMode) {}
 
-    /**
-     * Deletes the provided Realm object, or each one inside the provided collection.
-     * @param {Realm.Object|Realm.Object[]|Realm.List|Realm.Results} object
-     */
-    delete(object) { }
+  /**
+   * Deletes the provided Realm object, or each one inside the provided collection.
+   * @param {Realm.Object|Realm.Object[]|Realm.List|Realm.Results} object
+   */
+  delete(object) {}
 
-    /**
-     * Deletes a Realm model, including all of its objects.
-     * If called outside a migration function, {@link Realm#schema schema} and {@link Realm#schemaVersion schemaVersion} are updated.
-     * @param {string} name - the model name
-     */
-    deleteModel(name) { }
+  /**
+   * Deletes a Realm model, including all of its objects.
+   * If called outside a migration function, {@link Realm#schema schema} and {@link Realm#schemaVersion schemaVersion} are updated.
+   * @param {string} name - the model name
+   */
+  deleteModel(name) {}
 
-    /**
-     * **WARNING:** This will delete **all** objects in the Realm!
-     */
-    deleteAll() { }
+  /**
+   * **WARNING:** This will delete **all** objects in the Realm!
+   */
+  deleteAll() {}
 
-    /**
-     * Returns all objects of the given `type` in the Realm.
-     * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
-     * @throws {Error} If type passed into this method is invalid or if the type is marked embedded.
-     * @returns {Realm.Results} that will live-update as objects are created and destroyed.
-     */
-    objects(type) { }
+  /**
+   * Returns all objects of the given `type` in the Realm.
+   * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
+   * @throws {Error} If type passed into this method is invalid or if the type is marked embedded.
+   * @returns {Realm.Results} that will live-update as objects are created and destroyed.
+   */
+  objects(type) {}
 
-    /**
-     * Searches for a Realm object by its primary key.
-     * @param {Realm~ObjectType} type - The type of Realm object to search for.
-     * @param {number|string} key - The primary key value of the object to search for.
-     * @throws {Error} If type passed into this method is invalid or if the object type did
-     *   not have a `primaryKey` specified in its {@link Realm~ObjectSchema ObjectSchema}.
-     * @returns {Realm.Object|undefined} if no object is found.
-     * @since 0.14.0
-     */
-    objectForPrimaryKey(type, key) { }
+  /**
+   * Searches for a Realm object by its primary key.
+   * @param {Realm~ObjectType} type - The type of Realm object to search for.
+   * @param {number|string} key - The primary key value of the object to search for.
+   * @throws {Error} If type passed into this method is invalid or if the object type did
+   *   not have a `primaryKey` specified in its {@link Realm~ObjectSchema ObjectSchema}.
+   * @returns {Realm.Object|undefined} if no object is found.
+   * @since 0.14.0
+   */
+  objectForPrimaryKey(type, key) {}
 
-    /**
-     * Add a listener `callback` for the specified event `name`.
-     * @param {string} name - The name of event that should cause the callback to be called.
-     *   _Currently, only the "change" and "schema" events are supported_.
-     * @param {callback(Realm, string)|callback(Realm, string, Schema)} callback - Function to be called when a change event occurs.
-     *   Each callback will only be called once per event, regardless of the number of times
-     *   it was added.
-     * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
-     */
-    addListener(name, callback) { }
+  /**
+   * Add a listener `callback` for the specified event `name`.
+   * @param {string} name - The name of event that should cause the callback to be called.
+   *   _Currently, only the "change" and "schema" events are supported_.
+   * @param {callback(Realm, string)|callback(Realm, string, Schema)} callback - Function to be called when a change event occurs.
+   *   Each callback will only be called once per event, regardless of the number of times
+   *   it was added.
+   * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
+   */
+  addListener(name, callback) {}
 
-    /**
-     * Remove the listener `callback` for the specfied event `name`.
-     * @param {string} name - The event name.
-     *   _Currently, only the "change" and "schema" events are supported_.
-     * @param {callback(Realm, string)|callback(Realm, string, Schema)} callback - Function that was previously added as a
-     *   listener for this event through the {@link Realm#addListener addListener} method.
-     * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
-     */
-    removeListener(name, callback) { }
+  /**
+   * Remove the listener `callback` for the specfied event `name`.
+   * @param {string} name - The event name.
+   *   _Currently, only the "change" and "schema" events are supported_.
+   * @param {callback(Realm, string)|callback(Realm, string, Schema)} callback - Function that was previously added as a
+   *   listener for this event through the {@link Realm#addListener addListener} method.
+   * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
+   */
+  removeListener(name, callback) {}
 
-    /**
-     * Remove all event listeners (restricted to the event `name`, if provided).
-     * @param {string} [name] - The name of the event whose listeners should be removed.
-     *   _Currently, only the "change" and "schema" events are supported_.
-     * @throws {Error} When invalid event `name` is supplied
-     */
-    removeAllListeners(name) { }
+  /**
+   * Remove all event listeners (restricted to the event `name`, if provided).
+   * @param {string} [name] - The name of the event whose listeners should be removed.
+   *   _Currently, only the "change" and "schema" events are supported_.
+   * @throws {Error} When invalid event `name` is supplied
+   */
+  removeAllListeners(name) {}
 
-    /**
-     * Synchronously call the provided `callback` inside a write transaction. If an exception happens inside a transaction,
-     * you’ll lose the changes in that transaction, but the Realm itself won’t be affected (or corrupted).
-     * More precisely, {@link Realm#beginTransaction beginTransaction()} and {@link Realm#commitTransaction commitTransaction()} will be called
-     * automatically. If any exception is thrown during the transaction {@link Realm#cancelTransaction cancelTransaction()} will
-     * be called instead of {@link Realm#commitTransaction commitTransaction()} and the exception will be re-thrown to the caller of `write()`.
-     *
-     * Nested transactions (calling `write()` within `write()`) is not possible.
-     * @param {function()} callback
-     */
-    write(callback) { }
+  /**
+   * Synchronously call the provided `callback` inside a write transaction. If an exception happens inside a transaction,
+   * you’ll lose the changes in that transaction, but the Realm itself won’t be affected (or corrupted).
+   * More precisely, {@link Realm#beginTransaction beginTransaction()} and {@link Realm#commitTransaction commitTransaction()} will be called
+   * automatically. If any exception is thrown during the transaction {@link Realm#cancelTransaction cancelTransaction()} will
+   * be called instead of {@link Realm#commitTransaction commitTransaction()} and the exception will be re-thrown to the caller of `write()`.
+   *
+   * Nested transactions (calling `write()` within `write()`) is not possible.
+   * @param {function()} callback
+   */
+  write(callback) {}
 
-    /**
-     * Initiate a write transaction.
-     *
-     * When doing a transaction, it is highly recommended to do error handling.
-     * If you don't handle errors, your data might become inconsistent. Error handling
-     * will often involve canceling the transaction.
-     *
-     * @example
-     * realm.beginTransaction();
-     * try {
-     *   realm.create('Person', { name: 'Arthur Dent',  origin: 'Earth' });
-     *   realm.create('Person', { name: 'Ford Prefect', origin: 'Betelgeuse Five' });
-     *   realm.commitTransaction();
-     * } catch (e) {
-     *   realm.cancelTransaction();
-     *   throw e;
-     * }
-     * @throws {Error} When already in write transaction
-     * @see {@link Realm#cancelTransaction cancelTransaction()}
-     * @see {@link Realm#commitTransaction commitTransaction()}
-     */
-    beginTransaction() { }
+  /**
+   * Initiate a write transaction.
+   *
+   * When doing a transaction, it is highly recommended to do error handling.
+   * If you don't handle errors, your data might become inconsistent. Error handling
+   * will often involve canceling the transaction.
+   *
+   * @example
+   * realm.beginTransaction();
+   * try {
+   *   realm.create('Person', { name: 'Arthur Dent',  origin: 'Earth' });
+   *   realm.create('Person', { name: 'Ford Prefect', origin: 'Betelgeuse Five' });
+   *   realm.commitTransaction();
+   * } catch (e) {
+   *   realm.cancelTransaction();
+   *   throw e;
+   * }
+   * @throws {Error} When already in write transaction
+   * @see {@link Realm#cancelTransaction cancelTransaction()}
+   * @see {@link Realm#commitTransaction commitTransaction()}
+   */
+  beginTransaction() {}
 
-    /**
-     * Commit a write transaction.
-     *
-     * @see {@link Realm#beginTransaction beginTransaction()}
-     */
-    commitTransaction() { }
+  /**
+   * Commit a write transaction.
+   *
+   * @see {@link Realm#beginTransaction beginTransaction()}
+   */
+  commitTransaction() {}
 
-    /**
-     * Cancel a write transaction.
-     *
-     * @see {@link Realm#beginTransaction beginTransaction()}
-     */
-    cancelTransaction() { }
+  /**
+   * Cancel a write transaction.
+   *
+   * @see {@link Realm#beginTransaction beginTransaction()}
+   */
+  cancelTransaction() {}
 
-    /**
-     * Replaces all string columns in this Realm with a string enumeration column and compacts the
-     * database file.
-     *
-     * Cannot be called from a write transaction.
-     *
-     * Compaction will not occur if other `Realm` instances exist.
-     *
-     * While compaction is in progress, attempts by other threads or processes to open the database will
-     * wait.
-     *
-     * Be warned that resource requirements for compaction is proportional to the amount of live data in
-     * the database. Compaction works by writing the database contents to a temporary database file and
-     * then replacing the database with the temporary one.
-     * @returns {true} if compaction succeeds.
-     */
-    compact() { }
+  /**
+   * Replaces all string columns in this Realm with a string enumeration column and compacts the
+   * database file.
+   *
+   * Cannot be called from a write transaction.
+   *
+   * Compaction will not occur if other `Realm` instances exist.
+   *
+   * While compaction is in progress, attempts by other threads or processes to open the database will
+   * wait.
+   *
+   * Be warned that resource requirements for compaction is proportional to the amount of live data in
+   * the database. Compaction works by writing the database contents to a temporary database file and
+   * then replacing the database with the temporary one.
+   * @returns {true} if compaction succeeds.
+   */
+  compact() {}
 
-    /**
-     * Writes a compacted copy of the Realm to the given path.
-     *
-     * The destination file cannot already exist.
-     *
-     * Note that if this method is called from within a write transaction, the current data is written,
-     * not the data from the point when the previous write transaction was committed.
-     * @param {string} path path to save the Realm to
-     * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Optional 64-byte encryption key to encrypt the new file with.
-     */
-    writeCopyTo(path, encryptionKey) { }
+  /**
+   * Writes a compacted copy of the Realm to the given path.
+   *
+   * The destination file cannot already exist.
+   *
+   * Note that if this method is called from within a write transaction, the current data is written,
+   * not the data from the point when the previous write transaction was committed.
+   * @param {string} path path to save the Realm to
+   * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Optional 64-byte encryption key to encrypt the new file with.
+   */
+  writeCopyTo(path, encryptionKey) {}
 
-    /**
-     * Get the current schema version of the Realm at the given path.
-     * @param {string} path - The path to the file where the
-     *   Realm database is stored.
-     * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Required only when
-     *   accessing encrypted Realms.
-     * @throws {Error} When passing an invalid or non-matching encryption key.
-     * @returns {number} version of the schema, or `-1` if no Realm exists at `path`.
-     */
-    static schemaVersion(path, encryptionKey) { }
+  /**
+   * Get the current schema version of the Realm at the given path.
+   * @param {string} path - The path to the file where the
+   *   Realm database is stored.
+   * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Required only when
+   *   accessing encrypted Realms.
+   * @throws {Error} When passing an invalid or non-matching encryption key.
+   * @returns {number} version of the schema, or `-1` if no Realm exists at `path`.
+   */
+  static schemaVersion(path, encryptionKey) {}
 
-    /**
-     * Delete the Realm file for the given configuration.
-     * @param {Realm~Configuration} config
-     * @throws {Error} If anything in the provided `config` is invalid.
-     */
-    static deleteFile(config) { }
+  /**
+   * Delete the Realm file for the given configuration.
+   * @param {Realm~Configuration} config
+   * @throws {Error} If anything in the provided `config` is invalid.
+   */
+  static deleteFile(config) {}
 
-    /**
-     * Checks if the Realm already exists on disk.
-     * @param {Realm~Configuration} config The configuration for the Realm.
-     * @throws {Error} if anything in the provided `config` is invalid.
-     * @returns {boolean} returns `true` if the Realm exists on the device, `false` if not.
-     */
-    static exists(config) { }
+  /**
+   * Checks if the Realm already exists on disk.
+   * @param {Realm~Configuration} config The configuration for the Realm.
+   * @throws {Error} if anything in the provided `config` is invalid.
+   * @returns {boolean} returns `true` if the Realm exists on the device, `false` if not.
+   */
+  static exists(config) {}
 
-    /**
-     * Copy all bundled Realm files to app's default file folder.
-     * This is only implemented for React Native.
-     * @throws {Error} If an I/O error occured or method is not implemented.
-     */
-    static copyBundledRealmFiles() { }
+  /**
+   * Copy all bundled Realm files to app's default file folder.
+   * This is only implemented for React Native.
+   * @throws {Error} If an I/O error occured or method is not implemented.
+   */
+  static copyBundledRealmFiles() {}
 }
 /**
  * This describes the different options used to create a {@link Realm} instance.

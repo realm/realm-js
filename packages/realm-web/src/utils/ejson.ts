@@ -18,8 +18,10 @@
 
 import { EJSON } from "bson";
 
+type SimpleObject = Record<string, unknown>;
+
 const SERIALIZATION_OPTIONS = {
-    relaxed: false, // Ensure Canonical mode
+  relaxed: false, // Ensure Canonical mode
 };
 
 /**
@@ -28,8 +30,8 @@ const SERIALIZATION_OPTIONS = {
  * @param obj The object containing BSON types.
  * @returns The document in extended-JSON format.
  */
-export function serialize<Obj extends object>(obj: Obj): object {
-    return EJSON.serialize(obj, SERIALIZATION_OPTIONS);
+export function serialize<Obj extends SimpleObject>(obj: Obj): SimpleObject {
+  return EJSON.serialize(obj, SERIALIZATION_OPTIONS);
 }
 
 /**
@@ -38,10 +40,10 @@ export function serialize<Obj extends object>(obj: Obj): object {
  * @param obj The object or array of objects in extended-JSON format.
  * @returns The object or array of objects with inflated BSON types.
  */
-export function deserialize<Obj extends object>(obj: object | object[]): Obj {
-    if (Array.isArray(obj)) {
-        return obj.map(doc => EJSON.deserialize(doc)) as Obj;
-    } else {
-        return EJSON.deserialize(obj) as Obj;
-    }
+export function deserialize(obj: SimpleObject | SimpleObject[]): EJSON.SerializableTypes {
+  if (Array.isArray(obj)) {
+    return obj.map((doc) => EJSON.deserialize(doc));
+  } else {
+    return EJSON.deserialize(obj);
+  }
 }

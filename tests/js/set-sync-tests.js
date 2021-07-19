@@ -16,217 +16,220 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
 const AppConfig = require("./support/testConfig");
 
 // Prevent React Native packager from seeing modules required with this
 const require_method = require;
 function nodeRequire(module) {
-    return require_method(module);
+  return require_method(module);
 }
 
-const Realm = require('realm');
-const TestCase = require('./asserts');
+const Realm = require("realm");
+const TestCase = require("./asserts");
 
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-const isElectronProcess = typeof process === 'object' && process.versions && process.versions.electron;
-const fs = isNodeProcess ? nodeRequire('fs-extra') : require('react-native-fs');
+const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
+const isElectronProcess = typeof process === "object" && process.versions && process.versions.electron;
+const fs = isNodeProcess ? nodeRequire("fs-extra") : require("react-native-fs");
 
 module.exports = {
-    async testSetSyncedNonRequired() {
-        // test that we can create a synced realm with a Set
-        // that isn't required
-        if (!global.enableSyncTests) return;
+  async testSetSyncedNonRequired() {
+    // test that we can create a synced realm with a Set
+    // that isn't required
+    if (!global.enableSyncTests) return;
 
-        const schema = {
-            name: "SyncedNumbers",
-            primaryKey: "_id",
-            properties: {
-                _id: "int",
-                numbers: "int<>",
-            }
-        };
+    const schema = {
+      name: "SyncedNumbers",
+      primaryKey: "_id",
+      properties: {
+        _id: "int",
+        numbers: "int<>",
+      },
+    };
 
-        const appConfig = AppConfig.integrationAppConfig;
-        const app = new Realm.App(appConfig);
-        const credentials = Realm.Credentials.anonymous();
+    const appConfig = AppConfig.integrationAppConfig;
+    const app = new Realm.App(appConfig);
+    const credentials = Realm.Credentials.anonymous();
 
-        const user = await app.logIn(credentials);
-        const config = {
-            sync: {
-                user,
-                partitionValue: "_id",
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            },
-            schema: [schema]
-        };
+    const user = await app.logIn(credentials);
+    const config = {
+      sync: {
+        user,
+        partitionValue: "_id",
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+      },
+      schema: [schema],
+    };
 
-        const realm = await Realm.open(config);
-        realm.write(() => {
-            realm.deleteAll();
-        });
+    const realm = await Realm.open(config);
+    realm.write(() => {
+      realm.deleteAll();
+    });
 
-        let objects = realm.objects(schema.name);
-        TestCase.assertEqual(objects.length, 0, "Table should be empty");
-    },
+    let objects = realm.objects(schema.name);
+    TestCase.assertEqual(objects.length, 0, "Table should be empty");
+  },
 
-    //
-    // test that deletions and additions to a Set are propagated correctly through Sync
-    async testSetSyncedAddDelete() {
-        // tests a synced realm while adding/deleting elements in a Set
-        if (!global.enableSyncTests) return;
+  //
+  // test that deletions and additions to a Set are propagated correctly through Sync
+  async testSetSyncedAddDelete() {
+    // tests a synced realm while adding/deleting elements in a Set
+    if (!global.enableSyncTests) return;
 
-        const schema = {
-            name: "SyncedNumbers",
-            primaryKey: "_id",
-            properties: {
-                _id: "int",
-                numbers: "int<>",
-            }
-        }
-        
-        const appConfig = AppConfig.integrationAppConfig;
-        const app = new Realm.App(appConfig);
-        const credentials = Realm.Credentials.anonymous();
+    const schema = {
+      name: "SyncedNumbers",
+      primaryKey: "_id",
+      properties: {
+        _id: "int",
+        numbers: "int<>",
+      },
+    };
 
-        const user = await app.logIn(credentials);
-        const config = {
-            sync: {
-                user,
-                partitionValue: "_id",
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            },
-            schema: [schema]
-        };
-        const realm = await Realm.open(config);
+    const appConfig = AppConfig.integrationAppConfig;
+    const app = new Realm.App(appConfig);
+    const credentials = Realm.Credentials.anonymous();
 
-        realm.write(() => {
-            realm.deleteAll();
-        });
+    const user = await app.logIn(credentials);
+    const config = {
+      sync: {
+        user,
+        partitionValue: "_id",
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+      },
+      schema: [schema],
+    };
+    const realm = await Realm.open(config);
 
-        // TODO:  fix Error: mySetfrew.mandatory must be of type 'number', got 'number' (2)
-        realm.write(() => {
-            realm.create(schema.name, { 
-                _id: 77,
-                numbers: [2],
-              });  
-        });
+    realm.write(() => {
+      realm.deleteAll();
+    });
 
-        await realm.syncSession.uploadAllLocalChanges();
+    // TODO:  fix Error: mySetfrew.mandatory must be of type 'number', got 'number' (2)
+    realm.write(() => {
+      realm.create(schema.name, {
+        _id: 77,
+        numbers: [2],
+      });
+    });
 
-        let objects = realm.objects(schema.name);
-        TestCase.assertEqual(objects.length, 1, "There should be 1 object");
+    await realm.syncSession.uploadAllLocalChanges();
 
-        // add an element to the Set
-        realm.write(() => {
-            objects[0].numbers.add(5);
-        });
-        await realm.syncSession.uploadAllLocalChanges();
+    let objects = realm.objects(schema.name);
+    TestCase.assertEqual(objects.length, 1, "There should be 1 object");
 
-        // there should still only be one object
-        TestCase.assertEqual(objects.length, 1, "Number of objects should be 1");
-        // .. but the object's Set should have two elements
-        TestCase.assertEqual(objects[0].numbers.size, 2, "Size of `numbers` should be 2");
+    // add an element to the Set
+    realm.write(() => {
+      objects[0].numbers.add(5);
+    });
+    await realm.syncSession.uploadAllLocalChanges();
 
-        // add an element to the Set, then delete another one
-        realm.write(() => {
-            objects[0].numbers.add(6).delete(2);
-        });
-        await realm.syncSession.uploadAllLocalChanges();
+    // there should still only be one object
+    TestCase.assertEqual(objects.length, 1, "Number of objects should be 1");
+    // .. but the object's Set should have two elements
+    TestCase.assertEqual(objects[0].numbers.size, 2, "Size of `numbers` should be 2");
 
-        objects = realm.objects(schema.name);
-        // there should still only be one object
-        TestCase.assertEqual(objects.length, 1, "Number of objects should be 1");
-        // .. but the object's Set should have two elements
-        TestCase.assertEqual(objects[0].numbers.size, 2, "Size of `numbers` should be 2");
+    // add an element to the Set, then delete another one
+    realm.write(() => {
+      objects[0].numbers.add(6).delete(2);
+    });
+    await realm.syncSession.uploadAllLocalChanges();
 
-        realm.write(() => {
-            objects[0].numbers.clear();
-        });
-        await realm.syncSession.uploadAllLocalChanges();
-        objects = realm.objects(schema.name);
-        // there should still only be one object
-        TestCase.assertEqual(objects.length, 1, "Number of objects should still be 1");
-        // .. but the object's Set should have two elements
-        TestCase.assertEqual(objects[0].numbers.size, 0, "Size of `numbers` should be 0");
+    objects = realm.objects(schema.name);
+    // there should still only be one object
+    TestCase.assertEqual(objects.length, 1, "Number of objects should be 1");
+    // .. but the object's Set should have two elements
+    TestCase.assertEqual(objects[0].numbers.size, 2, "Size of `numbers` should be 2");
 
-        realm.close();
-    },
+    realm.write(() => {
+      objects[0].numbers.clear();
+    });
+    await realm.syncSession.uploadAllLocalChanges();
+    objects = realm.objects(schema.name);
+    // there should still only be one object
+    TestCase.assertEqual(objects.length, 1, "Number of objects should still be 1");
+    // .. but the object's Set should have two elements
+    TestCase.assertEqual(objects[0].numbers.size, 0, "Size of `numbers` should be 0");
 
-    async testSetSyncedDownstream() {
-        if (!global.enableSyncTests) return;
+    realm.close();
+  },
 
-        const schema = {
-            name: "SyncedNumbers",
-            primaryKey: "_id",
-            properties: {
-                _id: "int",
-                numbers: "int<>",
-            }
-        };
+  async testSetSyncedDownstream() {
+    if (!global.enableSyncTests) return;
 
-        const appConfig = AppConfig.integrationAppConfig;
-        const app = new Realm.App(appConfig);
-        const credentials = Realm.Credentials.anonymous();
-        const user = await app.logIn(credentials);
-        const config = {
-            sync: {
-                user,
-                partitionValue: "_id",
-                _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-            },
-            schema: [schema]
-        };
-        const realm = await Realm.open(config);
+    const schema = {
+      name: "SyncedNumbers",
+      primaryKey: "_id",
+      properties: {
+        _id: "int",
+        numbers: "int<>",
+      },
+    };
 
-        // clear out any lingering documents
-        realm.write(() => {
-            realm.deleteAll();
-        });
+    const appConfig = AppConfig.integrationAppConfig;
+    const app = new Realm.App(appConfig);
+    const credentials = Realm.Credentials.anonymous();
+    const user = await app.logIn(credentials);
+    const config = {
+      sync: {
+        user,
+        partitionValue: "_id",
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+      },
+      schema: [schema],
+    };
+    const realm = await Realm.open(config);
 
-        const integerArray = [1, 2, 3, 4, 5, 6, 7];
-        realm.write(() => {
-            realm.create(schema.name, {
-                _id: 0,
-                numbers: integerArray
-            });
-        });
-        // make sure everything is synced upstream
-        await realm.syncSession.uploadAllLocalChanges();
+    // clear out any lingering documents
+    realm.write(() => {
+      realm.deleteAll();
+    });
 
-        // make sure everything is in the database
-        let integers = realm.objects(schema.name)[0];
-        TestCase.assertEqual(integers.numbers.size, 7, "There should be 7 integers");
+    const integerArray = [1, 2, 3, 4, 5, 6, 7];
+    realm.write(() => {
+      realm.create(schema.name, {
+        _id: 0,
+        numbers: integerArray,
+      });
+    });
+    // make sure everything is synced upstream
+    await realm.syncSession.uploadAllLocalChanges();
 
-        // make sure we don't have a local copy of the realm
-        realm.close();
-        Realm.deleteFile(config);
+    // make sure everything is in the database
+    let integers = realm.objects(schema.name)[0];
+    TestCase.assertEqual(integers.numbers.size, 7, "There should be 7 integers");
 
-        // create a new local realm and sync from server
-        const syncedRealm = await Realm.open(config)
-        await syncedRealm.syncSession.downloadAllServerChanges();
+    // make sure we don't have a local copy of the realm
+    realm.close();
+    Realm.deleteFile(config);
 
-        // check that our set of integers is the same as before
-        let syncedIntegers = syncedRealm.objects(schema.name)[0].numbers;
-        TestCase.assertEqual(syncedIntegers.size, 7, "There still should be 7 integers");
+    // create a new local realm and sync from server
+    const syncedRealm = await Realm.open(config);
+    await syncedRealm.syncSession.downloadAllServerChanges();
 
-        const intsValues = Array.from(syncedIntegers.values());
-        let locatedElements = 0;
-        // make sure that every element pulled from the database is also
-        // in the original array (this only works because all values in integerArray
-        // are unique)
-        intsValues.forEach(dbValue => {
-            if (integerArray.find(arrrayValue => arrrayValue == dbValue)) {
-                locatedElements++;
-            }
-        });
-        TestCase.assertEqual(locatedElements, integerArray.length, "Downloaded integers should be the same as uploaded integers");
+    // check that our set of integers is the same as before
+    let syncedIntegers = syncedRealm.objects(schema.name)[0].numbers;
+    TestCase.assertEqual(syncedIntegers.size, 7, "There still should be 7 integers");
 
-        // clean up the objects we created
-        syncedRealm.write(() => {
-            syncedRealm.deleteAll();
-        });
-        await syncedRealm.syncSession.uploadAllLocalChanges();
-        realm.close();
-    },
-};  // module.exports
+    const intsValues = Array.from(syncedIntegers.values());
+    let locatedElements = 0;
+    // make sure that every element pulled from the database is also
+    // in the original array (this only works because all values in integerArray
+    // are unique)
+    intsValues.forEach((dbValue) => {
+      if (integerArray.find((arrrayValue) => arrrayValue == dbValue)) {
+        locatedElements++;
+      }
+    });
+    TestCase.assertEqual(
+      locatedElements,
+      integerArray.length,
+      "Downloaded integers should be the same as uploaded integers",
+    );
+
+    // clean up the objects we created
+    syncedRealm.write(() => {
+      syncedRealm.deleteAll();
+    });
+    await syncedRealm.syncSession.uploadAllLocalChanges();
+    realm.close();
+  },
+}; // module.exports

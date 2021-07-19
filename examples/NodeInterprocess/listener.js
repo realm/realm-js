@@ -16,21 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+"use strict";
 
-var Realm = require('realm');
+var Realm = require("realm");
 
 let winstonRealm = new Realm({
-  path: 'winston.realm'
+  path: "winston.realm",
 });
 
 // Register listener to print out log messages at error level
-winstonRealm.objects('Log').filtered('level = "error"').addListener((logs, changes) => {
-  changes.insertions.map((index) => {
-    let log = logs[index];
+winstonRealm
+  .objects("Log")
+  .filtered('level = "error"')
+  .addListener((logs, changes) => {
+    changes.insertions.map((index) => {
+      let log = logs[index];
 
-    // eslint-disable-next-line no-console
-    console.log(log.message);
-  })
-});
-
+      // eslint-disable-next-line no-console
+      console.log(log.message);
+    });
+  });

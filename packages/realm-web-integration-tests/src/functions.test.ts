@@ -23,17 +23,17 @@ import { Credentials } from "realm-web";
 import { createApp } from "./utils";
 
 interface TranslateFunctions {
-    translate: (sentence: string, languages: string) => Promise<string>;
+  translate: (sentence: string, languages: string) => Promise<string>;
 }
 
 describe("Realm.FunctionsFactory", () => {
-    it("can be called authenticated", async () => {
-        const app = createApp<TranslateFunctions>();
-        // Login a user
-        const credentials = Credentials.anonymous();
-        const user = await app.logIn(credentials);
-        // Call a function
-        const response = await user.functions.translate("hello", "en_fr");
-        expect(response).to.equal("bonjour");
-    });
+  it("can be called authenticated", async () => {
+    const app = createApp<TranslateFunctions>();
+    // Login a user
+    const credentials = Credentials.anonymous();
+    const user = await app.logIn(credentials);
+    // Call a function
+    const response = await user.functions.translate("hello", "en_fr");
+    expect(response).to.equal("bonjour");
+  });
 });

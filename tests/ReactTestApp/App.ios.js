@@ -19,8 +19,8 @@
 'use strict';
 import React from 'react';
 import {StyleSheet, Text, View, TouchableHighlight} from 'react-native';
-import { test } from 'shelljs';
-const tests = require('./tests')
+import {test} from 'shelljs';
+const tests = require('./tests');
 export default class ReactTests extends React.Component {
   render() {
     return (

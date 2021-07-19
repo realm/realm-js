@@ -19,8 +19,7 @@
 // Inspired by
 // https://stackoverflow.com/questions/51676159/puppeteer-console-log-how-to-look-inside-jshandleobject/66801550#66801550
 
-const chalk = require('chalk');
-const puppeteer = require('puppeteer');
+const chalk = require("chalk");
 
 const COLORS = {
   log: chalk.gray,
@@ -30,7 +29,7 @@ const COLORS = {
 
 function serializeArg(arg) {
   if (typeof arg.evaluate === "function") {
-    return arg.evaluate(value => {
+    return arg.evaluate((value) => {
       if (value instanceof Error) {
         return value.stack;
       } else if (value && value.toString === "function") {
@@ -47,8 +46,8 @@ function serializeArg(arg) {
 async function handleConsole(msg) {
   const args = await Promise.all(msg.args().map(serializeArg));
   const type = msg.type();
-  const color = COLORS[type] || chalk.white;
-  const log = console[type] || console.log;
+  const color = COLORS[type] || chalk.white;
+  const log = console[type] || console.log;
   log(color(`[chrome:${type}]`), ...args);
 }
 

@@ -20,8 +20,6 @@
  * @param obj The object to remove keys (and undefined values from)
  * @returns A new object without the keys where the value is undefined.
  */
-export function removeKeysWithUndefinedValues<T extends object>(obj: T): T {
-    return Object.fromEntries(
-        Object.entries(obj).filter(entry => typeof entry[1] !== "undefined"),
-    ) as T;
+export function removeKeysWithUndefinedValues<T extends Record<string, unknown>>(obj: T): T {
+  return Object.fromEntries(Object.entries(obj).filter((entry) => typeof entry[1] !== "undefined")) as T;
 }

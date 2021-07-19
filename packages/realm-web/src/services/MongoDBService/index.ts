@@ -32,17 +32,12 @@ export { MongoDBCollection };
  * @returns The collection.
  */
 function createCollection<T extends Realm.Services.MongoDB.Document = any>(
-    fetcher: Fetcher,
-    serviceName: string,
-    databaseName: string,
-    collectionName: string,
+  fetcher: Fetcher,
+  serviceName: string,
+  databaseName: string,
+  collectionName: string,
 ): MongoDBCollection<T> {
-    return new MongoDBCollection<T>(
-        fetcher,
-        serviceName,
-        databaseName,
-        collectionName,
-    );
+  return new MongoDBCollection<T>(fetcher, serviceName, databaseName, collectionName);
 }
 
 /**
@@ -54,19 +49,15 @@ function createCollection<T extends Realm.Services.MongoDB.Document = any>(
  * @param databaseName A database name
  * @returns The database.
  */
-function createDatabase(
-    fetcher: Fetcher,
-    serviceName: string,
-    databaseName: string,
-): Realm.Services.MongoDBDatabase {
-    return {
-        collection: createCollection.bind(
-            null,
-            fetcher,
-            serviceName,
-            databaseName,
-        ) as Realm.Services.MongoDBDatabase["collection"],
-    };
+function createDatabase(fetcher: Fetcher, serviceName: string, databaseName: string): Realm.Services.MongoDBDatabase {
+  return {
+    collection: createCollection.bind(
+      null,
+      fetcher,
+      serviceName,
+      databaseName,
+    ) as Realm.Services.MongoDBDatabase["collection"],
+  };
 }
 
 /**
@@ -78,5 +69,5 @@ function createDatabase(
  * @returns The service.
  */
 export function createService(fetcher: Fetcher, serviceName = "mongo-db") {
-    return { db: createDatabase.bind(null, fetcher, serviceName) };
+  return { db: createDatabase.bind(null, fetcher, serviceName) };
 }

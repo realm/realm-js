@@ -22,7 +22,7 @@ import cp from "child_process";
 
 const version = process.env.npm_package_version as string;
 if (typeof version !== "string") {
-    throw new Error("Failed to determine package version");
+  throw new Error("Failed to determine package version");
 }
 
 const readmePath = path.resolve(__dirname, "../README.md");
@@ -30,18 +30,13 @@ const changelogPath = path.resolve(__dirname, "../CHANGELOG.md");
 
 // Update the readme file to use the new version in the script-tag.
 const readmeContent = fs.readFileSync(readmePath, "utf8");
-const readmeContentReplaced = readmeContent.replace(
-    /realm-web@[^/]+/,
-    `realm-web@${version}`,
-);
+const readmeContentReplaced = readmeContent.replace(/realm-web@[^/]+/, `realm-web@${version}`);
 fs.writeFileSync(readmePath, readmeContentReplaced);
 
 // Update the changelog with the current version and date
 const changelog = fs.readFileSync(changelogPath, "utf8");
 const today = new Date().toISOString().split("T")[0];
-const changelogReplaced = changelog
-    .replace(/\?\.\?\.\?/, version)
-    .replace(/[\d]{4}-\?\?-\?\?/, today);
+const changelogReplaced = changelog.replace(/\?\.\?\.\?/, version).replace(/[\d]{4}-\?\?-\?\?/, today);
 // Update the changelog
 fs.writeFileSync(changelogPath, changelogReplaced);
 

@@ -16,94 +16,80 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-    NetworkTransport,
-    Request,
-    ResponseHandler,
-    Headers,
-    Fetch,
-    AbortController,
-} from "./types";
+import { NetworkTransport, Request, ResponseHandler, Headers, Fetch, AbortController } from "./types";
 
 export class DefaultNetworkTransport implements NetworkTransport {
-    public static fetch: Fetch;
-    public static AbortController: AbortController;
+  public static fetch: Fetch;
+  public static AbortController: AbortController;
 
-    public static DEFAULT_HEADERS = {
-        "Content-Type": "application/json",
-    };
+  public static DEFAULT_HEADERS = {
+    "Content-Type": "application/json",
+  };
 
-    constructor() {
-        if (!DefaultNetworkTransport.fetch) {
-            throw new Error(
-                "DefaultNetworkTransport.fetch must be set before it's used",
-            );
-        }
-        if (!DefaultNetworkTransport.AbortController) {
-            throw new Error(
-                "DefaultNetworkTransport.AbortController must be set before it's used",
-            );
-        }
+  constructor() {
+    if (!DefaultNetworkTransport.fetch) {
+      throw new Error("DefaultNetworkTransport.fetch must be set before it's used");
     }
-
-    public fetchWithCallbacks<RequestBody extends any>(
-        request: Request<RequestBody>,
-        handler: ResponseHandler,
-    ) {
-        // tslint:disable-next-line: no-console
-        this.fetch(request)
-            .then(async response => {
-                const decodedBody = await response.text();
-                // Pull out the headers of the response
-                const responseHeaders: Headers = {};
-                response.headers.forEach((value, key) => {
-                    responseHeaders[key] = value;
-                });
-                return {
-                    statusCode: response.status,
-                    headers: responseHeaders,
-                    body: decodedBody,
-                };
-            })
-            .then(r => handler.onSuccess(r))
-            .catch(e => handler.onError(e));
+    if (!DefaultNetworkTransport.AbortController) {
+      throw new Error("DefaultNetworkTransport.AbortController must be set before it's used");
     }
+  }
 
-    public async fetch<RequestBody extends any>(request: Request<RequestBody>) {
-        const { timeoutMs, url, ...rest } = request;
-        const { signal, cancelTimeout } = this.createTimeoutSignal(timeoutMs);
-        try {
-            // We'll await the response to catch throw our own error
-            return await DefaultNetworkTransport.fetch(url, {
-                signal, // Used to signal timeouts
-                ...rest,
-            });
-        } finally {
-            // Whatever happens, cancel any timeout
-            cancelTimeout();
-        }
-    }
+  public fetchWithCallbacks<RequestBody extends any>(request: Request<RequestBody>, handler: ResponseHandler) {
+    // tslint:disable-next-line: no-console
+    this.fetch(request)
+      .then(async (response) => {
+        const decodedBody = await response.text();
+        // Pull out the headers of the response
+        const responseHeaders: Headers = {};
+        response.headers.forEach((value, key) => {
+          responseHeaders[key] = value;
+        });
+        return {
+          statusCode: response.status,
+          headers: responseHeaders,
+          body: decodedBody,
+        };
+      })
+      .then((r) => handler.onSuccess(r))
+      .catch((e) => handler.onError(e));
+  }
 
-    private createTimeoutSignal(timeoutMs: number | undefined) {
-        if (typeof timeoutMs === "number") {
-            const controller = new DefaultNetworkTransport.AbortController();
-            // Call abort after a specific number of milliseconds
-            const timeout = setTimeout(() => {
-                controller.abort();
-            }, timeoutMs);
-            return {
-                signal: controller.signal,
-                cancelTimeout: () => {
-                    clearTimeout(timeout);
-                },
-            };
-        } else {
-            return {
-                signal: undefined,
-                cancelTimeout: () => {
-                    /* No-op */
-                },
-            };
-        }
+  public async fetch<RequestBody extends any>(request: Request<RequestBody>) {
+    const { timeoutMs, url, ...rest } = request;
+    const { signal, cancelTimeout } = this.createTimeoutSignal(timeoutMs);
+    try {
+      // We'll await the response to catch throw our own error
+      return await DefaultNetworkTransport.fetch(url, {
+        signal, // Used to signal timeouts
+        ...rest,
+      });
+    } finally {
+      // Whatever happens, cancel any timeout
+      cancelTimeout();
     }
+  }
+
+  private createTimeoutSignal(timeoutMs: number | undefined) {
+    if (typeof timeoutMs === "number") {
+      const controller = new DefaultNetworkTransport.AbortController();
+      // Call abort after a specific number of milliseconds
+      const timeout = setTimeout(() => {
+        controller.abort();
+      }, timeoutMs);
+      return {
+        signal: controller.signal,
+        cancelTimeout: () => {
+          clearTimeout(timeout);
+        },
+      };
+    } else {
+      return {
+        signal: undefined,
+        cancelTimeout: () => {
+          /* No-op */
+        },
+      };
+    }
+  }
 }

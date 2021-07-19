@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
+    "@types/fs-extra": "^9.0.12",
     "@types/mocha": "^5.2.6",
     "concurrently": "^6.0.2",
     "fs-extra": "^7.0.1",

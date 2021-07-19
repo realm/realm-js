@@ -61,6 +61,6 @@ The uncommented function below is just a placeholder and will result in failure.
 */
 
 exports = ({ token, tokenId, username, password }) => {
-    // will not reset the password
-    return { status: "fail" };
+  // will not reset the password
+  return { status: "fail" };
 };

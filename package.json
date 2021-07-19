@@ -47,6 +47,7 @@
   "scripts": {
     "lerna:bootstrap": "lerna bootstrap",
     "lerna:lint": "lerna run lint",
+    "lerna:lint:fix": "lerna run lint --no-bail -- -- --fix",
     "lint": "eslint .",
     "get-version": "node -p process.env.npm_package_version",
     "set-version": "scripts/set-version.sh",

@@ -21,15 +21,15 @@ import { run } from "./index";
 const devtools = "DEV_TOOLS" in process.env;
 
 run(devtools).then(
-    () => {
-        if (!devtools) {
-            process.exit();
-        }
-    },
-    err => {
-        console.error(err);
-        if (!devtools) {
-            process.exit(1);
-        }
-    },
+  () => {
+    if (!devtools) {
+      process.exit();
+    }
+  },
+  (err) => {
+    console.error(err);
+    if (!devtools) {
+      process.exit(1);
+    }
+  },
 );

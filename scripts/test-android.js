@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
-
 var shell = require("shelljs");
 
 shell.set("-e");
@@ -26,8 +24,8 @@ shell.pushd("./tests/react-test-app");
 
 shell.exec("npm install");
 
-if (process.platform !== "win32") { 
-    shell.env["PATH"] = "/opt/android-sdk-linux/platform-tools:$PATH"
+if (process.platform !== "win32") {
+  shell.env["PATH"] = "/opt/android-sdk-linux/platform-tools:$PATH";
 }
 
 shell.exec("npm install realm");
@@ -59,6 +57,6 @@ shell.exec("adb shell am start -n io.realm.react.testapp/.MainActivity");
 
 shell.popd();
 
-shell.exec("adb shell \"logcat -c && logcat | grep -m 1 __REALM_JS_TESTS_COMPLETED__\"");
+shell.exec('adb shell "logcat -c && logcat | grep -m 1 __REALM_JS_TESTS_COMPLETED__"');
 
 shell.exec("adb pull /sdcard/tests.xml");

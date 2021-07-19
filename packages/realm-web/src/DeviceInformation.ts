@@ -31,91 +31,90 @@ export const DEVICE_ID_STORAGE_KEY = "deviceId";
 declare const __SDK_VERSION__: string;
 
 enum DeviceFields {
-    DEVICE_ID = "deviceId",
-    APP_ID = "appId",
-    APP_VERSION = "appVersion",
-    PLATFORM = "platform",
-    PLATFORM_VERSION = "platformVersion",
-    SDK_VERSION = "sdkVersion",
+  DEVICE_ID = "deviceId",
+  APP_ID = "appId",
+  APP_VERSION = "appVersion",
+  PLATFORM = "platform",
+  PLATFORM_VERSION = "platformVersion",
+  SDK_VERSION = "sdkVersion",
 }
 
 type DeviceInformationValues = {
-    [DeviceFields.PLATFORM]: string;
-    [DeviceFields.PLATFORM_VERSION]: string;
-    [DeviceFields.SDK_VERSION]: string;
-    [DeviceFields.APP_ID]?: string;
-    [DeviceFields.APP_VERSION]?: string;
-    [DeviceFields.DEVICE_ID]?: ObjectId;
+  [DeviceFields.PLATFORM]: string;
+  [DeviceFields.PLATFORM_VERSION]: string;
+  [DeviceFields.SDK_VERSION]: string;
+  [DeviceFields.APP_ID]?: string;
+  [DeviceFields.APP_VERSION]?: string;
+  [DeviceFields.DEVICE_ID]?: ObjectId;
 };
 
 type DeviceInformationParams = {
-    appId?: string;
-    appVersion?: string;
-    deviceId?: ObjectId;
+  appId?: string;
+  appVersion?: string;
+  deviceId?: ObjectId;
 };
 
 /**
  * Information describing the device, app and SDK.
  */
 export class DeviceInformation implements DeviceInformationValues {
-    /**
-     * The id of the device.
-     */
-    public readonly deviceId: ObjectId | undefined;
+  /**
+   * The id of the device.
+   */
+  public readonly deviceId: ObjectId | undefined;
 
-    /**
-     * The id of the Realm App.
-     */
-    public readonly appId: string | undefined;
+  /**
+   * The id of the Realm App.
+   */
+  public readonly appId: string | undefined;
 
-    /**
-     * The version of the Realm App.
-     */
-    public readonly appVersion: string | undefined;
+  /**
+   * The version of the Realm App.
+   */
+  public readonly appVersion: string | undefined;
 
-    /**
-     * The name of the platform / browser.
-     */
-    public readonly platform: string;
+  /**
+   * The name of the platform / browser.
+   */
+  public readonly platform: string;
 
-    /**
-     * The version of the platform / browser.
-     */
-    public readonly platformVersion: string;
+  /**
+   * The version of the platform / browser.
+   */
+  public readonly platformVersion: string;
 
-    /**
-     * The version of the Realm Web SDK (constant provided by Rollup).
-     */
-    public readonly sdkVersion: string = __SDK_VERSION__;
+  /**
+   * The version of the Realm Web SDK (constant provided by Rollup).
+   */
+  public readonly sdkVersion: string = __SDK_VERSION__;
 
-    /**
-     * @param params Construct the device information from these parameters.
-     */
-    public constructor({
-        appId,
-        appVersion,
-        deviceId,
-    }: DeviceInformationParams) {
-        const environment = getEnvironment();
-        this.platform = environment.platform;
-        this.platformVersion = environment.platformVersion;
-        this.appId = appId;
-        this.appVersion = appVersion;
-        this.deviceId = deviceId;
-    }
+  /**
+   * @param params Construct the device information from these parameters.
+   * @param params.appId
+   * @param params.appVersion
+   * @param params.deviceId
+   */
+  public constructor({ appId, appVersion, deviceId }: DeviceInformationParams) {
+    const environment = getEnvironment();
+    this.platform = environment.platform;
+    this.platformVersion = environment.platformVersion;
+    this.appId = appId;
+    this.appVersion = appVersion;
+    this.deviceId = deviceId;
+  }
 
-    /**
-     * @returns An base64 URI encoded representation of the device information.
-     */
-    public encode(): string {
-        const obj = removeKeysWithUndefinedValues(this);
-        return Base64.encode(JSON.stringify(obj));
-    }
+  /**
+   * @returns An base64 URI encoded representation of the device information.
+   */
+  public encode(): string {
+    const obj = removeKeysWithUndefinedValues(this as Record<string, unknown>);
+    return Base64.encode(JSON.stringify(obj));
+  }
 
-    /**
-     * @returns The defaults
-     */
-    public toJSON() {
-        return removeKeysWithUndefinedValues(this);
-    }
+  /**
+   * @returns The defaults
+   */
+  public toJSON(): Record<string, unknown> {
+    return removeKeysWithUndefinedValues(this as Record<string, unknown>);
+  }
 }

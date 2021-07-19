@@ -23,64 +23,64 @@ import * as RealmTests from 'realm-tests';
 import ListViewTest from './listview-test';
 
 RealmTests.registerTests({
-    ListViewTest,
+  ListViewTest,
 });
 
 const realmTestEmitter = new NativeEventEmitter(
-    NativeModules.RealmTestEventEmitter,
+  NativeModules.RealmTestEventEmitter,
 );
 // Listen for event signalling native is ready to receive test names
 realmTestEmitter.addListener('test-names', () => {
-    NativeModules.Realm.emit('realm-test-names', getTestNames());
+  NativeModules.Realm.emit('realm-test-names', getTestNames());
 });
 
 // Listen for event to run a particular test.
 realmTestEmitter.addListener('run-test', async ({suite, name}) => {
-    let error;
-    try {
-        await RealmTests.runTest(suite, name);
-    } catch (e) {
-        error = '' + e;
-    }
+  let error;
+  try {
+    await RealmTests.runTest(suite, name);
+  } catch (e) {
+    error = '' + e;
+  }
 
-    NativeModules.Realm.emit('realm-test-finished', error);
+  NativeModules.Realm.emit('realm-test-finished', error);
 });
-realmTestEmitter.addListener('dummy', () => { });
+realmTestEmitter.addListener('dummy', () => {});
 
 export function getTestNames() {
-    return RealmTests.getTestNames();
+  return RealmTests.getTestNames();
 }
 
 export async function runTests() {
-    let testNames = getTestNames();
-    let passed = true;
+  let testNames = getTestNames();
+  let passed = true;
 
-    for (let suiteName in testNames) {
-        console.log('Starting ' + suiteName);
+  for (let suiteName in testNames) {
+    console.log('Starting ' + suiteName);
 
-        for (let testName of testNames[suiteName]) {
-            try {
-                await runTest(suiteName, testName);
-            } catch (e) {
-                passed = false;
-            }
-        }
+    for (let testName of testNames[suiteName]) {
+      try {
+        await runTest(suiteName, testName);
+      } catch (e) {
+        passed = false;
+      }
     }
+  }
 
-    return passed;
+  return passed;
 }
 
 export async function runTest(suiteName, testName) {
-    await RealmTests.runTest(suiteName, 'beforeEach');
+  await RealmTests.runTest(suiteName, 'beforeEach');
 
-    try {
-        await RealmTests.runTest(suiteName, testName);
-        console.warn('+ ' + testName);
-    } catch (e) {
-        console.error('- ' + testName);
-        console.error(e.message || e);
-        throw e;
-    } finally {
-        await RealmTests.runTest(suiteName, 'afterEach');
-    }
+  try {
+    await RealmTests.runTest(suiteName, testName);
+    console.warn('+ ' + testName);
+  } catch (e) {
+    console.error('- ' + testName);
+    console.error(e.message || e);
+    throw e;
+  } finally {
+    await RealmTests.runTest(suiteName, 'afterEach');
+  }
 }

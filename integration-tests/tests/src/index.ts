@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,19 +19,19 @@
 console.log("Loading Realm Integration Tests");
 
 if (!global.fs) {
-    throw new Error("Expected 'fs' to be available as a global");
+  throw new Error("Expected 'fs' to be available as a global");
 }
 
 if (!global.path) {
-    throw new Error("Expected 'path' to be available as a global");
+  throw new Error("Expected 'path' to be available as a global");
 }
 
 if (!global.fetch) {
-    throw new Error("Expected 'fetch' to be available as a global");
+  throw new Error("Expected 'fetch' to be available as a global");
 }
 
 if (!global.environment || typeof global.environment !== "object") {
-    throw new Error("Expected 'environment' to be available as a global");
+  throw new Error("Expected 'environment' to be available as a global");
 }
 
 // Patch in a function that can skip running tests in specific environments

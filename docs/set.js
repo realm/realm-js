@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+// The "Set" name clash with the built-in class of the same name. We don't care since this is just documentation.
+/* eslint-disable no-redeclare */
+
 /**
  * Instances of this class will be returned when accessing object properties whose type is `"Set"`
  * (see {@linkplain Realm~ObjectSchemaProperty ObjectSchemaProperty}).
@@ -35,43 +38,43 @@
  * @memberof Realm
  */
 class Set extends Collection {
-    /**
-     * Remove a value from the Set
-     * @param {T} value Value to delete from the Set
-     * @throws {Error} If not inside a write transaction.
-     * @returns {boolean}: true if the value existed in the Set, false otherwise
-     */
-     delete(value) { }
+  /**
+   * Remove a value from the Set
+   * @param {T} value Value to delete from the Set
+   * @throws {Error} If not inside a write transaction.
+   * @returns {boolean}: true if the value existed in the Set, false otherwise
+   */
+  delete(value) {}
 
-    /**
-     * Remove all values from the Set
-     * @throws {Error} If not inside a write transaction.
-     * @returns {void} 
-     */
-     clear() { }
+  /**
+   * Remove all values from the Set
+   * @throws {Error} If not inside a write transaction.
+   * @returns {void}
+   */
+  clear() {}
 
-     /**
-     * Add a value to the Set
-     *
-     * @param {T} value Value to add to the Set
-     * @throws {TypeError} If a `value` is not of a type which can be stored in
-     *   the Set, or if an object being added to the Set does not match the
-     *   {@linkcode Realm~ObjectSchema object schema} for the Set.
-     *
-     * @throws {Error} If not inside a write transaction.
-     * @returns {Realm.Set}: The Set itself, after adding the element
-     */
-     add(value) { }
+  /**
+   * Add a value to the Set
+   *
+   * @param {T} value Value to add to the Set
+   * @throws {TypeError} If a `value` is not of a type which can be stored in
+   *   the Set, or if an object being added to the Set does not match the
+   *   {@linkcode Realm~ObjectSchema object schema} for the Set.
+   *
+   * @throws {Error} If not inside a write transaction.
+   * @returns {Realm.Set}: The Set itself, after adding the element
+   */
+  add(value) {}
 
-     /**
-     * Check for the existence of a value in the Set
-     *
-     * @param {T} value Value to to search for in the Set
-     * @throws {TypeError} If a `value` is not of a type which can be stored in
-     *   the Set, or if an object being added to the Set does not match the
-     *   {@linkcode Realm~ObjectSchema object schema} for the Set.
-     *
-     * @returns {boolean}: True if the value exists in the Set, false otherwise
-     */
-     has(value) { }
+  /**
+   * Check for the existence of a value in the Set
+   *
+   * @param {T} value Value to to search for in the Set
+   * @throws {TypeError} If a `value` is not of a type which can be stored in
+   *   the Set, or if an object being added to the Set does not match the
+   *   {@linkcode Realm~ObjectSchema object schema} for the Set.
+   *
+   * @returns {boolean}: True if the value exists in the Set, false otherwise
+   */
+  has(value) {}
 }

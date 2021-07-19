@@ -22,33 +22,33 @@ import { ObjectId } from "bson";
 import { DeviceInformation } from "../DeviceInformation";
 
 describe("DeviceInformation", () => {
-    it("it can be constructed from almost nothing", () => {
-        const info = new DeviceInformation({});
-        expect(info).deep.equals({
-            platform: "node",
-            platformVersion: process.versions.node,
-            sdkVersion: "0.0.0-test", // Mocked version injected by env.js
-            appId: undefined,
-            appVersion: undefined,
-            deviceId: undefined,
-        });
+  it("it can be constructed from almost nothing", () => {
+    const info = new DeviceInformation({});
+    expect(info).deep.equals({
+      platform: "node",
+      platformVersion: process.versions.node,
+      sdkVersion: "0.0.0-test", // Mocked version injected by env.js
+      appId: undefined,
+      appVersion: undefined,
+      deviceId: undefined,
     });
+  });
 
-    it("it can be constructed with app id, version and device id", () => {
-        const deviceId = new ObjectId("000000000000000000001337");
-        const info = new DeviceInformation({
-            appId: "my-app",
-            appVersion: "0.0.0-app-test",
-            deviceId,
-        });
-        expect(info).deep.equals({
-            appId: "my-app",
-            appVersion: "0.0.0-app-test",
-            // Other values
-            platform: "node",
-            platformVersion: process.versions.node,
-            sdkVersion: "0.0.0-test", // Mocked version injected by env.js
-            deviceId,
-        });
+  it("it can be constructed with app id, version and device id", () => {
+    const deviceId = new ObjectId("000000000000000000001337");
+    const info = new DeviceInformation({
+      appId: "my-app",
+      appVersion: "0.0.0-app-test",
+      deviceId,
     });
+    expect(info).deep.equals({
+      appId: "my-app",
+      appVersion: "0.0.0-app-test",
+      // Other values
+      platform: "node",
+      platformVersion: process.versions.node,
+      sdkVersion: "0.0.0-test", // Mocked version injected by env.js
+      deviceId,
+    });
+  });
 });

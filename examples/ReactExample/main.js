@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+"use strict";
 
-import { AppRegistry } from 'react-native';
-import TodoApp from './components/todo-app';
+import { AppRegistry } from "react-native";
+import TodoApp from "./components/todo-app";
 
-AppRegistry.registerComponent('ReactExample', () => TodoApp);
+AppRegistry.registerComponent("ReactExample", () => TodoApp);

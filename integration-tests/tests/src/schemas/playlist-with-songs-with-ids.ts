@@ -21,52 +21,52 @@ import Realm from "realm";
 /* tslint:disable max-classes-per-file */
 
 export interface IPlaylist {
-    _id: number;
-    title: string;
-    songs: Realm.List<ISong>;
-    related: Realm.List<IPlaylist>;
+  _id: number;
+  title: string;
+  songs: Realm.List<ISong>;
+  related: Realm.List<IPlaylist>;
 }
 
 export const PlaylistSchema: Realm.ObjectSchema = {
-    name: "Playlist",
-    primaryKey: "_id",
-    properties: {
-        _id: "int",
-        title: "string",
-        songs: "Song[]",
-        related: "Playlist[]",
-    },
+  name: "Playlist",
+  primaryKey: "_id",
+  properties: {
+    _id: "int",
+    title: "string",
+    songs: "Song[]",
+    related: "Playlist[]",
+  },
 };
 
 export class Playlist extends Realm.Object implements IPlaylist {
-    _id: number;
-    title: string;
-    songs: Realm.List<Song>;
-    related: Realm.List<Playlist>;
+  _id: number;
+  title: string;
+  songs: Realm.List<Song>;
+  related: Realm.List<Playlist>;
 
-    static schema = PlaylistSchema;
+  static schema = PlaylistSchema;
 }
 
 export interface ISong {
-    _id: number;
-    artist: string;
-    title: string;
+  _id: number;
+  artist: string;
+  title: string;
 }
 
 export const SongSchema: Realm.ObjectSchema = {
-    name: "Song",
-    primaryKey: "_id",
-    properties: {
-        _id: "int",
-        artist: "string",
-        title: "string",
-    },
+  name: "Song",
+  primaryKey: "_id",
+  properties: {
+    _id: "int",
+    artist: "string",
+    title: "string",
+  },
 };
 
 export class Song extends Realm.Object implements ISong {
-    _id: number;
-    artist: string;
-    title: string;
+  _id: number;
+  artist: string;
+  title: string;
 
-    static schema = SongSchema;
+  static schema = SongSchema;
 }

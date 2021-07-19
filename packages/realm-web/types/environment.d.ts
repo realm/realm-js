@@ -21,37 +21,29 @@
  * This should reflect the lowest common denominator across environemnts.
  */
 interface Console {
-    /**
-     * Log something.
-     */
-    log(...data: any[]): void;
+  /**
+   * Log something.
+   */
+  log(...data: unknown[]): void;
 
-    /**
-     * Log a warning.
-     */
-    warn(...data: any[]): void;
+  /**
+   * Log a warning.
+   */
+  warn(...data: unknown[]): void;
 
-    /**
-     * Log an error.
-     */
-    error(...data: any[]): void;
+  /**
+   * Log an error.
+   */
+  error(...data: unknown[]): void;
 }
 
 declare const console: Console;
 
 // Timer related stuff
-type TimerHandle = any;
-type TimerHandler = string | Function;
-declare function setTimeout(
-    handler: TimerHandler,
-    timeout?: number,
-    ...arguments: any[]
-): TimerHandle;
-declare function setInterval(
-    handler: TimerHandler,
-    timeout?: number,
-    ...arguments: any[]
-): TimerHandle;
+type TimerHandle = unknown;
+type TimerHandler = string | (() => void);
+declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: unknown[]): TimerHandle;
+declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: unknown[]): TimerHandle;
 declare function clearInterval(handle?: TimerHandle): void;
 declare function clearTimeout(handle?: TimerHandle): void;
 

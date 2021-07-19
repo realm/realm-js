@@ -25,91 +25,91 @@ import dts from "rollup-plugin-dts";
 import pkg from "./package.json";
 
 const replacer = replace({
-    __SDK_VERSION__: JSON.stringify(pkg.version),
+  __SDK_VERSION__: JSON.stringify(pkg.version),
 });
 
 export default [
-    {
-        input: "src/node/index.ts",
-        output: [
-            {
-                file: pkg.main,
-                format: "cjs",
-            },
-            {
-                file: pkg.module,
-                format: "es",
-            },
-        ],
-        plugins: [
-            commonjs(),
-            typescript({
-                tsconfig: "src/node/tsconfig.json",
-            }),
-            nodeResolve(),
-            replacer,
-        ],
-        external: ["bson", "node-fetch", "abort-controller"],
+  {
+    input: "src/node/index.ts",
+    output: [
+      {
+        file: pkg.main,
+        format: "cjs",
+      },
+      {
+        file: pkg.module,
+        format: "es",
+      },
+    ],
+    plugins: [
+      commonjs(),
+      typescript({
+        tsconfig: "src/node/tsconfig.json",
+      }),
+      nodeResolve(),
+      replacer,
+    ],
+    external: ["bson", "node-fetch", "abort-controller"],
+  },
+  {
+    input: "src/dom/index.ts",
+    output: [
+      {
+        file: pkg.browser[pkg.main],
+        format: "cjs",
+      },
+      {
+        file: pkg.browser[pkg.module],
+        format: "es",
+      },
+    ],
+    plugins: [
+      commonjs(),
+      typescript({
+        tsconfig: "src/dom/tsconfig.json",
+      }),
+      nodeResolve({
+        browser: true,
+      }),
+      replacer,
+    ],
+    external: ["bson"],
+  },
+  {
+    input: "src/dom/index.ts",
+    output: [
+      {
+        file: "dist/bundle.iife.js",
+        name: "Realm",
+        format: "iife",
+      },
+    ],
+    plugins: [
+      commonjs(),
+      typescript({
+        tsconfig: "src/dom/tsconfig.json",
+      }),
+      nodeResolve({
+        browser: true,
+        preferBuiltins: false,
+      }),
+      replacer,
+    ],
+  },
+  {
+    input: "types/generated/dom/index.d.ts",
+    output: {
+      file: "dist/bundle.d.ts",
+      format: "es",
+      intro: '/// <reference path="../types/realm/app.d.ts" />',
     },
-    {
-        input: "src/dom/index.ts",
-        output: [
-            {
-                file: pkg.browser[pkg.main],
-                format: "cjs",
-            },
-            {
-                file: pkg.browser[pkg.module],
-                format: "es",
-            },
-        ],
-        plugins: [
-            commonjs(),
-            typescript({
-                tsconfig: "src/dom/tsconfig.json",
-            }),
-            nodeResolve({
-                browser: true,
-            }),
-            replacer,
-        ],
-        external: ["bson"],
-    },
-    {
-        input: "src/dom/index.ts",
-        output: [
-            {
-                file: "dist/bundle.iife.js",
-                name: "Realm",
-                format: "iife",
-            },
-        ],
-        plugins: [
-            commonjs(),
-            typescript({
-                tsconfig: "src/dom/tsconfig.json",
-            }),
-            nodeResolve({
-                browser: true,
-                preferBuiltins: false,
-            }),
-            replacer,
-        ],
-    },
-    {
-        input: "types/generated/dom/index.d.ts",
-        output: {
-            file: "dist/bundle.d.ts",
-            format: "es",
-            intro: '/// <reference path="../types/realm/app.d.ts" />',
-        },
-        plugins: [
-            dts({
-                // Ensures that the realm-network-transport types are included in the bundle
-                respectExternal: true,
-            }),
-            nodeResolve(),
-        ],
-        external: ["bson"],
-    },
+    plugins: [
+      dts({
+        // Ensures that the realm-network-transport types are included in the bundle
+        respectExternal: true,
+      }),
+      nodeResolve(),
+    ],
+    external: ["bson"],
+  },
 ];

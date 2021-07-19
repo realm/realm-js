@@ -28,12 +28,12 @@
  * @memberof Realm
  */
 class Results extends Collection {
-    /**
-     * Bulk update objects in the collection.
-     * @param {string} property - The name of the property.
-     * @param {string} value - The updated property value.
-     * @throws {Error} If no property with the name exists.
-     * @since 2.0.0-rc20
-     */
-    update(property, value) { }
+  /**
+   * Bulk update objects in the collection.
+   * @param {string} property - The name of the property.
+   * @param {string} value - The updated property value.
+   * @throws {Error} If no property with the name exists.
+   * @since 2.0.0-rc20
+   */
+  update(property, value) {}
 }

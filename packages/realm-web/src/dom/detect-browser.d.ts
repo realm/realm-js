@@ -20,5 +20,5 @@
  * Used by the "detect-browser" package.
  */
 declare namespace NodeJS {
-    type Platform = string;
+  type Platform = string;
 }

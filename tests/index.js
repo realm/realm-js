@@ -19,74 +19,79 @@
 /* eslint-env es6, node */
 /* eslint-disable no-console */
 
-'use strict';
-
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 function runTests() {
-    const Realm = require('realm');
-    const RealmTests = require('./js');
+  const Realm = require("realm");
+  const RealmTests = require("./js");
 
-    RealmTests.registerTests({
-        AsyncTests: require('./js/async-tests'),
-    });
+  RealmTests.registerTests({
+    AsyncTests: require("./js/async-tests"),
+  });
 
-    const testNames = RealmTests.getTestNames();
-    let passed = true;
+  const testNames = RealmTests.getTestNames();
+  let passed = true;
 
-    // Create this method with appropriate implementation for Node testing.
-    Realm.copyBundledRealmFiles = function() {
-        let sourceDir = path.join(__dirname, 'data');
-        let destinationDir = path.dirname(Realm.defaultPath);
+  // Create this method with appropriate implementation for Node testing.
+  Realm.copyBundledRealmFiles = function () {
+    let sourceDir = path.join(__dirname, "data");
+    let destinationDir = path.dirname(Realm.defaultPath);
 
-        for (let filename of fs.readdirSync(sourceDir)) {
-            let src = path.join(sourceDir, filename);
-            let dest = path.join(destinationDir, filename);
+    for (let filename of fs.readdirSync(sourceDir)) {
+      let src = path.join(sourceDir, filename);
+      let dest = path.join(destinationDir, filename);
 
-            // If the destination file already exists, then don't overwrite it.
-            try {
-                fs.accessSync(dest);
-                continue;
-            } catch (e) {}
+      // If the destination file already exists, then don't overwrite it.
+      const exists = fs.existsSync(dest);
+      if (!exists) {
+        fs.writeFileSync(dest, fs.readFileSync(src));
+      }
+    }
+  };
 
-            fs.writeFileSync(dest, fs.readFileSync(src));
-        }
-    };
+  return Object.keys(testNames)
+    .reduce((suitePromiseChain, suiteName) => {
+      return suitePromiseChain.then(() => {
+        console.warn("Starting " + suiteName);
 
-    return Object.keys(testNames).reduce((suitePromiseChain, suiteName) => {
-        return suitePromiseChain.then(() => {
-            console.warn('Starting ' + suiteName);
-
-            return testNames[suiteName].reduce((testPromiseChain, testName) => {
-                return testPromiseChain.then(() => {
-                    return RealmTests.runTest(suiteName, 'beforeEach');
-                }).then(() => {
-                    return RealmTests.runTest(suiteName, testName);
-                }).then(() => {
-                    console.warn('+ ' + testName);
-                }, (err) => {
-                    console.warn('- ' + testName);
-                    console.warn(err.message || err);
-                    passed = false;
-                }).then(() => {
-                    return RealmTests.runTest(suiteName, 'afterEach');
-                });
-            }, Promise.resolve());
-        });
-    }, Promise.resolve()).then(() => passed);
+        return testNames[suiteName].reduce((testPromiseChain, testName) => {
+          return testPromiseChain
+            .then(() => {
+              return RealmTests.runTest(suiteName, "beforeEach");
+            })
+            .then(() => {
+              return RealmTests.runTest(suiteName, testName);
+            })
+            .then(
+              () => {
+                console.warn("+ " + testName);
+              },
+              (err) => {
+                console.warn("- " + testName);
+                console.warn(err.message || err);
+                passed = false;
+              },
+            )
+            .then(() => {
+              return RealmTests.runTest(suiteName, "afterEach");
+            });
+        }, Promise.resolve());
+      });
+    }, Promise.resolve())
+    .then(() => passed);
 }
 
 if (require.main == module) {
-    runTests().then(
-        (passed) => {
-            if (!passed) {
-                process.exit(1);
-            }
-        },
-        (err) => {
-            console.error(err);
-            process.exit(1);
-        }
-    );
+  runTests().then(
+    (passed) => {
+      if (!passed) {
+        process.exit(1);
+      }
+    },
+    (err) => {
+      console.error(err);
+      process.exit(1);
+    },
+  );
 }
