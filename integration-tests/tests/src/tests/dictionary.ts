@@ -1,11 +1,29 @@
-import { assert, expect } from "chai";
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2021 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+import { expect } from "chai";
 import Realm from "realm";
 
 import { openRealmBefore } from "../hooks";
 
 type Item<ValueType = Realm.Mixed> = {
   dict: Realm.Dictionary<ValueType>;
-}
+};
 
 type DictValues = { [key: string]: unknown };
 
@@ -22,30 +40,33 @@ type TypedDictionarySuite = {
 describe("Dictionary", () => {
   describe("with unconstrained (mixed) values", () => {
     openRealmBefore({
-      schema: [{
-        name: "Item",
-        properties: { dict: "{}" },
-      }, {
-        name: "Person",
-        properties: { name: "string" },
-      }],
+      schema: [
+        {
+          name: "Item",
+          properties: { dict: "{}" },
+        },
+        {
+          name: "Person",
+          properties: { name: "string" },
+        },
+      ],
     });
-    
-    it("can be used as a property type in a schema", function(this: RealmContext) {
+
+    it("can be used as a property type in a schema", function (this: RealmContext) {
       expect(this.realm.isClosed).equals(false);
       const dictSchemaProperty = this.realm.schema[0].properties.dict as Realm.ObjectSchemaProperty;
       expect(typeof dictSchemaProperty).equals("object");
       expect(dictSchemaProperty.type).equals("dictionary");
       expect(dictSchemaProperty.objectType).equals("mixed");
     });
-  
-    it("is instanceof Dictionary", function(this: RealmContext) {
+
+    it("is instanceof Dictionary", function (this: RealmContext) {
       this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {});
         expect(item.dict instanceof Realm.Dictionary);
       });
     });
-  
+
     const methodNames = [
       // "get",
       "set",
@@ -55,27 +76,27 @@ describe("Dictionary", () => {
       "removeAllListeners",
     ];
     for (const name of methodNames) {
-      it(`expose a method named '${name}'`, function(this: RealmContext) {
+      it(`expose a method named '${name}'`, function (this: RealmContext) {
         this.realm.write(() => {
           const item = this.realm.create<Item>("Item", {});
           expect(typeof item.dict[name]).equals("function");
         });
       });
     }
-  
-    it("can store string values using string keys", function(this: RealmContext) {
+
+    it("can store string values using string keys", function (this: RealmContext) {
       this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {});
         item.dict.key1 = "hello";
         expect(item.dict.key1).equals("hello");
       });
     });
-  
-    it("can store number values using string keys", function(this: RealmContext) {
+
+    it("can store number values using string keys", function (this: RealmContext) {
       this.realm.write(() => {
         // Creation
         const item = this.realm.create<Item<number>>("Item", {
-          dict: { key1: 0 }
+          dict: { key1: 0 },
         });
         expect(item.dict).deep.equals({ key1: 0 });
         // Assignment
@@ -85,38 +106,38 @@ describe("Dictionary", () => {
         expect(item.dict).deep.equals({
           key1: 1234,
           key2: Number.MAX_VALUE,
-          key3: Number.MIN_VALUE
+          key3: Number.MIN_VALUE,
         });
         // Increments
         item.dict.key1++;
         expect(item.dict.key1).equals(1235);
       });
     });
-  
-    it("can store boolean values using string keys", function(this: RealmContext) {
+
+    it("can store boolean values using string keys", function (this: RealmContext) {
       this.realm.write(() => {
         // Creation
         const item = this.realm.create<Item>("Item", {
           dict: {
             key1: true,
             key2: false,
-          }
+          },
         });
         expect(item.dict).deep.equals({
           key1: true,
-          key2: false
+          key2: false,
         });
         // After assignment
         item.dict.key1 = false;
         item.dict.key2 = true;
         expect(item.dict).deep.equals({
           key1: false,
-          key2: true
+          key2: true,
         });
       });
     });
-  
-    it("can store object link values using string keys", function(this: RealmContext) {
+
+    it("can store object link values using string keys", function (this: RealmContext) {
       this.realm.write(() => {
         const alice = this.realm.create("Person", { name: "Alice" });
         const bob = this.realm.create("Person", { name: "Bob" });
@@ -124,7 +145,7 @@ describe("Dictionary", () => {
         const item = this.realm.create<Item>("Item", {
           dict: {
             key1: alice,
-          }
+          },
         });
         expect(item.dict).deep.equals({
           key1: alice,
@@ -132,12 +153,12 @@ describe("Dictionary", () => {
         // After assignment
         item.dict.key1 = bob;
         expect(item.dict).deep.equals({
-          key1: bob
+          key1: bob,
         });
       });
     });
-  
-    it("is spreadable", function(this: RealmContext) {
+
+    it("is spreadable", function (this: RealmContext) {
       this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {
           dict: { key1: "hi" },
@@ -145,34 +166,34 @@ describe("Dictionary", () => {
         expect({ ...item.dict }).deep.equals({ key1: "hi" });
       });
     });
-    
-    it("can JSON.stringify", function(this: RealmContext) {
+
+    it("can JSON.stringify", function (this: RealmContext) {
       this.realm.write(() => {
         const values: DictValues = {
           key1: "hello",
           key2: 1234,
           key3: false,
-          key4: null
+          key4: null,
         };
         const item = this.realm.create<Item>("Item", { dict: values });
         const stringifiedAndParsed = JSON.parse(JSON.stringify(item.dict));
         expect(stringifiedAndParsed).deep.equals(values);
       });
     });
-    
+
     // TODO: Unskip once https://github.com/realm/realm-core/issues/4805 is fixed
-    it.skip("throws a meaningful error if accessed after deletion", function(this: RealmContext) {
+    it.skip("throws a meaningful error if accessed after deletion", function (this: RealmContext) {
       this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {});
-        const dict = item.dict
+        const dict = item.dict;
         this.realm.delete(item);
         expect(() => {
           JSON.stringify(dict);
         }).throws("Access to invalidated Dictionary object");
       });
     });
-  
-    it("can have values deleted", function(this: RealmContext) {
+
+    it("can have values deleted", function (this: RealmContext) {
       this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {
           dict: { key1: "hi" },
@@ -186,22 +207,19 @@ describe("Dictionary", () => {
     });
   });
 
-  function describeTypedSuite({
-    extraSchema = [],
-    type,
-    goodValues,
-    badValues,
-    expectedError
-  }: TypedDictionarySuite) {
+  function describeTypedSuite({ extraSchema = [], type, goodValues, badValues, expectedError }: TypedDictionarySuite) {
     return describe(`with constrained '${type}' values`, () => {
       openRealmBefore({
-        schema: [{
-          name: "Item",
-          properties: { dict: `${type}{}` },
-        }, ...extraSchema],
+        schema: [
+          {
+            name: "Item",
+            properties: { dict: `${type}{}` },
+          },
+          ...extraSchema,
+        ],
       });
 
-      it("can initialize", function(this: RealmContext) {
+      it("can initialize", function (this: RealmContext) {
         this.realm.write(() => {
           const values = typeof goodValues === "function" ? goodValues(this.realm) : goodValues;
           const item = this.realm.create<Item>("Item", { dict: values });
@@ -209,7 +227,7 @@ describe("Dictionary", () => {
         });
       });
 
-      it("can assign", function(this: RealmContext) {
+      it("can assign", function (this: RealmContext) {
         this.realm.write(() => {
           const item = this.realm.create<Item>("Item", {});
           const values = typeof goodValues === "function" ? goodValues(this.realm) : goodValues;
@@ -220,7 +238,7 @@ describe("Dictionary", () => {
         });
       });
 
-      it("fails if type mismatch", function(this: RealmContext) {
+      it("fails if type mismatch", function (this: RealmContext) {
         this.realm.write(() => {
           expect(() => {
             const item = this.realm.create<Item>("Item", {
@@ -240,44 +258,44 @@ describe("Dictionary", () => {
       key3: 0,
     },
     badValues: {
-      key1: "this is a string"
+      key1: "this is a string",
     },
-    expectedError: "Property must be of type 'number'"
+    expectedError: "Property must be of type 'number'",
   });
 
   describeTypedSuite({
     type: "string",
     goodValues: {
       key1: "hi",
-      key2: "there"
+      key2: "there",
     },
     badValues: {
-      key1: false
+      key1: false,
     },
-    expectedError: "Property must be of type 'string'"
+    expectedError: "Property must be of type 'string'",
   });
 
   describeTypedSuite({
     type: "bool",
     goodValues: {
       key1: true,
-      key2: false
+      key2: false,
     },
     badValues: {
-      key1: 1234
+      key1: 1234,
     },
-    expectedError: "Property must be of type 'boolean'"
+    expectedError: "Property must be of type 'boolean'",
   });
 
   describeTypedSuite({
-    extraSchema: [{ name: "Person", properties: { name: "string" }}],
+    extraSchema: [{ name: "Person", properties: { name: "string" } }],
     type: "Person",
-    goodValues: realm => ({
-      key1: realm.create("Person", { name: "Alice" })
+    goodValues: (realm) => ({
+      key1: realm.create("Person", { name: "Alice" }),
     }),
     badValues: {
-      key1: "unexpected string"
+      key1: "unexpected string",
     },
-    expectedError: "JS value must be of type 'object'"
+    expectedError: "JS value must be of type 'object'",
   });
 });
