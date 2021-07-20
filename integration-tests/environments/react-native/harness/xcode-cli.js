@@ -53,6 +53,30 @@ function list(type, searchterm, asJson = true) {
 }
 
 /**
+ * Get My Mac Device ID
+ * @param
+ */
+function getMyMacDeviceId() {
+  const p = xcrun("xctrace", "list", "devices");
+
+  // For some reason, xctrace outputs to stderr in github actions
+  const result = p.stdout === "" ? p.stderr : p.stdout;
+
+  // The machine running this command will always be displayed as the second item
+  const outputLines = result.split("\n");
+  const myMac = outputLines[1];
+  const idMatcher = /\(([\S]+)\)/;
+  const searchResult = myMac.match(idMatcher);
+
+  if (searchResult) {
+    const myMacDeviceId = searchResult[1];
+    return myMacDeviceId;
+  }
+
+  return null;
+}
+
+/**
  * Create a new device
  * @param {string} name The name of the new device
  * @param {string} deviceTypeId The type of device to use (run `xcrun simctl list devicetypes` to get these)
@@ -130,6 +154,7 @@ function bootstatus(device) {
 }
 
 module.exports = {
+  getMyMacDeviceId,
   xcrun,
   simctl: {
     list,
