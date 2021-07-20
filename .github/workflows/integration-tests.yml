@@ -95,7 +95,7 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   react-native-ios:
-    name: React Native on iOS ${{matrix.platform.name}} (${{ matrix.type }})
+    name: React Native on ${{matrix.platform.name}} (${{ matrix.type }})
     runs-on: macos-latest
     strategy:
       fail-fast: false

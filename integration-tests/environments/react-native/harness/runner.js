@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-const child_process = require("child_process");
+const cp = require("child_process");
 const puppeteer = require("puppeteer");
 
 const rn = require("./react-native-cli");
@@ -157,7 +157,7 @@ async function run(headless, spawnLogcat) {
     // the following lines can be removed
 
     // This will retrieve the build information and launch the app
-    const buildSettings = child_process.execFileSync(
+    const buildSettings = cp.execFileSync(
       "xcodebuild",
       [
         "-workspace",
@@ -188,7 +188,7 @@ async function run(headless, spawnLogcat) {
     }
 
     if (targetExecutable !== "") {
-      const appProcess = child_process.spawn(`${targetBuildDir}/${executableFolderPath}/RealmReactNativeTests`, [], {
+      const appProcess = cp.spawn(targetExecutable, [], {
         detached: true,
         stdio: "ignore",
       });
