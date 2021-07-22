@@ -11,7 +11,7 @@ if [[ -n "$EXISTING_STITCH" ]]; then
   echo "found existing stitch running, not attempting to start another"
 else
   echo "no existing stitch instance running in docker, attempting to start one"
-  . "${SRCROOT}/dependencies.list"
+  source "${SRCROOT}/dependencies.list"
   stitch_apps_path="tests/mongodb"
   DOCKER_VOLUMES=""
   for app in $(ls -d $stitch_apps_path/*/ | cut -f3 -d'/'); do
