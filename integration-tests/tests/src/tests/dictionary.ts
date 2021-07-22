@@ -181,6 +181,20 @@ describe("Dictionary", () => {
       });
     });
 
+    it("can JSON.stringify via the object", function (this: RealmContext) {
+      this.realm.write(() => {
+        const values: DictValues = {
+          key1: "hello",
+          key2: 1234,
+          key3: false,
+          key4: null,
+        };
+        const item = this.realm.create<Item>("Item", { dict: values });
+        const stringifiedAndParsed = JSON.parse(JSON.stringify(item));
+        expect(stringifiedAndParsed).deep.equals({ dict: values });
+      });
+    });
+
     // TODO: Unskip once https://github.com/realm/realm-core/issues/4805 is fixed
     it.skip("throws a meaningful error if accessed after deletion", function (this: RealmContext) {
       this.realm.write(() => {
@@ -241,7 +255,7 @@ describe("Dictionary", () => {
       it("fails if type mismatch", function (this: RealmContext) {
         this.realm.write(() => {
           expect(() => {
-            const item = this.realm.create<Item>("Item", {
+            this.realm.create<Item>("Item", {
               dict: badValues,
             });
           }).throws(expectedError);
