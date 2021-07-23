@@ -27,16 +27,6 @@ type Item<ValueType = Realm.Mixed> = {
 
 type DictValues = { [key: string]: unknown };
 
-type ValueGenerator = (realm: Realm) => DictValues;
-
-type TypedDictionarySuite = {
-  extraSchema?: Realm.ObjectSchema[];
-  type: string;
-  goodValues: DictValues | ValueGenerator;
-  badValues: DictValues;
-  expectedError: string;
-};
-
 describe("Dictionary", () => {
   describe("with unconstrained (mixed) values", () => {
     openRealmBefore({
@@ -60,7 +50,7 @@ describe("Dictionary", () => {
       expect(dictSchemaProperty.objectType).equals("mixed");
     });
 
-    it("is instanceof Dictionary", function (this: RealmContext) {
+    it("is an instance of Dictionary", function (this: RealmContext) {
       this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {});
         expect(item.dict instanceof Realm.Dictionary);
@@ -76,7 +66,7 @@ describe("Dictionary", () => {
       "removeAllListeners",
     ];
     for (const name of methodNames) {
-      it(`expose a method named '${name}'`, function (this: RealmContext) {
+      it(`exposes a method named '${name}'`, function (this: RealmContext) {
         this.realm.write(() => {
           const item = this.realm.create<Item>("Item", {});
           expect(typeof item.dict[name]).equals("function");
@@ -108,9 +98,6 @@ describe("Dictionary", () => {
           key2: Number.MAX_VALUE,
           key3: Number.MIN_VALUE,
         });
-        // Increments
-        item.dict.key1++;
-        expect(item.dict.key1).equals(1235);
       });
     });
 
@@ -160,10 +147,8 @@ describe("Dictionary", () => {
 
     it("is spreadable", function (this: RealmContext) {
       this.realm.write(() => {
-        const item = this.realm.create<Item>("Item", {
-          dict: { key1: "hi" },
-        });
-        expect({ ...item.dict }).deep.equals({ key1: "hi" });
+        const item = this.realm.create<Item>("Item", { dict: { key1: "hi" } });
+        expect({ ...item.dict, key2: "hello" }).deep.equals({ key1: "hi", key2: "hello" });
       });
     });
 
@@ -220,6 +205,16 @@ describe("Dictionary", () => {
       });
     });
   });
+
+  type ValueGenerator = (realm: Realm) => DictValues;
+
+  type TypedDictionarySuite = {
+    extraSchema?: Realm.ObjectSchema[];
+    type: string;
+    goodValues: DictValues | ValueGenerator;
+    badValues: DictValues;
+    expectedError: string;
+  };
 
   function describeTypedSuite({ extraSchema = [], type, goodValues, badValues, expectedError }: TypedDictionarySuite) {
     return describe(`with constrained '${type}' values`, () => {
