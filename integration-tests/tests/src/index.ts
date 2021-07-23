@@ -46,5 +46,6 @@ require("./tests/objects");
 require("./tests/iterators");
 require("./tests/dynamic-schema-updates");
 require("./tests/bson");
+require("./tests/dictionary");
 require("./tests/credentials/anonymous");
 require("./tests/sync/mixed");

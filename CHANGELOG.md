@@ -4,7 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fix TypeScript definition of `Realm.Dictionary.remove()`. (since v10.6.0)
+* Fixed TypeScript definition of `Realm.Dictionary.remove()`. (since v10.6.0)
+* Fixed Realm.Object#toJSON as it threw "Right-hand side of 'instanceof' is not an object". (since v10.6.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
