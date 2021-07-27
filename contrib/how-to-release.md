@@ -21,6 +21,13 @@ The procedure is:
 - Build Android binaries: `node ./scripts/build-android.js`
 - Build iOS binaries: `./scripts/build-ios.sh`
 - Publish the package: `npm publish`
+- Manually create a new release on Github
+  - Find the tag pushed in the previous step.  Click the `...` and select `Create release`
+  - Copy text from changelog
+  - Click `Publish release` 
+- Post to `#realm-releases` Slack channel
+  - Create post in Slack and copy text from changelog (format the text to Slack markdown (bold is `*bold*`))
+  - Share to `#realm-releases` channel
 - Apply the changelog template: `./scripts/changelog-header.sh`
 - Stage the template: `git add CHANGELOG.md`
 - Commit the template: `git commit -m "Adding changelog template"`
