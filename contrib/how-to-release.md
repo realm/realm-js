@@ -13,7 +13,7 @@ The procedure is:
 * Set the version number: `npm run set-version X.Y.Z`
 * Open `dependencies.list` and change `VERSION` to `X.Y.Z`
 * It is recommended that you proof-read and mildly edit `CHANGELOG.md`.
-* Add changes: `git add CHANGELOG.md package.lock package-lock.json dependencies.list react-native/ios/RealmReact.xcodeproj/project.pbxproj`
+* Add changes: `git add CHANGELOG.md package.json package-lock.json dependencies.list react-native/ios/RealmReact.xcodeproj/project.pbxproj`
 * Tag the commit: `git tag vX.Y.Z`
 * Commit the changes: `git commit -m "[X.Y.Z] Bump version"`
 * Push the changes: `git push origin --tag master` (if you are releasing from another branch, then use that instead of `master`)
