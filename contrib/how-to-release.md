@@ -24,4 +24,4 @@ The procedure is:
 * Apply the changelog template: `./scripts/changelog-header.sh`
 * Stage the template: `git add CHANGELOG.md`
 * Commit the template: `git commit -m "Adding changelog template"`
-* Push the template: `npm push origin master` (if you are releasing from another branch, then use that instead of `master`)
+* Push the template: `git push origin master` (if you are releasing from another branch, then use that instead of `master`)
