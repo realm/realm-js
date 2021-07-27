@@ -1,0 +1,64 @@
+{
+  "name": "@realm.io/react",
+  "version": "0.0.1-alpha.1",
+  "description": "React specific hooks and implementation helpers for Realm",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc --watch",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@testing-library/react-hooks": "^7.0.1",
+    "@testing-library/react-native": "^7.2.0",
+    "@types/jest": "^26.0.24",
+    "@types/react": "^17.0.14",
+    "@types/react-native": "^0.64.12",
+    "eslint": "^7.31.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "jest": "^27.0.6",
+    "prettier": "^2.3.2",
+    "react": "^17.0.2",
+    "react-native": "^0.64.2",
+    "react-test-renderer": "^16.14.0",
+    "realm": "^10.6.1",
+    "ts-jest": "^27.0.4",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-native": ">=0.59",
+    "realm": ">=10.0.0"
+  },
+  "files": [
+    "dist",
+    "types/realm",
+    "LICENSE",
+    "src",
+    "package.json"
+  ],
+  "keywords": [
+    "realm",
+    "browser"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git",
+    "directory": "packages/realm-react"
+  },
+  "homepage": "https://github.com/realm/realm-js/tree/master/packages/realm-react#readme",
+  "bugs": {
+    "url": "https://github.com/realm/realm-js/issues"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "jest": {
+    "preset": "react-native"
+  }
+}
