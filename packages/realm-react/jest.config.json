@@ -1,0 +1,8 @@
+{
+  "verbose": true,
+  "roots": ["<rootDir>/src"],
+  "transform": {
+    ".(ts|tsx)": "ts-jest"
+  },
+  "testRegex": "(/__tests__/.*.(test|spec)).(jsx?|tsx?|js?|ts?)$"
+}
