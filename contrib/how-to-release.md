@@ -10,18 +10,18 @@ Please remember that we follow [semantic versioning](https://semver.org/). Prior
 
 The procedure is:
 
-* Set the version number: `npm run set-version X.Y.Z`
-* Open `dependencies.list` and change `VERSION` to `X.Y.Z`
-* It is recommended that you proof-read and mildly edit `CHANGELOG.md`.
-* Add changes: `git add CHANGELOG.md package.json package-lock.json dependencies.list react-native/ios/RealmReact.xcodeproj/project.pbxproj`
-* Tag the commit: `git tag vX.Y.Z`
-* Commit the changes: `git commit -m "[X.Y.Z] Bump version"`
-* Push the changes: `git push origin --tag master` (if you are releasing from another branch, then use that instead of `master`)
-* Our CI system will build and push binaries for node.js. You can follow the progress at https://ci.realm.io. Once the "Publish" stage is completed, the binaries are uploaded.
-* Build Android binaries: `node ./scripts/build-android.js`
-* Build iOS binaries: `./scripts/build-ios.sh`
-* Publish the package: `npm publish`
-* Apply the changelog template: `./scripts/changelog-header.sh`
-* Stage the template: `git add CHANGELOG.md`
-* Commit the template: `git commit -m "Adding changelog template"`
-* Push the template: `git push origin master` (if you are releasing from another branch, then use that instead of `master`)
+- Set the version number: `npm run set-version X.Y.Z`
+- Open `dependencies.list` and change `VERSION` to `X.Y.Z`
+- It is recommended that you proof-read and mildly edit `CHANGELOG.md`.
+- Add changes: `git add CHANGELOG.md package.json package-lock.json dependencies.list react-native/ios/RealmReact.xcodeproj/project.pbxproj`
+- Commit the changes: `git commit -m "[X.Y.Z] Bump version"`
+- Tag the commit: `git tag vX.Y.Z`
+- Push the changes: `git push origin --tag master` (if you are releasing from another branch, then use that instead of `master`)
+- Our CI system will build and push binaries for node.js. You can follow the progress at https://ci.realm.io. Once the "Publish" stage is completed, the binaries are uploaded.
+- Build Android binaries: `node ./scripts/build-android.js`
+- Build iOS binaries: `./scripts/build-ios.sh`
+- Publish the package: `npm publish`
+- Apply the changelog template: `./scripts/changelog-header.sh`
+- Stage the template: `git add CHANGELOG.md`
+- Commit the template: `git commit -m "Adding changelog template"`
+- Push the template: `git push origin master` (if you are releasing from another branch, then use that instead of `master`)
