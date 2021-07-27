@@ -45,7 +45,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Using Realm Core v11.4.0 @ commit [be69223](https://github.com/realm/realm-core/commit/be6922394a57077d90723eba60c98ae9b2aa0eae) for Catalyst support
+* Using Realm Core v11.0.4 @ commit [be69223](https://github.com/realm/realm-core/commit/be6922394a57077d90723eba60c98ae9b2aa0eae) for Catalyst support
 * Upgraded test app to RN 0.64.1
 
 10.5.0 Release notes (2021-6-24)
