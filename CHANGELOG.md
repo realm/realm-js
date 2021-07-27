@@ -19,9 +19,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Metrics is not longer submitted to MixPanel but uploaded to S3.
 * Ran --fix for linters in all sub-packages of the repository.
 * Add step for Catalyst integration tests
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v10.0.4 to v11.1.1
 
 10.6.0 Release notes (2021-7-8)
 =============================================================
