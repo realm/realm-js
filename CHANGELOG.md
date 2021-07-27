@@ -36,7 +36,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Add Jenkins job for testing Catalyst
-* Metrics is not longer submitted to MixPanel but uploaded to S3.
+* Metrics is no longer submitted to MixPanel, but uploaded to S3.
 * Ran --fix for linters in all sub-packages of the repository.
 * Add step for Catalyst integration tests
 * Using Realm Core v11.0.4 @ commit [be69223](https://github.com/realm/realm-core/commit/be6922394a57077d90723eba60c98ae9b2aa0eae) for Catalyst support
