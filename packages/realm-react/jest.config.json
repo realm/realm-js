@@ -1,6 +1,6 @@
 {
   "verbose": true,
-  "roots": ["<rootDir>/src"],
+  "roots": ["<rootDir>/lib"],
   "transform": {
     ".(ts|tsx)": "ts-jest"
   },

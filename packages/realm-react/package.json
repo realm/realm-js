@@ -1,6 +1,6 @@
 {
   "name": "@realm.io/react",
-  "version": "0.0.1-alpha.1",
+  "version": "0.0.1-alpha.2",
   "description": "React specific hooks and implementation helpers for Realm",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,6 +17,7 @@
     "@types/react-native": "^0.64.12",
     "eslint": "^7.31.0",
     "eslint-plugin-prettier": "^3.4.0",
+    "fb-watchman": "^2.0.1",
     "jest": "^27.0.6",
     "prettier": "^2.3.2",
     "react": "^17.0.2",
@@ -36,12 +37,13 @@
     "dist",
     "types/realm",
     "LICENSE",
-    "src",
+    "lib",
     "package.json"
   ],
   "keywords": [
     "realm",
-    "browser"
+    "react",
+    "hooks"
   ],
   "author": {
     "name": "Realm",

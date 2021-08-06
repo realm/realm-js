@@ -75,5 +75,5 @@
     "excludeDirectories": ["**/node_modules", "dist"],
     "excludeFiles": ["jest.config.ts"]
   },
-  "exclude": ["**/__tests__/*", "dist"]
+  "exclude": ["dist"]
 }
