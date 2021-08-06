@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Remove deprecation warning when building for Android ([#3870](https://github.com/realm/realm-js/issues/????))
 * None.
 
 ### Compatibility
