@@ -16,97 +16,36 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, { useContext, useEffect, useState } from "react";
+import { createContext } from "react";
 import Realm from "realm";
+import { createUseRealm, UseRealm } from "./useRealm";
+import { UseQuery, createUseQuery } from "./useQuery";
+import { UseObject, createUseObject } from "./useObject";
+import { createRealmProvider, IRealmProvider } from "./RealmProvider";
 
-interface ProviderProps {
-  children?: React.ReactNode;
-  config?: Realm.Configuration;
-}
-
-interface UseCollection {
-  (type: string, modifiers?: { sort?: string; filter?: string }): Realm.Results<Realm.Object>;
-}
-interface UseObject {
-  (type: string, primaryKey: Realm.PrimaryKey): Realm.Object | undefined;
-}
 interface RealmContext {
-  RealmProvider: ({ children, config }: ProviderProps) => JSX.Element | null;
-  useCollection: UseCollection;
+  RealmProvider: IRealmProvider;
+  useQuery: UseQuery;
   useObject: UseObject;
-  useRealm: () => Realm;
+  useRealm: UseRealm;
 }
 
-export function createRealmContext(realmConfig: Realm.Configuration): RealmContext {
-  const RealmContext = React.createContext<Realm | null>(null);
-  const RealmProvider = ({ children, config }: ProviderProps) => {
-    const [realm, setRealm] = useState<Realm | null>(null);
-    useEffect(() => {
-      if (!realm?.isClosed) {
-        realm?.close();
-      }
-      const initRealm = async () => {
-        try {
-          const combinedConfig = {
-            ...realmConfig,
-            ...config,
-          } as Realm.Configuration;
-          const openRealm = await Realm.open(combinedConfig);
-          setRealm(openRealm);
-        } catch (err) {
-          console.error(err);
-        }
-      };
-      if (realm === null) {
-        initRealm();
-      }
-      return () => {
-        realm?.close();
-      };
-    }, [config]);
+interface CreateRealmContext {
+  (realmConfig: Realm.Configuration): RealmContext;
+}
 
-    if (realm == null) {
-      return null;
-    }
+export const createRealmContext: CreateRealmContext = (realmConfig: Realm.Configuration) => {
+  const RealmContext = createContext<Realm | null>(null);
+  const RealmProvider = createRealmProvider(realmConfig, RealmContext);
 
-    return <RealmContext.Provider value={realm}>{children}</RealmContext.Provider>;
-  };
-
-  const useRealm = () => {
-    const context = useContext(RealmContext);
-    if (context == null) {
-      throw new Error("RealmContext not found!");
-    }
-    return context;
-  };
-
-  const useCollection: UseCollection = (type, modifiers) => {
-    const realm = useRealm();
-    const sort = modifiers?.sort && modifiers?.sort !== "" ? modifiers.sort : null;
-    const filter = modifiers?.filter != null && modifiers?.filter !== "" ? modifiers.filter : null;
-
-    let result = null;
-    result = realm.objects(type);
-    if (filter) {
-      result = result.filtered(filter);
-    }
-
-    if (sort) {
-      result = result.sorted(sort);
-    }
-
-    return result;
-  };
-
-  const useObject: UseObject = (type, primaryKey) => {
-    const realm = useRealm();
-    return realm.objectForPrimaryKey(type, primaryKey);
-  };
+  const useRealm = createUseRealm(RealmContext);
+  const useQuery = createUseQuery(useRealm);
+  const useObject = createUseObject(useRealm);
 
   return {
     RealmProvider,
     useRealm,
-    useCollection,
+    useQuery,
     useObject,
   };
-}
+};

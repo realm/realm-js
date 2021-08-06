@@ -75,11 +75,11 @@ const watchman = {
 async function run(dependencyPath) {
   // Ensure that a dependency on the "realm" package
   const dependencyPackageJson = readPackageJson(dependencyPath);
-  if (Object.keys(dependencyPackageJson.dependencies).includes("@realm/react") === false) {
+  if (Object.keys(dependencyPackageJson.dependencies).includes("@realm.io/react") === false) {
     console.warn(`Expected the package (${dependencyPath}) to be depending on "@realm/react"`);
   }
   // Ensure that the "realm" package has already been installed
-  const dependencyRealmPath = path.resolve(dependencyPath, "node_modules/@realm/react");
+  const dependencyRealmPath = path.resolve(dependencyPath, "node_modules/@realm.io/react");
   if (fs.existsSync(dependencyRealmPath) === false) {
     throw new Error(`Expected realm to be installed at ${dependencyRealmPath} - run "npm install" first`);
   }
