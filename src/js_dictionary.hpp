@@ -99,7 +99,7 @@ inline static void derive_property_type(StringData const &object_name, Property 
         }
         prop.type = PropertyType::Object | PropertyType::Dictionary;
     }
-}  // validated_property_type()
+}  // derive_property_type()
 
 };  // dictionary namespace
 
