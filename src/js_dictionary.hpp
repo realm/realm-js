@@ -87,7 +87,7 @@ inline static void derive_property_type(StringData const &object_name, Property 
         prop.object_type = "";
     }
     else if (prop.object_type == "mixed") {
-        prop.type |= PropertyType::Mixed | PropertyType::Nullable;
+        prop.type |= PropertyType::Mixed | PropertyType::Dictionary;
         prop.object_type = "";
     }
     else {

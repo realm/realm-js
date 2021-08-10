@@ -28,6 +28,41 @@ const DictSchema = {
 };
 
 module.exports = {
+  testDictionarySchema() {
+    // Test that short (JS) and canonical schema types yield
+    // the same results
+    const shorthandSchema = {
+      name: "ShorthandSchema",
+      properties: {
+        a: "string{}",
+        b: "{}",
+      },
+    };
+
+    const canonicalSchema = {
+      name: "CanonicalSchema",
+      properties: {
+        a: { type: "dictionary", objectType: "string", optional: false },
+        b: { type: "dictionary", objectType: "mixed", optional: true },
+      },
+    };
+
+    const shorthandRealm = new Realm({ schema: [shorthandSchema] });
+    const shSchema = shorthandRealm.schema;
+    shorthandRealm.close();
+
+    const canonicalRealm = new Realm({ schema: [canonicalSchema] });
+    const canSchema = canonicalRealm.schema;
+    canonicalRealm.close();
+
+    TestCase.assertEqual(
+      shSchema.properties,
+      canSchema.properties,
+      "Canonical and shorthand schemas should have identical properties",
+    );
+  },
+
+
   testDictionaryCreate() {
     //Shouldn't throw
     let realm = new Realm({ schema: [DictSchema] });
@@ -136,11 +171,11 @@ module.exports = {
     const DictWrongSchema = {
       name: "Dictionary",
       properties: {
-        a: "wwwww{}",
+        a: { type: "dictionary", objectType: "wwwww" },
       },
     };
     let err = new Error(
-      "Schema validation failed due to the following errors:\n- Property 'Dictionary.a' of type 'dictionary' has unknown object type 'wwwww'",
+      "Schema validation failed due to the following errors:\n- Property 'Dictionary.a' of type 'object' must be nullable.\n- Property 'Dictionary.a' of type 'dictionary' has unknown object type 'wwwww'",
     );
     let _defer = () => {
       let r = new Realm({ schema: [DictWrongSchema] });
@@ -723,8 +758,8 @@ module.exports = {
     const DictTypedSchema = {
       name: "TypedDictionary",
       properties: {
-        dict1: "Children{}",
-        dict2: "Children{}",
+        dict1: { type: "dictionary", objectType: "Children", optional: true },
+        dict2: { type: "dictionary", objectType: "Children", optional: true },
       },
     };
 
