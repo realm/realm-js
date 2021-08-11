@@ -22,7 +22,7 @@
     "tmp": "^0.0.30",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.7",
-    "url-parse": "^1.4.7"
+    "url-parse": "^1.5.2"
   },
   "scripts": {
     "check-typescript": "tsc --types --noEmit --alwaysStrict ./../types/index.d.ts --lib es2018",
