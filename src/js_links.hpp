@@ -75,11 +75,6 @@ class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
     MixedLink(std::shared_ptr<Realm> _realm): realm{_realm} {}
 
     Mixed wrap(Context context, ValueType const& value) {
-
-        if (Value::is_array(context, value)) {
-            throw std::runtime_error("A mixed property cannot contain an array of values.");
-        }
-
         RealmLink<T> realm_link {context, value};
 
         if (!realm_link.is_instance() || !realm_link.belongs_to_realm(realm)) {
