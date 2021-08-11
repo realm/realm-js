@@ -384,4 +384,31 @@ module.exports = {
       ],
     );
   },
+
+  testRemoveAllListeners() {
+    let realm = new Realm({ schema: [schemas.IntPrimary] });
+    let objects = realm.objects(schemas.IntPrimary.name);
+
+    let calls = 0;
+    objects.addListener((collection, changes) => {
+      calls++;
+    });
+
+    // attempt to remove all listeners but listeners are bound to
+    // a specific collection and the listener above is not
+    // removed
+    realm.objects(schemas.IntPrimary.name).removeAllListeners();
+
+    realm.write(() => {
+      realm.create(schemas.IntPrimary.name, { primaryCol: 1, valueCol: "one" });
+    });
+
+    return new Promise((resolve, _) => {
+      setTimeout(() => {
+        TestCase.assertEqual(calls, 2); // new Realm() + realm.create()
+        realm.close();
+        resolve();
+      }, 2000);
+    });
+  },
 };
