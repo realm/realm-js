@@ -122,20 +122,20 @@ if (gitTag) {
 stage('test') {
   parallelExecutors = [:]
 
-  parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
-  parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
-  parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
-  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
-  parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
-  parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
+//  parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
+  //parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
+  //parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
+  //parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
+  //parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
+  //parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
   parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
-  parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  parallelExecutors["React Native Catalyst Release"] = testMacOS('catalyst-tests Release')
-  parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
+  //parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
+  //parallelExecutors["React Native Catalyst Release"] = testMacOS('catalyst-tests Release')
+  //parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
 
-  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
+  //parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
+  //parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
   parallel parallelExecutors
 }
 
