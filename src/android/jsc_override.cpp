@@ -24,8 +24,8 @@
 #include <JavaScriptCore/JSContextRef.h>
 
 #include "jsc_init.h"
-#include "shared_realm.hpp"
-#include "impl/realm_coordinator.hpp"
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/impl/realm_coordinator.hpp>
 
 /**
 `__attribute__((constructor))` will trigger a first call to swap_function() which will install the function hook.
@@ -134,7 +134,7 @@ static JSGlobalContextRef create_context(JSContextGroupRef group, JSClassRef glo
     swap_function();
 
     // Clear cache from previous instances.
-    realm::_impl::RealmCoordinator::clear_all_caches();
+    RJSInvalidateCaches();
 
     RJSInitializeInContext(ctx);
     realmContextInjected = true;

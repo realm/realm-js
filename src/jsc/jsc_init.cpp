@@ -19,6 +19,9 @@
 #include <algorithm>
 #include <cassert>
 
+#include <realm/object-store/impl/realm_coordinator.hpp>
+#include <realm/object-store/sync/app.hpp>
+
 #include "jsc_init.hpp"
 #include "platform.hpp"
 namespace realm {
@@ -49,6 +52,13 @@ void RJSInitializeInContext(JSContextRef ctx) {
     JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
 
     jsc::Object::set_property(ctx, global_object, realm_string, realm_constructor, js::ReadOnly | js::DontEnum | js::DontDelete);
+}
+
+void RJSInvalidateCaches() {
+    // Close all cached Realms
+    realm::_impl::RealmCoordinator::clear_all_caches();
+    // Clear the Object Store App cache, to prevent instances from using a context that was released
+    realm::app::App::clear_cached_apps();
 }
 
 } // extern "C"

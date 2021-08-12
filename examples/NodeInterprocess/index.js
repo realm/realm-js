@@ -16,11 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+"use strict";
 
-var express = require('express'),
-    winston = require('winston'),
-    RealmWinston = require('./winston-realm').Realm;
+var express = require("express"),
+  winston = require("winston"),
+  RealmWinston = require("./winston-realm").Realm;
 
 var app = express();
 
@@ -28,18 +28,17 @@ var app = express();
 // Writes log data to winston.realm
 winston.add(RealmWinston, {});
 
-app.get('/', function (req, res) {
-  res.send('Hello World!');
-  winston.info('Handled Hello World');
+app.get("/", function (req, res) {
+  res.send("Hello World!");
+  winston.info("Handled Hello World");
 });
 
 app.use(function (req, res) {
-  res.status(404).send('Sorry can not find that!');
-  winston.error('404 Error at: ' + req.url);
-})
+  res.status(404).send("Sorry can not find that!");
+  winston.error("404 Error at: " + req.url);
+});
 
 app.listen(3000, function () {
   // eslint-disable-next-line no-console
-  console.log('Example app listening on port 3000!');
+  console.log("Example app listening on port 3000!");
 });
-

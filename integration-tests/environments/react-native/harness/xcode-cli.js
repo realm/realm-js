@@ -1,20 +1,33 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2021 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 const cp = require("child_process");
 
 function xcrun(...args) {
-    const p = cp.spawnSync("xcrun", args, { encoding: "utf8" });
-    if (p.status !== 0) {
-        throw new Error(
-            `Failed running "xcrun ${args.join(" ")}" (status = ${
-                p.status
-            }):\n${p.stderr.trim()}`,
-        );
-    } else {
-        return p;
-    }
+  const p = cp.spawnSync("xcrun", args, { encoding: "utf8" });
+  if (p.status !== 0) {
+    throw new Error(`Failed running "xcrun ${args.join(" ")}" (status = ${p.status}):\n${p.stderr.trim()}`);
+  } else {
+    return p;
+  }
 }
 
 function simctl(...args) {
-    return xcrun("simctl", ...args);
+  return xcrun("simctl", ...args);
 }
 
 /**
@@ -22,21 +35,45 @@ function simctl(...args) {
  * @param {string} type One of devices, devicetypes, runtimes or pairs
  */
 function list(type, searchterm, asJson = true) {
-    const args = [type];
-    if (searchterm && !type) {
-        throw new Error("You must provide a type when providing a search term");
-    } else if (searchterm) {
-        args.push(searchterm);
-    }
-    if (asJson) {
-        args.push("--json");
-    }
-    const p = simctl("list", ...args);
-    if (asJson) {
-        return JSON.parse(p.stdout);
-    } else {
-        return p;
-    }
+  const args = [type];
+  if (searchterm && !type) {
+    throw new Error("You must provide a type when providing a search term");
+  } else if (searchterm) {
+    args.push(searchterm);
+  }
+  if (asJson) {
+    args.push("--json");
+  }
+  const p = simctl("list", ...args);
+  if (asJson) {
+    return JSON.parse(p.stdout);
+  } else {
+    return p;
+  }
+}
+
+/**
+ * Get My Mac Device ID
+ * @param
+ */
+function getMyMacDeviceId() {
+  const p = xcrun("xctrace", "list", "devices");
+
+  // For some reason, xctrace outputs to stderr in github actions
+  const result = p.stdout === "" ? p.stderr : p.stdout;
+
+  // The machine running this command will always be displayed as the second item
+  const outputLines = result.split("\n");
+  const myMac = outputLines[1];
+  const idMatcher = /\(([\S]+)\)/;
+  const searchResult = myMac.match(idMatcher);
+
+  if (searchResult) {
+    const myMacDeviceId = searchResult[1];
+    return myMacDeviceId;
+  }
+
+  return null;
 }
 
 /**
@@ -46,7 +83,7 @@ function list(type, searchterm, asJson = true) {
  * @param {string} runtimeId The id of the runtime of the new device (run `xcrun simctl list runtimes` to get these)
  */
 function create(name, deviceTypeId, runtimeId) {
-    return simctl("create", name, deviceTypeId, runtimeId);
+  return simctl("create", name, deviceTypeId, runtimeId);
 }
 
 /**
@@ -54,7 +91,7 @@ function create(name, deviceTypeId, runtimeId) {
  * @param {string} device Device to delete
  */
 function deleteDevice(device) {
-    return simctl("delete", device);
+  return simctl("delete", device);
 }
 
 /**
@@ -62,7 +99,7 @@ function deleteDevice(device) {
  * @param {string} device Device to erase
  */
 function erase(device) {
-    return simctl("erase", device);
+  return simctl("erase", device);
 }
 
 /**
@@ -70,7 +107,7 @@ function erase(device) {
  * @param {string} device Device to boot
  */
 function boot(device) {
-    return simctl("boot", device);
+  return simctl("boot", device);
 }
 
 /**
@@ -78,7 +115,7 @@ function boot(device) {
  * @param {string} device Device to shut down
  */
 function shutdown(device) {
-    return simctl("shutdown", device);
+  return simctl("shutdown", device);
 }
 
 /**
@@ -87,7 +124,7 @@ function shutdown(device) {
  * @param {string} appBundleIdentifier The bundle id of the app to terminate
  */
 function terminate(device, appBundleIdentifier) {
-    return simctl("terminate", device, appBundleIdentifier);
+  return simctl("terminate", device, appBundleIdentifier);
 }
 
 /**
@@ -96,7 +133,7 @@ function terminate(device, appBundleIdentifier) {
  * @param {string} appBundleIdentifier The bundle id of the app to launch
  */
 function launch(device, appBundleIdentifier) {
-    return simctl("launch", device, appBundleIdentifier);
+  return simctl("launch", device, appBundleIdentifier);
 }
 
 /**
@@ -105,7 +142,7 @@ function launch(device, appBundleIdentifier) {
  * @param {string} url
  */
 function openUrl(device, url) {
-    return simctl("openurl", device, url);
+  return simctl("openurl", device, url);
 }
 
 /**
@@ -113,21 +150,22 @@ function openUrl(device, url) {
  * @param {string} device Device to wait for
  */
 function bootstatus(device) {
-    return simctl("bootstatus", device);
+  return simctl("bootstatus", device);
 }
 
 module.exports = {
-    xcrun,
-    simctl: {
-        list,
-        create,
-        delete: deleteDevice,
-        erase,
-        boot,
-        shutdown,
-        terminate,
-        launch,
-        openUrl,
-        bootstatus,
-    },
+  getMyMacDeviceId,
+  xcrun,
+  simctl: {
+    list,
+    create,
+    delete: deleteDevice,
+    erase,
+    boot,
+    shutdown,
+    terminate,
+    launch,
+    openUrl,
+    bootstatus,
+  },
 };

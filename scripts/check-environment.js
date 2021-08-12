@@ -1,31 +1,32 @@
-'use strict';
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2021 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
-const fs = require('fs');
-const path = require('path');
-const exec = require('child_process').exec;
+const fs = require("fs");
+const path = require("path");
+const exec = require("child_process").exec;
 
-console.log('Checking setup...');
+console.log("Checking setup...");
 
 function successLog(msg) {
   console.log(` \x1b[32m✓\x1b[0m ${msg}`);
 }
 
-function validateEnvPath(envKey) {
-  if (process.env.hasOwnProperty(envKey)) {
-    const resolvedPath = path.resolve(process.env[envKey]);
-    if (process.env[envKey].indexOf('~') !== -1 || resolvedPath !== process.env[envKey]) {
-      console.error(`The ${envKey} environment variable is set to ${process.env[envKey]}.`)
-      console.error('Since gyp doesn\'t expand user- and relative paths, this path will not work. Please use a fully resolved path');
-      process.exit(-1);
-    }
-
-    successLog(`${envKey} set to ${process.env[envKey]}`);
-  } else {
-    successLog(`${envKey} not set, downloading binaries`);
-  }
-}
-
-exec('npm --version', (err, stdout) => {
+exec("npm --version", (err, stdout) => {
   const verRegex = /^(\d+\.)?(\d+\.)?(\*|\d+)$/;
   const npmVer = stdout.trim();
   if (!verRegex.test(npmVer)) {
@@ -34,16 +35,12 @@ exec('npm --version', (err, stdout) => {
   }
   successLog(`npm version is ${npmVer}`);
 
-  const objectStoreDir = path.join(__dirname, '..', 'src', 'object-store');
+  const objectStoreDir = path.join(__dirname, "..", "vendor", "realm-core");
   if (fs.existsSync(objectStoreDir)) {
-    successLog('Object store submodule is checked out');
+    successLog("Realm Core submodule is checked out");
   } else {
-    console.error('Object store folder not found. Did you remember to pull submodules?')
+    console.error("Realm Core folder not found. Did you remember to pull submodules?");
   }
 
-  validateEnvPath('REALM_CORE_PREFIX');
-  validateEnvPath('REALM_SYNC_PREFIX');
-
   // TODO: Check ANDROID_NDK and SDK for Android, and XCode for iOS.
-
 });

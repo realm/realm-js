@@ -17,14 +17,20 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const os = require("os");
+const { Client } = require("mocha-remote-client");
 
-// Exposing the Realm constructor as a global
+global.client = new Client({
+  title: `Node.js v${process.versions.node} on ${os.platform()}`,
+  tests(context) {
+    // Exposing the Realm constructor as a global
+    global.fs = require("fs-extra");
+    global.path = require("path");
+    global.environment = { ...context, node: true };
+    global.fetch = require("node-fetch");
 
-global.title = `Node.js v${process.versions.node} on ${os.platform()}`;
-global.Realm = require("realm");
-global.fs = require("fs-extra");
-global.path = require("path");
-global.environment = { node: true };
+    // Require the tests
+    require("realm-integration-tests");
+  },
+});
 
-// Require the tests
-require("realm-integration-tests");
+// TODO: Setup a watch to re-run when the tests change

@@ -26,6 +26,7 @@ extern "C" {
 
 JSObjectRef RJSConstructorCreate(JSContextRef ctx);
 void RJSInitializeInContext(JSContextRef ctx);
+void RJSInvalidateCaches();
 
 #ifdef __cplusplus
 }

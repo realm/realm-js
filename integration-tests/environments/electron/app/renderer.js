@@ -1,5 +1,3 @@
-"use strict";
-
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2019 Realm Inc.
@@ -25,9 +23,5 @@ const remote = require("electron").remote;
 
 // Use the main process console when logging
 global.console = remote.getGlobal("console");
-// Get the options available for the renderer
-const { mochaRemoteServerURL, processType } = remote.getGlobal("options");
 // If we're supposed to run in the renderer, start the mocha remote client
-if (processType === "renderer") {
-    require("./mocha.js")(mochaRemoteServerURL, "renderer");
-}
+require("./mocha.js");

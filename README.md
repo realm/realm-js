@@ -3,7 +3,13 @@
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (both iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
 
+
 ** Draft PR - testing CI **
+
+## Tell us about your experience
+
+We want to hear from you! Tell us about your experience using the Realm SDKs in our [short survey](http://bit.ly/3hRO5U2).
+
 
 ## Features
 
@@ -42,7 +48,10 @@ Prerequisites:
 * Android SDK 23+
 * [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
     - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.
-    - From the command-line: ```$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
+    - From the command-line: ```$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
+* [Android CMake](https://developer.android.com/ndk/guides/cmake)
+    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**
+    - From the command-line  ```$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "cmake;3.18.1"````
 
 Clone RealmJS repository:
 
@@ -67,7 +76,7 @@ del src
 del vendor
 mklink /j "src" "../../../../../src/"
 mklink /j "vendor" "../../../../../vendor"
-cd realm-js\tests\react-test-app\android\app\src\main
+cd realm-js\tests\ReactTestApp\android\app\src\main
 #remove assets file
 del assets
 mklink /j assets "../../../../../data"
@@ -87,15 +96,17 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 * The compiled version of the Android module is here: `<project-root>/android`
 
 ### Building for nodejs:
-Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
-For example you can use Homebrew to install it.
-```
-brew install python@2
+You can build for nodejs by running the command:
+
+```sh
+npm run build
 ```
 
-```
-npm install --build-from-source=realm
-```
+If you want to build for Apple Silicon on an Intel based Mac, you can use the following command instead:
+
+```sh
+ npm run build-m1
+ ```
 
 #### Additional steps for Windows
 On Windows you will need to setup the environment for node-gyp:
@@ -167,7 +178,7 @@ Some users have reported the Chrome debugging being too slow to use after integr
 
 ## Running the tests
 
-The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your prefered shell setup:
+The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your preferred shell setup:
 
 ```
 export NVM_DIR="$HOME/.nvm"
@@ -190,7 +201,7 @@ You will need yarn installed on the machine.
  * node - runs all tests for node
  * test-runners - checks supported tests runners are working correctly
 
-If you modify or add a test, please remove `tests/react-test-app/node_modules/realm-tests` before running `test.sh` (of course, only if you are testing with React Native).
+If you modify or add a test, please remove `tests/ReactTestApp/node_modules/realm-tests` before running `test.sh` (of course, only if you are testing with React Native).
 
 ### Testing on Windows
 
@@ -238,7 +249,7 @@ Currently the following information is reported:
  * The OS platform and version which is being used.
  * Node.js, v8, libuv, OpenSSL version numbers.
  * An anonymous machine identifier and hashed application path to aggregate the other information on.
- 
+
  ## Known issues
 
 * AWS Lambda is not supported.
@@ -254,9 +265,7 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING
 
 ## License
 
-Realm JS is published under a mix of the Apache License 2.0 and the Realm Platform Extensions License.
-Realm Core is published under the Apache 2.0 license and is available
-[here](https://github.com/realm/realm-core).
+Realm JS and [Realm Core](https://github.com/realm/realm-core) are published under the Apache License 2.0.
 
 **This product is not being made available to any person located in Cuba, Iran,
 North Korea, Sudan, Syria or the Crimea region, or to any other person that is

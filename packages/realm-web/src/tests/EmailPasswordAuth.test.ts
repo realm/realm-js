@@ -22,149 +22,127 @@ import { ObjectId } from "bson";
 import { User } from "..";
 import { EmailPasswordAuth } from "../auth-providers";
 
-import {
-    ACCEPT_JSON_HEADERS,
-    SENDING_JSON_HEADERS,
-    MockFetcher,
-} from "./utils";
+import { ACCEPT_JSON_HEADERS, SENDING_JSON_HEADERS, MockFetcher } from "./utils";
 
 describe("EmailPasswordAuth", () => {
-    let fetcher: MockFetcher;
-    let client: EmailPasswordAuth;
+  let fetcher: MockFetcher;
+  let client: EmailPasswordAuth;
 
-    beforeEach(() => {
-        fetcher = new MockFetcher([
-            {
-                _id: {
-                    $oid: "deadbeefdeadbeefdeadbeef",
-                },
-                name: "my-key-name",
-                key: "super-secret-key",
-                disabled: true,
-            },
-        ]);
-        client = new EmailPasswordAuth(fetcher);
-    });
+  beforeEach(() => {
+    fetcher = new MockFetcher([
+      {
+        _id: {
+          $oid: "deadbeefdeadbeefdeadbeef",
+        },
+        name: "my-key-name",
+        key: "super-secret-key",
+        disabled: true,
+      },
+    ]);
+    client = new EmailPasswordAuth(fetcher);
+  });
 
-    it("can register a user", async () => {
-        // Make a request
-        await client.registerUser("gilfoyle@testing.mongodb.com", "s3cr3t");
-        // Expect something of the request
-        expect(fetcher.requests).deep.equals([
-            {
-                method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/register",
-                body: {
-                    email: "gilfoyle@testing.mongodb.com",
-                    password: "s3cr3t",
-                },
-                headers: SENDING_JSON_HEADERS,
-            },
-        ]);
-    });
+  it("can register a user", async () => {
+    // Make a request
+    await client.registerUser("gilfoyle@testing.mongodb.com", "s3cr3t");
+    // Expect something of the request
+    expect(fetcher.requests).deep.equals([
+      {
+        method: "POST",
+        url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/register",
+        body: {
+          email: "gilfoyle@testing.mongodb.com",
+          password: "s3cr3t",
+        },
+        headers: SENDING_JSON_HEADERS,
+      },
+    ]);
+  });
 
-    it("can confirm a user", async () => {
-        // Make a request
-        await client.confirmUser("token-value", "token-id-value");
-        // Expect something of the request
-        expect(fetcher.requests).deep.equals([
-            {
-                method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/confirm",
-                body: {
-                    token: "token-value",
-                    tokenId: "token-id-value",
-                },
-                headers: SENDING_JSON_HEADERS,
-            },
-        ]);
-    });
+  it("can confirm a user", async () => {
+    // Make a request
+    await client.confirmUser("token-value", "token-id-value");
+    // Expect something of the request
+    expect(fetcher.requests).deep.equals([
+      {
+        method: "POST",
+        url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/confirm",
+        body: {
+          token: "token-value",
+          tokenId: "token-id-value",
+        },
+        headers: SENDING_JSON_HEADERS,
+      },
+    ]);
+  });
 
-    it("can request a resend of confirmation", async () => {
-        // Make a request
-        await client.resendConfirmationEmail("gilfoyle@testing.mongodb.com");
-        // Expect something of the request
-        expect(fetcher.requests).deep.equals([
-            {
-                method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/confirm/send",
-                body: {
-                    email: "gilfoyle@testing.mongodb.com",
-                },
-                headers: SENDING_JSON_HEADERS,
-            },
-        ]);
-    });
+  it("can request a resend of confirmation", async () => {
+    // Make a request
+    await client.resendConfirmationEmail("gilfoyle@testing.mongodb.com");
+    // Expect something of the request
+    expect(fetcher.requests).deep.equals([
+      {
+        method: "POST",
+        url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/confirm/send",
+        body: {
+          email: "gilfoyle@testing.mongodb.com",
+        },
+        headers: SENDING_JSON_HEADERS,
+      },
+    ]);
+  });
 
-    it("can reset a password", async () => {
-        // Make a request
-        await client.resetPassword(
-            "token-value",
-            "token-id-value",
-            "my-new-password",
-        );
-        // Expect something of the request
-        expect(fetcher.requests).deep.equals([
-            {
-                method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset",
-                body: {
-                    token: "token-value",
-                    tokenId: "token-id-value",
-                    password: "my-new-password",
-                },
-                headers: SENDING_JSON_HEADERS,
-            },
-        ]);
-    });
+  it("can reset a password", async () => {
+    // Make a request
+    await client.resetPassword("token-value", "token-id-value", "my-new-password");
+    // Expect something of the request
+    expect(fetcher.requests).deep.equals([
+      {
+        method: "POST",
+        url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset",
+        body: {
+          token: "token-value",
+          tokenId: "token-id-value",
+          password: "my-new-password",
+        },
+        headers: SENDING_JSON_HEADERS,
+      },
+    ]);
+  });
 
-    it("can request a password reset", async () => {
-        // Make a request
-        await client.sendResetPasswordEmail("gilfoyle@testing.mongodb.com");
-        // Expect something of the request
-        expect(fetcher.requests).deep.equals([
-            {
-                method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset/send",
-                body: {
-                    email: "gilfoyle@testing.mongodb.com",
-                },
-                headers: SENDING_JSON_HEADERS,
-            },
-        ]);
-    });
+  it("can request a password reset", async () => {
+    // Make a request
+    await client.sendResetPasswordEmail("gilfoyle@testing.mongodb.com");
+    // Expect something of the request
+    expect(fetcher.requests).deep.equals([
+      {
+        method: "POST",
+        url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset/send",
+        body: {
+          email: "gilfoyle@testing.mongodb.com",
+        },
+        headers: SENDING_JSON_HEADERS,
+      },
+    ]);
+  });
 
-    it("can reset a password via a function", async () => {
-        // Make a request
-        await client.callResetPasswordFunction(
-            "gilfoyle@testing.mongodb.com",
-            "my-new-password",
-            {
-                someObjectId: ObjectId.createFromHexString(
-                    "5f84057629c14b540462cd1d",
-                ),
-            },
-        );
-        // Expect something of the request
-        expect(fetcher.requests).deep.equals([
-            {
-                method: "POST",
-                url:
-                    "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset/call",
-                body: {
-                    email: "gilfoyle@testing.mongodb.com",
-                    password: "my-new-password",
-                    arguments: [
-                        { someObjectId: { $oid: "5f84057629c14b540462cd1d" } },
-                    ],
-                },
-                headers: SENDING_JSON_HEADERS,
-            },
-        ]);
+  it("can reset a password via a function", async () => {
+    // Make a request
+    await client.callResetPasswordFunction("gilfoyle@testing.mongodb.com", "my-new-password", {
+      someObjectId: ObjectId.createFromHexString("5f84057629c14b540462cd1d"),
     });
+    // Expect something of the request
+    expect(fetcher.requests).deep.equals([
+      {
+        method: "POST",
+        url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/reset/call",
+        body: {
+          email: "gilfoyle@testing.mongodb.com",
+          password: "my-new-password",
+          arguments: [{ someObjectId: { $oid: "5f84057629c14b540462cd1d" } }],
+        },
+        headers: SENDING_JSON_HEADERS,
+      },
+    ]);
+  });
 });

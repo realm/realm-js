@@ -53,7 +53,14 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     private final AssetManager assetManager;
 
     static {
-        SoLoader.loadLibrary("realmreact");
+        try {
+            SoLoader.loadLibrary("realm");
+        } catch (UnsatisfiedLinkError e) {
+            if (e.getMessage().contains("library \"libjsc.so\" not found")) {
+                throw new RuntimeException("Realm JS does not support the Hermes engine yet. Express your 💚 on https://github.com/realm/realm-js/issues/2455", e);
+            }
+            throw e;
+        }
     }
 
     private Handler worker;
@@ -210,9 +217,9 @@ class RealmReactModule extends ReactContextBaseJavaModule {
                 Response response = newFixedLengthResponse("");
                 response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
                 return response;
-            }  
+            }
             final String jsonResponse = processChromeDebugCommand(cmdUri, json);
-           
+
             Response response = newFixedLengthResponse(jsonResponse);
             response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
             return response;

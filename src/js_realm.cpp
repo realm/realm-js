@@ -19,11 +19,11 @@
 #include "platform.hpp"
 #include "js_types.hpp"
 
-#include "impl/realm_coordinator.hpp"
+#include <realm/object-store/impl/realm_coordinator.hpp>
 
 #if REALM_ENABLE_SYNC
-#include "sync/sync_manager.hpp"
-#include "sync/sync_user.hpp"
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
 #endif
 
 namespace realm {
@@ -104,21 +104,31 @@ std::string TypeErrorException::type_string(Property const& prop)
         case PropertyType::ObjectId:
             ret = "objectId";
             break;
+        case PropertyType::UUID:
+            ret = "uuid";
+            break;
         case PropertyType::LinkingObjects:
         case PropertyType::Object:
             ret = prop.object_type;
             break;
-        case PropertyType::Any:
-            throw std::runtime_error("'Any' type is not supported");
+        case PropertyType::Mixed:
+            ret = "mixed";
+            break;
         default:
             REALM_UNREACHABLE();
     }
 
-    if (realm::is_nullable(prop.type)) {
+    if (realm::is_nullable(prop.type) && !realm::is_dictionary(prop.type)) {
         ret += "?";
     }
     if (realm::is_array(prop.type)) {
         ret += "[]";
+    }
+    if (realm::is_dictionary(prop.type)) {
+        ret += "{}";
+    }
+    if (realm::is_set(prop.type)) {
+        ret += "<>";
     }
     return ret;
 }

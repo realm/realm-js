@@ -194,6 +194,12 @@ inline bool jsc::Value::is_object_id(JSContextRef ctx, const JSValueRef &value) 
 }
 
 template<>
+inline bool jsc::Value::is_uuid(JSContextRef ctx, const JSValueRef &value) {
+    // TODO: is_ejson_type won't work for binary EJSON
+    return is_bson_type(ctx, value, "UUID") || is_ejson_type(ctx, value, "$uuid");
+}
+
+template<>
 inline JSValueRef jsc::Value::from_boolean(JSContextRef ctx, bool boolean) {
     return JSValueMakeBoolean(ctx, boolean);
 }
@@ -226,6 +232,9 @@ JSValueRef jsc::Value::from_decimal128(JSContextRef ctx, const Decimal128& value
 
 template<>
 JSValueRef jsc::Value::from_object_id(JSContextRef ctx, const ObjectId& value);
+
+template<>
+JSValueRef jsc::Value::from_uuid(JSContextRef ctx, const UUID& value);
 
 template<>
 inline bool jsc::Value::to_boolean(JSContextRef ctx, const JSValueRef &value) {
@@ -300,13 +309,16 @@ inline JSObjectRef jsc::Value::to_function(JSContextRef ctx, const JSValueRef &v
 }
 
 template<>
-OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, JSValueRef value);
+OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, const JSValueRef& value);
 
 template<>
 Decimal128 jsc::Value::to_decimal128(JSContextRef ctx, const JSValueRef& value);
 
 template<>
 ObjectId jsc::Value::to_object_id(JSContextRef ctx, const JSValueRef& value);
+
+template<>
+UUID jsc::Value::to_uuid(JSContextRef ctx, const JSValueRef& value);
 
 } // js
 } // realm

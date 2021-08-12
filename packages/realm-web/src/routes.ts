@@ -20,101 +20,101 @@
  * @returns The base api route.
  */
 function api() {
-    return {
-        path: "/api/client/v2.0",
+  return {
+    path: "/api/client/v2.0",
+    /**
+     * @param appId The id of the app.
+     * @returns The URL of the app endpoint.
+     */
+    app(appId: string) {
+      return {
+        path: this.path + `/app/${appId}`,
         /**
-         * @param appId The id of the app.
-         * @returns The URL of the app endpoint.
+         * @returns The URL of the app location endpoint.
          */
-        app(appId: string) {
-            return {
-                path: this.path + `/app/${appId}`,
-                /**
-                 * @returns The URL of the app location endpoint.
-                 */
-                location() {
-                    return {
-                        path: this.path + "/location",
-                    };
-                },
-                /**
-                 * @param providerName The name of the provider.
-                 * @returns The app url concatinated with the /auth/providers/{providerName}
-                 */
-                authProvider(providerName: string) {
-                    return {
-                        path: this.path + `/auth/providers/${providerName}`,
-                        /**
-                         * @returns Get the URL of an authentication provider.
-                         */
-                        login() {
-                            return { path: this.path + "/login" };
-                        },
-                    };
-                },
-                /**
-                 * @param providerName The name of the provider.
-                 * @returns The app url concatinated with the /auth/providers/{providerName}
-                 */
-                emailPasswordAuth(providerName: string) {
-                    const authProviderRoutes = this.authProvider(providerName);
-                    return {
-                        ...authProviderRoutes,
-                        register() {
-                            return { path: this.path + "/register" };
-                        },
-                        confirm() {
-                            return { path: this.path + "/confirm" };
-                        },
-                        confirmSend() {
-                            return { path: this.path + "/confirm/send" };
-                        },
-                        reset() {
-                            return { path: this.path + "/reset" };
-                        },
-                        resetSend() {
-                            return { path: this.path + "/reset/send" };
-                        },
-                        resetCall() {
-                            return { path: this.path + "/reset/call" };
-                        },
-                    };
-                },
-                functionsCall() {
-                    return {
-                        path: this.path + "/functions/call",
-                    };
-                },
-            };
+        location() {
+          return {
+            path: this.path + "/location",
+          };
         },
-        auth() {
-            return {
-                path: this.path + "/auth",
-                apiKeys() {
-                    return {
-                        path: this.path + "/api_keys",
-                        key(id: string) {
-                            return {
-                                path: this.path + `/${id}`,
-                                enable() {
-                                    return { path: this.path + "/enable" };
-                                },
-                                disable() {
-                                    return { path: this.path + "/disable" };
-                                },
-                            };
-                        },
-                    };
-                },
-                profile() {
-                    return { path: this.path + "/profile" };
-                },
-                session() {
-                    return { path: this.path + "/session" };
-                },
-            };
+        /**
+         * @param providerName The name of the provider.
+         * @returns The app url concatinated with the /auth/providers/{providerName}
+         */
+        authProvider(providerName: string) {
+          return {
+            path: this.path + `/auth/providers/${providerName}`,
+            /**
+             * @returns Get the URL of an authentication provider.
+             */
+            login() {
+              return { path: this.path + "/login" };
+            },
+          };
         },
-    };
+        /**
+         * @param providerName The name of the provider.
+         * @returns The app url concatinated with the /auth/providers/{providerName}
+         */
+        emailPasswordAuth(providerName: string) {
+          const authProviderRoutes = this.authProvider(providerName);
+          return {
+            ...authProviderRoutes,
+            register() {
+              return { path: this.path + "/register" };
+            },
+            confirm() {
+              return { path: this.path + "/confirm" };
+            },
+            confirmSend() {
+              return { path: this.path + "/confirm/send" };
+            },
+            reset() {
+              return { path: this.path + "/reset" };
+            },
+            resetSend() {
+              return { path: this.path + "/reset/send" };
+            },
+            resetCall() {
+              return { path: this.path + "/reset/call" };
+            },
+          };
+        },
+        functionsCall() {
+          return {
+            path: this.path + "/functions/call",
+          };
+        },
+      };
+    },
+    auth() {
+      return {
+        path: this.path + "/auth",
+        apiKeys() {
+          return {
+            path: this.path + "/api_keys",
+            key(id: string) {
+              return {
+                path: this.path + `/${id}`,
+                enable() {
+                  return { path: this.path + "/enable" };
+                },
+                disable() {
+                  return { path: this.path + "/disable" };
+                },
+              };
+            },
+          };
+        },
+        profile() {
+          return { path: this.path + "/profile" };
+        },
+        session() {
+          return { path: this.path + "/session" };
+        },
+      };
+    },
+  };
 }
 
 export default { api };

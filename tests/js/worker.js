@@ -18,43 +18,41 @@
 
 /* eslint-env es6, node */
 
-'use strict';
-
 class Worker {
-    constructor(script, args) {
-        let options;
-        // FIXME: how to enable debugging?
-        // FIXME: tests are failing due to "Starting inspector on 127.0.0.1:44725 failed: address already in use"
-        // if (process.execArgv.find(arg => arg.indexOf("--debug=")) || process.execArgv.find(arg => arg.indexOf("--inspect="))) {
-        //     options = { execArgv: ['--inspect=44725'] };
-        // }
+  constructor(script, args) {
+    let options;
+    // FIXME: how to enable debugging?
+    // FIXME: tests are failing due to "Starting inspector on 127.0.0.1:44725 failed: address already in use"
+    // if (process.execArgv.find(arg => arg.indexOf("--debug=")) || process.execArgv.find(arg => arg.indexOf("--inspect="))) {
+    //     options = { execArgv: ['--inspect=44725'] };
+    // }
 
-        this._process = require('child_process').fork(script, args, options);
+    this._process = require("child_process").fork(script, args, options);
 
-        this._process.on('message', (message) => {
-            if (this.onmessage) {
-                this.onmessage(message);
-            }
-        });
+    this._process.on("message", (message) => {
+      if (this.onmessage) {
+        this.onmessage(message);
+      }
+    });
+  }
+  postMessage(message) {
+    if (this._process) {
+      this._process.send(message);
     }
-    postMessage(message) {
-        if (this._process) {
-            this._process.send(message);
-        }
+  }
+  terminate(cb) {
+    if (!cb) {
+      cb = function () {};
     }
-    terminate(cb) {
-        if (!cb) {
-            cb = function() { };
-        }
 
-        if (this._process) {
-            this._process.once('close', cb);
-            this._process.kill();
-            delete this._process;
-        } else {
-            cb();
-        }
+    if (this._process) {
+      this._process.once("close", cb);
+      this._process.kill();
+      delete this._process;
+    } else {
+      cb();
     }
+  }
 }
 
 module.exports = Worker;

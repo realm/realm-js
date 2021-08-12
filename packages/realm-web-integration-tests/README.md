@@ -47,7 +47,7 @@ Currently, these are only available when running in a browser.
 
 Before running tests which depends on a specific authentication provider:
 1. Run once to import the app,
-2. Go to http://localhost:9090 (or whereever your MongoDB Realm server is listening)
+2. Go to http://localhost:9090 (or wherever your MongoDB Realm server is listening)
 3. Setup the appropriate authentication providers.
 
 To enable testing credentials that require interaction, run with DEV_TOOLS and TEST_CREDENTIALS set to a comma-separated list of credentials.
@@ -78,3 +78,15 @@ To skip importing the app or use a different server, specify one or more of the 
 - `MDB_REALM_BASE_URL`
 - `MDB_REALM_USERNAME`
 - `MDB_REALM_PASSWORD`
+
+If you want to communicate with the server using the credentials created by the test harness, you can run the test with the following environment variable:
+
+```
+MDB_REALM_SKIP_CLEANUP=true
+```
+
+This will skip the clean-up, leaving the app derived from the `./my-test-app-template` and the `./realm-config` file containing access and refresh tokens.
+
+```
+npx realm-cli export --base-url http://localhost:9090 --config-path ./realm-config --app-id my-test-app-kuxuo
+```

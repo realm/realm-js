@@ -23,35 +23,35 @@ import { Window } from "./OAuth2Helper";
  * Helps decode buffers into strings of various encodings.
  */
 declare class TextDecoder {
-    decode(buffer: Uint8Array, options?: { stream: boolean }): string;
+  decode(buffer: Uint8Array, options?: { stream: boolean }): string;
 }
 
 /** An object with values specific to the runtime environment. */
 export type Environment = {
-    /**
-     * The default storage instance on the environment.
-     */
-    defaultStorage: Storage;
+  /**
+   * The default storage instance on the environment.
+   */
+  defaultStorage: Storage;
 
-    /**
-     * Open a browser window.
-     */
-    openWindow: (url: string) => Window | null;
+  /**
+   * Open a browser window.
+   */
+  openWindow: (url: string) => Window | null;
 
-    /**
-     * The name of the executing platform.
-     */
-    platform: string;
+  /**
+   * The name of the executing platform.
+   */
+  platform: string;
 
-    /**
-     * The version of the executing platform.
-     */
-    platformVersion: string;
+  /**
+   * The version of the executing platform.
+   */
+  platformVersion: string;
 
-    /**
-     * Helps decode buffers into strings of various encodings.
-     */
-    TextDecoder: typeof TextDecoder;
+  /**
+   * Helps decode buffers into strings of various encodings.
+   */
+  TextDecoder: typeof TextDecoder;
 };
 
 let environment: Environment | null = null;
@@ -63,7 +63,7 @@ let environment: Environment | null = null;
  * @param e An object containing environment specific implementations.
  */
 export function setEnvironment(e: Environment) {
-    environment = e;
+  environment = e;
 }
 
 /**
@@ -72,9 +72,9 @@ export function setEnvironment(e: Environment) {
  * @returns An object containing environment specific implementations.
  */
 export function getEnvironment() {
-    if (environment) {
-        return environment;
-    } else {
-        throw new Error("Cannot get environment before it's set");
-    }
+  if (environment) {
+    return environment;
+  } else {
+    throw new Error("Cannot get environment before it's set");
+  }
 }

@@ -1,0 +1,44 @@
+# Keeping our code style aligned with linting
+
+We're using linters for a couple of reasons:
+- We've experienced a lot of reviews to focus on the stying of code rather than its design and architecture. In particular, this has the potential to be a real turn-off for a newcomer.
+- Writing code in a shared style makes way easier to read across files.
+- As with any static analysis of code, linting has the potential to find bugs before our users do.
+
+## Setup your editor to format on save
+
+To help yourself keep your code passing linters at all times, it's highly recommended to setup your editor to help you.
+
+### Visual Studio Code
+
+- Install and enable the ["eslint" extension for VS Code](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint).
+- Make sure you've enabled "format on save" on your workspace.
+
+Both the eslint plugin and formatting on save can be enabled via the UI or you can <kbd>Cmd</kbd> + <kbd>P</kbd>, type *"> Preferences Open Workspace Settings (JSON)"* and paste in the following in the `settings` object:
+
+```json
+"eslint.format.enable": true,
+"editor.formatOnSave": true
+```
+
+## Running the linters off the CLI
+
+Linters are run for every pull-request, via [the `pr-linting` workflow](../.github/workflows/pr-linting.yml) on GitHub Actions.
+
+Every package of this mono-repository should have a `lint` script - to lint, simply change your working directory and run the script:
+
+```
+npm run lint
+```
+
+To run linting on every package of the project, use the `lerna:lint` script in the root package:
+
+```
+npm run lerna:lint
+```
+
+The linter can automatically fix some issues. To run a fix across every sub-package, you can use the `lerna:lint:fix` script in the root package:
+
+```
+npm run lerna:lint:fix
+```

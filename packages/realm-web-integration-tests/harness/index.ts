@@ -29,8 +29,7 @@ import WEBPACK_CONFIG = require("../webpack.config");
 import path = require("path");
 
 // Default to testing only the credentials that does not require manual interactions.
-const testCredentials =
-    process.env.TEST_CREDENTIALS || "anonymous,email-password,function,jwt";
+const testCredentials = process.env.TEST_CREDENTIALS || "anonymous,email-password,function,jwt";
 
 const { BASE_URL = "http://localhost:8080" } = process.env;
 
@@ -38,125 +37,120 @@ const { BASE_URL = "http://localhost:8080" } = process.env;
  * A list of expected errors and warnings logged to the console
  */
 const EXPECTED_ISSUES = [
-    /was set with `SameSite=None` but without `Secure`/,
-    // User / "refresh invalid access tokens" is posting an invalid token
-    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-    // Closing the watch streams, might yield this error (we're doing that three times)
-    "Failed to load resource: net::ERR_FAILED",
-    "Failed to load resource: net::ERR_FAILED",
-    "Failed to load resource: net::ERR_FAILED",
-    // EmailPasswordAuth is exercising confirming users that has already been confirmed
-    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
-    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
-    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
-    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+  /was set with `SameSite=None` but without `Secure`/,
+  // User / "refresh invalid access tokens" is posting an invalid token
+  "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+  // Closing the watch streams, might yield this error (we're doing that three times)
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  // EmailPasswordAuth is exercising confirming users that has already been confirmed
+  "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+  "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+  "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+  "Failed to load resource: the server responded with a status of 400 (Bad Request)",
 ];
 
 function checkIssues(issues: string[]) {
-    const expectedQueue = [...EXPECTED_ISSUES];
-    issueLoop: for (const issue of issues) {
-        while (expectedQueue.length > 0) {
-            const expected = expectedQueue.shift();
-            if (
-                expected === issue ||
-                (expected instanceof RegExp && expected.test(issue))
-            ) {
-                // This matches, let's go to the next issue
-                continue issueLoop;
-            }
-        }
-        throw new Error(`Unexpected error or warning: ${issue}`);
+  const expectedQueue = [...EXPECTED_ISSUES];
+  issueLoop: for (const issue of issues) {
+    while (expectedQueue.length > 0) {
+      const expected = expectedQueue.shift();
+      if (expected === issue || (expected instanceof RegExp && expected.test(issue))) {
+        // This matches, let's go to the next issue
+        continue issueLoop;
+      }
     }
+    throw new Error(`Unexpected error or warning: ${issue}`);
+  }
 }
 
 export async function run(devtools = false) {
-    // Prepare
-    const { appId, baseUrl } = await importRealmApp();
-    // Start up the Webpack Dev Server
-    const compiler = webpack({
-        ...(WEBPACK_CONFIG as webpack.Configuration),
-        mode: "development",
-        plugins: [
-            ...WEBPACK_CONFIG.plugins,
-            new webpack.DefinePlugin({
-                APP_ID: JSON.stringify(appId),
-                // Uses the webpack dev servers proxy
-                BASE_URL: JSON.stringify(BASE_URL),
-                TEST_CREDENTIALS: JSON.stringify(testCredentials.split(",")),
-                IIFE_BUNDLE_URL: JSON.stringify(
-                    `${BASE_URL}/realm-web/dist/bundle.iife.js`,
-                ),
-                // Used when testing Google Sign-In
-                GOOGLE_CLIENT_ID: JSON.stringify(process.env.GOOGLE_CLIENT_ID),
-            }),
-        ],
+  // Prepare
+  const { appId, baseUrl } = await importRealmApp();
+  // Start up the Webpack Dev Server
+  const compiler = webpack({
+    ...(WEBPACK_CONFIG as webpack.Configuration),
+    mode: "development",
+    plugins: [
+      ...WEBPACK_CONFIG.plugins,
+      new webpack.DefinePlugin({
+        APP_ID: JSON.stringify(appId),
+        // Uses the webpack dev servers proxy
+        BASE_URL: JSON.stringify(BASE_URL),
+        TEST_CREDENTIALS: JSON.stringify(testCredentials.split(",")),
+        IIFE_BUNDLE_URL: JSON.stringify(`${BASE_URL}/realm-web/dist/bundle.iife.js`),
+        // Used when testing Google Sign-In
+        GOOGLE_CLIENT_ID: JSON.stringify(process.env.GOOGLE_CLIENT_ID),
+      }),
+    ],
+  });
+
+  // Start the webpack-dev-server
+  const devServer = new WebpackDevServer(compiler, {
+    proxy: { "/api": baseUrl },
+    historyApiFallback: true,
+    contentBase: path.join(__dirname, "../node_modules/realm-web"),
+    contentBasePublicPath: "/realm-web",
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    devServer.listen(8080, "localhost", (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
     });
+  });
 
-    // Start the webpack-dev-server
-    const devServer = new WebpackDevServer(compiler, {
-        proxy: { "/api": baseUrl },
-        historyApiFallback: true,
-        contentBase: path.join(__dirname, "../node_modules/realm-web"),
-        contentBasePublicPath: "/realm-web",
-    });
+  process.once("exit", () => {
+    devServer.close();
+  });
 
-    await new Promise((resolve, reject) => {
-        devServer.listen(8080, "localhost", err => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    });
+  // Start the mocha remote server
+  const mochaServer = new MochaRemoteServer(undefined, {
+    runOnConnection: devtools,
+  });
 
-    process.once("exit", () => {
-        devServer.close();
-    });
+  process.once("exit", () => {
+    mochaServer.stop();
+  });
 
-    // Start the mocha remote server
-    const mochaServer = new MochaRemoteServer(undefined, {
-        runOnConnection: devtools,
-    });
+  await mochaServer.start();
 
-    process.once("exit", () => {
-        mochaServer.stop();
-    });
+  // Start up the browser, running the tests
+  const browser = await puppeteer.launch({ devtools });
 
-    await mochaServer.start();
+  process.once("exit", () => {
+    browser.close();
+  });
 
-    // Start up the browser, running the tests
-    const browser = await puppeteer.launch({ devtools });
-
-    process.once("exit", () => {
-        browser.close();
-    });
-
-    // Navigate to the pages served by the webpack dev server
-    const page = await browser.newPage();
-    const issues: string[] = [];
-    page.on("console", message => {
-        const type = message.type();
-        if (type === "error") {
-            const text = message.text();
-            issues.push(text);
-            console.error(`[ERROR] ${text}`);
-        } else if (type === "warning") {
-            const text = message.text();
-            issues.push(text);
-            console.warn(`[WARNING] ${text}`);
-        } else if (type === "info") {
-            const text = message.text();
-            console.log(`[INFO] ${text}`);
-        }
-    });
-    await page.goto("http://localhost:8080");
-    // We will have to manually invoke running the tests if we're not running on connections
-    if (!devtools) {
-        await mochaServer.runAndStop();
+  // Navigate to the pages served by the webpack dev server
+  const page = await browser.newPage();
+  const issues: string[] = [];
+  page.on("console", (message) => {
+    const type = message.type();
+    if (type === "error") {
+      const text = message.text();
+      issues.push(text);
+      console.error(`[ERROR] ${text}`);
+    } else if (type === "warning") {
+      const text = message.text();
+      issues.push(text);
+      console.warn(`[WARNING] ${text}`);
+    } else if (type === "info") {
+      const text = message.text();
+      console.log(`[INFO] ${text}`);
     }
-    // Wait for the tests to complete
-    await mochaServer.stopped;
-    // Check the issues logged in the browser
-    checkIssues(issues);
+  });
+  await page.goto("http://localhost:8080");
+  // We will have to manually invoke running the tests if we're not running on connections
+  if (!devtools) {
+    await mochaServer.runAndStop();
+  }
+  // Wait for the tests to complete
+  await mochaServer.stopped;
+  // Check the issues logged in the browser
+  checkIssues(issues);
 }

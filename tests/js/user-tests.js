@@ -18,35 +18,33 @@
 
 /* eslint-env es6, node */
 
-'use strict';
-
-const Realm = require('realm');
-const TestCase = require('./asserts');
-const Utils = require('./test-utils');
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-const AppConfig = require('./support/testConfig');
+const Realm = require("realm");
+const TestCase = require("./asserts");
+const Utils = require("./test-utils");
+const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
+const AppConfig = require("./support/testConfig");
 
 const require_method = require;
 function node_require(module) {
-    return require_method(module);
+  return require_method(module);
 }
 let appConfig = AppConfig.integrationAppConfig;
 
 let fs, jwt, rosDataDir;
 if (isNodeProcess) {
-  fs = node_require('fs');
-  jwt = node_require('jsonwebtoken');
-  rosDataDir = process.env.ROS_DATA_DIR || '../realm-object-server-data';
+  fs = node_require("fs");
+  jwt = node_require("jsonwebtoken");
+  rosDataDir = process.env.ROS_DATA_DIR || "../realm-object-server-data";
 }
 
 function assertIsUser(user) {
   TestCase.assertDefined(user);
-  TestCase.assertType(user, 'object');
-  TestCase.assertType(user.accessToken, 'string');
-  TestCase.assertType(user.refreshToken, 'string');
-  TestCase.assertType(user.id, 'string');
-  TestCase.assertType(user.identities, 'object');
-  TestCase.assertType(user.customData, 'object');
+  TestCase.assertType(user, "object");
+  TestCase.assertType(user.accessToken, "string");
+  TestCase.assertType(user.refreshToken, "string");
+  TestCase.assertType(user.id, "string");
+  TestCase.assertType(user.identities, "object");
+  TestCase.assertType(user.customData, "object");
   TestCase.assertInstanceOf(user, Realm.User);
 }
 
@@ -57,14 +55,14 @@ function assertIsSameUser(value, user) {
 }
 
 function assertIsError(error, message) {
-  TestCase.assertInstanceOf(error, Error, 'The API should return an Error');
+  TestCase.assertInstanceOf(error, Error, "The API should return an Error");
   if (message) {
     TestCase.assertEqual(error.message, message);
   }
 }
 
 function assertIsAuthError(error, code, title) {
-  TestCase.assertInstanceOf(error, Realm.App.Sync.AuthError, 'The API should return an AuthError');
+  TestCase.assertInstanceOf(error, Realm.App.Sync.AuthError, "The API should return an AuthError");
   if (code) {
     TestCase.assertEqual(error.code, code);
   }
@@ -74,15 +72,15 @@ function assertIsAuthError(error, code, title) {
 }
 
 function signToken(userId) {
-  return jwt.sign({userId}, fs.readFileSync(`${rosDataDir}/keys/jwt.pem`), {
+  return jwt.sign({ userId }, fs.readFileSync(`${rosDataDir}/keys/jwt.pem`), {
     expiresIn: "1d",
     algorithm: "RS256",
   });
 }
 
 function randomVerifiableEmail() {
-    // according to the custom register function, emails will register if they contain "realm_tests_do_autoverify"
-    return `realm_tests_do_autoverify_${Utils.uuid()}_@test.com`;
+  // according to the custom register function, emails will register if they contain "realm_tests_do_autoverify"
+  return `realm_tests_do_autoverify_${Utils.uuid()}_@test.com`;
 }
 
 function randomNonVerifiableEmail() {
@@ -94,7 +92,7 @@ async function registerAndLogInEmailUser(app) {
   const validEmail = randomVerifiableEmail();
   const validPassword = "test1234567890";
   await app.emailPasswordAuth.registerUser(validEmail, validPassword);
-  let user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword))
+  let user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
   assertIsUser(user);
   assertIsSameUser(user, app.currentUser);
   return user;
@@ -102,13 +100,12 @@ async function registerAndLogInEmailUser(app) {
 
 async function logOutExistingUsers(app) {
   const users = app.allUsers;
-  Object.keys(app.allUsers).forEach(async id => {
+  Object.keys(app.allUsers).forEach(async (id) => {
     await users[id].logOut();
   });
 }
 
 module.exports = {
-
   // tests also logIn() and currentUser
   async testLogout() {
     let app = new Realm.App(appConfig);
@@ -124,7 +121,7 @@ module.exports = {
   },
 
   testEmailPasswordMissingUsername() {
-    let err = TestCase.assertThrows(() => Realm.Credentials.emailPassword(undefined, 'password'));
+    let err = TestCase.assertThrows(() => Realm.Credentials.emailPassword(undefined, "password"));
     TestCase.assertEqual(err.message, "email must be of type 'string', got (undefined)");
   },
 
@@ -136,12 +133,15 @@ module.exports = {
 
   testLoginNonExistingUser() {
     let app = new Realm.App(appConfig);
-    let credentials = Realm.Credentials.emailPassword('foo', 'pass');
-    return app.logIn(credentials).then((user) => {
-      throw new Error("Login should have failed");
-    }).catch(err => {
-      TestCase.assertEqual(err.message, "invalid username/password");
-    });
+    let credentials = Realm.Credentials.emailPassword("foo", "pass");
+    return app
+      .logIn(credentials)
+      .then((user) => {
+        throw new Error("Login should have failed");
+      })
+      .catch((err) => {
+        TestCase.assertEqual(err.message, "invalid username/password");
+      });
   },
 
   async testCustomData() {
@@ -151,7 +151,7 @@ module.exports = {
     let user = await app.logIn(credentials);
     const customData = user.customData;
     // TODO: Enable custom user data in the app to test this e2e
-    TestCase.assertType(customData, 'object');
+    TestCase.assertType(customData, "object");
   },
 
   async testEmailPasswordAuth() {
@@ -164,42 +164,52 @@ module.exports = {
     let app = new Realm.App(appConfig);
     const validEmail = randomVerifiableEmail();
     const invalidEmail = randomNonVerifiableEmail();
-    const invalidPassword = 'pass'; // too short
+    const invalidPassword = "pass"; // too short
     const validPassword = "password123456";
 
-    { // invalid email, invalid password
+    {
+      // invalid email, invalid password
       let credentials = Realm.Credentials.emailPassword(invalidEmail, invalidPassword);
-      let err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
+      let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
-      err = await TestCase.assertThrowsAsync(async() => app.emailPasswordAuth.registerUser(invalidEmail, invalidPassword));
+      err = await TestCase.assertThrowsAsync(async () =>
+        app.emailPasswordAuth.registerUser(invalidEmail, invalidPassword),
+      );
       TestCase.assertEqual(err.message, "password must be between 6 and 128 characters");
-      err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
+      err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user did not register
     }
-    { // invalid email, valid password
+    {
+      // invalid email, valid password
       let credentials = Realm.Credentials.emailPassword(invalidEmail, validPassword);
-      let err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
+      let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
-      err = await TestCase.assertThrowsAsync(async() => app.emailPasswordAuth.registerUser(invalidEmail, validPassword));
+      err = await TestCase.assertThrowsAsync(async () =>
+        app.emailPasswordAuth.registerUser(invalidEmail, validPassword),
+      );
       TestCase.assertEqual(err.message, `failed to confirm user ${invalidEmail}`);
-      err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
+      err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user did not register
     }
-    { // valid email, invalid password
+    {
+      // valid email, invalid password
       let credentials = Realm.Credentials.emailPassword(validEmail, invalidPassword);
-      let err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
+      let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
-      err = await TestCase.assertThrowsAsync(async() => app.emailPasswordAuth.registerUser(validEmail, invalidPassword));
+      err = await TestCase.assertThrowsAsync(async () =>
+        app.emailPasswordAuth.registerUser(validEmail, invalidPassword),
+      );
       TestCase.assertEqual(err.message, "password must be between 6 and 128 characters");
-      err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
+      err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user did not register
     }
-    { // valid email, valid password
+    {
+      // valid email, valid password
       let credentials = Realm.Credentials.emailPassword(validEmail, validPassword);
-      let err = await TestCase.assertThrowsAsync(async() => app.logIn(credentials));
+      let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
       await app.emailPasswordAuth.registerUser(validEmail, validPassword);
-      let user = await app.logIn(credentials)
+      let user = await app.logIn(credentials);
       assertIsUser(user);
       assertIsSameUser(user, app.currentUser);
       await user.logOut();
@@ -230,18 +240,21 @@ module.exports = {
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
-    TestCase.assertEqual(await user.callFunction('sumFunc', [123]), 123);
+    TestCase.assertEqual(await user.callFunction("sumFunc"), 0);
+    TestCase.assertEqual(await user.callFunction("sumFunc", [123]), 123);
     TestCase.assertEqual(await user.functions.sumFunc(123), 123);
-    TestCase.assertEqual(await user.functions['sumFunc'](123), 123);
+    TestCase.assertEqual(await user.functions["sumFunc"](123), 123);
 
     // Test method stashing / that `this` is bound correctly.
     const sumFunc = user.functions.sumFunc;
+    TestCase.assertEqual(await sumFunc(), 0);
     TestCase.assertEqual(await sumFunc(123), 123);
     TestCase.assertEqual(await sumFunc(123), 123); // Not just one-shot
 
+    TestCase.assertEqual(await user.functions.sumFunc(), 0);
     TestCase.assertEqual(await user.functions.sumFunc(1, 2, 3), 6);
 
-    const err = await TestCase.assertThrowsAsync(async() => await user.functions.error());
+    const err = await TestCase.assertThrowsAsync(async () => await user.functions.error());
     TestCase.assertEqual(err.message, "function not found: 'error'");
   },
 
@@ -250,31 +263,31 @@ module.exports = {
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
-    let mongo = user.mongoClient('BackingDB');
-    TestCase.assertEqual(mongo.serviceName, 'BackingDB');
-    let database = mongo.db('test_data');
-    TestCase.assertEqual(database.name, 'test_data');
+    let mongo = user.mongoClient("BackingDB");
+    TestCase.assertEqual(mongo.serviceName, "BackingDB");
+    let database = mongo.db("test_data");
+    TestCase.assertEqual(database.name, "test_data");
 
-    let collection = database.collection('testRemoteMongoClient');
-    TestCase.assertEqual(collection.name, 'testRemoteMongoClient');
+    let collection = database.collection("testRemoteMongoClient");
+    TestCase.assertEqual(collection.name, "testRemoteMongoClient");
 
     await collection.deleteMany({});
-    await collection.insertOne({hello: "world"});
+    await collection.insertOne({ hello: "world" });
     TestCase.assertEqual(await collection.count({}), 1);
-    TestCase.assertEqual(await collection.count({hello: "world"}), 1);
-    TestCase.assertEqual(await collection.count({hello: "pineapple"}), 0);
+    TestCase.assertEqual(await collection.count({ hello: "world" }), 1);
+    TestCase.assertEqual(await collection.count({ hello: "pineapple" }), 0);
   },
 
   async testMongoClientWatch() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
-    let collection = user.mongoClient('BackingDB').db('test_data').collection('testRemoteMongoClient');
+    let collection = user.mongoClient("BackingDB").db("test_data").collection("testRemoteMongoClient");
 
     await collection.deleteMany({});
 
-    const sleep = async time => new Promise(resolve => setInterval(resolve, time));
-    const str = 'use some odd chars to force weird encoding %\n\r\n\\????>>>>';
+    const sleep = async (time) => new Promise((resolve) => setInterval(resolve, time));
+    const str = "use some odd chars to force weird encoding %\n\r\n\\????>>>>";
     await Promise.all([
       (async () => {
         // There is a race with creating the watch() streams, since they won't
@@ -283,28 +296,23 @@ module.exports = {
         await sleep(490);
         for (let i = 0; i < 10; i++) {
           await sleep(10);
-          await collection.insertOne({_id: i, hello: "world", str});
+          await collection.insertOne({ _id: i, hello: "world", str });
         }
-        await collection.insertOne({_id: 'done', done: true}); // break other sides out of loop
+        await collection.insertOne({ _id: "done", done: true }); // break other sides out of loop
       })(),
       (async () => {
         let expected = 0;
         for await (let event of collection.watch()) {
-          if (event.fullDocument.done)
-            break;
+          if (event.fullDocument.done) break;
           TestCase.assertEqual(event.fullDocument._id, expected++);
         }
         TestCase.assertEqual(expected, 10);
       })(),
       (async () => {
-        const filter = {$or:[
-          {'fullDocument._id': 3, 'fullDocument.str': str},
-          {'fullDocument.done': true},
-        ]}
+        const filter = { $or: [{ "fullDocument._id": 3, "fullDocument.str": str }, { "fullDocument.done": true }] };
         let seenIt = false;
-        for await (let event of collection.watch({filter})) {
-          if (event.fullDocument.done)
-            break;
+        for await (let event of collection.watch({ filter })) {
+          if (event.fullDocument.done) break;
           TestCase.assertEqual(event.fullDocument._id, 3);
           seenIt = true;
         }
@@ -312,9 +320,8 @@ module.exports = {
       })(),
       (async () => {
         let seenIt = false;
-        for await (let event of collection.watch({ids: [5, 'done']})) {
-          if (event.fullDocument.done)
-            break;
+        for await (let event of collection.watch({ ids: [5, "done"] })) {
+          if (event.fullDocument.done) break;
           TestCase.assertTrue(event.fullDocument._id, 5);
           seenIt = true;
         }
@@ -329,17 +336,15 @@ module.exports = {
         TestCase.assertTrue(false, "This should be unreachable");
       }
     });
-    if (err.code != 401)
-      throw err;
+    if (err.code != 401) throw err;
   },
 
-  
   async testPush() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
 
-    let push = user.push('gcm');
+    let push = user.push("gcm");
 
     await push.deregister(); // deregister never registered not an error
     await push.register("hello");
@@ -347,10 +352,9 @@ module.exports = {
     await push.deregister();
     await push.deregister(); // double deregister not an error
 
-    const err = await TestCase.assertThrowsAsync(async() => await user.push('nonesuch').register('hello'))
+    const err = await TestCase.assertThrowsAsync(async () => await user.push("nonesuch").register("hello"));
     TestCase.assertEqual(err.message, "service not found: 'nonesuch'");
   },
- 
 
   async testAllWithAnonymous() {
     let app = new Realm.App(appConfig);
@@ -418,7 +422,7 @@ module.exports = {
     const userIDs = Object.keys(all);
 
     let loggedInUsers = 0;
-    for (let i=0; i<userIDs.length; i++) {
+    for (let i = 0; i < userIDs.length; i++) {
       console.log("Checking for login on user " + userIDs[i] + "\n");
       if (all[userIDs[i]].isLoggedIn) {
         loggedInUsers++;
@@ -451,5 +455,5 @@ module.exports = {
     TestCase.assertFalse(user1.isLoggedIn);
     TestCase.assertFalse(user2.isLoggedIn);
     TestCase.assertArrayLength(Object.keys(all), 2, "still holds references to both users"); // FIXME: is this actually expected?
-  }
+  },
 };

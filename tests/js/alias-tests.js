@@ -18,147 +18,143 @@
 
 /* eslint-env es6, node */
 
-'use strict';
-
-var Realm = require('realm');
-var TestCase = require('./asserts');
-var schemas = require('./schemas');
+var Realm = require("realm");
+var TestCase = require("./asserts");
+var schemas = require("./schemas");
 
 function getRealm() {
-    const schemas = [{
-        name: 'ObjectA',
-        properties: {
-            otherName: { type: 'string', mapTo: "name"},
-            age: {type: 'int', optional: true}
-        }
-    }];
+  const schemas = [
+    {
+      name: "ObjectA",
+      properties: {
+        otherName: { type: "string", mapTo: "name" },
+        age: { type: "int", optional: true },
+      },
+    },
+  ];
 
-    return new Realm({
-        schema: schemas
-    });
+  return new Realm({
+    schema: schemas,
+  });
 }
 
 function addTestObjects(realm) {
-    realm.beginTransaction();
-    realm.create('ObjectA', {
-        otherName: 'Foo',
-        age: 41
-    });
-    realm.create('ObjectA', {
-        otherName: 'Bar',
-        age: 42
-    });
-    realm.commitTransaction();
+  realm.beginTransaction();
+  realm.create("ObjectA", {
+    otherName: "Foo",
+    age: 41,
+  });
+  realm.create("ObjectA", {
+    otherName: "Bar",
+    age: 42,
+  });
+  realm.commitTransaction();
 }
 
-
 module.exports = {
+  testAliasInSchema() {
+    const Person = {
+      name: "Person",
+      properties: {
+        _name: { type: "string", mapTo: "name" },
+        address: { type: "string", indexed: true },
+        age: "double",
+        _married: { type: "bool", default: false, mapTo: "married" },
+        _children: { type: "list", objectType: "Person", mapTo: "children" },
+        _parents: { type: "linkingObjects", objectType: "Person", property: "children", mapTo: "parents" },
+      },
+    };
 
-    testAliasInSchema() {
-        const Person = {
-            name: 'Person',
-            properties: {
-                _name:     {type: 'string', mapTo: 'name'},
-                address:  {type: 'string', indexed: true },
-                age:      'double',
-                _married:  {type: 'bool', default: false, mapTo: 'married'},
-                _children: {type: 'list', objectType: 'Person', mapTo: 'children'},
-                _parents:  {type: 'linkingObjects', objectType: 'Person', property: 'children', mapTo: 'parents'},
-            }
-        };
+    const realm = new Realm({
+      schema: [Person],
+    });
 
-        const realm = new Realm({
-            schema: [Person]
-        });
+    // Mapped properties are reported for all variants, no matter if the public_name is set or not.
+    const props = realm.schema[0].properties;
+    TestCase.assertEqual(props["_name"].mapTo, "name");
+    TestCase.assertEqual(props["address"].mapTo, "address");
+    TestCase.assertEqual(props["age"].mapTo, "age");
+    TestCase.assertEqual(props["_married"].mapTo, "married");
+    TestCase.assertEqual(props["_children"].mapTo, "children");
+    TestCase.assertEqual(props["_parents"].mapTo, "parents");
 
-        // Mapped properties are reported for all variants, no matter if the public_name is set or not.
-        const props = realm.schema[0].properties;
-        TestCase.assertEqual(props['_name'].mapTo, 'name');
-        TestCase.assertEqual(props['address'].mapTo, 'address');
-        TestCase.assertEqual(props['age'].mapTo, 'age');
-        TestCase.assertEqual(props['_married'].mapTo, 'married');
-        TestCase.assertEqual(props['_children'].mapTo, 'children');
-        TestCase.assertEqual(props['_parents'].mapTo, 'parents');
+    realm.close();
+  },
 
-        realm.close();
-    },
+  testAliasWhenCreatingObjects() {
+    const realm = getRealm();
+    realm.beginTransaction();
 
+    // Creating objects most use the alias
+    realm.create("ObjectA", {
+      otherName: "Foo",
+      age: 42,
+    });
 
-    testAliasWhenCreatingObjects() {
-        const realm = getRealm();
-        realm.beginTransaction();
+    // Creating uses arrays still work
+    realm.create("ObjectA", ["Bar", 42]);
 
-        // Creating objects most use the alias
-        realm.create('ObjectA', {
-            otherName: 'Foo',
-            age: 42
-        });
+    // Using the internal name instead of the alias throws an exception.
+    TestCase.assertThrows(() => realm.create("ObjectA", { name: "Boom" }));
 
-        // Creating uses arrays still work
-        realm.create('ObjectA', ['Bar', 42])
+    realm.commitTransaction();
 
-        // Using the internal name instead of the alias throws an exception.
-        TestCase.assertThrows(() => realm.create('ObjectA', { name: 'Boom' }));
+    realm.close();
+  },
 
-        realm.commitTransaction();
+  testAliasWhenUpdatingObjects() {
+    const realm = getRealm();
+    realm.beginTransaction();
 
-        realm.close();
-    },
+    let obj = realm.create("ObjectA", { otherName: "Foo" });
 
-    testAliasWhenUpdatingObjects() {
-        const realm = getRealm();
-        realm.beginTransaction();
+    // Setting properties must use alias
+    obj.otherName = "Bar";
+    TestCase.assertEqual(obj.otherName, "Bar");
 
-        let obj = realm.create('ObjectA', { otherName: 'Foo' });
+    // If no alias is defined, the internal name still works
+    obj.age = 1;
+    TestCase.assertEqual(obj.age, 1);
 
-        // Setting properties must use alias
-        obj.otherName = "Bar";
-        TestCase.assertEqual(obj.otherName, "Bar");
+    // Even if a mapped name is set, only the public name can be used when updating properties.
+    obj.name = "Baz";
+    TestCase.assertEqual(obj.otherName, "Bar");
 
-        // If no alias is defined, the internal name still works
-        obj.age = 1;
-        TestCase.assertEqual(obj.age, 1);
+    realm.commitTransaction();
 
-        // Even if a mapped name is set, only the public name can be used when updating properties.
-        obj.name = "Baz";
-        TestCase.assertEqual(obj.otherName, "Bar");
+    realm.close();
+  },
 
-        realm.commitTransaction();
+  testAliasWhenReadingProperties() {
+    const realm = getRealm();
+    addTestObjects(realm);
 
-        realm.close();
-    },
+    // The mapped property names cannot be used when reading properties
+    let obj = realm.objects("ObjectA")[0];
+    TestCase.assertEqual(obj.name, undefined);
+    TestCase.assertEqual(obj.otherName, "Foo");
+    TestCase.assertEqual(obj.age, 41);
 
-    testAliasWhenReadingProperties() {
-        const realm = getRealm();
-        addTestObjects(realm);
+    // Only the Javascript property names are visible as keys, not the mapped names.
+    for (var key in obj) {
+      TestCase.assertFalse(key === "name");
+    }
 
-        // The mapped property names cannot be used when reading properties
-        let obj = realm.objects("ObjectA")[0];
-        TestCase.assertEqual(obj.name, undefined);
-        TestCase.assertEqual(obj.otherName, 'Foo');
-        TestCase.assertEqual(obj.age, 41);
+    realm.close();
+  },
 
-        // Only the Javascript property names are visible as keys, not the mapped names.
-        for(var key in obj) {
-            TestCase.assertFalse(key === 'name');
-        }
+  testAliasInQueries() {
+    const realm = getRealm();
+    addTestObjects(realm);
 
-        realm.close();
-    },
+    // Queries also use aliases
+    let results = realm.objects("ObjectA").filtered("otherName = 'Foo'");
+    TestCase.assertEqual(results.length, 1);
 
-    testAliasInQueries() {
-        const realm = getRealm();
-        addTestObjects(realm);
+    // Querying on internal names are still allowed
+    results = realm.objects("ObjectA").filtered("name = 'Foo'");
+    TestCase.assertEqual(results.length, 1);
 
-        // Queries also use aliases
-        let results = realm.objects("ObjectA").filtered("otherName = 'Foo'");
-        TestCase.assertEqual(results.length, 1);
-
-        // Querying on internal names are still allowed
-        results = realm.objects("ObjectA").filtered("name = 'Foo'");
-        TestCase.assertEqual(results.length, 1);
-
-        realm.close();
-    },
-
+    realm.close();
+  },
 };

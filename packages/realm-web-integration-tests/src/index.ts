@@ -20,29 +20,29 @@ import { MochaRemoteClient } from "mocha-remote-client";
 import * as Realm from "realm-web";
 
 if (location.pathname.endsWith("-callback")) {
-    console.log("This is the callback from Google OAuth 2.0 flow");
-    Realm.handleAuthRedirect();
+  console.log("This is the callback from Google OAuth 2.0 flow");
+  Realm.handleAuthRedirect();
 } else if (location.pathname.endsWith("/google-login")) {
-    console.log("Hello to Google Login ...");
-    require("./google-login");
+  console.log("Hello to Google Login ...");
+  require("./google-login");
 } else {
-    const mochaClient = new MochaRemoteClient({
-        onInstrumented: () => {
-            beforeEach(function () {
-                this.slow(1000);
-                this.timeout(10000);
-            });
+  const mochaClient = new MochaRemoteClient({
+    onInstrumented: () => {
+      beforeEach(function () {
+        this.slow(1000);
+        this.timeout(10000);
+      });
 
-            require("./environment.test");
-            require("./app.test");
-            require("./credentials.test");
-            require("./user.test");
-            require("./functions.test");
-            require("./services.test");
-            require("./api-key-auth.test");
-            require("./email-password-auth.test");
-            require("./iife.test");
-            require("./bson.test");
-        },
-    });
+      require("./environment.test");
+      require("./app.test");
+      require("./credentials.test");
+      require("./user.test");
+      require("./functions.test");
+      require("./services.test");
+      require("./api-key-auth.test");
+      require("./email-password-auth.test");
+      require("./iife.test");
+      require("./bson.test");
+    },
+  });
 }

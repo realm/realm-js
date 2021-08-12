@@ -23,6 +23,8 @@
 #include "js_util.hpp"
 #include "js_realm_object.hpp"
 #include "js_list.hpp"
+#include "js_set.hpp"
+#include "js_dictionary.hpp"
 #include "js_results.hpp"
 #include "js_schema.hpp"
 #include "js_observable.hpp"
@@ -35,24 +37,25 @@
 #include "js_app_credentials.hpp"
 #include "js_email_password_auth.hpp"
 #include "js_api_key_auth.hpp"
-#include "sync/async_open_task.hpp"
-#include "sync/sync_config.hpp"
-#include "sync/sync_manager.hpp"
+#include <realm/sync/config.hpp>
+#include <realm/object-store/sync/async_open_task.hpp>
+#include <realm/object-store/sync/sync_manager.hpp>
 #endif
 
-#include "util/scheduler.hpp"
+#include <realm/object-store/util/scheduler.hpp>
 
-#include "binding_context.hpp"
-#include "object_accessor.hpp"
-#include "results.hpp"
-#include "shared_realm.hpp"
-#include "thread_safe_reference.hpp"
-#include "util/scheduler.hpp"
+#include <realm/object-store/binding_context.hpp>
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/results.hpp>
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/thread_safe_reference.hpp>
+#include <realm/object-store/util/scheduler.hpp>
 
 #include <realm/disable_sync_to_disk.hpp>
 #include <realm/global_key.hpp>
 #include <realm/util/file.hpp>
 #include <realm/util/scope_exit.hpp>
+#include <realm/sync/config.hpp>
 
 #include <cctype>
 #include <list>
@@ -242,7 +245,7 @@ public:
 
         const int argc = 2;
         typename T::Value arguments[argc] = { Value<T>::from_number(this_object->m_ctx, total_bytes), Value<T>::from_number(this_object->m_ctx, used_bytes) };
-        typename T::Value ret_val = Function<T>::callback(this_object->m_ctx, this_object->m_func, typename T::Object(), argc, arguments);
+        typename T::Value ret_val = Function<T>::callback(this_object->m_ctx, this_object->m_func, Object<T>::create_empty(this_object->m_ctx), argc, arguments);
         this_object->m_should_compact_on_launch = Value<T>::validated_to_boolean(this_object->m_ctx, ret_val);
         this_object->m_ready = true;
         this_object->m_cond_var->notify_one();
@@ -342,6 +345,8 @@ public:
     static void delete_file(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void realm_file_exists(ContextType, ObjectType, Arguments &, ReturnValue &);
 
+    static void bson_parse_json(ContextType, ObjectType, Arguments &, ReturnValue &);
+
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
     static void set_default_path(ContextType, ObjectType, ValueType value);
@@ -354,6 +359,7 @@ public:
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
         {"deleteFile", wrap<delete_file>},
         {"exists", wrap<realm_file_exists>},
+        {"_bsonParseJsonForTest", wrap<bson_parse_json>},
 #if REALM_ENABLE_SYNC
         {"_asyncOpen", wrap<async_open_realm>},
 #endif
@@ -381,7 +387,6 @@ public:
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"_updateSchema", wrap<update_schema>},
-        {"_objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
 
@@ -478,12 +483,16 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
     FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
+    FunctionType set_constructor = ObjectWrap<T, SetClass<T>>::create_constructor(ctx);
+    FunctionType dictionary_constructor = ObjectWrap<T, DictionaryClass<T>>::create_constructor(ctx);
     FunctionType realm_object_constructor = ObjectWrap<T, RealmObjectClass<T>>::create_constructor(ctx);
     FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "Set", set_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "Dictionary", dictionary_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 
@@ -570,6 +579,9 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             static const String in_memory_string = "inMemory";
             ValueType in_memory_value = Object::get_property(ctx, object, in_memory_string);
             if (!Value::is_undefined(ctx, in_memory_value) && Value::validated_to_boolean(ctx, in_memory_value, "inMemory")) {
+                if (config.force_sync_history || config.sync_config) {
+                    throw std::invalid_argument("Options 'inMemory' and 'sync' are mutual exclusive.");
+                }
                 config.in_memory = true;
             }
 
@@ -624,6 +636,10 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             static const String migration_string = "migration";
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {
+                if (config.force_sync_history || config.sync_config) {
+                    throw std::invalid_argument("Options 'migration' and 'sync' are mutual exclusive.");
+                }
+
                 FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
 
                 if (config.schema_mode == SchemaMode::ResetFile) {
@@ -785,7 +801,7 @@ void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Argume
     SharedRealm& realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
 
     auto& config = realm->config();
-    if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::Additive || config.schema_mode == SchemaMode::ReadOnlyAlternative) {
+    if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::AdditiveExplicit || config.schema_mode == SchemaMode::ReadOnlyAlternative) {
         throw std::runtime_error("Cannot delete model for a read-only or a synced Realm.");
     }
 
@@ -906,8 +922,9 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                              Value::from_string(protected_ctx, "Cannot asynchronously open synced Realm because the associated session previously experienced a fatal error"));
         Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
-        ValueType callback_arguments[1];
-        callback_arguments[0] = object;
+        ValueType callback_arguments[] = {
+            object,
+        };
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
     }
 
@@ -926,9 +943,10 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                 Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
                 Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
-                ValueType callback_arguments[2];
-                callback_arguments[0] = Value::from_undefined(protected_ctx);
-                callback_arguments[1] = object;
+                ValueType callback_arguments[2] =  {
+                    Value::from_undefined(protected_ctx),
+                    object,
+                };
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
                 return;
             }
@@ -940,10 +958,11 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         set_binding_context(protected_ctx, realm, schema_updated, std::move(def), std::move(ctor));
         ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
 
-        ValueType callback_arguments[2];
-        callback_arguments[0] = object;
-        callback_arguments[1] = Value::from_null(protected_ctx);
-        Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+        ValueType callback_arguments[2] = {
+            object,
+            Value::from_null(protected_ctx),
+        };
+        Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
     });
 
     task->start(callback_handler);
@@ -1282,24 +1301,6 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 }
 
 template<typename T>
-void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
-    args.validate_count(2);
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
-
-    auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
-    std::string object_id_string = Value::validated_to_string(ctx, args[1]);
-
-    const Group& group = realm->read_group();
-    auto table = ObjectStore::table_for_object_type(group, object_schema.name);
-    auto object_id = GlobalKey::from_string(object_id_string);
-    auto object_key = table->get_objkey(object_id);
-
-    if (object_key) {
-        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, object_key)));
-    }
-}
-
-template<typename T>
 void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
     args.validate_count(1);
 
@@ -1340,6 +1341,14 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
         nullptr,
         true
     );
+}
+
+template<typename T>
+void RealmClass<T>::bson_parse_json(ContextType ctx, ObjectType, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(1);
+    auto json = std::string(Value::validated_to_string(ctx, args[0]));
+    auto parsed = bson::parse(json);
+    return_value.set(Value::from_bson(ctx, parsed));
 }
 
 #if REALM_ENABLE_SYNC
@@ -1396,10 +1405,11 @@ void AsyncOpenTaskClass<T>::add_download_notification(ContextType ctx, ObjectTyp
 
     realm::util::EventLoopDispatcher<SyncProgressHandler> callback_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) mutable {
         HANDLESCOPE(protected_ctx)
-        ValueType callback_arguments[2];
-        callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
-        callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
-        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+        ValueType callback_arguments[2] = {
+            Value::from_number(protected_ctx, transferred_bytes),
+            Value::from_number(protected_ctx, transferrable_bytes),
+        };
+        Function::callback(protected_ctx, protected_callback, 2, callback_arguments);
     });
 
     std::shared_ptr<AsyncOpenTask> task = *get_internal<T, AsyncOpenTaskClass<T>>(ctx, this_object);

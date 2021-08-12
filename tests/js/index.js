@@ -16,112 +16,115 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-"use strict";
-
 const Realm = require("realm");
+const BSON = require("bson");
 
 if (typeof Realm.App !== "undefined" && Realm.App !== null) {
-    global.WARNING = "global is not available in React Native. Use it only in tests";
-    global.enableSyncTests = process.env.REALM_DISABLE_SYNC_TESTS ? false : true;
+  global.WARNING = "global is not available in React Native. Use it only in tests";
+  global.enableSyncTests = process.env.REALM_DISABLE_SYNC_TESTS ? false : true;
 }
 
 const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
 const isElectronProcess = typeof process === "object" && process.versions && process.versions.electron;
 const require_method = require;
-function node_require(module) { return require_method(module); }
+function node_require(module) {
+  return require_method(module);
+}
 
 if (isNodeProcess && process.platform === "win32") {
-    global.enableSyncTests = false;
+  global.enableSyncTests = false;
 }
 
 var TESTS = {
-    ListTests: require("./list-tests"),
-    LinkingObjectsTests: require("./linkingobjects-tests"),
-    ObjectTests: require("./object-tests"),
-    RealmTests: require("./realm-tests"),
-    ResultsTests: require("./results-tests"),
-    QueryTests: require("./query-tests"),
-    MigrationTests: require("./migration-tests"),
-    EncryptionTests: require("./encryption-tests"),
-    AliasTests: require("./alias-tests"),
-    ArrayBuffer: require("./array-buffer-tests")
+  ListTests: require("./list-tests"),
+  LinkingObjectsTests: require("./linkingobjects-tests"),
+  ObjectTests: require("./object-tests"),
+  RealmTests: require("./realm-tests"),
+  ResultsTests: require("./results-tests"),
+  QueryTests: require("./query-tests"),
+  MigrationTests: require("./migration-tests"),
+  EncryptionTests: require("./encryption-tests"),
+  AliasTests: require("./alias-tests"),
+  BsonTests: require("./bson-tests"),
+  MixedTests: require("./mixed-tests"),
+  DictionaryTest: require("./dictionary-tests"),
+  // Garbagecollectiontests: require('./garbage-collection'),
+  ArrayBuffer: require("./array-buffer-tests"),
+  SetTests: require("./set-tests"),
 };
-
-//TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
-if (isNodeProcess) {
-    TESTS.ObjectIDTests = require("./object-id-tests");
-}
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
-    //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
-    if (isNodeProcess) {
-        TESTS.AppTests = require("./app-tests");
-        TESTS.OpenBehaviorTests = require("./open-behavior-tests");
-        TESTS.UserTests = require("./user-tests");
-        TESTS.SessionTests = require("./session-tests");
-        TESTS.AnalyticsTests = require('./analytics-tests');
-    }
+  //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+  if (isNodeProcess) {
+    TESTS.AppTests = require("./app-tests");
+    TESTS.OpenBehaviorTests = require("./open-behavior-tests");
+    TESTS.UserTests = require("./user-tests");
+    TESTS.SessionTests = require("./session-tests");
+    TESTS.UUIDSyncTests = node_require("./uuid-sync-tests");
+    TESTS.PartitionValueTests = node_require("./partition-value-tests");
+    TESTS.SetSyncTests = node_require("./set-sync-tests");
+    TESTS.MixedSyncTests = node_require("./mixed-sync-tests");
+    TESTS.AnalyticsTests = require("./analytics-tests");
+  }
 }
 
 // If on node, run the async tests
 if (isNodeProcess && process.platform !== "win32") {
-    TESTS.AsyncTests = node_require("./async-tests");
+  TESTS.AsyncTests = node_require("./async-tests");
 }
 
 var SPECIAL_METHODS = {
-    beforeEach: true,
-    afterEach: true,
+  beforeEach: true,
+  afterEach: true,
 };
 
-exports.getTestNames = function() {
-    var testNames = {};
+exports.getTestNames = function () {
+  var testNames = {};
 
-    for (var suiteName in TESTS) {
-        var testSuite = TESTS[suiteName];
+  for (var suiteName in TESTS) {
+    var testSuite = TESTS[suiteName];
 
-        testNames[suiteName] = Object.keys(testSuite).filter(function(testName) {
-            return !(testName in SPECIAL_METHODS) && typeof testSuite[testName] == "function";
-        });
-    }
+    testNames[suiteName] = Object.keys(testSuite).filter(function (testName) {
+      return !(testName in SPECIAL_METHODS) && typeof testSuite[testName] == "function";
+    });
+  }
 
-    return testNames;
+  return testNames;
 };
 
-exports.registerTests = function(tests) {
-    for (var suiteName in tests) {
-        TESTS[suiteName] = tests[suiteName];
-    }
+exports.registerTests = function (tests) {
+  for (var suiteName in tests) {
+    TESTS[suiteName] = tests[suiteName];
+  }
 };
 
 exports.prepare = function (done) {
-    done();
+  done();
 };
 
-exports.runTest = function(suiteName, testName) {
-    const testSuite = TESTS[suiteName];
-    const testMethod = testSuite && testSuite[testName];
+exports.runTest = function (suiteName, testName) {
+  const testSuite = TESTS[suiteName];
+  const testMethod = testSuite && testSuite[testName];
 
-    if (testMethod) {
-        Realm.clearTestState();
-        console.warn("Starting test " + testName);
-        var result = testMethod.call(testSuite);
+  if (testMethod) {
+    Realm.clearTestState();
+    var result = testMethod.call(testSuite);
 
-        //make sure v8 GC can collect garbage after each test and does not fail
-        if (isNodeProcess || isElectronProcess) {
-            if (result instanceof Promise) {
-                result.finally(() => global.gc());
-                return result;
-            }
-            else {
-                global.gc();
-            }
-        }
-
+    //make sure v8 GC can collect garbage after each test and does not fail
+    if (isNodeProcess || isElectronProcess) {
+      if (result instanceof Promise) {
+        result.finally(() => global.gc());
         return result;
+      } else {
+        global.gc();
+      }
     }
 
-    if (!testSuite || !(testName in SPECIAL_METHODS)) {
-        throw new Error(`Missing test: ${suiteName}.${testName}`);
-    }
-}
+    return result;
+  }
+
+  if (!testSuite || !(testName in SPECIAL_METHODS)) {
+    throw new Error(`Missing test: ${suiteName}.${testName}`);
+  }
+};

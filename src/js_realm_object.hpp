@@ -24,8 +24,8 @@ namespace js {
 }
 }
 
-#include "object_accessor.hpp"
-#include "object_store.hpp"
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/object_store.hpp>
 
 #include "js_class.hpp"
 #include "js_types.hpp"
@@ -95,8 +95,8 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
         {"objectSchema", wrap<get_object_schema>},
         {"linkingObjects", wrap<linking_objects>},
         {"linkingObjectsCount", wrap<linking_objects_count>},
-        {"_objectId", wrap<get_object_id>},
         {"_isSameObject", wrap<is_same_object>},
+        {"_objectId", wrap<get_object_id>},
         {"_setLink", wrap<set_link>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
@@ -138,13 +138,7 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 
     try {
         if (!delegate || !delegate->m_constructors.count(name)) {
-            #ifdef REALM_PLATFORM_NODE 
-                FunctionType constructor;
-            #else
-                FunctionType constructor = nullptr;
-            #endif
-            auto object = create_instance_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, internal);
-            return object;
+            return create_instance_by_schema<T, RealmObjectClass<T>>(ctx, schema, internal);
         }
 
         FunctionType constructor = delegate->m_constructors.at(name);

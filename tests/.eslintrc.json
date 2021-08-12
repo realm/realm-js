@@ -1,9 +1,12 @@
 {
+  "extends": "plugin:jasmine/recommended",
   "env": {
+    "node": true,
     "jasmine": true
   },
-  "plugins": ["jasmine"],
-  "extends": "plugin:jasmine/recommended",
+  "plugins": [
+    "jasmine"
+  ],
   "globals": {
     "ArrayBuffer": false,
     "DataView": false,
@@ -20,8 +23,14 @@
   "rules": {
     "no-invalid-this": "off",
     "no-magic-numbers": "off",
-    "jasmine/no-spec-dupes": ["error", "branch"],
-    "jasmine/no-suite-dupes": ["error", "branch"],
+    "jasmine/no-spec-dupes": [
+      "error",
+      "branch"
+    ],
+    "jasmine/no-suite-dupes": [
+      "error",
+      "branch"
+    ],
     "no-console": "off",
     "no-unused-vars": "off"
   }

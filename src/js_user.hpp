@@ -24,12 +24,12 @@
 #include "js_api_key_auth.hpp"
 #include "js_network_transport.hpp"
 
-#include "sync/mongo_collection.hpp"
-#include "sync/sync_config.hpp"
-#include "sync/sync_manager.hpp"
-#include "sync/sync_session.hpp"
-#include "sync/sync_user.hpp"
-#include "sync/app.hpp"
+#include <realm/sync/config.hpp>
+#include <realm/object-store/sync/mongo_collection.hpp>
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/sync_session.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
+#include <realm/object-store/sync/app.hpp>
 #include "platform.hpp"
 
 namespace realm {
@@ -309,7 +309,7 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
 
     auto profile_object = Object::create_empty(ctx);
 #define STRING_TO_PROP(propname) \
-    util::Optional<std::string> optional_##propname = user_profile.propname; \
+    util::Optional<std::string> optional_##propname = user_profile.propname(); \
     if (optional_##propname ) { \
         Object::set_property(ctx, profile_object, string_##propname, Value::from_string(ctx, *optional_##propname)); \
     }

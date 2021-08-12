@@ -21,6 +21,7 @@ DerivedData
 *.ipa
 *.xcuserstate
 
+
 # Android/IntelliJ
 #
 build/
@@ -57,3 +58,4 @@ buck-out/
 
 # CocoaPods
 /ios/Pods/
+/ios/Podfile.lock

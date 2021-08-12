@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,60 +19,59 @@
 /* tslint:disable max-classes-per-file */
 
 import Realm from "realm";
-import { ObjectId } from "bson";
 
 export interface IPerson {
-    _id: ObjectId;
-    name: string;
-    age: number;
-    friends: Realm.List<IPerson>;
-    dogs: Realm.Collection<IDog>;
+  _id: Realm.BSON.ObjectId;
+  name: string;
+  age: number;
+  friends: Realm.List<IPerson>;
+  dogs: Realm.Collection<IDog>;
 }
 
 export const PersonSchema: Realm.ObjectSchema = {
-    name: "Person",
-    primaryKey: "_id",
-    properties: {
-        _id: "objectId",
-        age: "int",
-        name: "string",
-        friends: "Person[]",
-    },
+  name: "Person",
+  primaryKey: "_id",
+  properties: {
+    _id: "objectId",
+    age: "int",
+    name: "string",
+    friends: "Person[]",
+  },
 };
 
 export class Person extends Realm.Object implements IPerson {
-    _id: ObjectId;
-    name: string;
-    age: number;
-    friends: Realm.List<Person>;
-    dogs: Realm.Collection<Dog>;
+  _id: Realm.BSON.ObjectId;
+  name: string;
+  age: number;
+  friends: Realm.List<Person>;
+  dogs: Realm.Collection<Dog>;
 
-    static schema: Realm.ObjectSchema = PersonSchema;
+  static schema: Realm.ObjectSchema = PersonSchema;
 }
 
 export interface IDog {
-    _id: ObjectId;
-    name: string;
-    age: number;
-    owner: IPerson;
+  _id: Realm.BSON.ObjectId;
+  name: string;
+  age: number;
+  owner: IPerson;
 }
 
 export const DogSchema: Realm.ObjectSchema = {
-    name: "Dog",
-    primaryKey: "_id",
-    properties: {
-        _id: "objectId",
-        age: "int",
-        name: "string",
-        owner: "Person",
-    },
+  name: "Dog",
+  primaryKey: "_id",
+  properties: {
+    _id: "objectId",
+    age: "int",
+    name: "string",
+    owner: "Person",
+  },
 };
 
 export class Dog extends Realm.Object implements IDog {
-    _id: ObjectId;
-    name: string;
-    age: number;
-    owner: Person;
+  _id: Realm.BSON.ObjectId;
+  name: string;
+  age: number;
+  owner: Person;
 
-    static schema: Realm.ObjectSchema = DogSchema;
+  static schema: Realm.ObjectSchema = DogSchema;
 }

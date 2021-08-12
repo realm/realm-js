@@ -25,40 +25,37 @@ import { MockNetworkTransport } from "./MockNetworkTransport";
  * A mock of the fetcher useful when testing.
  */
 export class MockFetcher extends Fetcher {
-    private readonly mockUserContext: UserContext;
-    private readonly mockTransport: MockNetworkTransport;
+  private readonly mockUserContext: UserContext;
+  private readonly mockTransport: MockNetworkTransport;
 
-    /**
-     * Construct a mocked network transport which returns pre-recorded requests.
-     *
-     * @param responses An array of pre-recorded requests.
-     * @param userContext An object defining the current user.
-     */
-    constructor(
-        responses: object[] = [],
-        userContext: UserContext = { currentUser: null },
-    ) {
-        const mockTransport = new MockNetworkTransport(responses);
-        super({
-            appId: "mocked-app-id",
-            userContext: userContext,
-            locationUrlContext: {
-                locationUrl: Promise.resolve("http://localhost:1337"),
-            },
-            transport: mockTransport,
-        });
-        this.mockTransport = mockTransport;
-        this.mockUserContext = userContext;
-    }
+  /**
+   * Construct a mocked network transport which returns pre-recorded requests.
+   *
+   * @param responses An array of pre-recorded requests.
+   * @param userContext An object defining the current user.
+   */
+  constructor(responses: unknown[] = [], userContext: UserContext = { currentUser: null }) {
+    const mockTransport = new MockNetworkTransport(responses);
+    super({
+      appId: "mocked-app-id",
+      userContext: userContext,
+      locationUrlContext: {
+        locationUrl: Promise.resolve("http://localhost:1337"),
+      },
+      transport: mockTransport,
+    });
+    this.mockTransport = mockTransport;
+    this.mockUserContext = userContext;
+  }
 
-    set currentUser(user: User<any, any> | null) {
-        this.mockUserContext.currentUser = user;
-    }
+  set currentUser(user: User<any, any> | null) {
+    this.mockUserContext.currentUser = user;
+  }
 
-    /**
-     * @returns List of all requests captured.
-     */
-    public get requests(): AuthenticatedRequest<any>[] {
-        return this.mockTransport.requests;
-    }
+  /**
+   * @returns List of all requests captured.
+   */
+  public get requests(): AuthenticatedRequest<any>[] {
+    return this.mockTransport.requests;
+  }
 }

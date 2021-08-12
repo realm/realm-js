@@ -1,4 +1,20 @@
-"use strict";
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2021 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 // This file is pretty much a copy of https://github.com/electron/electron-quick-start/blob/master/main.js
 
@@ -23,7 +39,7 @@ function getJasmineFilter() {
 
 function getProcess() {
   const filterArg = process.argv.find((arg) => arg.indexOf(MAIN_PROCESS_KEY) === 0);
-  return filterArg ? filterArg.slice(MAIN_PROCESS_KEY.length + 1) : 'render';
+  return filterArg ? filterArg.slice(MAIN_PROCESS_KEY.length + 1) : "render";
 }
 
 const filter = getJasmineFilter();
@@ -38,13 +54,13 @@ app.on("ready", () => {
   mainWindow = new BrowserWindow({
     show: false,
     webPreferences: {
-      nodeIntegration: true
-    }
+      nodeIntegration: true,
+    },
   });
 
   global.options = {
     filter,
-    runIn
+    runIn,
   };
 
   process.on("uncaughtException", (error) => {
@@ -52,33 +68,34 @@ app.on("ready", () => {
     process.exit(-1);
   });
 
-
-  app.on('window-all-closed', function () {
-      app.exit();
+  app.on("window-all-closed", function () {
+    app.exit();
   });
 
-  app.on('render-process-gone', function (event, webcontents, details) {
+  app.on("render-process-gone", function (event, webcontents, details) {
     if (details.reason !== "clean-exit") {
       console.log(`Renderer process gone reason: ${details.reason}`);
       app.exit(-1);
     }
-    
+
     app.exit(0);
-});
+  });
 
   // Load the index.html of the app.
-  mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, "index.html"),
-    protocol: "file:",
-    slashes: true
-  }));
+  mainWindow.loadURL(
+    url.format({
+      pathname: path.join(__dirname, "index.html"),
+      protocol: "file:",
+      slashes: true,
+    }),
+  );
 
   if (runIn === "main") {
     console.log("Running tests in the main process.");
     const jasmine = require("./jasmine.js").execute(filter);
     jasmine.onComplete((passed) => {
       let success = passed ? 0 : -1;
-      console.log(`\nTesting completed in main process with status ${success}`)
+      console.log(`\nTesting completed in main process with status ${success}`);
       process.exit(success);
     });
   } else if (runIn === "render") {

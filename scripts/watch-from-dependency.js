@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,10 +17,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-"use strict";
-
 const cp = require("child_process");
-const cla = require("command-line-args");
 const path = require("path");
 const fs = require("fs");
 const Watchman = require("fb-watchman");
@@ -37,13 +33,13 @@ const EXCLUDED_PATHS = [
 
 function readPackageJson(packagePath) {
   const packageJsonPath = path.resolve(packagePath, "package.json");
-  const packageJsonContent = fs.readFileSync(packageJsonPath, "utf8")
+  const packageJsonContent = fs.readFileSync(packageJsonPath, "utf8");
   return JSON.parse(packageJsonContent);
 }
 
 const realmPackagePath = path.resolve(__dirname, "..");
 const realmPackageJson = readPackageJson(realmPackagePath);
-const realmPackageFileGlobs = realmPackageJson.files.map(p => {
+const realmPackageFileGlobs = realmPackageJson.files.map((p) => {
   const resolvedPath = path.resolve(realmPackagePath, p);
   if (fs.existsSync(resolvedPath) && fs.lstatSync(resolvedPath).isDirectory()) {
     return p + "/**";
@@ -77,20 +73,14 @@ const watchman = {
   },
   subscribe(rootPath, name, subscriptionObject) {
     return this.command("subscribe", rootPath, name, subscriptionObject);
-  }
+  },
 };
 
-async function run() {
-
-  const options = cla({
-    name: "path", alias: "p",
-  });
-  
-  const dependencyPath = path.resolve(options.path);
+async function run(dependencyPath) {
   // Ensure that a dependency on the "realm" package
   const dependencyPackageJson = readPackageJson(dependencyPath);
   if (Object.keys(dependencyPackageJson.dependencies).includes("realm") === false) {
-    throw new Error(`Expected the package (${dependencyPath}) to be depending on "realm"`);
+    console.warn(`Expected the package (${dependencyPath}) to be depending on "realm"`);
   }
   // Ensure that the "realm" package has already been installed
   const dependencyRealmPath = path.resolve(dependencyPath, "node_modules/realm");
@@ -113,22 +103,26 @@ async function run() {
     } else {
       console.log(`🚀 Performing sync: ${resp.files.length} file(s) changed`);
     }
-    cp.spawnSync("rsync", [
-      // "--verbose",
-      "--progress",
-      "--archive",
-      "--delete",
-      ...EXCLUDED_PATHS.map(p => ["--exclude", p]).flat(),
-      // The file or directory itself
-      ...realmPackageJson.files.map(f => ["--include", f]).flat(),
-      // Any files under this
-      ...realmPackageJson.files.map(f => ["--include", f + "/**"]).flat(),
-      // Exclude anything that was not explicitly included
-      "--exclude",
-      "*",
-      realmPackagePath + "/",
-      dependencyRealmPath + "/",
-    ], { stdio: "inherit" });
+    cp.spawnSync(
+      "rsync",
+      [
+        // "--verbose",
+        "--progress",
+        "--archive",
+        "--delete",
+        ...EXCLUDED_PATHS.map((p) => ["--exclude", p]).flat(),
+        // The file or directory itself
+        ...realmPackageJson.files.map((f) => ["--include", f]).flat(),
+        // Any files under this
+        ...realmPackageJson.files.map((f) => ["--include", f + "/**"]).flat(),
+        // Exclude anything that was not explicitly included
+        "--exclude",
+        "*",
+        realmPackagePath + "/",
+        dependencyRealmPath + "/",
+      ],
+      { stdio: "inherit" },
+    );
     console.log("💤 Waiting for changes\n");
   });
 
@@ -139,14 +133,21 @@ async function run() {
     expression: [
       "allof",
       // Include all the files included by the package
-      ["anyof", ...realmPackageFileGlobs.map(pattern => ["match", pattern, "wholename"])],
-      ...EXCLUDED_PATHS.map(p => ["not", ["match", p + "/**", "wholename"]])
+      ["anyof", ...realmPackageFileGlobs.map((pattern) => ["match", pattern, "wholename"])],
+      ...EXCLUDED_PATHS.map((p) => ["not", ["match", p + "/**", "wholename"]]),
     ],
     fields: ["name"],
   });
 }
 
-run().catch(err => {
-  console.error(err.message);
-  process.exit(1);
-});
+if (module.parent === null) {
+  if (process.argv.length < 3) {
+    throw new Error("Expected path to a dependent package");
+  }
+  const lastArg = process.argv[process.argv.length - 1];
+  const dependencyPath = path.resolve(lastArg);
+  run(dependencyPath).catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
+}

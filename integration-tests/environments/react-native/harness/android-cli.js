@@ -17,74 +17,69 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const cp = require("child_process");
+const path = require("path");
 
 function getAdbPath() {
-    return process.env.ANDROID_HOME
-        ? process.env.ANDROID_HOME + "/platform-tools/adb"
-        : "adb";
+  return process.env.ANDROID_HOME ? path.resolve(process.env.ANDROID_HOME, "platform-tools/adb") : "adb";
 }
 
 function getEmulatorPath() {
-    return process.env.ANDROID_HOME
-        ? process.env.ANDROID_HOME + "/tools/emulator"
-        : "emulator";
-}
-
-function execSync(path, args, returnStdOut) {
-    if (returnStdOut) {
-        return cp.execFileSync(path, args, {
-            encoding: "utf8",
-        });
-    } else {
-        cp.execFileSync(path, args, {
-            stdio: ["inherit", "inherit", "inherit"],
-        });
-    }
+  return process.env.ANDROID_HOME ? path.resolve(process.env.ANDROID_HOME, "tools/emulator") : "emulator";
 }
 
 const adb = {
-    exec(args, returnStdOut = true) {
-        const path = getAdbPath();
-        console.log(`Running ${path} ${args.join(" ")}`);
-        return execSync(path, args, returnStdOut);
-    },
-    reverseServerPort(port) {
-        adb.exec(["reverse", `tcp:${port}`, `tcp:${port}`], false);
-    },
-    devices() {
-        const output = adb
-            .exec(["devices"])
-            .trim()
-            .split("\n");
-        // Remove the "List of devices attached"
-        const [intro, ...lines] = output;
-        if (intro !== "List of devices attached") {
-            throw new Error("Unexpected output from ADB");
-        }
-        // Return the list of devices
-        return lines.map(line => {
-            const [id, state] = line.split("\t");
-            return { id, state };
-        });
-    },
+  exec(args, returnStdOut = true, verbose = true) {
+    const adbPath = getAdbPath();
+    if (verbose) {
+      console.log(`Executing ${adbPath} ${args.join(" ")}`);
+    }
+    return cp.execFileSync(adbPath, args, returnStdOut ? { encoding: "utf8" } : { stdio: "inherit" });
+  },
+  spawn(args) {
+    const adbPath = getAdbPath();
+    console.log(`Spawning ${adbPath} ${args.join(" ")}`);
+    return cp.spawn(adbPath, args, { stdio: "inherit" });
+  },
+  reverseServerPort(port) {
+    adb.exec(["reverse", `tcp:${port}`, `tcp:${port}`], false);
+  },
+  devices() {
+    const output = adb.exec(["devices"]).trim().split("\n");
+    // Remove the "List of devices attached"
+    const [intro, ...lines] = output;
+    if (intro !== "List of devices attached") {
+      throw new Error("Unexpected output from ADB");
+    }
+    // Return the list of devices
+    return lines.map((line) => {
+      const [id, state] = line.split("\t");
+      return { id, state };
+    });
+  },
+  logcat(...args) {
+    return adb.spawn(["logcat", ...args]);
+  },
+  shell(...args) {
+    return adb.exec(["shell", ...args]);
+  },
+  shellPidOf(packageName) {
+    return adb.exec(["shell", `pidof -s ${packageName}`], true, false).trim();
+  },
 };
 
 const emulator = {
-    exec(args, returnStdOut = true) {
-        const path = getEmulatorPath();
-        console.log(`Running ${path} ${args.join(" ")}`);
-        return execSync(path, args, returnStdOut);
-    },
-    devices() {
-        return emulator
-            .exec(["-list-avds"])
-            .trim()
-            .split("\n");
-    },
-    start(avd) {
-        const path = getEmulatorPath();
-        return cp.spawn(path, ["-avd", avd, "-verbose"]);
-    },
+  exec(args, returnStdOut = true) {
+    const emulatorPath = getEmulatorPath();
+    console.log(`Running ${emulatorPath} ${args.join(" ")}`);
+    return cp.execSync(emulatorPath, args, returnStdOut);
+  },
+  devices() {
+    return emulator.exec(["-list-avds"]).trim().split("\n");
+  },
+  start(avd) {
+    const emulatorPath = getEmulatorPath();
+    return cp.spawn(emulatorPath, ["-avd", avd, "-verbose"]);
+  },
 };
 
 module.exports = { adb, emulator };

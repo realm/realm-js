@@ -35,7 +35,7 @@
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
                BuildableName = "RealmReactTests.xctest"
                BlueprintName = "RealmReactTests"
-               ReferencedContainer = "container:../../tests/react-test-app/ios/ReactTests.xcodeproj">
+               ReferencedContainer = "container:../../tests/ReactTestApp/ios/ReactTests.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

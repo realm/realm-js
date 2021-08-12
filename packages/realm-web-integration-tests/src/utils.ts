@@ -22,32 +22,26 @@ import { App } from "realm-web";
 declare const APP_ID: string;
 declare const BASE_URL: string;
 
-export function createApp<
-    FunctionsFactoryType extends object = Realm.DefaultFunctionsFactory
->() {
-    if (typeof APP_ID !== "string") {
-        throw new Error("Expected a global APP_ID");
-    }
-    if (typeof BASE_URL !== "string") {
-        throw new Error("Expected a global BASE_URL");
-    }
-    return new App<FunctionsFactoryType>({
-        id: APP_ID,
-        baseUrl: BASE_URL,
-    });
+export function createApp<FunctionsFactoryType = Realm.DefaultFunctionsFactory>(): App<FunctionsFactoryType> {
+  if (typeof APP_ID !== "string") {
+    throw new Error("Expected a global APP_ID");
+  }
+  if (typeof BASE_URL !== "string") {
+    throw new Error("Expected a global BASE_URL");
+  }
+  return new App<FunctionsFactoryType>({
+    id: APP_ID,
+    baseUrl: BASE_URL,
+  });
 }
 
-export function describeIf(
-    condition: boolean,
-    title: string,
-    fn: (this: Mocha.Suite) => void,
-) {
-    if (condition) {
-        describe(title, fn);
-    } else {
-        describe.skip(title, fn);
-    }
+export function describeIf(condition: boolean, title: string, fn: (this: Mocha.Suite) => void) {
+  if (condition) {
+    describe(title, fn);
+  } else {
+    describe.skip(title, fn);
+  }
 }
 
 export const INVALID_TOKEN =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MDAwMDAwMDAsImlhdCI6MTUwMDAwMDAwMCwic3ViIjoiMTIzNDU2Nzg5MCJ9.x3-ZWVJGjEltXWWa1uaBaN4oo7dOjPbgA46STVD5KKY";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MDAwMDAwMDAsImlhdCI6MTUwMDAwMDAwMCwic3ViIjoiMTIzNDU2Nzg5MCJ9.x3-ZWVJGjEltXWWa1uaBaN4oo7dOjPbgA46STVD5KKY";

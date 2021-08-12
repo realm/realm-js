@@ -16,9 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export {
-    MongoDBCollection,
-    createService as createMongoDBService,
-} from "./MongoDBService";
+export { MongoDBCollection, createService as createMongoDBService } from "./MongoDBService";
 
 export { HTTPService, createService as createHTTPService } from "./HTTPService";

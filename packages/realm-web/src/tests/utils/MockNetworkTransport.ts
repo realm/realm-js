@@ -16,12 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-    NetworkTransport,
-    Request,
-    FetchResponse,
-    FetchHeaders,
-} from "realm-network-transport";
+import { NetworkTransport, Request, FetchResponse, FetchHeaders } from "realm-network-transport";
 
 import { MongoDBRealmError } from "../..";
 
@@ -29,86 +24,82 @@ import { MongoDBRealmError } from "../..";
  * Perform mocked requests and get pre-recorded responses
  */
 export class MockNetworkTransport implements NetworkTransport {
-    /**
-     * List of all requests captured.
-     */
-    public readonly requests: Request<any>[] = [];
+  /**
+   * List of all requests captured.
+   */
+  public readonly requests: Request<unknown>[] = [];
 
-    /**
-     * Responses sent back on each expected request.
-     */
-    public readonly responses: any[];
+  /**
+   * Responses sent back on each expected request.
+   */
+  public readonly responses: unknown[];
 
-    /**
-     * Construct a mocked network transport which returns pre-recorded requests.
-     *
-     * @param responses An array of pre-recorded requests.
-     */
-    constructor(responses: object[] = []) {
-        this.responses = responses;
+  /**
+   * Construct a mocked network transport which returns pre-recorded requests.
+   *
+   * @param responses An array of pre-recorded requests.
+   */
+  constructor(responses: unknown[] = []) {
+    this.responses = responses;
+  }
+
+  /** @inheritdoc */
+  fetch<RequestBody>(request: Request<RequestBody>): Promise<FetchResponse> {
+    if (!request.headers || Object.keys(request.headers).length === 0) {
+      delete request.headers;
     }
-
-    /** @inheritdoc */
-    fetch<RequestBody extends any>(
-        request: Request<RequestBody>,
-    ): Promise<FetchResponse> {
-        if (!request.headers || Object.keys(request.headers).length === 0) {
-            delete request.headers;
-        }
-        // Save a parsed body, instead of a string
-        if (typeof request.body === "string") {
-            request.body = JSON.parse(request.body);
-        }
-        // Delete the body if it's missing a value, which makes it easier to expect.deepEquals.
-        if (request.body === undefined) {
-            delete request.body;
-        }
-        this.requests.push(request);
-        if (this.responses.length > 0) {
-            const [response] = this.responses.splice(0, 1);
-            if (response instanceof MongoDBRealmError) {
-                return Promise.resolve({
-                    ok: false,
-                    status: response.statusCode,
-                    statusText: response.statusText,
-                    url: response.url,
-                    json: async () => ({
-                        error: response.error,
-                        errorCode: response.errorCode,
-                        link: response.link,
-                    }),
-                    headers: {
-                        get(name: string) {
-                            if (name.toLowerCase() === "content-type") {
-                                return "application/json";
-                            }
-                        },
-                    } as FetchHeaders,
-                } as FetchResponse);
-            } else {
-                return Promise.resolve({
-                    ok: true,
-                    json: () => Promise.resolve(response),
-                    headers: {
-                        get(name: string) {
-                            if (name.toLowerCase() === "content-type") {
-                                return "application/json";
-                            }
-                        },
-                    } as FetchHeaders,
-                } as FetchResponse);
-            }
-        } else {
-            throw new Error(
-                `Unexpected request (method = ${request.method}, url = ${
-                    request.url
-                }, body = ${JSON.stringify(request.body)})`,
-            );
-        }
+    // Save a parsed body, instead of a string
+    if (typeof request.body === "string") {
+      request.body = JSON.parse(request.body);
     }
-
-    /** @inheritdoc */
-    fetchWithCallbacks() {
-        throw new Error("Not implemented");
+    // Delete the body if it's missing a value, which makes it easier to expect.deepEquals.
+    if (request.body === undefined) {
+      delete request.body;
     }
+    this.requests.push(request);
+    if (this.responses.length > 0) {
+      const [response] = this.responses.splice(0, 1);
+      if (response instanceof MongoDBRealmError) {
+        return Promise.resolve({
+          ok: false,
+          status: response.statusCode,
+          statusText: response.statusText,
+          url: response.url,
+          json: async () => ({
+            error: response.error,
+            errorCode: response.errorCode,
+            link: response.link,
+          }),
+          headers: {
+            get(name: string) {
+              if (name.toLowerCase() === "content-type") {
+                return "application/json";
+              }
+            },
+          } as FetchHeaders,
+        } as FetchResponse);
+      } else {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(response),
+          headers: {
+            get(name: string) {
+              if (name.toLowerCase() === "content-type") {
+                return "application/json";
+              }
+            },
+          } as FetchHeaders,
+        } as FetchResponse);
+      }
+    } else {
+      throw new Error(
+        `Unexpected request (method = ${request.method}, url = ${request.url}, body = ${JSON.stringify(request.body)})`,
+      );
+    }
+  }
+
+  /** @inheritdoc */
+  fetchWithCallbacks(): void {
+    throw new Error("Not implemented");
+  }
 }

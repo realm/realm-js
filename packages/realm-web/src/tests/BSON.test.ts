@@ -20,8 +20,8 @@ import { expect } from "chai";
 import { BSON } from "..";
 
 describe("BSON", () => {
-    it("expose an ObjectId constructor", () => {
-        const objectId = new BSON.ObjectId();
-        expect(objectId).instanceOf(BSON.ObjectId);
-    });
+  it("expose an ObjectId constructor", () => {
+    const objectId = new BSON.ObjectId();
+    expect(objectId).instanceOf(BSON.ObjectId);
+  });
 });

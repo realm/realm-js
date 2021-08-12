@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,39 +16,36 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-if (!global.Realm) {
-    throw new Error("Expected 'Realm' to be available as a global");
-}
-
-if (!global.title) {
-    throw new Error("Expected 'title' to be available as a global");
-}
+console.log("Loading Realm Integration Tests");
 
 if (!global.fs) {
-    throw new Error("Expected 'fs' to be available as a global");
+  throw new Error("Expected 'fs' to be available as a global");
 }
 
 if (!global.path) {
-    throw new Error("Expected 'path' to be available as a global");
+  throw new Error("Expected 'path' to be available as a global");
+}
+
+if (!global.fetch) {
+  throw new Error("Expected 'fetch' to be available as a global");
 }
 
 if (!global.environment || typeof global.environment !== "object") {
-    throw new Error("Expected 'environment' to be available as a global");
+  throw new Error("Expected 'environment' to be available as a global");
 }
 
 // Patch in a function that can skip running tests in specific environments
-import { skipIf } from "./utils/skip-if";
-global.it.skipIf = skipIf;
+import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
+global.describe.skipIf = suiteSkipIf;
+global.it.skipIf = testSkipIf;
 
-describe(global.title, () => {
-    require("./realm-constructor");
-    require("./serialization");
-    require("./objects");
-    require("./iterators");
-    require("./dynamic-schema-updates");
-    require("./bson");
-});
-
-beforeEach(() => {
-    Realm.clearTestState();
-});
+require("./tests/import-app-util");
+require("./tests/realm-constructor");
+require("./tests/serialization");
+require("./tests/objects");
+require("./tests/iterators");
+require("./tests/dynamic-schema-updates");
+require("./tests/bson");
+require("./tests/dictionary");
+require("./tests/credentials/anonymous");
+require("./tests/sync/mixed");

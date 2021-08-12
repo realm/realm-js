@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include "sync/generic_network_transport.hpp"
-#include "sync/sync_user.hpp"
-#include "sync/app.hpp"
-#include "sync/app_credentials.hpp"
+#include <realm/object-store/sync/generic_network_transport.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
+#include <realm/object-store/sync/app.hpp>
+#include <realm/object-store/sync/app_credentials.hpp>
 
-#include "util/event_loop_dispatcher.hpp"
+#include <realm/object-store/util/event_loop_dispatcher.hpp>
 
 #include "js_user.hpp"
 #include "js_app_credentials.hpp"
@@ -59,7 +59,7 @@ public:
      * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network requests.
      * Exposed to allow other components (ex the RPCServer) to override the underlying implementation.
      */
-    static inline NetworkTransportFactory transport_generator = [] (ContextType ctx, typename NetworkTransport::Dispatcher eld) {
+    static inline NetworkTransportFactory transport_generator = +[] (ContextType ctx, typename NetworkTransport::Dispatcher eld) -> std::unique_ptr<app::GenericNetworkTransport> {
         return std::make_unique<NetworkTransport>(ctx, std::move(eld));
     };
 
@@ -125,7 +125,7 @@ inline typename T::Object AppClass<T>::create_instance(ContextType ctx, SharedAp
 template<typename T>
 void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args) {
     static const String config_id = "id";
-    static const String config_url = "url";
+    static const String config_base_url = "baseUrl";
     static const String config_timeout = "timeout";
     static const String config_app = "app";
     static const String config_app_name = "name";
@@ -149,9 +149,9 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
             throw std::runtime_error("App configuration must have an id.");
         }
 
-        ValueType config_url_value = Object::get_property(ctx, config_object, config_url);
-        if (!Value::is_undefined(ctx, config_url_value)) {
-            config.base_url = util::Optional<std::string>(Value::validated_to_string(ctx, config_url_value, "url"));
+        ValueType config_base_url_value = Object::get_property(ctx, config_object, config_base_url);
+        if (!Value::is_undefined(ctx, config_base_url_value)) {
+            config.base_url = util::Optional<std::string>(Value::validated_to_string(ctx, config_base_url_value, "baseUrl"));
         }
 
         ValueType config_timeout_value = Object::get_property(ctx, config_object, config_timeout);

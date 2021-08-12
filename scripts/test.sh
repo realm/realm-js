@@ -8,7 +8,7 @@ export NPM_CONFIG_PROGRESS=false
 
 TARGET=$1
 CONFIGURATION=${2:-Release}
-NODE_VERSION=${3:-v10.19.0}
+NODE_VERSION=${3:-v12.20.0}
 
 if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
@@ -39,11 +39,6 @@ cd "$SRCROOT"
 # Add node_modules to PATH just in case we weren't called from `npm test`
 PATH="$PWD/node_modules/.bin:$PATH"
 
-if [[ $TARGET = *-android ]]; then
-  # Inform the prepublish script to build Android modules.
-  export REALM_BUILD_ANDROID=1
-fi
-
 # SERVER_PID=0
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
 LOGCAT_OUT="$SRCROOT/logcat_out.txt"
@@ -60,29 +55,7 @@ start_server() {
     echo "CI Run detected, not manually starting a server"
     return;
   fi
-
-  if [[ -z "$(command -v docker)" ]]; then
-    echo "starting stitch requires docker"
-    exit 1
-  fi
-  local EXISTING_STITCH=$(docker ps | grep "mongodb-realm-test-server.*9090")
-  if [[ -n "$EXISTING_STITCH" ]]; then
-    echo "found existing stitch running, not attempting to start another"
-  else
-    echo "no existing stitch instance running in docker, attempting to start one"
-    . "${SRCROOT}/src/object-store/dependencies.list"
-    echo "using object-store stitch dependency: ${MDBREALM_TEST_SERVER_TAG}"
-    if [[ -n "$RUN_STITCH_IN_FORGROUND" ]]; then
-      # we don't worry about tracking the STITCH_DOCKER_ID because without the -d flag, this docker is tied to the shell
-      docker run -v "${SRCROOT}/src/object-store/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}"
-    else
-      STITCH_DOCKER_ID=$(docker run -d $BACKGROUND_FLAG -v "${SRCROOT}/src/object-store/tests/mongodb:/apps/os-integration-tests" -p 9090:9090 -it "docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${MDBREALM_TEST_SERVER_TAG}")
-      echo "starting docker image $STITCH_DOCKER_ID"
-      # wait for stitch to import apps and start serving before continuing
-      docker logs --follow "$STITCH_DOCKER_ID" | grep -m 1 "Serving on.*9090" || true
-      echo "Started stitch with docker id: ${STITCH_DOCKER_ID}"
-    fi
-  fi
+  RUN_STITCH_IN_FORGROUND="$RUN_STITCH_IN_FORGROUND" ./scripts/start-sync-server.sh 
 }
 
 stop_server() {
@@ -157,7 +130,9 @@ start_packager() {
   ./node_modules/react-native/scripts/packager.sh --reset-cache | tee "$PACKAGER_OUT" &
 
   while :; do
-    if grep -Fxq "Loading dependency graph, done." "$PACKAGER_OUT"; then
+    if grep "Welcome to Metro!" "$PACKAGER_OUT"; then
+      break
+    elif grep -Fxq "Loading dependency graph, done." "$PACKAGER_OUT"; then
       break
     else
       echo "Waiting for packager."
@@ -185,8 +160,28 @@ xctest() {
       exit $EXITCODE
   }
 
-  echo "Shuttting down ${SIM_DEVICE_NAME} simulator. (device is not deleted. you can use it to debug the app)"
+  echo "Shutting down ${SIM_DEVICE_NAME} simulator. (device is not deleted. you can use it to debug the app)"
   shutdown_ios_simulator
+
+  check_test_results $1
+}
+
+catalystTest() {
+  # - Run the build and test
+  echo "Building application"
+  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -destination 'platform=macOS,variant=Mac Catalyst' -derivedDataPath ./build build-for-testing || {
+      EXITCODE=$?
+      echo "*** Failure (exit code $EXITCODE). ***"
+      exit $EXITCODE
+  }
+
+  log_temp="$(pwd)/build/out.txt"
+  echo "Launching tests. (output is in ${log_temp})"
+  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -destination 'platform=macOS,variant=Mac Catalyst' -derivedDataPath ./build test-without-building 2>&1 | tee "$log_temp" || {
+      EXITCODE=$?
+      echo "*** Failure (exit code $EXITCODE). ***"
+      exit $EXITCODE
+  }
 
   check_test_results $1
 }
@@ -279,15 +274,6 @@ case "$TARGET" in
 "check-environment")
   npm run check-environment
   ;;
-"eslint")
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm run eslint
-  ;;
-"eslint-ci")
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm ci
-  ./node_modules/.bin/eslint -f checkstyle . > eslint.xml || true
-  ;;
 "license-check")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm run license-check
@@ -297,26 +283,55 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "react-tests")
+  npm ci --ignore-scripts
   npm run check-environment
+
+  echo "building iOS binaries"
+  ./scripts/build-ios.sh -c $CONFIGURATION simulator
+
   set_nvm_default
-  npm ci
   start_server
 
-  pushd tests/react-test-app
-  npm ci
+  pushd tests/ReactTestApp
+  npm ci --no-optional
   ./node_modules/.bin/install-local
   open_chrome
   start_packager
 
   pushd ios
   pod install
-  xctest ReactTests
+  xctest ReactTestApp
+  stop_server
+  ;;
+"catalyst-tests")
+  npm ci --ignore-scripts
+  npm run check-environment
+
+  echo "building catalyst binaries"
+  ./scripts/build-ios.sh -c $CONFIGURATION catalyst
+
+  set_nvm_default
+  start_server
+
+  pushd tests/ReactTestApp
+  npm ci --no-optional
+  ./node_modules/.bin/install-local
+  open_chrome
+  start_packager
+
+  pushd ios
+  pod install
+  catalystTest ReactTestApp
   stop_server
   ;;
 "react-example")
+  npm ci --ignore-scripts
   npm run check-environment
+
+  echo "building iOS binaries"
+  ./scripts/build-ios.sh -c $CONFIGURATION simulator
+
   set_nvm_default
-  npm ci
 
   pushd examples/ReactExample
   npm ci
@@ -333,49 +348,52 @@ case "$TARGET" in
   RUN_STITCH_IN_FORGROUND=true
   start_server
   ;;
-"react-tests-android")
+"test-android")
+  npm ci --ignore-scripts
   npm run check-environment
 
-  [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  XCPRETTY=''
+  # building only for x86 emulator to speed CI
+  echo "building android binaries"
+  node scripts/build-android.js --arch=x86
 
-  pushd react-native/android
-  $(pwd)/gradlew publishAndroid
-  popd
+  pushd tests/ReactTestApp
+  echo "installing ReactTestApp dependencies"
+  npm ci --no-optional
+  npx install-local
 
-  pushd tests/react-test-app
-  npm ci
-  ./node_modules/.bin/install-local
-
+  echo "Adb devices"
+  adb devices
   echo "Resetting logcat"
+  adb logcat -c || true
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
-  mkdir -p $(pwd)/build || true
-  adb logcat -c
   adb logcat -T 1 | tee "$LOGCAT_OUT" | tee $(pwd)/build/out.txt &
 
+  start_packager
   ./run-android.sh
 
   echo "Start listening for Test completion"
 
+  TESTS_FAILED=TRUE
   while :; do
-    if grep -q "__REALM_JS_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
+    if grep -q "__REALM_JS_TESTS_SUCCEEDED__" "$LOGCAT_OUT"; then
+      TESTS_FAILED=FALSE
+      break
+    elif grep -q "__REALM_JS_TESTS_FAILED__" "$LOGCAT_OUT"; then
+      echo "*** REALM JS TESTS FAILED. See tests results above ***"
       break
     else
       echo "Waiting for tests."
-      sleep 2
+      sleep 10
     fi
   done
-
-  rm -f tests.xml
-  adb pull /sdcard/tests.xml .
 
   # Stop running child processes before printing results.
   cleanup
   echo "********* TESTS COMPLETED *********";
-  echo "********* File location: $(pwd)/tests.xml *********";
-  cat tests.xml
 
-  check_test_results ReactTests
+  if [ $TESTS_FAILED = 'TRUE' ]; then
+    exit 20
+  fi
   ;;
 
 "node")
@@ -426,7 +444,7 @@ case "$TARGET" in
   ;;
 "all")
   # Run all tests that must pass before publishing.
-  for test in eslint license-check react-example react-tests-android react-tests; do
+  for test in license-check react-example react-tests-android react-tests; do
     for configuration in Debug Release; do
       echo "RUNNING TEST: $test ($configuration)"
       echo '----------------------------------------'
@@ -434,11 +452,6 @@ case "$TARGET" in
       echo
     done
   done
-  ;;
-"object-store")
-  pushd src/object-store
-  cmake -DCMAKE_BUILD_TYPE="$CONFIGURATION" .
-  make run-tests
   ;;
 *)
   echo "Invalid target '${TARGET}'"

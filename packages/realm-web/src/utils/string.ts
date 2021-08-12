@@ -26,16 +26,16 @@ import { removeKeysWithUndefinedValues } from "./objects";
  * @returns A string of characters picked randomly from `alphabet`.
  */
 export function generateRandomString(length: number, alphabet: string) {
-    let result = "";
-    for (let i = 0; i < length; i++) {
-        result += alphabet[Math.floor(Math.random() * alphabet.length)];
-    }
-    return result;
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return result;
 }
 
 /** Parameters passed in a query string */
 export type QueryParams = {
-    [key: string]: string | number | boolean;
+  [key: string]: string | number | boolean;
 };
 
 /**
@@ -45,21 +45,18 @@ export type QueryParams = {
  * @param prefixed Should the "?" prefix be added if values exists?
  * @returns A URL encoded representation of the parameters (omitting a "?" prefix).
  */
-export function encodeQueryString<P extends Partial<QueryParams>>(
-    params: P,
-    prefixed = true,
-) {
-    // Filter out undefined values
-    const cleanedParams = removeKeysWithUndefinedValues(params) as QueryParams;
-    // Determine if a prefixed "?" is appropreate
-    const prefix = prefixed && Object.keys(cleanedParams).length > 0 ? "?" : "";
-    // Transform keys and values to a query string
-    return (
-        prefix +
-        Object.entries(cleanedParams)
-            .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
-            .join("&")
-    );
+export function encodeQueryString<P extends Partial<QueryParams>>(params: P, prefixed = true) {
+  // Filter out undefined values
+  const cleanedParams = removeKeysWithUndefinedValues(params) as QueryParams;
+  // Determine if a prefixed "?" is appropreate
+  const prefix = prefixed && Object.keys(cleanedParams).length > 0 ? "?" : "";
+  // Transform keys and values to a query string
+  return (
+    prefix +
+    Object.entries(cleanedParams)
+      .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+      .join("&")
+  );
 }
 
 /**
@@ -69,12 +66,12 @@ export function encodeQueryString<P extends Partial<QueryParams>>(
  * @returns The decoded query string.
  */
 export function decodeQueryString(str: string) {
-    const cleanStr = str[0] === "?" ? str.substr(1) : str;
-    return Object.fromEntries(
-        cleanStr
-            .split("&")
-            .filter(s => s.length > 0)
-            .map(kvp => kvp.split("="))
-            .map(([k, v]) => [k, decodeURIComponent(v)]),
-    );
+  const cleanStr = str[0] === "?" ? str.substr(1) : str;
+  return Object.fromEntries(
+    cleanStr
+      .split("&")
+      .filter((s) => s.length > 0)
+      .map((kvp) => kvp.split("="))
+      .map(([k, v]) => [k, decodeURIComponent(v)]),
+  );
 }

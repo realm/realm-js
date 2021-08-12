@@ -19,9 +19,8 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
-/// <reference path="./app.d.ts"/>
 
-type ObjectId = import("bson").ObjectId;
+/// <reference path="./app.d.ts"/>
 
 declare namespace Realm {
     interface CollectionChangeSet {
@@ -83,6 +82,8 @@ declare namespace Realm {
         schema: ObjectSchema;
     }
 
+    type PrimaryKey = number | string | Realm.BSON.ObjectId | Realm.BSON.UUID;
+
     /**
      * ObjectType
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectType }
@@ -97,34 +98,63 @@ declare namespace Realm {
     type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
 
+    interface SSLVerifyObject {
+        serverAddress: string;
+        serverPort: number;
+        pemCertificate: string;
+        acceptedByOpenSSL: boolean;
+        depth: number;
+    }
+
+    type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
+    interface SSLConfiguration {
+        validate?: boolean;
+        certificatePath?: string;
+        validateCallback?: SSLVerifyCallback;
+    }
+
     interface SyncConfiguration {
         user: User;
-        partitionValue: string|number|ObjectId|null;
+        partitionValue: Realm.App.Sync.PartitionValue;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        ssl?: SSLConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
         error?: ErrorCallback;
+    }
+
+    interface BaseConfiguration {
+        encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
+        schema?: (ObjectClass | ObjectSchema)[];
+        schemaVersion?: number;
+        shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
+        path?: string;
+        fifoFilesFallbackPath?: string;
+        readOnly?: boolean;
+    }
+
+    interface ConfigurationWithSync extends BaseConfiguration {
+        sync: SyncConfiguration;
+        migration?: never;
+        inMemory?: never;
+        deleteRealmIfMigrationNeeded?: never;
+        disableFormatUpgrade?: never;
+    }
+
+    interface ConfigurationWithoutSync extends BaseConfiguration {
+        sync?: never;
+        migration?: MigrationCallback;
+        inMemory?: boolean;
+        deleteRealmIfMigrationNeeded?: boolean;
+        disableFormatUpgrade?: boolean;
     }
 
     /**
      * realm configuration
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
      */
-    interface Configuration {
-        encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
-        migration?: MigrationCallback;
-        shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
-        path?: string;
-        fifoFilesFallbackPath?: string;
-        readOnly?: boolean;
-        inMemory?: boolean;
-        schema?: (ObjectClass | ObjectSchema)[];
-        schemaVersion?: number;
-        sync?: SyncConfiguration;
-        deleteRealmIfMigrationNeeded?: boolean;
-        disableFormatUpgrade?: boolean;
-    }
+    type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
 
     /**
      * realm configuration used for overriding default configuration values.
@@ -142,9 +172,6 @@ declare namespace Realm {
     }
 
     type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
-
-    interface PartialConfiguration extends Partial<Realm.Configuration> {
-    }
 
     /**
      * Object
@@ -211,6 +238,49 @@ declare namespace Realm {
     type SortDescriptor = [string] | [string, boolean];
 
     /**
+     * Dictionary
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Dictionary.html }
+     */
+
+    type Dictionary<ValueType = Mixed> = DictionaryBase<ValueType> & {
+        [key: string]: ValueType;
+    }
+
+    interface DictionaryChangeSet {
+        deletions: string[],
+        modifications: string[],
+        insertions: string[]
+    }
+
+    type DictionaryChangeCallback = (dict: Dictionary, changes: DictionaryChangeSet) => void;
+
+    const Dictionary: {
+        new(): never; // This type isn't supposed to be constructed manually by end users.
+        readonly prototype: Dictionary;
+    };
+
+    interface DictionaryBase<ValueType = Mixed> {
+        /**
+         * Adds given element to the dictionary
+         * @returns The dictionary
+         */
+        set(element:{[key:string]: ValueType}): DictionaryBase<ValueType>;
+
+        /**
+         * Removes given element from the dictionary
+         * @returns The dictionary
+         */
+        remove(key:string|string[]): DictionaryBase<ValueType>;
+
+        /**
+         * @returns void
+         */
+        addListener(callback: DictionaryChangeCallback): void;
+        removeListener(callback: DictionaryChangeCallback): void;
+        removeAllListeners(): void;
+    }
+
+    /**
      * Collection
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html }
      */
@@ -275,6 +345,7 @@ declare namespace Realm {
     }
 
     const Collection: {
+        new(): never; // This type isn't supposed to be constructed manually by end users.
         readonly prototype: Collection<any>;
     };
 
@@ -282,7 +353,7 @@ declare namespace Realm {
      * List
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.List.html }
      */
-    interface List<T> extends Collection<T> {
+     interface List<T> extends Collection<T> {
         [n: number]: T;
 
         pop(): T | null | undefined;
@@ -310,7 +381,48 @@ declare namespace Realm {
     }
 
     const List: {
+        new(): never; // This type isn't supposed to be constructed manually by end users.
         readonly prototype: List<any>;
+    };
+
+
+    /**
+     * Set
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Set.html }
+     */
+     interface Set<T> extends Collection<T> {
+        /**
+         * Delete a value from the Set
+         * @param {T} object Value to delete from the Set
+         * @returns Boolean:  true if the value existed in the Set prior to deletion, false otherwise
+         */
+        delete(object: T): boolean;
+
+        /**
+         * Add a new value to the Set
+         * @param  {T} object Value to add to the Set
+         * @returns The Realm.Set<T> itself, after adding the new value
+         */
+        add(object: T): Realm.Set<T>;
+
+        /**
+         * Clear all values from the Set
+         */
+        clear(): void;
+
+        /**
+         * Check for existence of a value in the Set
+         * @param  {T} object Value to search for in the Set
+         * @returns Boolean: true if the value exists in the Set, false otherwise
+         */
+         has(object: T): boolean;
+
+         readonly size: number
+    }
+
+    const Set: {
+        new(): never; // This type isn't supposed to be constructed manually by end users.
+        readonly prototype: Set<any>;
     };
 
     /**
@@ -328,8 +440,14 @@ declare namespace Realm {
     }
 
     const Results: {
+        new(): never; // This type isn't supposed to be constructed manually by end users.
         readonly prototype: Results<any>;
     };
+
+    /**
+     * A primitive value, a BSON value or an object link.
+     */
+    type Mixed = unknown;
 
     interface UserMap {
         [identity: string]: User
@@ -432,8 +550,10 @@ declare namespace Realm {
             Off,
         }
 
+        type PartitionValue = string|number|Realm.BSON.ObjectId|Realm.BSON.UUID|null;
+
         function getAllSyncSessions(user: Realm.User): [Realm.App.Sync.Session];
-        function getSyncSession(user: Realm.User, partitionValue: string|number|ObjectId|null) : Realm.App.Sync.Session;
+        function getSyncSession(user: Realm.User, partitionValue: Realm.App.Sync.PartitionValue) : Realm.App.Sync.Session;
         function setLogLevel(app: App, logLevel: LogLevel): void;
         function setLogger(app: App, callback: (level: NumericLogLevel, message: string) => void): void;
         function setUserAgent(app: App, userAgent: string): void;
@@ -453,6 +573,12 @@ declare namespace Realm {
         const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
     }
 
+    namespace BSON {
+        type Decimal128 = import("bson").Decimal128;
+        type ObjectId = import("bson").ObjectId;
+        type UUID = import("bson").UUID;
+    }
+
     const BSON: typeof import("bson");
 }
 
@@ -460,6 +586,7 @@ interface ProgressPromise extends Promise<Realm> {
     cancel(): void;
     progress(callback: Realm.ProgressNotificationCallback): Promise<Realm>;
 }
+
 /**
  * Extracts an intersection of keys from T, where the value extends the given PropType.
  */
@@ -471,17 +598,34 @@ type ExtractPropertyNamesOfType<T, PropType> = {
  * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
  */
 type RealmListsRemappedModelPart<T> = {
-    [K in keyof T]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
+    [K in ExtractPropertyNamesOfType<T, Realm.List<any>>]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
 }
+
+/**
+* Exchanges properties defined as Realm.Dicionary<Model> with an optional key to mixed value object.
+*/
+type RealmDictionaryRemappedModelPart<T> = {
+    [K in ExtractPropertyNamesOfType<T, Realm.Dictionary>]?: T[K] extends Realm.Dictionary<infer ValueType> ? { [key: string]: ValueType } : never
+}
+
+/** Omits all properties of a model which are not defined by the schema */
+type OmittedRealmTypes<T> = Omit<T,
+    keyof Realm.Object |
+    ExtractPropertyNamesOfType<T, Function> |
+    ExtractPropertyNamesOfType<T, Realm.Collection<any>> |
+    ExtractPropertyNamesOfType<T, Realm.Dictionary>
+>;
+
+/** Remaps realm types to "simpler" types (arrays and objects) */
+type RemappedRealmTypes<T> =
+    RealmListsRemappedModelPart<T> &
+    RealmDictionaryRemappedModelPart<T>;
 
 /**
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
  * with only the keys which value extends Realm.List, remapped as Arrays.
  */
-type RealmInsertionModel<T> =
-    Omit<Omit<Omit<T, ExtractPropertyNamesOfType<T, Function>>, keyof Realm.Object>, ExtractPropertyNamesOfType<T, Realm.Collection<any>>>
-    & RealmListsRemappedModelPart<Pick<T, ExtractPropertyNamesOfType<T, Realm.List<any>>>>
-
+type RealmInsertionModel<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;
 declare class Realm {
     static defaultPath: string;
 
@@ -588,17 +732,17 @@ declare class Realm {
 
     /**
      * @param  {string} type
-     * @param  {number|string|ObjectId} key
+     * @param  {number|string|ObjectId|UUID} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string, key: number | string | ObjectId): (T & Realm.Object) | undefined;
+    objectForPrimaryKey<T>(type: string, key: Realm.PrimaryKey): (T & Realm.Object) | undefined;
 
     /**
      * @param  {Class} type
-     * @param  {number|string|ObjectId} key
+     * @param  {number|string|ObjectId|UUID} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: number | string | ObjectId): T | undefined;
+    objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: Realm.PrimaryKey): T | undefined;
 
     /**
      * @param  {string} type

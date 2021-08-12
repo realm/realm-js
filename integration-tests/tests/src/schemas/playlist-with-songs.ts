@@ -21,44 +21,44 @@ import Realm from "realm";
 /* tslint:disable max-classes-per-file */
 
 export interface IPlaylist {
-    title: string;
-    songs: Realm.List<ISong>;
-    related: Realm.List<IPlaylist>;
+  title: string;
+  songs: Realm.List<ISong>;
+  related: Realm.List<IPlaylist>;
 }
 
 export const PlaylistSchema: Realm.ObjectSchema = {
-    name: "Playlist",
-    properties: {
-        title: "string",
-        songs: "Song[]",
-        related: "Playlist[]",
-    },
+  name: "Playlist",
+  properties: {
+    title: "string",
+    songs: "Song[]",
+    related: "Playlist[]",
+  },
 };
 
 export class Playlist extends Realm.Object implements IPlaylist {
-    title: string;
-    songs: Realm.List<Song>;
-    related: Realm.List<Playlist>;
+  title: string;
+  songs: Realm.List<Song>;
+  related: Realm.List<Playlist>;
 
-    static schema = PlaylistSchema;
+  static schema = PlaylistSchema;
 }
 
 export interface ISong {
-    artist: string;
-    title: string;
+  artist: string;
+  title: string;
 }
 
 export const SongSchema: Realm.ObjectSchema = {
-    name: "Song",
-    properties: {
-        artist: "string",
-        title: "string",
-    },
+  name: "Song",
+  properties: {
+    artist: "string",
+    title: "string",
+  },
 };
 
 export class Song extends Realm.Object implements ISong {
-    artist: string;
-    title: string;
+  artist: string;
+  title: string;
 
-    static schema = SongSchema;
+  static schema = SongSchema;
 }

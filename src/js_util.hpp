@@ -22,8 +22,8 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "object_schema.hpp"
-#include "shared_realm.hpp"
+#include <realm/object-store/object_schema.hpp>
+#include <realm/object-store/shared_realm.hpp>
 
 namespace realm {
 namespace js {

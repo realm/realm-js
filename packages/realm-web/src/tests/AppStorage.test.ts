@@ -22,26 +22,23 @@ import { AppStorage } from "../AppStorage";
 import { MemoryStorage } from "../storage";
 
 describe("AppStorage", () => {
-    describe("user ids", () => {
-        it("can be set with merging, retrieved, removed and set without merging", () => {
-            const baseStorage = new MemoryStorage();
-            // Add two existing user ids
-            baseStorage.set(
-                "app(default-app-id):userIds",
-                JSON.stringify(["a", "b", "c"]),
-            );
-            const storage = new AppStorage(baseStorage, "default-app-id");
+  describe("user ids", () => {
+    it("can be set with merging, retrieved, removed and set without merging", () => {
+      const baseStorage = new MemoryStorage();
+      // Add two existing user ids
+      baseStorage.set("app(default-app-id):userIds", JSON.stringify(["a", "b", "c"]));
+      const storage = new AppStorage(baseStorage, "default-app-id");
 
-            // Inserting updating by adding two new users (d and e)
-            storage.setUserIds(["c", "d", "e"], true);
-            // We expect the three newly updated ids to be stored and any existing to be at the end of the array
-            expect(storage.getUserIds()).deep.equals(["c", "d", "e", "a", "b"]);
-            // Remove a single user
-            storage.removeUserId("e");
-            expect(storage.getUserIds()).deep.equals(["c", "d", "a", "b"]);
-            // Empty the list of users
-            storage.setUserIds([], false);
-            expect(storage.getUserIds()).deep.equals([]);
-        });
+      // Inserting updating by adding two new users (d and e)
+      storage.setUserIds(["c", "d", "e"], true);
+      // We expect the three newly updated ids to be stored and any existing to be at the end of the array
+      expect(storage.getUserIds()).deep.equals(["c", "d", "e", "a", "b"]);
+      // Remove a single user
+      storage.removeUserId("e");
+      expect(storage.getUserIds()).deep.equals(["c", "d", "a", "b"]);
+      // Empty the list of users
+      storage.setUserIds([], false);
+      expect(storage.getUserIds()).deep.equals([]);
     });
+  });
 });
