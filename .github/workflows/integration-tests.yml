@@ -18,7 +18,7 @@ on:
       - ".github/workflows/integration-tests.yml"
 
 jobs:
-  node:
+  #node:
   #   name: Node.js v${{ matrix.node }} on ${{ matrix.os }} (${{ matrix.type }})
   #   runs-on: ${{ matrix.os }}
   #   strategy:
