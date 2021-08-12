@@ -3,9 +3,11 @@ FROM debian:stretch-slim
 
 # Setting environment variables for versions
 # See https://developer.android.com/studio/#command-tools for the latest SDK version
-ARG ANDROID_SDK_VERSION=4333796
+#ARG ANDROID_SDK_VERSION=4333796
+ARG ANDROID_SDK_VERSION=7583922
 ARG ANDROID_NDK_VERSION=r21
-ARG ANDROID_BUILD_TOOLS_VERSION=28.0.3
+#ARG ANDROID_BUILD_TOOLS_VERSION=28.0.3
+ARG ANDROID_BUILD_TOOLS_VERSION=30.0.2
 ARG NODE_VERSION=12.x
 
 # Locales
