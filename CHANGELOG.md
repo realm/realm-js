@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.6.2-beta.1 Release notes (2021-8-12)
 =============================================================
 ### Enhancements
 * None.
@@ -7,6 +7,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed a crash when an object which is linked to by a `mixed `is invalidated (sync only). ([#4828](https://github.com/realm/realm-core/pull/4828), since 10.5.0)
 * Fixed a rare crash when setting a mixed link for the first time which would trigger if the link was to the same table. ([#4828](https://github.com/realm/realm-core/pull/4828), since v10.5.0)
 * User profile now correctly persisted between runs. ([#3561](https://github.com/realm/realm-js/issues/3561), since v10.0.0)
+* When updating a property of list of embedded objects, previous value is not cleared and might lead to an inconsistent state (sync only). ([realm/realm-core#4844](https://github.com/realm/realm-core/pull/4844))
+
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
@@ -14,7 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.0.4 @ @ commit [be69223](https://github.com/realm/realm-core/commit/be6922394a57077d90723eba60c98ae9b2aa0eae) to v11.2.0.
+* Upgraded Realm Core from v11.0.4 @ commit [be69223](https://github.com/realm/realm-core/commit/be6922394a57077d90723eba60c98ae9b2aa0eae) to v11.2.0 @ [5e128e9f](https://github.com/realm/realm-core/pull/4844/commits/5e128e9f9c81937aaa7e7d1429794983b16077aa)
 
 10.6.1 Release notes (2021-7-27)
 =============================================================
