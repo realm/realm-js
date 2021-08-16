@@ -172,6 +172,8 @@ In the debugging pane, you can find `Debug LLDB + NodeJS` in the dropdown. First
 ## Issues with debugging
 Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. See https://github.com/realm/realm-js/issues/491 for more information. The best workaround is to use Safari instead, as a user has described [here](https://github.com/realm/realm-js/issues/491#issuecomment-404670910).
 
+Moreover, we have a switch to [Flipper](https://fbflipper.com/) in the works as part of our effort to [support Hermes](https://github.com/realm/realm-js/pull/3792). It implies that we envision a near future where the Chrome debugging will be removed, and we currently don't invest much in its maintenance.
+
 ## Running the tests
 
 The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your preferred shell setup:
