@@ -23,110 +23,109 @@
 namespace realm {
 namespace js {
 
-template<>
-class Protected<JSGlobalContextRef> {
-    JSGlobalContextRef m_context;
+template <> class Protected<JSGlobalContextRef> {
+  JSGlobalContextRef m_context;
 
-  public:
-    Protected() : m_context(nullptr) {}
-    Protected(const Protected<JSGlobalContextRef> &other) : Protected(other.m_context) {}
-    Protected(Protected<JSGlobalContextRef> &&other) : m_context(other.m_context) {
-        other.m_context = nullptr;
+public:
+  Protected() : m_context(nullptr) {}
+  Protected(const Protected<JSGlobalContextRef> &other)
+      : Protected(other.m_context) {}
+  Protected(Protected<JSGlobalContextRef> &&other)
+      : m_context(other.m_context) {
+    other.m_context = nullptr;
+  }
+  explicit Protected(JSGlobalContextRef ctx) : m_context(ctx) {
+    JSGlobalContextRetain(m_context);
+  }
+  ~Protected() {
+    if (m_context) {
+      JSGlobalContextRelease(m_context);
     }
-    explicit Protected(JSGlobalContextRef ctx) : m_context(ctx) {
-        JSGlobalContextRetain(m_context);
+  }
+  operator JSGlobalContextRef() const { return m_context; }
+  operator bool() const { return m_context != nullptr; }
+
+  struct Comparator {
+    bool operator()(const Protected<JSGlobalContextRef> &a,
+                    const Protected<JSGlobalContextRef> &b) const {
+      return a.m_context == b.m_context;
     }
-    ~Protected() {
-        if (m_context) {
-            JSGlobalContextRelease(m_context);
-        }
-    }
-    operator JSGlobalContextRef() const {
-        return m_context;
-    }
-    operator bool() const {
-        return m_context != nullptr;
-    }
-    
-    struct Comparator {
-        bool operator() (const Protected<JSGlobalContextRef>& a, const Protected<JSGlobalContextRef>& b) const {
-            return a.m_context == b.m_context;
-        }
-    };
+  };
 };
 
-template<>
-class Protected<JSValueRef> {
-  protected:
-    JSGlobalContextRef m_context = nullptr;
-    JSValueRef m_value = nullptr;
+template <> class Protected<JSValueRef> {
+protected:
+  JSGlobalContextRef m_context = nullptr;
+  JSValueRef m_value = nullptr;
 
-  public:
-    Protected() {}
+public:
+  Protected() {}
 
-    Protected(const Protected<JSValueRef> &other) : Protected(other.m_context, other.m_value) {}
-    
-    Protected(Protected<JSValueRef> &&other) : m_context(other.m_context), m_value(other.m_value) {
-        other.m_context = nullptr;
-        other.m_value = nullptr;
+  Protected(const Protected<JSValueRef> &other)
+      : Protected(other.m_context, other.m_value) {}
+
+  Protected(Protected<JSValueRef> &&other)
+      : m_context(other.m_context), m_value(other.m_value) {
+    other.m_context = nullptr;
+    other.m_value = nullptr;
+  }
+
+  Protected(JSContextRef ctx, JSValueRef value)
+      : m_context(JSContextGetGlobalContext(ctx)), m_value(value) {
+    JSGlobalContextRetain(m_context);
+    JSValueProtect(m_context, m_value);
+  }
+
+  ~Protected() {
+    if (m_value) {
+      JSValueUnprotect(m_context, m_value);
     }
 
-    Protected(JSContextRef ctx, JSValueRef value) : m_context(JSContextGetGlobalContext(ctx)), m_value(value) {
-        JSGlobalContextRetain(m_context);
-        JSValueProtect(m_context, m_value);
+    if (m_context) {
+      JSGlobalContextRelease(m_context);
     }
+  }
+  operator JSValueRef() const { return m_value; }
+  operator bool() const { return m_value != nullptr; }
 
-    ~Protected() {
-        if (m_value) {
-            JSValueUnprotect(m_context, m_value);
-        }
+  struct Comparator {
+    bool operator()(const Protected<JSValueRef> &a,
+                    const Protected<JSValueRef> &b) const {
+      if (a.m_context != b.m_context) {
+        return false;
+      }
+      return JSValueIsStrictEqual(a.m_context, a.m_value, b.m_value);
+    }
+  };
 
-        if (m_context) {
-            JSGlobalContextRelease(m_context);
-        }
-    }
-    operator JSValueRef() const {
-        return m_value;
-    }
-    operator bool() const {
-        return m_value != nullptr;
-    }
-    
-    struct Comparator {
-        bool operator() (const Protected<JSValueRef>& a, const Protected<JSValueRef>& b) const {
-            if (a.m_context != b.m_context) {
-                return false;
-            }
-            return JSValueIsStrictEqual(a.m_context, a.m_value, b.m_value);
-        }
-    };
-    
-    Protected<JSValueRef>& operator=(Protected<JSValueRef> other) {
-        std::swap(m_context, other.m_context);
-        std::swap(m_value, other.m_value);
-        return *this;
-    }
+  Protected<JSValueRef> &operator=(Protected<JSValueRef> other) {
+    std::swap(m_context, other.m_context);
+    std::swap(m_value, other.m_value);
+    return *this;
+  }
 };
 
-template<>
-class Protected<JSObjectRef> : public Protected<JSValueRef> {
-  public:
-    Protected() : Protected<JSValueRef>() {}
-    Protected(const Protected<JSObjectRef> &other) : Protected<JSValueRef>(other) {}
-    Protected(Protected<JSObjectRef> &&other) : Protected<JSValueRef>(std::move(other)) {}
-    Protected(JSContextRef ctx, JSObjectRef value) : Protected<JSValueRef>(ctx, value) {}
+template <> class Protected<JSObjectRef> : public Protected<JSValueRef> {
+public:
+  Protected() : Protected<JSValueRef>() {}
+  Protected(const Protected<JSObjectRef> &other)
+      : Protected<JSValueRef>(other) {}
+  Protected(Protected<JSObjectRef> &&other)
+      : Protected<JSValueRef>(std::move(other)) {}
+  Protected(JSContextRef ctx, JSObjectRef value)
+      : Protected<JSValueRef>(ctx, value) {}
 
-    operator JSObjectRef() const {
-        JSValueRef value = static_cast<JSValueRef>(*this);
-        return (JSObjectRef)value;
-    }
-    
-    Protected<JSObjectRef>& operator=(Protected<JSObjectRef> other) {
-        std::swap(m_context, other.m_context);
-        std::swap(m_value, other.m_value);
-        return *this;
-    }
+  operator JSObjectRef() const {
+    JSValueRef value = static_cast<JSValueRef>(*this);
+    return (JSObjectRef)value;
+  }
+
+  Protected<JSObjectRef> &operator=(Protected<JSObjectRef> other) {
+    std::swap(m_context, other.m_context);
+    std::swap(m_value, other.m_value);
+    return *this;
+  }
 };
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm

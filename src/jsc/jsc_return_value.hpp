@@ -18,67 +18,48 @@
 
 #pragma once
 
-#include "jsc_types.hpp"
 #include "jsc_string.hpp"
+#include "jsc_types.hpp"
 
 #include "js_mixed.hpp"
 
 namespace realm {
 namespace js {
 
-template<>
-class ReturnValue<jsc::Types> {
-    const JSContextRef m_context;
-    JSValueRef m_value = nullptr;
+template <> class ReturnValue<jsc::Types> {
+  const JSContextRef m_context;
+  JSValueRef m_value = nullptr;
 
-  public:
-    ReturnValue(JSContextRef ctx) : m_context(ctx) {}
+public:
+  ReturnValue(JSContextRef ctx) : m_context(ctx) {}
 
-    void set(const JSValueRef &value) {
-        m_value = value;
-    }
-    void set(const std::string &string) {
-        m_value = JSValueMakeString(m_context, jsc::String(string));
-    }
-    void set(const char *string) {
-        m_value = JSValueMakeString(m_context, jsc::String(string));
-    }
-    void set(bool boolean) {
-        m_value = JSValueMakeBoolean(m_context, boolean);
-    }
-    void set(double number) {
-        m_value = JSValueMakeNumber(m_context, number);
-    }
-    void set(int32_t number) {
-        m_value = JSValueMakeNumber(m_context, number);
-    }
-    void set(uint32_t number) {
-        m_value = JSValueMakeNumber(m_context, number);
-    }
-    void set(realm::Mixed mixed) {
-        m_value = TypeMixed<jsc::Types>::get_instance().wrap(m_context, mixed);
-    }
-    void set_null() {
-        m_value = JSValueMakeNull(m_context);
-    }
-    void set_undefined() {
-        m_value = JSValueMakeUndefined(m_context);
-    }
+  void set(const JSValueRef &value) { m_value = value; }
+  void set(const std::string &string) {
+    m_value = JSValueMakeString(m_context, jsc::String(string));
+  }
+  void set(const char *string) {
+    m_value = JSValueMakeString(m_context, jsc::String(string));
+  }
+  void set(bool boolean) { m_value = JSValueMakeBoolean(m_context, boolean); }
+  void set(double number) { m_value = JSValueMakeNumber(m_context, number); }
+  void set(int32_t number) { m_value = JSValueMakeNumber(m_context, number); }
+  void set(uint32_t number) { m_value = JSValueMakeNumber(m_context, number); }
+  void set(realm::Mixed mixed) {
+    m_value = TypeMixed<jsc::Types>::get_instance().wrap(m_context, mixed);
+  }
+  void set_null() { m_value = JSValueMakeNull(m_context); }
+  void set_undefined() { m_value = JSValueMakeUndefined(m_context); }
 
-    template<typename T>
-    void set(const util::Optional<T>& value) {
-        if (value) {
-            set(*value);
-        }
-        else {
-            set_undefined();
-        }
+  template <typename T> void set(const util::Optional<T> &value) {
+    if (value) {
+      set(*value);
+    } else {
+      set_undefined();
     }
+  }
 
-    operator JSValueRef() const {
-        return m_value;
-    }
+  operator JSValueRef() const { return m_value; }
 };
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm

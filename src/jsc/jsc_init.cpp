@@ -26,12 +26,12 @@
 #include "platform.hpp"
 namespace realm {
 namespace jsc {
-    js::Protected<JSObjectRef> ObjectDefineProperty;
-    js::Protected<JSObjectRef> FunctionPrototype;
-    js::Protected<JSObjectRef> RealmObjectClassConstructor;
-    js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
-}
-}
+js::Protected<JSObjectRef> ObjectDefineProperty;
+js::Protected<JSObjectRef> FunctionPrototype;
+js::Protected<JSObjectRef> RealmObjectClassConstructor;
+js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
+} // namespace jsc
+} // namespace realm
 
 extern "C" {
 
@@ -39,26 +39,28 @@ using namespace realm;
 using namespace realm::jsc;
 
 JSObjectRef RJSConstructorCreate(JSContextRef ctx) {
-    return js::RealmClass<Types>::create_constructor(ctx);
+  return js::RealmClass<Types>::create_constructor(ctx);
 }
 
 void RJSInitializeInContext(JSContextRef ctx) {
-    static const jsc::String realm_string = "Realm";
+  static const jsc::String realm_string = "Realm";
 
-    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+  JSObjectRef global_object = JSContextGetGlobalObject(ctx);
 
-    jsc_class_init(ctx, global_object);
+  jsc_class_init(ctx, global_object);
 
-    JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
+  JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
 
-    jsc::Object::set_property(ctx, global_object, realm_string, realm_constructor, js::ReadOnly | js::DontEnum | js::DontDelete);
+  jsc::Object::set_property(ctx, global_object, realm_string, realm_constructor,
+                            js::ReadOnly | js::DontEnum | js::DontDelete);
 }
 
 void RJSInvalidateCaches() {
-    // Close all cached Realms
-    realm::_impl::RealmCoordinator::clear_all_caches();
-    // Clear the Object Store App cache, to prevent instances from using a context that was released
-    realm::app::App::clear_cached_apps();
+  // Close all cached Realms
+  realm::_impl::RealmCoordinator::clear_all_caches();
+  // Clear the Object Store App cache, to prevent instances from using a context
+  // that was released
+  realm::app::App::clear_cached_apps();
 }
 
 } // extern "C"

@@ -27,103 +27,110 @@
 namespace realm {
 namespace js {
 
-template<typename T>
-struct Arguments {
-    const typename T::Context ctx;
-    const size_t count;
-    const typename T::Value* const value;
+template <typename T> struct Arguments {
+  const typename T::Context ctx;
+  const size_t count;
+  const typename T::Value *const value;
 
-    typename T::Value operator[](size_t index) const noexcept {
-        if (index >= count) {
-            return Value<T>::from_undefined(ctx);
-        }
-        return value[index];
+  typename T::Value operator[](size_t index) const noexcept {
+    if (index >= count) {
+      return Value<T>::from_undefined(ctx);
     }
+    return value[index];
+  }
 
-    void validate_maximum(size_t max) const {
-        if (max < count) {
-            throw std::invalid_argument(util::format("Invalid arguments: at most %1 expected, but %2 supplied.", max, count));
-        }
+  void validate_maximum(size_t max) const {
+    if (max < count) {
+      throw std::invalid_argument(util::format(
+          "Invalid arguments: at most %1 expected, but %2 supplied.", max,
+          count));
     }
+  }
 
-    void validate_count(size_t expected) const {
-        if (count != expected) {
-            throw std::invalid_argument(util::format("Invalid arguments: %1 expected, but %2 supplied.", expected, count));
-        }
+  void validate_count(size_t expected) const {
+    if (count != expected) {
+      throw std::invalid_argument(util::format(
+          "Invalid arguments: %1 expected, but %2 supplied.", expected, count));
     }
+  }
 
-    void validate_between(size_t min, size_t max) const {
-        if (count < min || count > max) {
-            throw std::invalid_argument(util::format("Invalid arguments: expected between %1 and %2, but %3 supplied.", min, max, count));
-        }
+  void validate_between(size_t min, size_t max) const {
+    if (count < min || count > max) {
+      throw std::invalid_argument(util::format(
+          "Invalid arguments: expected between %1 and %2, but %3 supplied.",
+          min, max, count));
     }
+  }
 };
 
-template<typename T>
-using ConstructorType = void(typename T::Context, typename T::Object, Arguments<T> &);
+template <typename T>
+using ConstructorType = void(typename T::Context, typename T::Object,
+                             Arguments<T> &);
 
-template<typename T>
-using ArgumentsMethodType = void(typename T::Context, typename T::Object, Arguments<T> &, ReturnValue<T> &);
+template <typename T>
+using ArgumentsMethodType = void(typename T::Context, typename T::Object,
+                                 Arguments<T> &, ReturnValue<T> &);
 
-template<typename T>
-struct PropertyType {
-    using GetterType = void(typename T::Context, typename T::Object, ReturnValue<T> &);
-    using SetterType = void(typename T::Context, typename T::Object, typename T::Value);
+template <typename T> struct PropertyType {
+  using GetterType = void(typename T::Context, typename T::Object,
+                          ReturnValue<T> &);
+  using SetterType = void(typename T::Context, typename T::Object,
+                          typename T::Value);
 
-    typename T::PropertyGetterCallback getter;
-    typename T::PropertySetterCallback setter;
+  typename T::PropertyGetterCallback getter;
+  typename T::PropertySetterCallback setter;
 };
 
-template<typename T>
-struct IndexPropertyType {
-    using GetterType = void(typename T::Context, typename T::Object, uint32_t, ReturnValue<T> &);
-    using SetterType = bool(typename T::Context, typename T::Object, uint32_t, typename T::Value);
+template <typename T> struct IndexPropertyType {
+  using GetterType = void(typename T::Context, typename T::Object, uint32_t,
+                          ReturnValue<T> &);
+  using SetterType = bool(typename T::Context, typename T::Object, uint32_t,
+                          typename T::Value);
 
-    typename T::IndexPropertyGetterCallback getter;
-    typename T::IndexPropertySetterCallback setter;
+  typename T::IndexPropertyGetterCallback getter;
+  typename T::IndexPropertySetterCallback setter;
 
-    explicit operator bool() const {
-        return getter || setter;
-    }
+  explicit operator bool() const { return getter || setter; }
 };
 
-template<typename T>
-struct StringPropertyType {
-    using GetterType = void(typename T::Context, typename T::Object, const String<T> &, ReturnValue<T> &);
-    using SetterType = bool(typename T::Context, typename T::Object, const String<T> &, typename T::Value);
-    using EnumeratorType = std::vector<String<T>>(typename T::Context, typename T::Object);
+template <typename T> struct StringPropertyType {
+  using GetterType = void(typename T::Context, typename T::Object,
+                          const String<T> &, ReturnValue<T> &);
+  using SetterType = bool(typename T::Context, typename T::Object,
+                          const String<T> &, typename T::Value);
+  using EnumeratorType = std::vector<String<T>>(typename T::Context,
+                                                typename T::Object);
 
-    typename T::StringPropertyGetterCallback getter;
-    typename T::StringPropertySetterCallback setter;
-    typename T::StringPropertyEnumeratorCallback enumerator;
+  typename T::StringPropertyGetterCallback getter;
+  typename T::StringPropertySetterCallback setter;
+  typename T::StringPropertyEnumeratorCallback enumerator;
 };
 
-template<typename T>
+template <typename T>
 using MethodMap = std::map<std::string, typename T::FunctionCallback>;
 
-template<typename T>
+template <typename T>
 using PropertyMap = std::map<std::string, PropertyType<T>>;
 
-template<typename T, typename U, typename V = void>
-struct ClassDefinition {
-    using Internal = U;
-    using Parent = V;
+template <typename T, typename U, typename V = void> struct ClassDefinition {
+  using Internal = U;
+  using Parent = V;
 
-    // Every subclass *must* at least have a name.
-    // std::string const name;
+  // Every subclass *must* at least have a name.
+  // std::string const name;
 
-    // ClassDefinition specializations should inherit from this class and override what's needed below.
-    ConstructorType<T>* const constructor = nullptr;
-    MethodMap<T> const static_methods = {};
-    PropertyMap<T> const static_properties = {};
-    MethodMap<T> const methods = {};
-    PropertyMap<T> const properties = {};
-    IndexPropertyType<T> const index_accessor = {};
-    StringPropertyType<T> const string_accessor = {};
+  // ClassDefinition specializations should inherit from this class and override
+  // what's needed below.
+  ConstructorType<T> *const constructor = nullptr;
+  MethodMap<T> const static_methods = {};
+  PropertyMap<T> const static_properties = {};
+  MethodMap<T> const methods = {};
+  PropertyMap<T> const properties = {};
+  IndexPropertyType<T> const index_accessor = {};
+  StringPropertyType<T> const string_accessor = {};
 };
 
-template<typename T, typename ClassType>
-class ObjectWrap;
+template <typename T, typename ClassType> class ObjectWrap;
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm

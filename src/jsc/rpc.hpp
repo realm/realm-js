@@ -18,22 +18,24 @@
 
 #pragma once
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace realm {
 namespace rpc {
 
 class RPCServerImpl;
 class RPCServer {
-  public:
-    RPCServer();
-    ~RPCServer();
-    std::string perform_request(std::string const& name, std::string const& json_args);
-    bool try_run_task();
-  private:
-    std::unique_ptr<RPCServerImpl> m_impl;
+public:
+  RPCServer();
+  ~RPCServer();
+  std::string perform_request(std::string const &name,
+                              std::string const &json_args);
+  bool try_run_task();
+
+private:
+  std::unique_ptr<RPCServerImpl> m_impl;
 };
 
-} // rpc
-} // realm
+} // namespace rpc
+} // namespace realm

@@ -27,25 +27,24 @@ namespace types {
  */
 
 enum Type {
-    NotImplemented = -100,
-    Object = 16,    // We translate TypedLink (16) -> Object 
-    Undefined = -2,
-    Null = -1,
-    Integer = 0,
-    Boolean = 1,
-    String = 2,
-    Binary = 4,
-    Mixed = 6,
-    Timestamp = 8,
-    Float = 9,
-    Double = 10,
-    Decimal = 11,
-    Link = 12,
-    LinkList = 13,
-    ObjectId = 15,
-    UUID = 17,
+  NotImplemented = -100,
+  Object = 16, // We translate TypedLink (16) -> Object
+  Undefined = -2,
+  Null = -1,
+  Integer = 0,
+  Boolean = 1,
+  String = 2,
+  Binary = 4,
+  Mixed = 6,
+  Timestamp = 8,
+  Float = 9,
+  Double = 10,
+  Decimal = 11,
+  Link = 12,
+  LinkList = 13,
+  ObjectId = 15,
+  UUID = 17,
 };
-
 
 } // namespace types
 } // namespace js

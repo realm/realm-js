@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "platform.hpp"
 #include "js_types.hpp"
+#include "platform.hpp"
 
 #include <realm/object-store/impl/realm_coordinator.hpp>
 
@@ -32,107 +32,104 @@ namespace js {
 static std::string s_default_path = "";
 
 std::string default_path() {
-    if (s_default_path.empty()) {
-        s_default_path = realm::default_realm_file_directory() +
+  if (s_default_path.empty()) {
+    s_default_path = realm::default_realm_file_directory() +
 #if defined(WIN32) && WIN32
-            '\\'
+                     '\\'
 #else
-            '/'
+                     '/'
 #endif
-            + "default.realm";
-    }
-    return s_default_path;
+                     + "default.realm";
+  }
+  return s_default_path;
 }
 
-void set_default_path(std::string path) {
-    s_default_path = path;
-}
+void set_default_path(std::string path) { s_default_path = path; }
 
 static std::string s_test_files_path;
 void clear_test_state() {
-    realm::_impl::RealmCoordinator::clear_all_caches();
-    realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
+  realm::_impl::RealmCoordinator::clear_all_caches();
+  realm::remove_realm_files_from_directory(
+      realm::default_realm_file_directory());
 #if REALM_ENABLE_SYNC
 #if REALM_ANDROID
-    s_test_files_path = realm::default_realm_file_directory();
-    auto ros_dir = s_test_files_path + "/realm-object-server";
-    if (util::File::exists(ros_dir)) {
-        util::remove_dir_recursive(s_test_files_path + "/realm-object-server");
-    }
+  s_test_files_path = realm::default_realm_file_directory();
+  auto ros_dir = s_test_files_path + "/realm-object-server";
+  if (util::File::exists(ros_dir)) {
+    util::remove_dir_recursive(s_test_files_path + "/realm-object-server");
+  }
 #else
-    auto remove_test_files = [] {
-        if (!s_test_files_path.empty()) {
-            util::remove_dir_recursive(s_test_files_path);
-        }
-    };
-    remove_test_files();
-
-    if (s_test_files_path.empty()) {
-        atexit(remove_test_files);
+  auto remove_test_files = [] {
+    if (!s_test_files_path.empty()) {
+      util::remove_dir_recursive(s_test_files_path);
     }
-    s_test_files_path = util::make_temp_dir();
+  };
+  remove_test_files();
+
+  if (s_test_files_path.empty()) {
+    atexit(remove_test_files);
+  }
+  s_test_files_path = util::make_temp_dir();
 #endif
 #endif
 }
 
-std::string TypeErrorException::type_string(Property const& prop)
-{
-    using realm::PropertyType;
-    std::string ret;
+std::string TypeErrorException::type_string(Property const &prop) {
+  using realm::PropertyType;
+  std::string ret;
 
-    switch (prop.type & ~PropertyType::Flags) {
-        case PropertyType::Int:
-        case PropertyType::Float:
-        case PropertyType::Double:
-            ret = "number";
-            break;
-        case PropertyType::Bool:
-            ret = "boolean";
-            break;
-        case PropertyType::String:
-            ret = "string";
-            break;
-        case PropertyType::Date:
-            ret = "date";
-            break;
-        case PropertyType::Data:
-            ret = "binary";
-            break;
-        case PropertyType::Decimal:
-            ret = "decimal128";
-            break;
-        case PropertyType::ObjectId:
-            ret = "objectId";
-            break;
-        case PropertyType::UUID:
-            ret = "uuid";
-            break;
-        case PropertyType::LinkingObjects:
-        case PropertyType::Object:
-            ret = prop.object_type;
-            break;
-        case PropertyType::Mixed:
-            ret = "mixed";
-            break;
-        default:
-            REALM_UNREACHABLE();
-    }
+  switch (prop.type & ~PropertyType::Flags) {
+  case PropertyType::Int:
+  case PropertyType::Float:
+  case PropertyType::Double:
+    ret = "number";
+    break;
+  case PropertyType::Bool:
+    ret = "boolean";
+    break;
+  case PropertyType::String:
+    ret = "string";
+    break;
+  case PropertyType::Date:
+    ret = "date";
+    break;
+  case PropertyType::Data:
+    ret = "binary";
+    break;
+  case PropertyType::Decimal:
+    ret = "decimal128";
+    break;
+  case PropertyType::ObjectId:
+    ret = "objectId";
+    break;
+  case PropertyType::UUID:
+    ret = "uuid";
+    break;
+  case PropertyType::LinkingObjects:
+  case PropertyType::Object:
+    ret = prop.object_type;
+    break;
+  case PropertyType::Mixed:
+    ret = "mixed";
+    break;
+  default:
+    REALM_UNREACHABLE();
+  }
 
-    if (realm::is_nullable(prop.type) && !realm::is_dictionary(prop.type)) {
-        ret += "?";
-    }
-    if (realm::is_array(prop.type)) {
-        ret += "[]";
-    }
-    if (realm::is_dictionary(prop.type)) {
-        ret += "{}";
-    }
-    if (realm::is_set(prop.type)) {
-        ret += "<>";
-    }
-    return ret;
+  if (realm::is_nullable(prop.type) && !realm::is_dictionary(prop.type)) {
+    ret += "?";
+  }
+  if (realm::is_array(prop.type)) {
+    ret += "[]";
+  }
+  if (realm::is_dictionary(prop.type)) {
+    ret += "{}";
+  }
+  if (realm::is_set(prop.type)) {
+    ret += "<>";
+  }
+  return ret;
 }
 
-
-} // js
-} // realm
+} // namespace js
+} // namespace realm

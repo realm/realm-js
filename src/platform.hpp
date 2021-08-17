@@ -48,6 +48,6 @@ void remove_file(const std::string &path);
 void remove_directory(const std::string &path);
 
 // print something
-void print(const char* fmt, ...);
+void print(const char *fmt, ...);
 
-}
+} // namespace realm

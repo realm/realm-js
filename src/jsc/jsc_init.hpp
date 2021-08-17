@@ -18,18 +18,19 @@
 
 #pragma once
 
-#include "jsc_init.h"
-#include "jsc_string.hpp"
-#include "jsc_protected.hpp"
-#include "jsc_context.hpp"
-#include "jsc_value.hpp"
-#include "jsc_object.hpp"
-#include "jsc_function.hpp"
-#include "jsc_exception.hpp"
-#include "jsc_return_value.hpp"
 #include "jsc_class.hpp"
+#include "jsc_context.hpp"
+#include "jsc_exception.hpp"
+#include "jsc_function.hpp"
+#include "jsc_init.h"
+#include "jsc_object.hpp"
+#include "jsc_protected.hpp"
+#include "jsc_return_value.hpp"
+#include "jsc_string.hpp"
+#include "jsc_value.hpp"
 
-// FIXME: js_object_accessor.hpp includes js_list.hpp which includes js_object_accessor.hpp.
+// FIXME: js_object_accessor.hpp includes js_list.hpp which includes
+// js_object_accessor.hpp.
 #include "js_object_accessor.hpp"
 
 #include "js_realm.hpp"

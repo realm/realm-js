@@ -25,138 +25,174 @@
 namespace realm {
 namespace js {
 
-template<typename T>
-class EmailPasswordAuthClass : public ClassDefinition<T, app::App::UsernamePasswordProviderClient> {
-    using GlobalContextType = typename T::GlobalContext;
-    using ContextType = typename T::Context;
-    using FunctionType = typename T::Function;
-    using ObjectType = typename T::Object;
-    using ValueType = typename T::Value;
-    using StringType = typename T::String;
-    using String = js::String<T>;
-    using Object = js::Object<T>;
-    using Value = js::Value<T>;
-    using Function = js::Function<T>;
-    using ReturnValue = js::ReturnValue<T>;
-    using Arguments = js::Arguments<T>;
+template <typename T>
+class EmailPasswordAuthClass
+    : public ClassDefinition<T, app::App::UsernamePasswordProviderClient> {
+  using GlobalContextType = typename T::GlobalContext;
+  using ContextType = typename T::Context;
+  using FunctionType = typename T::Function;
+  using ObjectType = typename T::Object;
+  using ValueType = typename T::Value;
+  using StringType = typename T::String;
+  using String = js::String<T>;
+  using Object = js::Object<T>;
+  using Value = js::Value<T>;
+  using Function = js::Function<T>;
+  using ReturnValue = js::ReturnValue<T>;
+  using Arguments = js::Arguments<T>;
 
 public:
-    std::string const name = "EmailPasswordAuth";
+  std::string const name = "EmailPasswordAuth";
 
-    static FunctionType create_constructor(ContextType);
-    static ObjectType create_instance(ContextType, SharedApp);
+  static FunctionType create_constructor(ContextType);
+  static ObjectType create_instance(ContextType, SharedApp);
 
-    PropertyMap<T> const properties = {
-    };
+  PropertyMap<T> const properties = {};
 
-    static void register_user(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void confirm_user(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void resend_confirmation_email(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void send_reset_password_email(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void reset_password(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void call_reset_password_function(ContextType, ObjectType, Arguments&, ReturnValue&);
+  static void register_user(ContextType, ObjectType, Arguments &,
+                            ReturnValue &);
+  static void confirm_user(ContextType, ObjectType, Arguments &, ReturnValue &);
+  static void resend_confirmation_email(ContextType, ObjectType, Arguments &,
+                                        ReturnValue &);
+  static void send_reset_password_email(ContextType, ObjectType, Arguments &,
+                                        ReturnValue &);
+  static void reset_password(ContextType, ObjectType, Arguments &,
+                             ReturnValue &);
+  static void call_reset_password_function(ContextType, ObjectType, Arguments &,
+                                           ReturnValue &);
 
-    MethodMap<T> const methods = {
-        {"_registerUser", wrap<register_user>},
-        {"_confirmUser", wrap<confirm_user>},
-        {"_resendConfirmationEmail", wrap<resend_confirmation_email>},
-        {"_sendResetPasswordEmail", wrap<send_reset_password_email>},
-        {"_resetPassword", wrap<reset_password>},
-        {"_callResetPasswordFunction", wrap<call_reset_password_function>},
+  MethodMap<T> const methods = {
+      {"_registerUser", wrap<register_user>},
+      {"_confirmUser", wrap<confirm_user>},
+      {"_resendConfirmationEmail", wrap<resend_confirmation_email>},
+      {"_sendResetPasswordEmail", wrap<send_reset_password_email>},
+      {"_resetPassword", wrap<reset_password>},
+      {"_callResetPasswordFunction", wrap<call_reset_password_function>},
 
-    };
+  };
 };
 
-template<typename T>
-inline typename T::Function EmailPasswordAuthClass<T>::create_constructor(ContextType ctx) {
-    FunctionType constructor = ObjectWrap<T, EmailPasswordAuthClass<T>>::create_constructor(ctx);
-    return constructor;
+template <typename T>
+inline typename T::Function
+EmailPasswordAuthClass<T>::create_constructor(ContextType ctx) {
+  FunctionType constructor =
+      ObjectWrap<T, EmailPasswordAuthClass<T>>::create_constructor(ctx);
+  return constructor;
 }
 
-template<typename T>
-typename T::Object EmailPasswordAuthClass<T>::create_instance(ContextType ctx, SharedApp app) {
-    return create_object<T, EmailPasswordAuthClass<T>>(ctx, new app::App::UsernamePasswordProviderClient(app->provider_client<realm::app::App::UsernamePasswordProviderClient>()));
+template <typename T>
+typename T::Object EmailPasswordAuthClass<T>::create_instance(ContextType ctx,
+                                                              SharedApp app) {
+  return create_object<T, EmailPasswordAuthClass<T>>(
+      ctx, new app::App::UsernamePasswordProviderClient(
+               app->provider_client<
+                   realm::app::App::UsernamePasswordProviderClient>()));
 }
 
-template<typename T>
-void EmailPasswordAuthClass<T>::register_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(3);
+template <typename T>
+void EmailPasswordAuthClass<T>::register_user(ContextType ctx,
+                                              ObjectType this_object,
+                                              Arguments &args,
+                                              ReturnValue &return_value) {
+  args.validate_count(3);
 
-    auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
+  auto &client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto email = Value::validated_to_string(ctx, args[0], "email");
-    auto password = Value::validated_to_string(ctx, args[1], "password");
-    auto callback = Value::validated_to_function(ctx, args[2], "callback");
+  auto email = Value::validated_to_string(ctx, args[0], "email");
+  auto password = Value::validated_to_string(ctx, args[1], "password");
+  auto callback = Value::validated_to_function(ctx, args[2], "callback");
 
-    client.register_email(email, password, Function::wrap_void_callback(ctx, this_object, callback));
+  client.register_email(
+      email, password,
+      Function::wrap_void_callback(ctx, this_object, callback));
 }
 
-template<typename T>
-void EmailPasswordAuthClass<T>::confirm_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(3);
+template <typename T>
+void EmailPasswordAuthClass<T>::confirm_user(ContextType ctx,
+                                             ObjectType this_object,
+                                             Arguments &args,
+                                             ReturnValue &return_value) {
+  args.validate_count(3);
 
-    auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
+  auto &client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto token = Value::validated_to_string(ctx, args[0], "token");
-    auto token_id = Value::validated_to_string(ctx, args[1], "token_id");
-    auto callback = Value::validated_to_function(ctx, args[2], "callback");
+  auto token = Value::validated_to_string(ctx, args[0], "token");
+  auto token_id = Value::validated_to_string(ctx, args[1], "token_id");
+  auto callback = Value::validated_to_function(ctx, args[2], "callback");
 
-    client.confirm_user(token, token_id, Function::wrap_void_callback(ctx, this_object, callback));
+  client.confirm_user(token, token_id,
+                      Function::wrap_void_callback(ctx, this_object, callback));
 }
 
-template<typename T>
-void EmailPasswordAuthClass<T>::resend_confirmation_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(2);
+template <typename T>
+void EmailPasswordAuthClass<T>::resend_confirmation_email(
+    ContextType ctx, ObjectType this_object, Arguments &args,
+    ReturnValue &return_value) {
+  args.validate_count(2);
 
-    auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
+  auto &client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto email = Value::validated_to_string(ctx, args[0], "email");
-    auto callback = Value::validated_to_function(ctx, args[1], "callback");
+  auto email = Value::validated_to_string(ctx, args[0], "email");
+  auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    client.resend_confirmation_email(email, Function::wrap_void_callback(ctx, this_object, callback));
+  client.resend_confirmation_email(
+      email, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
-template<typename T>
-void EmailPasswordAuthClass<T>::send_reset_password_email(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(2);
+template <typename T>
+void EmailPasswordAuthClass<T>::send_reset_password_email(
+    ContextType ctx, ObjectType this_object, Arguments &args,
+    ReturnValue &return_value) {
+  args.validate_count(2);
 
-    auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
+  auto &client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto email = Value::validated_to_string(ctx, args[0], "email");
-    auto callback = Value::validated_to_function(ctx, args[1], "callback");
+  auto email = Value::validated_to_string(ctx, args[0], "email");
+  auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    client.send_reset_password_email(email, Function::wrap_void_callback(ctx, this_object, callback));
+  client.send_reset_password_email(
+      email, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
-template<typename T>
-void EmailPasswordAuthClass<T>::reset_password(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(4);
+template <typename T>
+void EmailPasswordAuthClass<T>::reset_password(ContextType ctx,
+                                               ObjectType this_object,
+                                               Arguments &args,
+                                               ReturnValue &return_value) {
+  args.validate_count(4);
 
-    auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
+  auto &client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto password = Value::validated_to_string(ctx, args[0], "password");
-    auto token = Value::validated_to_string(ctx, args[1], "token");
-    auto token_id = Value::validated_to_string(ctx, args[2], "token_id");
-    auto callback = Value::validated_to_function(ctx, args[3], "callback");
+  auto password = Value::validated_to_string(ctx, args[0], "password");
+  auto token = Value::validated_to_string(ctx, args[1], "token");
+  auto token_id = Value::validated_to_string(ctx, args[2], "token_id");
+  auto callback = Value::validated_to_function(ctx, args[3], "callback");
 
-    client.reset_password(password, token, token_id, Function::wrap_void_callback(ctx, this_object, callback));
+  client.reset_password(
+      password, token, token_id,
+      Function::wrap_void_callback(ctx, this_object, callback));
 }
 
-template<typename T>
-void EmailPasswordAuthClass<T>::call_reset_password_function(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(4);
+template <typename T>
+void EmailPasswordAuthClass<T>::call_reset_password_function(
+    ContextType ctx, ObjectType this_object, Arguments &args,
+    ReturnValue &return_value) {
+  args.validate_count(4);
 
-    auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
+  auto &client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto email = Value::validated_to_string(ctx, args[0], "email");
-    auto password = Value::validated_to_string(ctx, args[1], "password");
-    auto stringified_ejson_args = Value::validated_to_string(ctx, args[2], "args");
-    auto callback = Value::validated_to_function(ctx, args[3], "callback");
-    
-    auto bson_args = String::to_bson(stringified_ejson_args);
+  auto email = Value::validated_to_string(ctx, args[0], "email");
+  auto password = Value::validated_to_string(ctx, args[1], "password");
+  auto stringified_ejson_args =
+      Value::validated_to_string(ctx, args[2], "args");
+  auto callback = Value::validated_to_function(ctx, args[3], "callback");
 
-    client.call_reset_password_function(email, password, bson_args.operator const bson::BsonArray &(), Function::wrap_void_callback(ctx, this_object, callback));
+  auto bson_args = String::to_bson(stringified_ejson_args);
+
+  client.call_reset_password_function(
+      email, password, bson_args.operator const bson::BsonArray &(),
+      Function::wrap_void_callback(ctx, this_object, callback));
 }
 
-}
-}
+} // namespace js
+} // namespace realm

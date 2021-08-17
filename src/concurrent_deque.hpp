@@ -26,68 +26,66 @@
 
 namespace realm {
 
-template <typename T>
-class ConcurrentDeque {
+template <typename T> class ConcurrentDeque {
 public:
-    T pop_back() {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_condition.wait(lock, [this] { return !m_deque.empty(); });
-        return do_pop_back();
+  T pop_back() {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_condition.wait(lock, [this] { return !m_deque.empty(); });
+    return do_pop_back();
+  }
+
+  T pop_if(std::function<bool(const T &)> predicate) {
+    std::unique_lock<std::mutex> lock(m_mutex);
+
+    for (auto it = m_deque.begin(); it != m_deque.end();) {
+      if (predicate(*it)) {
+        T item = std::move(*it);
+        m_deque.erase(it);
+        return item;
+      } else {
+        ++it;
+      }
     }
 
-    T pop_if(std::function<bool(const T&)> predicate) {
-        std::unique_lock<std::mutex> lock(m_mutex);
+    return nullptr;
+  }
 
-        for (auto it = m_deque.begin(); it != m_deque.end();) {
-            if (predicate(*it)) {
-                T item = std::move(*it);
-                m_deque.erase(it);
-                return item;
-            }
-            else {
-                ++it;
-            }
-        }
+  util::Optional<T> try_pop_back(size_t timeout) {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_condition.wait_for(lock, std::chrono::milliseconds(timeout),
+                         [this] { return !m_deque.empty(); });
+    return m_deque.empty() ? util::none : util::make_optional(do_pop_back());
+  }
 
-        return nullptr;
-    }
+  void push_front(T &&item) {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_deque.push_front(std::move(item));
+    lock.unlock();
+    m_condition.notify_one();
+  }
 
-    util::Optional<T> try_pop_back(size_t timeout) {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_condition.wait_for(lock, std::chrono::milliseconds(timeout),
-                             [this] { return !m_deque.empty(); });
-        return m_deque.empty() ? util::none : util::make_optional(do_pop_back());
-    }
+  void push_back(T &&item) {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_deque.push_back(std::move(item));
+    lock.unlock();
+    m_condition.notify_one();
+  }
 
-    void push_front(T&& item) {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_deque.push_front(std::move(item));
-        lock.unlock();
-        m_condition.notify_one();
-    }
-
-    void push_back(T&& item) {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_deque.push_back(std::move(item));
-        lock.unlock();
-        m_condition.notify_one();
-    }
-
-    bool empty() {
-        std::lock_guard <std::mutex> lock(m_mutex);
-        return m_deque.empty();
-    }
+  bool empty() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_deque.empty();
+  }
 
 private:
-    std::condition_variable m_condition;
-    std::mutex m_mutex;
-    std::deque<T> m_deque;
+  std::condition_variable m_condition;
+  std::mutex m_mutex;
+  std::deque<T> m_deque;
 
-    T do_pop_back() {
-        T item = std::move(m_deque.back());
-        m_deque.pop_back();
-        return item;
-    }
+  T do_pop_back() {
+    T item = std::move(m_deque.back());
+    m_deque.pop_back();
+    return item;
+  }
 };
 
-} // realm
+} // namespace realm

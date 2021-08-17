@@ -23,30 +23,40 @@
 namespace realm {
 namespace js {
 
-template<>
-inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef &function, const JSObjectRef &this_object, size_t argc, const JSValueRef arguments[]) {
-    JSValueRef exception = nullptr;
-    JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
-    if (exception) {
-        throw jsc::Exception(ctx, exception);
-    }
-    return result;
+template <>
+inline JSValueRef
+jsc::Function::call(JSContextRef ctx, const JSObjectRef &function,
+                    const JSObjectRef &this_object, size_t argc,
+                    const JSValueRef arguments[]) {
+  JSValueRef exception = nullptr;
+  JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc,
+                                             arguments, &exception);
+  if (exception) {
+    throw jsc::Exception(ctx, exception);
+  }
+  return result;
 }
 
-template<>
-inline JSValueRef jsc::Function::callback(JSContextRef ctx, const JSObjectRef &function, const JSObjectRef &this_object, size_t argc, const JSValueRef arguments[]) {
-   return jsc::Function::call(ctx, function, this_object, argc, arguments);
+template <>
+inline JSValueRef
+jsc::Function::callback(JSContextRef ctx, const JSObjectRef &function,
+                        const JSObjectRef &this_object, size_t argc,
+                        const JSValueRef arguments[]) {
+  return jsc::Function::call(ctx, function, this_object, argc, arguments);
 }
 
-template<>
-inline JSObjectRef jsc::Function::construct(JSContextRef ctx, const JSObjectRef &function, size_t argc, const JSValueRef arguments[]) {
-    JSValueRef exception = nullptr;
-    JSObjectRef result = JSObjectCallAsConstructor(ctx, function, argc, arguments, &exception);
-    if (exception) {
-        throw jsc::Exception(ctx, exception);
-    }
-    return result;
+template <>
+inline JSObjectRef
+jsc::Function::construct(JSContextRef ctx, const JSObjectRef &function,
+                         size_t argc, const JSValueRef arguments[]) {
+  JSValueRef exception = nullptr;
+  JSObjectRef result =
+      JSObjectCallAsConstructor(ctx, function, argc, arguments, &exception);
+  if (exception) {
+    throw jsc::Exception(ctx, exception);
+  }
+  return result;
 }
-    
-} // js
-} // realm
+
+} // namespace js
+} // namespace realm

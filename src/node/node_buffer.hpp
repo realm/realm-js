@@ -27,70 +27,50 @@ using NodeBuffer = Napi::Buffer<char>;
 using TypedArray = Napi::TypedArray;
 using DataView = Napi::DataView;
 
-template <typename ArrayBuffer>
-int get_size(ArrayBuffer array_buffer)
-{
-    return array_buffer.ByteLength();
+template <typename ArrayBuffer> int get_size(ArrayBuffer array_buffer) {
+  return array_buffer.ByteLength();
 }
 
-template <>
-int get_size<NodeBuffer>(NodeBuffer buffer)
-{
-    return buffer.Length();
+template <> int get_size<NodeBuffer>(NodeBuffer buffer) {
+  return buffer.Length();
 }
 
-template <typename ArrayBuffer>
-auto get_data(ArrayBuffer buffer)
-{
-    return static_cast<const char*>(buffer.Data());
+template <typename ArrayBuffer> auto get_data(ArrayBuffer buffer) {
+  return static_cast<const char *>(buffer.Data());
 }
 
-template <>
-auto get_data<DataView>(DataView data_view)
-{
-    auto buffer = data_view.ArrayBuffer();
-    return static_cast<const char*>(buffer.Data());
+template <> auto get_data<DataView>(DataView data_view) {
+  auto buffer = data_view.ArrayBuffer();
+  return static_cast<const char *>(buffer.Data());
 }
 
-template <>
-auto get_data<TypedArray>(TypedArray typed_array)
-{
-    auto buffer = typed_array.ArrayBuffer();
-    return static_cast<const char*>(buffer.Data());
+template <> auto get_data<TypedArray>(TypedArray typed_array) {
+  auto buffer = typed_array.ArrayBuffer();
+  return static_cast<const char *>(buffer.Data());
 }
 
 class NodeBinary {
 public:
-    virtual bool is_empty() = 0;
-    virtual OwnedBinaryData create_binary_blob() = 0;
-    virtual int length() = 0;
+  virtual bool is_empty() = 0;
+  virtual OwnedBinaryData create_binary_blob() = 0;
+  virtual int length() = 0;
 };
 
 template <typename BufferType, typename Value>
 class NodeBinaryManager : public NodeBinary {
 private:
-    BufferType buffer;
+  BufferType buffer;
 
 public:
-    NodeBinaryManager(Value value)
-    {
-        buffer = value.template As<BufferType>();
-    }
+  NodeBinaryManager(Value value) { buffer = value.template As<BufferType>(); }
 
-    OwnedBinaryData create_binary_blob()
-    {
-        return OwnedBinaryData(get_data<BufferType>(buffer), length());
-    }
+  OwnedBinaryData create_binary_blob() {
+    return OwnedBinaryData(get_data<BufferType>(buffer), length());
+  }
 
-    bool is_empty()
-    {
-        return length() == 0;
-    }
+  bool is_empty() { return length() == 0; }
 
-    int length()
-    {
-        return get_size<BufferType>(buffer);
-    }
+  int length() { return get_size<BufferType>(buffer); }
 };
 
 } // namespace js

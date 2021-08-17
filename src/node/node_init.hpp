@@ -18,15 +18,16 @@
 
 #pragma once
 
-#include "node_string.hpp"
-#include "node_protected.hpp"
-#include "node_function.hpp"
-#include "node_value.hpp"
-#include "node_context.hpp"
-#include "node_object.hpp"
-#include "node_exception.hpp"
-#include "node_return_value.hpp"
 #include "node_class.hpp"
+#include "node_context.hpp"
+#include "node_exception.hpp"
+#include "node_function.hpp"
+#include "node_object.hpp"
+#include "node_protected.hpp"
+#include "node_return_value.hpp"
+#include "node_string.hpp"
+#include "node_value.hpp"
 
-// FIXME: js_object_accessor.hpp includes js_list.hpp which includes js_object_accessor.hpp.
+// FIXME: js_object_accessor.hpp includes js_list.hpp which includes
+// js_object_accessor.hpp.
 #include "js_object_accessor.hpp"

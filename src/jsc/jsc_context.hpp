@@ -23,10 +23,10 @@
 namespace realm {
 namespace js {
 
-template<>
+template <>
 inline JSGlobalContextRef jsc::Context::get_global_context(JSContextRef ctx) {
-    return JSContextGetGlobalContext(ctx);
+  return JSContextGetGlobalContext(ctx);
 }
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm

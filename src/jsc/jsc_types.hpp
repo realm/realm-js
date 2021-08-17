@@ -26,31 +26,32 @@
 
 #include "js_types.hpp"
 
-
 namespace realm {
 namespace jsc {
 
 struct Types {
-    using Context = JSContextRef;
-    using GlobalContext = JSGlobalContextRef;
-    using Value = JSValueRef;
-    using Object = JSObjectRef;
-    using String = JSStringRef;
-    using Function = JSObjectRef;
+  using Context = JSContextRef;
+  using GlobalContext = JSGlobalContextRef;
+  using Value = JSValueRef;
+  using Object = JSObjectRef;
+  using String = JSStringRef;
+  using Function = JSObjectRef;
 
-    using ConstructorCallback = JSObjectCallAsConstructorCallback;
-    using FunctionCallback = JSObjectCallAsFunctionCallback;
-    using PropertyGetterCallback = JSObjectGetPropertyCallback;
-    using PropertySetterCallback = JSObjectSetPropertyCallback;
-    using IndexPropertyGetterCallback = JSValueRef (*)(JSContextRef, JSObjectRef, uint32_t, JSValueRef*);
-    using IndexPropertySetterCallback = bool (*)(JSContextRef, JSObjectRef, uint32_t, JSValueRef, JSValueRef*);
-    using StringPropertyGetterCallback = JSObjectGetPropertyCallback;
-    using StringPropertySetterCallback = JSObjectSetPropertyCallback;
-    using StringPropertyEnumeratorCallback = JSObjectGetPropertyNamesCallback;
+  using ConstructorCallback = JSObjectCallAsConstructorCallback;
+  using FunctionCallback = JSObjectCallAsFunctionCallback;
+  using PropertyGetterCallback = JSObjectGetPropertyCallback;
+  using PropertySetterCallback = JSObjectSetPropertyCallback;
+  using IndexPropertyGetterCallback = JSValueRef (*)(JSContextRef, JSObjectRef,
+                                                     uint32_t, JSValueRef *);
+  using IndexPropertySetterCallback = bool (*)(JSContextRef, JSObjectRef,
+                                               uint32_t, JSValueRef,
+                                               JSValueRef *);
+  using StringPropertyGetterCallback = JSObjectGetPropertyCallback;
+  using StringPropertySetterCallback = JSObjectSetPropertyCallback;
+  using StringPropertyEnumeratorCallback = JSObjectGetPropertyNamesCallback;
 };
 
-template<typename ClassType>
-class ObjectWrap;
+template <typename ClassType> class ObjectWrap;
 
 using String = js::String<Types>;
 using Context = js::Context<Types>;
@@ -60,5 +61,5 @@ using Object = js::Object<Types>;
 using Exception = js::Exception<Types>;
 using ReturnValue = js::ReturnValue<Types>;
 
-} // jsc
-} // realm
+} // namespace jsc
+} // namespace realm

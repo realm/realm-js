@@ -28,109 +28,112 @@
 namespace realm {
 namespace js {
 
-enum class AggregateFunc {
-    Min,
-    Max,
-    Sum,
-    Avg
-};
+enum class AggregateFunc { Min, Max, Sum, Avg };
 
-template<typename T>
-class RealmDelegate;
+template <typename T> class RealmDelegate;
 
-template<typename T>
+template <typename T>
 static inline RealmDelegate<T> *get_delegate(realm::Realm *realm) {
-    return static_cast<RealmDelegate<T> *>(realm->m_binding_context.get());
+  return static_cast<RealmDelegate<T> *>(realm->m_binding_context.get());
 }
 
-static const char *local_string_for_property_type(realm::PropertyType type)
-{
-    switch (type & ~realm::PropertyType::Flags) {
-        // Override naming given by ObjectStore
-        case realm::PropertyType::ObjectId: return "objectId";
-        case realm::PropertyType::Decimal: return "decimal128";
+static const char *local_string_for_property_type(realm::PropertyType type) {
+  switch (type & ~realm::PropertyType::Flags) {
+  // Override naming given by ObjectStore
+  case realm::PropertyType::ObjectId:
+    return "objectId";
+  case realm::PropertyType::Decimal:
+    return "decimal128";
 
-        default: return string_for_property_type(type);
-    }
+  default:
+    return string_for_property_type(type);
+  }
 }
 
-template<typename T>
-static inline T stot(const std::string &s) {
-    std::istringstream iss(s);
-    T value;
-    iss >> value;
-    if (iss.fail()) {
-        throw std::invalid_argument("Cannot convert string '" + s + "'");
-    }
-    return value;
+template <typename T> static inline T stot(const std::string &s) {
+  std::istringstream iss(s);
+  T value;
+  iss >> value;
+  if (iss.fail()) {
+    throw std::invalid_argument("Cannot convert string '" + s + "'");
+  }
+  return value;
 }
 
 static inline uint32_t validated_positive_index(std::string string) {
-    int64_t index = stot<int64_t>(string);
-    if (index < 0) {
-        throw std::out_of_range(std::string("Index ") + string + " cannot be less than zero.");
-    }
-    if (index > std::numeric_limits<uint32_t>::max()) {
-        throw std::out_of_range(std::string("Index ") + string + " must be a 32-bit unsigned integer");
-    }
-    return static_cast<uint32_t>(index);
+  int64_t index = stot<int64_t>(string);
+  if (index < 0) {
+    throw std::out_of_range(std::string("Index ") + string +
+                            " cannot be less than zero.");
+  }
+  if (index > std::numeric_limits<uint32_t>::max()) {
+    throw std::out_of_range(std::string("Index ") + string +
+                            " must be a 32-bit unsigned integer");
+  }
+  return static_cast<uint32_t>(index);
 }
 
-static inline void validate_argument_count(size_t count, size_t expected, const char *message = nullptr) {
-    if (count != expected) {
-        throw std::invalid_argument(message ? message : "Invalid arguments");
-    }
+static inline void validate_argument_count(size_t count, size_t expected,
+                                           const char *message = nullptr) {
+  if (count != expected) {
+    throw std::invalid_argument(message ? message : "Invalid arguments");
+  }
 }
 
-static inline void validate_argument_count(size_t count, size_t min, size_t max, const char *message = nullptr) {
-    if (count < min || count > max) {
-        throw std::invalid_argument(message ? message : "Invalid arguments");
-    }
+static inline void validate_argument_count(size_t count, size_t min, size_t max,
+                                           const char *message = nullptr) {
+  if (count < min || count > max) {
+    throw std::invalid_argument(message ? message : "Invalid arguments");
+  }
 }
 
-static inline void validate_argument_count_at_least(size_t count, size_t expected, const char *message = nullptr) {
-    if (count < expected) {
-        throw std::invalid_argument(message ? message : "Invalid arguments");
-    }
+static inline void
+validate_argument_count_at_least(size_t count, size_t expected,
+                                 const char *message = nullptr) {
+  if (count < expected) {
+    throw std::invalid_argument(message ? message : "Invalid arguments");
+  }
 }
 
-template<typename T, AggregateFunc func>
-void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::ObjectType this_object,
-                                     typename T::Arguments &args, typename T::ReturnValue &return_value) {
+template <typename T, AggregateFunc func>
+void compute_aggregate_on_collection(typename T::ContextType ctx,
+                                     typename T::ObjectType this_object,
+                                     typename T::Arguments &args,
+                                     typename T::ReturnValue &return_value) {
 
-    auto list = get_internal<typename T::Type, T>(ctx, this_object);
+  auto list = get_internal<typename T::Type, T>(ctx, this_object);
 
-    ColKey column = {};
-    if (list->get_type() == realm::PropertyType::Object) {
-        const ObjectSchema& object_schema = list->get_object_schema();
-        std::string property_name = T::Value::validated_to_string(ctx, args[0]);
-        const Property* property = object_schema.property_for_name(property_name);
-        if (!property) {
-            throw std::invalid_argument(util::format("Property '%1' does not exist on object '%2'",
-                                                     property_name, object_schema.name));
-        }
-        column = property->column_key;
+  ColKey column = {};
+  if (list->get_type() == realm::PropertyType::Object) {
+    const ObjectSchema &object_schema = list->get_object_schema();
+    std::string property_name = T::Value::validated_to_string(ctx, args[0]);
+    const Property *property = object_schema.property_for_name(property_name);
+    if (!property) {
+      throw std::invalid_argument(
+          util::format("Property '%1' does not exist on object '%2'",
+                       property_name, object_schema.name));
     }
-    else {
-        args.validate_maximum(0);
-    }
+    column = property->column_key;
+  } else {
+    args.validate_maximum(0);
+  }
 
-    util::Optional<Mixed> mixed;
-    switch (func) {
-        case AggregateFunc::Min:
-            return_value.set(list->min(column));
-            break;
-        case AggregateFunc::Max:
-            return_value.set(list->max(column));
-            break;
-        case AggregateFunc::Sum:
-            return_value.set(list->sum(column));
-            break;
-        case AggregateFunc::Avg:
-            return_value.set(list->average(column));
-            break;
-    }
+  util::Optional<Mixed> mixed;
+  switch (func) {
+  case AggregateFunc::Min:
+    return_value.set(list->min(column));
+    break;
+  case AggregateFunc::Max:
+    return_value.set(list->max(column));
+    break;
+  case AggregateFunc::Sum:
+    return_value.set(list->sum(column));
+    break;
+  case AggregateFunc::Avg:
+    return_value.set(list->average(column));
+    break;
+  }
 }
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm

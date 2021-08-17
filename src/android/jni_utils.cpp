@@ -22,29 +22,24 @@ using namespace realm::jni_util;
 
 static std::unique_ptr<JniUtils> s_instance;
 
-void JniUtils::initialize(JavaVM* vm, jint vm_version) noexcept
-{
-    s_instance = std::unique_ptr<JniUtils>(new JniUtils(vm, vm_version));
+void JniUtils::initialize(JavaVM *vm, jint vm_version) noexcept {
+  s_instance = std::unique_ptr<JniUtils>(new JniUtils(vm, vm_version));
 }
 
-void JniUtils::release()
-{
-    s_instance.release();
-}
+void JniUtils::release() { s_instance.release(); }
 
-JNIEnv* JniUtils::get_env(bool attach_if_needed)
-{
-    JNIEnv* env;
-    if (s_instance->m_vm->GetEnv(reinterpret_cast<void**>(&env), s_instance->m_vm_version) != JNI_OK) {
-        if (attach_if_needed) {
-            jint ret = s_instance->m_vm->AttachCurrentThread(&env, nullptr);
-        }
+JNIEnv *JniUtils::get_env(bool attach_if_needed) {
+  JNIEnv *env;
+  if (s_instance->m_vm->GetEnv(reinterpret_cast<void **>(&env),
+                               s_instance->m_vm_version) != JNI_OK) {
+    if (attach_if_needed) {
+      jint ret = s_instance->m_vm->AttachCurrentThread(&env, nullptr);
     }
+  }
 
-    return env;
+  return env;
 }
 
-void JniUtils::detach_current_thread()
-{
-    s_instance->m_vm->DetachCurrentThread();
+void JniUtils::detach_current_thread() {
+  s_instance->m_vm->DetachCurrentThread();
 }

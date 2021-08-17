@@ -35,38 +35,49 @@ namespace node {
 extern Napi::FunctionReference RealmClassConstructor;
 
 struct Types {
-	using Context = Napi::Env;
-	using GlobalContext = Napi::Env;
-	using Value = Napi::Value;
-	using Object = Napi::Object;
-	using String = Napi::String;
-	using Function = Napi::Function;
+  using Context = Napi::Env;
+  using GlobalContext = Napi::Env;
+  using Value = Napi::Value;
+  using Object = Napi::Object;
+  using String = Napi::String;
+  using Function = Napi::Function;
 
-	typedef Napi::Value(*NapiFunctionCallback)(const Napi::CallbackInfo& info);
+  typedef Napi::Value (*NapiFunctionCallback)(const Napi::CallbackInfo &info);
 
-	typedef Napi::Value(*NapiIndexGetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, uint32_t index);
-	typedef Napi::Value(*NapiIndexSetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, uint32_t index, const Napi::Value& value);
-	typedef Napi::Value(*NapiPropertyGetterCallback)(const Napi::CallbackInfo& info);
-	typedef void(*NapiPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::Value& value);
+  typedef Napi::Value (*NapiIndexGetterCallback)(const Napi::CallbackInfo &info,
+                                                 const Napi::Object &instance,
+                                                 uint32_t index);
+  typedef Napi::Value (*NapiIndexSetterCallback)(const Napi::CallbackInfo &info,
+                                                 const Napi::Object &instance,
+                                                 uint32_t index,
+                                                 const Napi::Value &value);
+  typedef Napi::Value (*NapiPropertyGetterCallback)(
+      const Napi::CallbackInfo &info);
+  typedef void (*NapiPropertySetterCallback)(const Napi::CallbackInfo &info,
+                                             const Napi::Value &value);
 
-	typedef Napi::Value(*NapiStringPropertyGetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, const Napi::String& property);
-	typedef Napi::Value(*NapiStringPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, const Napi::String& property, const Napi::Value& value);
-	typedef Napi::Value(*NapiStringPropertyEnumeratorCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance);
+  typedef Napi::Value (*NapiStringPropertyGetterCallback)(
+      const Napi::CallbackInfo &info, const Napi::Object &instance,
+      const Napi::String &property);
+  typedef Napi::Value (*NapiStringPropertySetterCallback)(
+      const Napi::CallbackInfo &info, const Napi::Object &instance,
+      const Napi::String &property, const Napi::Value &value);
+  typedef Napi::Value (*NapiStringPropertyEnumeratorCallback)(
+      const Napi::CallbackInfo &info, const Napi::Object &instance);
 
-	using ConstructorCallback = NapiFunctionCallback;
-	using FunctionCallback = NapiFunctionCallback;
-	using PropertyGetterCallback = NapiPropertyGetterCallback;
-	using PropertySetterCallback = NapiPropertySetterCallback;
-	using IndexPropertyGetterCallback = NapiIndexGetterCallback;
-	using IndexPropertySetterCallback = NapiIndexSetterCallback;
+  using ConstructorCallback = NapiFunctionCallback;
+  using FunctionCallback = NapiFunctionCallback;
+  using PropertyGetterCallback = NapiPropertyGetterCallback;
+  using PropertySetterCallback = NapiPropertySetterCallback;
+  using IndexPropertyGetterCallback = NapiIndexGetterCallback;
+  using IndexPropertySetterCallback = NapiIndexSetterCallback;
 
-	using StringPropertyGetterCallback = NapiStringPropertyGetterCallback;
-	using StringPropertySetterCallback = NapiStringPropertySetterCallback;
-	using StringPropertyEnumeratorCallback = NapiStringPropertyEnumeratorCallback;
+  using StringPropertyGetterCallback = NapiStringPropertyGetterCallback;
+  using StringPropertySetterCallback = NapiStringPropertySetterCallback;
+  using StringPropertyEnumeratorCallback = NapiStringPropertyEnumeratorCallback;
 };
 
-template<typename ClassType>
-class ObjectWrap;
+template <typename ClassType> class ObjectWrap;
 
 using String = js::String<Types>;
 using Context = js::Context<Types>;
@@ -76,5 +87,5 @@ using Object = js::Object<Types>;
 using Exception = js::Exception<Types>;
 using ReturnValue = js::ReturnValue<Types>;
 
-} // node
-} // realm
+} // namespace node
+} // namespace realm

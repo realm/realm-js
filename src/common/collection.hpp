@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 #pragma once
 struct IOCollection {
-    virtual void set(std::string, realm::Mixed) = 0;
-    virtual realm::Mixed get(std::string) = 0;
-    virtual void remove(std::string) = 0;
-    virtual bool contains(std::string) = 0;
+  virtual void set(std::string, realm::Mixed) = 0;
+  virtual realm::Mixed get(std::string) = 0;
+  virtual void remove(std::string) = 0;
+  virtual bool contains(std::string) = 0;
 };

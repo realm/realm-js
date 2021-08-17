@@ -26,9 +26,8 @@
 #include "realm/object-store/dictionary.hpp"
 
 struct Subscriber {
-    virtual void notify(JSObjectRef, realm::DictionaryChangeSet &) = 0;
-    virtual bool equals(std::unique_ptr<Subscriber>&) const = 0;
-    virtual JSValueRef callback() const = 0;
-    virtual ~Subscriber() = default;
+  virtual void notify(JSObjectRef, realm::DictionaryChangeSet &) = 0;
+  virtual bool equals(std::unique_ptr<Subscriber> &) const = 0;
+  virtual JSValueRef callback() const = 0;
+  virtual ~Subscriber() = default;
 };
-

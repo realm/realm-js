@@ -18,11 +18,11 @@
 #pragma once
 
 #if REALM_PLATFORM_NODE
-#include "node/subscriber.hpp"
 #include "node/methods.hpp"
 #include "node/object.hpp"
+#include "node/subscriber.hpp"
 #else
-#include "jsc/subscriber.hpp"
 #include "jsc/methods.hpp"
 #include "jsc/object.hpp"
+#include "jsc/subscriber.hpp"
 #endif

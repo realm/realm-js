@@ -19,87 +19,86 @@
 #include <common/mixed_type.hpp>
 #include <common/types.hpp>
 
-#include "js_realm_object.hpp"
 #include "js_mixed.hpp"
+#include "js_realm_object.hpp"
 
 namespace realm {
 namespace js {
-template <typename T>
-class RealmLink {
+template <typename T> class RealmLink {
 private:
+  using ValueType = typename T::Value;
+  using Context = typename T::Context;
+  using Object = js::Object<T>;
+  using ObjectType = typename Object::ObjectType;
+  using RealmObjClass = RealmObjectClass<T>;
+  using Value = js::Value<T>;
 
-    using ValueType = typename T::Value;
-    using Context = typename T::Context;
-    using Object = js::Object<T>;
-    using ObjectType =  typename Object::ObjectType;
-    using RealmObjClass =  RealmObjectClass<T>;
-    using Value =  js::Value<T>;
-
-    Context context;
-    ObjectType js_object;
+  Context context;
+  ObjectType js_object;
 
 public:
-    RealmLink(Context _context, ValueType value): context{_context} {
-        js_object = Value::validated_to_object(context, value);
-    }
+  RealmLink(Context _context, ValueType value) : context{_context} {
+    js_object = Value::validated_to_object(context, value);
+  }
 
-    realm::Object* get_os_object(){ return get_internal<T, RealmObjClass>(context, js_object); }
+  realm::Object *get_os_object() {
+    return get_internal<T, RealmObjClass>(context, js_object);
+  }
 
-    bool is_instance() {
-        return Object::template is_instance<RealmObjClass>(context, js_object);
-    }
+  bool is_instance() {
+    return Object::template is_instance<RealmObjClass>(context, js_object);
+  }
 
-    bool belongs_to_realm(std::shared_ptr<Realm> realm){
-        auto os_object = get_os_object();
-        return is_instance() && os_object && os_object->realm() == realm;
-    }
+  bool belongs_to_realm(std::shared_ptr<Realm> realm) {
+    auto os_object = get_os_object();
+    return is_instance() && os_object && os_object->realm() == realm;
+  }
 
-    bool is_read_only(realm::CreatePolicy policy) {
-        return !policy.copy && !policy.update && !policy.create;
-    }
+  bool is_read_only(realm::CreatePolicy policy) {
+    return !policy.copy && !policy.update && !policy.create;
+  }
 
-    realm::Obj get_realm_object(){ return get_os_object()->obj(); }
+  realm::Obj get_realm_object() { return get_os_object()->obj(); }
 };
 
 template <typename T>
 class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
-  private:
-    using Context = typename T::Context;
-    using Value = typename T::Value;
-    using RealmClass =  RealmObjectClass<T>;
+private:
+  using Context = typename T::Context;
+  using Value = typename T::Value;
+  using RealmClass = RealmObjectClass<T>;
 
-    std::shared_ptr<Realm> realm;
+  std::shared_ptr<Realm> realm;
 
-  public:
-    MixedLink(std::shared_ptr<Realm> _realm): realm{_realm} {}
+public:
+  MixedLink(std::shared_ptr<Realm> _realm) : realm{_realm} {}
 
-    Mixed wrap(Context context, Value const& value) {
+  Mixed wrap(Context context, Value const &value) {
 
-        RealmLink<T> realm_link {context, value};
+    RealmLink<T> realm_link{context, value};
 
-        if(!realm_link.is_instance() ||
-        !realm_link.belongs_to_realm(realm)){
-            throw std::runtime_error("Only Realm instances are supported.");
-        }
-
-        auto realm_object = realm_link.get_realm_object();
-        return Mixed(realm_object);
+    if (!realm_link.is_instance() || !realm_link.belongs_to_realm(realm)) {
+      throw std::runtime_error("Only Realm instances are supported.");
     }
 
-    Value unwrap(Context context, Mixed mixed) {
-        realm::Object realm_object(realm, mixed.get_link());
-        return RealmClass::create_instance(context, realm_object);
-    }
+    auto realm_object = realm_link.get_realm_object();
+    return Mixed(realm_object);
+  }
 
-    static void add_strategy(std::shared_ptr<Realm> realm){
-        TypeMixed<T>::get_instance().register_strategy(types::Object, new MixedLink<T>{realm});
-    }
+  Value unwrap(Context context, Mixed mixed) {
+    realm::Object realm_object(realm, mixed.get_link());
+    return RealmClass::create_instance(context, realm_object);
+  }
 
+  static void add_strategy(std::shared_ptr<Realm> realm) {
+    TypeMixed<T>::get_instance().register_strategy(types::Object,
+                                                   new MixedLink<T>{realm});
+  }
 
-    static void remove_strategy(){
-        TypeMixed<T>::get_instance().unregister(types::Object);
-    }
+  static void remove_strategy() {
+    TypeMixed<T>::get_instance().unregister(types::Object);
+  }
 };
 
-}  // namespace js
-}  // namespace realm
+} // namespace js
+} // namespace realm

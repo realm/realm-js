@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include <string>
-#include <realm/object-store/sync/generic_network_transport.hpp>
-#include "js_types.hpp"
 #include "js_network_transport.hpp"
+#include "js_types.hpp"
+#include <realm/object-store/sync/generic_network_transport.hpp>
+#include <string>
 
 namespace realm {
 namespace rpc {
@@ -33,39 +33,48 @@ struct RPCFetchRef {
 */
 
 /**
- * Provides an implementation of GenericNetworkTransport for use when the library is loaded in a runtime which doesn't provide the APIs required to perform network requests directly.
- * Instead it uses the RPC server to ask the RPC client to perform network requests on its behalf.
+ * Provides an implementation of GenericNetworkTransport for use when the
+ * library is loaded in a runtime which doesn't provide the APIs required to
+ * perform network requests directly. Instead it uses the RPC server to ask the
+ * RPC client to perform network requests on its behalf.
  */
 struct RPCNetworkTransport : public app::GenericNetworkTransport {
-    using T = jsc::Types;
-    using ContextType = typename T::Context;
-    using FunctionType = typename T::Function;
-    using ObjectType = typename T::Object;
-    using ValueType = typename T::Value;
-    using String = js::String<T>;
-    using Object = js::Object<T>;
-    using Value = js::Value<T>;
-    using Function = js::Function<T>;
+  using T = jsc::Types;
+  using ContextType = typename T::Context;
+  using FunctionType = typename T::Function;
+  using ObjectType = typename T::Object;
+  using ValueType = typename T::Value;
+  using String = js::String<T>;
+  using Object = js::Object<T>;
+  using Value = js::Value<T>;
+  using Function = js::Function<T>;
 
-    using SendRequestHandler = void(ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback);
-    
-    static inline js::Protected<FunctionType> fetch_function;
+  using SendRequestHandler =
+      void(ContextType m_ctx, const app::Request request,
+           std::function<void(const app::Response)> completion_callback);
 
-    RPCNetworkTransport(ContextType ctx) : m_ctx(ctx) {}
+  static inline js::Protected<FunctionType> fetch_function;
 
-    void send_request_to_server(const app::Request request, std::function<void(const app::Response)> completion_callback) override {
-        // Build up a JS request object
-        auto request_object = js::JavaScriptNetworkTransport<T>::makeRequest(m_ctx, request);
-        // Ask the RPC layer to enqueue a call to the client-side fetch function
-        Function::call(m_ctx, fetch_function, nullptr, {
-            request_object,
-            js::ResponseHandlerClass<T>::create_instance(m_ctx, std::move(completion_callback)),
-        });
-    }
+  RPCNetworkTransport(ContextType ctx) : m_ctx(ctx) {}
+
+  void send_request_to_server(
+      const app::Request request,
+      std::function<void(const app::Response)> completion_callback) override {
+    // Build up a JS request object
+    auto request_object =
+        js::JavaScriptNetworkTransport<T>::makeRequest(m_ctx, request);
+    // Ask the RPC layer to enqueue a call to the client-side fetch function
+    Function::call(m_ctx, fetch_function, nullptr,
+                   {
+                       request_object,
+                       js::ResponseHandlerClass<T>::create_instance(
+                           m_ctx, std::move(completion_callback)),
+                   });
+  }
 
 private:
-    ContextType m_ctx;
+  ContextType m_ctx;
 };
 
-}
-}
+} // namespace rpc
+} // namespace realm

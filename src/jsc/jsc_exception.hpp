@@ -23,11 +23,12 @@
 namespace realm {
 namespace js {
 
-template<>
-inline JSValueRef jsc::Exception::value(JSContextRef ctx, const std::string &message) {
-    JSValueRef value = jsc::Value::from_string(ctx, message);
-    return JSObjectMakeError(ctx, 1, &value, NULL);
+template <>
+inline JSValueRef jsc::Exception::value(JSContextRef ctx,
+                                        const std::string &message) {
+  JSValueRef value = jsc::Value::from_string(ctx, message);
+  return JSObjectMakeError(ctx, 1, &value, NULL);
 }
-    
-} // js
-} // realm
+
+} // namespace js
+} // namespace realm

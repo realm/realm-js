@@ -22,11 +22,10 @@
 namespace realm {
 namespace js {
 
-template <typename Context, typename Value>
-class MixedWrapper {
-  public:
-    virtual Mixed wrap(Context, Value const &) = 0;
-    virtual Value unwrap(Context, Mixed) = 0;
+template <typename Context, typename Value> class MixedWrapper {
+public:
+  virtual Mixed wrap(Context, Value const &) = 0;
+  virtual Value unwrap(Context, Mixed) = 0;
 };
 
 } // namespace js
