@@ -379,14 +379,14 @@ public:
     }
 
     static Internal* get_internal(JsiEnv env, const JsiObj& object) {
-        if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
-            throw jsi::JSError(env, "calling method on wrong type of object");
-        }
         auto internal = object->getProperty(env, g_internal_field);
         if (internal.isUndefined()) {
             if constexpr (std::is_same_v<T, RealmObjectClass<hermes::Types>>) // XXX comment why
                 return nullptr;
             throw jsi::JSError(env, "no internal field");
+        }
+        if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
+            throw jsi::JSError(env, "calling method on wrong type of object");
         }
         return unwrapUnique<Internal>(env, std::move(internal));
     }
