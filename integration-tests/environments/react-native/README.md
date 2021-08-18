@@ -62,7 +62,11 @@ This will keep the harness, metro server and mocha-remote servers running and co
 
 ## Environment variables
 
-// TODO: Add a section on environment variables supported by the harness.
+// TODO: Add a section on the rest of the environment variables supported by the harness.
+
+### `SKIP_RUNNER`
+
+When debugging it's often desirable to build and attach a debugger to the integration test app via Xcode. To prevent the test harness from also building and launching the app set the `SKIP_RUNNER=true`.
 
 ## Weird configurations
 
