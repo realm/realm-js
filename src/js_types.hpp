@@ -167,7 +167,6 @@ struct Value {
     static ValueType from_nonnull_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
     static ValueType from_timestamp(ContextType, Timestamp);
-    static ValueType from_mixed(ContextType, const Mixed &);
     static ValueType from_uuid(ContextType, const UUID&);
     static ValueType from_objkey(ContextType, const ObjKey&);
     static ValueType from_objlink(ContextType, const ObjLink&);
