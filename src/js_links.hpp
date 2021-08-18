@@ -39,8 +39,7 @@ private:
     ObjectType js_object;
 
 public:
-    RealmLink(Context _context, ValueType value): context{_context} {
-        js_object = Value::validated_to_object(context, value);
+    RealmLink(Context _context, ValueType value): context{_context}, js_object{ Value::validated_to_object(context, value) } {
     }
 
     realm::Object* get_os_object(){ return get_internal<T, RealmObjClass>(context, js_object); }
