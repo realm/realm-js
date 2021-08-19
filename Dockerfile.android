@@ -1,85 +1,91 @@
-# Starting from a slimmed version of the latest stable Debian
-FROM debian:stretch-20210721-slim
-
-# Setting environment variables for versions
-# See https://developer.android.com/studio/#command-tools for the latest SDK version
-ARG ANDROID_SDK_VERSION=4333796
-ARG ANDROID_NDK_VERSION=r21
-ARG ANDROID_BUILD_TOOLS_VERSION=28.0.3
-ARG NODE_VERSION=12.x
+FROM ubuntu:18.04
 
 # Locales
-ENV LANG C.UTF-8
+RUN apt-get clean && apt-get -y update && apt-get install -y locales && locale-gen en_US.UTF-8
+ENV LANG "en_US.UTF-8"
+ENV LANGUAGE "en_US.UTF-8"
+ENV LC_ALL "en_US.UTF-8"
+ENV TZ=Europe/Copenhagen
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-ENV NPM_CONFIG_UNSAFE_PERM true
-ENV NVM_DIR /tmp/.nvm
+# Set the environment variables
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+ENV ANDROID_HOME /opt/android-sdk-linux
+# Need by cmake
+ENV ANDROID_NDK_HOME /opt/android-ndk
+ENV ANDROID_NDK /opt/android-ndk
+ENV PATH ${PATH}:${ANDROID_HOME}/emulator:${ANDROID_HOME}/cmdline-tools/latest:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools
+ENV PATH ${PATH}:${NDK_HOME}
+ENV NDK_CCACHE /usr/bin/ccache
+ENV CCACHE_CPP2 yes
 
-# Because we're using the slim variant of Debian some directories (expected when installing openjdk) are missing
-RUN mkdir /usr/share/man/man1
+# Keep the packages in alphabetical order to make it easy to avoid duplication
+# tzdata needs to be installed first. See https://askubuntu.com/questions/909277/avoiding-user-interaction-with-tzdata-when-installing-certbot-in-a-docker-contai
+# `file` is need by the Android Emulator
+RUN DEBIAN_FRONTEND=noninteractive \
+    && apt-get update -qq \
+    && apt-get install -y tzdata \
+    && apt-get install -y bsdmainutils \
+                          bridge-utils \
+                          build-essential \
+                          ccache \
+                          curl \
+                          file \
+                          git \
+                          jq \
+                          libc6 \
+                          libgcc1 \
+                          libglu1 \
+                          libncurses5 \
+                          libstdc++6 \
+                          libz1 \
+                          libvirt-clients \
+                          libvirt-daemon-system \
+                          openjdk-8-jdk-headless \
+                          qemu-kvm \
+                          s3cmd \
+                          unzip \
+                          virt-manager \
+                          wget \
+                          zip \
+                          ninja-build \
+    && apt-get clean
 
-# Install dependencies
-ENV DEBIAN_FRONTEND noninteractive
-RUN dpkg --add-architecture i386 && \
-    apt-get update -qq && \
-    apt-get install -qq -y \
-      # Installing OpenJDK in its headless variant as we don't need the GUI related parts
-      openjdk-8-jdk-headless \
-      # Tools needed when installing dependencies
-      curl \
-      gnupg \
-      unzip \
-      git \
-      qemu-kvm \
-      libglu1 \
-      # Tools ndeed when building Android module
-      build-essential \
-    && \
-    # Install the active LTS version of Node.js
-    curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - && \
-    apt-get install -qq -y nodejs && \
-    # Clean-up to lower the image size
-    apt-get clean
+# Install the Android SDK
+# See https://developer.android.com/studio/index.html#downloads for latest version
+RUN cd /opt && \
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip -O android-tools-linux.zip && \
+    mkdir --parents ${ANDROID_HOME}/cmdline-tools/latest && \
+    unzip android-tools-linux.zip -d ${ANDROID_HOME}/cmdline-tools/latest && \
+    mv ${ANDROID_HOME}/cmdline-tools/latest/cmdline-tools/* ${ANDROID_HOME}/cmdline-tools/latest/ && \
+    rm -f android-tools-linux.zip
 
-# Jenkins will run this image as user 1001, let's ensure that user exists and has a home directory
-RUN adduser --uid 1001 --disabled-password --gecos "" jenkins
-# Install the SDK and NDK
-USER jenkins
+# Grab what's needed in the SDK
+RUN sdkmanager --update
 
-# Install the Android SDK and NDK
-ENV ANDROID_HOME /home/jenkins/android-sdk
-ENV PATH ${PATH}:${ANDROID_HOME}/emulator:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
-ENV ANDROID_NDK /home/jenkins/android-ndk
+# Accept licenses before installing components, no need to echo y for each component
+# License is valid for all the standard components in versions installed from this file
+# Non-standard components: MIPS system images, preview versions, GDK (Google Glass) and Android Google TV require separate licenses, not accepted there
+RUN yes | sdkmanager --licenses
 
-RUN echo 'Installing Android SDK' && \
-    mkdir -p ${ANDROID_HOME} && cd ${ANDROID_HOME} && \
-    curl -sO https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_VERSION}.zip && \
-    unzip -q sdk-tools-linux-*.zip && \
-    rm sdk-tools-linux-*.zip && \
-    sdkmanager --update && \
-    yes | sdkmanager --licenses && \
-    yes | sdkmanager "tools" \
-                     "platform-tools" \
-                     "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
-                     "platforms;android-26" \
-                     "cmake;3.10.2.4988404"\
-                     "system-images;android-29;default;x86" && \
-    \
-    echo 'Installing Android NDK' && \
-    cd ${ANDROID_NDK}/.. && \
-    curl -sO http://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
-    unzip -q android-ndk-*-linux-x86_64.zip && \
-    rm android-ndk-*-linux-x86_64.zip && \
-    mv android-ndk-* android-ndk
+# SDKs
+# The `yes` is for accepting all non-standard tool licenses.
+# Please keep all sections in descending order!
+RUN yes | sdkmanager \
+    'build-tools;30.0.3' \
+    'emulator' \
+    'extras;android;m2repository' \
+    'platforms;android-30' \
+    'platform-tools' \
+    'ndk;21.0.6113669' \
+    'system-images;android-29;default;x86'
 
-RUN mkdir -p $NVM_DIR \
- && curl -s https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash \
- && . $NVM_DIR/nvm.sh \
- && nvm install 12 \
- && chmod a+rwX -R $NVM_DIR
+# Make the SDK universally writable
+RUN chmod -R a+rwX ${ANDROID_HOME}
 
 # Ensure a new enough version of CMake is available.
-RUN mkdir -p /home/jenkins/cmake && \
-    cd /home/jenkins/cmake && \
-    curl -O -J https://cmake.org/files/v3.17/cmake-3.17.5-Linux-x86_64.tar.gz &&\
-    tar zxf cmake-3.17.5-Linux-x86_64.tar.gz
-ENV PATH "/home/jenkins/cmake/cmake-3.17.5-Linux-x86_64/bin:$PATH"
+RUN cd /opt \
+    && wget -nv https://cmake.org/files/v3.18/cmake-3.18.4-Linux-x86_64.tar.gz \
+    && tar zxf cmake-3.18.4-Linux-x86_64.tar.gz
+
+ENV PATH "/opt/cmake-3.18.4-Linux-x86_64/bin:$PATH"
