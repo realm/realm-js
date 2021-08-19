@@ -101,3 +101,4 @@ RUN cd /opt \
     && tar zxf cmake-3.18.4-Linux-x86_64.tar.gz
 
 ENV PATH "/opt/cmake-3.18.4-Linux-x86_64/bin:$PATH"
+ENV CMAKE_PATH "/opt/cmake-3.18.4-Linux-x86_64/bin/cmake"
