@@ -61,10 +61,10 @@ inline bool hermes::Value::is_array_buffer(JsiEnv env, const JsiVal &value) {
 template <>
 inline bool hermes::Value::is_array_buffer_view(JsiEnv env,
                                                 const JsiVal &value) {
-  auto arrayBuffer = globalType(env, "arrayBuffer");
-  return arrayBuffer.getPropertyAsFunction(env, "isView")
-      .call(env, value)
-      .getBool();
+  return globalType(env, "ArrayBuffer")
+             .getPropertyAsFunction(env, "isView")
+             .call(env, value)
+             .getBool();
 }
 
 template <>
