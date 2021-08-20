@@ -36,7 +36,7 @@ template<typename JSEngine>
 class NativeAccessor;
 
 namespace dictionary {
-    /**
+/**
  * @brief Derive and apply property flags for \ref Dictionary.
  *
  * @param object_name Name of the Dictionary object (for error reporting purposes)
