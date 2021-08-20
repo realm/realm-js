@@ -218,7 +218,22 @@ inline hermes::String hermes::Value::to_string(JsiEnv env,
 
 template <>
 inline double hermes::Value::to_number(JsiEnv env, const JsiVal &value) {
-  double number = value->asNumber(); // XXX should do conversion
+  double number = std::nan("");
+  if (value->isNumber()) {
+    number = value->asNumber();
+  } else if (value->isString()) {
+    std::string string = value->toString(env).utf8(env);
+    try {
+      number = std::stod(string);
+    } catch (std::invalid_argument) {
+      // The number will remain nan and we defer to the check below to throw an exception.
+    }
+  } else if (is_date(env, value)) {
+    jsi::Object date = value->getObject(env);
+    number = date.getPropertyAsFunction(env, "getTime")
+                 .callWithThis(env, date)
+                 .getNumber();
+  }
   if (std::isnan(number)) {
     throw std::invalid_argument(
         util::format("Value '%1' not convertible to a number.",
