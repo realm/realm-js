@@ -99,6 +99,7 @@ jobs:
   react-native-ios:
     name: React Native on ${{matrix.platform.name}} (${{ matrix.type }})
     runs-on: macos-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -190,6 +191,7 @@ jobs:
         #TODO: Reactivate debug when builds are optimized
         #type: [Release, Debug]
         type: [Release]
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
         with:
