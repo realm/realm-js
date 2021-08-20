@@ -194,7 +194,7 @@ function getCmakePath() {
 
 function getCmakeVersion(sdkPath) {
   if ("CMAKE_PATH" in process.env) {
-    return child_process.execSync(`${process.env["CMAKE_PATH"]} --version | head -1 | cut -f3 -d' '`).toString().trim();
+    return exec(process.env["CMAKE_PATH"], [ "--version" ]).toString().split("\n")[0].split(" ")[2];
   }
   const cmakePath = `${sdkPath}/cmake`;
   let dirs = fs.readdirSync(cmakePath);
