@@ -8,7 +8,7 @@ export NPM_CONFIG_PROGRESS=false
 
 TARGET=$1
 CONFIGURATION=${2:-Release}
-NODE_VERSION=${3:-v12.20.0}
+NODE_VERSION=${3:-v12.22.5}
 
 if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
@@ -55,7 +55,7 @@ start_server() {
     echo "CI Run detected, not manually starting a server"
     return;
   fi
-  RUN_STITCH_IN_FORGROUND="$RUN_STITCH_IN_FORGROUND" ./scripts/start-sync-server.sh 
+  RUN_STITCH_IN_FORGROUND="$RUN_STITCH_IN_FORGROUND" ./scripts/start-sync-server.sh
 }
 
 stop_server() {
