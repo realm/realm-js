@@ -122,7 +122,7 @@ class JSI_EXPORT HostObject {
   virtual void set(Runtime&, const PropNameID& name, const Value& value);
 
   // When JS wants a list of property names for the HostObject, it will
-  // call this method. If it throws an exception, the call will throw a
+  // call this method. If it throws an exception, the call will thow a
   // JS \c Error object. The default implementation returns empty vector.
   virtual std::vector<PropNameID> getPropertyNames(Runtime& rt);
 };
@@ -184,35 +184,6 @@ class JSI_EXPORT Runtime {
   /// when the JSI API is sufficient.
   virtual Value evaluatePreparedJavaScript(
       const std::shared_ptr<const PreparedJavaScript>& js) = 0;
-
-  /// Drain the JavaScript VM internal Microtask (a.k.a. Job in ECMA262) queue.
-  ///
-  /// \param maxMicrotasksHint a hint to tell an implementation that it should
-  /// make a best effort not execute more than the given number. It's default
-  /// to -1 for infinity (unbounded execution).
-  /// \return true if the queue is drained or false if there is more work to do.
-  ///
-  /// When there were exceptions thrown from the execution of microtasks,
-  /// implementations shall discard the exceptional jobs. An implementation may
-  /// \throw a \c JSError object to signal the hosts to handle. In that case, an
-  /// implementation may or may not suspend the draining.
-  ///
-  /// Hosts may call this function again to resume the draining if it was
-  /// suspended due to either exceptions or the \p maxMicrotasksHint bound.
-  /// E.g. a host may repetitively invoke this function until the queue is
-  /// drained to implement the "microtask checkpint" defined in WHATWG HTML
-  /// event loop: https://html.spec.whatwg.org/C#perform-a-microtask-checkpoint.
-  ///
-  /// Note that error propagation is only a concern if a host needs to implement
-  /// `queueMicrotask`, a recent API that allows enqueueing aribitary functions
-  /// (hence may throw) as microtasks. Exceptions from ECMA-262 Promise Jobs are
-  /// handled internally to VMs and are never propagrated to hosts.
-  ///
-  /// This API offers some queue management to hosts at its best effort due to
-  /// different behaviors and limitations imposed by different VMs and APIs. By
-  /// the time this is written, An implementation may swallow exceptions (JSC),
-  /// may not pause (V8), and may not support bounded executions.
-  //virtual bool drainMicrotasks(int maxMicrotasksHint = -1) = 0;
 
   /// \return the global object
   virtual Object global() = 0;
@@ -962,12 +933,12 @@ class JSI_EXPORT Value {
 #if 0
   template <typename T>
 #else // XXX Realm modification
-  template <typename T, typename = std::enable_if_t<
-            !std::is_reference_v<T> && 
-            (std::is_base_of<Symbol, T>::value ||
-             std::is_base_of<String, T>::value ||
-             std::is_base_of<Object, T>::value)
-          >>
+  template <
+      typename T,
+      typename = std::enable_if_t<
+          std::is_base_of<Symbol, T>::value ||
+          std::is_base_of<String, T>::value ||
+          std::is_base_of<Object, T>::value>>
 #endif
   /* implicit */ Value(T&& other) : Value(kindOf(other)) {
     static_assert(
@@ -1033,8 +1004,8 @@ class JSI_EXPORT Value {
     return runtime.createValueFromJsonUtf8(json, length);
   }
 
-  /// \return according to the Strict Equality Comparison algorithm, see:
-  /// https://262.ecma-international.org/11.0/#sec-strict-equality-comparison
+  /// \return according to the SameValue algorithm see more here:
+  //  https://www.ecma-international.org/ecma-262/5.1/#sec-11.9.4
   static bool strictEquals(Runtime& runtime, const Value& a, const Value& b);
 
   Value& operator=(Value&& other) {
@@ -1323,4 +1294,4 @@ class JSI_EXPORT JSError : public JSIException {
 } // namespace jsi
 } // namespace facebook
 
-#include "jsi/jsi-inl.h"
+#include <jsi/jsi-inl.h>
