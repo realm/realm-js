@@ -15,6 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Using Realm Core v11.2.0 @ [5e128e9f](https://github.com/realm/realm-core/pull/4844/commits/5e128e9f9c81937aaa7e7d1429794983b16077aa)
+* Switch testing to node v12.22.5.
 * Enabled CI testing on Android.
 
 10.6.2-beta.1 Release notes (2021-8-12)
