@@ -4,8 +4,11 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    
+
     steps:
+      - name: Disable Analytics
+        run: |
+          echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
