@@ -28,39 +28,39 @@ const DictSchema = {
 };
 
 module.exports = {
-  // testDictionarySchema() {
-  //   // Test that short (JS) and canonical schema types yield
-  //   // the same results
-  //   const shorthandSchema = {
-  //     name: "ShorthandSchema",
-  //     properties: {
-  //       a: "string{}",
-  //       b: "{}",
-  //     },
-  //   };
+  testDictionarySchema() {
+    // Test that short (JS) and canonical schema types yield
+    // the same results
+    const shorthandSchema = {
+      name: "ShorthandSchema",
+      properties: {
+        a: "string{}",
+        b: "{}",
+      },
+    };
 
-  //   const canonicalSchema = {
-  //     name: "CanonicalSchema",
-  //     properties: {
-  //       a: { type: "dictionary", objectType: "string", optional: false },
-  //       b: { type: "dictionary", objectType: "mixed", optional: true },
-  //     },
-  //   };
+    const canonicalSchema = {
+      name: "CanonicalSchema",
+      properties: {
+        a: { type: "dictionary", objectType: "string", optional: false },
+        b: { type: "dictionary", objectType: "mixed", optional: true },
+      },
+    };
 
-  //   const canonicalRealm = new Realm({ schema: [canonicalSchema] });
-  //   const canSchema = canonicalRealm.schema;
-  //   canonicalRealm.close();
+    const canonicalRealm = new Realm({ schema: [canonicalSchema] });
+    const canSchema = canonicalRealm.schema;
+    canonicalRealm.close();
 
-  //   const shorthandRealm = new Realm({ schema: [shorthandSchema] });
-  //   const shSchema = shorthandRealm.schema;
-  //   shorthandRealm.close();
+    const shorthandRealm = new Realm({ schema: [shorthandSchema] });
+    const shSchema = shorthandRealm.schema;
+    shorthandRealm.close();
 
-  //   TestCase.assertEqual(
-  //     shSchema.properties,
-  //     canSchema.properties,
-  //     "Canonical and shorthand schemas should have identical properties",
-  //   );
-  // },
+    TestCase.assertEqual(
+      shSchema.properties,
+      canSchema.properties,
+      "Canonical and shorthand schemas should have identical properties",
+    );
+  },
 
   testDictionaryCreate() {
     //Shouldn't throw
