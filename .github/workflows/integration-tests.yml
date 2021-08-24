@@ -1,5 +1,8 @@
 name: Integration Tests
 
+env:
+  REALM_DISABLE_ANALYTICS: 1
+
 on:
   pull_request:
     paths:
@@ -30,9 +33,6 @@ jobs:
         #type: [release, debug]
         type: [release]
     steps:
-      - name: Disable Analytics
-        run: |
-          echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -75,9 +75,6 @@ jobs:
     name: Electron on Linux
     runs-on: ubuntu-latest
     steps:
-      - name: Disable Analytics
-        run: |
-          echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -114,9 +111,6 @@ jobs:
         type: [Release]
         platform: [{ name: ios, build-configuration: simulator }, { name: catalyst, build-configuration: catalyst }]
     steps:
-      - name: Disable Analytics
-        run: |
-          echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -202,12 +196,6 @@ jobs:
         type: [Release]
     timeout-minutes: 60
     steps:
-      - name: Disable Analytics
-        run: |
-          echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
-      - name: Disable Analytics
-        run: |
-          echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
