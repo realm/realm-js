@@ -97,7 +97,7 @@ inline static void derive_property_type(StringData const &object_name, Property 
         if (is_array(prop.type)) {
             throw std::logic_error(util::format("Dictionary property '%1.%2' must have a non-list value type", object_name, prop.name));
         }
-        prop.type = PropertyType::Object | PropertyType::Dictionary;
+        prop.type = PropertyType::Object | PropertyType::Dictionary | PropertyType::Nullable;
     }
 }  // derive_property_type()
 

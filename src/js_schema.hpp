@@ -204,10 +204,14 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         // The type could be the name of another object type in the same schema.
         prop.type |= PropertyType::Object;
         prop.object_type = type;
+        // Dictionary of object properties are implicitly optional
+        if (is_dictionary(prop.type)) {
+            prop.type |= PropertyType::Nullable;
+        }
     }
 
     // Only Object properties are implicitly optional
-    if (prop.type == PropertyType::Object && !is_array(prop.type) && !is_set(prop.type) && !is_dictionary(prop.type)) {
+    if (prop.type == PropertyType::Object && !is_array(prop.type) && !is_set(prop.type)) {
         prop.type |= PropertyType::Nullable;
     }
 }
