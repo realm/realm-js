@@ -4,7 +4,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -17,6 +17,6 @@ jobs:
       - name: Install root package dependencies
         run: npm ci --ignore-scripts
       - name: Install subpackages dependencies
-        run: npm run lerna:bootstrap
+        run: npm run lerna:bootstrap -- --legacy-peer-deps
       - name: Run linting of subpackages
         run: npm run lerna:lint -- --no-bail --concurrency 1 --stream --no-prefix
