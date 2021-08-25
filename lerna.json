@@ -7,5 +7,6 @@
     "integration-tests/environments/*"
   ],
   "version": "independent",
-  "forceLocal": true
+  "forceLocal": true,
+  "npmClientArgs": [ "--legacy-peer-deps" ]
 }
