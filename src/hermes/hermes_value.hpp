@@ -254,12 +254,13 @@ inline OwnedBinaryData hermes::Value::to_binary(JsiEnv env,
   }
 
   if (is_array_buffer_view(env, value)) {
-    // XXX TODO
-    throw std::runtime_error("Can only convert ArrayBuffer objects to binary");
+    auto buffer = obj.getPropertyAsObject(env, "buffer").getArrayBuffer(env);
+    size_t byteOffset = static_cast<size_t>(obj.getProperty(env, "byteOffset").asNumber());
+    size_t byteLength = static_cast<size_t>(obj.getProperty(env, "byteLength").asNumber());
+    return OwnedBinaryData(reinterpret_cast<const char *>(buffer.data(env) + byteOffset), byteLength);
   }
 
-  throw std::runtime_error(
-      "Can only convert ArrayBuffer and ArrayBufferView objects to binary");
+  throw std::runtime_error("Can only convert ArrayBuffer and ArrayBufferView objects to binary");
 }
 
 template <>
