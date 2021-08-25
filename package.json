@@ -45,7 +45,7 @@
     "CMakeLists.txt"
   ],
   "scripts": {
-    "lerna:bootstrap": "lerna bootstrap",
+    "lerna:bootstrap": "lerna bootstrap --legacy-peer-deps",
     "lerna:lint": "lerna run lint",
     "lerna:lint:fix": "lerna run lint --no-bail -- -- --fix",
     "lint": "eslint .",
