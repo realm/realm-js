@@ -49,8 +49,12 @@ public:
     }
 
     bool belongs_to_realm(std::shared_ptr<Realm> realm){
-        auto os_object = get_os_object();
-        return is_instance() && os_object && os_object->realm() == realm;
+        if (is_instance()) {
+            auto os_object = get_os_object();
+            return os_object && os_object->realm() == realm;
+        } else {
+            return false;
+        }
     }
 
     bool is_read_only(realm::CreatePolicy policy) {
