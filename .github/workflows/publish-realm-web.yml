@@ -9,7 +9,7 @@ jobs:
   test-build-and-publish:
     name: Test, build & publish
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -18,6 +18,9 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Install npm v7
         run: npm install -g npm@7
+      # lerna bootstrap doesn't fully support npm v7 (https://github.com/n8n-io/n8n/issues/1149#issuecomment-895985664)
+      - name: Peer dependencies like before npm v7
+        run: npm config set legacy-peer-deps true
       # Install the root package
       - run: npm ci
       # Bootstrap lerna sub-packages
