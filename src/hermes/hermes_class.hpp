@@ -316,7 +316,7 @@ public:
                             },
                             getOwnPropertyDescriptor(target, prop) {
                                 if (typeof(prop) != 'string' || !isNumber.test(prop))
-                                    return Reflect.getOwnPropertyDescriptor(target, prop)
+                                    return Reflect.getOwnPropertyDescriptor(...arguments);
                                 const index =  Number(prop);
                                 if (index >= 0 && index < target.length)
                                     return {
@@ -326,15 +326,15 @@ public:
                             },
                             get(target, prop, receiver) {
                                 if (typeof(prop) != 'string' || !isNumber.test(prop))
-                                    return Reflect.get(target, prop, receiver);
-                                return getter(target, Number(prop))
+                                    return Reflect.get(...arguments);
+                                return getter(target, Number(prop));
                             },
-                            set(target, prop, receiver, val) {
+                            set(target, prop, value, receiver) {
                                 if (typeof(prop) != 'string' || !isNumber.test(prop))
-                                    return Reflect.set(target, prop, receiver, val);
+                                    return Reflect.set(...arguments);
                                 if (!setter)
                                     return false;
-                                return setter(target, Number(prop), val)
+                                return setter(target, Number(prop), value);
                             }
                         }
                         return (obj) => new Proxy(obj, handler);
