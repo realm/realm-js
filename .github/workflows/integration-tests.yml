@@ -41,9 +41,6 @@ jobs:
         # TODO: Remove the following line once we've found a workaround for https://github.com/dotnet/msbuild/issues/5726
         if: ${{ matrix.os != 'windows-latest' }}
         run: npm install -g npm@7
-      # lerna bootstrap doesn't fully support npm v7 (https://github.com/n8n-io/n8n/issues/1149#issuecomment-895985664)
-      - name: Peer dependencies like before npm v7
-        run: npm config set legacy-peer-deps true
       # The following is a noop on non-windows runners
       - name: Install Microsoft Visual C++ cmd tools
         uses: ilammy/msvc-dev-cmd@v1
@@ -84,9 +81,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Install npm v7
         run: npm install -g npm@7
-      # lerna bootstrap doesn't fully support npm v7 (https://github.com/n8n-io/n8n/issues/1149#issuecomment-895985664)
-      - name: Peer dependencies like before npm v7
-        run: npm config set legacy-peer-deps true
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
@@ -123,9 +117,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Install npm v7
         run: npm install -g npm@7
-      # lerna bootstrap doesn't fully support npm v7 (https://github.com/n8n-io/n8n/issues/1149#issuecomment-895985664)
-      - name: Peer dependencies like before npm v7
-        run: npm config set legacy-peer-deps true
       # Setup tools
       - name: Install tools
         run: brew install watchman
@@ -211,9 +202,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Install npm v7
         run: npm install -g npm@7
-      # lerna bootstrap doesn't fully support npm v7 (https://github.com/n8n-io/n8n/issues/1149#issuecomment-895985664)
-      - name: Peer dependencies like before npm v7
-        run: npm config set legacy-peer-deps true
       # Setup tools
       - name: Install tools
         run: brew install watchman
