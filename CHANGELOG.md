@@ -17,6 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Pinning BSON to v4.4.1.
 
 10.6.2-beta.1 Release notes (2021-8-12)
 =============================================================
