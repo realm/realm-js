@@ -10,11 +10,13 @@ on:
       # No need to run when updating documentation
       - '!**.md'
 
+env:
+  REALM_DISABLE_ANALYTICS: 1
+
 jobs:
   job:
     name: Build & test
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1

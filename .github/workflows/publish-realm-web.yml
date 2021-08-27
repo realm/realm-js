@@ -4,12 +4,13 @@ on:
   push:
     tags:
       - realm-web-v*
+env:
+  REALM_DISABLE_ANALYTICS: 1
 
 jobs:
   test-build-and-publish:
     name: Test, build & publish
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1

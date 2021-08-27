@@ -1,5 +1,8 @@
 name: Integration Tests
 
+env:
+  REALM_DISABLE_ANALYTICS: 1
+
 on:
   pull_request:
     paths:
