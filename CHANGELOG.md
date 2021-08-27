@@ -18,6 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Pinning BSON to v4.4.1.
+* Disable analytics if `NODE_ENV` is set to `"production"` or `"test"`. Since `NODE_ENV` is used by many commonly used JavaScript frameworks, this should help us to get a better signal-to-noise ratio in our builders' statistics.
 
 10.6.2-beta.1 Release notes (2021-8-12)
 =============================================================
