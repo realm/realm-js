@@ -23,7 +23,7 @@
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js",
     "prepare": "npm run install-local && pod-install",
-    "install-local": "npm_config_ignore_scripts=true install-local"
+    "install-local": "npm_config_legacy_peer_deps=true npm_config_ignore_scripts=true install-local"
   },
   "dependencies": {
     "@react-native-community/art": "^1.2.0",
