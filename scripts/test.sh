@@ -257,6 +257,7 @@ if [[ "$(command -v nvm)" ]]; then
   fi
   set -e
   echo nvm install of $NODE_VERSION completed
+  npm install -g npm@7
 fi
 set_nvm_default() {
   if [ -n "$REALM_SET_NVM_ALIAS" ] && [[ "$(command -v nvm)" ]]; then
@@ -293,7 +294,7 @@ case "$TARGET" in
   start_server
 
   pushd tests/ReactTestApp
-  npm ci --no-optional
+  npm ci --legacy-peer-deps --no-optional
   ./node_modules/.bin/install-local
   open_chrome
   start_packager
@@ -314,7 +315,7 @@ case "$TARGET" in
   start_server
 
   pushd tests/ReactTestApp
-  npm ci --no-optional
+  npm ci --legacy-peer-deps --no-optional
   ./node_modules/.bin/install-local
   open_chrome
   start_packager
@@ -334,7 +335,7 @@ case "$TARGET" in
   set_nvm_default
 
   pushd examples/ReactExample
-  npm ci
+  npm ci --legacy-peer-deps
   ./node_modules/.bin/install-local
   open_chrome
   start_packager
@@ -349,7 +350,7 @@ case "$TARGET" in
   start_server
   ;;
 "test-android")
-  npm ci --ignore-scripts
+  npm ci --legacy-peer-deps --ignore-scripts
   npm run check-environment
 
   # building only for x86 emulator to speed CI
@@ -358,7 +359,7 @@ case "$TARGET" in
 
   pushd tests/ReactTestApp
   echo "installing ReactTestApp dependencies"
-  npm ci --no-optional
+  npm ci --legacy-peer-deps --no-optional
   npx install-local
 
   echo "Adb devices"
