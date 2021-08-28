@@ -1,11 +1,11 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Sync logs now contain information about what object/changeset was being applied when the exception was thrown. ([realm/realm-core#4836](https://github.com/realm/realm-core/issues/4836))
+* Query parser now accepts `BETWEEN` operator. It can be used like `Age BETWEEN {20, 60}` which means "'Age' must be in the open interval ]20;60[". ([realm/realm-core#4268](https://github.com/realm/realm-core/issues/4268) and [#805](https://github.com/realm/realm-js/issues/805))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed history corruption when replacing an embedded object in a list. ([realm/realm-core#4845](https://github.com/realm/realm-core/issues/4845), since v10.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
+* Upgraded Realm Core from Upgraded Realm Core from v11.0.4 @ commit [be69223](https://github.com/realm/realm-core/commit/be6922394a57077d90723eba60c98ae9b2aa0eae) to v11.3.0. ([#3924](https://github.com/realm/realm-js/issues/3924))
 * Pinning BSON to v4.4.1.
 * Disable analytics if `NODE_ENV` is set to `"production"` or `"test"`. Since `NODE_ENV` is used by many commonly used JavaScript frameworks, this should help us to get a better signal-to-noise ratio in our builders' statistics.
 * Using Realm Core v11.2.0 @ [5e128e9f](https://github.com/realm/realm-core/pull/4844/commits/5e128e9f9c81937aaa7e7d1429794983b16077aa)
