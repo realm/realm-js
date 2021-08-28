@@ -5,7 +5,7 @@ import groovy.json.JsonOutput
 repoName = 'realm-js'
 
 platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'darwin-arm64', 'linux-x64', 'linux-arm']
-nodeTestVersion = '12.20.0'
+nodeTestVersion = '12.22.5'
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
 //For more see https://www.npmjs.com/package/spectron
@@ -129,6 +129,7 @@ stage('test') {
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
+  parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
   parallelExecutors["React Native Catalyst Release"] = testMacOS('catalyst-tests Release')
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
