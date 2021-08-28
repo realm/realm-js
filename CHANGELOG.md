@@ -1,8 +1,9 @@
-x.x.x Release notes (yyyy-MM-dd)
+X.Y.Z Release notes (YYYY-M-DD)
 =============================================================
 ### Enhancements
 * Sync logs now contain information about what object/changeset was being applied when the exception was thrown. ([realm/realm-core#4836](https://github.com/realm/realm-core/issues/4836))
 * Query parser now accepts `BETWEEN` operator. It can be used like `Age BETWEEN {20, 60}` which means "'Age' must be in the open interval ]20;60[". ([realm/realm-core#4268](https://github.com/realm/realm-core/issues/4268) and [#805](https://github.com/realm/realm-js/issues/805))
+* Changed error code for wrong username/password to 50.  ([realm/realm-core#4581](https://github.com/realm/realm-core/issues/4581))
 
 ### Fixed
 * Fixed history corruption when replacing an embedded object in a list. ([realm/realm-core#4845](https://github.com/realm/realm-core/issues/4845), since v10.0.0)
