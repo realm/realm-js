@@ -304,7 +304,9 @@ public:
                 env,
                 "value",
                 globalType(env, "Function").call(env, "getter", "setter", R"(
-                        const isNumber = /^[-+]?\d+$/;
+                        function getIndex(prop) {
+                            return typeof prop === "string" ? Number(prop) : Number.NaN;
+                        }
                         const handler = {
                             ownKeys(target) {
                                 const out = Reflect.ownKeys(target)
@@ -315,26 +317,33 @@ public:
                                 return out;
                             },
                             getOwnPropertyDescriptor(target, prop) {
-                                if (typeof(prop) != 'string' || !isNumber.test(prop))
+                                const index = getIndex(prop);
+                                if (Number.isNaN(index)) {
                                     return Reflect.getOwnPropertyDescriptor(...arguments);
-                                const index =  Number(prop);
-                                if (index >= 0 && index < target.length)
+                                } else if (index >= 0 && index < target.length) {
                                     return {
                                         configurable: true,
                                         enumerable: true,
                                     };
+                                }
                             },
                             get(target, prop, receiver) {
-                                if (typeof(prop) != 'string' || !isNumber.test(prop))
+                                const index = getIndex(prop);
+                                if (Number.isNaN(index)) {
                                     return Reflect.get(...arguments);
-                                return getter(target, Number(prop));
+                                } else if (index >= 0 && index < target.length) {
+                                    return getter(target, index);
+                                }
                             },
                             set(target, prop, value, receiver) {
-                                if (typeof(prop) != 'string' || !isNumber.test(prop))
+                                const index = getIndex(prop);
+                                if (Number.isNaN(index)) {
                                     return Reflect.set(...arguments);
-                                if (!setter)
+                                } else if (setter) {
+                                    return setter(target, index, value);
+                                } else {
                                     return false;
-                                return setter(target, Number(prop), value);
+                                }
                             }
                         }
                         return (obj) => new Proxy(obj, handler);
