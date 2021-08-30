@@ -17,15 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #import <Foundation/Foundation.h>
-#import <JavaScriptCore/JavaScriptCore.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef void (^RealmReactEventHandler)(id message);
-
-JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create);
 
 @interface RealmReact : NSObject
 
