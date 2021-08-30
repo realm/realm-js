@@ -30,47 +30,16 @@
 
 #include <iostream>
 #import "jsi/jsi.h"
-//#import "hermes_init.hpp"
+#import "hermes_init.h"
 
-namespace jsi = facebook::jsi;
-extern "C" void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports);
-
-@interface NSObject ()
-- (instancetype)initWithJSContext:(JSContext *)context;
-- (instancetype)initWithJSContext:(JSContext *)context onThread:(NSThread *)thread;
-- (JSContext *)context;
-@end
+// namespace jsi = facebook::jsi;
+// extern "C" void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports);
 
 // the part of the RCTCxxBridge private class we care about
 @interface RCTBridge (Realm_RCTCxxBridge)
-- (JSGlobalContextRef)jsContextRef;
+// - (JSGlobalContextRef)jsContextRef;
 - (void *)runtime;
 @end
-
-extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
-    Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
-    if (!contextIvar) {
-        return NULL;
-    }
-
-    id rctJSContext = object_getIvar(executor, contextIvar);
-    if (!rctJSContext && create) {
-        Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-        if ([RCTJavaScriptContext instancesRespondToSelector:@selector(initWithJSContext:onThread:)]) {
-            // for RN 0.28.0+
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new] onThread:[NSThread currentThread]];
-        }
-        else {
-            // for RN < 0.28.0
-            NSCAssert([RCTJavaScriptContext instancesRespondToSelector:@selector(initWithJSContext:)], @"React Native version too old");
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new]];
-        }
-
-        object_setIvar(executor, contextIvar, rctJSContext);
-    }
-
-    return [rctJSContext context].JSGlobalContextRef;
-}
 
 @interface RealmReact () <RCTBridgeModule>
 @end
@@ -138,6 +107,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
     [self performSelectorOnMainThread:@selector(invalidate) withObject:nil waitUntilDone:YES];
 }
 
+/*
 typedef JSGlobalContextRef (^JSContextRefExtractor)();
 
 void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
@@ -152,6 +122,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
 
     // RJSInitializeInContext(jsContextExtractor());
 }
+*/
 
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
@@ -177,6 +148,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
         auto exports = jsi::Object(rt);
         realm_hermes_init(rt, exports);
         
+        /*
         [bridge dispatchBlock:^{
             __typeof__(self) self = weakSelf;
             __typeof__(bridge) bridge = weakBridge;
@@ -201,22 +173,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
                 return static_cast<RealmJSCRuntime*>(bridge.runtime)->ctx_;
             });
         } queue:RCTJSThread];
-    } else { // React Native 0.44 and older
-        id<RCTJavaScriptExecutor> executor = [bridge valueForKey:@"javaScriptExecutor"];
-        __weak __typeof__(self) weakSelf = self;
-        __weak __typeof__(executor) weakExecutor = executor;
-
-        [executor executeBlockOnJavaScriptQueue:^{
-            __typeof__(self) self = weakSelf;
-            __typeof__(executor) executor = weakExecutor;
-            if (!self || !executor) {
-                return;
-            }
-
-            _initializeOnJSThread(^ {
-                return RealmReactGetJSGlobalContextForExecutor(executor, true);
-            });
-        }];
+        */
     }
 }
 
