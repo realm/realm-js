@@ -294,8 +294,8 @@ case "$TARGET" in
   start_server
 
   pushd tests/ReactTestApp
-  npm ci --legacy-peer-deps --no-optional
-  ./node_modules/.bin/install-local
+  npm ci --no-optional
+  npx install-local
   open_chrome
   start_packager
 
@@ -315,8 +315,8 @@ case "$TARGET" in
   start_server
 
   pushd tests/ReactTestApp
-  npm ci --legacy-peer-deps --no-optional
-  ./node_modules/.bin/install-local
+  npm ci --no-optional
+  npx install-local
   open_chrome
   start_packager
 
@@ -335,8 +335,8 @@ case "$TARGET" in
   set_nvm_default
 
   pushd examples/ReactExample
-  npm ci --legacy-peer-deps
-  ./node_modules/.bin/install-local
+  npm ci
+  npx install-local
   open_chrome
   start_packager
 
@@ -350,7 +350,7 @@ case "$TARGET" in
   start_server
   ;;
 "test-android")
-  npm ci --legacy-peer-deps --ignore-scripts
+  npm ci --ignore-scripts
   npm run check-environment
 
   # building only for x86 emulator to speed CI
@@ -359,7 +359,7 @@ case "$TARGET" in
 
   pushd tests/ReactTestApp
   echo "installing ReactTestApp dependencies"
-  npm ci --legacy-peer-deps --no-optional
+  npm ci --no-optional
   npx install-local
 
   echo "Adb devices"
@@ -423,7 +423,7 @@ case "$TARGET" in
   export npm_config_runtime=electron
   export npm_config_disturl=https://atom.io/download/electron
   npm ci --realm_enable_sync
-  ./node_modules/.bin/install-local
+  npx install-local
 
   npm test -- --process=main
 
