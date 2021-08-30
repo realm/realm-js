@@ -9,6 +9,11 @@
 * Fixed history corruption when replacing an embedded object in a list. ([realm/realm-core#4845](https://github.com/realm/realm-core/issues/4845), since v10.0.0)
 * Fixed `Invalid data type` assertion failure in the sync client when adding an existing `mixed` property when it already exists locally. ([realm/realm-core#4873](https://github.com/realm/realm-core/issues/4873), since v10.5.0)
 * Fixed a crash when accessing the lock file during deletion of a Realm on Windows if the folder does not exist. ([realm/realm-core#4855](https://github.com/realm/realm-core/pull/4855))
+* Fixed a crash when an object which is linked to by a `mixed `is invalidated (sync only). ([#4828](https://github.com/realm/realm-core/pull/4828), since 10.5.0)
+* Fixed a rare crash when setting a mixed link for the first time which would trigger if the link was to the same table. ([#4828](https://github.com/realm/realm-core/pull/4828), since v10.5.0)
+* User profile now correctly persisted between runs. ([#3561](https://github.com/realm/realm-js/issues/3561), since v10.0.0)
+* When updating a property of list of embedded objects, previous value is not cleared and might lead to an inconsistent state (sync only). ([realm/realm-core#4844](https://github.com/realm/realm-core/pull/4844))
+
 
 ### Compatibility
 * MongoDB Realm Cloud.
