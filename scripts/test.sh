@@ -297,7 +297,7 @@ case "$TARGET" in
 
   pushd tests/ReactTestApp
   npm ci --no-optional
-  npx install-local
+  npm run install-local
   open_chrome
   start_packager
 
@@ -318,7 +318,7 @@ case "$TARGET" in
 
   pushd tests/ReactTestApp
   npm ci --no-optional
-  npx install-local
+  npm run install-local
   open_chrome
   start_packager
 
@@ -338,7 +338,7 @@ case "$TARGET" in
 
   pushd examples/ReactExample
   npm ci
-  ./node_modules/.bin/install-local
+  npm run install-local
   open_chrome
   start_packager
 
@@ -362,7 +362,7 @@ case "$TARGET" in
   pushd tests/ReactTestApp
   echo "installing ReactTestApp dependencies"
   npm ci --no-optional
-  npx install-local
+  npm run install-local
 
   echo "Adb devices"
   adb devices
