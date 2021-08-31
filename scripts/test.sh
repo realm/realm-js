@@ -267,6 +267,9 @@ set_nvm_default() {
   fi
 }
 
+# use npm v7
+npm install -g npm@7
+
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
 
@@ -294,7 +297,7 @@ case "$TARGET" in
 
   pushd tests/ReactTestApp
   npm ci --no-optional
-  ./node_modules/.bin/install-local
+  npm run install-local
   open_chrome
   start_packager
 
@@ -315,7 +318,7 @@ case "$TARGET" in
 
   pushd tests/ReactTestApp
   npm ci --no-optional
-  ./node_modules/.bin/install-local
+  npm run install-local
   open_chrome
   start_packager
 
@@ -335,7 +338,7 @@ case "$TARGET" in
 
   pushd examples/ReactExample
   npm ci
-  ./node_modules/.bin/install-local
+  npm run install-local
   open_chrome
   start_packager
 
@@ -359,7 +362,7 @@ case "$TARGET" in
   pushd tests/ReactTestApp
   echo "installing ReactTestApp dependencies"
   npm ci --no-optional
-  npx install-local
+  npm run install-local
 
   echo "Adb devices"
   adb devices

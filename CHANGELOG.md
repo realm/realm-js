@@ -1,11 +1,19 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.7.0 Release notes (2021-8-30)
 =============================================================
 ### Enhancements
-* None.
+* Sync logs now contain information about what object/changeset was being applied when the exception was thrown. ([realm/realm-core#4836](https://github.com/realm/realm-core/issues/4836))
+* Query parser now accepts `BETWEEN` operator. It can be used like `Age BETWEEN {20, 60}` which means "'Age' must be in the open interval ]20;60[". ([realm/realm-core#4268](https://github.com/realm/realm-core/issues/4268) and [#805](https://github.com/realm/realm-js/issues/805))
+* Changed error code for wrong username/password to 50. ([realm/realm-core#4581](https://github.com/realm/realm-core/issues/4581))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed history corruption when replacing an embedded object in a list. ([realm/realm-core#4845](https://github.com/realm/realm-core/issues/4845), since v10.0.0)
+* Fixed `Invalid data type` assertion failure in the sync client when adding an existing `mixed` property when it already exists locally. ([realm/realm-core#4873](https://github.com/realm/realm-core/issues/4873), since v10.5.0)
+* Fixed a crash when accessing the lock file during deletion of a Realm on Windows if the folder does not exist. ([realm/realm-core#4855](https://github.com/realm/realm-core/pull/4855))
+* Fixed a crash when an object which is linked to by a `mixed `is invalidated (sync only). ([#4828](https://github.com/realm/realm-core/pull/4828), since 10.5.0)
+* Fixed a rare crash when setting a mixed link for the first time which would trigger if the link was to the same table. ([#4828](https://github.com/realm/realm-core/pull/4828), since v10.5.0)
+* User profile now correctly persisted between runs. ([#3561](https://github.com/realm/realm-js/issues/3561), since v10.0.0)
+* When updating a property of list of embedded objects, previous value is not cleared and might lead to an inconsistent state (sync only). ([realm/realm-core#4844](https://github.com/realm/realm-core/pull/4844))
+
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -16,7 +24,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Pinning BSON to v4.4.1.
 * Disable analytics if `NODE_ENV` is set to `"production"` or `"test"`. Since `NODE_ENV` is used by many commonly used JavaScript frameworks, this should help us to get a better signal-to-noise ratio in our builders' statistics.
-* Using Realm Core v11.2.0 @ [5e128e9f](https://github.com/realm/realm-core/pull/4844/commits/5e128e9f9c81937aaa7e7d1429794983b16077aa)
+* Upgraded Realm Core v11.2.0 @ [5e128e9f](https://github.com/realm/realm-core/pull/4844/commits/5e128e9f9c81937aaa7e7d1429794983b16077aa) to v11.3.1.
 * Switch testing to node v12.22.5.
 * Enabled CI testing on Android.
 

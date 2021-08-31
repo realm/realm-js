@@ -331,4 +331,27 @@ module.exports = {
       TestCase.assertEqual(filtered.length, 1, `filtered objects should contain exactly 1 of new UUID("${uuidStr}")`);
     });
   },
+
+  testBetween: function () {
+    const intSchema = {
+      name: "IntSchema",
+      properties: {
+        value: "int",
+      },
+    };
+
+    let realm = new Realm({ schema: [intSchema] });
+    realm.write(() => {
+      for (let i = 0; i < 10; i++) {
+        realm.create(intSchema.name, { value: i });
+      }
+    });
+
+    let range = realm.objects(intSchema.name).filtered("value BETWEEN {5, 8}"); // 6, 7
+    TestCase.assertEqual(range.length, 2);
+    TestCase.assertEqual(range[0].value, 6);
+    TestCase.assertEqual(range[1].value, 7);
+
+    realm.close();
+  },
 };
