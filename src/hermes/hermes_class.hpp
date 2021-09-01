@@ -244,6 +244,12 @@ public:
             .asObject(env).asFunction(env)
         );
 
+        js::Context<js::hermes::Types>::register_invalidator([] {
+            // Ensure the static constructor is destructed when the runtime goes away.
+            // This is to avoid the reassignment of s_ctor throwing because the runtime has disappeared.
+            s_ctor.reset();
+        });
+
         for (auto&& [name, prop] : s_type.static_properties) {
             auto desc = jsi::Object(env);
             if (prop.getter) {
