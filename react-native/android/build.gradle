@@ -48,6 +48,11 @@ android {
         minSdkVersion rootProject.hasProperty("minSdkVersion") ? rootProject.minSdkVersion : 16
         targetSdkVersion rootProject.hasProperty("targetSdkVersion") ? rootProject.targetSdkVersion : 28
     }
+    buildTypes {
+        debug {
+            jniDebuggable true
+        }
+    }
 
     tasks.withType(JavaCompile) {
         compileTask -> compileTask.dependsOn forwardDebugPort
