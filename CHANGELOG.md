@@ -1,11 +1,29 @@
-10.20.0-alpha.0 Release notes (2021-9-1)
+10.20.0-alpha.1 Release notes (2021-9-22)
+=============================================================
+NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
+NOTE: This is an early (alpha) release with Hermes/JSI support: We expect crashes and bugs.
+
+### Enhancements
+* Support arithmetic operations (+, -, *, /) in queries. Operands can be properties and/or constants of numeric types (`int`, `float`, `double` or `Decimal128`). You can now say something like `(age + 5) * 2 > child.age`.
+* Adding support for Hermes on Android.
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Lint react-native templates and ensure they are checked by the CI.
+* Small fix to Jenkins to publish Docker image for Raspberry Pi.
+
+10.20.0-alpha.0 Release notes (2021-9-2)
 =============================================================
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
 NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
 
-
 ### Enhancements
-* Support arithmetic operations (+, -, *, /) in queries. Operands can be properties and/or constants of numeric types (`int`, `float`, `double` or `Decimal128`). You can now say something like `(age + 5) * 2 > child.age`.
+* Adding support for Hermes (iOS only).
 
 ### Fixed
 * Opening a Realm with a schema that has an orphaned embedded object type performed an extra empty write transaction. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115), since v10.5.0)
