@@ -17,6 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Disable analytics if the `CI` environment variable is set to some value.
 
 10.7.0 Release notes (2021-8-30)
 =============================================================
