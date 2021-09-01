@@ -79,6 +79,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
     static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void remove_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void remove_all_listeners(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void get_property_type(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     static void get_realm(ContextType, ObjectType, ReturnValue &);
 
@@ -101,6 +102,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
+        {"getPropertyType", wrap<get_property_type>},
     };
 
     PropertyMap<T> const properties = {
@@ -415,6 +417,24 @@ void RealmObjectClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_
     realm_object->m_notification_tokens.clear();
 }
 
+template<typename T>
+void RealmObjectClass<T>::get_property_type(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+
+    std::string property_name = Value::validated_to_string(ctx, args[0], "propertyName");
+    
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+
+    const Property* prop = realm_object->get_object_schema().property_for_public_name(property_name);
+    if (!prop) {
+        throw std::invalid_argument(util::format("No such property: %1", property_name));
+    }
+
+    return_value.set(prop->type_string());
+}
 
 } // js
 } // realm

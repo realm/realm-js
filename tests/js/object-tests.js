@@ -724,4 +724,36 @@ module.exports = {
       }, 2000);
     });
   },
+
+  testGetPropertyType: function () {
+    const realm = new Realm({
+      schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
+    });
+    let obj;
+
+    realm.write(function () {
+      obj = realm.create("AllTypesObject", allTypesValues);
+    });
+    
+    TestCase.assertEqual(obj.getPropertyType("boolCol"), "bool");
+    TestCase.assertEqual(obj.getPropertyType("floatCol"), "float");
+    TestCase.assertEqual(obj.getPropertyType("doubleCol"), "double");
+    TestCase.assertEqual(obj.getPropertyType("stringCol"), "string");
+    TestCase.assertEqual(obj.getPropertyType("dateCol"), "date");
+    TestCase.assertEqual(obj.getPropertyType("dataCol"), "data");
+    TestCase.assertEqual(obj.getPropertyType("objectCol"), "<TestObject>");
+
+    TestCase.assertEqual(obj.getPropertyType("boolArrayCol"), "array<bool>");
+    TestCase.assertEqual(obj.getPropertyType("floatArrayCol"), "array<float>");
+    TestCase.assertEqual(obj.getPropertyType("doubleArrayCol"), "array<double>");
+    TestCase.assertEqual(obj.getPropertyType("stringArrayCol"), "array<string>");
+    TestCase.assertEqual(obj.getPropertyType("dateArrayCol"), "array<date>");
+    TestCase.assertEqual(obj.getPropertyType("dataArrayCol"), "array<data>");
+    TestCase.assertEqual(obj.getPropertyType("objectArrayCol"), "array<TestObject>");
+
+    // property that does not exist
+    TestCase.assertThrowsException(() => {
+      obj.getPropertyType('foo');
+    }, new Error("No such property: foo"));
+  },
 };
