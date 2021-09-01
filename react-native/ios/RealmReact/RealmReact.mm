@@ -19,8 +19,10 @@
 #import "RealmReact.h"
 #import "RealmAnalytics.h"
 
+#import <realm-js-ios/hermes_init.h>
+
 #import <React/RCTBridge+Private.h>
-#import <React/RCTJavaScriptExecutor.h>
+#import <jsi/jsi.h>
 
 #import <objc/runtime.h>
 #import <arpa/inet.h>
@@ -28,16 +30,8 @@
 #import <netdb.h>
 #import <net/if.h>
 
-#include <iostream>
-#import "jsi/jsi.h"
-#import "hermes_init.h"
-
-// namespace jsi = facebook::jsi;
-// extern "C" void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports);
-
 // the part of the RCTCxxBridge private class we care about
 @interface RCTBridge (Realm_RCTCxxBridge)
-// - (JSGlobalContextRef)jsContextRef;
 - (void *)runtime;
 @end
 
@@ -100,29 +94,12 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 }
 
 - (void)invalidate {
-    // RJSInvalidateCaches();
+    realm_hermes_invalidate_caches();
 }
 
 - (void)dealloc {
     [self performSelectorOnMainThread:@selector(invalidate) withObject:nil waitUntilDone:YES];
 }
-
-/*
-typedef JSGlobalContextRef (^JSContextRefExtractor)();
-
-void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
-    // Make sure the previous JS thread is completely finished before continuing.
-    static __weak NSThread *s_currentJSThread;
-    while (s_currentJSThread && !s_currentJSThread.finished) {
-        [NSThread sleepForTimeInterval:0.1];
-    }
-    s_currentJSThread = [NSThread currentThread];
-    
-    jsContextExtractor();
-
-    // RJSInitializeInContext(jsContextExtractor());
-}
-*/
 
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
@@ -134,21 +111,9 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
     if (objc_lookUpClass("RCTWebSocketExecutor") && [bridge executorClass] == objc_lookUpClass("RCTWebSocketExecutor")) {
         @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported" userInfo:nil];
     } else if ([bridge isKindOfClass:objc_lookUpClass("RCTCxxBridge")] || [NSStringFromClass([bridge class]) isEqual: @"RCTCxxBridge"]) {
-        // probe for the new C++ bridge in React Native 0.45+
-        
-        // auto& rt = *static_cast<facebook::jsi::Runtime*>(bridge.runtime);
-        // auto exports = jsi::Object(rt);
-        // realm_hermes_init(rt, exports);
-
         __weak __typeof__(self) weakSelf = self;
         __weak __typeof__(bridge) weakBridge = bridge;
-        
-        // probe for the new C++ bridge in React Native 0.45+
-        auto& rt = *static_cast<facebook::jsi::Runtime*>(bridge.runtime);
-        auto exports = jsi::Object(rt);
-        realm_hermes_init(rt, exports);
-        
-        /*
+
         [bridge dispatchBlock:^{
             __typeof__(self) self = weakSelf;
             __typeof__(bridge) bridge = weakBridge;
@@ -156,24 +121,17 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
                 return;
             }
 
-            _initializeOnJSThread(^{
-                
-                // RN < 0.58 has a private method that returns the js context
-                if ([bridge respondsToSelector:@selector(jsContextRef)]) {
-                    return [bridge jsContextRef];
-                }
-                // RN 0.58+ wraps the js context in the jsi abstraction layer,
-                // which doesn't have any way to obtain the JSGlobalContextRef,
-                // so engage in some undefined behavior and slurp out the
-                // member variable
-                struct RealmJSCRuntime {
-                    virtual ~RealmJSCRuntime() = 0;
-                    JSGlobalContextRef ctx_;
-                };
-                return static_cast<RealmJSCRuntime*>(bridge.runtime)->ctx_;
-            });
+            // Make sure the previous JS thread is completely finished before continuing.
+            static __weak NSThread *s_currentJSThread;
+            while (s_currentJSThread && !s_currentJSThread.finished) {
+                [NSThread sleepForTimeInterval:0.1];
+            }
+            s_currentJSThread = [NSThread currentThread];
+
+            auto& rt = *static_cast<facebook::jsi::Runtime*>(bridge.runtime);
+            auto exports = jsi::Object(rt);
+            realm_hermes_init(rt, exports);
         } queue:RCTJSThread];
-        */
     }
 }
 

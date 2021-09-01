@@ -65,7 +65,7 @@ public:
 
     void set(const std::string& string)
     {
-        m_value = jsi::Value(m_env, str(m_env, string));
+        m_value = str(m_env, string).get();
     }
 
     void set(const char* c_str)
@@ -74,7 +74,7 @@ public:
             set_null();
         }
         else {
-            m_value = jsi::Value(m_env, str(m_env, c_str));
+            m_value = str(m_env, c_str).get();
         }
     }
 
