@@ -7,49 +7,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 /*
-* Class:      io_realm_react_RealmReactModule
-* Method:     setDefaultRealmFileDirectory
-*/
+ * Class:     io_realm_react_RealmReactModule
+ * Method:    setDefaultRealmFileDirectory
+ * Signature: (Ljava/lang/String;Landroid/content/res/AssetManager;)V
+ */
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
   (JNIEnv *, jclass, jstring, jobject);
 
 /*
  * Class:     io_realm_react_RealmReactModule
- * Method:    setupChromeDebugModeRealmJsContext
+ * Method:    install
+ * Signature: (J)V
  */
-JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugModeRealmJsContext
-  (JNIEnv *, jclass);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    processChromeDebugCommand
- */
-JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebugCommand
-  (JNIEnv *, jclass, jstring, jstring);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    tryRunTask
- */
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_tryRunTask
-(JNIEnv *, jclass);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    isContextInjected
- */
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected
-    (JNIEnv *, jclass);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    clearContextInjectedFlag
- */
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag
-  (JNIEnv *, jclass);
-
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install
+  (JNIEnv *, jclass, jlong);
 
 #ifdef __cplusplus
 }
