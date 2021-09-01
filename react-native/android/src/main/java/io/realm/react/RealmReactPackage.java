@@ -16,27 +16,47 @@
 
 package io.realm.react;
 
+import android.util.Log;
+
 import com.facebook.react.ReactPackage;
-import com.facebook.react.bridge.JavaScriptModule;
+import com.facebook.react.TurboReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.uimanager.ViewManager;
+import com.facebook.react.module.model.ReactModuleInfo;
+import com.facebook.react.module.model.ReactModuleInfoProvider;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-public class RealmReactPackage implements ReactPackage {
+public class RealmReactPackage extends TurboReactPackage implements ReactPackage {
     @Override
-    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Collections.<NativeModule>singletonList(new RealmReactModule(reactContext));
+    public NativeModule getModule(String name, final ReactApplicationContext reactContext) {
+        Log.d("RealmJS", "Asked to get module " + name);
+        if (name.equals(RealmReactModule.NAME)) {
+            return new RealmReactModule(reactContext);
+        } else {
+            return null;
+        }
     }
 
-    public List<Class<? extends JavaScriptModule>> createJSModules() {
-        return Collections.emptyList();
-    }
-
     @Override
-    public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-        return Collections.emptyList();
+    public ReactModuleInfoProvider getReactModuleInfoProvider() {
+        Log.d("RealmJS", "Asked to getReactModuleInfoProvider");
+        return new ReactModuleInfoProvider() {
+            @Override
+            public Map<String, ReactModuleInfo> getReactModuleInfos() {
+                Map reactModuleInfoMap = new HashMap();
+                reactModuleInfoMap.put(RealmReactModule.NAME, new ReactModuleInfo(
+                        RealmReactModule.NAME,
+                        "io.realm.react.RealmReactModule",
+                        false,
+                        false,
+                        false,
+                        false, // TODO: Should we be using this?
+                        true
+                ));
+                return reactModuleInfoMap;
+            }
+        };
     }
 }

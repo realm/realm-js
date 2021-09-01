@@ -26,6 +26,9 @@
 
 #include "js_realm.hpp"
 
+#include <realm/object-store/impl/realm_coordinator.hpp>
+#include <realm/object-store/sync/app.hpp>
+
 namespace realm::js::hermes {
 extern "C" void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports)
 {
@@ -33,6 +36,15 @@ extern "C" void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports)
     jsi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
     auto name = realm_constructor.getProperty(env, "name").asString(env);
     exports.setProperty(env, std::move(name), std::move(realm_constructor));
+}
+extern "C" void realm_hermes_invalidate_caches()
+{
+    // Close all cached Realms
+    realm::_impl::RealmCoordinator::clear_all_caches();
+    // Clear the Object Store App cache, to prevent instances from using a context that was released
+    realm::app::App::clear_cached_apps();
+    // Ensure all registered invalidators get notified that the runtime is going away.
+    realm::js::Context<realm::js::hermes::Types>::invalidate();
 }
 } // namespace realm::js::hermes
 
