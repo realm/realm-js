@@ -616,7 +616,7 @@ module.exports = {
 
     // able to return value from realm.write callback
     const foobar = realm.write(() => {
-      return { "foo": "bar" };
+      return { foo: "bar" };
     });
     TestCase.assertEqual(foobar.foo, "bar", "wrong foobar object property value");
 
