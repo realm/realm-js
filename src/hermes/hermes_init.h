@@ -18,7 +18,7 @@
 
 #pragma once
 
-#import "jsi/jsi.h"
+#import <jsi/jsi.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,6 +26,7 @@ extern "C" {
 
 namespace jsi = facebook::jsi;
 void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports);
+void realm_hermes_invalidate_caches();
 
 #ifdef __cplusplus
 }
