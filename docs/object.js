@@ -99,5 +99,5 @@ class Object {
    * @throws {Error} If property does not exist.
    * @since 10.8.0
    */
-   getPropertyType(propertyName) {}
+  getPropertyType(propertyName) {}
 }

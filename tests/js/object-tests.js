@@ -734,7 +734,7 @@ module.exports = {
     realm.write(function () {
       obj = realm.create("AllTypesObject", allTypesValues);
     });
-    
+
     TestCase.assertEqual(obj.getPropertyType("boolCol"), "bool");
     TestCase.assertEqual(obj.getPropertyType("floatCol"), "float");
     TestCase.assertEqual(obj.getPropertyType("doubleCol"), "double");
@@ -753,7 +753,7 @@ module.exports = {
 
     // property that does not exist
     TestCase.assertThrowsException(() => {
-      obj.getPropertyType('foo');
+      obj.getPropertyType("foo");
     }, new Error("No such property: foo"));
   },
 };
