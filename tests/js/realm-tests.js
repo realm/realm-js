@@ -609,6 +609,27 @@ module.exports = {
     });
   },
 
+  testRealmWriteReturn: function () {
+    const realm = new Realm({
+      schema: [schemas.TestObject],
+    });
+
+    // able to return value from realm.write callback
+    const foobar = realm.write(() => {
+      return { "foo": "bar" };
+    });
+    TestCase.assertEqual(foobar.foo, "bar", "wrong foobar object property value");
+
+    const testObject = realm.write(() => {
+      return realm.create("TestObject", { doubleCol: 1 });
+    });
+    // object was created
+    TestCase.assertEqual(1, realm.objects("TestObject").length);
+    // object was returned
+    const objects = realm.objects("TestObject");
+    TestCase.assertEqual(objects[0].doubleCol, testObject.doubleCol, "wrong test object property value");
+  },
+
   testRealmCreate: function () {
     const realm = new Realm({ schema: [schemas.TestObject] });
 

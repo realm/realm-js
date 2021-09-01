@@ -779,10 +779,10 @@ declare class Realm {
     removeAllListeners(name?: string): void;
 
     /**
-     * @param  {()=>void} callback
-     * @returns void
+     * @param  {()=>ReturnValueType} callback
+     * @returns {ReturnValueType}
      */
-    write(callback: () => void): void;
+    write<ReturnValueType>(callback: () => ReturnValueType): ReturnValueType;
 
     /**
      * @returns void

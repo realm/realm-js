@@ -138,6 +138,23 @@ describe("Realm objects", () => {
       const persons = realm.objects(PersonSchemaWithId.name);
       expect(persons.length).equals(1);
     });
+
+    it("can return a value on write", () => {
+      const realm = new Realm({ schema: [PersonSchema] });
+
+      const john = realm.write(() => {
+        return realm.create<IPerson>(PersonSchema.name, {
+          name: "John Doe",
+          age: 42,
+        });
+      });
+
+      // Expect John to be the one and only result
+      const persons = realm.objects(PersonSchema.name);
+      expect(persons.length).equals(1);
+      const [firstPerson] = persons;
+      expect(firstPerson).deep.equals(john);
+    });
   });
 
   describe("Class Model", () => {

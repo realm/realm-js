@@ -238,6 +238,7 @@ class Realm {
    *
    * Nested transactions (calling `write()` within `write()`) is not possible.
    * @param {function()} callback
+   * @returns {*} Returned value from the callback.
    */
   write(callback) {}
 
