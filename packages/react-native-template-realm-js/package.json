@@ -1,0 +1,16 @@
+{
+  "name": "react-native-template-realm-js",
+  "version": "0.0.1",
+  "description": "React Native Template Realm JS",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git",
+    "directory": "packages/react-native-template-realm-js"
+  },
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
+  "license": "MIT"
+}
