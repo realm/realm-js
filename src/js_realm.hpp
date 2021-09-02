@@ -1140,7 +1140,7 @@ void RealmClass<T>::write(ContextType ctx, ObjectType this_object, Arguments &ar
     realm->begin_transaction();
 
     try {
-        auto callback_return = Function<T>::call(ctx, callback, this_object, 0, nullptr);
+        auto const &callback_return = Function<T>::call(ctx, callback, this_object, 0, nullptr);
         return_value.set(callback_return);
     }
     catch (...) {
