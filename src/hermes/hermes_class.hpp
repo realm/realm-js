@@ -310,8 +310,13 @@ public:
                 env,
                 "value",
                 globalType(env, "Function").call(env, "getter", "setter", R"(
+                        const integerPattern = /^\d+$/;
                         function getIndex(prop) {
-                            return typeof prop === "string" ? Number(prop) : Number.NaN;
+                            if (typeof prop === "string" && integerPattern.test(prop)) {
+                                return parseInt(prop, 10);
+                            } else {
+                                return Number.NaN;
+                            }
                         }
                         const handler = {
                             ownKeys(target) {
