@@ -2,6 +2,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Synchronized Realms are no longer opened twice, cutting the address space and file descriptors used in half. ([realm/realm-core#4839](https://github.com/realm/realm-core/pull/4839))
+* `Realm.write()` now returns callback return value. ([#2237](https://github.com/realm/realm-js/issues/2237))
 
 ### Fixed
 * Fixed issue when opening a synced Realm is prevented by assertion "m_state == SyncUser::State::LoggedIn". ([realm/realm-core#4875](https://github.com/realm/realm-core/issues/4875), since v10.0.0)
