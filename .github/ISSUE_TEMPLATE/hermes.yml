@@ -1,5 +1,5 @@
 name: Hermes feedback
-description: Report feedback on the experience of using an early access release compatible with the Hermes JS engine.
+description: Report feedback on the experience of using an early access release compatible with the Hermes JS engine. See also [#3940](https://github.com/realm/realm-js/issues/3940).
 labels: [hermes]
 body:
   - type: markdown
