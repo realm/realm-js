@@ -1,11 +1,10 @@
-10.20.0-alpha.0 Release notes (2021-9-1)
+10.20.0-alpha.0 Release notes (2021-9-2)
 =============================================================
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
 NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
 
-
 ### Enhancements
-* None.
+* Adding support for Hermes (iOS only).
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
