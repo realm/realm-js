@@ -88,6 +88,8 @@ jobs:
       - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
       - run: npx lerna bootstrap --scope realm-electron-tests --include-dependencies
+        env:
+          npm_config_realm_local_prebuilds: ${{ github.workspace }}/prebuilds
       # Run tests (using xvfb-run to enable opening windows in a virtual framebuffer)
       - name: Run tests (Electron / Main)
         run: xvfb-run npm run test:main --prefix integration-tests/environments/electron
