@@ -1,14 +1,12 @@
-10.20.0-alpha.0 Release notes (2021-9-1)
+10.20.0-alpha.0 Release notes (2021-9-2)
 =============================================================
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
 NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
 
-
 ### Enhancements
-* None.
+* Adding support for Hermes (iOS only).
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
@@ -18,9 +16,7 @@ NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supp
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Realm Core v10.3.1
 * Disable analytics if the `CI` environment variable is set to some value.
 
 10.7.0 Release notes (2021-8-30)
