@@ -99,7 +99,7 @@ stage('pretest') {
 
 stage('build') {
     parallelExecutors = [:]
-    parallelExecutors["macOS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
+    parallelExecutors["OS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
     parallelExecutors["macOS arm NAPI ${nodeTestVersion}"] = buildMacOSArm { buildCommon(nodeTestVersion, it, '-- --arch=arm64') }
 
     parallelExecutors["Linux x86_64 NAPI ${nodeTestVersion}"] = buildLinux { buildCommon(nodeTestVersion, it) }
@@ -427,7 +427,7 @@ def testAndroid(target, postStep = null) {
 
 def testLinux(target, postStep = null, Boolean enableSync = false) {
   return {
-      node('docker') {
+    node('docker') {
       def reportName = "Linux ${target}"
       deleteDir()
       unstash 'source'
@@ -441,6 +441,9 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
                   // check the network connection to local mongodb before continuing to compile everything
                   sh "curl http://mongodb-realm:9090"
               }
+              dir('prebuilds') {
+                unstash 'prebuild-linux-x64'
+              }
               timeout(time: 1, unit: 'HOURS') {
                 sh "scripts/test.sh ${target}"
               }
@@ -449,8 +452,8 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
               }
               deleteDir()
               reportStatus(reportName, 'SUCCESS', 'Success!')
-            }
           }
+        }
       }
 
       try {
@@ -485,7 +488,11 @@ def testMacOS(target, postStep = null) {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-12.2.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1',
-               'REALM_DISABLE_SYNC_TESTS=1']) {
+               'REALM_DISABLE_SYNC_TESTS=1',
+               'npm_config_realm_local_prebuilds=./prebuilds']) {
+        dir('prebuilds') {
+          unstash 'prebuild-darwin-x64'
+        }
         doInside('./scripts/test.sh', target, postStep)
       }
     }
