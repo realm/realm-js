@@ -436,18 +436,20 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
 
       def buildSteps = { String dockerArgs = "" ->
           image.inside("-e HOME=/tmp ${dockerArgs}") {
-            if (enableSync) {
-                // check the network connection to local mongodb before continuing to compile everything
-                sh "curl http://mongodb-realm:9090"
+            withEnv(['npm_config_realm_local_prebuilds=./prebuilds']) {
+              if (enableSync) {
+                  // check the network connection to local mongodb before continuing to compile everything
+                  sh "curl http://mongodb-realm:9090"
+              }
+              timeout(time: 1, unit: 'HOURS') {
+                sh "scripts/test.sh ${target}"
+              }
+              if (postStep) {
+                postStep.call()
+              }
+              deleteDir()
+              reportStatus(reportName, 'SUCCESS', 'Success!')
             }
-            timeout(time: 1, unit: 'HOURS') {
-              sh "scripts/test.sh ${target}"
-            }
-            if (postStep) {
-              postStep.call()
-            }
-            deleteDir()
-            reportStatus(reportName, 'SUCCESS', 'Success!')
           }
       }
 
