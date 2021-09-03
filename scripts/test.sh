@@ -409,7 +409,7 @@ case "$TARGET" in
   test_temp_dir=$PWD # set it to be cleaned at exit
 
   pushd "$SRCROOT/tests"
-  npm ci
+  npm ci --build-from-source=realm --realm_enable_sync=${USE_REALM_SYNC} --use_realm_debug=${USE_REALM_DEBUG}
   npm run test
   popd
   stop_server
