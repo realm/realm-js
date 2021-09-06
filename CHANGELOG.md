@@ -17,6 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgraded Realm Core from v11.3.1 to v11.4.1. ([#3942](https://github.com/realm/realm-js/issues/3942))
+* Extend Jest test runner to cover opening and closing of a realm.
 * Disable analytics if the `CI` environment variable is set to some value.
 
 10.7.0 Release notes (2021-8-30)
