@@ -18,7 +18,7 @@
 
 #pragma once
 
-#import <jsi/jsi.h>
+#import "jsi/jsi.h"
 
 #ifdef __cplusplus
 extern "C" {
