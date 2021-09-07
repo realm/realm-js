@@ -57,8 +57,9 @@ class SendAnalyticsTask extends DefaultTask {
     def sendAnalytics() {
        try {
             def env = System.getenv()
-            def disableAnalytics= env['REALM_DISABLE_ANALYTICS']
-            if (disableAnalytics == null || disableAnalytics != "true") {
+            def disableAnalytics = env['REALM_DISABLE_ANALYTICS'] != null
+            def isCI = env['CI'] != null
+            if (!disableAnalytics && !isCI) {
                 send()
             }
        } catch(all) {}

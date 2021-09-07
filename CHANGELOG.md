@@ -4,7 +4,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
@@ -13,7 +12,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v11 (reads and upgrades previous file format).
 
 ### Internal
-* None.
+* Disable analytics if `NODE_ENV` is set to `"production"` or `"test"`. Since `NODE_ENV` is used by many commonly used JavaScript frameworks, this should help us to get a better signal-to-noise ratio in our builders' statistics.
+* Disable analytics if the `CI` environment variable is set to some value.
 
 6.1.7 Release notes (2021-3-13)
 =============================================================
