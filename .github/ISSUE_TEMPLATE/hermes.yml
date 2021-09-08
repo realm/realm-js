@@ -26,7 +26,7 @@ body:
   - type: dropdown
     id: repro
     attributes:
-      label: Can you reproduce the bug?
+      label: Can you reproduce a bug?
       options:
         - Yes, always
         - Yes, sometimes
