@@ -450,7 +450,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
             HANDLESCOPE(protected_ctx)
             ValueType callback_arguments[2] = {
                 Value::from_number(protected_ctx, transferred_bytes),
-                Value::from_number(protected_ctx, transferrable_bytes), 
+                Value::from_number(protected_ctx, transferrable_bytes),
             };
 
             Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
@@ -885,11 +885,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         if (Value::is_object(ctx, ssl_config_value)) {
             auto ssl_config_object = Value::to_object(ctx, ssl_config_value);
             populate_sync_config_for_ssl(ctx, ssl_config_object, *config.sync_config);
-        }
-
-        if (!config.encryption_key.empty()) {
-            config.sync_config->realm_encryption_key = std::array<char, 64>();
-            std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
         }
 
         config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
