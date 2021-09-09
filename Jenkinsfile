@@ -82,21 +82,6 @@ if (packagesExclusivelyChanged) {
   return
 }
 
-stage('pretest') {
-  parallelExecutors = [:]
-    parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
-    publishHTML([
-      allowMissing: false,
-      alwaysLinkToLastBuild: false,
-      keepAll: false,
-      reportDir: 'docs/output',
-      reportFiles: 'index.html',
-      reportName: 'Docs'
-    ])
-  })
-  parallel parallelExecutors
-}
-
 stage('build') {
     parallelExecutors = [:]
     parallelExecutors["OS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
@@ -111,6 +96,21 @@ stage('build') {
     parallelExecutors["iOS RN"] = buildiOS()
 
     parallel parallelExecutors
+}
+
+stage('pretest') {
+  parallelExecutors = [:]
+    parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
+    publishHTML([
+      allowMissing: false,
+      alwaysLinkToLastBuild: false,
+      keepAll: false,
+      reportDir: 'docs/output',
+      reportFiles: 'index.html',
+      reportName: 'Docs'
+    ])
+  })
+  parallel parallelExecutors
 }
 
 if (gitTag) {
