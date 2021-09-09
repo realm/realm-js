@@ -436,7 +436,7 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
 
       def buildSteps = { String dockerArgs = "" ->
           image.inside("-e HOME=/tmp ${dockerArgs}") {
-            withEnv(['npm_config_realm_local_prebuilds=./prebuilds']) {
+            withEnv(['npm_config_realm_local_prebuilds=prebuilds']) {
               if (enableSync) {
                   // check the network connection to local mongodb before continuing to compile everything
                   sh "curl http://mongodb-realm:9090"
@@ -489,7 +489,7 @@ def testMacOS(target, postStep = null) {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-12.2.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1',
                'REALM_DISABLE_SYNC_TESTS=1',
-               'npm_config_realm_local_prebuilds=./prebuilds']) {
+               'npm_config_realm_local_prebuilds=prebuilds']) {
         dir('prebuilds') {
           unstash 'prebuild-darwin-x64'
         }
