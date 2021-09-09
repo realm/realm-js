@@ -436,6 +436,7 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
 
       def buildSteps = { String dockerArgs = "" ->
           image.inside("-e HOME=/tmp ${dockerArgs}") {
+            withEnv(['npm_config_realm_local_prebuilds=./prebuilds']) {
               if (enableSync) {
                   // check the network connection to local mongodb before continuing to compile everything
                   sh "curl http://mongodb-realm:9090"
@@ -451,8 +452,8 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
               }
               deleteDir()
               reportStatus(reportName, 'SUCCESS', 'Success!')
+            }
           }
-        }
       }
 
       try {
