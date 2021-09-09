@@ -109,7 +109,11 @@ jobs:
         #TODO: Reactivate debug when builds are optimized
         #type: [Release, Debug]
         type: [Release]
-        platform: [{ name: ios, build-configuration: simulator }, { name: catalyst, build-configuration: catalyst }]
+        platform:
+          [
+            { name: ios, build-configuration: simulator },
+            { name: catalyst, build-configuration: catalyst },
+          ]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -142,7 +146,7 @@ jobs:
         name: Restore iOS build folder from cache
         with:
           path: react-native/ios/build
-          key: ios-build-dir-${matrix.platform.name}-${matrix.type}-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
+          key: ios-build-dir-${{matrix.platform.name}}-${{matrix.type}}-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
           restore-keys: |
             ios-build-dir-
       - uses: actions/cache@v2
@@ -150,17 +154,17 @@ jobs:
         id: cache-xcframework
         with:
           path: react-native/ios/realm-js-ios.xcframework
-          key: xcframework-${matrix.platform.name}-${matrix.type}-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
+          key: xcframework-${{matrix.platform.name}}-${{matrix.type}}-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
       - uses: actions/cache@v2
         name: Restore Xcode "derived data" from cache
         with:
           path: ~/Library/Developer/Xcode/DerivedData
-          key: xcode-derived-data-${matrix.platform.name}-${matrix.type}
+          key: xcode-derived-data-${{matrix.platform.name}}-${{matrix.type}}
       - uses: actions/cache@v2
         name: Restore CocoaPods from cache
         with:
           path: integration-tests/environments/react-native/ios/Pods
-          key: cocoapods-${matrix.platform.name}-${matrix.type}-${{ hashFiles('integration-tests/environments/react-native/ios/Podfile.lock') }}
+          key: cocoapods-${{matrix.platform.name}}-${{matrix.type}}-${{ hashFiles('integration-tests/environments/react-native/ios/Podfile.lock') }}
           restore-keys: | # Enables running from an old build
             cocoapods-
 
