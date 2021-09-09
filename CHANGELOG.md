@@ -1,11 +1,12 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Synchronized Realms are no longer opened twice, cutting the address space and file descriptors used in half. ([realm/realm-core#4839](https://github.com/realm/realm-core/pull/4839))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed issue when opening a synced Realm is prevented by assertion "m_state == SyncUser::State::LoggedIn". ([realm/realm-core#4875](https://github.com/realm/realm-core/issues/4875), since v10.0.0)
+* Fixed slow teardown of Realm by which interfered with Jest. ([#3620](https://github.com/realm/realm-js/issues/3620) and [#2993](https://github.com/realm/realm-js/issues/2993), since v1.0.0)
+* If an object with a null primary key was deleted by another sync client, the exception `KeyNotFound: No such object` could be triggered. ([realm/realm-core#4885](https://github.com/realm/realm-core/issues/4885), since v10.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -14,9 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.3.1 to v11.4.1. ([#3942](https://github.com/realm/realm-js/issues/3942))
 * Disable analytics if the `CI` environment variable is set to some value.
 
 10.7.0 Release notes (2021-8-30)
