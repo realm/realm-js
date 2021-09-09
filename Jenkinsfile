@@ -375,6 +375,9 @@ def doInside(script, target, postStep = null) {
         unstash 'source'
       }
     }
+    dir('prebuilds') {
+      unstash 'prebuild-darwin-x64'
+    }
     wrap([$class: 'AnsiColorBuildWrapper']) {
         timeout(time: 1, unit: 'HOURS') {
           sh "bash ${script} ${target}"
@@ -490,9 +493,6 @@ def testMacOS(target, postStep = null) {
                'REALM_SET_NVM_ALIAS=1',
                'REALM_DISABLE_SYNC_TESTS=1',
                'npm_config_realm_local_prebuilds=prebuilds']) {
-        dir('prebuilds') {
-          unstash 'prebuild-darwin-x64'
-        }
         doInside('./scripts/test.sh', target, postStep)
       }
     }
