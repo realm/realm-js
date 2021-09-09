@@ -401,7 +401,11 @@ case "$TARGET" in
 
 "node")
   npm run check-environment
-  npm ci --build-from-source=realm --realm_enable_sync=${USE_REALM_SYNC} --use_realm_debug=${USE_REALM_DEBUG}
+  if [ "$CI_RUN" == "true" ]; then
+    npm ci
+  else
+    npm ci --build-from-source=realm --realm_enable_sync=${USE_REALM_SYNC} --use_realm_debug=${USE_REALM_DEBUG}
+  fi
   start_server
 
   # Change to a temp directory.
