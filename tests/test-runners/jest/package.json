@@ -1,16 +1,9 @@
 {
   "scripts": {
-    "test": "jest --forceExit"
+    "test": "jest"
   },
   "devDependencies": {
-    "jest-cli": "^26.5.2",
+    "jest": "^27.1.0",
     "realm": "../../.."
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "unmockedModulePathPatterns": [
-      "realm"
-    ],
-    "testRegex": "test.js"
   }
 }
