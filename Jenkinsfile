@@ -82,6 +82,22 @@ if (packagesExclusivelyChanged) {
   return
 }
 
+stage('build') {
+    parallelExecutors = [:]
+    parallelExecutors["OS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
+    parallelExecutors["macOS arm NAPI ${nodeTestVersion}"] = buildMacOSArm { buildCommon(nodeTestVersion, it, '-- --arch=arm64') }
+
+    parallelExecutors["Linux x86_64 NAPI ${nodeTestVersion}"] = buildLinux { buildCommon(nodeTestVersion, it) }
+    parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
+    parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
+    parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
+
+    parallelExecutors["Android RN"] = buildAndroid()
+    parallelExecutors["iOS RN"] = buildiOS()
+
+    parallel parallelExecutors
+}
+
 stage('pretest') {
   parallelExecutors = [:]
     parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
@@ -95,22 +111,6 @@ stage('pretest') {
     ])
   })
   parallel parallelExecutors
-}
-
-stage('build') {
-    parallelExecutors = [:]
-    parallelExecutors["macOS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
-    parallelExecutors["macOS arm NAPI ${nodeTestVersion}"] = buildMacOSArm { buildCommon(nodeTestVersion, it, '-- --arch=arm64') }
-
-    parallelExecutors["Linux x86_64 NAPI ${nodeTestVersion}"] = buildLinux { buildCommon(nodeTestVersion, it) }
-    parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
-    parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
-    parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
-
-    parallelExecutors["Android RN"] = buildAndroid()
-    parallelExecutors["iOS RN"] = buildiOS()
-
-    parallel parallelExecutors
 }
 
 if (gitTag) {
@@ -375,6 +375,9 @@ def doInside(script, target, postStep = null) {
         unstash 'source'
       }
     }
+    dir('prebuilds') {
+      unstash 'prebuild-darwin-x64'
+    }
     wrap([$class: 'AnsiColorBuildWrapper']) {
         timeout(time: 1, unit: 'HOURS') {
           sh "bash ${script} ${target}"
@@ -427,7 +430,7 @@ def testAndroid(target, postStep = null) {
 
 def testLinux(target, postStep = null, Boolean enableSync = false) {
   return {
-      node('docker') {
+    node('docker') {
       def reportName = "Linux ${target}"
       deleteDir()
       unstash 'source'
@@ -436,18 +439,23 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
 
       def buildSteps = { String dockerArgs = "" ->
           image.inside("-e HOME=/tmp ${dockerArgs}") {
-            if (enableSync) {
-                // check the network connection to local mongodb before continuing to compile everything
-                sh "curl http://mongodb-realm:9090"
+            withEnv(['npm_config_realm_local_prebuilds=prebuilds']) {
+              if (enableSync) {
+                  // check the network connection to local mongodb before continuing to compile everything
+                  sh "curl http://mongodb-realm:9090"
+              }
+              dir('prebuilds') {
+                unstash 'prebuild-linux-x64'
+              }
+              timeout(time: 1, unit: 'HOURS') {
+                sh "scripts/test.sh ${target}"
+              }
+              if (postStep) {
+                postStep.call()
+              }
+              deleteDir()
+              reportStatus(reportName, 'SUCCESS', 'Success!')
             }
-            timeout(time: 1, unit: 'HOURS') {
-              sh "scripts/test.sh ${target}"
-            }
-            if (postStep) {
-              postStep.call()
-            }
-            deleteDir()
-            reportStatus(reportName, 'SUCCESS', 'Success!')
           }
       }
 
@@ -483,7 +491,8 @@ def testMacOS(target, postStep = null) {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-12.2.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1',
-               'REALM_DISABLE_SYNC_TESTS=1']) {
+               'REALM_DISABLE_SYNC_TESTS=1',
+               'npm_config_realm_local_prebuilds=prebuilds']) {
         doInside('./scripts/test.sh', target, postStep)
       }
     }
