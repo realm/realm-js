@@ -50,18 +50,8 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     private final AssetManager assetManager;
 
     static {
-        try {
-            SoLoader.loadLibrary("realm");
-        } catch (UnsatisfiedLinkError e) {
-            if (e.getMessage().contains("library \"libjsc.so\" not found")) {
-                throw new RuntimeException("Realm JS does not support the Hermes engine yet. Express your 💚 on https://github.com/realm/realm-js/issues/2455", e);
-            }
-            throw e;
-        }
+        SoLoader.loadLibrary("realm");
     }
-
-    private Handler worker;
-    private HandlerThread workerThread;
 
     public RealmReactModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -86,40 +76,6 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     @Override
     public Map<String, Object> getConstants() {
         return Collections.<String, Object>emptyMap();
-    }
-
-    private static boolean isRunningOnEmulator() {
-        // Check if running in Genymotion or on the stock emulator.
-        return Build.FINGERPRINT.contains("vbox") || Build.FINGERPRINT.contains("generic");
-    }
-
-    private List<String> getIPAddresses() {
-        ArrayList<String> ipAddresses = new ArrayList<String>();
-
-        try {
-            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-
-            while (networkInterfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = networkInterfaces.nextElement();
-                if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-                    continue;
-                }
-
-                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
-                while (addresses.hasMoreElements()) {
-                    InetAddress address = addresses.nextElement();
-                    if (address.isLoopbackAddress() || address.isLinkLocalAddress() || address.isAnyLocalAddress()) {
-                        continue;
-                    }
-
-                    ipAddresses.add(address.getHostAddress());
-                }
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-
-        return ipAddresses;
     }
 
     // fileDir: path of the internal storage of the application
