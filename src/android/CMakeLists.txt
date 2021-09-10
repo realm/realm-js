@@ -22,36 +22,36 @@ target_compile_definitions(realm-js-android PRIVATE
     REALM_HAVE_CONFIG=1
 )
 
-# HERMES_ROOT_DIR allows sharing the same directory for all architectures and skip re-downloading
-if(NOT HERMES_ROOT_DIR)
-    # set HERMES_ROOT_DIR to current dir
-    set(HERMES_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+# JSI_DIR allows sharing the same directory for all architectures and skip re-downloading
+if(NOT JSI_DIR)
+    # set JSI_DIR to current dir
+    set(JSI_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
-set(HERMES_LIB_DIR "${HERMES_ROOT_DIR}/package/android/jni/${ANDROID_ABI}")
-set(HERMES_LIB_FILE "${HERMES_LIB_DIR}/libhermes.so")
+if(NOT REACT_NATIVE_DIR)
+    message(FATAL_ERROR "Expected a REACT_NATIVE_DIR")
+endif()
 
-if(NOT EXISTS ${HERMES_LIB_FILE})
-    set(HERMES_LIB_URL "https://registry.npmjs.org/hermes-engine/-/hermes-engine-0.8.0.tgz")
+if(NOT REACT_NATIVE_VERSION)
+    message(FATAL_ERROR "Expected a REACT_NATIVE_VERSION")
+endif()
 
-    message(STATUS "Getting ${HERMES_LIB_URL}...")
-    file(DOWNLOAD "${HERMES_LIB_URL}" "${HERMES_ROOT_DIR}/hermes-engine-0.8.0.tgz" STATUS download_status)
+set(HERMES_LIB_DIR "${JSI_DIR}/jni/${ANDROID_ABI}")
+set(HERMES_LIB_PATH "${HERMES_LIB_DIR}/libjsi.so")
 
-    list(GET download_status 0 status_code)
-    if (NOT "${status_code}" STREQUAL "0")
-        message(FATAL_ERROR "Downloading ${url}... Failed. Status: ${download_status}")
-    endif()
-    
-    message(STATUS "Uncompressing ${HERMES_ROOT_DIR}/hermes-engine-0.8.0.tgz")
+set(REACT_NATIVE_AAR_DIR "${REACT_NATIVE_DIR}/android/com/facebook/react/react-native/${REACT_NATIVE_VERSION}")
+set(REACT_NATIVE_AAR_FILE "react-native-${REACT_NATIVE_VERSION}.aar")
+
+if(NOT EXISTS ${HERMES_LIB_PATH})
+    message(STATUS "Copying ${REACT_NATIVE_AAR_DIR}/${REACT_NATIVE_AAR_FILE}")
     execute_process(
-        COMMAND ${CMAKE_COMMAND} -E tar xfz "hermes-engine-0.8.0.tgz"
-        WORKING_DIRECTORY "${HERMES_ROOT_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy ${REACT_NATIVE_AAR_FILE} ${JSI_DIR}/${REACT_NATIVE_AAR_FILE}
+        WORKING_DIRECTORY ${REACT_NATIVE_AAR_DIR}
     )
-
-    message(STATUS "Uncompressing ${HERMES_ROOT_DIR}/package/android/hermes-debug.aar")
+    message(STATUS "Uncompressing ${JSI_DIR}/${REACT_NATIVE_AAR_FILE}")
     execute_process(
-        COMMAND ${CMAKE_COMMAND} -E tar xfz "hermes-debug.aar"
-        WORKING_DIRECTORY "${HERMES_ROOT_DIR}/package/android/"
+        COMMAND ${CMAKE_COMMAND} -E tar xfz ${REACT_NATIVE_AAR_FILE}
+        WORKING_DIRECTORY ${JSI_DIR}
     )
 endif()
 
@@ -76,8 +76,8 @@ target_include_directories(realm-js-android PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_directories(realm-js-android PUBLIC "${HERMES_LIB_DIR}")
 
-target_link_libraries(realm-js-android realm-js-hermes realm-js-shared "${HERMES_LIB_FILE}")
-target_link_libraries(realm-js-android realm-js-hermes realm-js-shared)
+target_link_libraries(realm-js-android PUBLIC realm-js-hermes realm-js-shared "${HERMES_LIB_PATH}")
+#target_link_libraries(realm-js-android realm-js-hermes realm-js-shared)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
     add_custom_command(TARGET realm-js-android
