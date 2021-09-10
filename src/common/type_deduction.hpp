@@ -51,7 +51,7 @@ class GenericTypeDeductionImpl {
         realm_to_js_map = {
             {types::String, "String"},       {types::Integer, "Int"},
             {types::Float, "Float"},         {types::Double, "Double"},
-            {types::Decimal, "Decimal128"},  {types::Boolean, "Boolean"},
+            {types::Decimal, "Decimal128"},  {types::Boolean, "Bool"},
             {types::ObjectId, "ObjectId"},   {types::Object, "Object"},
             {types::UUID, "UUID"},       {types::Object, "Object"},
             {types::Undefined, "Undefined"}, {types::Null, "Null"}};

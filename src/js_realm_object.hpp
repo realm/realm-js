@@ -413,7 +413,7 @@ void RealmObjectClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_
     if (!realm_object) {
         throw std::runtime_error("Invalid 'this' object");
     }
-    
+
     realm_object->m_notification_tokens.clear();
 }
 
@@ -422,7 +422,7 @@ void RealmObjectClass<T>::get_property_type(ContextType ctx, ObjectType this_obj
     args.validate_maximum(1);
 
     std::string property_name = Value::validated_to_string(ctx, args[0], "propertyName");
-    
+
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
     if (!realm_object) {
         throw std::runtime_error("Invalid 'this' object");
@@ -433,7 +433,16 @@ void RealmObjectClass<T>::get_property_type(ContextType ctx, ObjectType this_obj
         throw std::invalid_argument(util::format("No such property: %1", property_name));
     }
 
-    return_value.set(prop->type_string());
+    if (prop->type == realm::PropertyType::Mixed) {
+        Obj obj = realm_object->obj();
+        Mixed value = obj.get_any(prop->column_key);
+        auto type_deduction = TypeDeduction::get_instance();
+        types::Type type = type_deduction.from(value);
+        return_value.set(type_deduction.javascript_type(type));
+    }
+    else {
+    	return_value.set(prop->type_string());
+    }
 }
 
 } // js

@@ -726,13 +726,25 @@ module.exports = {
   },
 
   testGetPropertyType: function () {
+    const MixedSchema = {
+      name: "MixedSchema",
+      properties: {
+        key: "string",
+        value: "mixed",
+      },
+    };
     const realm = new Realm({
-      schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
+      schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes, MixedSchema],
     });
-    let obj;
+    let obj, mixedNull, mixedInt, mixedString, mixedFloat, mixedBool;
 
-    realm.write(function () {
-      obj = realm.create("AllTypesObject", allTypesValues);
+    realm.write(() => {
+      obj = realm.create(schemas.AllTypes.name, allTypesValues);
+      mixedNull = realm.create(MixedSchema.name, { key: "zero", value: null });
+      mixedInt = realm.create(MixedSchema.name, { key: "one", value: 1 });
+      mixedString = realm.create(MixedSchema.name, { key: "two", value: "two" });
+      mixedFloat = realm.create(MixedSchema.name, { key: "three", value: 3.0 });
+      mixedBool = realm.create(MixedSchema.name, { key: "five", value: true });
     });
 
     TestCase.assertEqual(obj.getPropertyType("boolCol"), "bool");
@@ -750,6 +762,15 @@ module.exports = {
     TestCase.assertEqual(obj.getPropertyType("dateArrayCol"), "array<date>");
     TestCase.assertEqual(obj.getPropertyType("dataArrayCol"), "array<data>");
     TestCase.assertEqual(obj.getPropertyType("objectArrayCol"), "array<TestObject>");
+
+    TestCase.assertEqual(mixedNull.getPropertyType("value"), "null");
+    TestCase.assertEqual(mixedInt.getPropertyType("value"), "double"); // we translate all numbers to "double"
+    TestCase.assertEqual(mixedString.getPropertyType("value"), "string");
+    TestCase.assertEqual(mixedFloat.getPropertyType("value"), "double"); // we translate all numbers to "double"
+    TestCase.assertEqual(mixedBool.getPropertyType("value"), "bool");
+    [mixedNull, mixedInt, mixedFloat, mixedString, mixedBool].forEach((mixed) => {
+      TestCase.assertEqual(mixed.getPropertyType("key"), "string", `${mixed.key}`);
+    });
 
     // property that does not exist
     TestCase.assertThrowsException(() => {
