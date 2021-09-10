@@ -72,7 +72,9 @@ if (!fs.existsSync(buildPath)) {
 }
 
 //shared root dir to download jsi once for all architectures
-const hermesDir = path.resolve(buildPath, "hermes-android");
+const jsiPath = path.resolve(buildPath, "jsi-android");
+const reactNativePath = path.resolve(__dirname, "../node_modules/react-native");
+const reactNativeVersion = fs.readJsonSync(path.join(reactNativePath, "package.json")).version;
 
 for (const arch of architectures) {
   console.log(`\nBuilding Realm JS Android for ${arch} (${buildType})`);
@@ -94,7 +96,10 @@ for (const arch of architectures) {
     "-DANDROID_NATIVE_API_LEVEL=16",
     `-DCMAKE_BUILD_TYPE=${buildType}`,
     "-DANDROID_STL=c++_static",
-    `-DHERMES_ROOT_DIR=${hermesDir}`,
+    "-DANDROID_CPP_FEATURES=exceptions;rtti",
+    `-DREACT_NATIVE_DIR=${reactNativePath}`,
+    `-DREACT_NATIVE_VERSION=${reactNativeVersion}`,
+    `-DJSI_DIR=${jsiPath}`,
     process.cwd(),
   ];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
