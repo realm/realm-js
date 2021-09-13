@@ -65,7 +65,8 @@ template <typename T>
 class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
   private:
     using Context = typename T::Context;
-    using Value = typename T::Value;
+    using ValueType = typename T::Value;
+    using Value = js::Value<T>;
     using RealmClass =  RealmObjectClass<T>;
 
     std::shared_ptr<Realm> realm;
@@ -73,12 +74,10 @@ class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
   public:
     MixedLink(std::shared_ptr<Realm> _realm): realm{_realm} {}
 
-    Mixed wrap(Context context, Value const& value) {
-
+    Mixed wrap(Context context, ValueType const& value) {
         RealmLink<T> realm_link {context, value};
 
-        if(!realm_link.is_instance() ||
-        !realm_link.belongs_to_realm(realm)){
+        if (!realm_link.is_instance() || !realm_link.belongs_to_realm(realm)) {
             throw std::runtime_error("Only Realm instances are supported.");
         }
 
@@ -86,7 +85,7 @@ class MixedLink : public MixedWrapper<typename T::Context, typename T::Value> {
         return Mixed(realm_object);
     }
 
-    Value unwrap(Context context, Mixed mixed) {
+    ValueType unwrap(Context context, Mixed mixed) {
         realm::Object realm_object(realm, mixed.get_link());
         return RealmClass::create_instance(context, realm_object);
     }

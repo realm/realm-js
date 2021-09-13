@@ -9,6 +9,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed issue when opening a synced Realm is prevented by assertion "m_state == SyncUser::State::LoggedIn". ([realm/realm-core#4875](https://github.com/realm/realm-core/issues/4875), since v10.0.0)
 * Fixed slow teardown of Realm by which interfered with Jest. ([#3620](https://github.com/realm/realm-js/issues/3620) and [#2993](https://github.com/realm/realm-js/issues/2993), since v1.0.0)
 * If an object with a null primary key was deleted by another sync client, the exception `KeyNotFound: No such object` could be triggered. ([realm/realm-core#4885](https://github.com/realm/realm-core/issues/4885), since v10.0.0)
+* Improve the error message when trying to use an array as value for a dictionary. ([#3730](https://github.com/realm/realm-js/issues/3730), since v10.6.0)
 * When opening a synced Realm with a `Realm.Dictionary` property, an exception similar to `Property 'Dictionary.columnFloatDictionary' has been made optional` might be thrown. (since v10.6.0)
 
 ### Compatibility
@@ -37,7 +38,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed a rare crash when setting a mixed link for the first time which would trigger if the link was to the same table. ([#4828](https://github.com/realm/realm-core/pull/4828), since v10.5.0)
 * User profile now correctly persisted between runs. ([#3561](https://github.com/realm/realm-js/issues/3561), since v10.0.0)
 * When updating a property of list of embedded objects, previous value is not cleared and might lead to an inconsistent state (sync only). ([realm/realm-core#4844](https://github.com/realm/realm-core/pull/4844))
-
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -78,8 +78,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed TypeScript definition of Realm.Dictionary.remove(). ([#3853](https://github.com/realm/realm-js/pull/3853) since v10.6.0)
-* Fixed Realm.Object#toJSON as it threw "Right-hand side of 'instanceof' is not an object". ([#3872](https://github.com/realm/realm-js/pull/3872) since v10.6.0)
+* Fixed TypeScript definition of `Realm.Dictionary.remove()`. ([#3853](https://github.com/realm/realm-js/pull/3853) since v10.6.0)
+* Fixed `Realm.Object#toJSON` as it threw `Right-hand side of 'instanceof' is not an object`. ([#3872](https://github.com/realm/realm-js/pull/3872) since v10.6.0)
 * Fixed `Realm not defined` error experienced when using `Realm.Set` iterators under Jest ([#3843](https://github.com/realm/realm-js/pull/3843) since v1.5.0-beta1)
 
 ### Compatibility

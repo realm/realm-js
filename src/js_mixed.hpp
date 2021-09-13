@@ -211,6 +211,10 @@ class TypeMixed {
     }
 
     Mixed unwrap(Context context, Value const &js_value) {
+        if (Utils::is_array(context, js_value)) {
+            throw std::runtime_error("A mixed property cannot contain an array of values.");
+        }
+
         auto type_deduction = TypeDeduction::get_instance();
         auto type = type_deduction.typeof<JavascriptEngine>(context, js_value);
         auto strategy = strategies[type];
