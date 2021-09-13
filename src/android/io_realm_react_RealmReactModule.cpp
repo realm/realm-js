@@ -19,11 +19,16 @@
 #include <jni.h>
 #include <android/log.h>
 #include <android/asset_manager_jni.h>
+#include <jsi/jsi.h>
 
-#include "io_realm_react_RealmReactModule.h"
+#include <hermes/hermes_init.h>
 #include "platform.hpp"
 #include "jni_utils.hpp"
 #include "hack.hpp"
+
+#include "io_realm_react_RealmReactModule.h"
+
+namespace jsi = facebook::jsi;
 
 using namespace realm::jni_util;
 
@@ -84,4 +89,19 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
     env->ReleaseStringUTFChars(fileDir, strFileDir);
 
     __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Absolute path: %s", realm::default_realm_file_directory().c_str());
+}
+
+
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install
+  (JNIEnv *, jclass, jlong runtimePointer)
+{
+    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "install");
+    auto runtime = reinterpret_cast<jsi::Runtime*>(runtimePointer);
+    // auto& runtime = *static_cast<facebook::jsi::Runtime*>(runtimePointer);
+    if (runtime) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Building an exports object");
+        auto exports = jsi::Object(*runtime);
+        __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Initializing ...");
+        realm_hermes_init(*runtime, exports);
+    }
 }
