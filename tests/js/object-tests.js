@@ -741,7 +741,7 @@ module.exports = {
     realm.write(() => {
       obj = realm.create(schemas.AllTypes.name, allTypesValues);
       mixedNull = realm.create(MixedSchema.name, { key: "zero", value: null });
-      mixedInt = realm.create(MixedSchema.name, { key: "one", value: 1 });
+      mixedInt = realm.create(MixedSchema.name, { key: "one", value: 1 }); // for mixed, all JavaScript numbers are saved as "double"
       mixedString = realm.create(MixedSchema.name, { key: "two", value: "two" });
       mixedFloat = realm.create(MixedSchema.name, { key: "three", value: 3.0 });
       mixedBool = realm.create(MixedSchema.name, { key: "five", value: true });
@@ -764,9 +764,9 @@ module.exports = {
     TestCase.assertEqual(obj.getPropertyType("objectArrayCol"), "array<TestObject>");
 
     TestCase.assertEqual(mixedNull.getPropertyType("value"), "null");
-    TestCase.assertEqual(mixedInt.getPropertyType("value"), "double"); // we translate all numbers to "double"
+    TestCase.assertEqual(mixedInt.getPropertyType("value"), "double"); // see comment above
     TestCase.assertEqual(mixedString.getPropertyType("value"), "string");
-    TestCase.assertEqual(mixedFloat.getPropertyType("value"), "double"); // we translate all numbers to "double"
+    TestCase.assertEqual(mixedFloat.getPropertyType("value"), "double");
     TestCase.assertEqual(mixedBool.getPropertyType("value"), "bool");
     [mixedNull, mixedInt, mixedFloat, mixedString, mixedBool].forEach((mixed) => {
       TestCase.assertEqual(mixed.getPropertyType("key"), "string", `${mixed.key}`);
