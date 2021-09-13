@@ -3,12 +3,14 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Enhancements
 * Synchronized Realms are no longer opened twice, cutting the address space and file descriptors used in half. ([realm/realm-core#4839](https://github.com/realm/realm-core/pull/4839))
 * `Realm.write()` now returns callback return value. ([#2237](https://github.com/realm/realm-js/issues/2237))
+* Added `Realm.Object.getPropertyType()` which returns the type of the property. For a mixed property, the underlying type will be returned. ([#3646](https://github.com/realm/realm-js/issues/3646))
 
 ### Fixed
 * Fixed issue when opening a synced Realm is prevented by assertion "m_state == SyncUser::State::LoggedIn". ([realm/realm-core#4875](https://github.com/realm/realm-core/issues/4875), since v10.0.0)
 * Fixed slow teardown of Realm by which interfered with Jest. ([#3620](https://github.com/realm/realm-js/issues/3620) and [#2993](https://github.com/realm/realm-js/issues/2993), since v1.0.0)
 * If an object with a null primary key was deleted by another sync client, the exception `KeyNotFound: No such object` could be triggered. ([realm/realm-core#4885](https://github.com/realm/realm-core/issues/4885), since v10.0.0)
 * Improve the error message when trying to use an array as value for a dictionary. ([#3730](https://github.com/realm/realm-js/issues/3730), since v10.6.0)
+* When opening a synced Realm with a `Realm.Dictionary` property, an exception similar to `Property 'Dictionary.columnFloatDictionary' has been made optional` might be thrown. (since v10.6.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -18,6 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgraded Realm Core from v11.3.1 to v11.4.1. ([#3942](https://github.com/realm/realm-js/issues/3942))
+* Extend Jest test runner to cover opening and closing of a realm.
 * Disable analytics if the `CI` environment variable is set to some value.
 
 10.7.0 Release notes (2021-8-30)

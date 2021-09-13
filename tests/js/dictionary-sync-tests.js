@@ -33,7 +33,7 @@ const fs = isNodeProcess ? nodeRequire("fs-extra") : require("react-native-fs");
 
 module.exports = {
   async testDictionarySync() {
-    // test that we can create a synced realm with a Set
+    // test that we can create a synced realm with a Dictionary
     // that isn't required
     if (!global.enableSyncTests) return;
 

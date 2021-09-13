@@ -223,6 +223,11 @@ declare namespace Realm {
         removeListener(callback: ObjectChangeCallback): void;
 
         removeAllListeners(): void;
+
+        /**
+         * @returns string
+         */
+        getPropertyType(propertyName: string) : string;
     }
 
     /**

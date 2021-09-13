@@ -724,4 +724,57 @@ module.exports = {
       }, 2000);
     });
   },
+
+  testGetPropertyType: function () {
+    const MixedSchema = {
+      name: "MixedSchema",
+      properties: {
+        key: "string",
+        value: "mixed",
+      },
+    };
+    const realm = new Realm({
+      schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes, MixedSchema],
+    });
+    let obj, mixedNull, mixedInt, mixedString, mixedFloat, mixedBool;
+
+    realm.write(() => {
+      obj = realm.create(schemas.AllTypes.name, allTypesValues);
+      mixedNull = realm.create(MixedSchema.name, { key: "zero", value: null });
+      mixedInt = realm.create(MixedSchema.name, { key: "one", value: 1 }); // for mixed, all JavaScript numbers are saved as "double"
+      mixedString = realm.create(MixedSchema.name, { key: "two", value: "two" });
+      mixedFloat = realm.create(MixedSchema.name, { key: "three", value: 3.0 });
+      mixedBool = realm.create(MixedSchema.name, { key: "five", value: true });
+    });
+
+    TestCase.assertEqual(obj.getPropertyType("boolCol"), "bool");
+    TestCase.assertEqual(obj.getPropertyType("floatCol"), "float");
+    TestCase.assertEqual(obj.getPropertyType("doubleCol"), "double");
+    TestCase.assertEqual(obj.getPropertyType("stringCol"), "string");
+    TestCase.assertEqual(obj.getPropertyType("dateCol"), "date");
+    TestCase.assertEqual(obj.getPropertyType("dataCol"), "data");
+    TestCase.assertEqual(obj.getPropertyType("objectCol"), "<TestObject>");
+
+    TestCase.assertEqual(obj.getPropertyType("boolArrayCol"), "array<bool>");
+    TestCase.assertEqual(obj.getPropertyType("floatArrayCol"), "array<float>");
+    TestCase.assertEqual(obj.getPropertyType("doubleArrayCol"), "array<double>");
+    TestCase.assertEqual(obj.getPropertyType("stringArrayCol"), "array<string>");
+    TestCase.assertEqual(obj.getPropertyType("dateArrayCol"), "array<date>");
+    TestCase.assertEqual(obj.getPropertyType("dataArrayCol"), "array<data>");
+    TestCase.assertEqual(obj.getPropertyType("objectArrayCol"), "array<TestObject>");
+
+    TestCase.assertEqual(mixedNull.getPropertyType("value"), "null");
+    TestCase.assertEqual(mixedInt.getPropertyType("value"), "double"); // see comment above
+    TestCase.assertEqual(mixedString.getPropertyType("value"), "string");
+    TestCase.assertEqual(mixedFloat.getPropertyType("value"), "double");
+    TestCase.assertEqual(mixedBool.getPropertyType("value"), "bool");
+    [mixedNull, mixedInt, mixedFloat, mixedString, mixedBool].forEach((mixed) => {
+      TestCase.assertEqual(mixed.getPropertyType("key"), "string", `${mixed.key}`);
+    });
+
+    // property that does not exist
+    TestCase.assertThrowsException(() => {
+      obj.getPropertyType("foo");
+    }, new Error("No such property: foo"));
+  },
 };

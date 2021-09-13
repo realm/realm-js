@@ -91,4 +91,13 @@ class Object {
    * @since 2.23.0
    */
   removeAllListeners() {}
+
+  /**
+   * Get underlying type of a property value.
+   * @param {string} propertyName - The name of the property to retrieve the type of.
+   * @returns {string} Underlying type of the property value.
+   * @throws {Error} If property does not exist.
+   * @since 10.8.0
+   */
+  getPropertyType(propertyName) {}
 }
