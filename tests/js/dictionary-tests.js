@@ -28,6 +28,49 @@ const DictSchema = {
 };
 
 module.exports = {
+  testDictionarySchema() {
+    // Test that short (JS) and canonical schema types yield
+    // the same results
+    const childSchema = {
+      name: "Child",
+      properties: {
+        value: "int",
+      },
+    };
+
+    const shorthandSchema = {
+      name: "ShorthandSchema",
+      properties: {
+        a: "string{}",
+        b: "{}",
+        c: "Child{}",
+      },
+    };
+
+    const canonicalSchema = {
+      name: "CanonicalSchema",
+      properties: {
+        a: { type: "dictionary", objectType: "string", optional: false },
+        b: { type: "dictionary", objectType: "mixed", optional: true },
+        c: { type: "dictionary", objectType: "Child", optional: true },
+      },
+    };
+
+    const canonicalRealm = new Realm({ schema: [canonicalSchema, childSchema] });
+    const canSchema = canonicalRealm.schema;
+    canonicalRealm.close();
+
+    const shorthandRealm = new Realm({ schema: [shorthandSchema, childSchema] });
+    const shSchema = shorthandRealm.schema;
+    shorthandRealm.close();
+
+    TestCase.assertEqual(
+      shSchema.properties,
+      canSchema.properties,
+      "Canonical and shorthand schemas should have identical properties",
+    );
+  },
+
   testDictionaryCreate() {
     //Shouldn't throw
     let realm = new Realm({ schema: [DictSchema] });
@@ -723,8 +766,8 @@ module.exports = {
     const DictTypedSchema = {
       name: "TypedDictionary",
       properties: {
-        dict1: "Children{}",
-        dict2: "Children{}",
+        dict1: { type: "dictionary", objectType: "Children" }, // dictionary of objects is nullable by default
+        dict2: { type: "dictionary", objectType: "Children", optional: true },
       },
     };
 

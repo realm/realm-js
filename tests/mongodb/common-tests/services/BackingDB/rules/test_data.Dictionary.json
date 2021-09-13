@@ -1,0 +1,49 @@
+{
+    "collection": "Dictionary",
+    "database": "test_data",
+    "id": "60edbc15af652697ed7940f6",
+    "roles": [
+        {
+            "name": "default",
+            "apply_when": {},
+            "insert": true,
+            "delete": true,
+            "additional_fields": {}
+        }
+    ],
+    "schema": {
+        "additionalProperties": {
+            "type": "string"
+        },
+        "properties": {
+            "_id": {
+                "bsonType": "long"
+            },
+            "columnFloatDictionary": {
+                "additionalProperties": {
+                    "bsonType": "float"
+                },
+                "bsonType": "object"
+            },
+            "columnIntegerDictionary": {
+                "additionalProperties": {
+                    "bsonType": "long"
+                },
+                "bsonType": "object"
+            },
+            "columnStringDictionary": {
+                "additionalProperties": {
+                    "bsonType": "string"
+                },
+                "bsonType": "object"
+            },
+            "realm_id": {
+                "bsonType": "string"
+            }
+        },
+        "required": [
+            "_id"
+        ],
+        "title": "Dictionary"
+    }
+}
