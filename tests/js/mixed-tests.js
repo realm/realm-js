@@ -211,7 +211,7 @@ module.exports = {
     TestCase.assertEqual(objectsBefore.length, 0);
 
     // check if the understandable error message is thrown
-    let error = new Error("A mixed property cannot contain an array of values.");
+    const error = new Error("A mixed property cannot contain an array of values.");
     TestCase.assertThrowsException(() => {
       realm.write(() => {
         realm.create("MixedClass", { value: [123, false, "hello"] });
@@ -219,7 +219,7 @@ module.exports = {
     }, error);
 
     //  verify that the transaction has been rolled back
-    let objectsAfter = realm.objects(MixedSchema.name);
+    const objectsAfter = realm.objects(MixedSchema.name);
     TestCase.assertEqual(objectsAfter.length, 0);
 
     realm.close();
