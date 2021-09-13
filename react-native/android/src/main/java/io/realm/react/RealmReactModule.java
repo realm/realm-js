@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
+import com.facebook.react.bridge.JavaScriptContextHolder;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.soloader.SoLoader;
@@ -66,6 +67,12 @@ class RealmReactModule extends ReactContextBaseJavaModule {
         }
 
         setDefaultRealmFileDirectory(fileDir, assetManager);
+
+        // Get the javascript runtime and install our native module with it
+        JavaScriptContextHolder jsContext = reactContext.getJavaScriptContextHolder();
+        synchronized(jsContext) {
+            install(jsContext.get());
+        }
     }
 
     @Override
@@ -80,4 +87,6 @@ class RealmReactModule extends ReactContextBaseJavaModule {
 
     // fileDir: path of the internal storage of the application
     private native void setDefaultRealmFileDirectory(String fileDir, AssetManager assets);
+
+    private native void install(long runtimePointer);
 }

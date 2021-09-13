@@ -7,13 +7,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 /*
-* Class:      io_realm_react_RealmReactModule
-* Method:     setDefaultRealmFileDirectory
-*/
+ * Class:     io_realm_react_RealmReactModule
+ * Method:    setDefaultRealmFileDirectory
+ * Signature: (Ljava/lang/String;Landroid/content/res/AssetManager;)V
+ */
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
   (JNIEnv *, jclass, jstring, jobject);
+
+/*
+ * Class:     io_realm_react_RealmReactModule
+ * Method:    install
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install
+  (JNIEnv *, jclass, jlong);
 
 #ifdef __cplusplus
 }
