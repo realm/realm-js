@@ -207,7 +207,7 @@ module.exports = {
 
     const realm = new Realm({ schema: [MixedSchema] });
 
-    let objectsBefore = realm.objects(MixedSchema.name);
+    const objectsBefore = realm.objects(MixedSchema.name);
     TestCase.assertEqual(objectsBefore.length, 0);
 
     // check if the understandable error message is thrown
