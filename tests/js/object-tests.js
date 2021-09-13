@@ -777,4 +777,29 @@ module.exports = {
       obj.getPropertyType("foo");
     }, new Error("No such property: foo"));
   },
+
+  testObjectSpread: function () {
+    let realm = new Realm({ schema: [schemas.IntPrimary] });
+
+    const firstObjects = [
+      { primaryCol: 1, valueCol: "one" },
+      { primaryCol: 2, valueCol: "two" },
+    ];
+
+    realm.write(() => {
+      firstObjects.forEach(o => {
+        realm.create(schemas.IntPrimary.name, o);
+      });
+    });
+
+    let objects = realm.objects(schemas.IntPrimary.name);
+    const secondObjects = [{ ...objects[0] }, { ...objects[1] }];
+
+    for (let i = 0; i < firstObjects.length; i++) {
+      TestCase.assertArraysEqual(Object.keys(secondObjects[i]), Object.keys(firstObjects[i]), `${i}`);
+      Object.keys(firstObjects[i]).forEach((key) => {
+        TestCase.assertEqual(firstObjects[key], secondObjects[key], `${i}: ${key}`);
+      });
+    }
+  },
 };
