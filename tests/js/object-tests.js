@@ -787,7 +787,7 @@ module.exports = {
     ];
 
     realm.write(() => {
-      firstObjects.forEach(o => {
+      firstObjects.forEach((o) => {
         realm.create(schemas.IntPrimary.name, o);
       });
     });
@@ -801,5 +801,26 @@ module.exports = {
         TestCase.assertEqual(firstObjects[key], secondObjects[key], `${i}: ${key}`);
       });
     }
+
+    realm.close();
+  },
+
+  testObjectKeys: function () {
+    let realm = new Realm({ schema: [schemas.IntPrimary] });
+
+    const firstObject = { primaryCol: 1, valueCol: "one" };
+    realm.write(() => {
+      realm.create(schemas.IntPrimary.name, firstObject);
+    });
+
+    let secondObject = realm.objectForPrimaryKey(schemas.IntPrimary.name, 1);
+    const keys = Object.keys(secondObject);
+    TestCase.assertArraysEqual(keys, ["primaryCol", "valueCol"]);
+
+    const entries = Object.entries(secondObject);
+    TestCase.assertArraysEqual(entries[0], ["primaryCol", 1]);
+    TestCase.assertArraysEqual(entries[1], ["valueCol", "one"]);
+
+    realm.close();
   },
 };
