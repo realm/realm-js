@@ -22,6 +22,8 @@ target_compile_definitions(realm-js-android PRIVATE
     REALM_HAVE_CONFIG=1
 )
 
+set(PACKAGE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+
 # JSI_DIR allows sharing the same directory for all architectures and skip re-downloading
 if(NOT JSI_DIR)
     # set JSI_DIR to current dir
@@ -55,6 +57,13 @@ if(NOT EXISTS ${HERMES_LIB_PATH})
     )
 endif()
 
+# set(REACT_NATIVE_DIR "${PACKAGE_ROOT_DIR}/node_modules/react-native")
+# message(STATUS "Looking in ${REACT_NATIVE_DIR}/ReactAndroid/build/react-ndk/all/${ANDROID_ABI}")
+# find_library(JSI jsi
+#    PATHS ${REACT_NATIVE_DIR}/ReactAndroid/build/react-ndk/all/${ANDROID_ABI}
+#    REQUIRED
+#)
+
 if (ANDROID_ABI MATCHES "^armeabi")
     target_compile_definitions(realm-js-android PUBLIC REALM_WRAP_MEMMOVE=1)
     target_link_options(realm-js-android PUBLIC -Wl,--wrap=memmove -Wl,--wrap=memcpy)
@@ -76,8 +85,11 @@ target_include_directories(realm-js-android PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_directories(realm-js-android PUBLIC "${HERMES_LIB_DIR}")
 
-target_link_libraries(realm-js-android PUBLIC realm-js-hermes realm-js-shared "${HERMES_LIB_PATH}")
-#target_link_libraries(realm-js-android realm-js-hermes realm-js-shared)
+target_link_libraries(realm-js-android PUBLIC
+    realm-js-hermes
+    realm-js-shared
+    jsi
+)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
     add_custom_command(TARGET realm-js-android
