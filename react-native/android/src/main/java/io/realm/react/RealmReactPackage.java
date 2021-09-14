@@ -32,7 +32,7 @@ public class RealmReactPackage extends TurboReactPackage implements ReactPackage
     @Override
     public NativeModule getModule(String name, final ReactApplicationContext reactContext) {
         Log.d("RealmJS", "Asked to get module " + name);
-        if (name == RealmReactModule.NAME) {
+        if (name.equals(RealmReactModule.NAME)) {
             return new RealmReactModule(reactContext);
         } else {
             return null;

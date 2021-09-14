@@ -97,7 +97,6 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "install");
     auto runtime = reinterpret_cast<jsi::Runtime*>(runtimePointer);
-    // auto& runtime = *static_cast<facebook::jsi::Runtime*>(runtimePointer);
     if (runtime) {
         __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Building an exports object");
         auto exports = jsi::Object(*runtime);
