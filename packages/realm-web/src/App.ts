@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NetworkTransport, DefaultNetworkTransport } from "realm-network-transport";
+import { NetworkTransport, DefaultNetworkTransport, Headers } from "realm-network-transport";
 import { ObjectId } from "bson";
 
 import { User, UserState } from "./User";
@@ -110,6 +110,16 @@ export class App<
    * Internal authenticator used to complete authentication requests.
    */
   public readonly authenticator: Authenticator;
+
+  /**
+   * an extended property that may be set/removed on this object statically,
+   *  or defined as a dynamic getter function
+   * will be sent with mongoClient and functions requests
+   *
+   * @type {Headers}
+   * @memberof User
+   */
+  public headers?: Headers;
 
   /**
    * An array of active and logged-out users.

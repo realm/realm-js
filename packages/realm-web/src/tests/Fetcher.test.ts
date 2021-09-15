@@ -103,4 +103,148 @@ describe("Fetcher", () => {
       },
     ]);
   });
+
+  it("allows user-defined headers", async () => {
+    const transport = new MockNetworkTransport([{}]);
+    const currentUser: unknown = {
+      accessToken: "my-access-token",
+      headers: { ["X-Custom-Header"]: "user-header-value" },
+    };
+    const fetcher = new Fetcher({
+      appId: "test-app-id",
+      transport,
+      userContext: {
+        currentUser: currentUser as User,
+      },
+      locationUrlContext: {
+        locationUrl: Promise.resolve("http://localhost:1337"),
+      },
+    });
+    // Send a request
+    await fetcher.fetchJSON({
+      method: "GET",
+      url: "http://localhost:1337/w00t",
+    });
+    // Expect something of the request
+    expect(transport.requests).deep.equals([
+      {
+        method: "GET",
+        url: "http://localhost:1337/w00t",
+        headers: {
+          ...ACCEPT_JSON_HEADERS,
+          Authorization: "Bearer my-access-token",
+          ["X-Custom-Header"]: "user-header-value",
+        },
+      },
+    ]);
+  });
+
+  it("allows app-defined headers", async () => {
+    const transport = new MockNetworkTransport([{}]);
+    const fetcher = new Fetcher({
+      appId: "test-app-id",
+      transport,
+      userContext: {
+        currentUser: { accessToken: "my-access-token" } as User,
+      },
+      locationUrlContext: {
+        locationUrl: Promise.resolve("http://localhost:1337"),
+        headers: { ["X-Custom-Header"]: "app-header-value" },
+      },
+    });
+    // Send a request
+    await fetcher.fetchJSON({
+      method: "GET",
+      url: "http://localhost:1337/w00t",
+    });
+    // Expect something of the request
+    expect(transport.requests).deep.equals([
+      {
+        method: "GET",
+        url: "http://localhost:1337/w00t",
+        headers: {
+          ...ACCEPT_JSON_HEADERS,
+          Authorization: "Bearer my-access-token",
+          ["X-Custom-Header"]: "app-header-value",
+        },
+      },
+    ]);
+  });
+
+  it("allows constructor-defined (or clone-defined) headers", async () => {
+    const transport = new MockNetworkTransport([{}]);
+    const fetcher = new Fetcher({
+      appId: "test-app-id",
+      transport,
+      userContext: {
+        currentUser: { accessToken: "my-access-token" } as User,
+      },
+      locationUrlContext: {
+        locationUrl: Promise.resolve("http://localhost:1337"),
+      },
+      headers: { ["X-Custom-Header"]: "ctor-header-value" },
+    });
+    // Send a request
+    await fetcher.fetchJSON({
+      method: "GET",
+      url: "http://localhost:1337/w00t",
+    });
+    // Expect something of the request
+    expect(transport.requests).deep.equals([
+      {
+        method: "GET",
+        url: "http://localhost:1337/w00t",
+        headers: {
+          ...ACCEPT_JSON_HEADERS,
+          Authorization: "Bearer my-access-token",
+          ["X-Custom-Header"]: "ctor-header-value",
+        },
+      },
+    ]);
+  });
+
+  it("allows all sorts of headers, precedence: app < user < ctor", async () => {
+    const transport = new MockNetworkTransport([{}]);
+    const currentUser: unknown = {
+      accessToken: "my-access-token",
+      headers: {
+        ["X-Custom-Header"]: "user-header-value",
+        ["X-Custom-Header2"]: "user-header2-value",
+      },
+    };
+    const fetcher = new Fetcher({
+      appId: "test-app-id",
+      transport,
+      userContext: {
+        currentUser: currentUser as User,
+      },
+      locationUrlContext: {
+        locationUrl: Promise.resolve("http://localhost:1337"),
+        headers: {
+          ["X-Custom-Header2"]: "app-header-value",
+          ["X-Custom-Header3"]: "app-header3-value",
+        },
+      },
+      headers: { ["X-Custom-Header2"]: "ctor-header-value" },
+    });
+    // Send a request
+    await fetcher.fetchJSON({
+      method: "GET",
+      url: "http://localhost:1337/w00t",
+    });
+    // Expect something of the request
+    expect(transport.requests).deep.equals([
+      {
+        method: "GET",
+        url: "http://localhost:1337/w00t",
+        headers: {
+          ...ACCEPT_JSON_HEADERS,
+          Authorization: "Bearer my-access-token",
+          ["X-Custom-Header"]: "user-header-value",
+          ["X-Custom-Header2"]: "ctor-header-value",
+          ["X-Custom-Header3"]: "app-header3-value",
+        },
+      },
+    ]);
+  });
 });

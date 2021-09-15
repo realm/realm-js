@@ -20,7 +20,7 @@
 import { Base64 } from "js-base64";
 
 import type { App } from "./App";
-import { Fetcher } from "./Fetcher";
+import { Fetcher, Headers } from "./Fetcher";
 import { UserProfile } from "./UserProfile";
 import { UserStorage } from "./UserStorage";
 import { FunctionsFactory } from "./FunctionsFactory";
@@ -95,6 +95,16 @@ export class User<
 
   /** @inheritdoc */
   public readonly apiKeys: ApiKeyAuth;
+
+  /**
+   * an extended property that may be set, removed or defined by others on an object
+   *  instance statically or as a dynamic getter function
+   * HTTP headers to be sent with mongoClient and functions requests
+   *
+   * @type {Headers}
+   * @memberof User
+   */
+  public headers?: Headers;
 
   private _accessToken: string | null;
   private _refreshToken: string | null;
@@ -331,7 +341,10 @@ export class User<
   }
 
   /** @inheritdoc */
-  public mongoClient(serviceName: string): Realm.Services.MongoDB {
+  public mongoClient(serviceName: string, options?: { headers?: Headers }): Realm.Services.MongoDB {
+    if (options) {
+      return createMongoDBRemoteService(this.fetcher.clone(options), serviceName);
+    }
     return createMongoDBRemoteService(this.fetcher, serviceName);
   }
 

@@ -24,6 +24,8 @@ import { User } from "./User";
 import routes from "./routes";
 import { deserialize, serialize } from "./utils/ejson";
 
+export { Headers } from "realm-network-transport";
+
 type SimpleObject = Record<string, unknown>;
 
 type StreamReader = {
@@ -80,6 +82,9 @@ export type UserContext = {
 export type LocationUrlContext = {
   /** The location URL of the app, used instead of the base url. */
   locationUrl: Promise<string>;
+
+  /** headers to be sent with HTTP requests */
+  headers?: Headers;
 };
 
 type TokenType = "access" | "refresh" | "none";
@@ -130,6 +135,10 @@ export type FetcherConfig = {
    * An optional promise which resolves to the response of the app location request.
    */
   locationUrlContext: LocationUrlContext;
+  /**
+   * An optional key-value object containing extra custom HTTP headers
+   */
+  headers?: Headers;
 };
 
 /**
@@ -196,17 +205,27 @@ export class Fetcher implements LocationUrlContext {
   private readonly locationUrlContext: LocationUrlContext;
 
   /**
+   * HTTP headers providing extra context
+   */
+  readonly headers?: Headers;
+
+  /**
    * @param config A configuration of the fetcher.
    * @param config.appId The application id.
    * @param config.transport The transport used when fetching.
    * @param config.userContext An object used to determine the requesting user.
    * @param config.locationUrlContext An object used to determine the location / base URL.
+   * @param config.headers Context to be sent as HTTP headers, higher precendence than user or location
    */
-  constructor({ appId, transport, userContext, locationUrlContext }: FetcherConfig) {
+  constructor({ appId, transport, userContext, locationUrlContext, headers }: FetcherConfig) {
     this.appId = appId;
     this.transport = transport;
     this.userContext = userContext;
     this.locationUrlContext = locationUrlContext;
+
+    if (headers) {
+      this.headers = headers;
+    }
   }
 
   clone(config: Partial<FetcherConfig>): Fetcher {
@@ -216,6 +235,7 @@ export class Fetcher implements LocationUrlContext {
       userContext: this.userContext,
       locationUrlContext: this.locationUrlContext,
       ...config,
+      ...("headers" in this && { headers: { ...this.headers, ...config.headers } }),
     });
   }
 
@@ -240,6 +260,9 @@ export class Fetcher implements LocationUrlContext {
         url,
         headers: {
           ...Fetcher.buildAuthorizationHeader(user, tokenType),
+          ...this.locationUrlContext.headers,
+          ...user?.headers,
+          ...this.headers,
           ...request.headers,
         },
       });
