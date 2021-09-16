@@ -26,13 +26,13 @@ const dogSchema: Realm.ObjectSchema = {
   name: "dog",
   primaryKey: "_id",
   properties: {
-    _id: "objectId",
+    _id: "int",
     name: "string",
   },
 };
 
 interface IDog {
-  _id: ObjectId;
+  _id: number;
   name: string;
 }
 
@@ -67,9 +67,9 @@ describe("useQuery", () => {
     const { realm, collection } = result.current;
 
     const [dog1, dog2, dog3] = [
-      { _id: new Realm.BSON.ObjectId(), name: "Vincent" },
-      { _id: new Realm.BSON.ObjectId(), name: "River" },
-      { _id: new Realm.BSON.ObjectId(), name: "Schatzi" },
+      { _id: 1, name: "Vincent" },
+      { _id: 2, name: "River" },
+      { _id: 3, name: "Schatzi" },
     ];
     act(() => {
       realm.write(() => {
@@ -102,9 +102,9 @@ describe("useObject", () => {
     await waitForNextUpdate();
     const realm = result.current;
     const [dog1, dog2, dog3] = [
-      { _id: new Realm.BSON.ObjectId(), name: "Vincent" },
-      { _id: new Realm.BSON.ObjectId(), name: "River" },
-      { _id: new Realm.BSON.ObjectId(), name: "Schatzi" },
+      { _id: 4, name: "Vincent" },
+      { _id: 5, name: "River" },
+      { _id: 6, name: "Schatzi" },
     ];
     act(() => {
       realm?.write(() => {
