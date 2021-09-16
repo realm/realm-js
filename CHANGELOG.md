@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* React Native templates now transfer hidden files into new projects([#3971](https://github.com/realm/realm-js/issues/3971))
 * None.
 
 ### Compatibility
