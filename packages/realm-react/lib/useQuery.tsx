@@ -35,8 +35,8 @@ export function createUseQuery(useRealm: UseRealm): UseQuery {
     const [hasError, setHasError] = useState(false);
     const [collection, setCollection] = useState<Realm.Results<T & Realm.Object> | null>(null);
 
-    try {
-      const generateResult = useCallback(() => {
+    const generateResult = useCallback(() => {
+      try {
         const sort = modifiers?.sort && modifiers?.sort !== "" ? modifiers.sort : null;
         const filter = modifiers?.filter != null && modifiers?.filter !== "" ? modifiers.filter : null;
         let result = null;
@@ -49,31 +49,32 @@ export function createUseQuery(useRealm: UseRealm): UseQuery {
           result = result.sorted(sort);
         }
         return result;
-      }, [realm, type, modifiers]);
+      } catch (err) {
+        console.error(err);
+        setHasError(true);
+        return null;
+      }
+    }, [realm, type, modifiers]);
 
-      useEffect(() => {
-        setCollection(generateResult());
-      }, [realm, type, modifiers, generateResult]);
+    useEffect(() => {
+      setCollection(generateResult());
+    }, [realm, type, modifiers, generateResult]);
 
-      useEffect(() => {
-        if (collection?.constructor.name === "Results") {
-          collection.addListener((_, changes) => {
-            if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
-              setCollection(generateResult());
-            }
-          });
-        }
-
-        return () => {
-          if (collection?.constructor.name === "Results") {
-            collection.removeAllListeners();
+    useEffect(() => {
+      if (collection) {
+        collection.addListener((_, changes) => {
+          if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
+            setCollection(generateResult());
           }
-        };
-      }, [collection]);
-    } catch (err) {
-      console.error(err);
-      setHasError(true);
-    }
+        });
+      }
+
+      return () => {
+        if (collection) {
+          collection.removeAllListeners();
+        }
+      };
+    }, [collection, generateResult]);
 
     return { hasError, data: collection };
   }

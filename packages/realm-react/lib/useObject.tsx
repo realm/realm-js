@@ -20,11 +20,11 @@ import { UseRealm } from "./useRealm";
 import { useState, useEffect } from "react";
 
 export interface UseObject {
-  <T>(type: string, primaryKey: Realm.PrimaryKey): { hasError: boolean; data: (T & Realm.Object) | null };
+  <T>(type: string, primaryKey: /*Realm.PrimaryKey*/ number): { hasError: boolean; data: (T & Realm.Object) | null };
 }
 
 export function createUseObject(useRealm: UseRealm): UseObject {
-  function useObject<T>(type: string, primaryKey: Realm.PrimaryKey) {
+  function useObject<T>(type: string, primaryKey: /*Realm.PrimaryKey*/ number) {
     const realm = useRealm();
     const [hasError, setHasError] = useState(false);
     const [object, setObject] = useState<(T & Realm.Object) | null>(null);
