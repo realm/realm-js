@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { SafeAreaView, View, StyleSheet } from 'react-native';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
+import {SafeAreaView, View, StyleSheet} from 'react-native';
 import Realm from 'realm';
 
 import Task from './app/models/Task';
@@ -18,13 +18,6 @@ function App() {
   // We store the listener in "subscriptionRef" to be able to remove it when the component unmounts.
   const subscriptionRef = useRef<Realm.Results<Task> | null>(null);
 
-  useEffect(() => {
-    openRealm();
-
-    // Return a cleanup callback to close the realm to prevent memory leaks
-    return closeRealm;
-  }, []);
-
   const openRealm = useCallback(async (): Promise<void> => {
     try {
       // Open a local realm file with the schema(s) that are a part of this realm.
@@ -39,13 +32,14 @@ function App() {
       // the realm will be opened synchronously when calling "Realm.open"
       const realm = await Realm.open(config);
       realmRef.current = realm;
-      
+
       // When querying a realm to find objects (e.g. realm.objects('Tasks')) the result we get back
       // and the objects in it are "live" and will always reflect the latest state.
       const tasksResults: Realm.Results<Task> = realm.objects('Task');
-      if (tasksResults?.length)
+      if (tasksResults?.length) {
         setTasks(tasksResults);
-      
+      }
+
       // Live queries and objects emit notifications when something has changed that we can listen for.
       subscriptionRef.current = tasksResults;
       tasksResults.addListener((/*collection, changes*/) => {
@@ -61,8 +55,7 @@ function App() {
         // argument) will not trigger a rerender since it is the same reference
         setTasks(realm.objects('Task'));
       });
-    }
-    catch (err) {
+    } catch (err) {
       console.error('Error opening realm: ', err.message);
     }
   }, [realmRef, setTasks]);
@@ -80,69 +73,85 @@ function App() {
     setTasks([]);
   }, [realmRef]);
 
-  const handleAddTask = useCallback((description: string): void => {
-    if (!description)
-      return;
+  useEffect(() => {
+    openRealm();
 
-    // Everything in the function passed to "realm.write" is a transaction and will
-    // hence succeed or fail together. A transcation is the smallest unit of transfer
-    // in Realm so we want to be mindful of how much we put into one single transaction
-    // and split them up if appropriate (more commonly seen server side). Since clients
-    // may occasionally be online during short time spans we want to increase the probability
-    // of sync participants to successfully sync everything in the transaction, otherwise
-    // no changes propagate and the transaction needs to start over when connectivity allows.
-    const realm = realmRef.current;
-    realm?.write(() => {
-      realm?.create('Task', Task.generate(description));
-    });
-  }, [realmRef]);
+    // Return a cleanup callback to close the realm to prevent memory leaks
+    return closeRealm;
+  }, [openRealm, closeRealm]);
 
-  const handleToggleTaskStatus = useCallback((task: Task): void => {
-    const realm = realmRef.current;
-    realm?.write(() => {
-      // Normally when updating a record in a NoSQL or SQL database, we have to type
-      // a statement that will later be interpreted and used as instructions for how
-      // to update the record. But in RealmDB, the objects are "live" because they are
-      // actually referencing the object's location in memory on the device (memory mapping).
-      // So rather than typing a statement, we modify the object directly by changing
-      // the property values. If the changes adhere to the schema, Realm will accept
-      // this new version of the object and wherever this object is being referenced
-      // locally will also see the changes "live".
-      task.isComplete = !task.isComplete;
-    });
+  const handleAddTask = useCallback(
+    (description: string): void => {
+      if (!description) {
+        return;
+      }
 
-    // Alternatively if passing the ID as the argument to handleToggleTaskStatus:
-    // realm?.write(() => {
-    //   const task = realm?.objectForPrimaryKey('Task', id); // If the ID is passed as an ObjectId
-    //   const task = realm?.objectForPrimaryKey('Task', Realm.BSON.ObjectId(id));  // If the ID is passed as a string
-    //   task.isComplete = !task.isComplete;
-    // });
-  }, [realmRef]);
+      // Everything in the function passed to "realm.write" is a transaction and will
+      // hence succeed or fail together. A transcation is the smallest unit of transfer
+      // in Realm so we want to be mindful of how much we put into one single transaction
+      // and split them up if appropriate (more commonly seen server side). Since clients
+      // may occasionally be online during short time spans we want to increase the probability
+      // of sync participants to successfully sync everything in the transaction, otherwise
+      // no changes propagate and the transaction needs to start over when connectivity allows.
+      const realm = realmRef.current;
+      realm?.write(() => {
+        realm?.create('Task', Task.generate(description));
+      });
+    },
+    [realmRef],
+  );
 
-  const handleDeleteTask = useCallback((task: Task): void => {
-    const realm = realmRef.current;
-    realm?.write(() => {
-      realm?.delete(task);
+  const handleToggleTaskStatus = useCallback(
+    (task: Task): void => {
+      const realm = realmRef.current;
+      realm?.write(() => {
+        // Normally when updating a record in a NoSQL or SQL database, we have to type
+        // a statement that will later be interpreted and used as instructions for how
+        // to update the record. But in RealmDB, the objects are "live" because they are
+        // actually referencing the object's location in memory on the device (memory mapping).
+        // So rather than typing a statement, we modify the object directly by changing
+        // the property values. If the changes adhere to the schema, Realm will accept
+        // this new version of the object and wherever this object is being referenced
+        // locally will also see the changes "live".
+        task.isComplete = !task.isComplete;
+      });
 
-      // Alternatively if passing the ID as the argument to handleDeleteTask:
-      // realm?.delete(realm?.objectForPrimaryKey('Task', id));
-    });
-  }, [realmRef]);
+      // Alternatively if passing the ID as the argument to handleToggleTaskStatus:
+      // realm?.write(() => {
+      //   const task = realm?.objectForPrimaryKey('Task', id); // If the ID is passed as an ObjectId
+      //   const task = realm?.objectForPrimaryKey('Task', Realm.BSON.ObjectId(id));  // If the ID is passed as a string
+      //   task.isComplete = !task.isComplete;
+      // });
+    },
+    [realmRef],
+  );
+
+  const handleDeleteTask = useCallback(
+    (task: Task): void => {
+      const realm = realmRef.current;
+      realm?.write(() => {
+        realm?.delete(task);
+
+        // Alternatively if passing the ID as the argument to handleDeleteTask:
+        // realm?.delete(realm?.objectForPrimaryKey('Task', id));
+      });
+    },
+    [realmRef],
+  );
 
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.content}>
         <AddTaskForm onSubmit={handleAddTask} />
-        {(tasks.length === 0)
-          ? <IntroText />
-          : (
-            <TaskList
-              tasks={tasks}
-              onToggleTaskStatus={handleToggleTaskStatus}
-              onDeleteTask={handleDeleteTask}
-            />
-          )
-        }
+        {tasks.length === 0 ? (
+          <IntroText />
+        ) : (
+          <TaskList
+            tasks={tasks}
+            onToggleTaskStatus={handleToggleTaskStatus}
+            onDeleteTask={handleDeleteTask}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -151,13 +160,13 @@ function App() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.darkBlue
+    backgroundColor: colors.darkBlue,
   },
   content: {
     flex: 1,
     paddingTop: 20,
-    paddingHorizontal: 20 
-  }
+    paddingHorizontal: 20,
+  },
 });
 
 export default App;
