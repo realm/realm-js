@@ -70,6 +70,7 @@ function AppWrapper() {
   );
 };
 ```
+### Implement Hooks in Child Components
 
 The hooks created by `createRealmContext` can now be used by any child component.
 
