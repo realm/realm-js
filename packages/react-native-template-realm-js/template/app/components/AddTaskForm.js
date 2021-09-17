@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, Platform, StyleSheet } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Platform,
+  StyleSheet,
+} from 'react-native';
 
 import colors from '../styles/colors';
 
-function AddTaskForm({ onSubmit }) {
+function AddTaskForm({onSubmit}) {
   const [description, setDescription] = useState('');
 
   const handleSubmit = () => {
@@ -15,19 +22,14 @@ function AddTaskForm({ onSubmit }) {
     <View style={styles.form}>
       <TextInput
         value={description}
-        placeholder='Enter new task description'
+        placeholder="Enter new task description"
         onChangeText={setDescription}
         autoCorrect={false}
-        autoCapitalize='none'
+        autoCapitalize="none"
         style={styles.textInput}
       />
-      <Pressable
-        onPress={handleSubmit}
-        style={styles.submit}
-      >
-        <Text style={styles.icon}>
-          ＋
-        </Text>
+      <Pressable onPress={handleSubmit} style={styles.submit}>
+        <Text style={styles.icon}>＋</Text>
       </Pressable>
     </View>
   );
@@ -43,15 +45,15 @@ const styles = StyleSheet.create({
         shadowColor: colors.black,
         shadowOffset: {
           width: 0,
-          height: 4
+          height: 4,
         },
         shadowOpacity: 0.7,
-        shadowRadius: 3
+        shadowRadius: 3,
       },
       android: {
-        elevation: 3
-      }
-    })
+        elevation: 3,
+      },
+    }),
   },
   textInput: {
     flex: 1,
@@ -74,8 +76,8 @@ const styles = StyleSheet.create({
     color: colors.white,
     textAlign: 'center',
     fontSize: 17,
-    fontWeight: 'bold'
-  }
+    fontWeight: 'bold',
+  },
 });
 
 export default AddTaskForm;

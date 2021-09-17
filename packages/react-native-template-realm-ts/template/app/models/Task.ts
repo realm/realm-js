@@ -20,8 +20,8 @@ class Task extends Realm.Object {
     properties: {
       _id: 'objectId',
       description: 'string',
-      isComplete: { type: 'bool', default: false }
-    }
+      isComplete: {type: 'bool', default: false},
+    },
   };
 }
 
