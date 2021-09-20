@@ -39,6 +39,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+set(PACKAGE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
 if(DEFINED CMAKE_JS_VERSION)
     include(NodeJSTargets)
 endif()
