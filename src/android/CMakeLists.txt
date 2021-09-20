@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 3.18.1)
 
-set(PACKAGE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(REACT_NATIVE_ROOT_DIR "${PACKAGE_ROOT_DIR}/node_modules/react-native")
 set(REACT_NATIVE_AAR_DIR "${CMAKE_BINARY_DIR}/../react-native-aar") # TODO: Could we use CMAKE_BINARY_DIR instead?
 
-set(JSI_HEADER_DIR "${REACT_NATIVE_ROOT}/ReactCommon/jsi")
+set(JSI_HEADER_DIR "${REACT_NATIVE_ROOT_DIR}/ReactCommon/jsi")
 
 add_library(realm-js-android SHARED
     # $<TARGET_OBJECTS:realm-js-shared>
@@ -32,10 +31,8 @@ file(GLOB_RECURSE REACT_NATIVE_AAR_FILE ${REACT_NATIVE_ROOT_DIR}/android/*/react
 file(ARCHIVE_EXTRACT INPUT ${REACT_NATIVE_AAR_FILE} DESTINATION ${REACT_NATIVE_AAR_DIR})
 set(REACT_NATIVE_SO_DIR "${REACT_NATIVE_AAR_DIR}/jni/${ANDROID_ABI}")
 
-target_link_directories(realm-js-android PUBLIC ${REACT_NATIVE_SO_DIR})
-target_include_directories(realm-js-android PUBLIC ${JSI_HEADER_DIR})
-
-# target_include_directories(realm-js-hermes PUBLIC "../hermes")
+target_link_directories(realm-js-android PRIVATE ${REACT_NATIVE_SO_DIR})
+target_include_directories(realm-js-android PRIVATE ${JSI_HEADER_DIR})
 
 if (ANDROID_ABI MATCHES "^armeabi")
     target_compile_definitions(realm-js-android PUBLIC REALM_WRAP_MEMMOVE=1)

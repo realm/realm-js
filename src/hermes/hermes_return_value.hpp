@@ -43,15 +43,9 @@ template<>
         void set(JsiVal value) {
             m_value = std::move(value.get());
         }
-        void set(const jsi::Value& value) {
-            m_value = jsi::Value(m_env, value);
-        }
-        void set(jsi::Value&& value) {
-            m_value = std::move(value);
-        }
 
         void set(const std::string &string) {
-            m_value = jsi::Value(m_env, str(m_env, string));
+            m_value = str(m_env, string).get();
         }
 
         void set(const char* c_str) {
@@ -59,7 +53,7 @@ template<>
                 set_null();
             }
             else {
-                m_value = jsi::Value(m_env, str(m_env, c_str));
+                m_value = str(m_env, c_str).get();
             }
         }
 
