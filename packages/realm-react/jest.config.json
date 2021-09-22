@@ -1,8 +1,14 @@
 {
   "verbose": true,
-  "roots": ["<rootDir>/lib"],
+  "preset": "react-native",
+  "roots": [
+    "<rootDir>/lib"
+  ],
+  "setupFilesAfterEnv": [
+    "@testing-library/jest-native/extend-expect"
+  ],
   "transform": {
-    ".(ts|tsx)": "ts-jest"
+    "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
   },
   "testRegex": "(/__tests__/.*.(test|spec)).(jsx?|tsx?|js?|ts?)$"
 }

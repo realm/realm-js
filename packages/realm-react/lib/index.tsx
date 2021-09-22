@@ -34,6 +34,8 @@ interface CreateRealmContext {
   (realmConfig: Realm.Configuration): RealmContext;
 }
 
+type PrimaryKey = Realm.PrimaryKey;
+
 export const createRealmContext: CreateRealmContext = (realmConfig: Realm.Configuration) => {
   const RealmContext = createContext<Realm | null>(null);
   const RealmProvider = createRealmProvider(realmConfig, RealmContext);
