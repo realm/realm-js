@@ -73,8 +73,50 @@ public:
         if (!c_str) {
             set_null();
         }
-        else {
-            m_value = str(m_env, c_str).get();
+
+        void set(JsiVal value)
+        {
+            m_value = std::move(value.get());
+        }
+
+        void set(const std::string& string)
+        {
+            m_value = str(m_env, string).get();
+        }
+
+        void set(const char* c_str)
+        {
+            if (!c_str) {
+                set_null();
+            }
+            else {
+                m_value = str(m_env, c_str).get();
+            }
+        }
+
+        void set(bool boolean)
+        {
+            m_value = jsi::Value(boolean);
+        }
+
+        void set(double number)
+        {
+            m_value = jsi::Value(number);
+        }
+
+        void set(int32_t number)
+        {
+            set(double(number));
+        }
+
+        void set(uint32_t number)
+        {
+            set(double(number));
+        }
+
+        void set(realm::Mixed mixed)
+        {
+            m_value = Value<hermes::Types>::from_mixed(m_env, nullptr, mixed).get();
         }
     }
 

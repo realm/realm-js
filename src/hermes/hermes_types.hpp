@@ -60,8 +60,6 @@ public:
         return *m_rt;
     }
 
-    inline JsiFunc globalType(const char* name);
-
     JsiVal operator()(const jsi::Value&) const;
     JsiVal operator()(jsi::Value&&) const;
     JsiObj operator()(const jsi::Object&) const;
@@ -261,11 +259,6 @@ inline JsiFunc JsiEnv::operator()(jsi::Function&& val) const
     return {*this, std::move(val)};
 }
 
-inline JsiFunc JsiEnv::globalType(const char* name)
-{
-    return (*this)(get().global().getPropertyAsFunction(*this, name));
-}
-
 inline JsiVal JsiEnv::null() const
 {
     return {*this, jsi::Value::null()};
@@ -322,16 +315,6 @@ struct Types {
     using JsiStringPropertyGetterCallback = JsiFunctionCallback;
     using JsiStringPropertySetterCallback = JsiFunctionCallback;
     using JsiStringPropertyEnumeratorCallback = JsiFunctionCallback;
-#if 0
-	using JsiIndexGetterCallback = jsi::Value(*)(const jsi::CallbackInfo& info, const jsi::Object& instance, uint32_t index);
-	using JsiIndexSetterCallback = jsi::Value(*)(const jsi::CallbackInfo& info, const jsi::Object& instance, uint32_t index, const jsi::Value& value);
-	using JsiPropertyGetterCallback = jsi::Value(*)(const jsi::CallbackInfo& info);
-	using JsiPropertySetterCallback = void(*)(const jsi::CallbackInfo& info, const jsi::Value& value);
-
-	using JsiStringPropertyGetterCallback = jsi::Value(*)(const jsi::CallbackInfo& info, const jsi::Object& instance, const jsi::String& property);
-	using JsiStringPropertySetterCallback = jsi::Value(*)(const jsi::CallbackInfo& info, const jsi::Object& instance, const jsi::String& property, const jsi::Value& value);
-	using JsiStringPropertyEnumeratorCallback = jsi::Value(*)(const jsi::CallbackInfo& info, const jsi::Object& instance);
-#endif
 
     using ConstructorCallback = JsiFunctionCallback;
     using FunctionCallback = JsiFunctionCallback;
