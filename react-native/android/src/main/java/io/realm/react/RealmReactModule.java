@@ -69,10 +69,19 @@ class RealmReactModule extends ReactContextBaseJavaModule {
         setDefaultRealmFileDirectory(fileDir, assetManager);
 
         // Get the javascript runtime and install our native module with it
+
+        // TODO: Update this to use reactContext.getRuntimeExecutor() instead (since this is calling a deprecated method underneath)
+        // Using the RuntimeExecutor however, requires that we link our native module against fbjni.
+
         JavaScriptContextHolder jsContext = reactContext.getJavaScriptContextHolder();
         synchronized(jsContext) {
             install(jsContext.get());
         }
+    }
+
+    @Override
+    public void invalidate() {
+        invalidateCaches();
     }
 
     @Override
@@ -89,4 +98,6 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     private native void setDefaultRealmFileDirectory(String fileDir, AssetManager assets);
 
     private native void install(long runtimePointer);
+
+    private native void invalidateCaches();
 }
