@@ -93,7 +93,6 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
                         realm::default_realm_file_directory().c_str());
 }
 
-
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install(JNIEnv*, jclass, jlong runtimePointer)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "install");
@@ -104,4 +103,10 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install(JNIEnv*, jcl
         __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Initializing ...");
         realm_hermes_init(*runtime, exports);
     }
+}
+
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv*, jclass)
+{
+    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "invalidateCaches");
+    realm_hermes_invalidate_caches();
 }

@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "graceful-fs": "^4.2.4",
-    "react": "17.0.1",
-    "react-native": "0.64.2",
+    "react": "17.0.2",
+    "react-native": "0.66.0-rc.3",
     "react-native-exception-handler": "^2.4.3",
     "react-native-exit-app": "1.1.0",
     "react-native-fs": "^2.16.6",
@@ -27,8 +27,8 @@
     "fs-extra": "^4.0.3",
     "install-local": "^3.0.1",
     "jest": "^26.6.3",
-    "metro-react-native-babel-preset": "^0.64.0",
-    "react-test-renderer": "17.0.1"
+    "metro-react-native-babel-preset": "^0.66.2",
+    "react-test-renderer": "17.0.2"
   },
   "localDependencies": {
     "realm": "../..",

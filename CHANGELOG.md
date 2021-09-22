@@ -1,3 +1,23 @@
+10.20.0-alpha.2 Release notes (2021-??-??)
+=============================================================
+NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
+NOTE: This is an early (alpha) release with Hermes/JSI support: We expect crashes and bugs.
+
+### Enhancements
+* None.
+
+### Fixed
+* Hot reloading on Android no longer crash the app.
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* None.
+
 10.20.0-alpha.1 Release notes (2021-9-22)
 =============================================================
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
