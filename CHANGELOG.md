@@ -1,14 +1,12 @@
-10.20.0-alpha.0 Release notes (2021-9-2)
+10.20.0-alpha.1 Release notes (2021-9-22)
 =============================================================
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
-NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
+NOTE: This is an early (alpha) release with Hermes/JSI support: We expect crashes and bugs.
 
 ### Enhancements
-* Adding support for Hermes (iOS only).
+* Adding support for Hermes on Android.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* React Native templates now transfer hidden files into new projects([#3971](https://github.com/realm/realm-js/issues/3971))
 * None.
 
 ### Compatibility
@@ -19,10 +17,27 @@ NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supp
 
 ### Internal
 * Lint react-native templates and ensure they are checked by the CI.
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Small fix to Jenkins to publish Docker image for Raspberry Pi.
+
+10.20.0-alpha.0 Release notes (2021-9-2)
+=============================================================
+NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
+NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
+
+### Enhancements
+* Adding support for Hermes (iOS only).
+
+### Fixed
+* None.
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* None
 
 10.8.0 Release notes (2021-9-14)
 =============================================================
