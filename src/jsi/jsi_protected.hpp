@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "hermes_types.hpp"
+#include "jsi_types.hpp"
 
 namespace realm {
 namespace js {
