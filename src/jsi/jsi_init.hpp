@@ -18,13 +18,13 @@
 
 #pragma once
 
-#include "hermes_string.hpp"
-#include "hermes_protected.hpp"
-#include "hermes_function.hpp"
-#include "hermes_value.hpp"
-#include "hermes_object.hpp"
-#include "hermes_return_value.hpp"
-#include "hermes_class.hpp"
+#include "jsi_string.hpp"
+#include "jsi_protected.hpp"
+#include "jsi_function.hpp"
+#include "jsi_value.hpp"
+#include "jsi_object.hpp"
+#include "jsi_return_value.hpp"
+#include "jsi_class.hpp"
 
 // FIXME: js_object_accessor.hpp includes js_list.hpp which includes js_object_accessor.hpp.
 #include "js_object_accessor.hpp"

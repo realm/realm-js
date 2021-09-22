@@ -23,6 +23,14 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install
   (JNIEnv *, jclass, jlong);
 
+/*
+ * Class:     io_realm_react_RealmReactModule
+ * Method:    invalidateCaches
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif

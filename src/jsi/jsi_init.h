@@ -25,8 +25,8 @@ extern "C" {
 #endif
 
 namespace jsi = facebook::jsi;
-void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports);
-void realm_hermes_invalidate_caches();
+void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports);
+void realm_jsi_invalidate_caches();
 
 #ifdef __cplusplus
 }
