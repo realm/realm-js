@@ -15,10 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-//import React from "react";
+
 import React from "react";
 import { renderHook } from "@testing-library/react-hooks";
-import { createRealmContext } from "../";
+import { createRealmContext } from "..";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -34,27 +34,18 @@ interface IDog {
   name: string;
 }
 
-const { RealmProvider, useRealm, useQuery } = createRealmContext({
+const { RealmProvider, useRealm, useObject } = createRealmContext({
   schema: [dogSchema],
   inMemory: true,
 });
 
-describe("realm-react", () => {
-  it("the context returns the configured realm with useRealm", async () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result, waitForNextUpdate } = renderHook(() => useRealm(), { wrapper });
-    await waitForNextUpdate();
-    const realm = result.current;
-    expect(realm).not.toBe(null);
-    expect(realm.schema[0].name).toBe("dog");
-  });
-});
-describe("useQuery", () => {
-  const testDataSet = [
-    { _id: 4, name: "Vincent" },
-    { _id: 5, name: "River" },
-    { _id: 6, name: "Schatzi" },
-  ];
+const testDataSet = [
+  { _id: 4, name: "Vincent" },
+  { _id: 5, name: "River" },
+  { _id: 6, name: "Schatzi" },
+];
+
+describe("useObject hook", () => {
   beforeEach(async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
     const { result, waitForNextUpdate } = renderHook(() => useRealm(), { wrapper });
@@ -67,21 +58,32 @@ describe("useQuery", () => {
       });
     });
   });
-  it("can retrieve collections using useQuery", async () => {
+
+  it("can retrieve a single object using useObject", async () => {
+    const [, dog2] = testDataSet;
+
     const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result, waitForNextUpdate } = renderHook(() => useQuery<IDog>("dog"), { wrapper });
-    await waitForNextUpdate();
-    const collection = result.current;
+    const { result: objectResult, waitForNextUpdate: waitForNextObjectUpdate } = renderHook(
+      () => useObject<IDog>("dog", dog2._id),
+      { wrapper },
+    );
+    await waitForNextObjectUpdate();
 
-    const [dog1, dog2, dog3] = testDataSet;
+    const object = objectResult.current;
 
-    if (collection !== undefined) {
-      const { data } = collection;
-      if (data) {
-        expect(data?.[0]).toMatchObject(dog1);
-        expect(data?.[1]).toMatchObject(dog2);
-        expect(data?.[2]).toMatchObject(dog3);
-      }
-    }
+    expect(object.data).toMatchObject(dog2);
+  });
+
+  it("object is null", async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
+    const { result: objectResult, waitForNextUpdate: waitForNextObjectUpdate } = renderHook(
+      () => useObject<IDog>("dog", 12),
+      { wrapper },
+    );
+    await waitForNextObjectUpdate();
+
+    const object = objectResult.current;
+
+    expect(object.data).toEqual(null);
   });
 });

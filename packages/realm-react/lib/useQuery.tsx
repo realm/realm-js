@@ -23,7 +23,7 @@ export type QueryModifiers = { sort?: string; filter?: string };
 
 export interface UseQuery {
   <T>(type: string, modifiers?: QueryModifiers): {
-    hasError: boolean;
+    error: Error | null;
     data: Realm.Results<T & Realm.Object> | null;
   };
 }
@@ -31,9 +31,6 @@ export interface UseQuery {
 export function createUseQuery(useRealm: UseRealm): UseQuery {
   function useQuery<T>(type: string, modifiers?: QueryModifiers) {
     const realm = useRealm();
-
-    const [hasError, setHasError] = useState(false);
-    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object> | null>(null);
 
     const generateResult = useCallback(() => {
       try {
@@ -51,14 +48,13 @@ export function createUseQuery(useRealm: UseRealm): UseQuery {
         return result;
       } catch (err) {
         console.error(err);
-        setHasError(true);
+        setError(err as Error);
         return null;
       }
     }, [realm, type, modifiers]);
 
-    useEffect(() => {
-      setCollection(generateResult());
-    }, [realm, type, modifiers, generateResult]);
+    const [error, setError] = useState<Error | null>(null);
+    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object> | null>(generateResult);
 
     useEffect(() => {
       if (collection) {
@@ -76,7 +72,7 @@ export function createUseQuery(useRealm: UseRealm): UseQuery {
       };
     }, [collection, generateResult]);
 
-    return { hasError, data: collection };
+    return { error, data: collection };
   }
   return useQuery;
 }

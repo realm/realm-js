@@ -1,6 +1,6 @@
 {
   "name": "@realm.io/react",
-  "version": "0.0.2-alpha",
+  "version": "0.0.2-alpha.2",
   "description": "React specific hooks and implementation helpers for Realm",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,20 +11,26 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@babel/core": "^7.15.5",
+    "@babel/preset-typescript": "^7.15.0",
+    "@babel/runtime": "^7.15.4",
+    "@testing-library/jest-native": "^4.0.2",
     "@testing-library/react-hooks": "^7.0.1",
     "@testing-library/react-native": "^7.2.0",
     "@types/jest": "^26.0.24",
     "@types/react": "^17.0.14",
     "@types/react-native": "^0.64.12",
+    "babel-jest": "^27.2.1",
+    "babel-plugin-module-resolver": "^4.1.0",
     "eslint": "^7.31.0",
     "eslint-plugin-prettier": "^3.4.0",
     "fb-watchman": "^2.0.1",
     "jest": "^27.0.6",
+    "metro-react-native-babel-preset": "^0.66.2",
     "prettier": "^2.3.2",
     "react": "^17.0.2",
-    "react-native": "^0.64.2",
+    "react-native": "^0.65.1",
     "react-test-renderer": "^16.14.0",
-    "ts-jest": "^27.0.4",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
   },
@@ -59,9 +65,6 @@
     "url": "https://github.com/realm/realm-js/issues"
   },
   "license": "SEE LICENSE IN LICENSE",
-  "jest": {
-    "preset": "react-native"
-  },
   "dependencies": {
     "realm": "^10.8.0"
   }

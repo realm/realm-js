@@ -15,10 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-//import React from "react";
 import React from "react";
+
+import { createRealmContext } from "..";
 import { renderHook } from "@testing-library/react-hooks";
-import { createRealmContext } from "../";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -36,25 +36,17 @@ interface IDog {
 
 const { RealmProvider, useRealm, useQuery } = createRealmContext({
   schema: [dogSchema],
+  path: "useObjectRealm",
   inMemory: true,
 });
 
-describe("realm-react", () => {
-  it("the context returns the configured realm with useRealm", async () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result, waitForNextUpdate } = renderHook(() => useRealm(), { wrapper });
-    await waitForNextUpdate();
-    const realm = result.current;
-    expect(realm).not.toBe(null);
-    expect(realm.schema[0].name).toBe("dog");
-  });
-});
+const testDataSet = [
+  { _id: 4, name: "Vincent" },
+  { _id: 5, name: "River" },
+  { _id: 6, name: "Schatzi" },
+];
+
 describe("useQuery", () => {
-  const testDataSet = [
-    { _id: 4, name: "Vincent" },
-    { _id: 5, name: "River" },
-    { _id: 6, name: "Schatzi" },
-  ];
   beforeEach(async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
     const { result, waitForNextUpdate } = renderHook(() => useRealm(), { wrapper });
