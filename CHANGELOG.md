@@ -202,6 +202,22 @@ const config = {
 * Added a performance test suite to the integration test.
 * Upgraded Realm Core from v11.6.1 to v11.7.0.
 
+10.20.0-alpha.2 Release notes (2021-11-25)
+=============================================================
+NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
+NOTE: This is an early (alpha) release with Hermes/JSI support: We expect crashes and bugs.
+
+Based on Realm JS v10.10.1: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.8.0).
+
+### Enhancements
+* None.
+
+### Fixed
+* Hot reloading on Android no longer crash the app.
+
+### Internal
+* Restructured C++ namespaces and files to reflect that we support JSI, not just Hermes.
+
 10.10.1 Release notes (2021-11-18)
 =============================================================
 ### Enhancements
@@ -319,7 +335,7 @@ const config = {
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
 NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
 
-Based on Realm JS v10.8.0: See changelog below for detailes on enhancements and fixes introduced by that version.
+Based on Realm JS v10.8.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.7.0).
 
 ### Enhancements
 * Adding support for Hermes on Android.
@@ -354,7 +370,7 @@ Based on Realm JS v10.8.0: See changelog below for detailes on enhancements and 
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
 NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
 
-Based on Realm JS v10.7.0: See changelog below for detailes on enhancements and fixes introduced by that version.
+Based on Realm JS v10.7.0: See changelog below for details on enhancements and fixes introduced by that version.
 
 ### Enhancements
 - Adding support for Hermes (iOS only).
