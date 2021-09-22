@@ -13,14 +13,4 @@ apply from: file("../node_modules/@react-native-community/cli-platform-android/n
 include ':realm'
 project(':realm').projectDir = new File(settingsDir, '../../../react-native/android')
 
-include ':ReactAndroid'
-project(':ReactAndroid').projectDir = new File(
-        rootProject.projectDir, '../node_modules/react-native/ReactAndroid')
-
-// Includes codegen and its plugin into Gradle project. Required by `:ReactAndroid` project configuration.
-include ':packages:react-native-codegen:android'
-project(':packages:react-native-codegen:android').projectDir = new File(rootProject.projectDir,
-        '../node_modules/react-native/packages/react-native-codegen/android')
-includeBuild('../node_modules/react-native/packages/react-native-codegen/android')
-
 include ':app'

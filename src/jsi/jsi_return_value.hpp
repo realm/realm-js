@@ -18,34 +18,36 @@
 
 #pragma once
 
-#include "hermes_types.hpp"
-#include "hermes_string.hpp"
+#include "jsi_types.hpp"
+#include "jsi_string.hpp"
 
 namespace realm {
 namespace js {
 
+namespace fbjsi = facebook::jsi;
+
 template <>
-class ReturnValue<hermes::Types> {
+class ReturnValue<realmjsi::Types> {
     JsiEnv m_env;
-    jsi::Value m_value; // defaults to undefined
+    fbjsi::Value m_value; // defaults to undefined
 
 public:
     ReturnValue(JsiEnv env)
         : m_env(env)
     {
     }
-    ReturnValue(JsiEnv env, jsi::Value&& value)
+    ReturnValue(JsiEnv env, fbjsi::Value&& value)
         : m_env(env)
         , m_value(std::move(value))
     {
     }
-    ReturnValue(JsiEnv env, const jsi::Value& value)
+    ReturnValue(JsiEnv env, const fbjsi::Value& value)
         : m_env(env)
         , m_value(env, value)
     {
     }
 
-    jsi::Value ToValue() &&
+    fbjsi::Value ToValue() &&
     {
         return std::move(m_value);
     }
@@ -53,14 +55,6 @@ public:
     void set(JsiVal value)
     {
         m_value = std::move(value.get());
-    }
-    void set(const jsi::Value& value)
-    {
-        m_value = jsi::Value(m_env, value);
-    }
-    void set(jsi::Value&& value)
-    {
-        m_value = std::move(value);
     }
 
     void set(const std::string& string)
@@ -80,12 +74,12 @@ public:
 
     void set(bool boolean)
     {
-        m_value = jsi::Value(boolean);
+        m_value = fbjsi::Value(boolean);
     }
 
     void set(double number)
     {
-        m_value = jsi::Value(number);
+        m_value = fbjsi::Value(number);
     }
 
     void set(int32_t number)
@@ -100,18 +94,18 @@ public:
 
     void set(realm::Mixed mixed)
     {
-        m_value = jsi::Value(m_env, TypeMixed<hermes::Types>::get_instance().wrap(m_env, mixed));
+        m_value = js::Value<realmjsi::Types>::from_mixed(m_env, nullptr, mixed).get();
     }
 
     void set_null()
     {
-        m_value = jsi::Value::null();
+        m_value = fbjsi::Value::null();
     }
 
 
     void set_undefined()
     {
-        m_value = jsi::Value::undefined();
+        m_value = fbjsi::Value::undefined();
     }
 
     template <typename T>

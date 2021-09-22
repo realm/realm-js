@@ -21,7 +21,7 @@
 #include <android/asset_manager_jni.h>
 #include <jsi/jsi.h>
 
-#include <hermes/hermes_init.h>
+#include <jsi/jsi_init.h>
 #include "platform.hpp"
 #include "jni_utils.hpp"
 #include "hack.hpp"
@@ -93,7 +93,6 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
                         realm::default_realm_file_directory().c_str());
 }
 
-
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install(JNIEnv*, jclass, jlong runtimePointer)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "install");
@@ -102,6 +101,12 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install(JNIEnv*, jcl
         __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Building an exports object");
         auto exports = jsi::Object(*runtime);
         __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Initializing ...");
-        realm_hermes_init(*runtime, exports);
+        realm_jsi_init(*runtime, exports);
     }
+}
+
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv*, jclass)
+{
+    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "invalidateCaches");
+    realm_jsi_invalidate_caches();
 }
