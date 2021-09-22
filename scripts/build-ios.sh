@@ -56,6 +56,7 @@ fi
 DESTINATIONS=()
 LIBRARIES=()
 BUILD_LIB_CMDS=()
+
 for platform in "${PLATFORMS[@]}"; do
     case "$platform" in 
         ios)
