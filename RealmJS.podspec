@@ -58,7 +58,7 @@ Pod::Spec.new do |s|
                                 'HEADER_SEARCH_PATHS' => [
                                   '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
                                   '"$(PODS_TARGET_SRCROOT)/src/"',
-                                  '"$(PODS_TARGET_SRCROOT)/src/hermes/"',
+                                  '"$(PODS_TARGET_SRCROOT)/src/jsi/"',
                                   '"$(PODS_ROOT)/Headers/Public/React-Core/"'
                                   #"'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting
                                 ].join(' ')
