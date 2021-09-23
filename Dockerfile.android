@@ -61,7 +61,7 @@ RUN echo 'Installing Android SDK' && \
                      "platform-tools" \
                      "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
                      "platforms;android-26" \
-                     "cmake;3.10.2.4988404"\
+                     "cmake;3.18.1"\
                      "system-images;android-29;default;x86" && \
     \
     echo 'Installing Android NDK' && \
