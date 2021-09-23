@@ -23,7 +23,7 @@
 #include <map>
 #include <string>
 
-#include <jsi/jsi.h>
+#include "jsi/jsi.h"
 
 #define HANDLESCOPE(env) ::facebook::jsi::Scope handle_scope(env);
 
