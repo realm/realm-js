@@ -20,11 +20,6 @@
 
 import {NativeEventEmitter, NativeModules} from 'react-native';
 import * as RealmTests from 'realm-tests';
-import ListViewTest from './listview-test';
-
-RealmTests.registerTests({
-  ListViewTest,
-});
 
 const realmTestEmitter = new NativeEventEmitter(
   NativeModules.RealmTestEventEmitter,
