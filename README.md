@@ -250,8 +250,9 @@ Currently the following information is reported:
 
 ## Code of Conduct
 
-This project adheres to the Contributor Covenant [code of conduct](https://realm.io/conduct/).
-By participating, you are expected to uphold this code. Please report unacceptable behavior to [info@realm.io](mailto:info+conduct@realm.io).
+This project adheres to the [MongoDB Code of Conduct](https://www.mongodb.com/community-code-of-conduct).
+By participating, you are expected to uphold this code. Please report
+unacceptable behavior to [community-conduct@mongodb.com](mailto:community-conduct@mongodb.com).
 
 ## Contributing
 
