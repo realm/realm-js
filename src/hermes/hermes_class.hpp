@@ -227,14 +227,14 @@ public:
                   "nativeFunc",
                   util::format(R"(
                       return function %1(...args) {
-                         //"use strict";
-                          if (!nativeFunc && false) // XXX only disable for Realm.Object
+                          // "use strict"; 
+                          if (!nativeFunc && false) // XXX only disable check for Realm.Object
                               throw TypeError("%1() cannot be constructed directly from javascript");
                           if (!new.target && false) { // XXX find another way to detect this correctly
                               throw TypeError("%1() must be called as a constructor");
                           }
                           if (nativeFunc)
-                          nativeFunc(this, ...args); 
+                              nativeFunc(this, ...args);
 
                           if ('_proxyWrapper' in %1)
                               return %1._proxyWrapper(this);

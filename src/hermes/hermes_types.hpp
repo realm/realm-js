@@ -217,16 +217,6 @@ struct Types {
 	using JsiStringPropertyGetterCallback = JsiFunctionCallback;
 	using JsiStringPropertySetterCallback = JsiFunctionCallback;
 	using JsiStringPropertyEnumeratorCallback = JsiFunctionCallback;
-#if 0
-	using JsiIndexGetterCallback = jsi::Value(*)(const jsi::CallbackInfo& info, const jsi::Object& instance, uint32_t index);
-	using JsiIndexSetterCallback = jsi::Value(*)(const jsi::CallbackInfo& info, const jsi::Object& instance, uint32_t index, const jsi::Value& value);
-	using JsiPropertyGetterCallback = jsi::Value(*)(const jsi::CallbackInfo& info);
-	using JsiPropertySetterCallback = void(*)(const jsi::CallbackInfo& info, const jsi::Value& value);
-
-	using JsiStringPropertyGetterCallback = jsi::Value(*)(const jsi::CallbackInfo& info, const jsi::Object& instance, const jsi::String& property);
-	using JsiStringPropertySetterCallback = jsi::Value(*)(const jsi::CallbackInfo& info, const jsi::Object& instance, const jsi::String& property, const jsi::Value& value);
-	using JsiStringPropertyEnumeratorCallback = jsi::Value(*)(const jsi::CallbackInfo& info, const jsi::Object& instance);
-#endif
 
 	using ConstructorCallback = JsiFunctionCallback;
 	using FunctionCallback = JsiFunctionCallback;
