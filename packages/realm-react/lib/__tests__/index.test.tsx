@@ -29,12 +29,7 @@ const dogSchema: Realm.ObjectSchema = {
   },
 };
 
-interface IDog {
-  _id: number;
-  name: string;
-}
-
-const { RealmProvider, useRealm, useQuery } = createRealmContext({
+const { RealmProvider, useRealm } = createRealmContext({
   schema: [dogSchema],
   inMemory: true,
 });
@@ -47,41 +42,5 @@ describe("realm-react", () => {
     const realm = result.current;
     expect(realm).not.toBe(null);
     expect(realm.schema[0].name).toBe("dog");
-  });
-});
-describe("useQuery", () => {
-  const testDataSet = [
-    { _id: 4, name: "Vincent" },
-    { _id: 5, name: "River" },
-    { _id: 6, name: "Schatzi" },
-  ];
-  beforeEach(async () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result, waitForNextUpdate } = renderHook(() => useRealm(), { wrapper });
-    await waitForNextUpdate();
-    const realm = result.current;
-    realm.write(() => {
-      realm.deleteAll();
-      testDataSet.forEach((data) => {
-        realm.create("dog", data);
-      });
-    });
-  });
-  it("can retrieve collections using useQuery", async () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result, waitForNextUpdate } = renderHook(() => useQuery<IDog>("dog"), { wrapper });
-    await waitForNextUpdate();
-    const collection = result.current;
-
-    const [dog1, dog2, dog3] = testDataSet;
-
-    if (collection !== undefined) {
-      const { data } = collection;
-      if (data) {
-        expect(data?.[0]).toMatchObject(dog1);
-        expect(data?.[1]).toMatchObject(dog2);
-        expect(data?.[2]).toMatchObject(dog3);
-      }
-    }
   });
 });

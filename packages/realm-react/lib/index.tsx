@@ -21,20 +21,18 @@ import Realm from "realm";
 import { createUseRealm, UseRealm } from "./useRealm";
 import { UseQuery, createUseQuery } from "./useQuery";
 import { UseObject, createUseObject } from "./useObject";
-import { createRealmProvider, IRealmProvider } from "./RealmProvider";
+import { createRealmProvider, RealmProviderType } from "./RealmProvider";
 
-interface RealmContext {
-  RealmProvider: IRealmProvider;
+type RealmContext = {
+  RealmProvider: RealmProviderType;
   useQuery: UseQuery;
   useObject: UseObject;
   useRealm: UseRealm;
-}
+};
 
 interface CreateRealmContext {
   (realmConfig: Realm.Configuration): RealmContext;
 }
-
-type PrimaryKey = Realm.PrimaryKey;
 
 export const createRealmContext: CreateRealmContext = (realmConfig: Realm.Configuration) => {
   const RealmContext = createContext<Realm | null>(null);
