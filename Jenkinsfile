@@ -254,7 +254,7 @@ def buildWindows(nodeVersion, arch) {
 
 def buildiOS() {
   return buildMacOS {
-    npm ci
+    sh 'npm ci'
     sh './scripts/build-iOS.sh -c Release'
       dir('react-native/ios') {
       // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
