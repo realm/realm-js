@@ -1,5 +1,6 @@
 # Starting from a slimmed version of the latest stable Debian
-FROM debian:stable-slim
+#FROM debian:stable-slim
+FROM debian:stretch-20210721-slim
 
 # Setting environment variables for versions
 # See https://developer.android.com/studio/#command-tools for the latest SDK version
@@ -15,14 +16,14 @@ ENV NPM_CONFIG_UNSAFE_PERM true
 ENV NVM_DIR /tmp/.nvm
 
 # Because we're using the slim variant of Debian some directories (expected when installing openjdk) are missing
-#RUN mkdir /usr/share/man/man1
+RUN mkdir /usr/share/man/man1
 
 # Install dependencies
 ENV DEBIAN_FRONTEND noninteractive
 RUN dpkg --add-architecture i386 && \
-    apt-get update -qq && \
-    apt-get install -qq software-properties-common && \
-    apt-add-repository 'deb http://security.debian.org/debian-security stretch/updates main' && \
+#    apt-get update -qq && \
+#    apt-get install -qq software-properties-common && \
+#    apt-add-repository 'deb http://security.debian.org/debian-security stretch/updates main' && \
     apt-get update -qq && \
     apt-get install -qq -y \
       # Installing OpenJDK in its headless variant as we don't need the GUI related parts
