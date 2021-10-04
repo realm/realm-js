@@ -19,50 +19,46 @@
 import React, { useEffect, useState } from "react";
 import Realm from "realm";
 
+//XXX Provider configuration properties as seperate properties
 interface ProviderProps {
-  children?: React.ReactNode;
   config?: Realm.Configuration;
 }
 
-export interface IRealmProvider {
-  ({ children, config }: ProviderProps): JSX.Element | null;
-}
+export type RealmProviderType = React.FC<ProviderProps>;
 
 export function createRealmProvider(
   realmConfig: Realm.Configuration,
   RealmContext: React.Context<Realm | null>,
-): IRealmProvider {
-  const RealmProvider = ({ children, config }: ProviderProps) => {
+): RealmProviderType {
+  const RealmProvider: React.FC<ProviderProps> = ({ children, config }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
+    //XXX consider confguration being changed with state (write tests for this)
     useEffect(() => {
       if (!realm?.isClosed) {
         realm?.close();
       }
       const initRealm = async () => {
-        try {
-          const combinedConfig = {
-            ...realmConfig,
-            ...config,
-          } as Realm.Configuration;
-          const openRealm = await Realm.open(combinedConfig);
-          setRealm(openRealm);
-        } catch (err) {
-          console.error(err);
-        }
+        //XXX deep merge the configurations
+        const combinedConfig = {
+          ...realmConfig,
+          ...config,
+        } as Realm.Configuration;
+        const openRealm = await Realm.open(combinedConfig);
+        setRealm(openRealm);
       };
       if (realm === null) {
-        initRealm();
+        initRealm().catch(console.error);
       }
       return () => {
-        realm?.close();
+        realm?.close(); //XXX test that this actually closes (maybe use multiple useEffects)
       };
-    }, [config]);
+    }, [config]); //use Ref for realm
 
     if (realm == null) {
       return null;
     }
 
-    return <RealmContext.Provider value={realm}>{children}</RealmContext.Provider>;
+    return <RealmContext.Provider value={realm} children={children} />;
   };
 
   return RealmProvider;

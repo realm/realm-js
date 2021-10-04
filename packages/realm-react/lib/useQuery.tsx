@@ -16,9 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import Realm from "realm";
 import { UseRealm } from "./useRealm";
 import { useEffect, useState, useCallback } from "react";
 
+//XXX filter needs to take arguments (see filtered function)
+//XXX sort needs to take reversed
 export type QueryModifiers = { sort?: string; filter?: string };
 
 export interface UseQuery {
@@ -31,6 +34,7 @@ export interface UseQuery {
 export function createUseQuery(useRealm: UseRealm): UseQuery {
   function useQuery<T>(type: string, modifiers?: QueryModifiers) {
     const realm = useRealm();
+    const [error, setError] = useState<Error | null>(null);
 
     const generateResult = useCallback(() => {
       try {
@@ -51,23 +55,22 @@ export function createUseQuery(useRealm: UseRealm): UseQuery {
         setError(err as Error);
         return null;
       }
-    }, [realm, type, modifiers]);
+    }, [realm, type, modifiers, setError]); //XXX Check the lint rulers for hooks (setError was not showing an error)
 
-    const [error, setError] = useState<Error | null>(null);
-    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object> | null>(generateResult);
+    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object> | null>(generateResult());
 
     useEffect(() => {
-      if (collection) {
-        collection.addListener((_, changes) => {
-          if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
-            setCollection(generateResult());
-          }
-        });
-      }
+      const listenerCallback: Realm.CollectionChangeCallback<T> = (_, changes) => {
+        if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
+          setCollection(generateResult());
+        }
+      };
+
+      if (collection) collection.addListener(listenerCallback);
 
       return () => {
         if (collection) {
-          collection.removeAllListeners();
+          collection.removeListener(listenerCallback);
         }
       };
     }, [collection, generateResult]);
