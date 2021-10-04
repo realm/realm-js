@@ -57,8 +57,6 @@ DESTINATIONS=()
 LIBRARIES=()
 BUILD_LIB_CMDS=()
 
-npm install
-
 for platform in "${PLATFORMS[@]}"; do
     case "$platform" in 
         ios)
