@@ -118,13 +118,6 @@ inline void copyProperty(JsiEnv env, const jsi::Object& from, const jsi::Object&
 
 inline constexpr const char g_internal_field[] = "__Realm_internal";
 
-#if 0
-inline jsi::Symbol ExternalSymbol;
-jsi::Symbol ext = jsi::Symbol::New(env, "_external");
-ExternalSymbol = hermes::Protected<jsi::Symbol>(env, ext);
-ExternalSymbol.SuppressDestruct();
-#endif
-
 template<typename T>
 using ClassDefinition = js::ClassDefinition<js::hermes::Types, T>;
 

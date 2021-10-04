@@ -54,8 +54,6 @@ public:
         return *m_rt;
     }
 
-    inline JsiFunc globalType(const char* name);
-
     JsiVal operator()(const jsi::Value&) const;
     JsiVal operator()(jsi::Value&&) const;
     JsiObj operator()(const jsi::Object&) const;
@@ -162,10 +160,6 @@ inline JsiString JsiEnv::operator()(const jsi::String& val) const { return {*thi
 inline JsiString JsiEnv::operator()(jsi::String&& val) const { return {*this, std::move(val)}; }
 inline JsiFunc JsiEnv::operator()(const jsi::Function& val) const { return {*this, val}; }
 inline JsiFunc JsiEnv::operator()(jsi::Function&& val) const { return {*this, std::move(val)}; }
-
-inline JsiFunc JsiEnv::globalType(const char* name) {
-    return (*this)(get().global().getPropertyAsFunction(*this, name));
-}
 
 inline JsiVal JsiEnv::null() const {
     return {*this, jsi::Value::null()};
