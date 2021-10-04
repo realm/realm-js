@@ -193,8 +193,7 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     //noinspection GradleDynamicVersion
 
-    // implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation project(':ReactAndroid')
+    implementation "com.facebook.react:react-native:+"  // From node_modules
 
     // We need to add realm manually, because it is not in the package.json
     implementation project(":realm") 
