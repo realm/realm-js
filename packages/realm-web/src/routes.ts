@@ -69,6 +69,9 @@ function api() {
             confirmSend() {
               return { path: this.path + "/confirm/send" };
             },
+            confirmCall() {
+              return { path: this.path + "/confirm/call" };
+            },
             reset() {
               return { path: this.path + "/reset" };
             },

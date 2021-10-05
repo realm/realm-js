@@ -52,6 +52,7 @@ public:
     static void register_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void confirm_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void resend_confirmation_email(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void retry_custom_confirmation(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void send_reset_password_email(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void reset_password(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void call_reset_password_function(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -60,6 +61,7 @@ public:
         {"_registerUser", wrap<register_user>},
         {"_confirmUser", wrap<confirm_user>},
         {"_resendConfirmationEmail", wrap<resend_confirmation_email>},
+        {"_retryCustomConfirmation", wrap<retry_custom_confirmation>},
         {"_sendResetPasswordEmail", wrap<send_reset_password_email>},
         {"_resetPassword", wrap<reset_password>},
         {"_callResetPasswordFunction", wrap<call_reset_password_function>},
@@ -114,6 +116,23 @@ void EmailPasswordAuthClass<T>::resend_confirmation_email(ContextType ctx, Objec
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     client.resend_confirmation_email(email, Function::wrap_void_callback(ctx, this_object, callback));
+}
+
+/**
+ * @brief Retry registering a user with custom confirmation logic
+ * 
+ * @param args Two arguments;  [0]:  email address of the user;  [1]:  callback to invoke upon completion
+ * @param return_value void
+ */
+template<typename T>
+void EmailPasswordAuthClass<T>::retry_custom_confirmation(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(2);
+
+    auto &client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
+    std::string const email = Value::validated_to_string(ctx, args[0], "email");
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
+
+    client.retry_custom_confirmation(email, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
