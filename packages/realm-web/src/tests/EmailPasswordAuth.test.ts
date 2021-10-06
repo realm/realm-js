@@ -92,6 +92,22 @@ describe("EmailPasswordAuth", () => {
     ]);
   });
 
+  it("can request a retry of custom confirmation", async () => {
+    // Make a request
+    await client.retryCustomConfirmation("gilfoyle@testing.mongodb.com");
+    // Expect something of the request
+    expect(fetcher.requests).deep.equals([
+      {
+        method: "POST",
+        url: "http://localhost:1337/api/client/v2.0/app/mocked-app-id/auth/providers/local-userpass/confirm/call",
+        body: {
+          email: "gilfoyle@testing.mongodb.com",
+        },
+        headers: SENDING_JSON_HEADERS,
+      },
+    ]);
+  });
+
   it("can reset a password", async () => {
     // Make a request
     await client.resetPassword("token-value", "token-id-value", "my-new-password");
