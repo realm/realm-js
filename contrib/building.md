@@ -1,17 +1,32 @@
 # Building Realm JS
 
+<!-- TOC generated with https://github.com/ekalinin/github-markdown-toc: gh-md-toc --insert contrib/building.md -->
+
 <!--ts-->
-  * [Pre-requisites](#pre-requisites)
-    * [Setup instructions for MacOS](#setup-instructions-for-macos)
-  * [Cloning the repository](#cloning-the-repository)
-  * [Building Realm JS](#building-realm-js-1)
-    * [Building for iOS](#building-for-ios)
-    * [Building for Android](#building-for-android)
-    * [Building for Node.js](#building-for-nodejs)
-    * [Building the documentation](#building-the-documentation)
-  * [Running the tests](#running-the-tests)
-  * [Debugging the tests](#debugging-the-tests)
-  * [Testing against real apps](#testing-against-real-apps)
+* [Building Realm JS](#building-realm-js)
+   * [Pre-Requisites](#pre-requisites)
+      * [Setup instructions for MacOS](#setup-instructions-for-macos)
+         * [All platforms](#all-platforms)
+         * [iOS](#ios)
+         * [Android](#android)
+         * [Optional extras](#optional-extras)
+            * [ccache](#ccache)
+   * [Cloning the repository](#cloning-the-repository)
+      * [Installing the project's sub-packages](#installing-the-projects-sub-packages)
+      * [Cloning the repository on Windows](#cloning-the-repository-on-windows)
+   * [Building Realm JS](#building-realm-js-1)
+      * [Building for iOS](#building-for-ios)
+      * [Building for Android](#building-for-android)
+      * [Building for Node.js](#building-for-nodejs)
+         * [Additional steps for Windows](#additional-steps-for-windows)
+      * [Building the documentation](#building-the-documentation)
+   * [Running the tests](#running-the-tests)
+      * [Testing on Windows](#testing-on-windows)
+      * [Node version setup](#node-version-setup)
+   * [Debugging the tests](#debugging-the-tests)
+      * [Debugging React Native tests](#debugging-react-native-tests)
+      * [Debugging Node.js tests using Visual Studio Code](#debugging-nodejs-tests-using-visual-studio-code)
+   * [Testing against real apps](#testing-against-real-apps)
 <!--te-->
 
 ## Pre-Requisites
