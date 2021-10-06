@@ -49,6 +49,7 @@ const EXPECTED_ISSUES = [
   "Failed to load resource: the server responded with a status of 400 (Bad Request)",
   "Failed to load resource: the server responded with a status of 400 (Bad Request)",
   "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+  "Failed to load resource: the server responded with a status of 400 (Bad Request)",
 ];
 
 function checkIssues(issues: string[]) {
