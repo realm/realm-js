@@ -1,7 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Realm JS now support re-running Custom Confirmation functions for Realm Sync users via `retryCustomConfirmation` ([#3032]())
+
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
