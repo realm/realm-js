@@ -56,6 +56,13 @@ declare namespace Realm {
       resendConfirmationEmail(email: string): Promise<void>;
 
       /**
+       * Rerun the custom confirmation function.
+       *
+       * @param email the email associated to resend the confirmation to.
+       */
+      retryCustomConfirmation(email: string): Promise<void>;
+
+      /**
        * Complete resetting the password
        *
        * @param token the token received.
