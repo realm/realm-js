@@ -88,6 +88,11 @@ function randomNonVerifiableEmail() {
   return `should-not-register-${Utils.uuid()}_@test.com`;
 }
 
+function randomPendingVerificationEmail() {
+  // create an email address that should neither auto-verify or fail verification
+  return `realm_tests_do_pendverify-${Utils.uuid()}_@test.com`;
+}
+
 async function registerAndLogInEmailUser(app) {
   const validEmail = randomVerifiableEmail();
   const validPassword = "test1234567890";
@@ -233,6 +238,34 @@ module.exports = {
     // TestCase.assertEqual(keys[0].name, mykey);
 
     await user.logOut();
+  },
+
+  async testCustomUserConfirmation() {
+    let app = new Realm.App(appConfig);
+    const pendingEmail = randomPendingVerificationEmail();
+    const validPassword = "password123456";
+
+    // we should be able to register our user as pending confirmation
+    await app.emailPasswordAuth.registerUser(pendingEmail, validPassword);
+
+    // we should be able to call the registration function again
+    await app.emailPasswordAuth.retryCustomConfirmation(pendingEmail);
+  },
+
+  async testCustomUserConfirmationAlreadyConfirmed() {
+    let app = new Realm.App(appConfig);
+    const validEmail = randomVerifiableEmail();
+    const validPassword = "password123456";
+
+    // make sure we can't call a confirmation function on a user that doesn't exist
+    let err = await TestCase.assertThrowsAsync(async () => app.emailPasswordAuth.retryCustomConfirmation(validEmail));
+    TestCase.assertEqual(err.message, "user not found", "User should not exist yet.");
+
+    await app.emailPasswordAuth.registerUser(validEmail, validPassword);
+
+    // make sure we can't call a confirmation function on a user that is already verified
+    err = await TestCase.assertThrowsAsync(async () => app.emailPasswordAuth.retryCustomConfirmation(validEmail));
+    TestCase.assertEqual(err.message, "already confirmed", "User should already be confirmed.");
   },
 
   async testFunctions() {
