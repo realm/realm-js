@@ -918,6 +918,7 @@ module.exports = {
       new ObjectId("603fa0af4caa9c90ff6e126c"),
       new UUID("f3287217-d1a2-445b-a4f7-af0520413b2a"),
       null,
+      "",
     ];
 
     for (const partitionValue of testPartitionValues) {
@@ -951,7 +952,6 @@ module.exports = {
   async testNonAcceptedPartitionValueTypes() {
     const testPartitionValues = [
       undefined,
-      "",
       Number.MAX_SAFE_INTEGER + 1,
       1.2,
       0.0000000000000001,

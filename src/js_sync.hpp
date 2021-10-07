@@ -63,9 +63,6 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
     bson::Bson partition_bson;
     if (Value<T>::is_string(ctx, partition_value_value)) {
         std::string pv = Value<T>::validated_to_string(ctx, partition_value_value);
-        if (pv.length() == 0) {
-            throw std::runtime_error("partitionValue of type 'string' may not be an empty string.");
-        }
         partition_bson = bson::Bson(pv);
     }
     else if (Value<T>::is_number(ctx, partition_value_value)) {
