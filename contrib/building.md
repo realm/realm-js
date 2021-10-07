@@ -12,7 +12,6 @@
          * [Optional extras](#optional-extras)
             * [ccache](#ccache)
    * [Cloning the repository](#cloning-the-repository)
-      * [Installing the project's sub-packages](#installing-the-projects-sub-packages)
       * [Cloning the repository on Windows](#cloning-the-repository-on-windows)
    * [Building Realm JS](#building-realm-js-1)
       * [Building for iOS](#building-for-ios)
@@ -20,18 +19,24 @@
       * [Building for Node.js](#building-for-nodejs)
          * [Additional steps for Windows](#additional-steps-for-windows)
       * [Building the documentation](#building-the-documentation)
+   * [Installing the project's sub-packages](#installing-the-projects-sub-packages)
    * [Running the tests](#running-the-tests)
-      * [Testing on Windows](#testing-on-windows)
-      * [Node version setup](#node-version-setup)
+      * [Modern tests](#modern-tests)
+      * [Legacy tests](#legacy-tests)
+         * [Testing on Windows](#testing-on-windows)
+         * [Node version setup](#node-version-setup)
    * [Debugging the tests](#debugging-the-tests)
       * [Debugging React Native tests](#debugging-react-native-tests)
       * [Debugging Node.js tests using Visual Studio Code](#debugging-nodejs-tests-using-visual-studio-code)
    * [Testing against real apps](#testing-against-real-apps)
+
+<!-- Added by: tom.duncalf, at: Thu  7 Oct 2021 11:03:49 BST -->
+
 <!--te-->
 
 ## Pre-Requisites
 
-The following dependencies are required (all except Xcode can be installed by following the [setup instructions for MacOS](#setup-instructions-for-macos)):
+The following dependencies are required. All except Xcode can be installed by following the [setup instructions for MacOS section](#setup-instructions-for-macos).
 
 * Xcode 12+ with Xcode command line tools installed
   - Newer versions may work but 12.2 is the current recommended version, which can be downloaded from [Apple](https://developer.apple.com/download/all/?q=xcode%2012.2)
@@ -57,6 +62,9 @@ brew install nvm
 
 # Install the latest LTS version of Node.js and set it as the default
 nvm install --lts
+
+# Install the project's JavaScript dependencies
+npm install
 ```
 
 #### iOS
@@ -130,16 +138,6 @@ git clone https://github.com/realm/realm-js.git
 cd realm-js
 git submodule update --init --recursive
 ```
-
-### Installing the project's sub-packages
-
-We've decided to slowly migrate this repository to a mono-repository containing multiple packages (stored in the `./packages` directory). To install and link these, run (from the `realm-js` repo root directory):
-
-```sh
-npx lerna bootstrap
-```
-
-Please familiarise yourself with [Lerna](https://github.com/lerna/lerna) to learn how to add dependencies to these packages.
 
 ### Cloning the repository on Windows
 
@@ -232,7 +230,27 @@ API documentation is written using [JSDoc](http://usejsdoc.org/). To generate th
 
 The generated docs can be found in `docs/output/realm/<version>/index.html`.
 
+## Installing the project's sub-packages
+
+We've decided to slowly migrate this repository to a mono-repository containing multiple packages (stored in the `./packages` directory). To install and link these, run (from the `realm-js` repo root directory):
+
+```sh
+npx lerna bootstrap
+```
+
+Note: you must successfuly build Realm JS for [iOS](#building-for-ios) and [Android](#building-for-android) before running `lerna`, or the command may fail.
+
+Please familiarise yourself with [Lerna](https://github.com/lerna/lerna) to learn how to add dependencies to these packages.
+
 ## Running the tests
+
+There are two sets of tests for Realm JS, one legacy and one modern. The intention is to move all tests over to the modern set, but for now you will need to execute both sets of tests.
+
+### Modern tests
+
+See [the instructions in the `integration-tests`](../integration-tests/README.md) directory.
+
+### Legacy tests
 
 To run the the tests, run the `scripts/test.sh` script, passing an argument for which tests you would like to execute. The following options are available:
 
@@ -248,7 +266,7 @@ For example:
 scripts/test.sh node
 ```
 
-### Testing on Windows
+#### Testing on Windows
 
 On Windows some of these targets are available as npm commands.
 ```
@@ -257,7 +275,7 @@ npm run node-tests
 npm run test-runners
 ```
 
-### Node version setup
+#### Node version setup
 
 The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. If you have Homebrew correctly installed, this should work – if it is not working, you can add the following to your preferred shell configuration:
 
