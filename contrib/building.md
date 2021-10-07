@@ -23,6 +23,7 @@
    * [Running the tests](#running-the-tests)
       * [Modern tests](#modern-tests)
       * [Legacy tests](#legacy-tests)
+      * [Linting the source code](#linting-the-source-code)
          * [Testing on Windows](#testing-on-windows)
          * [Node version setup](#node-version-setup)
    * [Debugging the tests](#debugging-the-tests)
@@ -30,7 +31,7 @@
       * [Debugging Node.js tests using Visual Studio Code](#debugging-nodejs-tests-using-visual-studio-code)
    * [Testing against real apps](#testing-against-real-apps)
 
-<!-- Added by: tom.duncalf, at: Thu  7 Oct 2021 11:03:49 BST -->
+<!-- Added by: tom.duncalf, at: Thu  7 Oct 2021 17:24:59 BST -->
 
 <!--te-->
 
@@ -38,13 +39,13 @@
 
 The following dependencies are required. All except Xcode can be installed by following the [setup instructions for MacOS section](#setup-instructions-for-macos).
 
-* Xcode 12+ with Xcode command line tools installed
+* [Xcode](https://developer.apple.com/xcode/) 12+ with Xcode command line tools installed
   - Newer versions may work but 12.2 is the current recommended version, which can be downloaded from [Apple](https://developer.apple.com/download/all/?q=xcode%2012.2)
 * [Node.js](https://nodejs.org/en/) version 10.19 or later
   - Consider [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
-* CMake
-* OpenJDK 8
-* Android SDK 23+
+* [CMake](https://cmake.org/)
+* [OpenJDK 8](https://openjdk.java.net/install/)
+* [Android SDK 23+](https://developer.android.com/studio/index.html#command-tools)
   -  Optionally, you can install [Android Studio](https://developer.android.com/studio)
 * [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
 * [Android CMake](https://developer.android.com/ndk/guides/cmake)
@@ -254,7 +255,6 @@ See [the instructions in the `integration-tests`](../integration-tests/README.md
 
 To run the the tests, run the `scripts/test.sh` script, passing an argument for which tests you would like to execute. The following options are available:
 
-* `eslint` - lints the sources
 * `react-tests` - runs all React Native tests on iOS Simulator
 * `react-tests-android` - runs all React Native Android tests on Android emulator
 * `node` - runs all tests for Node.js
@@ -265,6 +265,10 @@ For example:
 ```sh
 scripts/test.sh node
 ```
+
+### Linting the source code
+
+Run `npm run lint` to lint the source code using `eslint`.
 
 #### Testing on Windows
 
