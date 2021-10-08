@@ -22,6 +22,22 @@ The documentation for the Realm React Native SDK can be found at [docs.mongodb.c
 
 The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
+## Template apps for React Native
+
+To get started with Realm JS for React Native, we have provided a simple template app.
+
+To create a new app from the TypeScript template:
+
+```
+npx react-native init TsExample --template react-native-template-realm-ts
+```
+
+or to create a new app from the JavaScript template:
+
+```
+npx react-native init JsExample --template react-native-template-realm-js
+```
+
 ## Getting Help
 
 * **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). You can also check out our [Community Forum](https://developer.mongodb.com/community/forums/tags/c/realm/9/realm-sdk) where general questions about how to do something can be discussed.
