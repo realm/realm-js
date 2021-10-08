@@ -56,3 +56,5 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
 endif()
 
 add_subdirectory(src)
+
+add_definitions(-DNAPI_VERSION=3)
