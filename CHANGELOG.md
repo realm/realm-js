@@ -16,6 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Lint react-native templates and ensure they are checked by the CI.
+* Updated `README.md` and `building.md` with updated instructions on building from source.
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>

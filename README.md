@@ -22,202 +22,36 @@ The documentation for the Realm React Native SDK can be found at [docs.mongodb.c
 
 The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
+## Template apps for React Native
+
+To get started with Realm JS for React Native, we have provided a simple template app.
+
+To create a new app from the TypeScript template:
+
+```
+npx react-native init TsExample --template react-native-template-realm-ts
+```
+
+or to create a new app from the JavaScript template:
+
+```
+npx react-native init JsExample --template react-native-template-realm-js
+```
+
 ## Getting Help
 
 * **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). You can also check out our [Community Forum](https://developer.mongodb.com/community/forums/tags/c/realm/9/realm-sdk) where general questions about how to do something can be discussed.
 * **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
 * **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
 
+## Building Realm JS
 
-## Building Realm
-
-In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
-
-Prerequisites:
-* Xcode 12+
-* Node.js version 10.19 or later
-* nvm (on Mac and Linux)
-* cocoapods (on Mac)
-* Android SDK 23+
-* [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
-    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.
-    - From the command-line: ```$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
-* [Android CMake](https://developer.android.com/ndk/guides/cmake)
-    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**
-    - From the command-line  ```$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "cmake;3.18.1"````
-
-Clone RealmJS repository:
-
-```
-git clone https://github.com/realm/realm-js.git
-cd realm-js
-git submodule update --init --recursive
-```
-
-Note: On Windows the RealmJS repo should be cloned with symlinks enabled
-```
-#run in elevated command prompt
-git clone -c core.symlinks=true https://github.com/realm/realm-js
-```
-
-or manually create the symlinks using directory junctions if you already have the repo cloned.
-```
-#run in elevated command prompt
-cd realm-js\react-native\android\src\main\jni
-#remove src and vendor files
-del src
-del vendor
-mklink /j "src" "../../../../../src/"
-mklink /j "vendor" "../../../../../vendor"
-cd realm-js\tests\ReactTestApp\android\app\src\main
-#remove assets file
-del assets
-mklink /j assets "../../../../../data"
-```
-
-Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.
-
-### Building for iOS:
-* Open `react-native/ios/RealmReact.xcodeproj` in Xcode
-* Select `RealmReact` under `Targets`
-* Build: `⌘ + B`
-
-### Building for Android:
-* `cd react-native/android`
-* `export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.0.6113669  #Location for your NDK folder`
-* `./gradlew publishAndroid`
-* The compiled version of the Android module is here: `<project-root>/android`
-
-### Building for nodejs:
-You can build for nodejs by running the command:
-
-```sh
-npm run build
-```
-
-If you want to build for Apple Silicon on an Intel based Mac, you can use the following command instead:
-
-```sh
- npm run build-m1
- ```
-
-#### Additional steps for Windows
-On Windows you will need to setup the environment for node-gyp:
-
-* Option 1: Install windows-build-tools node package
-
-    ```
-    # run in elevated command prompt (as Administrator)
-    npm install -g --production windows-build-tools
-    ```
-
-* Option 2: Manually install and configure as described in the [node-gyp](https://github.com/nodejs/node-gyp) manual.
-
-    Note you may need to configure the build tools path using npm
-    ```
-    npm config set msbuild_path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe"
-    ```
-
-You also need to install openssl libraries with vcpkg:
-
-```
-git clone https://github.com/Microsoft/vcpkg
-cd vcpkg
-bootstrap-vcpkg.bat
-vcpkg install openssl:x64-windows-static
-mkdir C:\src\vcpkg\installed\x64-windows-static\lib
-copy .\packages\openssl-windows_x64-windows-static\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
-copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg\installed\x64-windows-static\lib
-```
-
-### Installing the project's sub-packages
-
-We've decided to slowly migrate this repository to a mono-repository containing multiple packages (stored in the `./packages` directory), to install & link these, run
-
-```
-npx lerna bootstrap
-```
-
-Please familiarise yourself with [Lerna](https://github.com/lerna/lerna) to learn how to add dependencies to these packages.
-
-### Building docs
-API documentation is written using [JSDoc](http://usejsdoc.org/).
-
-* `npm run jsdoc`
-
-The generated docs can be found by opening `docs/output/realm/<version>/index.html`.
-
-## Debugging the node addon
-
-You can use [Visual Studio Code](https://code.visualstudio.com/) to develop and debug. In the `.vscode` folder, configuration for building and debugging has been added for your convience.
-
-VSCode has good support for debugging JavaScript, but to work with C++ code, you are required to install two additional VSCode extensions:
-
-* Microsoft C/C++
-* CodeLLDB
-
-To begin, you will need to build the node addon and prepare the test environment:
-```
-npm install --build-from-source --debug
-(cd tests && npm install)
-```
-
-Prior to begin debugging, you must start Realm Object Server. In VSCode, under menu *Tasks*/*Run Task*, find *Download and Start Server*.
-
-In the debugging pane, you can find `Debug LLDB + NodeJS` in the dropdown. First select *Start Debugging* in the *Debug* menu.
+For instructions on building Realm JS yourself from source, see the [building.md](contrib/building.md) file.
 
 ## Issues with debugging
 Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. See https://github.com/realm/realm-js/issues/491 for more information. The best workaround is to use Safari instead, as a user has described [here](https://github.com/realm/realm-js/issues/491#issuecomment-404670910).
 
 Moreover, we have a switch to [Flipper](https://fbflipper.com/) in the works as part of our effort to [support Hermes](https://github.com/realm/realm-js/pull/3792). It implies that we envision a near future where the Chrome debugging will be removed, and we currently don't invest much in its maintenance.
-
-## Running the tests
-
-The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your preferred shell setup:
-
-```
-export NVM_DIR="$HOME/.nvm"
-. "$(brew --prefix nvm)/nvm.sh"
-```
-
-Install cocoapods
-```
-sudo gem install cocoapods
-```
-
-You can now use `scripts/test.sh` to run the various tests.
-You will need yarn installed on the machine.
-
-`test.sh` options
-
- * eslint - lints the sources
- * react-tests - runs all React Native tests on iOS Simulator
- * react-tests-android runs all React Native Android tests on Android emulator
- * node - runs all tests for node
- * test-runners - checks supported tests runners are working correctly
-
-If you modify or add a test, please remove `tests/ReactTestApp/node_modules/realm-tests` before running `test.sh` (of course, only if you are testing with React Native).
-
-### Testing on Windows
-
-On Windows some of these targets are available as npm commands.
-```
-npm run eslint
-npm run node-tests
-npm run test-runners
-```
-
-## Debugging the tests
-
-You can attach a debugger to react-native tests by passing "Debug" to the `test.sh` script. A Chrome browser will open and connect to the react native application. Use the built-in Chrome Debugger to debug the code.
-
-```
-./scripts/tests.sh react-tests Debug
-```
-
-Using Visual Studio Code
-
-You can debug node tests using Visual Studio Code. Just use one of the launch configurations.
 
 ## Analytics
 
@@ -245,7 +79,7 @@ Currently the following information is reported:
  * Node.js, v8, libuv, OpenSSL version numbers.
  * An anonymous machine identifier and hashed application path to aggregate the other information on.
 
- ## Known issues
+## Known issues
 
 * AWS Lambda is not supported.
 

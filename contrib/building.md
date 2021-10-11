@@ -1,302 +1,325 @@
-# Working With Realm-JS
+# Building Realm JS
 
+<!-- TOC generated with https://github.com/ekalinin/github-markdown-toc: gh-md-toc --insert contrib/building.md -->
 
 <!--ts-->
-  * [Install Instructions For Mac](#instructions-for-macos)
-  * [Hello World Projects To Practice](#test-projects)
-  * [Building Realm for React Native **Android**](#building-for-android)
-  * [Building Realm for React Native **iOS**](#ios)
-  * [Building Realm for **NodeJS**](#building-for-nodejs)
+* [Building Realm JS](#building-realm-js)
+   * [Pre-Requisites](#pre-requisites)
+      * [Setup instructions for MacOS](#setup-instructions-for-macos)
+         * [All platforms](#all-platforms)
+         * [iOS](#ios)
+         * [Android](#android)
+         * [Optional extras](#optional-extras)
+            * [ccache](#ccache)
+   * [Cloning the repository](#cloning-the-repository)
+      * [Cloning the repository on Windows](#cloning-the-repository-on-windows)
+   * [Building Realm JS](#building-realm-js-1)
+      * [Building for iOS](#building-for-ios)
+      * [Building for Android](#building-for-android)
+      * [Building for Node.js](#building-for-nodejs)
+         * [Additional steps for Windows](#additional-steps-for-windows)
+      * [Building the documentation](#building-the-documentation)
+   * [Installing the project's sub-packages](#installing-the-projects-sub-packages)
+   * [Running the tests](#running-the-tests)
+      * [Modern tests](#modern-tests)
+      * [Legacy tests](#legacy-tests)
+      * [Linting the source code](#linting-the-source-code)
+         * [Testing on Windows](#testing-on-windows)
+         * [Node version setup](#node-version-setup)
+   * [Debugging the tests](#debugging-the-tests)
+      * [Debugging React Native tests](#debugging-react-native-tests)
+      * [Debugging Node.js tests using Visual Studio Code](#debugging-nodejs-tests-using-visual-studio-code)
+   * [Testing against real apps](#testing-against-real-apps)
+
+<!-- Added by: tom.duncalf, at: Thu  7 Oct 2021 17:24:59 BST -->
 
 <!--te-->
 
-
 ## Pre-Requisites
 
-Clone [realm-js project](https://github.com/realm/realm-js) and install the required dependencies:
+The following dependencies are required. All except Xcode can be installed by following the [setup instructions for MacOS section](#setup-instructions-for-macos).
 
-* XCode 9.4+
-* [Node.js](https://nodejs.org/en/) version 10 or later. 
-  - Consider [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions.
-* Android SDK 23+ (available via [Android Studio](https://developer.android.com/studio))
-* Android NDK 21.0
-  - Available via the SDK Manager on Android Studio **Tools > SDK Manager**.
+* [Xcode](https://developer.apple.com/xcode/) 12+ with Xcode command line tools installed
+  - Newer versions may work but 12.2 is the current recommended version, which can be downloaded from [Apple](https://developer.apple.com/download/all/?q=xcode%2012.2)
+* [Node.js](https://nodejs.org/en/) version 10.19 or later
+  - Consider [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
+* [CMake](https://cmake.org/)
+* [OpenJDK 8](https://openjdk.java.net/install/)
+* [Android SDK 23+](https://developer.android.com/studio/index.html#command-tools)
+  -  Optionally, you can install [Android Studio](https://developer.android.com/studio)
+* [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
+* [Android CMake](https://developer.android.com/ndk/guides/cmake)
 
-### Instructions for MacOS:
+### Setup instructions for MacOS
+
+#### All platforms
 
 ```sh
-  #Install brew
-  bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+# Install brew
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
-  #Install NVM, OpenJDK 8 and cocoapods
-  brew install nvm openjdk@8 cocoapods
+# Install nvm
+brew install nvm
 
+# Install the latest LTS version of Node.js and set it as the default
+nvm install --lts
+
+# Install the project's JavaScript dependencies
+npm install
 ```
 
-Android Setup to build from the command-line:
+#### iOS
 
 ```sh
-# Before following this make sure java is available in the command line.
+# Install cocoapods and cmake
+brew install cocoapods cmake
+```
+
+#### Android
+
+First, install OpenJDK 8 (later versions are not compatible with the project and with Android's `sdkmanager` tool):
+
+```sh
+brew tap AdoptOpenJDK/openjdk
+brew install --cask adoptopenjdk8
+
+# Check this returns: openjdk version "1.8.0_292".
+# If not, check if you have a JAVA_HOME environment variable set pointing elsewhere.
+java -version
+```
+
+Next you need to define some environment variables. The best way to do this is in your shell’s configuration file, e.g. `~/.zshrc`, then open a new terminal window or `source ~/.zshrc` to reload the config. Add the following:
+
+```sh
 # Location of your Android SDK
 export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
 
-#To install NDK
-$ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "ndk;21.0.6113669"
-
-#Setup NDK
+# Location of your Android NDK
 export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/21.0.6113669
+export ANDROID_NDK=$ANDROID_NDK_HOME
+
+# Other required locations
+export ANDROID_SDK_HOME=$HOME/.android
+export ANDROID_EMULATOR_HOME=$HOME/.android
+export ANDROID_AVD_HOME=$HOME/.android/avd
+
+# Add the Android SDK tools to your PATH
+export PATH=$PATH:$ANDROID_SDK_ROOT/tools/bin
+export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
 ```
 
-### Additional Configurations
-
-##### JDK
-If you are a user of Android Studio you can reuse their embedded JDK instead, which save you from installing it yourself:  
+Then you can install the SDK, NDK and CMake by running: (you can alternatively do this via **Tools > SDK Manager** in Android Studio)
 
 ```sh
-# Add JAVA_HOME
-export JAVA_HOME="/Applications/Android Studio.app/Contents/jre/jdk/Contents/Home"
+sdkmanager --install "platforms;android-31"
+sdkmanager --install "ndk;21.0.6113669"
+sdkmanager --install "cmake;3.18.1"
 ```
 
+#### Optional extras
 
-##### CCache
+##### ccache
 
-To improve compilation speed you can use [ccache](https://ccache.dev/), to install you should do:
+To improve compilation speed. you can use [ccache](https://ccache.dev/):
 
 ```sh
 # Install ccache
 brew install ccache
 
-
 # Export the ccache variants of compilation tools
 export PATH=/usr/local/opt/ccache/libexec:$PATH
 ```
 
+## Cloning the repository
 
-##### Android Environment Variables
-
-Here are some additional Android environment variables that can be useful.
-
-```sh
-export ANDROID_SDK_HOME=$HOME/.android
-export ANDROID_EMULATOR_HOME=$HOME/.android
-export ANDROID_AVD_HOME=$HOME/.android/avd
-
-# export ANDROID_NDK_ROOT=
-export PATH=$PATH:$ANDROID_SDK_ROOT/tools
-export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
-```
-
-
-
-
-### Projects For Testing
-
-To test your changes on react native you can clone this sample project.
+To clone the RealmJS repository and install git submodules:
 
 ```sh
-git clone https://github.com/cesarvr/react-native-realm sample-rn-project
-cd sample-rn-project
-npm install
+git clone https://github.com/realm/realm-js.git
+cd realm-js
+git submodule update --init --recursive
 ```
 
-To test your changes on NodeJS you can clone this example.
+### Cloning the repository on Windows
+
+On Windows the RealmJS repo should be cloned with symlinks enabled:
+
+```cmd
+# run in elevated command prompt
+git clone -c core.symlinks=true https://github.com/realm/realm-js
+```
+
+or manually create the symlinks using directory junctions if you already have the repo cloned:
+
+```cmd
+# run in elevated command prompt
+cd realm-js\react-native\android\src\main\jni
+# remove src and vendor files
+del src
+del vendor
+mklink /j "src" "../../../../../src/"
+mklink /j "vendor" "../../../../../vendor"
+cd realm-js\tests\ReactTestApp\android\app\src\main
+# remove assets file
+del assets
+mklink /j assets "../../../../../data"
+```
+
+Note: If you have cloned the repo previously make sure you remove your `node_modules` directory since it may contain stale dependencies which may cause the build to fail.
+
+## Building Realm JS
+
+### Building for iOS
+
+* Run `./scripts/build-ios.sh` from the `realm-js` root directory
+
+### Building for Android
+
+* Run `node scripts/build-android.js` from the `realm-js` root directory
+  -  The compiled version of the Android module is output to `<project-root>/android`
+
+### Building for Node.js
+
+You can build for Node.js by running the command:
 
 ```sh
-git clone https://github.com/cesarvr/hello-world-realm-js hello-sync
-cd hello-sync
-npm install
+npm run build
 ```
 
-## Workflow Suggestion
-
-This workflows are mere suggestions, fee free to include or improve:
-
-### Deploying Changes
-
-Right now you should have three folders:
+If you want to build for Apple Silicon on an Intel based Mac, you can use the following command instead:
 
 ```sh
-  realm-js  #realm-js source code.
+ npm run build-m1
+ ```
 
-  hello-sync #nodejs project using realm.
-  sample-rn-project #the sample react-native project.
+#### Additional steps for Windows
+
+On Windows you will need to setup the environment for node-gyp:
+
+* Option 1: Install windows-build-tools Node.js package
+
+    ```cmd
+    # run in elevated command prompt (as Administrator)
+    npm install -g --production windows-build-tools
+    ```
+
+* Option 2: Manually install and configure as described in the [node-gyp](https://github.com/nodejs/node-gyp) manual.
+
+    Note you may need to configure the build tools path using npm
+
+    ```cmd
+    npm config set msbuild_path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe"
+    ```
+
+You also need to install openssl libraries with vcpkg:
+
+```cmd
+git clone https://github.com/Microsoft/vcpkg
+cd vcpkg
+bootstrap-vcpkg.bat
+vcpkg install openssl:x64-windows-static
+mkdir C:\src\vcpkg\installed\x64-windows-static\lib
+copy .\packages\openssl-windows_x64-windows-static\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
+copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg\installed\x64-windows-static\lib
 ```
 
-What you want to do is to do all your work on the ```realm-js``` project and use the other two projects to test and deploy any new changes.
+### Building the documentation
 
-To do that you can use the help of this tool:
+API documentation is written using [JSDoc](http://usejsdoc.org/). To generate the documentation, run:
+
+```npm run jsdoc```
+
+The generated docs can be found in `docs/output/realm/<version>/index.html`.
+
+## Installing the project's sub-packages
+
+We've decided to slowly migrate this repository to a mono-repository containing multiple packages (stored in the `./packages` directory). To install and link these, run (from the `realm-js` repo root directory):
 
 ```sh
-  cd realm-js  #Jump to the realm-js root folder.
-  curl https://raw.githubusercontent.com/cesarvr/dev-lnk/master/index.js -o nlk.js #Download the file in there.
+npx lerna bootstrap
 ```
 
-You can configure this tool to watch some sections of your ``realm-js`` and deploy those changes automatically to any of those projects.
+Note: you must successfuly build Realm JS for [iOS](#building-for-ios) and [Android](#building-for-android) before running `lerna`, or the command may fail.
 
-Once you have the script you just need to go to the bottom and configure the files/folder you want to watch and update in your target, something similar to this:
+Please familiarise yourself with [Lerna](https://github.com/lerna/lerna) to learn how to add dependencies to these packages.
 
-```js
-syncByAppend(
-  '<source-folder>', // Source folder...
-  '<target-folder>', // Target folder...
-  <RegExp> /* Regular expression to match and update */
-)
-```
+## Running the tests
 
+There are two sets of tests for Realm JS, one legacy and one modern. The intention is to move all tests over to the modern set, but for now you will need to execute both sets of tests.
 
+### Modern tests
 
-### On Android
+See [the instructions in the `integration-tests`](../integration-tests/README.md) directory.
 
+### Legacy tests
 
-First let's configure the ```nlk.js``` tool to watch for Android changes and deploy this into the React Native project.
+To run the the tests, run the `scripts/test.sh` script, passing an argument for which tests you would like to execute. The following options are available:
 
-Open ```nlk.js``` with your favourite text editor like ``vim``, go to the bottom and add:
+* `react-tests` - runs all React Native tests on iOS Simulator
+* `react-tests-android` - runs all React Native Android tests on Android emulator
+* `node` - runs all tests for Node.js
+* `test-runners` - checks supported tests runners are working correctly
 
-```js
-syncByAppend(
-  './react-native/android/build/realm-react-ndk/all', // Source folder...
-  '../sample-rn-project/node_modules/realm/android/src/main/jniLibs', // Target folder...
-  RegExp('librealmreact.so'))  // copy librealmreact.so if a change has been detected...
-```
-
-> As you can see this is just a dumb script that copy files anytime they change... you can use [Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions) to handle more complex scenarios.
-
-
-After adding that you can run it by doing:
+For example:
 
 ```sh
-node nlk.js # it will sleep and wait for changes...
+scripts/test.sh node
 ```
 
-#### Building for Android
+### Linting the source code
 
-Open a new terminal tab and start doing your changes on the ``realm-js/src`` folder for example and once your are ready you can build an Android binary by doing:
+Run `npm run lint` to lint the source code using `eslint`.
 
+#### Testing on Windows
+
+On Windows some of these targets are available as npm commands.
+```
+npm run eslint
+npm run node-tests
+npm run test-runners
+```
+
+#### Node version setup
+
+The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. If you have Homebrew correctly installed, this should work – if it is not working, you can add the following to your preferred shell configuration:
 
 ```sh
-# from the realm-js root folder...
-
-cd react-native/android/  # enter the React Native Android project.
-./gradlew publishAndroid # Take a coffee...
+export NVM_DIR="$HOME/.nvm"
+. "$(brew --prefix nvm)/nvm.sh"
 ```
 
-As soon as the compilation finish this module will be deployed into the React Native project (``sample-rn-project``).
+## Debugging the tests
 
+### Debugging React Native tests
 
-If you visit the script tab you will see the files that have been sync:
+You can attach a debugger to the React Native tests by passing "Debug" to the `test.sh` script. A Chrome browser will open and connect to the react native application. Use the built-in Chrome Debugger to debug the code.
 
 ```sh
-sync done for: librealmreact.so.  11:54:30   #arm
-sync done for: librealmreact.so.  11:54:30   #x86
-sync done for: librealmreact.so.  11:54:30   #x64 ...
-sync done for: librealmreact.so.  11:54:30
-
+./scripts/tests.sh react-tests Debug
 ```
-> This will trigger any time a new binary object is created...
 
+### Debugging Node.js tests using Visual Studio Code
 
-Now you can just can navigate to the React Native project and do:
+You can use [Visual Studio Code](https://code.visualstudio.com/) to develop and debug for Node.js. In the `.vscode` folder, configuration for building and debugging has been added for your convience.
 
+VSCode has good support for debugging JavaScript, but to work with C++ code, you are required to install two additional VSCode extensions:
+
+* Microsoft C/C++
+* CodeLLDB
+
+To begin, you will need to build the Node addon and prepare the test environment:
 ```sh
-npx react-native run-android
+npm install --build-from-source --debug
+(cd tests && npm install)
 ```
 
+Prior to begin debugging, you must start Realm Object Server. In VSCode, under menu *Tasks*/*Run Task*, find *Download and Start Server*.
 
+In the debugging pane, you can find `Debug LLDB + Node.js` in the dropdown. First select *Start Debugging* in the *Debug* menu.
 
-### iOS
+## Testing against real apps
 
-For iOS the things is a bit different as per today we don't ship a pre-compiled binary like we do on Android.
+There are a couple of suggested workflows for testing your changes to Realm JS against real apps:
 
-But we can keep the source files in sync between the main source of truth the ``realm-js`` folder against the iOS project embedded in the React Native project (```sample-rn-project```).
-
-First as we did with the Android project we add a new entry to the script:
-
-```js
-// Android
-syncByAppend('./react-native/android/build/realm-react-ndk/all',
-            '../sample-rn-project/node_modules/realm/android/src/main/jniLibs',
-            RegExp('librealmreact.so'))
-
-// iOS
-syncByAppend('./src',
-             '../sample-rn-project/node_modules/realm/src',
-             RegExp('.*'))    
-```
-
-Now if make a change in the ```realm-js/src``` folder you will see this change propagate to your React Native project.
-
-```sh
-sync done for: js_logger.hpp.  12:54:26
-sync done for: js_logger.hpp.  12:54:26
-```
-
-#### Building for iOS
-
-Now you can just open the xcode project in ```sample-rn-project``` by doing:
-
-```sh
-cd sample-rn-project/ios/
-pod install # Install iOS dependencies
-
-open sample-rn-project/ios/MyAwesomeRealmApp.xcworkspace
-#or just open MyAwesomeRealmApp.xcworkspace if you are inside the folder
-```
-
-After that you can press ```CMD + B``` and see your changes compiled, then you do ```CMD + R``` and you run the new code on the emulator.
-
-
-### NodeJS
-
-In NodeJS is really simple, we just need to sync the module generated using the included NodeJS [GYP](https://gyp.gsrc.io/).
-
-Assuming we have the same folder structure:
-
-
-```sh
-  realm-js  #realm-js source code.
-
-  hello-sync #nodejs project using realm.
-  sample-rn-project #the sample react-native project.
-```
-
-We jump to the ``realm-js`` root folder and open the ```nlk.js``` script, jump to the bottom and add:
-
-```js
-// Android
-syncByAppend('./react-native/android/build/realm-react-ndk/all',
-            '../sample-rn-project/node_modules/realm/android/src/main/jniLibs',
-            RegExp('librealmreact.so'))
-
-// iOS
-syncByAppend('./src',
-             '../sample-rn-project/node_modules/realm/src',
-             RegExp('.*'))    
-
-
-// NodeJS  [ New ]
-syncByAppend('./compiled',
-          '../hello-sync/node_modules/realm/compiled',
-          RegExp('realm.node'))
-
-```
-
-That's it run the script to start watching/sync for files:
-
-```sh
-node nlk.js
-```
-
-#### Building for NodeJS
-
-Then once you are fine with changes, you just need to compile the NodeJS module using:
-
-```sh
-npm install --build-from-source=realm  # Take a coffee...
-
-#... events from nlk ...
-#sync done for: realm.node.  13:8:26
-#sync done for: realm.node.  13:8:26
-
-```
-
-Once that finish you can go to your node project (``hello-sync``) and try your changes.
+* [Guide: Setting up watchman to copy changes from this package to an app](guide-watchman.md)
+* [Guide: Testing your changes against sample apps using a script](guide-testing-with-sample-apps.md)
