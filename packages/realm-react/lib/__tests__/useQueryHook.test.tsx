@@ -15,10 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import React from "react";
-
-import { createRealmContext } from "..";
+import Realm from "realm";
+import { useState, useEffect } from "react";
 import { renderHook } from "@testing-library/react-hooks";
+import { createUseQuery } from "../useQuery";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -26,43 +26,61 @@ const dogSchema: Realm.ObjectSchema = {
   properties: {
     _id: "int",
     name: "string",
+    color: "string",
+    age: "int",
+    gender: "string",
   },
 };
 
 interface IDog {
   _id: number;
   name: string;
+  color: string;
+  age: number;
+  gender: string;
 }
-
-const { RealmProvider, useRealm, useQuery } = createRealmContext({
+const configuration: Realm.Configuration = {
   schema: [dogSchema],
-  path: "useObjectRealm",
-  inMemory: true,
-});
+  path: "testArtifacts/useQueryRealm",
+  deleteRealmIfMigrationNeeded: true,
+};
+
+const useRealm = () => {
+  const [realm, setRealm] = useState<Realm | null>(new Realm(configuration));
+  useEffect(() => {
+    return () => {
+      realm?.close();
+      setRealm(null);
+    };
+  }, [realm, setRealm]);
+
+  return new Realm(configuration);
+};
+
+const useQuery = createUseQuery(useRealm);
 
 const testDataSet = [
-  { _id: 4, name: "Vincent" },
-  { _id: 5, name: "River" },
-  { _id: 6, name: "Schatzi" },
+  { _id: 2, name: "River", color: "brown", gender: "female", age: 12 },
+  { _id: 3, name: "Schatzi", color: "beige", gender: "female", age: 10 },
+  { _id: 4, name: "Victor", color: "dark brown", gender: "male", age: 18 },
+  { _id: 1, name: "Vincent", color: "black and white", gender: "male", age: 4 },
+  { _id: 5, name: "Jazz", color: "dark brown", gender: "female", age: 12 },
+  { _id: 6, name: "Sadie", color: "gold", gender: "female", age: 5 },
 ];
 
 describe("useQuery", () => {
-  beforeEach(async () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result, waitForNextUpdate } = renderHook(() => useRealm(), { wrapper });
-    await waitForNextUpdate();
-    const realm = result.current;
+  beforeEach(() => {
+    const realm = new Realm(configuration);
     realm.write(() => {
       realm.deleteAll();
       testDataSet.forEach((data) => {
         realm.create("dog", data);
       });
     });
+    realm.close();
   });
-  it("can retrieve collections using useQuery", async () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result, waitForNextUpdate } = renderHook(() => useQuery<IDog>("dog"), { wrapper });
-    await waitForNextUpdate();
+  it("can retrieve collections using useQuery", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog"));
     const collection = result.current;
 
     const [dog1, dog2, dog3] = testDataSet;
@@ -75,5 +93,35 @@ describe("useQuery", () => {
         expect(data?.[2]).toMatchObject(dog3);
       }
     }
+  });
+  it("can filter with a interpolation", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog", { filter: ["gender == $0", "female"] }));
+    const collection = result.current;
+
+    expect(collection.data?.length).toBe(4);
+  });
+  it("can filter with a string", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog", { filter: "gender == 'female'" }));
+    const collection = result.current;
+
+    expect(collection.data?.length).toBe(4);
+  });
+  it("can sort by a value", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog", { sort: "age" }));
+    const collection = result.current;
+
+    expect(collection.data?.[0]?.name).toBe("Vincent");
+  });
+  it("can sort by a value and be reversed", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog", { sort: "age", reverse: true }));
+    const collection = result.current;
+
+    expect(collection.data?.[0]?.name).toBe("Victor");
+  });
+  it("can sort by a value and be reversed in array form", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog", { sort: [["age", true]] }));
+    const collection = result.current;
+
+    expect(collection.data?.[0]?.name).toBe("Victor");
   });
 });

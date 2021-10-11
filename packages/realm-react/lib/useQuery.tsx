@@ -16,14 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+import Realm, { SortDescriptor } from "realm";
 import { UseRealm } from "./useRealm";
 import { useEffect, useState, useCallback } from "react";
 
 //XXX filter needs to take arguments (see filtered function)
 //XXX sort needs to take reversed
-export type QueryModifiers = { sort?: string; filter?: string };
 
+export type QueryModifiers = {
+  sort?: string | SortDescriptor[];
+  filter?: string | [string, ...unknown[]]; // | { query: string; args: unknown[] };
+  reverse?: boolean;
+};
 export interface UseQuery {
   <T>(type: string, modifiers?: QueryModifiers): {
     error: Error | null;
@@ -39,15 +43,23 @@ export function createUseQuery(useRealm: UseRealm): UseQuery {
     const generateResult = useCallback(() => {
       try {
         const sort = modifiers?.sort && modifiers?.sort !== "" ? modifiers.sort : null;
-        const filter = modifiers?.filter != null && modifiers?.filter !== "" ? modifiers.filter : null;
+        const filter = modifiers?.filter ? modifiers.filter : null;
         let result = null;
         result = realm.objects<T>(type);
-        if (filter) {
+        if (filter instanceof Array) {
+          result = result.filtered(filter[0], ...filter.slice(1));
+        } else if (typeof filter === "string") {
           result = result.filtered(filter);
         }
 
-        if (sort) {
+        if (sort instanceof Array) {
           result = result.sorted(sort);
+        } else if (typeof sort === "string") {
+          result = modifiers?.reverse ? result.sorted(sort, true) : result.sorted(sort);
+        }
+
+        if (!sort && modifiers?.reverse) {
+          result = result.sorted(true);
         }
         return result;
       } catch (err) {
@@ -57,7 +69,7 @@ export function createUseQuery(useRealm: UseRealm): UseQuery {
       }
     }, [realm, type, modifiers, setError]); //XXX Check the lint rulers for hooks (setError was not showing an error)
 
-    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object> | null>(generateResult());
+    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object> | null>(generateResult);
 
     useEffect(() => {
       const listenerCallback: Realm.CollectionChangeCallback<T> = (_, changes) => {
@@ -66,7 +78,7 @@ export function createUseQuery(useRealm: UseRealm): UseQuery {
         }
       };
 
-      if (collection) collection.addListener(listenerCallback);
+      if (collection && collection.isValid && !realm.isClosed) collection.addListener(listenerCallback);
 
       return () => {
         if (collection) {
