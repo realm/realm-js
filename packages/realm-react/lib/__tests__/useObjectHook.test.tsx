@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React from "react";
+import { useEffect, useState } from "react";
+import Realm from "realm";
 import { renderHook } from "@testing-library/react-hooks";
-import { createRealmContext } from "..";
+import { createUseObject } from "../useObject";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -34,10 +35,24 @@ interface IDog {
   name: string;
 }
 
-const { RealmProvider, useRealm, useObject } = createRealmContext({
+const configuration = {
   schema: [dogSchema],
-  inMemory: true,
-});
+  path: "useObjectHook",
+};
+
+const useRealm = () => {
+  const [realm, setRealm] = useState<Realm | null>(new Realm(configuration));
+  useEffect(() => {
+    return () => {
+      realm?.close();
+      setRealm(null);
+    };
+  }, [realm, setRealm]);
+
+  return new Realm(configuration);
+};
+
+const useObject = createUseObject(useRealm);
 
 const testDataSet = [
   { _id: 4, name: "Vincent" },
@@ -46,43 +61,31 @@ const testDataSet = [
 ];
 
 describe("useObject hook", () => {
-  beforeEach(async () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result, waitForNextUpdate } = renderHook(() => useRealm(), { wrapper });
-    await waitForNextUpdate();
-    const realm = result.current;
+  beforeEach(() => {
+    const realm = new Realm(configuration);
     realm.write(() => {
       realm.deleteAll();
       testDataSet.forEach((data) => {
         realm.create("dog", data);
       });
     });
+    realm.close();
   });
 
-  it("can retrieve a single object using useObject", async () => {
+  it("can retrieve a single object using useObject", () => {
     const [, dog2] = testDataSet;
 
-    const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result: objectResult, waitForNextUpdate: waitForNextObjectUpdate } = renderHook(
-      () => useObject<IDog>("dog", dog2._id),
-      { wrapper },
-    );
-    await waitForNextObjectUpdate();
+    const { result } = renderHook(() => useObject<IDog>("dog", dog2._id));
 
-    const object = objectResult.current;
+    const object = result.current;
 
     expect(object.data).toMatchObject(dog2);
   });
 
-  it("object is null", async () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result: objectResult, waitForNextUpdate: waitForNextObjectUpdate } = renderHook(
-      () => useObject<IDog>("dog", 12),
-      { wrapper },
-    );
-    await waitForNextObjectUpdate();
+  it("object is null", () => {
+    const { result } = renderHook(() => useObject<IDog>("dog", 12));
 
-    const object = objectResult.current;
+    const object = result.current;
 
     expect(object.data).toEqual(null);
   });

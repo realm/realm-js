@@ -19,10 +19,7 @@
 import React, { useEffect, useState } from "react";
 import Realm from "realm";
 
-//XXX Provider configuration properties as seperate properties
-interface ProviderProps {
-  config?: Realm.Configuration;
-}
+type ProviderProps = Realm.Configuration;
 
 export type RealmProviderType = React.FC<ProviderProps>;
 
@@ -30,29 +27,34 @@ export function createRealmProvider(
   realmConfig: Realm.Configuration,
   RealmContext: React.Context<Realm | null>,
 ): RealmProviderType {
-  const RealmProvider: React.FC<ProviderProps> = ({ children, config }) => {
+  const RealmProvider: React.FC<ProviderProps> = ({ children, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
-    //XXX consider confguration being changed with state (write tests for this)
+    //XXX consider configuration being changed with state (write tests for this)
+    //XXX consider rendering the provider twice and unmounting one of them (does the other still work?)
     useEffect(() => {
-      if (!realm?.isClosed) {
-        realm?.close();
+      // if restProps change, then close the realm before reopening it
+      if (realm && !realm.isClosed) {
+        realm.close();
+        setRealm(null);
       }
       const initRealm = async () => {
-        //XXX deep merge the configurations
-        const combinedConfig = {
-          ...realmConfig,
-          ...config,
-        } as Realm.Configuration;
+        const combinedConfig = mergeConfiguration(realmConfig, restProps);
         const openRealm = await Realm.open(combinedConfig);
         setRealm(openRealm);
       };
       if (realm === null) {
         initRealm().catch(console.error);
       }
+    }, [restProps]);
+
+    useEffect(() => {
       return () => {
-        realm?.close(); //XXX test that this actually closes (maybe use multiple useEffects)
+        if (realm) {
+          realm.close();
+          setRealm(null);
+        }
       };
-    }, [config]); //use Ref for realm
+    }, [realm, setRealm]);
 
     if (realm == null) {
       return null;
@@ -62,4 +64,17 @@ export function createRealmProvider(
   };
 
   return RealmProvider;
+}
+
+export function mergeConfiguration(
+  configA: Realm.Configuration,
+  configB: Partial<Realm.Configuration>,
+): Realm.Configuration {
+  const sync = { ...configA.sync, ...configB.sync };
+
+  return {
+    ...configA,
+    ...configB,
+    ...(Object.keys(sync).length > 0 ? { sync } : undefined),
+  } as Realm.Configuration;
 }
