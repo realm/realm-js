@@ -7,6 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * React Native templates now transfer hidden files into new projects([#3971](https://github.com/realm/realm-js/issues/3971))
 * Remove usage of deprecated features for Gradle 7 ([#3946](https://github.com/realm/realm-js/issues/3946), [#3879](https://github.com/realm/realm-js/issues/3879))
+* A `sync` configuration value of `undefined` now behaves the same as a missing `sync` configuration ([#3999](https://github.com/realm/realm-js/issues/3999), since v2.2.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -16,6 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Lint react-native templates and ensure they are checked by the CI.
+* Updated `README.md` and `building.md` with updated instructions on building from source.
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>

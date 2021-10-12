@@ -148,6 +148,16 @@ module.exports = {
     TestCase.assertNull(realm.syncSession);
   },
 
+  testRealmSyncUndefinedHasNoSession() {
+    const config = {
+      sync: undefined,
+    };
+
+    return Realm.open(config).then((realm) => {
+      TestCase.assertNull(realm.syncSession);
+    });
+  },
+
   async testRealmInvalidSyncConfiguration1() {
     const config = {
       sync: true,
