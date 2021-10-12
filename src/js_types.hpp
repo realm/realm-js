@@ -18,13 +18,15 @@
 
 #pragma once
 
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/object.hpp>
 #include <realm/object-store/property.hpp>
 
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include <sstream>
-
+#include <iostream>
 #include <realm/binary_data.hpp>
 #include <realm/string_data.hpp>
 #include <realm/util/to_string.hpp>
@@ -52,6 +54,9 @@ namespace realm {
 namespace js {
 
 template<typename>
+struct RealmObjectClass;
+
+template<typename>
 struct ResultsClass;
 template<typename>
 struct ListClass;
@@ -68,6 +73,9 @@ enum PropertyAttributes : unsigned {
     DontEnum   = 1 << 1,
     DontDelete = 1 << 2
 };
+
+template<typename>
+struct Object;
 
 // JS: Number.MAX_SAFE_INTEGER === Math.pow(2, 53)-1;
 constexpr static int64_t JS_MAX_SAFE_INTEGER = (1ll << 53) - 1;
@@ -167,12 +175,43 @@ struct Value {
     static ValueType from_nonnull_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
     static ValueType from_timestamp(ContextType, Timestamp);
-    static ValueType from_mixed(ContextType, const Mixed &);
     static ValueType from_uuid(ContextType, const UUID&);
     static ValueType from_objkey(ContextType, const ObjKey&);
     static ValueType from_objlink(ContextType, const ObjLink&);
     static ValueType from_bson(ContextType, const bson::Bson &);
     static ObjectType from_bson(ContextType, const bson::BsonDocument &);
+    static ValueType from_mixed(ContextType ctx, std::shared_ptr<Realm> realm, const Mixed &mixed) {
+        if (mixed.is_null()) {
+            return from_null(ctx);
+        }
+
+        switch (mixed.get_type()) {
+            case DataType::Type::Int: return from_number(ctx, mixed.get_int());
+            case DataType::Type::Bool: return from_boolean(ctx, mixed.get_bool());
+            case DataType::Type::String: {
+                std::string str = std::string(mixed.get<StringData>());
+                return from_string(ctx, str);
+            }
+            case DataType::Type::Binary: return from_binary(ctx, mixed.get<BinaryData>()); // TODO: avoid copies
+            case DataType::Type::Timestamp: return from_timestamp(ctx, mixed.get_timestamp());
+            case DataType::Type::Float: return from_number(ctx, mixed.get_float());
+            case DataType::Type::Double: return from_number(ctx, mixed.get_double());
+            case DataType::Type::Decimal: return from_decimal128(ctx, mixed.get_decimal());
+            case DataType::Type::Link: {
+                realm::Object realm_object(realm, mixed.get_link());
+                return RealmObjectClass<T>::create_instance(ctx, realm_object);
+            };
+            // case DataType::Type::LinkList: ;
+            case DataType::Type::ObjectId: return from_object_id(ctx, mixed.get_object_id());
+            case DataType::Type::TypedLink: {
+                realm::Object realm_object(realm, mixed.get_link());
+                return RealmObjectClass<T>::create_instance(ctx, realm_object);
+            };
+            case DataType::Type::UUID: return from_uuid(ctx, mixed.get_uuid());
+            default:
+                REALM_UNREACHABLE();
+        }
+    }
 
     static ObjectType to_array(ContextType, const ValueType &);
     static bool to_boolean(ContextType, const ValueType &);
@@ -187,6 +226,59 @@ struct Value {
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, const ValueType&);
     static bson::Bson to_bson(ContextType, ValueType);
+    static Mixed to_mixed(ContextType ctx, ValueType value) {
+        if (is_null(ctx, value) || is_undefined(ctx, value)) {
+            return Mixed(realm::null());
+        }
+        else if (is_boolean(ctx, value)) {
+            return Mixed(to_boolean(ctx, value));
+        }
+        else if (is_date(ctx, value)) {
+            auto date = to_date(ctx, value);
+
+            double milliseconds = to_number(ctx, date);
+            int64_t seconds = milliseconds / 1000;
+            int32_t nanoseconds = ((int64_t)milliseconds % 1000) * 1000000;
+            Timestamp ts(seconds, nanoseconds);
+
+            return Mixed(ts);
+        }
+        else if (is_number(ctx, value)) {
+            return Mixed(to_number(ctx, value)); // TODO: should check if value is int, float or double
+        }
+        else if (is_string(ctx, value)) {
+            std::string str = to_string(ctx, value);
+            return Mixed(strdup(str.c_str())); // TODO: how to avoid copying the string?
+        }
+        else if (is_binary(ctx, value)) {
+            return Mixed(to_binary(ctx, value).get());
+        }
+        else if (is_decimal128(ctx, value)) {
+            return Mixed(to_decimal128(ctx, value));
+        }
+        else if (is_object_id(ctx, value)) {
+            return Mixed(to_object_id(ctx, value));
+        }
+        else if (is_uuid(ctx, value)) {
+            return Mixed(to_uuid(ctx, value));
+        }
+        else if (is_object(ctx, value)) {
+            const std::string message = "Only Realm instances are supported.";
+            auto js_object = to_object(ctx, value);
+
+            auto is_ros_instance = Object<T>::template is_instance<RealmObjectClass<T>>(ctx, js_object);
+            if (!is_ros_instance) {
+                throw std::runtime_error(message);
+            }
+            auto os_object = Object<T>::template get_internal<RealmObjectClass<T>>(ctx, js_object);
+            if (!(os_object /*&& os_object->realm() == realm*/)) {
+                throw std::runtime_error(message);
+            }
+
+            return Mixed(os_object->obj());
+        }
+        // TODO: links
+    }
 
 #define VALIDATED(return_t, type) \
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \

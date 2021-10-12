@@ -101,11 +101,11 @@ public:
 	}
 
     void register_plugins() {
-        MixedLink<JSEngine>::add_strategy(m_realm);
+        // MixedLink<JSEngine>::add_strategy(m_realm);
     }
 
     ~NativeAccessor() {
-        MixedLink<JSEngine>::remove_strategy();
+        // MixedLink<JSEngine>::remove_strategy();
     }
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
@@ -153,7 +153,7 @@ public:
     ValueType box(ObjectId objectId) { return Value::from_object_id(m_ctx, objectId); }
     ValueType box(Decimal128 number) { return Value::from_decimal128(m_ctx, number); }
     ValueType box(UUID uuid)         { return Value::from_uuid(m_ctx, uuid); }
-    ValueType box(Mixed mixed)       { return TypeMixed<JSEngine>::get_instance().wrap(m_ctx, mixed); }
+    ValueType box(Mixed mixed)       { return Value::from_mixed(m_ctx, m_realm, mixed); }
 
     ValueType box(Timestamp ts) {
         if (ts.is_null()) {
@@ -408,7 +408,7 @@ struct Unbox<JSEngine, BinaryData> {
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
     static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        return TypeMixed<JSEngine>::get_instance().unwrap(ctx->m_ctx, value);
+        return js::Value<JSEngine>::to_mixed(ctx->m_ctx, value); // no need to validate type for a mixed value
     }
 };
 
