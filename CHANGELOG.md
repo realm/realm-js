@@ -22,6 +22,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Small fix to Jenkins to publish Docker image for Raspberry Pi.
+* Added CMake toolchain file for Linux to prevent compilation using a mix of clang and gcc
 
 10.8.0 Release notes (2021-9-14)
 =============================================================
