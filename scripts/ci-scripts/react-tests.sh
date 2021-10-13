@@ -163,11 +163,9 @@ echo "building iOS binaries"
 # set_nvm_default
 # start_server
 
-pushd tests/react-test-app
-echo "tests/react-test-app npm ci --no-optional"
+pushd tests/ReactTestApp
+echo "tests/ReactTestApp npm ci --no-optional"
 npm ci --no-optional
-echo "installing install-local"
-./node_modules/.bin/install-local
 # open_chrome
 # start_packager
 
