@@ -1,11 +1,9 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.9.0-rc.1 Release notes (2021-10-13)
 =============================================================
 ### Enhancements
-* Realm JS now support re-running Custom Confirmation functions for Realm Sync users via `retryCustomConfirmation` ([#3032]())
-
+* Realm JS now support re-running Custom Confirmation functions for Realm Sync users via `retryCustomConfirmation`. ([#3032](https://github.com/realm/realm-js/issues/3032))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * React Native templates now transfer hidden files into new projects([#3971](https://github.com/realm/realm-js/issues/3971))
 * Remove usage of deprecated features for Gradle 7 ([#3946](https://github.com/realm/realm-js/issues/3946), [#3879](https://github.com/realm/realm-js/issues/3879))
 * A `sync` configuration value of `undefined` now behaves the same as a missing `sync` configuration ([#3999](https://github.com/realm/realm-js/issues/3999), since v2.2.0)
@@ -21,9 +19,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Updated `README.md` and `building.md` with updated instructions on building from source.
 * Changed logo to a 'dark-mode' aware SVG ([#4020](https://github.com/realm/realm-js/pull/4020))
 * Added workaround for crash when closing Realm in Jest test on Node 12 ([#4025](https://github.com/realm/realm-js/pull/4025), since v10.8.0)
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Using Realm Core v11.4.1.
 * Small fix to Jenkins to publish Docker image for Raspberry Pi.
 
 10.8.0 Release notes (2021-9-14)
