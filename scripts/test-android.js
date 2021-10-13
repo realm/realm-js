@@ -20,7 +20,7 @@ var shell = require("shelljs");
 
 shell.set("-e");
 
-shell.pushd("./tests/react-test-app");
+shell.pushd("./tests/ReactTestApp");
 
 shell.exec("npm install");
 

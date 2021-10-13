@@ -51,9 +51,9 @@ if (options.arch) {
 
 const buildType = options.buildType;
 
-const ndkPath = process.env["ANDROID_NDK"];
+const ndkPath = process.env["ANDROID_NDK"] || process.env["ANDROID_NDK_HOME"];
 if (!ndkPath) {
-  throw Error("ANDROID_NDK environment variable not set");
+  throw Error("ANDROID_NDK / ANDROID_NDK_HOME environment variable not set");
 }
 
 const sdkPath = getAndroidSdkPath();
@@ -68,7 +68,7 @@ if (options.clean) {
 }
 
 if (!fs.existsSync(buildPath)) {
-  fs.mkdirSync(buildPath);
+  fs.mkdirSync(buildPath, { recursive: true });
 }
 //shared root dir to download jsc once for all architectures
 const jscDir = path.resolve(buildPath, "jsc-android");
