@@ -412,14 +412,14 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
 
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
 
-        std::string direction = Value::validated_to_string(ctx, args[0], "direction");
+        std::string direction_str = Value::validated_to_string(ctx, args[0], "direction");
         std::string mode = Value::validated_to_string(ctx, args[1], "mode");
-        SyncSession::NotifierType notifierType;
-        if (direction == "download") {
-            notifierType = SyncSession::NotifierType::download;
+        SyncSession::ProgressDirection direction;
+        if (direction_str == "download") {
+            direction = SyncSession::ProgressDirection::download;
         }
-        else if (direction == "upload") {
-            notifierType = SyncSession::NotifierType::upload;
+        else if (direction_str == "upload") {
+            direction = SyncSession::ProgressDirection::upload;
         }
         else {
             throw std::invalid_argument("Invalid argument 'direction'. Only 'download' and 'upload' progress notification directions are supported");
@@ -455,7 +455,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
 
         progressFunc = std::move(progress_handler);
 
-        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, is_streaming);
+        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), direction, is_streaming);
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
         Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
@@ -755,7 +755,7 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
     };
 
     auto sync_logger = common::logger::Logger::build_sync_logger(show_logs);
-    app->sync_manager()->set_logger_factory( *sync_logger );
+    app->sync_manager()->set_logger_factory(sync_logger);
 }
 
 template<typename T>
