@@ -262,6 +262,9 @@ struct Value {
         else if (is_uuid(ctx, value)) {
             return Mixed(to_uuid(ctx, value));
         }
+        else if (is_array(ctx, value)) {
+            throw std::runtime_error("A mixed property cannot contain an array of values.");
+        }
         else if (is_object(ctx, value)) {
             const std::string message = "Only Realm instances are supported.";
             auto js_object = to_object(ctx, value);
