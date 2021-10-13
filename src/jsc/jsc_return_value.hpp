@@ -21,8 +21,6 @@
 #include "jsc_types.hpp"
 #include "jsc_string.hpp"
 
-#include "js_mixed.hpp"
-
 namespace realm {
 namespace js {
 
@@ -56,7 +54,7 @@ class ReturnValue<jsc::Types> {
         m_value = JSValueMakeNumber(m_context, number);
     }
     void set(realm::Mixed mixed) {
-        m_value = TypeMixed<jsc::Types>::get_instance().wrap(m_context, mixed);
+        m_value = from_mixed(m_context, nullptr, mixed);
     }
     void set_null() {
         m_value = JSValueMakeNull(m_context);

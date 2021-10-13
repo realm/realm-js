@@ -24,7 +24,6 @@
 #include "js_set.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
-#include "js_links.hpp"
 
 #if REALM_ENABLE_SYNC
 #include <realm/util/base64.hpp>
@@ -459,21 +458,25 @@ struct Unbox<JSEngine, Obj> {
     static Obj call(NativeAccessor<JSEngine> *native_accessor, typename JSEngine::Value const& value, realm::CreatePolicy policy, ObjKey current_row) {
         using Value = js::Value<JSEngine>;
         using ValueType = typename JSEngine::Value;
+        using Object = js::Object<JSEngine>;
 
-        RealmLink<JSEngine> realm_link {native_accessor->m_ctx, value};
         auto current_realm = native_accessor->m_realm;
+        auto js_object = Value::validated_to_object(native_accessor->m_ctx, value);
+        auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(native_accessor->m_ctx, js_object);
 
-        if(realm_link.belongs_to_realm(current_realm)){
-            return realm_link.get_realm_object();
+        auto is_ros_instance = Object::template is_instance<RealmObjectClass<JSEngine>>(native_accessor->m_ctx, js_object);
+
+        if (is_ros_instance && realm_object && realm_object->realm() == current_realm) {
+            return realm_object->obj();
         }
 
-        if(realm_link.is_instance() && realm_link.is_read_only(policy)) {
+        if (is_ros_instance && !policy.copy && !policy.update && !policy.create) {
             throw std::runtime_error("Realm object is from another Realm");
         }
 
         // if our RealmObject isn't in ObjectStore, it's a detached object
         // (not in to database), and we can't add it
-        if (realm_link.is_instance() && !realm_link.get_os_object()) {
+        if (is_ros_instance && !realm_object) {
             throw std::runtime_error("Cannot reference a detached instance of Realm.Object");
         }
 
@@ -481,14 +484,13 @@ struct Unbox<JSEngine, Obj> {
             return Obj();
         }
 
-        auto object = Value::validated_to_object(native_accessor->m_ctx, value);
-        if (Value::is_array(native_accessor->m_ctx, object)) {
-            object = Schema<JSEngine>::dict_for_property_array(native_accessor->m_ctx, *native_accessor->m_object_schema, object);
+        if (Value::is_array(native_accessor->m_ctx, js_object)) {
+            js_object = Schema<JSEngine>::dict_for_property_array(native_accessor->m_ctx, *native_accessor->m_object_schema, js_object);
         }
 
         auto child = realm::Object::create<ValueType>
             (*native_accessor, native_accessor->m_realm, *native_accessor->m_object_schema,
-                    static_cast<ValueType>(object), policy, current_row);
+                    static_cast<ValueType>(js_object), policy, current_row);
         return child.obj();
     }
 };
