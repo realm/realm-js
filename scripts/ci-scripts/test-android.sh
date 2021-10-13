@@ -22,28 +22,9 @@ start_packager() {
   done
 }
 
-# pack realm package manually since install-local does not allow passing --ignore-scripts
-echo "manually packing realm package"
-npm pack .
-rm -rf realm.tgz
-mv realm-*.*.*.tgz realm.tgz
-
-echo "manually packing realm tests package"
-pushd tests/js
-npm pack .
-rm -rf realm-tests.tgz
-mv realm-tests-*.*.*.tgz realm-tests.tgz
-popd
-
-pushd tests/react-test-app
-echo "installing react-test-app dependencies"
+pushd tests/ReactTestApp
+echo "installing ReactTestApp dependencies"
 npm ci --no-optional
-
-echo "installing manually packed realm package"
-npm install --save-optional  --ignore-scripts ../../realm.tgz
-
-echo "installing manually packed realm tests package"
-npm install --save-optional ../js/realm-tests.tgz
 
 echo "Adb devices"
 adb devices
