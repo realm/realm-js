@@ -113,7 +113,7 @@ class SessionClass : public ClassDefinition<T, WeakSession> {
 public:
     std::string const name = "Session";
     using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
-    using StateHandler = void(SyncSession::PublicState old_state, SyncSession::PublicState new_state);
+    using StateHandler = void(SyncSession::State old_state, SyncSession::State new_state);
     using ConnectionHandler = void(SyncSession::ConnectionState new_state, SyncSession::ConnectionState old_state);
     using DownloadUploadCompletionHandler = void(std::error_code error);
 
@@ -368,7 +368,7 @@ void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue 
     return_value.set(invalid);
 
     if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
-        if (session->state() == SyncSession::PublicState::Inactive) {
+        if (session->state() == SyncSession::State::Inactive) {
             return_value.set(inactive);
         } else {
             return_value.set(active);
@@ -412,14 +412,14 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
 
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
 
-        std::string direction = Value::validated_to_string(ctx, args[0], "direction");
+        std::string direction_str = Value::validated_to_string(ctx, args[0], "direction");
         std::string mode = Value::validated_to_string(ctx, args[1], "mode");
-        SyncSession::NotifierType notifierType;
-        if (direction == "download") {
-            notifierType = SyncSession::NotifierType::download;
+        SyncSession::ProgressDirection direction;
+        if (direction_str == "download") {
+            direction = SyncSession::ProgressDirection::download;
         }
-        else if (direction == "upload") {
-            notifierType = SyncSession::NotifierType::upload;
+        else if (direction_str == "upload") {
+            direction = SyncSession::ProgressDirection::upload;
         }
         else {
             throw std::invalid_argument("Invalid argument 'direction'. Only 'download' and 'upload' progress notification directions are supported");
@@ -455,7 +455,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
 
         progressFunc = std::move(progress_handler);
 
-        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, is_streaming);
+        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), direction, is_streaming);
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
         Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
@@ -536,7 +536,7 @@ void SessionClass<T>::is_connected(ContextType ctx, ObjectType this_object, Argu
         auto state = session->state();
         auto connection_state = session->connection_state();
         if (connection_state == SyncSession::ConnectionState::Connected
-            && (state == SyncSession::PublicState::Active || state == SyncSession::PublicState::Dying)) {
+            && (state == SyncSession::State::Active || state == SyncSession::State::Dying)) {
             return_value.set(true);
         }
     }
@@ -755,7 +755,7 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
     };
 
     auto sync_logger = common::logger::Logger::build_sync_logger(show_logs);
-    app->sync_manager()->set_logger_factory( *sync_logger );
+    app->sync_manager()->set_logger_factory(sync_logger);
 }
 
 template<typename T>
