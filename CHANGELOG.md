@@ -1,13 +1,10 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.9.0-rc.1 Release notes (2021-10-13)
 =============================================================
 ### Enhancements
-* Realm JS now support re-running Custom Confirmation functions for Realm Sync users via `retryCustomConfirmation` ([#3032]())
-
+* Realm JS now support re-running Custom Confirmation functions for Realm Sync users via `retryCustomConfirmation`. ([#3032](https://github.com/realm/realm-js/issues/3032))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * React Native templates now transfer hidden files into new projects([#3971](https://github.com/realm/realm-js/issues/3971))
-* None.
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -17,9 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Lint react-native templates and ensure they are checked by the CI.
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Using Realm Core v11.4.1.
 * Small fix to Jenkins to publish Docker image for Raspberry Pi.
 
 10.8.0 Release notes (2021-9-14)
