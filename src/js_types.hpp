@@ -281,6 +281,8 @@ struct Value {
             return Mixed(os_object->obj());
         }
         // TODO: links
+
+        REALM_UNREACHABLE();
     }
 
 #define VALIDATED(return_t, type) \
