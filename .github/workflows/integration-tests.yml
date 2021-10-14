@@ -238,18 +238,8 @@ jobs:
           key: android-build-dir-${{ hashFiles('src/**', 'react-native/android/**', 'vendor/**') }}
           restore-keys: |
             android-build-dir-
-      - uses: actions/cache@v2
-        name: Restore Android librealm.so from cache
-        id: cache-android-so
-        with:
-          path: react-native/android/**/librealm.so
-          key: android-so-${{ hashFiles('src/**', 'react-native/android/**', 'vendor/**') }}
-
       - run: npm ci
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
-      # Build the Android shared object file (if cache missed)
-      - run: ANDROID_NDK=$ANDROID_NDK_HOME node scripts/build-android.js --arch=x86 --build-type=${{ matrix.type }}
-        if: ${{ steps.cache-android-so.outputs.cache-hit != 'true' }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests

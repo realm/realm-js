@@ -355,10 +355,6 @@ case "$TARGET" in
   npm ci --ignore-scripts
   npm run check-environment
 
-  # building only for x86 emulator to speed CI
-  echo "building android binaries"
-  node scripts/build-android.js --arch=x86
-
   pushd tests/ReactTestApp
   echo "installing ReactTestApp dependencies"
   npm ci --no-optional

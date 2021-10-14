@@ -92,7 +92,6 @@ stage('build') {
     parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
     parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
 
-    parallelExecutors["Android RN"] = buildAndroid()
     parallelExecutors["iOS RN"] = buildiOS()
 
     parallel parallelExecutors
@@ -286,25 +285,6 @@ def inAndroidContainer(workerFunction) {
         ) {
           workerFunction()
         }
-      }
-    }
-  }
-}
-
-def buildAndroid() {
-  return {
-    myNode('docker') {
-      unstash 'source'
-      def image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
-      image.inside('-e HOME=/tmp') {
-        // Using --ignore-scripts to skip building for node
-        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
-        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
-      }
-      dir('react-native/android/src/main') {
-        // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
-        // archiveArtifacts('jniLibs/**')
-        stash includes: 'jniLibs/**', name: 'android-jnilibs'
       }
     }
   }
