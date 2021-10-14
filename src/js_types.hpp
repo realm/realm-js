@@ -189,7 +189,7 @@ struct Value {
             case DataType::Type::Int: return from_number(ctx, mixed.get_int());
             case DataType::Type::Bool: return from_boolean(ctx, mixed.get_bool());
             case DataType::Type::String: {
-                std::string str = std::string(mixed.get<StringData>());
+                auto str = std::string(mixed.get<StringData>());
                 return from_string(ctx, str);
             }
             case DataType::Type::Binary: return from_binary(ctx, mixed.get<BinaryData>()); // TODO: avoid copies
@@ -201,7 +201,6 @@ struct Value {
                 realm::Object realm_object(realm, mixed.get_link());
                 return RealmObjectClass<T>::create_instance(ctx, realm_object);
             };
-            // case DataType::Type::LinkList: ;
             case DataType::Type::ObjectId: return from_object_id(ctx, mixed.get_object_id());
             case DataType::Type::TypedLink: {
                 realm::Object realm_object(realm, mixed.get_link());
@@ -226,7 +225,7 @@ struct Value {
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, const ValueType&);
     static bson::Bson to_bson(ContextType, ValueType);
-    static Mixed to_mixed(ContextType ctx, ValueType value) {
+    static Mixed to_mixed(ContextType ctx, std::shared_ptr<Realm> realm, ValueType value) {
         if (is_null(ctx, value) || is_undefined(ctx, value)) {
             return Mixed(realm::null());
         }
@@ -244,7 +243,7 @@ struct Value {
             return Mixed(ts);
         }
         else if (is_number(ctx, value)) {
-            return Mixed(to_number(ctx, value)); // TODO: should check if value is int, float or double
+            return Mixed(to_number(ctx, value));
         }
         else if (is_string(ctx, value)) {
             std::string str = to_string(ctx, value);
@@ -274,14 +273,12 @@ struct Value {
                 throw std::runtime_error(message);
             }
             auto os_object = Object<T>::template get_internal<RealmObjectClass<T>>(ctx, js_object);
-            if (!(os_object /*&& os_object->realm() == realm*/)) {
+            if (!(os_object && os_object->realm() == realm)) {
                 throw std::runtime_error(message);
             }
 
             return Mixed(os_object->obj());
         }
-        // TODO: links
-
         REALM_UNREACHABLE();
     }
 

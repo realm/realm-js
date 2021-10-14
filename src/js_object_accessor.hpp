@@ -54,18 +54,15 @@ public:
     using OptionalValue = util::Optional<ValueType>;
 
     NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm, const ObjectSchema& object_schema)
-    : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(&object_schema) {
-        register_plugins();
-    }
+    : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(&object_schema)
+    { }
 
     template<typename Collection>
     NativeAccessor(ContextType ctx, Collection const& collection)
     : m_ctx(ctx)
     , m_realm(collection.get_realm())
     , m_object_schema(collection.get_type() == realm::PropertyType::Object ? &collection.get_object_schema() : nullptr)
-    {
-        register_plugins();
-    }
+    { }
 
     NativeAccessor(NativeAccessor& na, Obj parent, Property const& prop)
         : m_ctx(na.m_ctx)
@@ -83,7 +80,6 @@ public:
             m_object_schema = na.m_object_schema;
         }
 
-        register_plugins();
     }
 
     NativeAccessor(NativeAccessor& parent, const Property& prop)
@@ -95,17 +91,9 @@ public:
 		if (schema != m_realm->schema().end()) {
 			m_object_schema = &*schema;
 		}
-
-        register_plugins();
-	}
-
-    void register_plugins() {
-        // MixedLink<JSEngine>::add_strategy(m_realm);
     }
 
-    ~NativeAccessor() {
-        // MixedLink<JSEngine>::remove_strategy();
-    }
+    ~NativeAccessor() { }
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
@@ -407,7 +395,7 @@ struct Unbox<JSEngine, BinaryData> {
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
     static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, realm::CreatePolicy, ObjKey) {
-        return js::Value<JSEngine>::to_mixed(ctx->m_ctx, value); // no need to validate type for a mixed value
+        return js::Value<JSEngine>::to_mixed(ctx->m_ctx, ctx->m_realm, value); // no need to validate type for a mixed value
     }
 };
 
