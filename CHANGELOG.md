@@ -19,6 +19,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Lint react-native templates and ensure they are checked by the CI.
 * Updated `README.md` and `building.md` with updated instructions on building from source.
 * Changed logo to a 'dark-mode' aware SVG ([#4020](https://github.com/realm/realm-js/pull/4020))
+* Added workaround for crash when closing Realm in Jest test on Node 12 ([#4025](https://github.com/realm/realm-js/pull/4025), since v10.8.0)
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
