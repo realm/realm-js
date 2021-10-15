@@ -192,7 +192,7 @@ struct Value {
                 auto str = std::string(mixed.get<StringData>());
                 return from_string(ctx, str);
             }
-            case DataType::Type::Binary: return from_binary(ctx, mixed.get<BinaryData>()); // TODO: avoid copies
+            case DataType::Type::Binary: return from_binary(ctx, mixed.get<BinaryData>());
             case DataType::Type::Timestamp: return from_timestamp(ctx, mixed.get_timestamp());
             case DataType::Type::Float: return from_number(ctx, mixed.get_float());
             case DataType::Type::Double: return from_number(ctx, mixed.get_double());
@@ -225,7 +225,7 @@ struct Value {
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, const ValueType&);
     static bson::Bson to_bson(ContextType, ValueType);
-    static Mixed to_mixed(ContextType ctx, std::shared_ptr<Realm> realm, ValueType value) {
+    static Mixed to_mixed(ContextType ctx, std::shared_ptr<Realm> realm, const ValueType& value) {
         if (is_null(ctx, value) || is_undefined(ctx, value)) {
             return Mixed(realm::null());
         }
@@ -247,7 +247,8 @@ struct Value {
         }
         else if (is_string(ctx, value)) {
             std::string str = to_string(ctx, value);
-            return Mixed(strdup(str.c_str())); // TODO: how to avoid copying the string?
+            // return Mixed(strdup(str.c_str()));
+            return Mixed(std::move(str));
         }
         else if (is_binary(ctx, value)) {
             return Mixed(to_binary(ctx, value).get());
