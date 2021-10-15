@@ -121,6 +121,6 @@ export class HTTPService implements HTTP {
  * @param serviceName An optional service name.
  * @returns The new HTTP Service.
  */
-export function createService(fetcher: Fetcher, serviceName = "http") {
+export function createService(fetcher: Fetcher, serviceName = "http"): HTTPService {
   return new HTTPService(fetcher, serviceName);
 }

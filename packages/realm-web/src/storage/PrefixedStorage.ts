@@ -49,17 +49,17 @@ export class PrefixedStorage implements Storage {
   }
 
   /** @inheritdoc */
-  public get(key: string) {
+  public get(key: string): string | null {
     return this.storage.get(this.keyPart + PrefixedStorage.PART_SEPARATOR + key);
   }
 
   /** @inheritdoc */
-  public set(key: string, value: string) {
+  public set(key: string, value: string): void {
     return this.storage.set(this.keyPart + PrefixedStorage.PART_SEPARATOR + key, value);
   }
 
   /** @inheritdoc */
-  public remove(key: string) {
+  public remove(key: string): void {
     return this.storage.remove(this.keyPart + PrefixedStorage.PART_SEPARATOR + key);
   }
 
@@ -69,17 +69,17 @@ export class PrefixedStorage implements Storage {
   }
 
   /** @inheritdoc */
-  public clear(prefix = "") {
+  public clear(prefix = ""): void {
     return this.storage.clear(this.keyPart + PrefixedStorage.PART_SEPARATOR + prefix);
   }
 
   /** @inheritdoc */
-  public addListener(listener: StorageChangeListener) {
+  public addListener(listener: StorageChangeListener): void {
     return this.storage.addListener(listener);
   }
 
   /** @inheritdoc */
-  public removeListener(listener: StorageChangeListener) {
+  public removeListener(listener: StorageChangeListener): void {
     return this.storage.addListener(listener);
   }
 }

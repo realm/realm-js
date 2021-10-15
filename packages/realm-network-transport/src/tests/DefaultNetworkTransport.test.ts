@@ -33,7 +33,7 @@ function getServerUrl(server: Server) {
 
 async function createTestServer(listener: RequestListener): Promise<Server> {
   const server = createServer(listener);
-  await new Promise((resolve) => server.listen(0, resolve));
+  await new Promise((resolve) => server.listen(0, () => resolve(server)));
   return server;
 }
 
@@ -106,7 +106,7 @@ describe("DefaultNetworkTransport", () => {
   });
 
   describe("requesting with fetchWithCallbacks", () => {
-    function fetchWithCallbacksPromised(transport: NetworkTransport, request: Request<any>) {
+    function fetchWithCallbacksPromised(transport: NetworkTransport, request: Request) {
       return new Promise<CallbackResponse>((resolve, reject) => {
         transport.fetchWithCallbacks(request, {
           onSuccess: resolve,

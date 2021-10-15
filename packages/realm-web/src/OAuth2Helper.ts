@@ -129,7 +129,7 @@ export class OAuth2Helper {
    * @param authInfo An authInfo string returned from the server.
    * @returns An object containing the separate parts of the authInfo string.
    */
-  public static decodeAuthInfo(authInfo: string | undefined) {
+  public static decodeAuthInfo(authInfo: string | undefined): Record<string, unknown> {
     const parts = (authInfo || "").split("$");
     if (parts.length === 4) {
       const [accessToken, refreshToken, userId, deviceId] = parts;
@@ -236,7 +236,7 @@ export class OAuth2Helper {
    *
    * @returns The random state string.
    */
-  public generateState() {
+  public generateState(): string {
     return generateRandomString(12, LOWERCASE_LETTERS);
   }
 }

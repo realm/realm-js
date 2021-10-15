@@ -38,7 +38,7 @@ export class AppStorage extends PrefixedStorage {
    *
    * @returns A list of user ids.
    */
-  public getUserIds() {
+  public getUserIds(): string[] {
     const userIdsString = this.get(USER_IDS_STORAGE_KEY);
     const userIds = userIdsString ? JSON.parse(userIdsString) : [];
     if (Array.isArray(userIds)) {
@@ -57,7 +57,7 @@ export class AppStorage extends PrefixedStorage {
    * @param userIds The list of ids to store.
    * @param mergeWithExisting Prepend existing ids to avoid data-races with other apps using this storage.
    */
-  public setUserIds(userIds: string[], mergeWithExisting: boolean) {
+  public setUserIds(userIds: string[], mergeWithExisting: boolean): void {
     if (mergeWithExisting) {
       // Add any existing user id to the end of this list, avoiding duplicates
       const existingIds = this.getUserIds();
@@ -76,7 +76,7 @@ export class AppStorage extends PrefixedStorage {
    *
    * @param userId The id of a User to be removed.
    */
-  public removeUserId(userId: string) {
+  public removeUserId(userId: string): void {
     const existingIds = this.getUserIds();
     const userIds = existingIds.filter((id) => id !== userId);
     // Store the list of ids
@@ -86,14 +86,14 @@ export class AppStorage extends PrefixedStorage {
   /**
    * @returns id of this device (if any exists)
    */
-  public getDeviceId() {
+  public getDeviceId(): string | null {
     return this.get(DEVICE_ID_STORAGE_KEY);
   }
 
   /**
    * @param deviceId The id of this device, to send on subsequent authentication requests.
    */
-  public setDeviceId(deviceId: string) {
+  public setDeviceId(deviceId: string): void {
     this.set(DEVICE_ID_STORAGE_KEY, deviceId);
   }
 }

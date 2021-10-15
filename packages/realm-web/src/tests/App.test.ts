@@ -90,6 +90,7 @@ describe("App", () => {
         user_id: "totally-valid-user-id",
         access_token: "deadbeef",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
     ]);
     const app = new App({
@@ -120,6 +121,7 @@ describe("App", () => {
         user_id: "totally-valid-user-id",
         access_token: "deadbeef",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
     ]);
     const app = new App({
@@ -152,6 +154,7 @@ describe("App", () => {
         user_id: "totally-valid-user-id",
         access_token: "deadbeef",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
       {
         data: {
@@ -220,6 +223,7 @@ describe("App", () => {
         user_id: "totally-valid-user-id",
         access_token: "deadbeef",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
       {},
     ]);
@@ -272,6 +276,7 @@ describe("App", () => {
         user_id: "totally-valid-user-id-1",
         access_token: "deadbeef1",
         refresh_token: "very-refreshing-1",
+        device_id: "000000000000000000000000",
       },
       {
         data: {},
@@ -284,6 +289,7 @@ describe("App", () => {
         user_id: "totally-valid-user-id-2",
         access_token: "deadbeef2",
         refresh_token: "very-refreshing-2",
+        device_id: "000000000000000000000000",
       },
       {
         data: {},
@@ -357,6 +363,7 @@ describe("App", () => {
         user_id: "totally-valid-user-id",
         access_token: "deadbeef",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
       {},
     ]);
@@ -406,6 +413,7 @@ describe("App", () => {
         user_id: "totally-valid-user-id",
         access_token: "deadbeef",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
     ]);
     const app = new App({
@@ -459,12 +467,14 @@ describe("App", () => {
         user_id: "bobs-id",
         access_token: "first-access-token",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
       INVALID_SESSION_ERROR,
       {
         user_id: "bobs-id",
         access_token: "second-access-token",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
       { bar: "baz" },
     ]);
@@ -524,6 +534,7 @@ describe("App", () => {
         user_id: "bobs-id",
         access_token: "first-access-token",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
       INVALID_SESSION_ERROR,
       INVALID_SESSION_ERROR,
@@ -585,6 +596,7 @@ describe("App", () => {
         user_id: "totally-valid-user-id",
         access_token: "deadbeef",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
       { msg: "hi there!" },
     ]);
@@ -680,6 +692,7 @@ describe("App", () => {
         user_id: "totally-valid-user-id",
         access_token: "deadbeef",
         refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
       },
     ]);
     const app = new App({
@@ -712,11 +725,13 @@ describe("App", () => {
           user_id: "alices-id",
           access_token: "alices-access-token",
           refresh_token: "alices-refresh-token",
+          device_id: "000000000000000000000000",
         },
         {
           user_id: "bobs-id",
           access_token: "bobs-access-token",
           refresh_token: "bobs-refresh-token",
+          device_id: "000000000000000000000000",
         },
         {
           data: {
@@ -739,14 +754,15 @@ describe("App", () => {
           user_id: "charlies-id",
           access_token: "charlies-access-token",
           refresh_token: "charlies-refresh-token",
+          device_id: "000000000000000000000000",
         },
       ]),
       baseUrl: "http://localhost:1337",
     });
 
     const credentials = App.Credentials.anonymous();
-    const alice = await app1.logIn(credentials, false);
-    const charlie = await app2.logIn(credentials, false);
+    await app1.logIn(credentials, false); // Alice
+    await app2.logIn(credentials, false); // Charlie
     const bob = await app1.logIn(credentials, true);
 
     const appStorage = storage.prefix("app(my-mocked-app)");
@@ -796,28 +812,33 @@ describe("App", () => {
           user_id: "gilfoyles-id",
           access_token: "gilfoyles-first-access-token",
           refresh_token: "gilfoyles-first-refresh-token",
+          device_id: "000000000000000000000000",
         },
         {
           user_id: "dineshs-id",
           access_token: "dineshs-first-access-token",
           refresh_token: "dineshs-first-refresh-token",
+          device_id: "000000000000000000000000",
         },
         {
           user_id: "gilfoyles-id",
           access_token: "gilfoyles-second-access-token",
           refresh_token: "gilfoyles-second-refresh-token",
+          device_id: "000000000000000000000000",
         },
         {},
         {
           user_id: "gilfoyles-id",
           access_token: "gilfoyles-third-access-token",
           refresh_token: "gilfoyles-third-refresh-token",
+          device_id: "000000000000000000000000",
         },
         {},
         {
           user_id: "gilfoyles-id",
           access_token: "gilfoyles-forth-access-token",
           refresh_token: "gilfoyles-forth-refresh-token",
+          device_id: "000000000000000000000000",
         },
       ]),
       baseUrl: "http://localhost:1337",

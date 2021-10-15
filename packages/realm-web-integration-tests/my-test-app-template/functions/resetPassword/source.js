@@ -60,7 +60,7 @@ exports = ({ token, tokenId, username, password }, sendEmail, securityQuestionAn
 The uncommented function below is just a placeholder and will result in failure.
 */
 
-exports = ({ token, tokenId, username, password }) => {
+exports = () => {
   // will not reset the password
   return { status: "fail" };
 };

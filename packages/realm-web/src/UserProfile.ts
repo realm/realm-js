@@ -93,11 +93,9 @@ export class UserProfile<UserProfileDataType = Realm.DefaultUserProfileData> {
       }
 
       if (Array.isArray(identities)) {
-        this.identities = identities.map((identity: any) => {
-          return {
-            id: identity.id,
-            providerType: identity["provider_type"],
-          };
+        this.identities = identities.map((identity: unknown) => {
+          const { id, provider_type: providerType } = identity as Record<string, string>;
+          return { id, providerType } as Realm.UserIdentity;
         });
       } else {
         throw new Error("Expected 'identities' in the response body");

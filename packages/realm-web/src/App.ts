@@ -75,7 +75,7 @@ export class App<
    * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
    * @returns The Realm App instance.
    */
-  static getApp(id: string) {
+  static getApp(id: string): App {
     if (id in App.appCache) {
       return App.appCache[id];
     } else {
@@ -184,7 +184,7 @@ export class App<
    *
    * @param nextUser The user or id of the user to switch to.
    */
-  public switchUser(nextUser: User<FunctionsFactoryType, CustomDataType>) {
+  public switchUser(nextUser: User<FunctionsFactoryType, CustomDataType>): void {
     const index = this.users.findIndex((u) => u === nextUser);
     if (index === -1) {
       throw new Error("The user was never logged into this app");
@@ -200,9 +200,10 @@ export class App<
    *
    * @param credentials Credentials to use when logging in.
    * @param fetchProfile Should the users profile be fetched? (default: true)
+   * @returns A promise resolving to the newly logged in user.
    */
   public async logIn(
-    credentials: Credentials<any>,
+    credentials: Credentials,
     fetchProfile = true,
   ): Promise<User<FunctionsFactoryType, CustomDataType>> {
     const response = await this.authenticator.authenticate(credentials);
@@ -231,7 +232,7 @@ export class App<
   /**
    * @inheritdoc
    */
-  public async removeUser(user: User<FunctionsFactoryType, CustomDataType>) {
+  public async removeUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void> {
     // Remove the user from the list of users
     const index = this.users.findIndex((u) => u === user);
     if (index === -1) {
@@ -285,6 +286,13 @@ export class App<
           url: this.baseUrl + path,
           tokenType: "none",
         })
+        .then((body) => {
+          if (typeof body !== "object") {
+            throw new Error("Expected response body be an object");
+          } else {
+            return body as Record<string, unknown>;
+          }
+        })
         .then(({ hostname }) => {
           if (typeof hostname !== "string") {
             throw new Error("Expected response to contain a 'hostname'");
@@ -304,7 +312,7 @@ export class App<
   /**
    * @returns Information about the current device, sent to the server when authenticating.
    */
-  public get deviceInformation() {
+  public get deviceInformation(): DeviceInformation {
     const deviceIdStr = this.storage.getDeviceId();
     const deviceId =
       typeof deviceIdStr === "string" && deviceIdStr !== "000000000000000000000000"

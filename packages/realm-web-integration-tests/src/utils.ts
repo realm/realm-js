@@ -35,7 +35,7 @@ export function createApp<FunctionsFactoryType = Realm.DefaultFunctionsFactory>(
   });
 }
 
-export function describeIf(condition: boolean, title: string, fn: (this: Mocha.Suite) => void) {
+export function describeIf(condition: boolean, title: string, fn: (this: Mocha.Suite) => void): void {
   if (condition) {
     describe(title, fn);
   } else {

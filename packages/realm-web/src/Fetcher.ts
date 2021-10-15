@@ -97,7 +97,7 @@ interface RequestWithPath<RequestBody> extends Omit<Request<RequestBody>, "url">
 /**
  * A request which will send the access or refresh token of the current user.
  */
-export type AuthenticatedRequest<RequestBody> = {
+export type AuthenticatedRequest<RequestBody = unknown> = {
   /**
    * Which token should be used when requesting?
    *
@@ -209,7 +209,7 @@ export class Fetcher implements LocationUrlContext {
     this.locationUrlContext = locationUrlContext;
   }
 
-  clone(config: Partial<FetcherConfig>) {
+  clone(config: Partial<FetcherConfig>): Fetcher {
     return new Fetcher({
       appId: this.appId,
       transport: this.transport,
@@ -272,7 +272,7 @@ export class Fetcher implements LocationUrlContext {
    * @param request The request which should be sent to the server.
    * @returns The response from the server, parsed as extended JSON.
    */
-  public async fetchJSON<RequestBody = any, ResponseBody = any>(
+  public async fetchJSON<RequestBody = unknown, ResponseBody = unknown>(
     request: AuthenticatedRequest<RequestBody>,
   ): Promise<ResponseBody> {
     const { body } = request;

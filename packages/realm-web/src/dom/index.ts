@@ -50,7 +50,7 @@ setEnvironment(environment);
  * @param location An optional location to use (defaults to the windows current location).
  * @param storage Optional storage used to save any results from the location.
  */
-export function handleAuthRedirect(location = window.location, storage = environment.defaultStorage) {
+export function handleAuthRedirect(location = window.location, storage = environment.defaultStorage): void {
   try {
     const queryString = location.hash.substr(1); // Strip the initial # from the hash
     OAuth2Helper.handleRedirect(queryString, storage);

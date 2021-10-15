@@ -90,9 +90,9 @@ export class DeviceInformation implements DeviceInformationValues {
 
   /**
    * @param params Construct the device information from these parameters.
-   * @param params.appId
-   * @param params.appVersion
-   * @param params.deviceId
+   * @param params.appId A user-defined application id.
+   * @param params.appVersion A user-defined application version.
+   * @param params.deviceId An unique id for the end-users device.
    */
   public constructor({ appId, appVersion, deviceId }: DeviceInformationParams) {
     const environment = getEnvironment();

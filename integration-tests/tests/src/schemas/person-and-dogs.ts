@@ -29,6 +29,7 @@ export interface IPerson {
 
 export const PersonSchema: Realm.ObjectSchema = {
   name: "Person",
+  primaryKey: "name",
   properties: {
     age: "int",
     name: "string",

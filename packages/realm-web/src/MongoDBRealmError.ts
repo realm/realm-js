@@ -59,6 +59,7 @@ export class MongoDBRealmError extends Error {
    *
    * @param request The request sent to the server.
    * @param response A raw response, as returned from the server.
+   * @returns An error from a request and a response.
    */
   public static async fromRequestAndResponse(
     request: Request<unknown>,

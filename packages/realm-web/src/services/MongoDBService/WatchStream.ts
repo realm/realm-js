@@ -51,17 +51,17 @@ export enum WatchStreamState {
 /**
  * Represents a stream of events
  */
-export class WatchStream<T extends Document = any> {
+export class WatchStream<T extends Document = Document> {
   // Call these when you have data, in whatever shape is easiest for your SDK to get.
   // Pick one, mixing and matching on a single instance isn't supported.
   // These can only be called in NEED_DATA state, which is the initial state.
-  feedBuffer(buffer: Uint8Array) {
+  feedBuffer(buffer: Uint8Array): void {
     this.assertState(WatchStreamState.NEED_DATA);
     this._buffer += this._textDecoder.decode(buffer, { stream: true });
     this.advanceBufferState();
   }
 
-  feedLine(line: string) {
+  feedLine(line: string): void {
     this.assertState(WatchStreamState.NEED_DATA);
     // This is an implementation of the algorithm described at
     // https://html.spec.whatwg.org/multipage/server-sent-events.html#event-stream-interpretation.
@@ -107,7 +107,7 @@ export class WatchStream<T extends Document = any> {
     }
   }
 
-  feedSse(sse: ServerSentEvent) {
+  feedSse(sse: ServerSentEvent): void {
     this.assertState(WatchStreamState.NEED_DATA);
     const firstPercentIndex = sse.data.indexOf("%");
     if (firstPercentIndex !== -1) {
@@ -164,7 +164,7 @@ export class WatchStream<T extends Document = any> {
         code: "unknown",
       });
       try {
-        const { error_code: errorCode, error } = EJSON.parse(sse.data) as any;
+        const { error_code: errorCode, error } = EJSON.parse(sse.data) as Record<string, string>;
         if (typeof errorCode !== "string") return;
         if (typeof error !== "string") return;
         // XXX in realm-js, object-store will error if the error_code is not one of the known
@@ -181,7 +181,7 @@ export class WatchStream<T extends Document = any> {
     }
   }
 
-  get state() {
+  get state(): WatchStreamState {
     return this._state;
   }
 

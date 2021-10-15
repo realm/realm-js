@@ -44,7 +44,7 @@ interface CallFunctionBody {
   /**
    * An array of arguments to pass to the function.
    */
-  arguments: any[];
+  arguments: unknown[];
   /**
    * An optional name of the service in which the function is defined.
    */
@@ -62,7 +62,7 @@ export interface FunctionsFactoryConfiguration {
   /**
    * Call this function to transform the arguments before they're sent to the service.
    */
-  argsTransformation?: (args: any[]) => any[];
+  argsTransformation?: (args: unknown[]) => unknown[];
 }
 
 /**
@@ -71,12 +71,12 @@ export interface FunctionsFactoryConfiguration {
  * @param args The arguments to clean.
  * @returns The cleaned arguments.
  */
-export function cleanArgs(args: any[]) {
+export function cleanArgs(args: unknown[]): typeof args {
   for (const arg of args) {
-    if (typeof arg === "object") {
+    if (typeof arg === "object" && arg) {
       for (const [key, value] of Object.entries(arg)) {
         if (value === undefined) {
-          delete arg[key];
+          delete (arg as SimpleObject)[key];
         }
       }
     }
@@ -90,9 +90,9 @@ export function cleanArgs(args: any[]) {
  * @param args The arguments to clean and serialize.
  * @returns The cleaned and serialized arguments.
  */
-function cleanArgsAndSerialize(args: any[]) {
+function cleanArgsAndSerialize(args: unknown[]) {
   const cleaned = cleanArgs(args);
-  return cleaned.map((arg) => (typeof arg === "object" ? serialize(arg) : arg));
+  return cleaned.map((arg) => (typeof arg === "object" ? serialize(arg as SimpleObject) : arg));
 }
 
 /**
@@ -114,7 +114,7 @@ export class FunctionsFactory {
     // TODO: Lazily fetch available functions and return these from the ownKeys() trap
     const factory: Realm.BaseFunctionsFactory = new FunctionsFactory(fetcher, config);
     // Wrap the factory in a proxy that calls the internal call method
-    return new Proxy<any>(factory, {
+    return new Proxy(factory, {
       get(target, p, receiver) {
         if (typeof p === "string" && RESERVED_NAMES.indexOf(p) === -1) {
           return target.callFunction.bind(target, p);
@@ -123,7 +123,7 @@ export class FunctionsFactory {
           return typeof prop === "function" ? prop.bind(target) : prop;
         }
       },
-    });
+    }) as FunctionsFactoryType & typeof factory;
   }
 
   /**
@@ -139,7 +139,7 @@ export class FunctionsFactory {
   /**
    * Call this function to transform the arguments before they're sent to the service.
    */
-  private readonly argsTransformation?: (args: any[]) => any[];
+  private readonly argsTransformation?: (args: unknown[]) => unknown[];
 
   /**
    * @param fetcher The underlying fetcher to use when sending requests.
@@ -158,7 +158,7 @@ export class FunctionsFactory {
    * @param args Arguments to pass to the remote function.
    * @returns A promise of the value returned when executing the remote function.
    */
-  async callFunction(name: string, ...args: any[]): Promise<any> {
+  async callFunction(name: string, ...args: unknown[]): Promise<unknown> {
     // See https://github.com/mongodb/stitch-js-sdk/blob/master/packages/core/sdk/src/services/internal/CoreStitchServiceClientImpl.ts
     const body: CallFunctionBody = {
       name,
@@ -182,7 +182,7 @@ export class FunctionsFactory {
    * @param args Arguments to pass to the remote function.
    * @returns A promise of the value returned when executing the remote function.
    */
-  public callFunctionStreaming(name: string, ...args: any[]): Promise<AsyncIterable<Uint8Array>> {
+  public callFunctionStreaming(name: string, ...args: unknown[]): Promise<AsyncIterable<Uint8Array>> {
     const body: CallFunctionBody = {
       name,
       arguments: this.argsTransformation ? this.argsTransformation(args) : args,

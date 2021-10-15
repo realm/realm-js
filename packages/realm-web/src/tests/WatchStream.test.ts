@@ -263,9 +263,6 @@ describe("WatchStream", () => {
   });
 
   // Defining a shorthand so that it is less disruptive to put this after every line.
-  /**
-   * @param ws
-   */
   function assertND(ws: WatchStream<any>) {
     assert.equal(ws.state, WatchStreamState.NEED_DATA);
   }
@@ -539,8 +536,8 @@ describe("WatchStream", () => {
      * Makes multi-line nows`tag template strings` cleaner by allowing indentation.
      *
      * @returns A buffer of from multi-line strings.
-     * @param args."0"
      * @param args All the nows strings.
+     * @param args."0" The first nows string.
      */
     function nows([str]: TemplateStringsArray, ...args: []): Uint8Array {
       assert.deepEqual(args, []);

@@ -25,7 +25,7 @@ import { removeKeysWithUndefinedValues } from "./objects";
  * @param alphabet The alphabet of characters to pick from.
  * @returns A string of characters picked randomly from `alphabet`.
  */
-export function generateRandomString(length: number, alphabet: string) {
+export function generateRandomString(length: number, alphabet: string): string {
   let result = "";
   for (let i = 0; i < length; i++) {
     result += alphabet[Math.floor(Math.random() * alphabet.length)];
@@ -45,7 +45,7 @@ export type QueryParams = {
  * @param prefixed Should the "?" prefix be added if values exists?
  * @returns A URL encoded representation of the parameters (omitting a "?" prefix).
  */
-export function encodeQueryString<P extends Partial<QueryParams>>(params: P, prefixed = true) {
+export function encodeQueryString<P extends Partial<QueryParams>>(params: P, prefixed = true): string {
   // Filter out undefined values
   const cleanedParams = removeKeysWithUndefinedValues(params) as QueryParams;
   // Determine if a prefixed "?" is appropreate
@@ -65,7 +65,7 @@ export function encodeQueryString<P extends Partial<QueryParams>>(params: P, pre
  * @param str The query string to decode.
  * @returns The decoded query string.
  */
-export function decodeQueryString(str: string) {
+export function decodeQueryString(str: string): Record<string, string> {
   const cleanStr = str[0] === "?" ? str.substr(1) : str;
   return Object.fromEntries(
     cleanStr
