@@ -32,20 +32,36 @@ export function createRealmProvider(
     //XXX consider configuration being changed with state (write tests for this)
     //XXX consider rendering the provider twice and unmounting one of them (does the other still work?)
     useEffect(() => {
+      let shouldInitRealm = realm === null;
+
       // if restProps change, then close the realm before reopening it
       if (realm && !realm.isClosed) {
         realm.close();
+
         setRealm(null);
+
+        // We need to keep track of `shouldInitRealm` separately from the `realm` state because even
+        // though we `setRealm(null)` above, the async nature of setting state means the value of `realm`
+        // does not change to `null` until this function has finished executing, so we can't just check
+        // `if (realm === null)` at the end of the function
+        shouldInitRealm = true;
       }
+
       const initRealm = async () => {
         const combinedConfig = mergeConfiguration(realmConfig, restProps);
         const openRealm = await Realm.open(combinedConfig);
+
         setRealm(openRealm);
       };
-      if (realm === null) {
+
+      if (shouldInitRealm) {
         initRealm().catch(console.error);
       }
-    }, [restProps]);
+
+      // We need to spread the values of `restProps` into the dependency array rather than just passing
+      // in `restProps` directly, because `restProps` is an object who's identity changes every render
+      // so you end up in a re-render loop
+    }, [...Object.values(restProps)]);
 
     useEffect(() => {
       return () => {
