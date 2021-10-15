@@ -19,6 +19,7 @@
 var Realm = require("realm");
 var TestCase = require("./asserts");
 var Schemas = require("./schemas");
+const { assertEqual } = require("./asserts");
 
 module.exports = {
   testMigrationFunction: function () {
@@ -514,5 +515,34 @@ module.exports = {
     TestCase.assertEqual(objects[1].values[0], 1);
     TestCase.assertEqual(objects[1].values[1], 4);
     TestCase.assertEqual(objects[1].values[2], 5);
+  },
+  testMigrationWithSortByDeletedField: function () {
+    let realm = new Realm({
+      schema: [{ name: "TestObject", properties: { name: "string", position: "int" } }],
+    });
+    realm.write(function () {
+      realm.create("TestObject", { name: "a", position: 0 });
+      realm.create("TestObject", { name: "b", position: 1 });
+      realm.create("TestObject", { name: "c", position: 2 });
+    });
+    realm.close();
+    realm = new Realm({
+      schema: [{ name: "TestObject", properties: { name: "string", index: "int" } }],
+      schemaVersion: 1,
+      migration: function (oldRealm, newRealm) {
+        console.log("oldRealm", oldRealm.isClosed);
+        console.log("newRealm", newRealm.isClosed);
+        const oldObjects = oldRealm.objects("TestObject").sorted("position");
+
+        oldObjects.forEach((object) => {
+          const foundObject = newRealm.objects("TestObject").filtered("name == $0", object.name)[0];
+          TestCase.assertNotNull(foundObject);
+          foundObject.index = object.position;
+        });
+      },
+    });
+    const objects = realm.objects("TestObject").sorted("index");
+    TestCase.assertEqual(objects.length, 2);
+    TestCase.assertEqual(objects[0].name, "a");
   },
 };
