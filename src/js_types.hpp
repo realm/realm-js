@@ -246,9 +246,8 @@ struct Value {
             return Mixed(to_number(ctx, value));
         }
         else if (is_string(ctx, value)) {
-            std::string str = to_string(ctx, value);
-            // return Mixed(strdup(str.c_str()));
-            return Mixed(std::move(str));
+            auto str = std::make_shared<std::string>(to_string(ctx, value));
+            return Mixed(*str);
         }
         else if (is_binary(ctx, value)) {
             return Mixed(to_binary(ctx, value).get());
