@@ -16,58 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm, { SortDescriptor } from "realm";
+import Realm from "realm";
 import { UseRealm } from "./useRealm";
 import { useEffect, useState, useCallback } from "react";
 
-//XXX filter needs to take arguments (see filtered function)
-//XXX sort needs to take reversed
-
-export type QueryModifiers = {
-  sort?: string | SortDescriptor[];
-  filter?: string | [string, ...unknown[]]; // | { query: string; args: unknown[] };
-  reverse?: boolean;
-};
+export type QueryModifierFn<T> = (query: Realm.Results<T & Realm.Object>) => Realm.Results<T & Realm.Object>;
 export interface UseQuery {
-  <T>(type: string, modifiers?: QueryModifiers): {
+  <T>(type: string, queryModifierFn?: QueryModifierFn<T>): {
     error: Error | null;
     data: Realm.Results<T & Realm.Object> | null;
   };
 }
 
 export function createUseQuery(useRealm: UseRealm): UseQuery {
-  function useQuery<T>(type: string, modifiers?: QueryModifiers) {
+  function useQuery<T>(type: string, queryModifierFn: QueryModifierFn<T> = (q) => q) {
     const realm = useRealm();
     const [error, setError] = useState<Error | null>(null);
 
     const generateResult = useCallback(() => {
       try {
-        const sort = modifiers?.sort && modifiers?.sort !== "" ? modifiers.sort : null;
-        const filter = modifiers?.filter ? modifiers.filter : null;
-        let result = null;
-        result = realm.objects<T>(type);
-        if (filter instanceof Array) {
-          result = result.filtered(filter[0], ...filter.slice(1));
-        } else if (typeof filter === "string") {
-          result = result.filtered(filter);
-        }
-
-        if (sort instanceof Array) {
-          result = result.sorted(sort);
-        } else if (typeof sort === "string") {
-          result = modifiers?.reverse ? result.sorted(sort, true) : result.sorted(sort);
-        }
-
-        if (!sort && modifiers?.reverse) {
-          result = result.sorted(true);
-        }
-        return result;
+        return queryModifierFn(realm.objects<T>(type));
       } catch (err) {
         console.error(err);
         setError(err as Error);
         return null;
       }
-    }, [realm, type, modifiers, setError]); //XXX Check the lint rulers for hooks (setError was not showing an error)
+    }, [realm, type, queryModifierFn, setError]); //XXX Check the lint rulers for hooks (setError was not showing an error)
 
     const [collection, setCollection] = useState<Realm.Results<T & Realm.Object> | null>(generateResult);
 

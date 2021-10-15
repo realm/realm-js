@@ -9,7 +9,9 @@ import colors from './app/styles/colors';
 
 function App() {
   const realm = useRealm();
-  const {data: tasks} = useQuery<Task>('Task');
+  const {data: tasks} = useQuery<Task>('Task', q =>
+    q.filtered('description LIKE "*s*"').sorted('description'),
+  );
 
   const handleAddTask = useCallback(
     (description: string): void => {
