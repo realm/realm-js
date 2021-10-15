@@ -95,33 +95,43 @@ describe("useQuery", () => {
     }
   });
   it("can filter with a interpolation", () => {
-    const { result } = renderHook(() => useQuery<IDog>("dog", { filter: ["gender == $0", "female"] }));
+    const { result } = renderHook(() => useQuery<IDog>("dog", (q) => q.filtered("gender == $0", "female")));
     const collection = result.current;
 
     expect(collection.data?.length).toBe(4);
   });
   it("can filter with a string", () => {
-    const { result } = renderHook(() => useQuery<IDog>("dog", { filter: "gender == 'female'" }));
+    const { result } = renderHook(() => useQuery<IDog>("dog", (q) => q.filtered("gender == 'female'")));
     const collection = result.current;
 
     expect(collection.data?.length).toBe(4);
   });
   it("can sort by a value", () => {
-    const { result } = renderHook(() => useQuery<IDog>("dog", { sort: "age" }));
+    const { result } = renderHook(() => useQuery<IDog>("dog", (q) => q.sorted("age")));
     const collection = result.current;
 
     expect(collection.data?.[0]?.name).toBe("Vincent");
   });
   it("can sort by a value and be reversed", () => {
-    const { result } = renderHook(() => useQuery<IDog>("dog", { sort: "age", reverse: true }));
+    const { result } = renderHook(() => useQuery<IDog>("dog", (q) => q.sorted("age", true)));
     const collection = result.current;
 
     expect(collection.data?.[0]?.name).toBe("Victor");
   });
   it("can sort by a value and be reversed in array form", () => {
-    const { result } = renderHook(() => useQuery<IDog>("dog", { sort: [["age", true]] }));
+    const { result } = renderHook(() => useQuery<IDog>("dog", (q) => q.sorted([["age", true]])));
     const collection = result.current;
 
     expect(collection.data?.[0]?.name).toBe("Victor");
+  });
+  it("can filter and sort", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog", (q) => q.filtered("gender == 'female'").sorted("age")));
+    const collection = result.current;
+
+    expect(collection.data?.length).toBe(4);
+    expect(collection.data?.[0]?.age).toBe(5);
+    expect(collection.data?.[1]?.age).toBe(10);
+    expect(collection.data?.[2]?.age).toBe(12);
+    expect(collection.data?.[3]?.age).toBe(12);
   });
 });
