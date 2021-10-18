@@ -1,10 +1,9 @@
-10.9.0-rc.1 Release notes (2021-10-13)
+x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Realm JS now support retrying Custom Confirmation functions for Realm Sync users via `retryCustomConfirmation`. ([#3032](https://github.com/realm/realm-js/issues/3032))
+* None
 
 ### Fixed
-* React Native templates now transfer hidden files into new projects([#3971](https://github.com/realm/realm-js/issues/3971))
 * Remove usage of deprecated features for Gradle 7 ([#3946](https://github.com/realm/realm-js/issues/3946), [#3879](https://github.com/realm/realm-js/issues/3879))
 * A `sync` configuration value of `undefined` now behaves the same as a missing `sync` configuration ([#3999](https://github.com/realm/realm-js/issues/3999), since v2.2.0)
 
@@ -15,10 +14,26 @@
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Lint react-native templates and ensure they are checked by the CI.
 * Updated `README.md` and `building.md` with updated instructions on building from source.
 * Changed logo to a 'dark-mode' aware SVG ([#4020](https://github.com/realm/realm-js/pull/4020))
 * Added workaround for crash when closing Realm in Jest test on Node 12 ([#4025](https://github.com/realm/realm-js/pull/4025), since v10.8.0)
+
+10.9.0-rc.1 Release notes (2021-10-13)
+=============================================================
+### Enhancements
+* Realm JS now support retrying Custom Confirmation functions for Realm Sync users via `retryCustomConfirmation`. ([#3032](https://github.com/realm/realm-js/issues/3032) since v10.0.0)
+
+### Fixed
+* React Native templates now transfer hidden files into new projects([#3971](https://github.com/realm/realm-js/issues/3971))
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Lint react-native templates and ensure they are checked by the CI.
 * Using Realm Core v11.4.1.
 * Small fix to Jenkins to publish Docker image for Raspberry Pi.
 
