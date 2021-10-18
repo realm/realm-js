@@ -1523,7 +1523,10 @@ module.exports = {
         const actual = objectSchema.properties[propName];
         const expected = normalizeProperty(original.properties[propName]);
         TestCase.assertEqual(actual.name, propName);
-        TestCase.assertEqual(actual.indexed, expected.indexed);
+
+        // The schema primary key is automatically indexed
+        const isPrimaryKey = original.primaryKey === propName;
+        TestCase.assertEqual(actual.indexed, expected.indexed || isPrimaryKey);
 
         if (actual.type == "object") {
           TestCase.assertEqual(actual.objectType, expected.type === "object" ? expected.objectType : expected.type);
