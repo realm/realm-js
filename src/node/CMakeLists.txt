@@ -35,4 +35,6 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE AND TARGET ObjectStore)
     )
 endif()
 
+string(APPEND CMAKE_CXX_FLAGS_DEBUG " -fno-omit-frame-pointer -fsanitize=address")
+
 target_link_libraries(realm-js realm-js-shared NodeJS)
