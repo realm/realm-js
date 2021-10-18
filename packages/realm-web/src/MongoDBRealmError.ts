@@ -69,13 +69,20 @@ export class MongoDBRealmError extends Error {
     const { status, statusText } = response;
     if (response.headers.get("content-type")?.startsWith("application/json")) {
       const body = await response.json();
-      const error = body.error || "No message";
-      const errorCode = body.error_code;
-      const link = body.link;
-      return new MongoDBRealmError(method, url, status, statusText, error, errorCode, link);
-    } else {
-      return new MongoDBRealmError(method, url, status, statusText);
+      if (typeof body === "object" && body) {
+        const { error, error_code: errorCode, link } = body as SimpleObject;
+        return new MongoDBRealmError(
+          method,
+          url,
+          status,
+          statusText,
+          typeof error === "string" ? error : undefined,
+          typeof errorCode === "string" ? errorCode : undefined,
+          typeof link === "string" ? link : undefined,
+        );
+      }
     }
+    return new MongoDBRealmError(method, url, status, statusText);
   }
 
   constructor(

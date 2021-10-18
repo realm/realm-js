@@ -290,7 +290,7 @@ export class Fetcher implements LocationUrlContext {
     const contentType = response.headers.get("content-type");
     if (contentType?.startsWith("application/json")) {
       const responseBody = await response.json();
-      return deserialize(responseBody) as ResponseBody;
+      return deserialize(responseBody as SimpleObject) as ResponseBody;
     } else if (contentType === null) {
       return (null as unknown) as ResponseBody;
     } else {
