@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.9.0 Release notes (2021-10-18)
 =============================================================
 ### Enhancements
 * None
