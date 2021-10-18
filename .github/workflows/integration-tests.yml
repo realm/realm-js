@@ -2,6 +2,7 @@ name: Integration Tests
 
 env:
   REALM_DISABLE_ANALYTICS: 1
+  MOCHA_REMOTE_TIMEOUT: 10000
 
 on:
   pull_request:

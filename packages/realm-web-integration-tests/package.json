@@ -15,7 +15,7 @@
     "js-base64": "^3.4.5",
     "jwt-encode": "^1.0.1",
     "mocha": "^5",
-    "mocha-remote": "^0.16.0",
+    "mocha-remote": "^1.4.3",
     "puppeteer": "^2.1.1",
     "realm-app-importer": "^0.1.0",
     "realm-web": "*",

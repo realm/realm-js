@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { MochaRemoteClient } from "mocha-remote-client";
+import { Client as MochaRemoteClient } from "mocha-remote-client";
 import * as Realm from "realm-web";
 
 if (location.pathname.endsWith("-callback")) {
@@ -26,8 +26,8 @@ if (location.pathname.endsWith("-callback")) {
   console.log("Hello to Google Login ...");
   require("./google-login");
 } else {
-  const mochaClient = new MochaRemoteClient({
-    onInstrumented: () => {
+  new MochaRemoteClient({
+    tests: () => {
       beforeEach(function () {
         this.slow(1000);
         this.timeout(10000);
