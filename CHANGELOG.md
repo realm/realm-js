@@ -1,7 +1,7 @@
 10.9.0-rc.1 Release notes (2021-10-13)
 =============================================================
 ### Enhancements
-* Realm JS now support re-running Custom Confirmation functions for Realm Sync users via `retryCustomConfirmation`. ([#3032](https://github.com/realm/realm-js/issues/3032))
+* Realm JS now support retrying Custom Confirmation functions for Realm Sync users via `retryCustomConfirmation`. ([#3032](https://github.com/realm/realm-js/issues/3032))
 
 ### Fixed
 * React Native templates now transfer hidden files into new projects([#3971](https://github.com/realm/realm-js/issues/3971))
