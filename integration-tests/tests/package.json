@@ -33,7 +33,8 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "chai": "^4.2.0"
+    "chai": "^4.2.0",
+    "realm-network-transport": "^0.7.0"
   },
   "files": [
     "/dist"

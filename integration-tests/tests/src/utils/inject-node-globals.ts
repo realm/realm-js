@@ -25,4 +25,3 @@ global.fs = require("fs-extra") as typeof global.fs;
 global.path = require("path") as typeof global.path;
 global.title = "Realm JS development-mode";
 global.environment = { node: true };
-global.fetch = require("node-fetch") as typeof global.fetch;

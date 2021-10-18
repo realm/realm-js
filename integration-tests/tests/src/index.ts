@@ -26,10 +26,6 @@ if (!global.path) {
   throw new Error("Expected 'path' to be available as a global");
 }
 
-if (!global.fetch) {
-  throw new Error("Expected 'fetch' to be available as a global");
-}
-
 if (!global.environment || typeof global.environment !== "object") {
   throw new Error("Expected 'environment' to be available as a global");
 }

@@ -86,7 +86,7 @@ interface FetchBody {
   readonly bodyUsed: boolean;
   arrayBuffer(): Promise<ArrayBuffer>;
   blob(): Promise<unknown>;
-  json(): Promise<unknown>;
+  json<ResponseBody = unknown>(): Promise<ResponseBody>;
   text(): Promise<string>;
 }
 

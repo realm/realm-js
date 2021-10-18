@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 import { App } from "realm";
 
+import { fetch } from "./fetch";
+
 export type TemplateReplacements = Record<string, Record<string, unknown>>;
 export type ErrorResponse = { message: string; appId: never };
 export type ImportResponse = { appId: string; message: never };
@@ -30,7 +32,7 @@ export async function importApp(name: string, replacements: TemplateReplacements
     method: "POST",
     body: JSON.stringify({ name, replacements }),
   });
-  const json: Response = await response.json();
+  const json = await response.json<Response>();
   if (response.ok && typeof json.appId === "string") {
     const baseUrl = typeof mongodbRealmBaseUrl === "string" ? mongodbRealmBaseUrl : "http://localhost:9090";
     return new App({ baseUrl, id: json.appId });
