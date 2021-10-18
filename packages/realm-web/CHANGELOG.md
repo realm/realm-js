@@ -1,3 +1,18 @@
+?.?.? Release notes (2020-??-??)
+=============================================================
+
+### Breaking Changes
+* Added support retrying custom confirmation functions via `retryCustomConfirmation`. ([#4000](https://github.com/realm/realm-js/pull/4000))
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Internal
+* None
+
 1.3.0 Release notes (2021-05-27)
 =============================================================
 
