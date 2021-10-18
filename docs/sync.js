@@ -490,6 +490,15 @@ class EmailPasswordAuth {
   resendConfirmationEmail(email) {}
 
   /**
+   * Re-run the custom confirmation function for user that has registered but
+   * not yet confirmed their email address.
+   *
+   * @param {string} email - The email address of the user to re-run the confirmation for.
+   * @returns {Promise<void>}
+   */
+  retryCustomConfirmation(email) {}
+
+  /**
    * Sends an email to the user for resetting the password.
    * @param {string} email - The email address of the user to re-send a confirmation for.
    * @returns {Promise<void>}

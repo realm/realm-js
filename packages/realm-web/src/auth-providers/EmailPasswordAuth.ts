@@ -65,6 +65,16 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
   }
 
   /** @inheritdoc */
+  async retryCustomConfirmation(email: string): Promise<void> {
+    const appRoute = this.fetcher.appRoute;
+    await this.fetcher.fetchJSON({
+      method: "POST",
+      path: appRoute.emailPasswordAuth(this.providerName).confirmCall().path,
+      body: { email },
+    });
+  }
+
+  /** @inheritdoc */
   async resetPassword(token: string, tokenId: string, password: string): Promise<void> {
     const appRoute = this.fetcher.appRoute;
     await this.fetcher.fetchJSON({

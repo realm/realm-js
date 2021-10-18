@@ -73,6 +73,26 @@ describe("EmailPasswordAuth", () => {
     }
   });
 
+  it("retry custom confirmation", async () => {
+    const app = createApp();
+    // Prepare email and password
+    const now = new Date();
+    const nonce = now.getTime();
+    const email = `gilfoil-${nonce}@testing.mongodb.com`;
+    const password = "my-super-secret-password";
+    // Register a user
+    await app.emailPasswordAuth.registerUser(email, password);
+    // Ask for a new confirmation email
+    try {
+      await app.emailPasswordAuth.retryCustomConfirmation(email);
+    } catch (err) {
+      // We expect this to throw, since the app does not currently have custom confirmation enabled
+      // TODO:  import an app with custom confirmation enabled
+      expect(err).instanceOf(MongoDBRealmError);
+      expect(err.error).equals(`cannot run confirmation for ${email}: automatic confirmation is enabled`);
+    }
+  });
+
   it("can request a password reset", async () => {
     const app = createApp();
     // Prepare email and password
