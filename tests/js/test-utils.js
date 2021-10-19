@@ -46,11 +46,11 @@ async function getRegisteredEmailPassCredentials(app) {
   }
 
   const email = randomVerifiableEmail();
-  const pass = "test1234567890";
+  const password = "test1234567890";
   // Create the user (see note in 'randomVerifiableEmail')
-  await app.emailPasswordAuth.registerUser(email, pass);
+  await app.emailPasswordAuth.registerUser({ email, password });
 
-  return Realm.Credentials.emailPassword(email, pass);
+  return Realm.Credentials.emailPassword(email, password);
 }
 
 module.exports = {

@@ -147,7 +147,7 @@ class App {
    * {
    * // Creating a new user, by registering via email & password
    * const app = new Realm.App(config);
-   * await app.emailPasswordAuth.registerUser('john@example.com', 'some-secure-password');
+   * await app.emailPasswordAuth.registerUser({ email: 'john@example.com', password: 'some-secure-password' });
    * }
    *
    * @type {Realm.Auth.EmailPasswordAuth}
@@ -465,11 +465,35 @@ class EmailPasswordAuth {
    * Registers a new email identity with the email/password provider,
    * and sends a confirmation email to the provided address.
    *
+   * @param {object} userDetails The new user's email and password details
+   * @param {string} userDetails.email - The email address of the user to register.
+   * @param {string} userDetails.password - The password that the user created for the new username/password identity.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  registerUser(userDetails) {}
+
+  /**
+   * Registers a new email identity with the email/password provider,
+   * and sends a confirmation email to the provided address.
+   *
    * @param {string} email - The email address of the user to register.
    * @param {string} password  - The password that the user created for the new username/password identity.
    * @returns {Promise<void>}
+   * @deprecated Use `registerUser(userDetails)` instead
    */
   registerUser(email, password) {}
+
+  /**
+   * Confirms an email identity with the email/password provider.
+   *
+   * @param {object} tokenDetails The received token and ID details
+   * @param {string} tokenDetails.token - The confirmation token that was emailed to the user.
+   * @param {string} tokenDetails.tokenId - The confirmation token id that was emailed to the user.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  confirmUser(tokenDetails) {}
 
   /**
    * Confirms an email identity with the email/password provider.
@@ -477,6 +501,7 @@ class EmailPasswordAuth {
    * @param {string} token - The confirmation token that was emailed to the user.
    * @param {string} id - The confirmation token id that was emailed to the user.
    * @returns {Promise<void>}
+   * @deprecated Use `confirmUser(tokenDetails)` instead
    */
   confirmUser(token, id) {}
 
@@ -484,8 +509,20 @@ class EmailPasswordAuth {
    * Re-sends a confirmation email to a user that has registered but
    * not yet confirmed their email address.
    *
+   * @param {object} emailDetails The associated email details
+   * @param {string} emailDetails.email - The email address of the user to re-send a confirmation for.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  resendConfirmationEmail(emailDetails) {}
+
+  /**
+   * Re-sends a confirmation email to a user that has registered but
+   * not yet confirmed their email address.
+   *
    * @param {string} email - The email address of the user to re-send a confirmation for.
    * @returns {Promise<void>}
+   * @deprecated Use `resendConfirmationEmail(emailDetails)` instead
    */
   resendConfirmationEmail(email) {}
 
@@ -493,17 +530,52 @@ class EmailPasswordAuth {
    * Re-run the custom confirmation function for user that has registered but
    * not yet confirmed their email address.
    *
+   * @param {object} emailDetails The associated email details
+   * @param {string} emailDetails.email - The email address of the user to re-run the confirmation for.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  retryCustomConfirmation(emailDetails) {}
+
+  /**
+   * Re-run the custom confirmation function for user that has registered but
+   * not yet confirmed their email address.
+   *
    * @param {string} email - The email address of the user to re-run the confirmation for.
    * @returns {Promise<void>}
+   * @deprecated Use `retryCustomConfirmation(emailDetails)` instead
    */
   retryCustomConfirmation(email) {}
 
   /**
    * Sends an email to the user for resetting the password.
+   *
+   * @param {object} emailDetails The email details to send the reset to
+   * @param {string} emailDetails.email - The email address of the user to re-send a confirmation for.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  sendResetPasswordEmail(emailDetails) {}
+
+  /**
+   * Sends an email to the user for resetting the password.
    * @param {string} email - The email address of the user to re-send a confirmation for.
    * @returns {Promise<void>}
+   * @deprecated Use `sendResetPasswordEmail(emailDetails)` instead
    */
   sendResetPasswordEmail(email) {}
+
+  /**
+   * Resets the password of an email identity using the password reset token emailed to a user.
+   *
+   * @param {object} resetDetails The token and password details for the reset
+   * @param {string} resetDetails.password - The desired new password.
+   * @param {string} resetDetails.token - The password reset token that was emailed to the user.
+   * @param {string} resetDetails.tokenId - The password reset token id that was emailed to the user.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  resetPassword(resetDetails) {}
 
   /**
    * Resets the password of an email identity using the password reset token emailed to a user.
@@ -511,8 +583,22 @@ class EmailPasswordAuth {
    * @param {string} token - The password reset token that was emailed to the user.
    * @param {string} id - The password reset token id that was emailed to the user.
    * @returns {Promise<void>}
+   * @deprecated Use `resetPassword(resetDetails)` instead
    */
   resetPassword(password, token, id) {}
+
+  /**
+   * Resets the password of an email identity using the
+   * password reset function set up in the application.
+   *
+   * @param resetDetails The email and password details to reset
+   * @param {string} resetDetails.email - The email address of the user.
+   * @param {string} resetDetails.password - The desired new password.
+   * @param {Array<BSON>} args - Arguments passed onto the function.
+   * @return {Promise<void>}
+   * @since v10.10.0
+   */
+  callResetPasswordFunction(resetDetails, ...args) {}
 
   /**
    * Resets the password of an email identity using the
@@ -522,6 +608,7 @@ class EmailPasswordAuth {
    * @param {string} password - The desired new password.
    * @param {Array<BSON>} args - Arguments passed onto the function.
    * @return {Promise<void>}
+   * @deprecated Use `callResetPasswordFunction(resetDetails, ...args)` instead
    */
   callResetPasswordFunction(email, password, ...args) {}
 }

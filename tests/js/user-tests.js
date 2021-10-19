@@ -96,7 +96,7 @@ function randomPendingVerificationEmail() {
 async function registerAndLogInEmailUser(app) {
   const validEmail = randomVerifiableEmail();
   const validPassword = "test1234567890";
-  await app.emailPasswordAuth.registerUser(validEmail, validPassword);
+  await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
   let user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
   assertIsUser(user);
   assertIsSameUser(user, app.currentUser);
@@ -178,7 +178,7 @@ module.exports = {
       let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
       err = await TestCase.assertThrowsAsync(async () =>
-        app.emailPasswordAuth.registerUser(invalidEmail, invalidPassword),
+        app.emailPasswordAuth.registerUser({ email: invalidEmail, password: invalidPassword }),
       );
       TestCase.assertEqual(err.message, "password must be between 6 and 128 characters");
       err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
@@ -190,7 +190,7 @@ module.exports = {
       let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
       err = await TestCase.assertThrowsAsync(async () =>
-        app.emailPasswordAuth.registerUser(invalidEmail, validPassword),
+        app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
       );
       TestCase.assertEqual(err.message, `failed to confirm user ${invalidEmail}`);
       err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
@@ -202,7 +202,7 @@ module.exports = {
       let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
       err = await TestCase.assertThrowsAsync(async () =>
-        app.emailPasswordAuth.registerUser(validEmail, invalidPassword),
+        app.emailPasswordAuth.registerUser({ email: validEmail, password: invalidPassword }),
       );
       TestCase.assertEqual(err.message, "password must be between 6 and 128 characters");
       err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
@@ -213,7 +213,7 @@ module.exports = {
       let credentials = Realm.Credentials.emailPassword(validEmail, validPassword);
       let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
-      await app.emailPasswordAuth.registerUser(validEmail, validPassword);
+      await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       let user = await app.logIn(credentials);
       assertIsUser(user);
       assertIsSameUser(user, app.currentUser);
@@ -246,10 +246,10 @@ module.exports = {
     const validPassword = "password123456";
 
     // we should be able to register our user as pending confirmation
-    await app.emailPasswordAuth.registerUser(pendingEmail, validPassword);
+    await app.emailPasswordAuth.registerUser({ email: pendingEmail, password: validPassword });
 
     // we should be able to call the registration function again
-    await app.emailPasswordAuth.retryCustomConfirmation(pendingEmail);
+    await app.emailPasswordAuth.retryCustomConfirmation({ email: pendingEmail });
   },
 
   async testCustomUserConfirmationAlreadyConfirmed() {
@@ -258,13 +258,17 @@ module.exports = {
     const validPassword = "password123456";
 
     // make sure we can't call a confirmation function on a user that doesn't exist
-    let err = await TestCase.assertThrowsAsync(async () => app.emailPasswordAuth.retryCustomConfirmation(validEmail));
+    let err = await TestCase.assertThrowsAsync(async () =>
+      app.emailPasswordAuth.retryCustomConfirmation({ email: validEmail }),
+    );
     TestCase.assertEqual(err.message, "user not found", "User should not exist yet.");
 
-    await app.emailPasswordAuth.registerUser(validEmail, validPassword);
+    await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
 
     // make sure we can't call a confirmation function on a user that is already verified
-    err = await TestCase.assertThrowsAsync(async () => app.emailPasswordAuth.retryCustomConfirmation(validEmail));
+    err = await TestCase.assertThrowsAsync(async () =>
+      app.emailPasswordAuth.retryCustomConfirmation({ email: validEmail }),
+    );
     TestCase.assertEqual(err.message, "already confirmed", "User should already be confirmed.");
   },
 

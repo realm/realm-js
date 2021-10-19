@@ -1,7 +1,13 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+
+### Deprecations
+* `EmailPasswordAuth` method calls using positional arguments are being deprecated in favour of using a single object dictionary argument. See "Examples of how to update to the new API" in the description of https://github.com/realm/realm-js/pull/4041 for examples of how to update each method call.
+    * The existing methods will be removed in the next major version.
+    * The existing methods will continue to work but will output a deprecation warning to the console in development mode when used, of the form: `Deprecation warning from Realm: resetPassword(password, token, token_id) is deprecated and will be removed in a future major release. Consider switching to resetPassword({ password, token, token_id })`.
+
 ### Enhancements
-* None.
+* New consistent API for `EmailPasswordAuth` methods, using a single object dictionary rather than positional arguments, to fix inconsistencies and make usage clearer. The existing API is being deprecated (see above). ([#3943](https://github.com/realm/realm-js/issues/3943))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

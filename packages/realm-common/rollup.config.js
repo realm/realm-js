@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ export default [
         tsconfig: "src/node/tsconfig.json",
       }),
     ],
-    external: ["abort-controller", "node-fetch"],
+    external: [],
   },
   {
     input: "src/dom/index.ts",
@@ -66,7 +66,7 @@ export default [
   {
     input: "types/generated/index.d.ts",
     output: {
-      file: pkg.types,
+      file: "dist/bundle.d.ts",
       format: "es",
     },
     plugins: [dts(), nodeResolve()],

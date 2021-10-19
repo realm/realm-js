@@ -28,7 +28,6 @@
     "node-fetch": "^2.6.1",
     "realm": "*",
     "realm-app-importer": "*",
-    "realm-network-transport": "*",
     "ts-mocha": "^6.0.0",
     "typescript": "^4.2.4"
   },
