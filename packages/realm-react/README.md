@@ -35,6 +35,7 @@ class Task extends Realm.Object {
       _id: new Realm.BSON.ObjectId(),
       description,
       isComplete: false,
+      createdAt: new Date()
     };
   }
 
@@ -46,6 +47,7 @@ class Task extends Realm.Object {
       _id: 'objectId',
       description: 'string',
       isComplete: {type: 'bool', default: false},
+      createdAt: 'date'
     },
   };
 }
@@ -54,7 +56,8 @@ export const {RealmProvider, useRealm, useObject, useQuery} =
   createRealmContext({schema: [Task.schema]});
 ```
 
-Wrap the component needing access to Realm (possible your entire application) with the RealmProvider componenet.
+Wrap the component needing access to Realm (possible your entire application) with the `RealmProvider` componenet.
+The `RealmProvider` also accepts Realm configuration properties.
 
 ```
 import {RealmProvider} from './createRealmContext';
@@ -64,7 +67,7 @@ function AppWrapper() {
     return null;
   }
   return (
-    <RealmProvider>
+    <RealmProvider path={"customPath"}>
       <App />
     </RealmProvider>
   );
@@ -77,14 +80,19 @@ The hooks created by `createRealmContext` can now be used by any child component
 ```
 function MyComponent({someId}){
 	const realm = useRealm();
-	const {data: tasks, error: tasksError} = useQuery<Task>('Task');
-	const {data: someObject, error: someObjectError} = useQuery<SomeObject>('Objects');
+	const tasks = useQuery<Task>('Task');
+	const someObject = useObject<SomeObject>('Objects', someId);
 
-	if(tasksError || someObjectError){
-		console.error(`${tasksError} ${someObjectError});
+  // sort collection with useMemo
+  const sortedTasks = useMemo( () => tasks.sorted("createdAt"), [tasks])
+
+  // make sure the data is there
+	if(!tasks || !someObject){
 		return null
 	}
 
 	return ...
 }
 ```
+
+

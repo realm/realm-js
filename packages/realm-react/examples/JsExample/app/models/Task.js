@@ -6,6 +6,7 @@ class Task {
     this._id = id;
     this.description = description;
     this.isComplete = isComplete;
+    this.createdAt = new Date();
   }
 
   // To use a class as a Realm object type, define the object schema on the static property "schema".
@@ -16,11 +17,12 @@ class Task {
       _id: 'objectId',
       description: 'string',
       isComplete: {type: 'bool', default: false},
+      createdAt: 'date',
     },
   };
 }
 
 export const {RealmProvider, useRealm, useObject, useQuery} =
-  createRealmContext({schema: [Task.schema]});
+  createRealmContext({schema: [Task.schema], deleteIfMigrationNeeded: true});
 
 export default Task;

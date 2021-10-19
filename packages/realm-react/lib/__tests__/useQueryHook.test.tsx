@@ -41,7 +41,7 @@ interface IDog {
 }
 const configuration: Realm.Configuration = {
   schema: [dogSchema],
-  path: "testArtifacts/useQueryRealm",
+  path: "testArtifacts/useQueryHook",
   deleteRealmIfMigrationNeeded: true,
 };
 
@@ -60,10 +60,10 @@ const useRealm = () => {
 const useQuery = createUseQuery(useRealm);
 
 const testDataSet = [
+  { _id: 1, name: "Vincent", color: "black and white", gender: "male", age: 4 },
   { _id: 2, name: "River", color: "brown", gender: "female", age: 12 },
   { _id: 3, name: "Schatzi", color: "beige", gender: "female", age: 10 },
   { _id: 4, name: "Victor", color: "dark brown", gender: "male", age: 18 },
-  { _id: 1, name: "Vincent", color: "black and white", gender: "male", age: 4 },
   { _id: 5, name: "Jazz", color: "dark brown", gender: "female", age: 12 },
   { _id: 6, name: "Sadie", color: "gold", gender: "female", age: 5 },
 ];
@@ -86,42 +86,9 @@ describe("useQuery", () => {
     const [dog1, dog2, dog3] = testDataSet;
 
     if (collection !== undefined) {
-      const { data } = collection;
-      if (data) {
-        expect(data?.[0]).toMatchObject(dog1);
-        expect(data?.[1]).toMatchObject(dog2);
-        expect(data?.[2]).toMatchObject(dog3);
-      }
+      expect(collection?.[0]).toMatchObject(dog1);
+      expect(collection?.[1]).toMatchObject(dog2);
+      expect(collection?.[2]).toMatchObject(dog3);
     }
-  });
-  it("can filter with a interpolation", () => {
-    const { result } = renderHook(() => useQuery<IDog>("dog", { filter: ["gender == $0", "female"] }));
-    const collection = result.current;
-
-    expect(collection.data?.length).toBe(4);
-  });
-  it("can filter with a string", () => {
-    const { result } = renderHook(() => useQuery<IDog>("dog", { filter: "gender == 'female'" }));
-    const collection = result.current;
-
-    expect(collection.data?.length).toBe(4);
-  });
-  it("can sort by a value", () => {
-    const { result } = renderHook(() => useQuery<IDog>("dog", { sort: "age" }));
-    const collection = result.current;
-
-    expect(collection.data?.[0]?.name).toBe("Vincent");
-  });
-  it("can sort by a value and be reversed", () => {
-    const { result } = renderHook(() => useQuery<IDog>("dog", { sort: "age", reverse: true }));
-    const collection = result.current;
-
-    expect(collection.data?.[0]?.name).toBe("Victor");
-  });
-  it("can sort by a value and be reversed in array form", () => {
-    const { result } = renderHook(() => useQuery<IDog>("dog", { sort: [["age", true]] }));
-    const collection = result.current;
-
-    expect(collection.data?.[0]?.name).toBe("Victor");
   });
 });

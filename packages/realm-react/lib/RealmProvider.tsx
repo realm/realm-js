@@ -21,13 +21,11 @@ import Realm from "realm";
 
 type ProviderProps = Realm.Configuration;
 
-export type RealmProviderType = React.FC<ProviderProps>;
-
 export function createRealmProvider(
   realmConfig: Realm.Configuration,
   RealmContext: React.Context<Realm | null>,
-): RealmProviderType {
-  const RealmProvider: React.FC<ProviderProps> = ({ children, ...restProps }) => {
+): React.FC<ProviderProps> {
+  return ({ children, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
     //XXX consider configuration being changed with state (write tests for this)
     //XXX consider rendering the provider twice and unmounting one of them (does the other still work?)
@@ -78,8 +76,6 @@ export function createRealmProvider(
 
     return <RealmContext.Provider value={realm} children={children} />;
   };
-
-  return RealmProvider;
 }
 
 export function mergeConfiguration(

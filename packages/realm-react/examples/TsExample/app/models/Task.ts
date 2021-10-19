@@ -11,6 +11,7 @@ class Task extends Realm.Object {
       _id: new Realm.BSON.ObjectId(),
       description,
       isComplete: false,
+      date: new Date(),
     };
   }
 
@@ -22,11 +23,15 @@ class Task extends Realm.Object {
       _id: 'objectId',
       description: 'string',
       isComplete: {type: 'bool', default: false},
+      createdAt: 'date',
     },
   };
 }
 
 export const {RealmProvider, useRealm, useObject, useQuery} =
-  createRealmContext({schema: [Task.schema]});
+  createRealmContext({
+    schema: [Task.schema],
+    deleteRealmIfMigrationNeeded: true,
+  });
 
 export default Task;

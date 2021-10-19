@@ -18,16 +18,16 @@
 
 import { createContext } from "react";
 import Realm from "realm";
-import { createUseRealm, UseRealm } from "./useRealm";
-import { UseQuery, createUseQuery } from "./useQuery";
-import { UseObject, createUseObject } from "./useObject";
-import { createRealmProvider, RealmProviderType } from "./RealmProvider";
+import { createUseRealm } from "./useRealm";
+import { createUseQuery } from "./useQuery";
+import { createUseObject } from "./useObject";
+import { createRealmProvider } from "./RealmProvider";
 
 type RealmContext = {
-  RealmProvider: RealmProviderType;
-  useQuery: UseQuery;
-  useObject: UseObject;
-  useRealm: UseRealm;
+  RealmProvider: ReturnType<typeof createRealmProvider>;
+  useQuery: ReturnType<typeof createUseQuery>;
+  useObject: ReturnType<typeof createUseObject>;
+  useRealm: ReturnType<typeof createUseRealm>;
 };
 
 interface CreateRealmContext {

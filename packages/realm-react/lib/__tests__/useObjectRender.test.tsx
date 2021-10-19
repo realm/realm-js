@@ -43,7 +43,7 @@ const testObject = { id: 1, name: "stapler" };
 const { RealmProvider, useRealm, useObject } = createRealmContext({
   schema: [ObjectSchema],
   inMemory: true,
-  path: "object",
+  path: "testArtifacts/useObjectRender",
 });
 
 const renderCounter = jest.fn();
@@ -64,9 +64,9 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
   const realm = useRealm();
   const [setupComplete, setSetupComplete] = useState(false);
   useEffect(() => {
-    realm.write(() => {
-      realm.deleteAll();
-      realm.create("Object", testObject);
+    realm?.write(() => {
+      realm?.deleteAll();
+      realm?.create("Object", testObject);
     });
     setSetupComplete(true);
   }, [realm]);
@@ -79,14 +79,10 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
 };
 
 const TestComponent = () => {
-  const { data: object, error } = useObject<IObject>("Object", testObject.id);
+  const object = useObject<IObject>("Object", testObject.id);
   const realm = useRealm();
   renderCounter();
 
-  if (error?.message) {
-    console.error(error?.message);
-    return null;
-  }
   if (!object) {
     return null;
   }
@@ -98,7 +94,7 @@ const TestComponent = () => {
         testID="inputComponent"
         value={object.name}
         onChangeText={(text) => {
-          realm.write(() => {
+          realm?.write(() => {
             object.name = text;
           });
         }}
@@ -106,8 +102,8 @@ const TestComponent = () => {
       <TouchableHighlight
         testID="deleteButton"
         onPress={() => {
-          realm.write(() => {
-            realm.delete(object);
+          realm?.write(() => {
+            realm?.delete(object);
           });
         }}
       >

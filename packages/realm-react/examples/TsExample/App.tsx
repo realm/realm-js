@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {SafeAreaView, View, StyleSheet} from 'react-native';
 
 import Task, {RealmProvider, useRealm, useQuery} from './app/models/Task';
@@ -9,7 +9,9 @@ import colors from './app/styles/colors';
 
 function App() {
   const realm = useRealm();
-  const {data: tasks} = useQuery<Task>('Task');
+  const result = useQuery<Task>('Task');
+
+  const tasks = useMemo(() => result?.sorted('createdAt'), [result]);
 
   const handleAddTask = useCallback(
     (description: string): void => {
@@ -71,7 +73,7 @@ function App() {
     <SafeAreaView style={styles.screen}>
       <View style={styles.content}>
         <AddTaskForm onSubmit={handleAddTask} />
-        {tasks === null || tasks?.length === 0 ? (
+        {tasks?.length === 0 || !tasks ? (
           <IntroText />
         ) : (
           <TaskList

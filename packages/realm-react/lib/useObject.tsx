@@ -16,41 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
-import { UseRealm } from "./useRealm";
 import { useState, useEffect } from "react";
 
-export interface UseObject {
-  <T>(type: string, primaryKey: Realm.PrimaryKey): { error: Error | null; data: (T & Realm.Object) | null };
-}
+type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
-// TODO: Figure out how to access objectForPrimaryKey paramater, so that versino 10.0.0 of realm works with hooks
-// type PrimaryKey = Parameters<typeof globalThis.Realm.objectForPrimaryKey>[0];
-
-export function createUseObject(useRealm: UseRealm): UseObject {
-  function useObject<T>(type: string, primaryKey: Realm.PrimaryKey) {
+export function createUseObject(useRealm: () => Realm | null) {
+  return function useObject<T>(type: string, primaryKey: PrimaryKey): (T & Realm.Object) | null {
     const realm = useRealm();
-    const [error, setError] = useState<Error | null>(null);
     const [object, setObject] = useState<(T & Realm.Object) | null>(
-      realm.objectForPrimaryKey(type, primaryKey) ?? null,
+      realm?.objectForPrimaryKey(type, primaryKey) ?? null,
     );
 
-    try {
-      useEffect(() => {
-        object?.addListener((_, changes) => {
-          if (changes.changedProperties.length > 0) {
-            setObject(realm.objectForPrimaryKey(type, primaryKey) ?? null);
-          } else if (changes.deleted) {
-            setObject(null);
-          }
-        });
-        return () => object?.removeAllListeners();
-      }, [object, type, primaryKey]);
-    } catch (err) {
-      console.error(err);
-      setError(err as Error);
-    }
+    useEffect(() => {
+      object?.addListener((_, changes) => {
+        if (changes.changedProperties.length > 0) {
+          setObject(realm?.objectForPrimaryKey(type, primaryKey) ?? null);
+        } else if (changes.deleted) {
+          setObject(null);
+        }
+      });
+      return () => object?.removeAllListeners();
+    }, [object, type, primaryKey]);
 
-    return { error, data: object };
-  }
-  return useObject;
+    return object;
+  };
 }

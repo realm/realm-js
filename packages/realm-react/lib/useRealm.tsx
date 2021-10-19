@@ -18,17 +18,12 @@
 import Realm from "realm";
 import { useContext } from "react";
 
-export interface UseRealm {
-  (): Realm;
-}
-
-export const createUseRealm = (RealmContext: React.Context<Realm | null>): UseRealm => {
-  function useRealm() {
+export const createUseRealm = (RealmContext: React.Context<Realm | null>) => {
+  return function useRealm(): Realm {
     const context = useContext(RealmContext);
     if (context == null) {
       throw new Error("Realm context not found.  Did you call useRealm() within a <RealmProvider/>?");
     }
     return context;
-  }
-  return useRealm;
+  };
 };

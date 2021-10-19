@@ -37,7 +37,7 @@ interface IDog {
 
 const configuration = {
   schema: [dogSchema],
-  path: "useObjectHook",
+  path: "testArtifacts/useObjectHook",
 };
 
 const useRealm = () => {
@@ -79,7 +79,7 @@ describe("useObject hook", () => {
 
     const object = result.current;
 
-    expect(object.data).toMatchObject(dog2);
+    expect(object).toMatchObject(dog2);
   });
 
   it("object is null", () => {
@@ -87,6 +87,6 @@ describe("useObject hook", () => {
 
     const object = result.current;
 
-    expect(object.data).toEqual(null);
+    expect(object).toEqual(null);
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@realm.io/react",
-  "version": "0.0.2-alpha.3",
+  "version": "0.0.1-alpha.3",
   "description": "React specific hooks and implementation helpers for Realm",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,14 +30,18 @@
     "prettier": "^2.3.2",
     "react": "^17.0.2",
     "react-native": "^0.65.1",
+    "realm": "^10.9.0",
     "react-test-renderer": "^17.0.2",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
-    "react-native": ">=0.59",
-    "realm": ">=10.0.0"
+    "realm": ">=10"
+  },
+  "optionalDependencies": {
+    "@babel/runtime": ">=7",
+    "react-native": ">=0.59"
   },
   "files": [
     "dist",
@@ -65,8 +69,5 @@
   "bugs": {
     "url": "https://github.com/realm/realm-js/issues"
   },
-  "license": "SEE LICENSE IN LICENSE",
-  "dependencies": {
-    "realm": ">=10.0.0"
-  }
+  "license": "SEE LICENSE IN LICENSE"
 }

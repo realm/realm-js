@@ -45,7 +45,7 @@ const testCollection = new Array(1000).fill(undefined).map((_, index) => ({ id: 
 const configuration: Realm.Configuration = {
   schema: [ObjectSchema],
   inMemory: true,
-  path: "object",
+  path: "testArtifacts/useQueryRender",
 };
 
 const renderCounter = jest.fn();
@@ -64,7 +64,6 @@ const useRealm = () => {
 };
 
 const useQuery = createUseQuery(useRealm);
-const useObject = createUseObject(useRealm);
 
 const App = () => {
   return (
@@ -124,12 +123,8 @@ const Item: React.FC<{ index: number; item: IObject & Realm.Object }> = ({ index
 };
 
 const TestComponent = () => {
-  const { data: collection, error } = useQuery<IObject>("Object");
+  const collection = useQuery<IObject>("Object");
 
-  if (error?.message) {
-    console.error(error?.message);
-    return null;
-  }
   if (!collection) {
     return null;
   }
@@ -154,7 +149,7 @@ describe("useQuery", () => {
   it("change to data will rerender", async () => {
     const { getByTestId } = render(<App />);
 
-    const element = await waitFor(() => getByTestId("result1"));
+    const element = getByTestId("result1");
     const [nameElement, inputComponent] = element.children;
 
     expect(nameElement).toHaveTextContent("1");
@@ -167,9 +162,9 @@ describe("useQuery", () => {
   });
 
   it("handles deletions", async () => {
-    const { getByTestId, debug } = render(<App />);
+    const { getByTestId } = render(<App />);
 
-    const [element] = await waitFor(() => [getByTestId("result1"), getByTestId("list")]);
+    const element = getByTestId("result1");
     const [nameElement, , deletionComponent] = element.children;
 
     expect(nameElement).toHaveTextContent("1");

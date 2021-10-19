@@ -4,17 +4,18 @@ const rootModulePackage = require('../../package.json');
 
 const root = path.resolve(__dirname, '../..');
 
-const peerDependencies = Object.keys({
+const conflictingDependencies = Object.keys({
   ...rootModulePackage.peerDependencies,
+  ...rootModulePackage.optionalDependencies,
 });
 
 // This ensures we do not duplicate multiple versions of the peer dependencies
-const blockList = peerDependencies.map(
+const blockList = conflictingDependencies.map(
   m => new RegExp(`^${escape(path.join(root, 'node_modules', m))}\\/.*$`),
 );
 
 // This includes the peer dependencies of the root library into the bundler
-const extraNodeModules = peerDependencies.reduce((modules, name) => {
+const extraNodeModules = conflictingDependencies.reduce((modules, name) => {
   modules[name] = path.join(__dirname, 'node_modules', name);
   return modules;
 }, {});
