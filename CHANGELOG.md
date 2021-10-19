@@ -26,6 +26,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Remove usage of deprecated features for Gradle 7 ([#3946](https://github.com/realm/realm-js/issues/3946), [#3879](https://github.com/realm/realm-js/issues/3879))
 * A `sync` configuration value of `undefined` now behaves the same as a missing `sync` configuration ([#3999](https://github.com/realm/realm-js/issues/3999), since v2.2.0)
+* Empty string is now a valid `partitionValue` ([#4002](https://github.com/realm/realm-js/issues/4002), since v10.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
