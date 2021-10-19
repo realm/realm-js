@@ -95,6 +95,8 @@ xcodebuild build \
     -scheme realm-js-ios \
     "${DESTINATIONS[@]}" \
     -configuration $CONFIGURATION \
+    CC="$PROJECT_ROOT/scripts/ccache-clang.sh" \
+    CXX="$PROJECT_ROOT/scripts/ccache-clang++.sh" \
     ONLY_ACTIVE_ARCH=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
     SUPPORTS_MACCATALYST=YES

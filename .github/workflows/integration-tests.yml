@@ -54,6 +54,14 @@ jobs:
         run: |
           Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
           Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+      # Install ccache on MacOS and Linux to speed up compilation of native code
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        if: ${{ matrix.os != 'windows-latest' }}
+        with:
+          key: node-${{ matrix.os }}-${{ matrix.type }}
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
       # Build the native module
@@ -83,6 +91,13 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
+      # Install ccache to speed up compilation of native code
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: electron-linux
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install npm v7
         run: npm install -g npm@7
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
@@ -128,6 +143,13 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
+      # Install ccache to speed up compilation of native code
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: react-native-${{ matrix.os }}-${{ matrix.type }}
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install npm v7
         run: npm install -g npm@7
       # Setup tools
@@ -213,6 +235,13 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
+      # Install ccache to speed up compilation of native code
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: react-native-${{ matrix.os }}-${{ matrix.type }}
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install npm v7
         run: npm install -g npm@7
       # Setup tools
