@@ -225,7 +225,7 @@ struct Value {
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, const ValueType&);
     static bson::Bson to_bson(ContextType, ValueType);
-    static Mixed to_mixed(ContextType ctx, std::shared_ptr<Realm> realm, const ValueType& value) {
+    static Mixed to_mixed(ContextType ctx, std::shared_ptr<Realm> realm, const ValueType& value, std::string &string_buffer) {
         if (is_null(ctx, value) || is_undefined(ctx, value)) {
             return Mixed(realm::null());
         }
@@ -246,8 +246,8 @@ struct Value {
             return Mixed(to_number(ctx, value));
         }
         else if (is_string(ctx, value)) {
-            auto str = std::make_shared<std::string>(to_string(ctx, value));
-            return Mixed(*str);
+            string_buffer = to_string(ctx, value);
+            return Mixed(string_buffer);
         }
         else if (is_binary(ctx, value)) {
             return Mixed(to_binary(ctx, value).get());
