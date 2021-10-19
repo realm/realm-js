@@ -27,7 +27,7 @@ import { App } from "./App";
  * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
  * @returns The Realm App instance.
  */
-export function getApp(id: string) {
+export function getApp(id: string): App {
   return App.getApp(id);
 }
 

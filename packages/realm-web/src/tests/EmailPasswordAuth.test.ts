@@ -19,10 +19,9 @@
 import { expect } from "chai";
 import { ObjectId } from "bson";
 
-import { User } from "..";
 import { EmailPasswordAuth } from "../auth-providers";
 
-import { ACCEPT_JSON_HEADERS, SENDING_JSON_HEADERS, MockFetcher } from "./utils";
+import { SENDING_JSON_HEADERS, MockFetcher } from "./utils";
 
 describe("EmailPasswordAuth", () => {
   let fetcher: MockFetcher;

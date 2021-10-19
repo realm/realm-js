@@ -43,14 +43,14 @@ export class MemoryStorage implements Storage {
   }
 
   /** @inheritdoc */
-  public set(key: string, value: string) {
+  public set(key: string, value: string): void {
     this.storage[key] = value;
     // Fire the listeners
     this.fireListeners();
   }
 
   /** @inheritdoc */
-  public remove(key: string) {
+  public remove(key: string): void {
     delete this.storage[key];
     // Fire the listeners
     this.fireListeners();
@@ -62,7 +62,7 @@ export class MemoryStorage implements Storage {
   }
 
   /** @inheritdoc */
-  public clear(prefix?: string) {
+  public clear(prefix?: string): void {
     // Iterate all keys and delete their values if they have a matching prefix
     for (const key of Object.keys(this.storage)) {
       if (!prefix || key.startsWith(prefix)) {
@@ -74,13 +74,13 @@ export class MemoryStorage implements Storage {
   }
 
   /** @inheritdoc */
-  public addListener(listener: StorageChangeListener) {
-    return this.listeners.add(listener);
+  public addListener(listener: StorageChangeListener): void {
+    this.listeners.add(listener);
   }
 
   /** @inheritdoc */
-  public removeListener(listener: StorageChangeListener) {
-    return this.listeners.delete(listener);
+  public removeListener(listener: StorageChangeListener): void {
+    this.listeners.delete(listener);
   }
 
   /**

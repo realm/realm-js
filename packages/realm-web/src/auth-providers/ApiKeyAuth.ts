@@ -30,9 +30,8 @@ export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
    * Construct an interface to the API-key authentication provider.
    *
    * @param fetcher The fetcher used to send requests to services.
-   * @param providerName Optional custom name of the authentication provider.
    */
-  constructor(fetcher: Fetcher, providerName = "api-key") {
+  constructor(fetcher: Fetcher) {
     this.fetcher = fetcher;
   }
 

@@ -15,7 +15,6 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-type Fetch = import("realm-network-transport").Fetch;
 
 interface fs {
   exists: (path: string) => boolean;
@@ -36,7 +35,6 @@ interface Global extends NodeJS.Global {
   path: path;
   environment: Environment;
   require: Require;
-  fetch: Fetch;
 }
 
 declare const global: Global;
@@ -44,7 +42,6 @@ declare const fs: fs;
 declare const path: path;
 declare const require: Require;
 declare const environment: Environment;
-declare const fetch: Fetch;
 
 // Extend the mocha test function with the skipIf that we patch in from index.ts
 declare namespace Mocha {

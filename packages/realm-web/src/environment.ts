@@ -62,7 +62,7 @@ let environment: Environment | null = null;
  *
  * @param e An object containing environment specific implementations.
  */
-export function setEnvironment(e: Environment) {
+export function setEnvironment(e: Environment): void {
   environment = e;
 }
 
@@ -71,7 +71,7 @@ export function setEnvironment(e: Environment) {
  *
  * @returns An object containing environment specific implementations.
  */
-export function getEnvironment() {
+export function getEnvironment(): Environment {
   if (environment) {
     return environment;
   } else {

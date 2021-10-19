@@ -21,9 +21,6 @@ import { Credentials } from "realm-web";
 
 import { createApp } from "./utils";
 
-// This global is injected by WebPack
-declare const TEST_CREDENTIALS: string[];
-
 // The function credential is used to authenticate the user
 describe("ApiKeyAuth", function () {
   this.slow(1000);

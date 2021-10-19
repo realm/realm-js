@@ -475,7 +475,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     }
 
     static const String indexed_string = "indexed";
-    Object::set_property(ctx, object, indexed_string, Value::from_boolean(ctx, property.is_indexed));
+    Object::set_property(ctx, object, indexed_string, Value::from_boolean(ctx, property.requires_index()));
 
     static const String optional_string = "optional";
     Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, is_nullable(property.type)));

@@ -44,7 +44,7 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
    *
    * @returns Access token (null if unknown).
    */
-  get accessToken() {
+  get accessToken(): string | null {
     return this.get(ACCESS_TOKEN_STORAGE_KEY);
   }
 
@@ -66,7 +66,7 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
    *
    * @returns Refresh token (null if unknown and user is logged out).
    */
-  get refreshToken() {
+  get refreshToken(): string | null {
     return this.get(REFRESH_TOKEN_STORAGE_KEY);
   }
 
@@ -88,7 +88,7 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
    *
    * @returns User profile (undefined if its unknown).
    */
-  get profile() {
+  get profile(): UserProfile<UserProfileDataType> | undefined {
     const value = this.get(PROFILE_STORAGE_KEY);
     if (value) {
       const profile = new UserProfile<UserProfileDataType>();
@@ -116,7 +116,7 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
    *
    * @returns User profile (undefined if its unknown).
    */
-  get providerType() {
+  get providerType(): ProviderType | undefined {
     const value = this.get(PROVIDER_TYPE_STORAGE_KEY);
     if (value) {
       return value as ProviderType;

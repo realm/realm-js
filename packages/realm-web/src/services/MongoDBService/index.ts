@@ -19,6 +19,13 @@
 import { Fetcher } from "../../Fetcher";
 import { MongoDBCollection } from "./MongoDBCollection";
 
+/**
+ * A remote MongoDB Service enables access to a MongoDB Atlas cluster.
+ */
+export type MongoDBService = {
+  db(name: string): ReturnType<typeof createDatabase>;
+};
+
 export { MongoDBCollection };
 
 /**
@@ -31,7 +38,7 @@ export { MongoDBCollection };
  * @param collectionName A collection name.
  * @returns The collection.
  */
-function createCollection<T extends Realm.Services.MongoDB.Document = any>(
+function createCollection<T extends Realm.Services.MongoDB.Document = Realm.Services.MongoDB.Document<unknown>>(
   fetcher: Fetcher,
   serviceName: string,
   databaseName: string,
@@ -68,6 +75,6 @@ function createDatabase(fetcher: Fetcher, serviceName: string, databaseName: str
  * @param serviceName An optional service name.
  * @returns The service.
  */
-export function createService(fetcher: Fetcher, serviceName = "mongo-db") {
+export function createService(fetcher: Fetcher, serviceName = "mongo-db"): MongoDBService {
   return { db: createDatabase.bind(null, fetcher, serviceName) };
 }

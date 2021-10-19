@@ -11,6 +11,7 @@
 		],
 		"types": [
 			"realm",
+			"realm-network-transport",
 			"bson",
 			"buffer",
 			"mocha",

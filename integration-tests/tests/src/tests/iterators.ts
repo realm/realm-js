@@ -23,8 +23,6 @@ import { DogSchema, IDog, IPerson, PersonSchema } from "../schemas/person-and-do
 
 describe("Iterating", () => {
   let realm: Realm;
-  let dogs: { [name: string]: IDog };
-  let persons: { [name: string]: IPerson };
 
   beforeEach(() => {
     Realm.clearTestState();
@@ -45,40 +43,36 @@ describe("Iterating", () => {
     };
     realm = new Realm({ schema: [DogSchema, PersonWithDogsSchema] });
     realm.write(() => {
-      persons = {
-        alice: realm.create<IPerson>("Person", {
-          name: "Alice",
-          age: 16,
-        }),
-        bob: realm.create<IPerson>("Person", {
-          name: "Bob",
-          age: 42,
-        }),
-        charlie: realm.create<IPerson>("Person", {
-          name: "Charlie",
-          age: 62,
-        }),
-      };
-      dogs = {
-        max: realm.create<IDog>("Dog", {
-          age: 1,
-          name: "Max",
-          owner: persons.alice,
-        }),
-        rex: realm.create<IDog>("Dog", {
-          age: 3,
-          name: "Rex",
-          owner: persons.alice,
-        }),
-        bobby: realm.create<IDog>("Dog", {
-          age: 5,
-          name: "Bobby",
-          owner: persons.bob,
-        }),
-      };
-      // Make Bob and Charlie frieds
-      persons.bob.friends.push(persons.charlie);
-      persons.charlie.friends.push(persons.bob);
+      const alice = realm.create<IPerson>("Person", {
+        name: "Alice",
+        age: 16,
+      });
+      const bob = realm.create<IPerson>("Person", {
+        name: "Bob",
+        age: 42,
+      });
+      const charlie = realm.create<IPerson>("Person", {
+        name: "Charlie",
+        age: 62,
+      });
+      realm.create<IDog>("Dog", {
+        age: 1,
+        name: "Max",
+        owner: alice,
+      });
+      realm.create<IDog>("Dog", {
+        age: 3,
+        name: "Rex",
+        owner: alice,
+      });
+      realm.create<IDog>("Dog", {
+        age: 5,
+        name: "Bobby",
+        owner: bob,
+      });
+      // Make Bob and Charlie mutural frieds
+      bob.friends.push(charlie);
+      charlie.friends.push(bob);
     });
   });
 
@@ -174,13 +168,13 @@ describe("Iterating", () => {
 
   describe("linkingObjects collections", () => {
     itCanIterate(() => {
-      return persons.alice.dogs;
+      return realm.objectForPrimaryKey<IPerson>("Person", "Alice").dogs;
     }, ["Max", "Rex"]);
   });
 
   describe("lists", () => {
     itCanIterate(() => {
-      return persons.bob.friends;
+      return realm.objectForPrimaryKey<IPerson>("Person", "Bob").friends;
     }, ["Charlie"]);
   });
 });

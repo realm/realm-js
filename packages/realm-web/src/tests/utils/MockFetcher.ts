@@ -48,7 +48,7 @@ export class MockFetcher extends Fetcher {
     this.mockUserContext = userContext;
   }
 
-  set currentUser(user: User<any, any> | null) {
+  set currentUser(user: User | null) {
     this.mockUserContext.currentUser = user;
   }
 

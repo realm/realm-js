@@ -20,7 +20,7 @@ export type Method = "GET" | "POST" | "DELETE" | "PUT";
 
 export type Headers = { [name: string]: string };
 
-export interface Request<RequestBody> extends FetchRequestInit<RequestBody> {
+export interface Request<RequestBody = unknown> extends FetchRequestInit<RequestBody> {
   method: Method;
   url: string;
   timeoutMs?: number;
@@ -42,13 +42,13 @@ export interface ResponseHandler {
 }
 
 export interface NetworkTransport {
-  fetch<RequestBody extends any>(request: Request<RequestBody>): Promise<FetchResponse>;
-  fetchWithCallbacks<RequestBody extends any>(request: Request<RequestBody>, handler: ResponseHandler): void;
+  fetch<RequestBody>(request: Request<RequestBody>): Promise<FetchResponse>;
+  fetchWithCallbacks<RequestBody>(request: Request<RequestBody>, handler: ResponseHandler): void;
 }
 
 // AbortController
 
-type AbortSignal = any;
+type AbortSignal = unknown;
 
 /** A controller object that allows you to abort one or more DOM requests as and when desired. */
 
@@ -86,7 +86,7 @@ interface FetchBody {
   readonly bodyUsed: boolean;
   arrayBuffer(): Promise<ArrayBuffer>;
   blob(): Promise<unknown>;
-  json(): Promise<any>;
+  json<ResponseBody = unknown>(): Promise<ResponseBody>;
   text(): Promise<string>;
 }
 

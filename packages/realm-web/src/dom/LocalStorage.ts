@@ -45,12 +45,12 @@ export class LocalStorage implements Storage {
   }
 
   /** @inheritdoc */
-  public set(key: string, value: string) {
+  public set(key: string, value: string): void {
     return this.window.localStorage.setItem(key, value);
   }
 
   /** @inheritdoc */
-  public remove(key: string) {
+  public remove(key: string): void {
     return this.window.localStorage.removeItem(key);
   }
 
@@ -60,7 +60,7 @@ export class LocalStorage implements Storage {
   }
 
   /** @inheritdoc */
-  public clear(prefix?: string) {
+  public clear(prefix?: string): void {
     const keys = [];
     // Iterate all keys to find the once have a matching prefix.
     for (let i = 0; i < this.window.localStorage.length; i++) {
@@ -76,12 +76,12 @@ export class LocalStorage implements Storage {
   }
 
   /** @inheritdoc */
-  public addListener(listener: StorageChangeListener) {
+  public addListener(listener: StorageChangeListener): void {
     return this.window.addEventListener("storage", listener);
   }
 
   /** @inheritdoc */
-  public removeListener(listener: StorageChangeListener) {
+  public removeListener(listener: StorageChangeListener): void {
     return this.window.removeEventListener("storage", listener);
   }
 }

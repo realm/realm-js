@@ -34,12 +34,12 @@ const DEFAULT_DEVICE_ID = "000000000000000000000000";
 type SimpleObject = Record<string, unknown>;
 
 interface HydratableUserParameters {
-  app: App<any>;
+  app: App;
   id: string;
 }
 
 interface UserParameters {
-  app: App<any>;
+  app: App;
   id: string;
   providerType: ProviderType;
   accessToken: string;
@@ -114,7 +114,7 @@ export class User<
    * @param parameters Parameters of the user.
    */
   public constructor(parameters: HydratableUserParameters | UserParameters) {
-    this.app = parameters.app;
+    this.app = (parameters.app as App<unknown, unknown>) as App<FunctionsFactoryType, CustomDataType>;
     this.id = parameters.id;
     this.storage = new UserStorage(this.app.storage, this.id);
     if ("accessToken" in parameters && "refreshToken" in parameters && "providerType" in parameters) {
@@ -147,7 +147,7 @@ export class User<
   /**
    * @returns The access token used to authenticate the user towards MongoDB Realm.
    */
-  get accessToken() {
+  get accessToken(): string | null {
     return this._accessToken;
   }
 
@@ -162,7 +162,7 @@ export class User<
   /**
    * @returns The refresh token used to issue new access tokens.
    */
-  get refreshToken() {
+  get refreshToken(): string | null {
     return this._refreshToken;
   }
 
@@ -237,7 +237,7 @@ export class User<
   /**
    * Refresh the users profile data.
    */
-  public async refreshProfile() {
+  public async refreshProfile(): Promise<void> {
     // Fetch the latest profile
     const response = await this.fetcher.fetchJSON({
       method: "GET",
@@ -252,7 +252,7 @@ export class User<
   /**
    * Log out the user, invalidating the session (and its refresh token).
    */
-  public async logOut() {
+  public async logOut(): Promise<void> {
     // Invalidate the refresh token
     try {
       if (this._refreshToken !== null) {
@@ -270,7 +270,7 @@ export class User<
   }
 
   /** @inheritdoc */
-  public async linkCredentials(credentials: Credentials) {
+  public async linkCredentials(credentials: Credentials): Promise<void> {
     const response = await this.app.authenticator.authenticate(credentials, (this as unknown) as User);
     // Sanity check the response
     if (this.id !== response.userId) {
@@ -286,13 +286,13 @@ export class User<
   /**
    * Request a new access token, using the refresh token.
    */
-  public async refreshAccessToken() {
+  public async refreshAccessToken(): Promise<void> {
     const response = await this.fetcher.fetchJSON({
       method: "POST",
       path: routes.api().auth().session().path,
       tokenType: "refresh",
     });
-    const { access_token: accessToken } = response;
+    const { access_token: accessToken } = response as Record<string, unknown>;
     if (typeof accessToken === "string") {
       this.accessToken = accessToken;
     } else {
@@ -301,20 +301,20 @@ export class User<
   }
 
   /** @inheritdoc */
-  public async refreshCustomData() {
+  public async refreshCustomData(): Promise<CustomDataType> {
     await this.refreshAccessToken();
     return this.customData;
   }
 
   /** @inheritdoc */
-  public callFunction(name: string, ...args: any[]) {
+  public callFunction<ReturnType = unknown>(name: string, ...args: unknown[]): Promise<ReturnType> {
     return this.functions.callFunction(name, ...args);
   }
 
   /**
    * @returns A plain ol' JavaScript object representation of the user.
    */
-  public toJSON() {
+  public toJSON(): Record<string, unknown> {
     return {
       id: this.id,
       accessToken: this.accessToken,
@@ -326,7 +326,7 @@ export class User<
   }
 
   /** @inheritdoc */
-  push(serviceName = ""): Realm.Services.Push {
+  push(): Realm.Services.Push {
     throw new Error("Not yet implemented");
   }
 

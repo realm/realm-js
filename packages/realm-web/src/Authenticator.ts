@@ -25,8 +25,6 @@ import { User } from "./User";
 
 const REDIRECT_LOCATION_HEADER = "x-baas-location";
 
-type SimpleObject = Record<string, unknown>;
-
 // TODO: Add the deviceId to the auth response.
 
 /**
@@ -75,8 +73,9 @@ export class Authenticator {
   /**
    * @param credentials Credentials to use when logging in.
    * @param linkingUser A user requesting to link.
+   * @returns A promise resolving to the response from the server.
    */
-  public async authenticate(credentials: Realm.Credentials<any>, linkingUser?: User): Promise<AuthResponse> {
+  public async authenticate(credentials: Realm.Credentials, linkingUser?: User): Promise<AuthResponse> {
     const deviceInformation = this.getDeviceInformation();
     const isLinking = typeof linkingUser === "object";
     if (credentials.providerType.startsWith("oauth2") && typeof credentials.payload.redirectUrl === "string") {
@@ -135,12 +134,18 @@ export class Authenticator {
         access_token: accessToken,
         refresh_token: refreshToken = null,
         device_id: deviceId,
-      } = response;
+      } = response as Record<string, unknown>;
       if (typeof userId !== "string") {
         throw new Error("Expected a user id in the response");
       }
       if (typeof accessToken !== "string") {
         throw new Error("Expected an access token in the response");
+      }
+      if (typeof refreshToken !== "string" && refreshToken !== null) {
+        throw new Error("Expected refresh token to be a string or null");
+      }
+      if (typeof deviceId !== "string") {
+        throw new Error("Expected device id to be a string");
       }
       return { userId, accessToken, refreshToken, deviceId };
     }
@@ -150,12 +155,9 @@ export class Authenticator {
    * @param credentials Credentials to use when logging in.
    * @param link Should the request link with the current user?
    * @param extraQueryParams Any extra parameters to include in the query string
+   * @returns A promise resolving to the url to be used when logging in.
    */
-  private async getLogInUrl(
-    credentials: Realm.Credentials<any>,
-    link = false,
-    extraQueryParams: Partial<QueryParams> = {},
-  ) {
+  private async getLogInUrl(credentials: Realm.Credentials, link = false, extraQueryParams: Partial<QueryParams> = {}) {
     // See https://github.com/mongodb/stitch-js-sdk/blob/310f0bd5af80f818cdfbc3caf1ae29ffa8e9c7cf/packages/core/sdk/src/auth/internal/CoreStitchAuth.ts#L746-L780
     const appRoute = this.fetcher.appRoute;
     const loginRoute = appRoute.authProvider(credentials.providerName).login();
@@ -170,6 +172,6 @@ export class Authenticator {
   private async openWindowAndWaitForAuthResponse(redirectUrl: string, state: string): Promise<AuthResponse> {
     const redirectResult = await this.oauth2.openWindowAndWaitForRedirect(redirectUrl, state);
     // Decode the auth info (id, tokens, etc.) from the result of the redirect
-    return OAuth2Helper.decodeAuthInfo(redirectResult.userAuth);
+    return OAuth2Helper.decodeAuthInfo(redirectResult.userAuth) as AuthResponse;
   }
 }

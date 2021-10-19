@@ -293,6 +293,7 @@ describe("User", () => {
       {
         user_id: "some-user-id",
         access_token: "new-access-token",
+        device_id: "000000000000000000000000",
       },
       {
         data: {

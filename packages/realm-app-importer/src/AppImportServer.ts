@@ -77,7 +77,7 @@ export class AppImportServer {
     });
   }
 
-  public get url() {
+  public get url(): string | undefined {
     const address = this.server.address();
     if (typeof address === "object" && address?.family === "IPv4") {
       return `http://${address.address}:${address.port}`;

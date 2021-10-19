@@ -42,7 +42,7 @@ setEnvironment(environment);
 /**
  * Handle an OAuth 2.0 redirect.
  */
-export function handleAuthRedirect() {
+export function handleAuthRedirect(): void {
   throw new Error("Handling OAuth 2.0 redirects is not supported outside a browser");
 }
 

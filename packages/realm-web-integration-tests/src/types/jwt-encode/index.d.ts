@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 declare module "jwt-encode" {
-  type Options = { alg: "HS256"; typ: "JWT"; [key: string]: any };
+  type Options = { alg: "HS256"; typ: "JWT"; [key: string]: unknown };
   /**
    * Create a very basic JWT signature.
    *

@@ -16,7 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NetworkTransport, Request, ResponseHandler, Headers, Fetch, AbortController } from "./types";
+import type {
+  NetworkTransport,
+  Request,
+  ResponseHandler,
+  Headers,
+  Fetch,
+  AbortController,
+  FetchResponse,
+} from "./types";
 
 export class DefaultNetworkTransport implements NetworkTransport {
   public static fetch: Fetch;
@@ -35,7 +43,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
     }
   }
 
-  public fetchWithCallbacks<RequestBody extends any>(request: Request<RequestBody>, handler: ResponseHandler) {
+  public fetchWithCallbacks<RequestBody = unknown>(request: Request<RequestBody>, handler: ResponseHandler): void {
     // tslint:disable-next-line: no-console
     this.fetch(request)
       .then(async (response) => {
@@ -55,7 +63,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
       .catch((e) => handler.onError(e));
   }
 
-  public async fetch<RequestBody extends any>(request: Request<RequestBody>) {
+  public async fetch<RequestBody = unknown>(request: Request<RequestBody>): Promise<FetchResponse> {
     const { timeoutMs, url, ...rest } = request;
     const { signal, cancelTimeout } = this.createTimeoutSignal(timeoutMs);
     try {
