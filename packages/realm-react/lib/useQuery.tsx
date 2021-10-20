@@ -19,7 +19,7 @@
 import Realm from "realm";
 import { useEffect, useState } from "react";
 
-export function createUseQuery(useRealm: () => Realm | null) {
+export function createUseQuery(useRealm: () => Realm) {
   return function useQuery<T>(type: string): Realm.Results<T> | null {
     const realm = useRealm();
     const [collection, setCollection] = useState<Realm.Results<T & Realm.Object> | null>(realm?.objects(type) ?? null);

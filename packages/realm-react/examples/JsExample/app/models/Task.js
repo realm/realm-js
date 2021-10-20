@@ -23,6 +23,9 @@ class Task {
 }
 
 export const {RealmProvider, useRealm, useObject, useQuery} =
-  createRealmContext({schema: [Task.schema], deleteIfMigrationNeeded: true});
+  createRealmContext({
+    schema: [Task.schema],
+    deleteRealmIfMigrationNeeded: true,
+  });
 
 export default Task;

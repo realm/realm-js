@@ -27,8 +27,6 @@ export function createRealmProvider(
 ): React.FC<ProviderProps> {
   return ({ children, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
-    //XXX consider configuration being changed with state (write tests for this)
-    //XXX consider rendering the provider twice and unmounting one of them (does the other still work?)
     useEffect(() => {
       let shouldInitRealm = realm === null;
 
@@ -82,11 +80,16 @@ export function mergeConfiguration(
   configA: Realm.Configuration,
   configB: Partial<Realm.Configuration>,
 ): Realm.Configuration {
+  // In order to granularly update sync properties on the RealmProvider, sync must be
+  // seperately applied to the configuration.  This allows for dynamic updates to the
+  // partition field.
   const sync = { ...configA.sync, ...configB.sync };
 
   return {
     ...configA,
     ...configB,
+    //TODO: When Realm >= 10.9.0 is a peer dependency, we can simply spread sync here
+    //See issue #4012
     ...(Object.keys(sync).length > 0 ? { sync } : undefined),
   } as Realm.Configuration;
 }

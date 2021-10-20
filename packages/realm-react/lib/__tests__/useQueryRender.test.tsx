@@ -23,8 +23,6 @@ import { View, TextInput, TouchableHighlight, Text, FlatList } from "react-nativ
 import "@testing-library/jest-native/extend-expect";
 import { ReactTestInstance } from "react-test-renderer";
 import { createUseQuery } from "../useQuery";
-import { createUseObject } from "../useObject";
-import { isObject } from "util";
 
 const ObjectSchema: Realm.ObjectSchema = {
   name: "Object",
@@ -50,7 +48,6 @@ const configuration: Realm.Configuration = {
 
 const renderCounter = jest.fn();
 
-//update the others
 const useRealm = () => {
   const realm = useMemo(() => new Realm(configuration), [configuration]);
 

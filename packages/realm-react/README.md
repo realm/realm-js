@@ -22,7 +22,6 @@ yarn:
 Create a Realm context object with `createRealmContext`.  It takes a Realm configuration and returns a RealmProvider and contextual hooks.
 
 ```typescript
-// RealmContext.tsx
 import {createRealmContext} from '@realm.io/react';
 
 class Task extends Realm.Object {

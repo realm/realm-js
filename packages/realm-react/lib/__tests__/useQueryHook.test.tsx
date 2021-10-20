@@ -85,6 +85,9 @@ describe("useQuery", () => {
 
     const [dog1, dog2, dog3] = testDataSet;
 
+    expect(collection).not.toBeNull();
+    expect(collection?.length).toBe(6);
+
     if (collection !== undefined) {
       expect(collection?.[0]).toMatchObject(dog1);
       expect(collection?.[1]).toMatchObject(dog2);
