@@ -291,7 +291,7 @@ typename T::Value DictionaryClass<T>::create_dictionary_change_set(ContextType c
     auto make_object_array = [&](auto const& keys) {
         scratch.clear();
         for (auto mixed_item : keys) {
-            scratch.push_back(TypeMixed<T>::get_instance().wrap(ctx, mixed_item));
+            scratch.push_back(Value::from_mixed(ctx, nullptr, mixed_item));
         }
         return Object::create_array(ctx, scratch);
     };
