@@ -3,7 +3,7 @@
 A better way to use Realm with React Native applications.
 
 ## Introduction
-Setting up Realm in a React-Native application has been historically complex. Developers had been forced to develop their own methods to handle changes to Realm state.  This can be error-prone an difficult to handle.  This library alleviates that by providing hooks which return Realm data that is state aware.  Any changes to the Realm data will cause components using the hook to rerender.
+Setting up Realm in a React Native application has been historically complex. Developers had been forced to develop their own methods to handle changes to Realm state.  This can be error-prone an difficult to handle.  This library alleviates that by providing hooks which return Realm data that is state aware.  Any changes to the Realm data will cause components using the hook to rerender.
 
 ## Installation
 
@@ -21,7 +21,7 @@ yarn:
 
 Create a Realm context object with `createRealmContext`.  It takes a Realm configuration and returns a RealmProvider and contextual hooks.
 
-```
+```typescript
 // RealmContext.tsx
 import {createRealmContext} from '@realm.io/react';
 
@@ -56,10 +56,10 @@ export const {RealmProvider, useRealm, useObject, useQuery} =
   createRealmContext({schema: [Task.schema]});
 ```
 
-Wrap the component needing access to Realm (possible your entire application) with the `RealmProvider` componenet.
+Wrap the component needing access to Realm (possibly your entire application) with the `RealmProvider` componenet.
 The `RealmProvider` also accepts Realm configuration properties.
 
-```
+```tsx
 import {RealmProvider} from './createRealmContext';
 
 function AppWrapper() {
@@ -77,21 +77,21 @@ function AppWrapper() {
 
 The hooks created by `createRealmContext` can now be used by any child component.
 
-```
+```tsx
 function MyComponent({someId}){
-	const realm = useRealm();
-	const tasks = useQuery<Task>('Task');
-	const someObject = useObject<SomeObject>('Objects', someId);
+  const realm = useRealm();
+  const tasks = useQuery<Task>('Task');
+  const someObject = useObject<SomeObject>('Objects', someId);
 
   // sort collection with useMemo
   const sortedTasks = useMemo( () => tasks.sorted("createdAt"), [tasks])
 
   // make sure the data is there
-	if(!tasks || !someObject){
-		return null
-	}
+  if(!sortedTasks || !someObject){
+    return null
+  }
 
-	return ...
+  return ...
 }
 ```
 
