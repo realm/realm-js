@@ -246,7 +246,7 @@ struct Value {
             return Mixed(to_number(ctx, value));
         }
         else if (is_string(ctx, value)) {
-            string_buffer = to_string(ctx, value);
+            string_buffer = std::move(to_string(ctx, value));
             return Mixed(string_buffer);
         }
         else if (is_binary(ctx, value)) {
