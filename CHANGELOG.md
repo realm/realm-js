@@ -1,11 +1,10 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.9.1 Release notes (2021-10-20)
 =============================================================
 ### Enhancements
-* None.
+* None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Address memory leak in the `Mixed` implementation affecting all datatypes ([#3913](https://github.com/realm/realm-js/issues/3913), [#4007](https://github.com/realm/realm-js/issues/4007), [#4016](https://github.com/realm/realm-js/issues/4016), since v10.5.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -14,9 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* None
 
 10.9.0 Release notes (2021-10-18)
 =============================================================
