@@ -1,0 +1,26 @@
+name: Testing Realm React (Pull Request)
+
+on:
+  pull_request:
+    paths:
+      # Only run when the PR changes realm-react
+      - "packages/realm-react/*"
+jobs:
+  job:
+    name: Build & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/realm-react
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      - name: Install npm v7
+        run: npm install -g npm@7
+      - name: Install node dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm run test
