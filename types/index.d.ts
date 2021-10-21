@@ -285,7 +285,7 @@ declare namespace Realm {
         removeAllListeners(): void;
     }
 
-    type QueryableString = string & {
+    type QueryableString = Pick<string, never> & {
         startsWith: (search: string, caseInsensitive?: boolean) => boolean;
         endsWith: (search: string, caseInsensitive?: boolean) => boolean;
         contains: (search: string, caseInsensitive?: boolean) => boolean;
