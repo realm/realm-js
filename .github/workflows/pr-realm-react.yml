@@ -20,7 +20,12 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Install npm v7
         run: npm install -g npm@7
+
       - name: Install node dependencies
         run: npm ci
+
+      - name: Build the library
+        run: npm run build
+
       - name: Run tests
         run: npm run test
