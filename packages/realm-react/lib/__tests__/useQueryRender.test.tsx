@@ -133,8 +133,9 @@ const TestComponent = () => {
 };
 
 describe("useQuery", () => {
-  beforeEach(() => {
+  afterEach(() => {
     renderCounter.mockClear();
+    Realm.clearTestState();
   });
   it("renders data in one render cycle per visible object in collection", async () => {
     const { getByTestId } = render(<App />);

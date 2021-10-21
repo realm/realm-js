@@ -71,6 +71,9 @@ describe("useObject hook", () => {
     });
     realm.close();
   });
+  afterEach(() => {
+    Realm.clearTestState;
+  });
 
   it("can retrieve a single object using useObject", () => {
     const [, dog2] = testDataSet;

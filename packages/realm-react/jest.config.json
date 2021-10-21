@@ -10,7 +10,5 @@
   "transform": {
     "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
   },
-  "testRegex": "(/__tests__/.*.(test|spec)).(jsx?|tsx?|js?|ts?)$",
-  "maxWorkers": 1,
-  "maxConcurrency": 1
+  "testRegex": "(/__tests__/.*.(test|spec)).(jsx?|tsx?|js?|ts?)$"
 }

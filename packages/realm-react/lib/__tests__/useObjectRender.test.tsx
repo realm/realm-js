@@ -114,8 +114,9 @@ const TestComponent = () => {
 };
 
 describe("useObject", () => {
-  beforeEach(() => {
+  afterEach(() => {
     renderCounter.mockClear();
+    Realm.clearTestState();
   });
   it("renders data in one render cycle", async () => {
     const { getByTestId } = render(<App />);

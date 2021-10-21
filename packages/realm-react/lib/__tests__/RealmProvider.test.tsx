@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import React, { useState } from "react";
+import Realm from "realm";
 import "@testing-library/jest-native/extend-expect";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { createRealmContext } from "..";
@@ -48,6 +49,9 @@ const { RealmProvider, useRealm } = createRealmContext({
 });
 
 describe("RealmProvider", () => {
+  afterEach(() => {
+    Realm.clearTestState();
+  });
   it("returns the configured realm with useRealm and closes on unmount", async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
     const { result, waitForNextUpdate, unmount } = renderHook(() => useRealm(), { wrapper });
