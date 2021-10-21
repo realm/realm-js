@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "react": "17.0.2",
-    "react-native": "0.65.1",
+    "react-native": "0.66.1",
     "react-native-get-random-values": "^1.7.0",
-    "realm": "^10.7.0"
+    "realm": "^10.9.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
@@ -22,8 +22,7 @@
     "babel-jest": "^26.6.3",
     "eslint": "7.14.0",
     "jest": "^26.6.3",
-    "metro-react-native-babel-preset": "^0.66.0",
-    "react-native-codegen": "^0.0.7",
+    "metro-react-native-babel-preset": "^0.66.2",
     "react-test-renderer": "17.0.2"
   },
   "jest": {
