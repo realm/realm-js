@@ -131,6 +131,39 @@ module.exports = {
     TestCase.assertEqual(keys.length, 1);
   },
 
+  testFilterQuery: () => {
+    var realm = new Realm({ schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject] });
+
+    realm.write(function () {
+      realm.create("PersonObject", { name: "Ari", age: 10 });
+      realm.create("PersonObject", { name: "Tim", age: 11 });
+      realm.create("PersonObject", { name: "Bjarne", age: 12 });
+      realm.create("PersonObject", { name: "Alex", age: 12, married: true });
+    });
+
+    const filteredSimple = realm.objects("PersonObject").filterQuery((p) => p.age === 10);
+
+    TestCase.assertEqual(filteredSimple.length, 1);
+    TestCase.assertEqual(filteredSimple[0].name, "Ari");
+
+    const filteredComplex = realm
+      .objects("PersonObject")
+      .filterQuery((p) => p.name.like("*e*") && p.age > 11 && p.married);
+
+    TestCase.assertEqual(filteredComplex.length, 1);
+    TestCase.assertEqual(filteredComplex[0].name, "Alex");
+
+    const filteredNegation = realm.objects("PersonObject").filterQuery((p) => !p.married);
+
+    TestCase.assertEqual(filteredNegation.length, 3);
+
+    const filteredCaseInsensitive = realm.objects("PersonObject").filterQuery((p) => p.name.startsWith("a", true));
+
+    TestCase.assertEqual(filteredCaseInsensitive.length, 2);
+    TestCase.assertEqual(filteredCaseInsensitive[0].name, "Ari");
+    TestCase.assertEqual(filteredCaseInsensitive[1].name, "Alex");
+  },
+
   testResultsFiltered: function () {
     var realm = new Realm({ schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject] });
 

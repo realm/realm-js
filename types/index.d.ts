@@ -285,6 +285,26 @@ declare namespace Realm {
         removeAllListeners(): void;
     }
 
+    type QueryableString = string & {
+        startsWith: (search: string, caseInsensitive?: boolean) => boolean;
+        endsWith: (search: string, caseInsensitive?: boolean) => boolean;
+        contains: (search: string, caseInsensitive?: boolean) => boolean;
+        like: (s: string, caseInsensitive?: boolean) => boolean;
+      };
+
+    type QueryableArray<T> = Queryable<T> & {
+        count: () => number;
+        any: () => QueryableArray<T>
+    };
+
+    type Queryable<T> = {
+        [P in keyof T]: T[P] extends string
+          ? QueryableString
+          : T[P] extends Array<any>
+          ? QueryableArray<T[P][0]>
+          : Queryable<T[P]>
+      };
+
     /**
      * Collection
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html }
@@ -321,6 +341,8 @@ declare namespace Realm {
          * @returns Results
          */
         filtered(query: string, ...arg: any[]): Results<T>;
+
+        filterQuery: (fn: (x: Queryable<T>) => boolean, deps?: () => any[]) => Results<T>;
 
         sorted(reverse?: boolean): Results<T>;
         sorted(descriptor: SortDescriptor[]): Results<T>;
