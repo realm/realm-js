@@ -28,13 +28,14 @@ export function createUseObject(useRealm: () => Realm | null) {
     );
 
     useEffect(() => {
-      object?.addListener((_, changes) => {
+      const listenerCallback: Realm.ObjectChangeCallback = (_, changes) => {
         if (changes.changedProperties.length > 0) {
           setObject(realm?.objectForPrimaryKey(type, primaryKey) ?? null);
         } else if (changes.deleted) {
           setObject(null);
         }
-      });
+      };
+      object?.addListener(listenerCallback);
       return () => object?.removeAllListeners();
     }, [object, type, primaryKey]);
 
