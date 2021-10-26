@@ -2,6 +2,12 @@
 
 Accessing MongoDB Realm from a web-browser.
 
+## Documentation
+
+Visit https://docs.mongodb.com/realm/web/ for quick guides on getting started and examples on how to use it.
+
+We're not publishing documentation explicitly for this SDK, but we aim to align names and method signatures identical for the subset of functionality in Realm Web which is also available in the Realm JS SDK. For this reason, the [Realm JS reference manual](https://docs.mongodb.com/realm-sdks/js/latest/) is a great start to learn about the classes and methods provided by the Realm Web SDK.
+
 ## Installation
 
 Via NPM, when used in a project with a bundler, such as Webpack, Parcel or Rollup:
