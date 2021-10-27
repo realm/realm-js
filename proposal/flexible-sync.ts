@@ -44,7 +44,7 @@ interface SubscriptionSet {
 
   // The exception containing information for why this collection is in the
   // Error state. If State is not Error, this will be null.
-  readonly error: Error;
+  readonly error: Realm.SyncError;
 
   // Wait for the server to acknowledge and send all the data associated
   // with this collection of subscriptions. If the State is Complete, this method
@@ -167,7 +167,7 @@ if (subs.length === 0) {
 
 // Later when moving to another screen
 const subs = realm.getSubscriptions();
-const texasContacts = realm.objects<Contact>('address.state == "TX"');
+const texasContacts = realm.objects<Contact>("Contact").filtered("address.state == 'TX'");
 
 // Check for and add subscription if not present
 if (!subs.find(texasContacts)) {
@@ -218,6 +218,7 @@ try {
 } catch (e) {
   // TODO how to test if error is flexible sync error?
   console.error("Couldn't download new data!");
+
   await subs.writeAsync(() => {
     subs.removeByName("my-sub");
   });
