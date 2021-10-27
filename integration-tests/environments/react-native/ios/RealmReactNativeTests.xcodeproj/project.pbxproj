@@ -209,7 +209,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1300;
 					};
 				};
 			};
@@ -484,9 +484,11 @@
 			baseConfigurationReference = F321DC80595C68AD38FBBE47 /* Pods-RealmReactNativeTests.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CC = "../../../../scripts/ccache-clang.sh";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = RealmReactNativeTests/RealmReactNativeTests.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				CXX = "../../../../scripts/ccache-clang++.sh";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = RealmReactNativeTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -513,9 +515,11 @@
 			baseConfigurationReference = A50A3B6ACA32A6AB84856EAC /* Pods-RealmReactNativeTests.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CC = "../../../../scripts/ccache-clang.sh";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = RealmReactNativeTests/RealmReactNativeTests.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				CXX = "../../../../scripts/ccache-clang++.sh";
 				INFOPLIST_FILE = RealmReactNativeTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

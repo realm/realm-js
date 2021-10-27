@@ -20,15 +20,24 @@ on:
       - "!**.md"
       # Run this on updates to the workflow
       - ".github/workflows/integration-tests.yml"
+  # The primary reason we trigger on pushes to master is to warm up the cache for PRs
+  push:
+    branches:
+      - master
 
 jobs:
   node:
-    name: Node.js v${{ matrix.node }} on ${{ matrix.os }} (${{ matrix.type }})
-    runs-on: ${{ matrix.os }}
+    name: Node.js v${{ matrix.node }} on ${{ matrix.os.name }} (${{ matrix.type }})
+    runs-on: ${{ matrix.os.runner }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os:
+          [
+            { name: Linux, runner: ubuntu-latest },
+            { name: Window, runner: windows-latest },
+            { name: macOS, runner: macos-latest },
+          ]
         node: [12, 14]
         #TODO: Reactivate debug when builds are optimized
         #type: [release, debug]
@@ -43,17 +52,25 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Install npm v7
         # TODO: Remove the following line once we've found a workaround for https://github.com/dotnet/msbuild/issues/5726
-        if: ${{ matrix.os != 'windows-latest' }}
+        if: ${{ runner.os != 'Windows' }}
         run: npm install -g npm@7
       # The following is a noop on non-windows runners
       - name: Install Microsoft Visual C++ cmd tools
         uses: ilammy/msvc-dev-cmd@v1
       - name: Windows Environment setup
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: powershell
         run: |
           Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
           Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+      # Install ccache on MacOS and Linux to speed up compilation of native code
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        if: ${{ runner.os != 'Windows' }}
+        with:
+          key: node-${{ runner.os }}
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
       # Build the native module
@@ -83,6 +100,13 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
+      # Install ccache to speed up compilation of native code
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: electron-linux
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install npm v7
         run: npm install -g npm@7
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
@@ -128,6 +152,13 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
+      # Install ccache to speed up compilation of native code
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ github.job }}
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install npm v7
         run: npm install -g npm@7
       # Setup tools
@@ -213,6 +244,13 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
+      # Install ccache to speed up compilation of native code
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ github.job }}
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install npm v7
         run: npm install -g npm@7
       # Setup tools
@@ -221,15 +259,13 @@ jobs:
       # TODO: Expose a way to skip building the Node.js native module
       - name: Patch package.json to avoid building Node.js native module
         run: cat <<< $(jq '.scripts.install = "echo skipping building Node.js binary"' < package.json) > package.json
-      # Install the root package
+      # Caches
       - uses: actions/cache@v2
         name: Restore node_modules
         id: cache-node-modules
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('package-lock.json') }}
-
-      # Caches
       - uses: actions/cache@v2
         name: Restore Android build folders from cache
         with:
@@ -245,7 +281,7 @@ jobs:
         with:
           path: react-native/android/**/librealm.so
           key: android-so-${{ hashFiles('src/**', 'react-native/android/**', 'vendor/**') }}
-
+      # Install the root package
       - run: npm ci
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
       # Build the Android shared object file (if cache missed)
