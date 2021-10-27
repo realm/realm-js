@@ -20,6 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Upgraded Realm Core from v11.4.1 to v10.5.2.
 * Change Apple/Linux temporary directory to default to the environment's `TMPDIR` if available. This is primarily used by tests. ([realm/realm-core#4921](https://github.com/realm/realm-core/issues/4921))
+* Adding use of [ccache](https://ccache.dev/) in build scripts, XCode projects and the integration tests GHA workflow.
 
 10.9.1 Release notes (2021-10-20)
 =============================================================
