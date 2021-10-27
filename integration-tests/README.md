@@ -16,11 +16,7 @@ Building the native module (xcframework) for the iOS simulator in debug mode:
 ./scripts/build-ios.sh -c Debug simulator
 ```
 
-Building the native module (.so) for the Android simulator in debug mode:
-
-```bash
-node scripts/build-android.js --arch=x86 --build-type=Debug
-```
+Building the native module (.so) for the Android simulator will happen once the integration test app is being built.
 
 ## Installing the integration tests and environments
 

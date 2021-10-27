@@ -171,12 +171,11 @@ Note: If you have cloned the repo previously make sure you remove your `node_mod
 
 ### Building for iOS
 
-* Run `./scripts/build-ios.sh` from the `realm-js` root directory
+Run `./scripts/build-ios.sh` from the `realm-js` root directory
 
 ### Building for Android
 
-* Run `node scripts/build-android.js` from the `realm-js` root directory
-  -  The compiled version of the Android module is output to `<project-root>/android`
+Building for Android is deferred, such that compilation happens on the users machine when building their app.
 
 ### Building for Node.js
 

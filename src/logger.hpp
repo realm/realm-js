@@ -112,24 +112,6 @@ class SyncLoggerDelegator : public util::RootLogger {
     Delegated loggerDelegate;
 };
 
-class SyncLoggerDelegatorFactory : public realm::SyncLoggerFactory {
-   public:
-    SyncLoggerDelegatorFactory(Delegated logs_fn) : logs_fn{logs_fn} {}
-
-    std::unique_ptr<realm::util::Logger> make_logger(
-        realm::util::Logger::Level level) {
-        auto logger = std::make_unique<SyncLoggerDelegator>();
-
-        logger->set_level_threshold(level);
-        logger->delegate(logs_fn);
-
-        return logger;
-    }
-
-   private:
-    Delegated logs_fn;
-};
-
 class Logger {
    private:
     // Warning: If this grows to big (for example: another method) we should
@@ -157,8 +139,13 @@ class Logger {
         throw std::runtime_error("Bad log level");
     }
 
-    static SyncLoggerDelegatorFactory* build_sync_logger(Delegated& log_fn) {
-        return new SyncLoggerDelegatorFactory(log_fn);
+    static SyncClientConfig::LoggerFactory build_sync_logger(Delegated& log_fn) {
+        return [&log_fn] (realm::util::Logger::Level level) {
+            auto logger = std::make_unique<SyncLoggerDelegator>();
+            logger->set_level_threshold(level);
+            logger->delegate(log_fn);
+            return logger;
+        };
     }
 };
 

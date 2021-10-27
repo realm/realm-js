@@ -181,9 +181,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         throw std::runtime_error("Expected either a configuration object or an app id string.");
     }
     
-    config.transport_generator = [ctx = Protected(Context::get_global_context(ctx)), eld=NetworkTransport::make_dispatcher()] {
-        return AppClass<T>::transport_generator(ctx, eld);
-    };
+    config.transport = AppClass<T>::transport_generator(Protected(Context::get_global_context(ctx)), NetworkTransport::make_dispatcher());
 
     config.platform = platform_os;
     config.platform_version = platform_version;

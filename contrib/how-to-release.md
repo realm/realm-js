@@ -19,7 +19,6 @@ The procedure is:
 - Tag the commit: `git tag vX.Y.Z`
 - Push the changes: `git push origin --tag master` (if you are releasing from another branch, then use that instead of `master`)
 - Our CI system will build and push binaries for node.js. You can follow the progress at https://ci.realm.io. Once the "Publish" stage is completed, the binaries are uploaded.
-- Build Android binaries: `node ./scripts/build-android.js`
 - Build iOS binaries: `./scripts/build-ios.sh`
 - Publish the package: `npm publish`
 - Manually create a new release on Github
