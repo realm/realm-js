@@ -27,9 +27,8 @@ interface Subscription<T> {
 
 // A mutable collection of subscriptions. Mutating it can only happen in a write/writeAsync callback.
 interface SubscriptionSet {
-  // TODO in JS do we want to support other array-like methods?
-  // In C#, this class extends IEnumberable
-  length: number;
+  // Returns true if there are no subscriptions in the set
+  readonly empty: boolean;
 
   // Find a subscription by name, null if not found.
   findByName<T>(name: string): Subscription<T> | null;
@@ -62,12 +61,12 @@ interface SubscriptionSet {
 
   // Add a query to the list of subscriptions. Optionally, provide a name
   // and other parameters.
-  // TODO do we need this in JS?
-  addQueryByString: (className: string, query: string, options: SubscriptionOptions | undefined) => void;
+  // NOTE: This is not in scope for beta
+  // addQueryByString: <T>(className: string, query: string, options: SubscriptionOptions | undefined, ...args: any[]) => Subscription<T>;
 
   // Add a query to the list of subscriptions. Optionally, provide a name
   // and other parameters.
-  add: <T>(query: Realm.Results<T & Realm.Object>, options: SubscriptionOptions | undefined) => void;
+  add: <T>(query: Realm.Results<T & Realm.Object>, options: SubscriptionOptions | undefined) => Subscription<T>;
 
   // Remove a subscription by name. Returns false if not found.
   removeByName: (name: string) => boolean;
@@ -85,10 +84,10 @@ interface SubscriptionSet {
   // int RemoveAll<T>();
   //
   // but there isn't really a JS equivalent in terms of taking a specific type T
-  removeAll: () => void;
+  removeAll: () => number;
 
   // Remove all subscriptions for object type. Returns number of removed subscriptions.
-  removeAllByObjectType: (objectType: string) => void;
+  removeAllByObjectType: (objectType: string) => number;
 }
 
 enum SubscriptionState {
@@ -138,6 +137,7 @@ const config = {
   schema: [Schema],
   sync: {
     user: currentUser,
+    // TypeScript definitions + config checking will enforce that `partitionValue` can't be used with `flexible: true`
     flexible: true,
   },
 };
@@ -147,16 +147,21 @@ const realm = await Realm.open(config);
 // Initial state - we don't have any subscriptions
 const subs = realm.getSubscriptions();
 
-if (subs.length === 0) {
+if (subs.empty) {
   try {
     console.log("Downloading initial data...");
 
     await subs.writeAsync(() => {
       subs.add(realm.objects<Contact>("Contact").filtered("address.state == 'NY'"));
+      // or with class-based schemas: subs.add(realm.objects(Contact).filtered("address.state == 'NY'"));
       subs.add(realm.objects<SaleOrder>("SaleOrder").filtered("author.id == $0", currentUser), { name: "MyOrders" });
       subs.add(realm.objects<UserPreference>("UserPreference").filtered("userId == $0", currentUser), {
         name: "MyPrefs",
       });
+
+      // Post-beta we might also support:
+      // subs.add("Contact", "address.state == 'NY'");
+      // although this may be problematic in terms of finding/removing the subscription when interpolated arguments are used
     });
 
     await subs.waitForSynchronization();
@@ -200,7 +205,7 @@ const config = {
     flexible: true,
     error: (e) => {
       // Handle errors here
-      // TODO how to distinguish flexible sync error? Is it a different `category`?
+      // Flexible sync errors can be distinguished as they will have their own `code`s
     },
   },
 };
@@ -213,12 +218,14 @@ if (subs.state === SubscriptionState.Error) {
 // When updating subscriptions
 try {
   await subs.writeAsync(() => {
-    subs.add(realm.objects<Foo>("Foo").filtered("invalid query"), { name: "my-sub" });
+    subs.add(realm.objects<Foo>("Foo"), { name: "my-sub" });
   });
+
+  await subs.waitForSynchronization();
 } catch (e) {
-  // TODO how to test if error is flexible sync error?
   console.error("Couldn't download new data!");
 
+  // Error is thrown while waiting for synchronisation, remove the subscription
   await subs.writeAsync(() => {
     subs.removeByName("my-sub");
   });
