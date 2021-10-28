@@ -57,11 +57,20 @@ interface SubscriptionSet {
 
   // Asynchronously creates and commits a write transaction to update
   // the subscription set. Doesn't call waitForSynchronization.
-  writeAsync: (callback: () => void) => Promise<void>;
+  //
+  // NOTE: removing this from JS for now, there is an ongoing discussion about whether
+  // write just writes locally (in which case we probably don't need an async API) or
+  // if it will also write to the server (in which case we might want write _and_ writeAsync)
+  //
+  // writeAsync: (callback: () => void) => Promise<void>;
 
   // Add a query to the list of subscriptions. Optionally, provide a name
   // and other parameters.
-  // NOTE: This is not in scope for beta
+  //
+  // NOTE: This is not in scope for beta. Also has issues with later finding or
+  // removing a subscription which uses interpolated arguments, if you have not
+  // captured a reference to the subscription itself.
+  //
   // addQueryByString: <T>(className: string, query: string, options: SubscriptionOptions | undefined, ...args: any[]) => Subscription<T>;
 
   // Add a query to the list of subscriptions. Optionally, provide a name
@@ -78,12 +87,6 @@ interface SubscriptionSet {
   removeSubscription: <T>(subscription: Subscription<T>) => boolean;
 
   // Remove all subscriptions. Returns number of removed subscriptions.
-  // TODO do we want this in JS? In C#, it is:
-  //
-  // Remove all subscriptions for type. Returns number of removed subscriptions.
-  // int RemoveAll<T>();
-  //
-  // but there isn't really a JS equivalent in terms of taking a specific type T
   removeAll: () => number;
 
   // Remove all subscriptions for object type. Returns number of removed subscriptions.
@@ -161,7 +164,6 @@ if (subs.empty) {
 
       // Post-beta we might also support:
       // subs.add("Contact", "address.state == 'NY'");
-      // although this may be problematic in terms of finding/removing the subscription when interpolated arguments are used
     });
 
     await subs.waitForSynchronization();
