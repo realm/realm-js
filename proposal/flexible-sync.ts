@@ -41,8 +41,8 @@ interface SubscriptionSet {
   // has the data been downloaded locally.
   readonly state: SubscriptionState;
 
-  // The exception containing information for why this collection is in the
-  // Error state. If State is not Error, this will be null.
+  // The exception containing information for why the state of the SubscriptionSet is set to
+  // Error. If the state is not set to Error, this will be null.
   readonly error: Realm.SyncError;
 
   // Wait for the server to acknowledge and send all the data associated
