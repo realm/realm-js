@@ -18,7 +18,6 @@
 
 import { Fetcher } from "../Fetcher";
 import { handleDeprecatedPositionalArgs } from "@realm.io/common";
-import { Auth } from "realm";
 
 /** @inheritdoc */
 export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
@@ -38,12 +37,13 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
 
   /** @inheritdoc */
   async registerUser(email: string, password: string): Promise<void>;
-  async registerUser(userDetails: Auth.RegisterUserDetails): Promise<void>;
-  async registerUser(...args: [string, string] | [Auth.RegisterUserDetails]): Promise<void> {
-    const { argsObject: userDetails } = handleDeprecatedPositionalArgs<Auth.RegisterUserDetails>(args, "registerUser", [
-      "email",
-      "password",
-    ]);
+  async registerUser(userDetails: Realm.Auth.RegisterUserDetails): Promise<void>;
+  async registerUser(...args: [string, string] | [Realm.Auth.RegisterUserDetails]): Promise<void> {
+    const { argsObject: userDetails } = handleDeprecatedPositionalArgs<Realm.Auth.RegisterUserDetails>(
+      args,
+      "registerUser",
+      ["email", "password"],
+    );
 
     const appRoute = this.fetcher.appRoute;
     await this.fetcher.fetchJSON({
@@ -55,12 +55,13 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
 
   /** @inheritdoc */
   async confirmUser(token: string, tokenId: string): Promise<void>;
-  async confirmUser(tokenDetails: Auth.ConfirmUserDetails): Promise<void>;
-  async confirmUser(...args: [string, string] | [Auth.ConfirmUserDetails]): Promise<void> {
-    const { argsObject: tokenDetails } = handleDeprecatedPositionalArgs<Auth.ConfirmUserDetails>(args, "confirmUser", [
-      "token",
-      "tokenId",
-    ]);
+  async confirmUser(tokenDetails: Realm.Auth.ConfirmUserDetails): Promise<void>;
+  async confirmUser(...args: [string, string] | [Realm.Auth.ConfirmUserDetails]): Promise<void> {
+    const { argsObject: tokenDetails } = handleDeprecatedPositionalArgs<Realm.Auth.ConfirmUserDetails>(
+      args,
+      "confirmUser",
+      ["token", "tokenId"],
+    );
 
     const appRoute = this.fetcher.appRoute;
     await this.fetcher.fetchJSON({
@@ -72,9 +73,9 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
 
   /** @inheritdoc */
   async resendConfirmationEmail(email: string): Promise<void>;
-  async resendConfirmationEmail(emailDetails: Auth.ResendConfirmationDetails): Promise<void>;
-  async resendConfirmationEmail(...args: [string] | [Auth.ResendConfirmationDetails]): Promise<void> {
-    const { argsObject: emailDetails } = handleDeprecatedPositionalArgs<Auth.ResendConfirmationDetails>(
+  async resendConfirmationEmail(emailDetails: Realm.Auth.ResendConfirmationDetails): Promise<void>;
+  async resendConfirmationEmail(...args: [string] | [Realm.Auth.ResendConfirmationDetails]): Promise<void> {
+    const { argsObject: emailDetails } = handleDeprecatedPositionalArgs<Realm.Auth.ResendConfirmationDetails>(
       args,
       "resendConfirmationEmail",
       ["email"],
@@ -90,9 +91,9 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
 
   /** @inheritdoc */
   async retryCustomConfirmation(email: string): Promise<void>;
-  async retryCustomConfirmation(emailDetails: Auth.RetryCustomConfirmationDetails): Promise<void>;
-  async retryCustomConfirmation(...args: [string] | [Auth.RetryCustomConfirmationDetails]): Promise<void> {
-    const { argsObject: emailDetails } = handleDeprecatedPositionalArgs<Auth.RetryCustomConfirmationDetails>(
+  async retryCustomConfirmation(emailDetails: Realm.Auth.RetryCustomConfirmationDetails): Promise<void>;
+  async retryCustomConfirmation(...args: [string] | [Realm.Auth.RetryCustomConfirmationDetails]): Promise<void> {
+    const { argsObject: emailDetails } = handleDeprecatedPositionalArgs<Realm.Auth.RetryCustomConfirmationDetails>(
       args,
       "retryCustomConfirmation",
       ["email"],
@@ -108,9 +109,9 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
 
   /** @inheritdoc */
   async resetPassword(token: string, tokenId: string, password: string): Promise<void>;
-  async resetPassword(resetDetails: Auth.ResetPasswordDetails): Promise<void>;
-  async resetPassword(...args: [string, string, string] | [Auth.ResetPasswordDetails]): Promise<void> {
-    const { argsObject: resetDetails } = handleDeprecatedPositionalArgs<Auth.ResetPasswordDetails>(
+  async resetPassword(resetDetails: Realm.Auth.ResetPasswordDetails): Promise<void>;
+  async resetPassword(...args: [string, string, string] | [Realm.Auth.ResetPasswordDetails]): Promise<void> {
+    const { argsObject: resetDetails } = handleDeprecatedPositionalArgs<Realm.Auth.ResetPasswordDetails>(
       args,
       "resetPassword",
       ["token", "tokenId", "password"],
@@ -126,9 +127,9 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
 
   /** @inheritdoc */
   async sendResetPasswordEmail(email: string): Promise<void>;
-  async sendResetPasswordEmail(emailDetails: Auth.SendResetPasswordDetails): Promise<void>;
-  async sendResetPasswordEmail(...args: [string] | [Auth.SendResetPasswordDetails]): Promise<void> {
-    const { argsObject: emailDetails } = handleDeprecatedPositionalArgs<Auth.SendResetPasswordDetails>(
+  async sendResetPasswordEmail(emailDetails: Realm.Auth.SendResetPasswordDetails): Promise<void>;
+  async sendResetPasswordEmail(...args: [string] | [Realm.Auth.SendResetPasswordDetails]): Promise<void> {
+    const { argsObject: emailDetails } = handleDeprecatedPositionalArgs<Realm.Auth.SendResetPasswordDetails>(
       args,
       "sendResetPasswordEmail",
       ["email"],
@@ -145,16 +146,16 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
   /** @inheritdoc */
   async callResetPasswordFunction(email: string, password: string, ...args: unknown[]): Promise<void>;
   async callResetPasswordFunction(
-    resetDetails: Auth.CallResetPasswordFunctionDetails,
+    resetDetails: Realm.Auth.CallResetPasswordFunctionDetails,
     ...args: unknown[]
   ): Promise<void>;
   async callResetPasswordFunction(
-    ...args: [string, string, ...unknown[]] | [Auth.CallResetPasswordFunctionDetails, ...unknown[]]
+    ...args: [string, string, ...unknown[]] | [Realm.Auth.CallResetPasswordFunctionDetails, ...unknown[]]
   ): Promise<void> {
     const {
       argsObject: resetDetails,
       restArgs,
-    } = handleDeprecatedPositionalArgs<Auth.CallResetPasswordFunctionDetails>(
+    } = handleDeprecatedPositionalArgs<Realm.Auth.CallResetPasswordFunctionDetails>(
       args,
       "callResetPasswordFunction",
       ["email", "password"],
