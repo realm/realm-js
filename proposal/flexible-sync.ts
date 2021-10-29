@@ -30,7 +30,7 @@ interface SubscriptionSet {
   // Returns true if there are no subscriptions in the set
   readonly empty: boolean;
 
-  // Find a subscription by name, null if not found.
+  // Find a subscription by name. Return null if not found.
   findByName<T>(name: string): Subscription<T> | null;
 
   // Find a subscription by query, null if not found.
