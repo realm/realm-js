@@ -113,7 +113,7 @@ class SessionClass : public ClassDefinition<T, WeakSession> {
 public:
     std::string const name = "Session";
     using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
-    using StateHandler = void(SyncSession::PublicState old_state, SyncSession::PublicState new_state);
+    using StateHandler = void(SyncSession::State old_state, SyncSession::State new_state);
     using ConnectionHandler = void(SyncSession::ConnectionState new_state, SyncSession::ConnectionState old_state);
     using DownloadUploadCompletionHandler = void(std::error_code error);
 
@@ -368,7 +368,7 @@ void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue 
     return_value.set(invalid);
 
     if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
-        if (session->state() == SyncSession::PublicState::Inactive) {
+        if (session->state() == SyncSession::State::Inactive) {
             return_value.set(inactive);
         } else {
             return_value.set(active);
@@ -536,7 +536,7 @@ void SessionClass<T>::is_connected(ContextType ctx, ObjectType this_object, Argu
         auto state = session->state();
         auto connection_state = session->connection_state();
         if (connection_state == SyncSession::ConnectionState::Connected
-            && (state == SyncSession::PublicState::Active || state == SyncSession::PublicState::Dying)) {
+            && (state == SyncSession::State::Active || state == SyncSession::State::Dying)) {
             return_value.set(true);
         }
     }

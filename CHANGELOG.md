@@ -8,7 +8,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed a rare assertion failure or deadlock when a sync session. ([realm/realm-core#4931](https://github.com/realm/realm-core/issues/4931))
 * Fixed a rare segfault which could trigger if a user was being logged out while the access token refresh response comes in. ([realm/realm-core#4944](https://github.com/realm/realm-core/issues/4944), since v10.0.0)
 * Fixed a user being left in the logged in state when the user's refresh token expires. ([realm/realm-core#4882](https://github.com/realm/realm-core/issues/4882), since v10.0.0)
-* Allow for EPERM to be returned from `fallocate()`. This improves support for running on Linux environments with interesting filesystems, like AWS Lambda. Thanks to [@ztane](https://github.com/ztane) for reporting and suggesting a fix. ([realm/realm-core#4957](https://github.com/realm/realm-core/issues/4957) and [#1832](https://github.com/realm/realm-js/issues/1832))
+* Allow for `EPERM` to be returned from `fallocate()`. This improves support for running on Linux environments with interesting file systems, like AWS Lambda. Thanks to [@ztane](https://github.com/ztane) for reporting and suggesting a fix. ([realm/realm-core#4957](https://github.com/realm/realm-core/issues/4957) and [#1832](https://github.com/realm/realm-js/issues/1832))
+* Sync progress notifiers would not trigger when the downloadable bytes size would equal 0. ([realm/realm-core#4989](https://github.com/realm/realm-core/pull/4989), since v10.3.0-rc.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -17,7 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.4.1 to v10.5.1.
+* Upgraded Realm Core from v11.4.1 to v10.5.2.
 * Change Apple/Linux temporary directory to default to the environment's `TMPDIR` if available. This is primarily used by tests. ([realm/realm-core#4921](https://github.com/realm/realm-core/issues/4921))
 
 10.9.1 Release notes (2021-10-20)
