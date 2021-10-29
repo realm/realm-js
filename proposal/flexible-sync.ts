@@ -33,7 +33,7 @@ interface SubscriptionSet {
   // Find a subscription by name. Return null if not found.
   findByName<T>(name: string): Subscription<T> | null;
 
-  // Find a subscription by query, null if not found.
+  // Find a subscription by query. Return null if not found.
   // Will match both named and unnamed subscriptions.
   find<T>(query: Realm.Results<T & Realm.Object>): Subscription<T> | null;
 
