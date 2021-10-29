@@ -26,8 +26,6 @@ public class MainApplication extends Application implements ReactApplication {
         protected List<ReactPackage> getPackages() {
           @SuppressWarnings("UnnecessaryLocalVariable")
           List<ReactPackage> packages = new PackageList(this).getPackages();
-          // Manually linking the Realm package
-          packages.add(new RealmReactPackage());
           return packages;
         }
 
