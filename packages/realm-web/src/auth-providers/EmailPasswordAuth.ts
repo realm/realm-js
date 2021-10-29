@@ -151,13 +151,15 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
   async callResetPasswordFunction(
     ...args: [string, string, ...unknown[]] | [Auth.CallResetPasswordFunctionDetails, ...unknown[]]
   ): Promise<void> {
-    const { argsObject: resetDetails, restArgs } =
-      handleDeprecatedPositionalArgs<Auth.CallResetPasswordFunctionDetails>(
-        args,
-        "callResetPasswordFunction",
-        ["email", "password"],
-        true,
-      );
+    const {
+      argsObject: resetDetails,
+      restArgs,
+    } = handleDeprecatedPositionalArgs<Auth.CallResetPasswordFunctionDetails>(
+      args,
+      "callResetPasswordFunction",
+      ["email", "password"],
+      true,
+    );
 
     const appRoute = this.fetcher.appRoute;
     await this.fetcher.fetchJSON({
