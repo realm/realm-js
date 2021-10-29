@@ -23,7 +23,7 @@ interface Subscription<T> {
 // ================================================
 
 // SubscriptionSet
-// Represents a mutable collection of all the subscriptions for the Realm. Using the mutating methods outside of a write call will be a runtime exception.
+// Represents a mutable collection of all the subscriptions for the Realm. Using the mutating methods outside of a write/writeAsync callback will cause a runtime exception.
 
 // A mutable collection of subscriptions. Mutating it can only happen in a write/writeAsync callback.
 interface SubscriptionSet {
