@@ -75,6 +75,8 @@ interface SubscriptionSet {
 
   // Add a query to the list of subscriptions. Optionally, provide a name
   // and other parameters.
+  // TODO: is the naming of `query` optimal for JS?
+  // TODO: possible future optimization is to make sure the DB does not execute the "query" in this context
   add: <T>(query: Realm.Results<T & Realm.Object>, options: SubscriptionOptions | undefined) => Subscription<T>;
 
   // Remove a subscription by name. Returns false if not found.
