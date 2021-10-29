@@ -37,4 +37,4 @@ jobs:
         run: npm install -g npm@7
       - run: npx lerna bootstrap --scope '{realm-network-transport,@realm.io/common}' --include-dependencies
       - run: npm test --prefix packages/realm-network-transport
-      - run: npm test --prefix @realm.io/common
+      - run: npm test --prefix packages/realm-common
