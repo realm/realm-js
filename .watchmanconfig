@@ -1,8 +1,9 @@
 {
   "ignore_dirs": [
-    "node_modules",
     "react-native/node_modules",
-    "packages",
+    "packages/realm-app-importer",
+    "packages/realm-web-importer",
+    "packages/realm-web-integration-tests",
     "tests"
   ]
 }
