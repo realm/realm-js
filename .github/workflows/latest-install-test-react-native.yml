@@ -1,9 +1,4 @@
-# This workflow installs
-# - the latest Realm JS,
-# - with latest Node.js & NPM into
-# - a newly initialized React Native app (running the latest version of React Native)
-
-name: Latest install test (React Native)
+name: Install test (React Native)
 
 on:
   # Every day at 9:00 CET
@@ -11,6 +6,15 @@ on:
     - cron: "0 8 * * *"
   # You can also activate this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      realm-version:
+        description: The version of Realm to install
+        required: true
+        default: latest
+      react-native-version:
+        description: The version of React Native to install
+        required: true
+        default: nightly
 
 jobs:
   install:
@@ -21,78 +25,12 @@ jobs:
           node-version: '14'
       - name: Install npm v7
         run: npm install -g npm@7
-      - name: Initialize a React Native app
-        run: npx react-native init ReactNativeTestApp --version nightly --directory react-native-test-app --npm
-      - name: Install Realm JS
-        working-directory: react-native-test-app
-        run: npm install realm
-      - name: Install CocoaPods
-        run: npx pod-install
-      - name: Make the app load Realm
-        working-directory: react-native-test-app
-        run: |
-          cat > App.js <<EOL
-            import React, {useEffect} from 'react';
-            import {Text} from 'react-native';
-            import Realm from 'realm';
-            const CALLBACK_HOST = 'http://localhost:3000';
-            const DELAY = 5000;
-            const schema = [{name: 'Person', properties: {name: 'string'}}];
-            const App = () => {
-              useEffect(() => {
-                const realm = new Realm({schema});
-                if (realm.empty) {
-                  realm.write(() => {
-                    realm.create('Person', {name: 'Alice'});
-                    realm.create('Person', {name: 'Bob'});
-                    realm.create('Person', {name: 'Charlie'});
-                  });
-                }
-                console.log(
-                  'Persons are',
-                  realm
-                    .objects('Person')
-                    .map((p) => p.name)
-                    .join(', '),
-                );
-                // Perform a request
-                setTimeout(() => {
-                  fetch(CALLBACK_HOST, {
-                    method: 'POST',
-                    body: message,
-                  }).catch(console.error);
-                }, DELAY);
-                // Close the Realm when component unmounts
-                return () => realm.close();
-              }, []);
-              return <Text>App rendered!</Text>;
-            };
-            export default App;
-          EOL
-      - name: Create a script listening for the app
-        working-directory: react-native-test-app
-        run: |
-          cat > listen.js <<EOL
-            const {createServer} = require('http');
-            const PORT = 3000;
-            const EXPECTED_MESSAGE = 'The persons are Alice, Bob, Charlie';
-            createServer((req, res) => {
-              req.on('data', (data) => {
-                const message = data.toString('utf-8');
-                res.statusCode = 200;
-                res.end();
-                console.log(`App sent "${message}"!`);
-                if (message === EXPECTED_MESSAGE) {
-                  process.exit(0);
-                } else {
-                  process.exit(1);
-                }
-              });
-            }).listen(PORT);
-          EOL
-      - name: Start the app
-        working-directory: react-native-test-app
-        run: npm run ios
-      - name: Wait for the request
-        working-directory: react-native-test-app
-        run: node listen.js
+      - name: Install React Native & Realm
+        run: install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
+        working-directory: install-tests/react-native
+      - name: Run the test (iOS)
+        run: run-test.sh ios
+        working-directory: install-tests/react-native
+      - name: Run the test (Android)
+        run: run-test.sh ios
+        working-directory: install-tests/react-native
