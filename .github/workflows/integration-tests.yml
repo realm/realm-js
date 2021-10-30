@@ -68,7 +68,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1
         if: ${{ runner.os != 'Windows' }}
         with:
-          key: node-${{ runner.os }}
+          key: node-${{ runner.os }}-${{ matrix.type }}
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
@@ -156,7 +156,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ github.job }}
+          key: ${{ github.job }}-${{ matrix.platform.name }}-${{ matrix.type }}
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install npm v7
@@ -248,7 +248,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ github.job }}
+          key: ${{ github.job }}-${{ matrix.type }}
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install npm v7
