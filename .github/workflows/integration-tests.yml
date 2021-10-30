@@ -38,10 +38,8 @@ jobs:
             { name: Window, runner: windows-latest },
             { name: macOS, runner: macos-latest },
           ]
-        node: [12, 14]
-        #TODO: Reactivate debug when builds are optimized
-        #type: [release, debug]
-        type: [release]
+        node: [14, 16]
+        type: [release, debug]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -63,7 +61,14 @@ jobs:
         run: |
           Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
           Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-      # Install ccache on MacOS and Linux to speed up compilation of native code
+
+      # Caches
+      - uses: actions/cache@v2
+        name: cached node_modules
+        id: cache-node-modules
+        with:
+          path: node_modules
+          key: node-modules-${{ github.job }}-${{ runner.os }}-${{ matrix.node }}-${{ hashFiles('package-lock.json') }}
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         if: ${{ runner.os != 'Windows' }}
@@ -71,6 +76,7 @@ jobs:
           key: node-${{ runner.os }}-${{ matrix.type }}
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
+
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
       # Build the native module
@@ -80,7 +86,7 @@ jobs:
       - name: Prebuild debug binary
         run: npx prebuild --debug
         if: ${{ matrix.type == 'debug' }}
-      # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
+      # Bootstrap lerna sub-packages (builds lerna packages and uses the prebuild native module)
       - run: npx lerna bootstrap --scope realm-node-tests --include-dependencies
         env:
           npm_config_realm_local_prebuilds: ${{ github.workspace }}/prebuilds
@@ -100,6 +106,14 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
+
+      # Caches
+      - uses: actions/cache@v2
+        name: cached node_modules
+        id: cache-node-modules
+        with:
+          path: node_modules
+          key: node-modules-${{ github.job }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       # Install ccache to speed up compilation of native code
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
@@ -107,6 +121,7 @@ jobs:
           key: electron-linux
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
+
       - name: Install npm v7
         run: npm install -g npm@7
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
@@ -152,13 +167,6 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
-      # Install ccache to speed up compilation of native code
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: ${{ github.job }}-${{ matrix.platform.name }}-${{ matrix.type }}
-      - name: Prepend ccache executables to the PATH
-        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install npm v7
         run: npm install -g npm@7
       # Setup tools
@@ -168,47 +176,27 @@ jobs:
         run: npm install -g ios-deploy
         if: ${{matrix.platform.name == 'catalyst'}}
 
+      # Caches
+      - uses: actions/cache@v2
+        name: cached node_modules
+        id: cache-node-modules
+        with:
+          path: node_modules
+          key: node-modules-${{ github.job }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ github.job }}-${{ matrix.platform.name }}-${{ matrix.type }}
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
+  
+      # Install and build
       # TODO: Expose a way to skip building the Node.js native module
       - name: Patch package.json to avoid building Node.js native module
         run: cat <<< $(jq '.scripts.install = "echo skipping building Node.js binary"' < package.json) > package.json
-
-      # Caches
-      - uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            npm-
-      - uses: actions/cache@v2
-        name: Restore iOS build folder from cache
-        with:
-          path: react-native/ios/build
-          key: ios-build-dir-${{matrix.platform.name}}-${{matrix.type}}-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
-          restore-keys: |
-            ios-build-dir-
-      - uses: actions/cache@v2
-        name: Restore xcframework from cache
-        id: cache-xcframework
-        with:
-          path: react-native/ios/realm-js-ios.xcframework
-          key: xcframework-${{matrix.platform.name}}-${{matrix.type}}-${{ hashFiles('src/**', 'react-native/ios/**', 'vendor/**') }}
-      - uses: actions/cache@v2
-        name: Restore Xcode "derived data" from cache
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: xcode-derived-data-${{matrix.platform.name}}-${{matrix.type}}
-      - uses: actions/cache@v2
-        name: Restore CocoaPods from cache
-        with:
-          path: integration-tests/environments/react-native/ios/Pods
-          key: cocoapods-${{matrix.platform.name}}-${{matrix.type}}-${{ hashFiles('integration-tests/environments/react-native/ios/Podfile.lock') }}
-          restore-keys: | # Enables running from an old build
-            cocoapods-
-
       - run: npm ci
-      # Build the iOS xcframework (if cache missed)
+      # Build the iOS xcframework
       - run: ./scripts/build-ios.sh -c ${{ matrix.type }} ${{matrix.platform.build-configuration}}
-        if: ${{ steps.cache-xcframework.outputs.cache-hit != 'true' }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests
@@ -244,30 +232,21 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
-      # Install ccache to speed up compilation of native code
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: ${{ github.job }}-${{ matrix.type }}
-      - name: Prepend ccache executables to the PATH
-        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install npm v7
         run: npm install -g npm@7
       # Setup tools
       - name: Install tools
         run: brew install watchman
-      # TODO: Expose a way to skip building the Node.js native module
-      - name: Patch package.json to avoid building Node.js native module
-        run: cat <<< $(jq '.scripts.install = "echo skipping building Node.js binary"' < package.json) > package.json
+
       # Caches
       - uses: actions/cache@v2
-        name: Restore node_modules
+        name: cached node_modules
         id: cache-node-modules
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          key: node-modules-${{ github.job }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - uses: actions/cache@v2
-        name: Restore Android build folders from cache
+        name: cached Android build directories
         with:
           path: |
             build-realm-android
@@ -275,18 +254,21 @@ jobs:
           key: android-build-dir-${{ hashFiles('src/**', 'react-native/android/**', 'vendor/**') }}
           restore-keys: |
             android-build-dir-
-      - uses: actions/cache@v2
-        name: Restore Android librealm.so from cache
-        id: cache-android-so
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
         with:
-          path: react-native/android/**/librealm.so
-          key: android-so-${{ hashFiles('src/**', 'react-native/android/**', 'vendor/**') }}
+          key: ${{ github.job }}-${{ matrix.type }}
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
+
+      # TODO: Expose a way to skip building the Node.js native module
+      - name: Patch package.json to avoid building Node.js native module
+        run: cat <<< $(jq '.scripts.install = "echo skipping building Node.js binary"' < package.json) > package.json
       # Install the root package
       - run: npm ci
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
-      # Build the Android shared object file (if cache missed)
+      # Build the Android shared object file
       - run: ANDROID_NDK=$ANDROID_NDK_HOME node scripts/build-android.js --arch=x86 --build-type=${{ matrix.type }}
-        if: ${{ steps.cache-android-so.outputs.cache-hit != 'true' }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # Run the tests
