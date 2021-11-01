@@ -16,7 +16,16 @@ def formattedVersion = null
 dependencies = null
 coreDependencies = null
 
-def packagesExclusivelyChanged = null
+def skipBuild = null
+
+def exclusivelyChanged(patterns) {
+  // Checks if this is a change/pull request and if the files changed exclusively match the provided regular expression
+  def regexp = patterns.join('|')
+  return env.CHANGE_TARGET && sh(
+    returnStatus: true,
+    script: "git diff origin/$CHANGE_TARGET --name-only | grep -E --invert-match '${regexp}'"
+  ) != 0
+}
 
 environment {
   GIT_COMMITTER_NAME="ci"
@@ -41,11 +50,12 @@ stage('check') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
 
-    // Abort early if only files in "packages/**" changed, since these will migrate to another CI platform
-    packagesExclusivelyChanged = exclusivelyChanged("^packages/.*")
-    if (packagesExclusivelyChanged) {
+    // Abort early if files didn't change outside of specific locations,
+    // since these will has been migrated to GitHub actions.
+    skipBuild = exclusivelyChanged(['^packages/', '^integration-tests/', '\\.md$'])
+    if (skipBuild) {
       currentBuild.result = 'SUCCESS'
-      echo 'Stopped since there were only changes to "/packages"'
+      echo 'Stopped since there were only changes to files that are uninteresting or already being tested using GitHub Actions'
       return
     }
 
@@ -78,7 +88,7 @@ stage('check') {
 }
 
 // Ensure no other stages are executed
-if (packagesExclusivelyChanged) {
+if (skipBuild) {
   return
 }
 
@@ -137,14 +147,6 @@ stage('test') {
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
   parallel parallelExecutors
-}
-
-def exclusivelyChanged(regexp) {
-  // Checks if this is a change/pull request and if the files changed exclusively match the provided regular expression
-  return env.CHANGE_TARGET && sh(
-    returnStatus: true,
-    script: "git diff origin/$CHANGE_TARGET --name-only | grep --invert-match '${regexp}'"
-  ) != 0
 }
 
 // == Methods
