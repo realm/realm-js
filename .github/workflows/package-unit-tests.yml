@@ -8,18 +8,12 @@ on:
   pull_request:
     paths:
       # Source code
-      - "*"
-      - "lib/**"
-      - "src/**"
-      - "types/**"
-      - "react-native/**"
-      - "vendor/**"
-      # Integration tests
-      - "integration-tests/**"
+      - "packages/realm-network-transport/**"
+      - "packages/realm-common/**"
       # No need to run when updating documentation
       - "!**.md"
       # Run this on updates to the workflow
-      - ".github/workflows/integration-tests.yml"
+      - ".github/workflows/package-unit-tests.yml"
 
 jobs:
   unit-tests-linux:
