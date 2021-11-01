@@ -188,7 +188,7 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
         throw TypeErrorException(accessor, realm_object->get_object_schema().name, *prop, value);
     }
 
-    realm_object->set_property_value(accessor, prop->name, value, realm::CreatePolicy::UpdateAll);
+    realm_object->set_property_value(accessor, *prop, value, realm::CreatePolicy::UpdateAll);
     return true;
 }
 
