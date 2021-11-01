@@ -1,6 +1,10 @@
 name: Install test (React Native)
 
 on:
+  # Any change to these files
+  push:
+    paths:
+      - install-tests/react-native/**
   # Every day at 9:00 CET
   schedule:
     - cron: "0 8 * * *"
@@ -28,9 +32,14 @@ jobs:
       - name: Install React Native & Realm
         run: install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
         working-directory: install-tests/react-native
-      - name: Run the test (iOS)
+      - name: Run test (iOS)
         run: run-test.sh ios
         working-directory: install-tests/react-native
-      - name: Run the test (Android)
-        run: run-test.sh ios
-        working-directory: install-tests/react-native
+      - name: Run test (Android)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          # ndk: 21.0.6113669
+          # cmake: 3.18.1
+          target: google_apis
+          script: run-test.sh android
