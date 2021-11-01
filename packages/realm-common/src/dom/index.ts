@@ -19,6 +19,6 @@
 import { setIsDevelopmentMode } from "../environment";
 
 // React/React Native set a global __DEV__ variable when running in dev mode
-setIsDevelopmentMode(typeof global.__DEV__ !== "undefined" && global.__DEV__);
+setIsDevelopmentMode(typeof __DEV__ !== "undefined" && __DEV__);
 
 export * from "../index";

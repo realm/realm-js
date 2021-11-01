@@ -1,6 +1,6 @@
 {
   "name": "@realm.io/common",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Cross-product common code used by Realm",
   "main": "./dist/bundle.cjs.js",
   "module": "./dist/bundle.es.js",
@@ -33,8 +33,7 @@
     "url": "https://github.com/realm/realm-js/issues"
   },
   "license": "SEE LICENSE IN LICENSE",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@rollup/plugin-commonjs": "^14.0.0",
     "@rollup/plugin-node-resolve": "^7.1.3",

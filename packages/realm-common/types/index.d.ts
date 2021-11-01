@@ -16,11 +16,7 @@ interface Window {}
 
 declare const window: Window | undefined;
 
-interface Global {
-  __DEV__: boolean | undefined;
-}
-
-declare const global: Global;
+declare const __DEV__: boolean | undefined;
 
 type Require = (id: string) => { app?: { isPackaged: boolean } };
 
