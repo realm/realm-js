@@ -68,7 +68,7 @@ endif()
 
 if (NOT MSVC)
     # Ninja buffers output so we need to tell the compiler to use colors even though stdout isn't a tty.
-    if("${CMAKE_GENERATOR}" STREQUAL "Ninja")
+    if(CMAKE_GENERATOR STREQUAL "Ninja")
         add_cxx_flag_if_supported(-fdiagnostics-color)
     endif()
 endif()
