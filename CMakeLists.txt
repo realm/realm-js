@@ -31,6 +31,12 @@ endif()
 cmake_minimum_required(VERSION 3.15)
 project(RealmJS)
 
+# Use ccache if available
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+endif()
+
 # Copied from Realm Core's CMakeList.txt
 function(add_cxx_flag_if_supported flag)
     if(flag MATCHES "^-Wno-")
