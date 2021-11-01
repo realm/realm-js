@@ -66,6 +66,7 @@ crash.log
 examples/ReactExample/ios/Pods/
 examples/ReactExample/ios/ReactExample.xcworkspace/
 tests/mongodb-realm
+install-tests/react-native/app/
 
 # Integration tests
 integration-tests/environments/electron/dist/
