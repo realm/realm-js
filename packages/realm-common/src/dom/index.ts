@@ -16,11 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { setIsDevelopmentModeImpl } from "../environment";
+import { setIsDevelopmentMode } from "../environment";
 
-setIsDevelopmentModeImpl(() => {
-  // React/React Native set a global __DEV__ variable when running in dev mode
-  return typeof global.__DEV__ !== "undefined" && global.__DEV__;
-});
+// React/React Native set a global __DEV__ variable when running in dev mode
+setIsDevelopmentMode(typeof global.__DEV__ !== "undefined" && global.__DEV__);
 
 export * from "../index";

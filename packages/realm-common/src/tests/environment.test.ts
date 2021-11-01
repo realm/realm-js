@@ -18,10 +18,10 @@
 
 import { expect } from "chai";
 
-import { isDevelopmentMode } from "../environment";
+import { isDevelopmentModeImpl } from "../node";
 
 describe("Environment utilities", () => {
-  describe("isDevelopmentMode (node environment)", () => {
+  describe("isDevelopmentMode (node implementation)", () => {
     let originalEnv: string | undefined;
     beforeEach(() => {
       originalEnv = process.env.NODE_ENV;
@@ -31,19 +31,19 @@ describe("Environment utilities", () => {
       process.env.NODE_ENV = originalEnv;
     });
 
-    it("returns true is NODE_ENV is undefined", () => {
+    it("returns true if NODE_ENV is undefined", () => {
       process.env.NODE_ENV = undefined;
-      expect(isDevelopmentMode()).to.equal(true);
+      expect(isDevelopmentModeImpl()).to.equal(true);
     });
 
-    it("returns true is NODE_ENV is development", () => {
+    it("returns true if NODE_ENV is development", () => {
       process.env.NODE_ENV = "development";
-      expect(isDevelopmentMode()).to.equal(true);
+      expect(isDevelopmentModeImpl()).to.equal(true);
     });
 
-    it("returns false is NODE_ENV is production", () => {
+    it("returns false if NODE_ENV is production", () => {
       process.env.NODE_ENV = "production";
-      expect(isDevelopmentMode()).to.equal(false);
+      expect(isDevelopmentModeImpl()).to.equal(false);
     });
   });
 });

@@ -16,26 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-let isDevelopmentModeImpl = (): boolean => false;
-
 /**
  * Check whether the user's app is running in "development mode" (e.g. `npm run dev`
  * for a React app, or `NODE_ENV=development` for a Node app). Each platform's entry
- * point should define the implementation of this using `setIsDevelopmentModeImpl`.
- * The default behaviour if the implementation is not defined is to always return `false`.
+ * point should define the value of this using `setIsDevelopmentMode`.
+ * The default behaviour is to always return `false`.
  *
  * @returns true if the user's app is running in development mode, false otherwise
  */
-export const isDevelopmentMode = (): boolean => isDevelopmentModeImpl();
+export let isDevelopmentMode = false;
 
 /**
- * Set the implementation used for `isDevelopmentMode`. This allows each entry point
- * (node vs DOM) to specify an appropriate implementation, while maintaing a common
- * interface.
+ * Set the value of `isDevelopmentMode`. This allows each entry point (node vs DOM)
+ * to use its own method for determining whether we are in development mode.
  *
- * @param impl A function returning a boolean indicating whether the user's app is running
- * in development mode or not.
+ * @param state A boolean indicating whether the user's app is running in
+ * development mode or not.
  */
-export const setIsDevelopmentModeImpl = (impl: typeof isDevelopmentModeImpl): void => {
-  isDevelopmentModeImpl = impl;
+export const setIsDevelopmentMode = (state: boolean): void => {
+  isDevelopmentMode = state;
 };

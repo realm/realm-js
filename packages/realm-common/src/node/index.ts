@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { setIsDevelopmentModeImpl } from "../environment";
+import { setIsDevelopmentMode } from "../environment";
 
-setIsDevelopmentModeImpl(() => {
+// Exported for unit testing
+export const isDevelopmentModeImpl = () => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { app } = require("electron");
@@ -31,6 +32,8 @@ setIsDevelopmentModeImpl(() => {
   // Node.js has no default for NODE_ENV, so check if it is anything other than
   // "production" to catch cases where it is just started with `node index.js`
   return process.env?.NODE_ENV !== "production";
-});
+};
+
+setIsDevelopmentMode(isDevelopmentModeImpl());
 
 export * from "../index";

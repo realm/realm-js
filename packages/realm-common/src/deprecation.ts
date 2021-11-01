@@ -26,7 +26,7 @@ import { isDevelopmentMode } from "./environment";
  * @param suggestedReplacement The method signature or name of the suggested replacement
  */
 export const deprecationWarning = (deprecatedItem: string, suggestedReplacement: string): void => {
-  if (!isDevelopmentMode()) return;
+  if (!isDevelopmentMode) return;
 
   console.warn(
     `Deprecation warning from Realm: ${deprecatedItem} is deprecated and will be removed in a future major release. Consider switching to ${suggestedReplacement}.`,
