@@ -38,12 +38,12 @@ interface SubscriptionSet {
   find<T>(query: Realm.Results<T & Realm.Object>): Subscription<T> | null;
 
   // The state of this collection - is it acknowledged by the server and
-  // has the data been downloaded locally.
+  // has the data been downloaded locally?
   readonly state: SubscriptionState;
 
   // The exception containing information for why the state of the SubscriptionSet is set to
   // Error. If the state is not set to Error, this will be null.
-  readonly error: Realm.SyncError;
+  readonly error: Realm.SyncError | null;
 
   // Wait for the server to acknowledge and send all the data associated
   // with this collection of subscriptions. If the State is Complete, this method
@@ -58,16 +58,13 @@ interface SubscriptionSet {
   // Asynchronously creates and commits a write transaction to update
   // the subscription set. Doesn't call waitForSynchronization.
   //
-  // NOTE: removing this from JS for now, there is an ongoing discussion about whether
-  // write just writes locally (in which case we probably don't need an async API) or
-  // if it will also write to the server (in which case we might want write _and_ writeAsync)
-  //
-  // writeAsync: (callback: () => void) => Promise<void>;
+  // NOTE: not sure if we need this in JS
+  writeAsync: (callback: () => void) => Promise<void>;
 
   // Add a query to the list of subscriptions. Optionally, provide a name
   // and other parameters.
   //
-  // NOTE: This is not in scope for beta. Also has issues with later finding or
+  // NOTE: This is not in scope for JS beta. Will have issues with later finding or
   // removing a subscription which uses interpolated arguments, if you have not
   // captured a reference to the subscription itself.
   //
@@ -75,8 +72,6 @@ interface SubscriptionSet {
 
   // Add a query to the list of subscriptions. Optionally, provide a name
   // and other parameters.
-  // TODO: is the naming of `query` optimal for JS?
-  // TODO: possible future optimization is to make sure the DB does not execute the "query" in this context
   add: <T>(query: Realm.Results<T & Realm.Object>, options: SubscriptionOptions | undefined) => Subscription<T>;
 
   // Remove a subscription by name. Returns false if not found.
@@ -142,7 +137,8 @@ const config = {
   schema: [Schema],
   sync: {
     user: currentUser,
-    // TypeScript definitions + config checking will enforce that `partitionValue` can't be used with `flexible: true`
+    // TypeScript definitions + runtime config checking will enforce
+    // that `partitionValue` can't be used with `flexible: true`
     flexible: true,
   },
 };
@@ -159,13 +155,15 @@ if (subs.empty) {
     await subs.writeAsync(() => {
       subs.add(realm.objects<Contact>("Contact").filtered("address.state == 'NY'"));
       // or with class-based schemas: subs.add(realm.objects(Contact).filtered("address.state == 'NY'"));
+
       subs.add(realm.objects<SaleOrder>("SaleOrder").filtered("author.id == $0", currentUser), { name: "MyOrders" });
+
       subs.add(realm.objects<UserPreference>("UserPreference").filtered("userId == $0", currentUser), {
         name: "MyPrefs",
       });
 
-      // Post-beta we might also support:
-      // subs.add("Contact", "address.state == 'NY'");
+      // Post-beta we _might_ also support string query based syntax:
+      // subs.add("Contact", "address.state == '%1'", { name: "ny-contacts"}, "NY");
     });
 
     await subs.waitForSynchronization();
@@ -179,8 +177,7 @@ const subs = realm.getSubscriptions();
 const texasContacts = realm.objects<Contact>("Contact").filtered("address.state == 'TX'");
 
 // Check for and add subscription if not present
-if (!subs.find(texasContacts)) {
-  // or: subs.findByName('contacts-tx');
+if (!subs.find(texasContacts)) { // or if named: subs.findByName('contacts-tx');
   console.log("Loading new data...");
 
   try {
