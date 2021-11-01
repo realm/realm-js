@@ -28,6 +28,7 @@
 #include "js_results.hpp"
 #include "js_schema.hpp"
 #include "js_observable.hpp"
+#include "js_test.hpp"
 #include "platform.hpp"
 
 #if REALM_ENABLE_SYNC
@@ -487,6 +488,7 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType dictionary_constructor = ObjectWrap<T, DictionaryClass<T>>::create_constructor(ctx);
     FunctionType realm_object_constructor = ObjectWrap<T, RealmObjectClass<T>>::create_constructor(ctx);
     FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
+    FunctionType test_constructor = ObjectWrap<T, TestClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
@@ -495,6 +497,7 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, realm_constructor, "Dictionary", dictionary_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "Test", test_constructor, attributes);
 
 #if REALM_ENABLE_SYNC
     FunctionType app_constructor = AppClass<T>::create_constructor(ctx);
