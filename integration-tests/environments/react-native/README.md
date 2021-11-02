@@ -10,6 +10,7 @@ Currently this directory consists of:
   - `react-native-cli.js` wraps the `react-native` CLI.
   - `xcode-cli.js` wraps the `react-native` CLI.
   - `puppeteer-log.js` implements a handler for logs used when running Chrome debugging headlessly.
+- A `metro.config.js` which can resolve the symbolic links produced by Lerna.
 
 To install this environment, run the following command from the root directory of repository:
 
@@ -17,7 +18,7 @@ To install this environment, run the following command from the root directory o
 npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
 ```
 
-This will run `install-local` and `pod install` (in `./ios`) for you.
+This will run `pod install` (in `./ios`) for you.
 
 ## Running the tests
 
@@ -74,7 +75,6 @@ This gives us an opportunity to manually link to the root project, removing the 
 
 - Watch the Realm library and the integration test suite packages.
 - Block any loading of packages from `node_modules` in the two packages.
-- Use `install-local` install the dependencies of our two packages into the app.
 
 ### Android configuration
 
