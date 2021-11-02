@@ -37,7 +37,7 @@ function readJson(...pathSegemnts) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-function getLinkedDependencies(packagePath, recursive = true, exclude = new Set()) {
+function getLinkedDependencies(packagePath, exclude = new Set()) {
   const packageJson = readJson(packagePath, "package.json");
   const nodeModulesPath = path.join(packagePath, "node_modules");
   const files = fs.readdirSync(nodeModulesPath, { encoding: "utf8", withFileTypes: true });
@@ -51,14 +51,13 @@ function getLinkedDependencies(packagePath, recursive = true, exclude = new Set(
     });
   // We're only interested in actual dependencies
   const dependencyLinks = links.filter(({ name }) => name in packageJson.dependencies && !exclude.has(name));
-  if (recursive) {
-    // Ensure we don't visit this package again
-    exclude.add(packageJson.name);
-    // Traverse all dependencies
-    for (const link of dependencyLinks) {
-      const additionalLinks = getLinkedDependencies(link.path, true, exclude);
-      dependencyLinks.push(...additionalLinks);
-    }
+  // Recurse
+  // Ensure we don't visit this package again
+  exclude.add(packageJson.name);
+  // Traverse all dependencies
+  for (const link of dependencyLinks) {
+    const additionalLinks = getLinkedDependencies(link.path, exclude);
+    dependencyLinks.push(...additionalLinks);
   }
   // Return only new links
   return dependencyLinks;
