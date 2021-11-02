@@ -53,6 +53,8 @@
     "realm-app-importer": "*"
   },
   "localDependencies": {
+    "@realm.io/common": "../../../packages/realm-common",
+    "realm-network-transport": "../../../packages/realm-network-transport",
     "realm": "../../..",
     "realm-integration-tests": "../../tests"
   }

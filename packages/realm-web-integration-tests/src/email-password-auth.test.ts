@@ -29,7 +29,7 @@ describe("EmailPasswordAuth", () => {
     const email = `gilfoil-${nonce}@testing.mongodb.com`;
     const password = "my-super-secret-password";
     // Register a user
-    await app.emailPasswordAuth.registerUser(email, password);
+    await app.emailPasswordAuth.registerUser({ email, password });
     // Authenticate
     const newCredentials = Credentials.emailPassword(email, password);
     await app.logIn(newCredentials);
@@ -43,10 +43,10 @@ describe("EmailPasswordAuth", () => {
     const email = `gilfoil-${nonce}@testing.mongodb.com`;
     const password = "my-super-secret-password";
     // Register a user
-    await app.emailPasswordAuth.registerUser(email, password);
+    await app.emailPasswordAuth.registerUser({ email, password });
     // Ask for a new confirmation email
     try {
-      await app.emailPasswordAuth.confirmUser("e30=", "some-token-id");
+      await app.emailPasswordAuth.confirmUser({ token: "e30=", tokenId: "some-token-id" });
     } catch (err) {
       // We expect this to throw, since we're feading in an invalid token
       expect(err).instanceOf(MongoDBRealmError);
@@ -62,10 +62,10 @@ describe("EmailPasswordAuth", () => {
     const email = `gilfoil-${nonce}@testing.mongodb.com`;
     const password = "my-super-secret-password";
     // Register a user
-    await app.emailPasswordAuth.registerUser(email, password);
+    await app.emailPasswordAuth.registerUser({ email, password });
     // Ask for a new confirmation email
     try {
-      await app.emailPasswordAuth.resendConfirmationEmail(email);
+      await app.emailPasswordAuth.resendConfirmationEmail({ email });
     } catch (err) {
       // We expect this to throw, since users are automatically confirmed with this app configuration
       expect(err).instanceOf(MongoDBRealmError);
@@ -81,10 +81,10 @@ describe("EmailPasswordAuth", () => {
     const email = `gilfoil-${nonce}@testing.mongodb.com`;
     const password = "my-super-secret-password";
     // Register a user
-    await app.emailPasswordAuth.registerUser(email, password);
+    await app.emailPasswordAuth.registerUser({ email, password });
     // Ask for a new confirmation email
     try {
-      await app.emailPasswordAuth.retryCustomConfirmation(email);
+      await app.emailPasswordAuth.retryCustomConfirmation({ email });
     } catch (err) {
       // We expect this to throw, since the app does not currently have custom confirmation enabled
       // TODO:  import an app with custom confirmation enabled
@@ -101,10 +101,10 @@ describe("EmailPasswordAuth", () => {
     const email = `gilfoil-${nonce}@testing.mongodb.com`;
     const password = "my-super-secret-password";
     // Register a user
-    await app.emailPasswordAuth.registerUser(email, password);
+    await app.emailPasswordAuth.registerUser({ email, password });
     // Ask for a password reset
     try {
-      await app.emailPasswordAuth.sendResetPasswordEmail(email);
+      await app.emailPasswordAuth.sendResetPasswordEmail({ email });
     } catch (err) {
       // We expect this to throw, since password resets via email is disabled with this app configuration
       expect(err).instanceOf(MongoDBRealmError);
@@ -120,10 +120,10 @@ describe("EmailPasswordAuth", () => {
     const email = `gilfoil-${nonce}@testing.mongodb.com`;
     const password = "my-super-secret-password";
     // Register a user
-    await app.emailPasswordAuth.registerUser(email, password);
+    await app.emailPasswordAuth.registerUser({ email, password });
     // Ask for a password reset
     try {
-      await app.emailPasswordAuth.callResetPasswordFunction(email, "my-new-password", "some-argument");
+      await app.emailPasswordAuth.callResetPasswordFunction({ email, password: "my-new-password" }, "some-argument");
     } catch (err) {
       // We expect this to throw, since password resets via functions fail with this app configuration
       expect(err).instanceOf(MongoDBRealmError);

@@ -75,6 +75,7 @@
     "check-environment": "node scripts/check-environment.js"
   },
   "dependencies": {
+    "@realm.io/common": "^0.1.1",
     "bindings": "^1.5.0",
     "bson": "4.4.1",
     "command-line-args": "^5.1.1",

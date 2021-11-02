@@ -82,26 +82,28 @@ typename T::Object EmailPasswordAuthClass<T>::create_instance(ContextType ctx, S
 
 template<typename T>
 void EmailPasswordAuthClass<T>::register_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(3);
+    args.validate_count(2);
 
     auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto email = Value::validated_to_string(ctx, args[0], "email");
-    auto password = Value::validated_to_string(ctx, args[1], "password");
-    auto callback = Value::validated_to_function(ctx, args[2], "callback");
+    auto details = Value::validated_to_object(ctx, args[0], "userDetails");
+    auto email = Object::validated_get_string(ctx, details, "email", "email");
+    auto password = Object::validated_get_string(ctx, details, "password", "password");
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     client.register_email(email, password, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
 void EmailPasswordAuthClass<T>::confirm_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(3);
+    args.validate_count(2);
 
     auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto token = Value::validated_to_string(ctx, args[0], "token");
-    auto token_id = Value::validated_to_string(ctx, args[1], "token_id");
-    auto callback = Value::validated_to_function(ctx, args[2], "callback");
+    auto details = Value::validated_to_object(ctx, args[0], "tokenDetails");
+    auto token = Object::validated_get_string(ctx, details, "token", "token");
+    auto token_id = Object::validated_get_string(ctx, details, "tokenId", "tokenId");
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     client.confirm_user(token, token_id, Function::wrap_void_callback(ctx, this_object, callback));
 }
@@ -112,7 +114,8 @@ void EmailPasswordAuthClass<T>::resend_confirmation_email(ContextType ctx, Objec
 
     auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto email = Value::validated_to_string(ctx, args[0], "email");
+    auto details = Value::validated_to_object(ctx, args[0], "emailDetails");
+    auto email = Object::validated_get_string(ctx, details, "email", "email");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     client.resend_confirmation_email(email, Function::wrap_void_callback(ctx, this_object, callback));
@@ -120,7 +123,7 @@ void EmailPasswordAuthClass<T>::resend_confirmation_email(ContextType ctx, Objec
 
 /**
  * @brief Retry registering a user with custom confirmation logic
- * 
+ *
  * @param args Two arguments;  [0]:  email address of the user;  [1]:  callback to invoke upon completion
  * @param return_value void
  */
@@ -129,7 +132,9 @@ void EmailPasswordAuthClass<T>::retry_custom_confirmation(ContextType ctx, Objec
     args.validate_count(2);
 
     auto &client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
-    std::string const email = Value::validated_to_string(ctx, args[0], "email");
+
+    auto details = Value::validated_to_object(ctx, args[0], "emailDetails");
+    auto email = Object::validated_get_string(ctx, details, "email", "email");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     client.retry_custom_confirmation(email, Function::wrap_void_callback(ctx, this_object, callback));
@@ -141,7 +146,8 @@ void EmailPasswordAuthClass<T>::send_reset_password_email(ContextType ctx, Objec
 
     auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto email = Value::validated_to_string(ctx, args[0], "email");
+    auto details = Value::validated_to_object(ctx, args[0], "emailDetails");
+    auto email = Object::validated_get_string(ctx, details, "email", "email");
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     client.send_reset_password_email(email, Function::wrap_void_callback(ctx, this_object, callback));
@@ -149,29 +155,31 @@ void EmailPasswordAuthClass<T>::send_reset_password_email(ContextType ctx, Objec
 
 template<typename T>
 void EmailPasswordAuthClass<T>::reset_password(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(4);
+    args.validate_count(2);
 
     auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto password = Value::validated_to_string(ctx, args[0], "password");
-    auto token = Value::validated_to_string(ctx, args[1], "token");
-    auto token_id = Value::validated_to_string(ctx, args[2], "token_id");
-    auto callback = Value::validated_to_function(ctx, args[3], "callback");
+    auto details = Value::validated_to_object(ctx, args[0], "resetDetails");
+    auto password = Object::validated_get_string(ctx, details, "password", "password");
+    auto token = Object::validated_get_string(ctx, details, "token", "token");
+    auto token_id = Object::validated_get_string(ctx, details, "tokenId", "tokenId");
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     client.reset_password(password, token, token_id, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template<typename T>
 void EmailPasswordAuthClass<T>::call_reset_password_function(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
-    args.validate_count(4);
+    args.validate_count(3);
 
     auto& client = *get_internal<T, EmailPasswordAuthClass<T>>(ctx, this_object);
 
-    auto email = Value::validated_to_string(ctx, args[0], "email");
-    auto password = Value::validated_to_string(ctx, args[1], "password");
+    auto details = Value::validated_to_object(ctx, args[0], "resetDetails");
+    auto email = Object::validated_get_string(ctx, details, "email", "email");
+    auto password = Object::validated_get_string(ctx, details, "password", "password");
     auto stringified_ejson_args = Value::validated_to_string(ctx, args[2], "args");
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
-    
+
     auto bson_args = String::to_bson(stringified_ejson_args);
 
     client.call_reset_password_function(email, password, bson_args.operator const bson::BsonArray &(), Function::wrap_void_callback(ctx, this_object, callback));

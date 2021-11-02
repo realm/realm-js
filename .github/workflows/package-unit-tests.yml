@@ -1,0 +1,34 @@
+name: Package Unit Tests
+
+env:
+  REALM_DISABLE_ANALYTICS: 1
+  MOCHA_REMOTE_TIMEOUT: 10000
+
+on:
+  pull_request:
+    paths:
+      # Source code
+      - "packages/realm-network-transport/**"
+      - "packages/realm-common/**"
+      # No need to run when updating documentation
+      - "!**.md"
+      # Run this on updates to the workflow
+      - ".github/workflows/package-unit-tests.yml"
+
+jobs:
+  unit-tests-linux:
+    name: Unit tests on Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      - name: Install npm v7
+        run: npm install -g npm@7
+      - run: npx lerna bootstrap --scope '{realm-network-transport,@realm.io/common}' --include-dependencies
+      - run: npm test --prefix packages/realm-network-transport
+      - run: npm test --prefix packages/realm-common

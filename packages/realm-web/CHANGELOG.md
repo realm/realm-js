@@ -1,3 +1,23 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+
+### Breaking Changes
+* None
+
+### Deprecations
+* `EmailPasswordAuth` method calls using positional arguments are being deprecated in favour of using a single object dictionary argument. See "Examples of how to update to the new API" in the description of https://github.com/realm/realm-js/pull/4041 for examples of how to update each method call.
+    * The existing methods will be removed in the next major version.
+    * The existing methods will continue to work but will output a deprecation warning to the console in development mode when used, of the form: `Deprecation warning from Realm: resetPassword(password, token, token_id) is deprecated and will be removed in a future major release. Consider switching to resetPassword({ password, token, token_id })`.
+
+### Enhancements
+* New consistent API for `EmailPasswordAuth` methods, using a single object dictionary rather than positional arguments, to fix inconsistencies and make usage clearer. The existing API is being deprecated (see above). ([#3943](https://github.com/realm/realm-js/issues/3943))
+
+### Fixed
+* New `EmailPasswordAuth` API (see Enhancements above) fixes `resetPassword` inconsistency between realm-web and realm. (fixes [#3723](https://github.com/realm/realm-js/issues/3723), since v.1.0.0)
+
+### Internal
+* None
+
 1.4.0 Release notes (2021-10-18)
 =============================================================
 
@@ -64,16 +84,16 @@
 * None
 
 1.1.0 Release notes (2020-12-08)
-=============================================================	
+=============================================================
 
-### Breaking Changes	
-* None	
+### Breaking Changes
+* None
 
-### Enhancements	
-* Added support of OpenID Connect credential for the Google authentication provider. ([#3383](https://github.com/realm/realm-js/issues/3383))	
+### Enhancements
+* Added support of OpenID Connect credential for the Google authentication provider. ([#3383](https://github.com/realm/realm-js/issues/3383))
 
-### Fixed	
-* Fixed the type returned by `getApp` and `App.getApp`, such that an `app.currentUser` will match the `User` exported by the package. ([#3420](https://github.com/realm/realm-js/pull/3420), since v1.0.0-rc.1)	
+### Fixed
+* Fixed the type returned by `getApp` and `App.getApp`, such that an `app.currentUser` will match the `User` exported by the package. ([#3420](https://github.com/realm/realm-js/pull/3420), since v1.0.0-rc.1)
 
 ### Internal
 * None

@@ -45,7 +45,7 @@ describe("Credentials", () => {
       const email = `gilfoil-${nonce}@testing.mongodb.com`;
       const password = "v3ry-s3cret";
       // Register the user
-      await app.emailPasswordAuth.registerUser(email, password);
+      await app.emailPasswordAuth.registerUser({ email, password });
       // Log in
       const credentials = Credentials.emailPassword(email, password);
       expect(credentials.payload.username).equals(email);

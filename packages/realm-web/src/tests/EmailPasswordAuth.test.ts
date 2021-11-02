@@ -43,7 +43,7 @@ describe("EmailPasswordAuth", () => {
 
   it("can register a user", async () => {
     // Make a request
-    await client.registerUser("gilfoyle@testing.mongodb.com", "s3cr3t");
+    await client.registerUser({ email: "gilfoyle@testing.mongodb.com", password: "s3cr3t" });
     // Expect something of the request
     expect(fetcher.requests).deep.equals([
       {
@@ -60,7 +60,7 @@ describe("EmailPasswordAuth", () => {
 
   it("can confirm a user", async () => {
     // Make a request
-    await client.confirmUser("token-value", "token-id-value");
+    await client.confirmUser({ token: "token-value", tokenId: "token-id-value" });
     // Expect something of the request
     expect(fetcher.requests).deep.equals([
       {
@@ -77,7 +77,7 @@ describe("EmailPasswordAuth", () => {
 
   it("can request a resend of confirmation", async () => {
     // Make a request
-    await client.resendConfirmationEmail("gilfoyle@testing.mongodb.com");
+    await client.resendConfirmationEmail({ email: "gilfoyle@testing.mongodb.com" });
     // Expect something of the request
     expect(fetcher.requests).deep.equals([
       {
@@ -93,7 +93,7 @@ describe("EmailPasswordAuth", () => {
 
   it("can request a retry of custom confirmation", async () => {
     // Make a request
-    await client.retryCustomConfirmation("gilfoyle@testing.mongodb.com");
+    await client.retryCustomConfirmation({ email: "gilfoyle@testing.mongodb.com" });
     // Expect something of the request
     expect(fetcher.requests).deep.equals([
       {
@@ -109,7 +109,7 @@ describe("EmailPasswordAuth", () => {
 
   it("can reset a password", async () => {
     // Make a request
-    await client.resetPassword("token-value", "token-id-value", "my-new-password");
+    await client.resetPassword({ token: "token-value", tokenId: "token-id-value", password: "my-new-password" });
     // Expect something of the request
     expect(fetcher.requests).deep.equals([
       {
@@ -127,7 +127,7 @@ describe("EmailPasswordAuth", () => {
 
   it("can request a password reset", async () => {
     // Make a request
-    await client.sendResetPasswordEmail("gilfoyle@testing.mongodb.com");
+    await client.sendResetPasswordEmail({ email: "gilfoyle@testing.mongodb.com" });
     // Expect something of the request
     expect(fetcher.requests).deep.equals([
       {
@@ -143,9 +143,12 @@ describe("EmailPasswordAuth", () => {
 
   it("can reset a password via a function", async () => {
     // Make a request
-    await client.callResetPasswordFunction("gilfoyle@testing.mongodb.com", "my-new-password", {
-      someObjectId: ObjectId.createFromHexString("5f84057629c14b540462cd1d"),
-    });
+    await client.callResetPasswordFunction(
+      { email: "gilfoyle@testing.mongodb.com", password: "my-new-password" },
+      {
+        someObjectId: ObjectId.createFromHexString("5f84057629c14b540462cd1d"),
+      },
+    );
     // Expect something of the request
     expect(fetcher.requests).deep.equals([
       {
