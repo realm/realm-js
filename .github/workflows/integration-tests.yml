@@ -202,6 +202,7 @@ jobs:
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
       # 👇 To work around "Unable to lookup in current state: Shutdown"
       - run: killall Simulator
+        continue-on-error: true
       # Run the tests
       - name: Run tests (${{matrix.platform.name}}/ Native)
         run: npm run test:${{matrix.platform.name}} --prefix integration-tests/environments/react-native
