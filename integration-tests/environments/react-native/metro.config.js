@@ -16,40 +16,95 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+// Metro bundler does not support symlinks (see https://github.com/facebook/metro/issues/1).
+// In order to link to our local version of Realm JS in a way which Metro can follow,
+// we need to instead add the module to `resolver.blockList`, and then in `resolver.extraNodeModules`,
+// override the locations for any symlinked modules by specifying a mapping from their name
+// to their actual location on disk.
+
+// In order to achieve this, we recursively check if each file/directory in `node_modules`
+// is a symlink or not. If it is, and if it is specified in our main `package.json` (i.e.
+// it is a direct dependency of our app), we add it to the `blockList` and
+// add a mapping for it. We also add it to the list of watched folders, so
+// that any changes to it are picked up by hot reloading.
+
 const path = require("path");
 const fs = require("fs");
 const exclusionList = require("metro-config/src/defaults/exclusionList");
-
-// Read the localDependencies property of package.json and resolve the relative path values
-const appPackageJson = readJson(__dirname, "package.json");
-const localDependencies = Object.fromEntries(
-  Object.entries(appPackageJson.localDependencies || {}).map(([localName, relativePath]) => [
-    localName,
-    path.resolve(__dirname, relativePath),
-  ]),
-);
 
 function readJson(...pathSegemnts) {
   const filePath = path.join(...pathSegemnts);
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-const watchFolders = Object.values(localDependencies);
+function getLinkedDependencies(packagePath, exclude = new Set()) {
+  const packageJson = readJson(packagePath, "package.json");
+  const nodeModulesPath = path.join(packagePath, "node_modules");
+  const files = fs.readdirSync(nodeModulesPath, { encoding: "utf8", withFileTypes: true });
+  const links = files
+    .filter((f) => f.isSymbolicLink())
+    .map(({ name }) => {
+      const linkPath = fs.realpathSync(path.join(nodeModulesPath, name));
+      const linkPackageJson = readJson(linkPath, "package.json");
+      const peerDependencies = Object.keys(linkPackageJson.peerDependencies || {});
+      return { name, path: linkPath, peerDependencies };
+    });
+  // We're only interested in actual dependencies
+  const dependencyLinks = links.filter(({ name }) => name in packageJson.dependencies && !exclude.has(name));
+  // Recurse
+  // Ensure we don't visit this package again
+  exclude.add(packageJson.name);
+  // Traverse all dependencies
+  for (const link of dependencyLinks) {
+    const additionalLinks = getLinkedDependencies(link.path, exclude);
+    dependencyLinks.push(...additionalLinks);
+  }
+  // Return only new links
+  return dependencyLinks;
+}
 
-// Block any node_module loaded from the local dependency, outside of the app's node_modules
-const blockList = Object.values(localDependencies).map(
-  (localPath) => new RegExp(`^${escape(path.join(localPath, "node_modules"))}\\/.*$`),
-);
+const linkedDependencies = getLinkedDependencies(__dirname);
+console.log(`Linked dependencies: ${linkedDependencies.map(({ name }) => name).join(", ")}`);
 
-// Serves any module from the app's node_modules
-const extraNodeModules = new Proxy(
-  {},
-  {
-    get(target, name, receiver) {
-      return path.resolve(__dirname, "node_modules", name);
-    },
+const watchFolders = linkedDependencies.map((pkg) => pkg.path);
+
+const blockedPaths = [];
+for (const pkg of linkedDependencies) {
+  // Block the links
+  blockedPaths.push(path.join(__dirname, "node_modules", pkg.name));
+  // Block any peer dependencies of the links
+  blockedPaths.push(...pkg.peerDependencies.map((peer) => path.join(pkg.path, "node_modules", peer)));
+}
+// Turn paths into regular expressions
+const blockList = blockedPaths.map((pkgPath) => new RegExp(`^${escape(pkgPath)}\\/.*$`));
+
+const peerNodeModules = {};
+const allPeerDependencies = linkedDependencies.flatMap((pkg) => pkg.peerDependencies);
+const unresolvedPeerDependencies = new Set(allPeerDependencies.filter((name) => !(name in linkedDependencies)));
+// Locate the package providing every unresolved peer dependency
+for (const peer of unresolvedPeerDependencies) {
+  for (const pkg of linkedDependencies) {
+    const potentialPath = path.join(pkg.path, "node_modules", peer);
+    if (fs.existsSync(potentialPath)) {
+      peerNodeModules[peer] = potentialPath;
+      break;
+    }
+  }
+}
+// Create a proxy around the resolved peer dependencies
+// This will resolve all modules exposed by the react-native app and fall back to resolved peer dependencies
+const extraNodeModules = new Proxy(peerNodeModules, {
+  get(target, name, receiver) {
+    const potentialPath = path.join(__dirname, "node_modules", name);
+    if (fs.existsSync(potentialPath)) {
+      return potentialPath;
+    } else if (name in target) {
+      return target[name];
+    } else {
+      return undefined;
+    }
   },
-);
+});
 
 module.exports = {
   projectRoot: __dirname,

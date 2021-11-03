@@ -21,6 +21,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Adding use of [ccache](https://ccache.dev/) in build scripts, XCode projects and the integration tests GHA workflow.
+* Dropped using `install-local` in the integration tests, in favour of a more involved Metro configuration.
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>

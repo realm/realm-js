@@ -15,11 +15,6 @@ target 'RealmReactNativeTests' do
     :hermes_enabled => false
   )
 
-  # Since we're installing Realm using install-local,
-  # auto-linking won't find a key for it in our package.json's dependencies,
-  # hence, we need to add this manually
-  pod 'RealmJS', :path => '../../../..', :inhibit_warnings => false
-
   target 'RealmReactNativeTestsTests' do
     inherit! :complete
     # Pods for testing
