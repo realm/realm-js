@@ -33,11 +33,12 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          [
-            { name: Linux, runner: ubuntu-latest },
-            { name: Window, runner: windows-latest },
-            { name: macOS, runner: macos-latest },
-          ]
+          - name: Linux
+            runner: ubuntu-latest
+          - name: Window
+            runner: windows-latest
+          - name: macOS
+            runner: macos-latest
         node: [14, 16]
         type: [release, debug]
     steps:
@@ -155,10 +156,13 @@ jobs:
         #type: [Release, Debug]
         type: [Release]
         platform:
-          [
-            { name: ios, build-configuration: simulator },
-            { name: catalyst, build-configuration: catalyst },
-          ]
+          - name: ios
+            build-configuration: simulator
+          - name: catalyst
+            build-configuration: catalyst
+    env:
+      # Pin the Xcode version
+      DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
     steps:
       - uses: actions/checkout@v2
         with:
