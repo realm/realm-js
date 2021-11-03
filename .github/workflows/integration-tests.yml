@@ -33,11 +33,12 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          [
-            { name: Linux, runner: ubuntu-latest },
-            { name: Window, runner: windows-latest },
-            { name: macOS, runner: macos-latest },
-          ]
+          - name: Linux
+            runner: ubuntu-latest
+          - name: Window
+            runner: windows-latest
+          - name: macOS
+            runner: macos-latest
         node: [14, 16]
         type: [release, debug]
     steps:
@@ -155,10 +156,10 @@ jobs:
         #type: [Release, Debug]
         type: [Release]
         platform:
-          [
-            { name: ios, build-configuration: simulator },
-            { name: catalyst, build-configuration: catalyst },
-          ]
+          - name: ios
+            build-configuration: simulator
+          - name: catalyst
+            build-configuration: catalyst
     steps:
       - uses: actions/checkout@v2
         with:
@@ -199,6 +200,8 @@ jobs:
       - run: ./scripts/build-ios.sh -c ${{ matrix.type }} ${{matrix.platform.build-configuration}}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
+      # 👇 To work around "Unable to lookup in current state: Shutdown"
+      - run: killall Simulator
       # Run the tests
       - name: Run tests (${{matrix.platform.name}}/ Native)
         run: npm run test:${{matrix.platform.name}} --prefix integration-tests/environments/react-native
