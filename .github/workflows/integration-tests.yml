@@ -160,6 +160,9 @@ jobs:
             build-configuration: simulator
           - name: catalyst
             build-configuration: catalyst
+    env:
+      # Pin the Xcode version
+      DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
     steps:
       - uses: actions/checkout@v2
         with:
@@ -200,9 +203,6 @@ jobs:
       - run: ./scripts/build-ios.sh -c ${{ matrix.type }} ${{matrix.platform.build-configuration}}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
-      # 👇 To work around "Unable to lookup in current state: Shutdown"
-      - run: killall Simulator
-        continue-on-error: true
       # Run the tests
       - name: Run tests (${{matrix.platform.name}}/ Native)
         run: npm run test:${{matrix.platform.name}} --prefix integration-tests/environments/react-native
