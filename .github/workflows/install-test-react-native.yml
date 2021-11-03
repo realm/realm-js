@@ -49,12 +49,12 @@ jobs:
       - name: Install npm v7
         run: npm install -g npm@7
       - name: Install React Native & Realm
-        run: install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
+        run: ./install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
       - name: Run test (iOS)
-        run: run-test.sh ios
+        run: ./run-test.sh ios
       - name: Run test (Android)
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
           target: google_apis
-          script: run-test.sh android
+          script: ./run-test.sh android
