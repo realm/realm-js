@@ -26,18 +26,30 @@ defaults:
 
 jobs:
   install:
+    name: Installing Realm → React Native (using Xcode v${{matrix.xcode}}, node v${{ matrix.node }}, npm v${{ matrix.npm }})
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # See https://github.com/actions/virtual-environments/blob/main/images/macos/macos-11-Readme.md#xcode
+        xcode:
+          - 12.5.1
+          - 13.1
+        npm:
+          - 7
+        node:
+          - 14
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: '14'
+          node-version: ${{ matrix.node }}
       - name: Install npm v7
         run: npm install -g npm@7
       - name: Install React Native & Realm
         run: install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
-      # 👇 To work around "Unable to lookup in current state: Shutdown"
-      - run: killall Simulator
-        continue-on-error: true
       - name: Run test (iOS)
         run: run-test.sh ios
       - name: Run test (Android)
