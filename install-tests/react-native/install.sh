@@ -2,7 +2,7 @@
 
 set -e
 
-react_native_version="${1:-nightly}"
+react_native_version="${1:-next}"
 realm_version="${2:-latest}"
 
 echo "Using React Native version = $react_native_version"
@@ -10,9 +10,9 @@ echo "Using Realm version = $realm_version"
 
 APP_DIR="$PWD/`dirname $0`/app"
 
-# Manually delete any app previously created
+# Manually delete any previously created app
 if [ -d "$APP_DIR" ]; then
-  echo "Found an existin app directory: Skipping React Native init"
+  echo "Found an existing app directory: Skipping React Native init"
 else
   # Create a new React Native app using the desired version
   npx --yes react-native init ReactNativeTestApp --version $react_native_version --directory $APP_DIR --npm

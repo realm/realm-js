@@ -11,14 +11,18 @@ on:
   # You can also activate this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
+      react-native-version:
+        description: The version of React Native to install
+        required: true
+        default: next
       realm-version:
         description: The version of Realm to install
         required: true
         default: latest
-      react-native-version:
-        description: The version of React Native to install
-        required: true
-        default: nightly
+
+defaults:
+  run:
+    working-directory: install-tests/react-native
 
 jobs:
   install:
@@ -31,15 +35,14 @@ jobs:
         run: npm install -g npm@7
       - name: Install React Native & Realm
         run: install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
-        working-directory: install-tests/react-native
+      # 👇 To work around "Unable to lookup in current state: Shutdown"
+      - run: killall Simulator
+        continue-on-error: true
       - name: Run test (iOS)
         run: run-test.sh ios
-        working-directory: install-tests/react-native
       - name: Run test (Android)
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          # ndk: 21.0.6113669
-          # cmake: 3.18.1
           target: google_apis
           script: run-test.sh android

@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, { useEffect } from "react";
-import { Text } from "react-native";
+import { useEffect } from "react";
 import Realm from "realm";
 
 const CALLBACK_HOST = "http://localhost:3000";
@@ -26,6 +25,7 @@ const schema = [{ name: "Person", properties: { name: "string" } }];
 const App = () => {
   useEffect(() => {
     const realm = new Realm({ schema });
+    // Write persons into the database
     if (realm.empty) {
       realm.write(() => {
         realm.create("Person", { name: "Alice" });
@@ -33,6 +33,7 @@ const App = () => {
         realm.create("Person", { name: "Charlie" });
       });
     }
+    // Read the persons out of the database again
     const message =
       "Persons are " +
       realm
@@ -40,7 +41,7 @@ const App = () => {
         .map((p) => p.name)
         .join(", ");
     console.log(`Sending '${message}'`);
-    // Perform a request
+    // Perform a request to signal a successful write & read
     setTimeout(() => {
       fetch(CALLBACK_HOST, {
         method: "POST",
@@ -52,4 +53,5 @@ const App = () => {
   }, []);
   return null;
 };
+
 export default App;

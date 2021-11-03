@@ -40,4 +40,4 @@ createServer((req, res) => {
 setTimeout(() => {
   console.log("It took too long for the app to send the message");
   process.exit(1);
-}, 10000);
+}, 60000);
