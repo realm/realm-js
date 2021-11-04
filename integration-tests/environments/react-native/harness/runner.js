@@ -187,12 +187,15 @@ async function run(headless, spawnLogcat) {
       }
     }
 
-    if (targetExecutable !== "") {
+    if (targetExecutable) {
       const appProcess = cp.spawn(targetExecutable, [], {
         detached: true,
         stdio: "ignore",
       });
       appProcess.unref();
+    } else {
+      console.warn({ buildSettings });
+      throw new Error("Failed to determine executable");
     }
   } else {
     throw new Error(`Unexpected platform: '${PLATFORM}'`);
