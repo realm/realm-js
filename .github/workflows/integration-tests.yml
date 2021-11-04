@@ -29,6 +29,7 @@ jobs:
   node:
     name: Node.js v${{ matrix.node }} on ${{ matrix.os.name }} (${{ matrix.type }})
     runs-on: ${{ matrix.os.runner }}
+    if: ${{ false }}
     strategy:
       fail-fast: false
       matrix:
@@ -99,6 +100,7 @@ jobs:
   electron-linux:
     name: Electron on Linux
     runs-on: ubuntu-latest
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -220,6 +222,7 @@ jobs:
           HEADLESS_DEBUGGER: true
   react-native-android:
     name: React Native on Android (${{ matrix.type }})
+    if: ${{ false }}
     runs-on: macos-latest
     strategy:
       fail-fast: false
