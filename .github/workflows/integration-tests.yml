@@ -158,8 +158,8 @@ jobs:
         #type: [Release, Debug]
         type: [Release]
         platform:
-          - name: ios
-            build-configuration: simulator
+          # - name: ios
+          #   build-configuration: simulator
           - name: catalyst
             build-configuration: catalyst
     env:
