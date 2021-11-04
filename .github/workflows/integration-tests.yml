@@ -158,14 +158,19 @@ jobs:
         #type: [Release, Debug]
         type: [Release]
         platform:
-          - name: ios
-            build-configuration: simulator
+          #- name: ios
+          #  build-configuration: simulator
           - name: catalyst
             build-configuration: catalyst
     env:
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
     steps:
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+            limit-access-to-actor: true
+        timeout-minutes: 50
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
