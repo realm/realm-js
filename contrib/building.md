@@ -29,9 +29,10 @@
    * [Debugging the tests](#debugging-the-tests)
       * [Debugging React Native tests](#debugging-react-native-tests)
       * [Debugging Node.js tests using Visual Studio Code](#debugging-nodejs-tests-using-visual-studio-code)
+      * [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
    * [Testing against real apps](#testing-against-real-apps)
 
-<!-- Added by: tom.duncalf, at: Thu  7 Oct 2021 17:24:59 BST -->
+<!-- Added by: tom.duncalf, at: Thu  4 Nov 2021 12:06:47 GMT -->
 
 <!--te-->
 
@@ -39,16 +40,16 @@
 
 The following dependencies are required. All except Xcode can be installed by following the [setup instructions for MacOS section](#setup-instructions-for-macos).
 
-* [Xcode](https://developer.apple.com/xcode/) 12+ with Xcode command line tools installed
+- [Xcode](https://developer.apple.com/xcode/) 12+ with Xcode command line tools installed
   - Newer versions may work but 12.2 is the current recommended version, which can be downloaded from [Apple](https://developer.apple.com/download/all/?q=xcode%2012.2)
-* [Node.js](https://nodejs.org/en/) version 10.19 or later
+- [Node.js](https://nodejs.org/en/) version 10.19 or later
   - Consider [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
-* [CMake](https://cmake.org/)
-* [OpenJDK 8](https://openjdk.java.net/install/)
-* [Android SDK 23+](https://developer.android.com/studio/index.html#command-tools)
-  -  Optionally, you can install [Android Studio](https://developer.android.com/studio)
-* [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
-* [Android CMake](https://developer.android.com/ndk/guides/cmake)
+- [CMake](https://cmake.org/)
+- [OpenJDK 8](https://openjdk.java.net/install/)
+- [Android SDK 23+](https://developer.android.com/studio/index.html#command-tools)
+  - Optionally, you can install [Android Studio](https://developer.android.com/studio)
+- [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
+- [Android CMake](https://developer.android.com/ndk/guides/cmake)
 
 ### Setup instructions for MacOS
 
@@ -171,12 +172,12 @@ Note: If you have cloned the repo previously make sure you remove your `node_mod
 
 ### Building for iOS
 
-* Run `./scripts/build-ios.sh` from the `realm-js` root directory
+- Run `./scripts/build-ios.sh` from the `realm-js` root directory
 
 ### Building for Android
 
-* Run `node scripts/build-android.js` from the `realm-js` root directory
-  -  The compiled version of the Android module is output to `<project-root>/android`
+- Run `node scripts/build-android.js` from the `realm-js` root directory
+  - The compiled version of the Android module is output to `<project-root>/android`
 
 ### Building for Node.js
 
@@ -190,26 +191,26 @@ If you want to build for Apple Silicon on an Intel based Mac, you can use the fo
 
 ```sh
  npm run build-m1
- ```
+```
 
 #### Additional steps for Windows
 
 On Windows you will need to setup the environment for node-gyp:
 
-* Option 1: Install windows-build-tools Node.js package
+- Option 1: Install windows-build-tools Node.js package
 
-    ```cmd
-    # run in elevated command prompt (as Administrator)
-    npm install -g --production windows-build-tools
-    ```
+  ```cmd
+  # run in elevated command prompt (as Administrator)
+  npm install -g --production windows-build-tools
+  ```
 
-* Option 2: Manually install and configure as described in the [node-gyp](https://github.com/nodejs/node-gyp) manual.
+- Option 2: Manually install and configure as described in the [node-gyp](https://github.com/nodejs/node-gyp) manual.
 
-    Note you may need to configure the build tools path using npm
+  Note you may need to configure the build tools path using npm
 
-    ```cmd
-    npm config set msbuild_path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe"
-    ```
+  ```cmd
+  npm config set msbuild_path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe"
+  ```
 
 You also need to install openssl libraries with vcpkg:
 
@@ -227,7 +228,7 @@ copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg
 
 API documentation is written using [JSDoc](http://usejsdoc.org/). To generate the documentation, run:
 
-```npm run jsdoc```
+`npm run jsdoc`
 
 The generated docs can be found in `docs/output/realm/<version>/index.html`.
 
@@ -255,10 +256,10 @@ See [the instructions in the `integration-tests`](../integration-tests/README.md
 
 To run the the tests, run the `scripts/test.sh` script, passing an argument for which tests you would like to execute. The following options are available:
 
-* `react-tests` - runs all React Native tests on iOS Simulator
-* `react-tests-android` - runs all React Native Android tests on Android emulator
-* `node` - runs all tests for Node.js
-* `test-runners` - checks supported tests runners are working correctly
+- `react-tests` - runs all React Native tests on iOS Simulator
+- `react-tests-android` - runs all React Native Android tests on Android emulator
+- `node` - runs all tests for Node.js
+- `test-runners` - checks supported tests runners are working correctly
 
 For example:
 
@@ -273,6 +274,7 @@ Run `npm run lint` to lint the source code using `eslint`.
 #### Testing on Windows
 
 On Windows some of these targets are available as npm commands.
+
 ```
 npm run eslint
 npm run node-tests
@@ -304,22 +306,37 @@ You can use [Visual Studio Code](https://code.visualstudio.com/) to develop and 
 
 VSCode has good support for debugging JavaScript, but to work with C++ code, you are required to install two additional VSCode extensions:
 
-* Microsoft C/C++
-* CodeLLDB
+- Microsoft C/C++
+- CodeLLDB
 
 To begin, you will need to build the Node addon and prepare the test environment:
+
 ```sh
 npm install --build-from-source --debug
 (cd tests && npm install)
 ```
 
-Prior to begin debugging, you must start Realm Object Server. In VSCode, under menu *Tasks*/*Run Task*, find *Download and Start Server*.
+Prior to begin debugging, you must start Realm Object Server. In VSCode, under menu _Tasks_/_Run Task_, find _Download and Start Server_.
 
-In the debugging pane, you can find `Debug LLDB + Node.js` in the dropdown. First select *Start Debugging* in the *Debug* menu.
+In the debugging pane, you can find `Debug LLDB + Node.js` in the dropdown. First select _Start Debugging_ in the _Debug_ menu.
+
+### Debugging failing Github Actions CI tests
+
+To debug failing Github Actions CI tests, it can be helpful to `ssh` into the runner and test out the CI commands manually. This Github Action can be used to add a step into the workflow which pauses it and outputs details to `ssh` into it: https://github.com/marketplace/actions/debugging-with-tmate
+
+The relevant snippet is:
+
+```
+- name: Setup tmate session
+  uses: mxschmitt/action-tmate@v3
+  with:
+      limit-access-to-actor: true
+  timeout-minutes: 30
+```
 
 ## Testing against real apps
 
 There are a couple of suggested workflows for testing your changes to Realm JS against real apps:
 
-* [Guide: Setting up watchman to copy changes from this package to an app](guide-watchman.md)
-* [Guide: Testing your changes against sample apps using a script](guide-testing-with-sample-apps.md)
+- [Guide: Setting up watchman to copy changes from this package to an app](guide-watchman.md)
+- [Guide: Testing your changes against sample apps using a script](guide-testing-with-sample-apps.md)
