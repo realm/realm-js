@@ -15,7 +15,7 @@ if [ -d "$APP_DIR" ]; then
   echo "Found an existing app directory: Skipping React Native init"
 else
   # Create a new React Native app using the desired version
-  npx --yes react-native init ReactNativeTestApp --version $react_native_version --directory $APP_DIR --npm
+  npx --yes react-native@$react_native_version init ReactNativeTestApp --version $react_native_version --directory $APP_DIR --npm
 fi
 
 cd $APP_DIR
