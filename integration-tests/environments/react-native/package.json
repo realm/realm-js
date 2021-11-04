@@ -27,13 +27,12 @@
   "dependencies": {
     "@react-native-community/art": "^1.2.0",
     "mocha": "^8.3.2",
-    "mocha-github-actions-reporter": "^0.2.3",
     "mocha-junit-reporter": "^2.0.0",
     "mocha-remote-client": "^1.4.3",
     "path-browserify": "^1.0.1",
-    "react": "17.0.1",
-    "react-native": "0.64.2",
-    "react-native-fs": "^2.16.6",
+    "react": "17.0.2",
+    "react-native": "0.66.2",
+    "react-native-fs": "^2.18.0",
     "react-native-progress": "^4.1.2",
     "realm": "*",
     "realm-integration-tests": "*"
@@ -41,15 +40,12 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/runtime": "^7.12.5",
-    "babel-jest": "^26.6.3",
-    "chalk": "^4.1.1",
     "concurrently": "^6.0.2",
-    "fs-extra": "^9.1.0",
-    "metro-react-native-babel-preset": "^0.64.0",
+    "metro-react-native-babel-preset": "^0.66.2",
+    "mocha-github-actions-reporter": "^0.2.3",
     "mocha-remote-cli": "^1.4.3",
     "pod-install": "^0.1.23",
     "puppeteer": "^9.0.0",
-    "react-test-renderer": "17.0.1",
     "realm-app-importer": "*"
   }
 }
