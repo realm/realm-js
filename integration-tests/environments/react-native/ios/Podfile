@@ -41,6 +41,12 @@ target 'RealmReactNativeTests' do
           config.build_settings['CODE_SIGN_IDENTITY[sdk=macosx*]'] = '-'
         end
       end
+      # Applying https://github.com/facebook/folly/issues/1470#issuecomment-943123653
+      if target.name == "RCT-Folly"
+        target.build_configurations.each do |config|
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', 'FOLLY_HAVE_CLOCK_GETTIME=1']
+        end
+      end
     end
   end
 end
