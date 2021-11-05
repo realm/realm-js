@@ -67,7 +67,7 @@ const {RealmProvider} = RealmContext
 
 function AppWrapper() {
   return (
-    <RealmProvider path={"customPath"}>
+    <RealmProvider>
       <App />
     </RealmProvider>
   );
