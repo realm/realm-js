@@ -41,7 +41,7 @@ interface IDog {
 }
 const configuration: Realm.Configuration = {
   schema: [dogSchema],
-  path: "testArtifacts/useQueryHook",
+  path: "testArtifacts/use-query-hook.realm",
   deleteRealmIfMigrationNeeded: true,
 };
 

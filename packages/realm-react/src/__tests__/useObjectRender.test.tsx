@@ -43,7 +43,7 @@ const testObject = { id: 1, name: "stapler" };
 const { RealmProvider, useRealm, useObject } = createRealmContext({
   schema: [ObjectSchema],
   inMemory: true,
-  path: "testArtifacts/useObjectRender",
+  path: "testArtifacts/use-object-rerender.realm",
 });
 
 const renderCounter = jest.fn();

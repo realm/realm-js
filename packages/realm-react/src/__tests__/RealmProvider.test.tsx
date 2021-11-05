@@ -46,7 +46,7 @@ const catSchema: Realm.ObjectSchema = {
 const { RealmProvider, useRealm } = createRealmContext({
   schema: [dogSchema],
   inMemory: true,
-  path: "testArtifacts/RealmProvider",
+  path: "testArtifacts/realm-provider.realm",
 });
 
 describe("RealmProvider", () => {

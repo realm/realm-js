@@ -43,7 +43,7 @@ const testCollection = new Array(1000).fill(undefined).map((_, index) => ({ id: 
 const configuration: Realm.Configuration = {
   schema: [ObjectSchema],
   inMemory: true,
-  path: "testArtifacts/useQueryRender",
+  path: "testArtifacts/use-query-rerender.realm",
 };
 
 const renderCounter = jest.fn();

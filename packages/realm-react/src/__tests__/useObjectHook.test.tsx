@@ -37,7 +37,7 @@ interface IDog {
 
 const configuration = {
   schema: [dogSchema],
-  path: "testArtifacts/useObjectHook",
+  path: "testArtifacts/use-object-hook.realm",
 };
 
 const useRealm = () => {
