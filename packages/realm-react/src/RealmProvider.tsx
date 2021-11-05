@@ -18,6 +18,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import Realm from "realm";
+import { isEqual } from "lodash";
 
 type ProviderProps = Realm.Configuration;
 
@@ -28,8 +29,8 @@ export function createRealmProvider(
   return ({ children, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
     const [reconfigure, reconfigureRealm] = useState(0);
-    const currentRealm = useRef(realm);
 
+    const currentRealm = useRef(realm);
     const configuration = useRef<Realm.Configuration>(mergeRealmConfiguration(realmConfig, restProps));
 
     useEffect(() => {
@@ -108,20 +109,5 @@ export function mergeRealmConfiguration(
 }
 
 export function areConfigurationsIdentical(a: Realm.Configuration, b: Realm.Configuration): boolean {
-  if (a === b) return true;
-  if (!(a instanceof Object) || !(b instanceof Object)) return false;
-
-  const objAKeys = Object.keys(a);
-  const objBKeys = Object.keys(b);
-
-  if (objAKeys.length !== objBKeys.length) {
-    return false;
-  }
-
-  const objA = a as Record<string, unknown>;
-  const objB = b as Record<string, unknown>;
-
-  return objAKeys.every((k) => {
-    return JSON.stringify(objA[k]) === JSON.stringify(objB[k]);
-  });
+  return isEqual(a, b);
 }

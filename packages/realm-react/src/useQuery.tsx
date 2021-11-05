@@ -20,18 +20,20 @@ import Realm from "realm";
 import { useEffect, useState } from "react";
 
 export function createUseQuery(useRealm: () => Realm) {
-  return function useQuery<T>(type: string): Realm.Results<T> | null {
+  return function useQuery<T extends Realm.Object>(type: string | { new (): T }): Realm.Results<T> {
     const realm = useRealm();
-    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object>>(() => realm.objects(type));
+    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object>>(() =>
+      typeof type === "string" ? realm.objects<T>(type) : realm.objects<T>(type),
+    );
 
     useEffect(() => {
       const listenerCallback: Realm.CollectionChangeCallback<T> = (_, changes) => {
         if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
-          setCollection(realm?.objects(type));
+          setCollection(typeof type === "string" ? realm.objects<T>(type) : realm.objects<T>(type));
         }
       };
 
-      if (collection && collection.isValid() && !realm?.isClosed) collection.addListener(listenerCallback);
+      if (collection && collection.isValid() && !realm.isClosed) collection.addListener(listenerCallback);
 
       return () => {
         if (collection) {

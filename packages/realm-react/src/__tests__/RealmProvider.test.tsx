@@ -179,16 +179,23 @@ describe("mergeRealmConfiguration", () => {
     expect(result).toMatchObject(expectedResult);
   });
   it("merge updates to realm configuration", () => {
-    const configA: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
-    const configB: Realm.Configuration = { schema: [dogSchema], deleteRealmIfMigrationNeeded: undefined };
+    let configA: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+    let configB: Realm.Configuration = { schema: [dogSchema], deleteRealmIfMigrationNeeded: undefined };
 
-    const expectedResult = {
+    let expectedResult: Realm.Configuration = {
       schema: [dogSchema],
     };
 
-    const result = mergeRealmConfiguration(configA, configB);
+    expect(mergeRealmConfiguration(configA, configB)).toMatchObject(expectedResult);
+    configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+    configB = { schema: [catSchema, dogSchema], deleteRealmIfMigrationNeeded: false };
 
-    expect(result).toMatchObject(expectedResult);
+    expectedResult = {
+      schema: [catSchema, dogSchema],
+      deleteRealmIfMigrationNeeded: false,
+    };
+
+    expect(mergeRealmConfiguration(configA, configB)).toMatchObject(expectedResult);
   });
 });
 
@@ -216,10 +223,28 @@ describe("areConfigurationsIdentical", () => {
     };
 
     expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
+
+    configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration: () => console.log("migration") };
+    configB = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration: () => console.log("migration") };
+
+    expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
+
+    configA = { schema: [dogSchema, catSchema], deleteRealmIfMigrationNeeded: true };
+    configB = { schema: [catSchema, dogSchema], deleteRealmIfMigrationNeeded: true };
+
+    expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
   });
+
   it("returns true there are no changes ", () => {
-    const configA: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
-    const configB: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+    let configA: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+    let configB: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+
+    expect(areConfigurationsIdentical(configA, configB)).toBeTruthy();
+
+    const migration = () => console.log(migration);
+
+    configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration };
+    configB = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration };
 
     expect(areConfigurationsIdentical(configA, configB)).toBeTruthy();
   });
