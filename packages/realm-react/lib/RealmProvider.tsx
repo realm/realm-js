@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Realm from "realm";
 
 type ProviderProps = Realm.Configuration;
@@ -27,7 +27,25 @@ export function createRealmProvider(
 ): React.FC<ProviderProps> {
   return ({ children, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
+    const [reconfigure, reconfigureRealm] = useState(0);
+    const currentRealm = useRef(realm);
+
+    const configuration = useRef<Realm.Configuration>(mergeRealmConfiguration(realmConfig, restProps));
+
     useEffect(() => {
+      const combinedConfig = mergeRealmConfiguration(realmConfig, restProps);
+      if (!areConfigurationsIdentical(configuration.current, combinedConfig)) {
+        configuration.current = combinedConfig;
+        reconfigureRealm((x) => x + 1);
+      }
+    }, [restProps]);
+
+    useEffect(() => {
+      currentRealm.current = realm;
+    }, [realm]);
+
+    useEffect(() => {
+      const realm = currentRealm.current;
       let shouldInitRealm = realm === null;
 
       // if restProps change, then close the realm before reopening it
@@ -44,8 +62,7 @@ export function createRealmProvider(
       }
 
       const initRealm = async () => {
-        const combinedConfig = mergeConfiguration(realmConfig, restProps);
-        const openRealm = await Realm.open(combinedConfig);
+        const openRealm = await Realm.open(configuration.current);
 
         setRealm(openRealm);
       };
@@ -53,11 +70,7 @@ export function createRealmProvider(
       if (shouldInitRealm) {
         initRealm().catch(console.error);
       }
-
-      // We need to spread the values of `restProps` into the dependency array rather than just passing
-      // in `restProps` directly, because `restProps` is an object who's identity changes every render
-      // so you end up in a re-render loop
-    }, [...Object.values(restProps)]);
+    }, [reconfigure]);
 
     useEffect(() => {
       return () => {
@@ -68,7 +81,7 @@ export function createRealmProvider(
       };
     }, [realm, setRealm]);
 
-    if (realm == null) {
+    if (!realm) {
       return null;
     }
 
@@ -76,7 +89,7 @@ export function createRealmProvider(
   };
 }
 
-export function mergeConfiguration(
+export function mergeRealmConfiguration(
   configA: Realm.Configuration,
   configB: Partial<Realm.Configuration>,
 ): Realm.Configuration {
@@ -92,4 +105,23 @@ export function mergeConfiguration(
     //See issue #4012
     ...(Object.keys(sync).length > 0 ? { sync } : undefined),
   } as Realm.Configuration;
+}
+
+export function areConfigurationsIdentical(a: Realm.Configuration, b: Realm.Configuration): boolean {
+  if (a === b) return true;
+  if (!(a instanceof Object) || !(b instanceof Object)) return false;
+
+  const objAKeys = Object.keys(a);
+  const objBKeys = Object.keys(b);
+
+  if (objAKeys.length !== objBKeys.length) {
+    return false;
+  }
+
+  const objA = a as Record<string, unknown>;
+  const objB = b as Record<string, unknown>;
+
+  return objAKeys.every((k) => {
+    return JSON.stringify(objA[k]) === JSON.stringify(objB[k]);
+  });
 }

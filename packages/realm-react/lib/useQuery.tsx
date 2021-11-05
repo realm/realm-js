@@ -22,12 +22,12 @@ import { useEffect, useState } from "react";
 export function createUseQuery(useRealm: () => Realm) {
   return function useQuery<T>(type: string): Realm.Results<T> | null {
     const realm = useRealm();
-    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object> | null>(realm?.objects(type) ?? null);
+    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object>>(() => realm.objects(type));
 
     useEffect(() => {
       const listenerCallback: Realm.CollectionChangeCallback<T> = (_, changes) => {
         if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
-          setCollection(realm?.objects(type) ?? null);
+          setCollection(realm?.objects(type));
         }
       };
 
@@ -38,7 +38,7 @@ export function createUseQuery(useRealm: () => Realm) {
           collection.removeListener(listenerCallback);
         }
       };
-    }, [collection, setCollection, type]);
+    }, [realm, collection, type]);
 
     return collection;
   };

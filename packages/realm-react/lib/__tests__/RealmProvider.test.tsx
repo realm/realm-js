@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import React, { useState } from "react";
-import Realm from "realm";
+import Realm, { User } from "realm";
 import "@testing-library/jest-native/extend-expect";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { createRealmContext } from "..";
+import { mergeRealmConfiguration, areConfigurationsIdentical } from "../RealmProvider";
 import { View, Button, Text } from "react-native";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { ReactTestInstance } from "react-test-renderer";
@@ -159,5 +160,67 @@ describe("RealmProvider", () => {
     const newSchemaNameContainer = getByTestId("schemaName");
 
     expect(newSchemaNameContainer).toHaveTextContent("cat");
+  });
+});
+
+describe("mergeRealmConfiguration", () => {
+  it("merges two realm configurations", () => {
+    const configA: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+    const configB: Realm.Configuration = { sync: { user: {} as User, partitionValue: "someValue" } };
+
+    const expectedResult = {
+      schema: [catSchema],
+      deleteRealmIfMigrationNeeded: true,
+      sync: { user: {} as User, partitionValue: "someValue" },
+    };
+
+    const result = mergeRealmConfiguration(configA, configB);
+
+    expect(result).toMatchObject(expectedResult);
+  });
+  it("merge updates to realm configuration", () => {
+    const configA: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+    const configB: Realm.Configuration = { schema: [dogSchema], deleteRealmIfMigrationNeeded: undefined };
+
+    const expectedResult = {
+      schema: [dogSchema],
+    };
+
+    const result = mergeRealmConfiguration(configA, configB);
+
+    expect(result).toMatchObject(expectedResult);
+  });
+});
+
+describe("areConfigurationsIdentical", () => {
+  it("returns false if changes detected", () => {
+    let configA: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+    let configB: Realm.Configuration = { sync: { user: {} as User, partitionValue: "someValue" } };
+
+    expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
+
+    configA = {
+      schema: [dogSchema, catSchema],
+      sync: { user: {} as User, partitionValue: "otherValue" },
+    };
+    configB = {
+      schema: [dogSchema, catSchema],
+      sync: { user: {} as User, partitionValue: "someValue" },
+    };
+
+    expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
+    configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+    configB = {
+      schema: [dogSchema, catSchema],
+      sync: { user: {} as User, partitionValue: "someValue" },
+    };
+
+    expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
+  });
+  it("returns true there are no changes ", () => {
+    const configA: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+    const configB: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
+
+    expect(areConfigurationsIdentical(configA, configB)).toBeTruthy();
   });
 });

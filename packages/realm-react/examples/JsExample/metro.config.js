@@ -11,7 +11,8 @@ const conflictingDependencies = Object.keys({
 
 // This ensures we do not duplicate multiple versions of the peer dependencies
 const blockList = conflictingDependencies.map(
-  m => new RegExp(`^${escape(path.join(root, 'node_modules', m))}\\/.*$`),
+  module =>
+    new RegExp(`^${escape(path.join(root, 'node_modules', module))}\\/.*$`),
 );
 
 // This includes the peer dependencies of the root library into the bundler

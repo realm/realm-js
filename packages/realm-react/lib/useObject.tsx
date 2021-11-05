@@ -24,7 +24,7 @@ export function createUseObject(useRealm: () => Realm | null) {
   return function useObject<T>(type: string, primaryKey: PrimaryKey): (T & Realm.Object) | null {
     const realm = useRealm();
     const [object, setObject] = useState<(T & Realm.Object) | null>(
-      realm?.objectForPrimaryKey(type, primaryKey) ?? null,
+      () => realm?.objectForPrimaryKey(type, primaryKey) ?? null,
     );
 
     useEffect(() => {
@@ -37,7 +37,7 @@ export function createUseObject(useRealm: () => Realm | null) {
       };
       object?.addListener(listenerCallback);
       return () => object?.removeAllListeners();
-    }, [object, type, primaryKey]);
+    }, [realm, object, type, primaryKey]);
 
     return object;
   };

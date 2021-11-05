@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Realm from "realm";
 import { render, waitFor, fireEvent, act } from "@testing-library/react-native";
 import { View, TextInput, TouchableHighlight, Text, FlatList } from "react-native";
@@ -49,7 +49,7 @@ const configuration: Realm.Configuration = {
 const renderCounter = jest.fn();
 
 const useRealm = () => {
-  const realm = useMemo(() => new Realm(configuration), [configuration]);
+  const [realm] = useState(new Realm(configuration));
 
   useEffect(() => {
     return () => {
@@ -122,12 +122,12 @@ const Item: React.FC<{ index: number; item: IObject & Realm.Object }> = ({ index
 const TestComponent = () => {
   const collection = useQuery<IObject>("Object");
 
-  if (!collection) {
-    return null;
-  }
   const renderItem = useCallback(({ index, item }) => <Item index={index} item={item} />, []);
 
   const keyExtractor = useCallback((item) => item.id, []);
+  if (!collection) {
+    return null;
+  }
 
   return <FlatList testID={"list"} data={collection} keyExtractor={keyExtractor} renderItem={renderItem} />;
 };
