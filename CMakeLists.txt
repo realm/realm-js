@@ -29,6 +29,8 @@ endif()
 cmake_minimum_required(VERSION 3.15)
 project(RealmJS)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Use ccache if available
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
