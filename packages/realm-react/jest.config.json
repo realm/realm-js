@@ -2,7 +2,7 @@
   "verbose": true,
   "preset": "react-native",
   "roots": [
-    "<rootDir>/lib"
+    "<rootDir>/src"
   ],
   "setupFilesAfterEnv": [
     "@testing-library/jest-native/extend-expect"

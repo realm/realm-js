@@ -10,9 +10,11 @@ Setting up Realm in a React Native application has historically been complex. Re
 This library requires `react-native` >= 0.59 and `realm` >= 10.0.0
 
 npm:
+
 ```npm install @realm.io/react```
 
 yarn:
+
 ```yarn add @realm.io/react```
 
 
@@ -22,6 +24,7 @@ yarn:
 Create a Realm context object with `createRealmContext`.  It takes a Realm configuration and returns a RealmProvider and contextual hooks.
 
 ```typescript
+// realm.ts
 import {createRealmContext} from '@realm.io/react';
 
 class Task extends Realm.Object {
@@ -51,15 +54,16 @@ class Task extends Realm.Object {
   };
 }
 
-export const {RealmProvider, useRealm, useObject, useQuery} =
-  createRealmContext({schema: [Task.schema]});
+export default createRealmContext({schema: [Task]});
 ```
 
 Wrap the component needing access to Realm (possibly your entire application) with the `RealmProvider` componenet.
 The `RealmProvider` also accepts Realm configuration properties.
 
 ```tsx
-import {RealmProvider} from './createRealmContext';
+import RealmContext from './realm';
+
+const {RealmProvider} = RealmContext
 
 function AppWrapper() {
   if (!RealmProvider) {
@@ -77,6 +81,10 @@ function AppWrapper() {
 The hooks created by `createRealmContext` can now be used by any child component.
 
 ```tsx
+import RealmContext from './realm';
+
+const {useRealm, useQuery, useObject} = RealmContext
+
 function MyComponent({someId}){
   const realm = useRealm();
   const tasks = useQuery<Task>('Task');
