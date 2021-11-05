@@ -84,7 +84,7 @@ const {useRealm, useQuery, useObject} = RealmContext
 
 function MyComponent({someId}){
   const realm = useRealm();
-  const tasks = useQuery<Task>('Task');
+  const tasks = useQuery(Task);
   const someObject = useObject<SomeObject>('Objects', someId);
 
   // sort collection with useMemo
