@@ -66,9 +66,6 @@ import RealmContext from './realm';
 const {RealmProvider} = RealmContext
 
 function AppWrapper() {
-  if (!RealmProvider) {
-    return null;
-  }
   return (
     <RealmProvider path={"customPath"}>
       <App />
