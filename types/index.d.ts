@@ -748,6 +748,9 @@ declare class Realm {
      * @returns {T | undefined}
      */
     objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: Realm.PrimaryKey): T | undefined;
+    
+    // Combined definitions 
+    objectForPrimaryKey<T>(type: string | {new(...arg: any[]): T; }, key: Realm.PrimaryKey): (T & Realm.Object) | undefined;
 
     /**
      * @param  {string} type
@@ -760,6 +763,9 @@ declare class Realm {
      * @returns Realm.Results<T>
      */
     objects<T extends Realm.Object>(type: {new(...arg: any[]): T; }): Realm.Results<T>;
+
+    // Combined definitions 
+    objects<T>(type: string | {new(...arg: any[]): T; }): Realm.Results<T & Realm.Object>;
 
     /**
      * @param  {string} name
