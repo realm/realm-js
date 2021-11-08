@@ -27,6 +27,7 @@ static void InitializeFlipper(UIApplication *application) {
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  printf("HELLO FROM APPDELEGATE\n");
 #ifdef FB_SONARKIT_ENABLED
   InitializeFlipper(application);
 #endif

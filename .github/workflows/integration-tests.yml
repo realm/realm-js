@@ -173,6 +173,8 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
+      - name: Disable firewall
+        run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off && sudo /usr/libexec/ApplicationFirewall/socketfilterfw -k
       - name: Install npm v7
         run: npm install -g npm@7
       # Setup tools
