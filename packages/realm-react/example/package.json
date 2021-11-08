@@ -1,5 +1,5 @@
 {
-  "name": "realmtstemplate",
+  "name": "realm-react-example",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@realm.io/react": "file:../",
     "react": "17.0.2",
     "react-native": "0.65.1",
     "react-native-get-random-values": "^1.7.0",

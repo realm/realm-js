@@ -21,25 +21,16 @@ import { useState, useEffect } from "react";
 type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
 export function createUseObject(useRealm: () => Realm) {
-  return function useObject<T extends Realm.Object>(
-    type: string | { new (): T },
-    primaryKey: PrimaryKey,
-  ): (T & Realm.Object) | null {
+  return function useObject<T>(type: string | { new (): T }, primaryKey: PrimaryKey): (T & Realm.Object) | null {
     const realm = useRealm();
-    const [object, setObject] = useState<(T & Realm.Object) | null>(() =>
-      typeof type === "string"
-        ? realm.objectForPrimaryKey(type, primaryKey) ?? null
-        : realm.objectForPrimaryKey(type, primaryKey) ?? null,
+    const [object, setObject] = useState<(T & Realm.Object) | null>(
+      () => realm.objectForPrimaryKey(type, primaryKey) ?? null,
     );
 
     useEffect(() => {
       const listenerCallback: Realm.ObjectChangeCallback = (_, changes) => {
         if (changes.changedProperties.length > 0) {
-          setObject(() =>
-            typeof type === "string"
-              ? realm.objectForPrimaryKey(type, primaryKey) ?? null
-              : realm.objectForPrimaryKey(type, primaryKey) ?? null,
-          );
+          setObject(() => realm.objectForPrimaryKey(type, primaryKey) ?? null);
         } else if (changes.deleted) {
           setObject(null);
         }
