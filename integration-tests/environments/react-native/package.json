@@ -36,7 +36,10 @@
     "react-native-fs": "^2.16.6",
     "react-native-progress": "^4.1.2",
     "realm": "*",
-    "realm-integration-tests": "*"
+    "realm-integration-tests": "*",
+    "@actions/artifact": "^0.5.2",
+    "@actions/core": "^1.6.0",
+    "screenshot-desktop": "^1.12.7"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

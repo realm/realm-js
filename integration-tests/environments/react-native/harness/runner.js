@@ -35,9 +35,11 @@ const artifact = require("@actions/artifact");
 
 const artifactClient = artifact.create();
 
+const filename = Date.now() + ".png";
+
 async function uploadScreenshot() {
-  await screenshot({ filename: new Date().toString() });
-  await artifactClient.uploadArtifact(new Date().toString(), [new Date().toString()], ".");
+  await screenshot({ filename: filename });
+  await artifactClient.uploadArtifact(filename, [filename], ".");
 }
 
 if (typeof PLATFORM !== "string") {
