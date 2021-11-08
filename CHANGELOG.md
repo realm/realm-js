@@ -10,8 +10,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * New consistent API for `EmailPasswordAuth` methods, using a single object dictionary rather than positional arguments, to fix inconsistencies and make usage clearer. The existing API is being deprecated (see above). ([#3943](https://github.com/realm/realm-js/issues/3943))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Aligned implementation with API documentation and TS defs: `timeOutBehavior` should be `"openLocalRealm"`. (since v10.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
