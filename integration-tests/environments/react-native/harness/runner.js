@@ -29,6 +29,17 @@ const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 
 const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, SPAWN_LOGCAT, SKIP_RUNNER } = process.env;
 
+const screenshot = require("screenshot-desktop");
+const core = require("@actions/core");
+const artifact = require("@actions/artifact");
+
+const artifactClient = artifact.create();
+
+async function uploadScreenshot() {
+  await screenshot({ filename: new Date().toString() });
+  await artifactClient.uploadArtifact(new Date().toString(), [new Date().toString()], ".");
+}
+
 if (typeof PLATFORM !== "string") {
   throw new Error("Expected a 'PLATFORM' environment variable");
 }
@@ -127,6 +138,8 @@ async function launchDebugger(headless) {
 }
 
 async function run(headless, spawnLogcat) {
+  uploadScreenshot();
+
   // Ensure the simulator is booted and ready for the app to start
   ensureSimulator();
 
@@ -201,6 +214,7 @@ async function run(headless, spawnLogcat) {
 
       setInterval(() => {
         cp.exec("ps aux | grep RealmReactNativeTests", (error, stdout) => console.log(stdout));
+        uploadScreenshot();
       }, 5000);
     } else {
       console.warn({ buildSettings });

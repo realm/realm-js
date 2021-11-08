@@ -11,6 +11,8 @@
     "test:github": "ts-node harness/github.ts"
   },
   "dependencies": {
+    "@actions/artifact": "^0.5.2",
+    "@actions/core": "^1.6.0",
     "chai": "^4.2.0",
     "js-base64": "^3.4.5",
     "jwt-encode": "^1.0.1",
@@ -19,6 +21,7 @@
     "puppeteer": "^2.1.1",
     "realm-app-importer": "^0.1.0",
     "realm-web": "*",
+    "screenshot-desktop": "^1.12.7",
     "ts-node": "^8.6.2",
     "webpack": "^4.41.6",
     "webpack-dev-server": "^3.10.3"
