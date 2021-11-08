@@ -4,28 +4,55 @@ on:
   pull_request:
     paths:
       # Only run when the PR changes realm-react
-      - "packages/realm-react/*"
+      - ".github/workflows/pr-realm-react.yml"
+      - "packages/realm-react/**"
 jobs:
   job:
     name: Build & test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/realm-react
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
           registry-url: https://registry.npmjs.org/
       - name: Install npm v7
         run: npm install -g npm@7
+      # Caches
+      - uses: actions/cache@v2
+        name: cached node_modules
+        id: cache-node-modules
+        with:
+          path: node_modules
+          key: node-modules-${{ github.job }}-${{ hashFiles('package-lock.json') }}
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
+
+      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
+      - name: install realm
+        run: npm ci --ignore-scripts
+
+      - name: Install common realm
+        run: npx lerna bootstrap --scope @realm.io/common
+
+      - name: Prebuild release binary
+        run: npx prebuild
+
+      - name: Pack and distribute realm
+        run: npm pack && mv realm*.tgz packages/realm-react
 
       - name: Install node dependencies
-        run: npm ci
+        working-directory: packages/realm-react
+        run: npm install realm*.tgz
 
       - name: Build the library
+        working-directory: packages/realm-react
         run: npm run build
 
       - name: Run tests
+        working-directory: packages/realm-react
         run: npm run test

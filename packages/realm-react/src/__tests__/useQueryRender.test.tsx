@@ -153,7 +153,10 @@ describe("useQuery", () => {
     expect(nameElement).toHaveTextContent("1");
     expect(renderCounter).toHaveBeenCalledTimes(10);
 
-    await act(async () => fireEvent.changeText(inputComponent as ReactTestInstance, "pencil"));
+    await act(async () => {
+      fireEvent.changeText(inputComponent as ReactTestInstance, "pencil");
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
 
     expect(nameElement).toHaveTextContent("pencil");
     expect(renderCounter).toHaveBeenCalledTimes(20);
@@ -168,7 +171,10 @@ describe("useQuery", () => {
     expect(nameElement).toHaveTextContent("1");
     expect(renderCounter).toHaveBeenCalledTimes(10);
 
-    await act(async () => fireEvent.press(deletionComponent as ReactTestInstance));
+    await act(async () => {
+      fireEvent.press(deletionComponent as ReactTestInstance);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
 
     expect(renderCounter).toHaveBeenCalledTimes(20);
   });

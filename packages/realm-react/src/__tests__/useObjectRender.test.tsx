@@ -64,9 +64,9 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
   const realm = useRealm();
   const [setupComplete, setSetupComplete] = useState(false);
   useEffect(() => {
-    realm?.write(() => {
-      realm?.deleteAll();
-      realm?.create("Object", testObject);
+    realm.write(() => {
+      realm.deleteAll();
+      realm.create("Object", testObject);
     });
     setSetupComplete(true);
   }, [realm]);
@@ -94,7 +94,7 @@ const TestComponent = () => {
         testID="inputComponent"
         value={object.name}
         onChangeText={(text) => {
-          realm?.write(() => {
+          realm.write(() => {
             object.name = text;
           });
         }}
@@ -102,8 +102,8 @@ const TestComponent = () => {
       <TouchableHighlight
         testID="deleteButton"
         onPress={() => {
-          realm?.write(() => {
-            realm?.delete(object);
+          realm.write(() => {
+            realm.delete(object);
           });
         }}
       >
@@ -138,6 +138,7 @@ describe("useObject", () => {
 
     await act(async () => {
       fireEvent.changeText(inputComponent as ReactTestInstance, "pencil");
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(nameElement).toHaveTextContent("pencil");
@@ -154,6 +155,7 @@ describe("useObject", () => {
 
     await act(async () => {
       fireEvent.press(deleteButton as ReactTestInstance);
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     const newTestContainer = queryByTestId("testContainer");

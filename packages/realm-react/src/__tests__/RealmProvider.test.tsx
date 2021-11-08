@@ -115,6 +115,7 @@ describe("RealmProvider", () => {
 
     await act(async () => {
       fireEvent.press(toggleComponent as ReactTestInstance);
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
     expect(() => getByTestId("secondRealmProvider")).toThrow(
       "Unable to find an element with testID: secondRealmProvider",
@@ -153,6 +154,7 @@ describe("RealmProvider", () => {
 
     await act(async () => {
       fireEvent.press(changeSchemaButton as ReactTestInstance);
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Changing the realm provider configuration will cause a comlete new remount
