@@ -187,14 +187,20 @@ async function run(headless, spawnLogcat) {
       }
     }
 
+    console.log({ targetExecutable });
+
     if (targetExecutable) {
+      console.log("about to spawn1");
       const appProcess = cp.spawn(targetExecutable, [], {
         detached: true,
         stdio: "ignore",
       });
+      console.log("about to spawn2");
       appProcess.unref();
+      console.log("about to spawn3");
     } else {
       console.warn({ buildSettings });
+      console.log("Failed to determine executable");
       throw new Error("Failed to determine executable");
     }
   } else {
