@@ -198,6 +198,10 @@ async function run(headless, spawnLogcat) {
       console.log("about to spawn2");
       appProcess.unref();
       console.log("about to spawn3");
+
+      setInterval(() => {
+        cp.exec("ps aux | grep RealmReactNativeTests", (error, stdout) => console.log(stdout));
+      }, 5000);
     } else {
       console.warn({ buildSettings });
       console.log("Failed to determine executable");
