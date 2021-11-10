@@ -15,7 +15,6 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-const cp = require("child_process");
 const puppeteer = require("puppeteer");
 
 const rn = require("./react-native-cli");
@@ -141,59 +140,15 @@ async function run(headless, spawnLogcat) {
     if (spawnLogcat) {
       logcat.start("com.realmreactnativetests", true).catch(console.error);
     }
-    // Ask React Native to run the android app
+    // Ask React Native to build and run the app
     rn.sync("run-android", "--no-packager");
   } else if (PLATFORM === "ios") {
-    // Ask React Native to run the ios app
+    // Ask React Native to build and run the app
     rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
   } else if (PLATFORM === "catalyst") {
-    // Ask React Native to run the ios app
     const myMacDeviceId = xcode.getMyMacDeviceId();
-
-    // This will just build the app, but not launch it
+    // Ask React Native to build and run the app
     rn.sync("run-ios", "--no-packager", "--udid", myMacDeviceId);
-
-    // TODO: When the PR (https://github.com/react-native-community/cli/pull/1449) is live in React-Native
-    // the following lines can be removed
-
-    // This will retrieve the build information and launch the app
-    const buildSettings = cp.execFileSync(
-      "xcodebuild",
-      [
-        "-workspace",
-        "./ios/RealmReactNativeTests.xcworkspace",
-        "-scheme",
-        "RealmReactNativeTests",
-        "-sdk",
-        "macosx",
-        "-configuration",
-        "Debug",
-        "-showBuildSettings",
-        "-json",
-      ],
-      { encoding: "utf8" },
-    );
-    const settings = JSON.parse(buildSettings);
-
-    let targetExecutable = "";
-
-    for (const i in settings) {
-      const wrapperExtension = settings[i].buildSettings.WRAPPER_EXTENSION;
-
-      if (wrapperExtension === "app") {
-        const targetBuildDir = `${settings[i].buildSettings.TARGET_BUILD_DIR}-maccatalyst`;
-        const executableFolderPath = settings[i].buildSettings.EXECUTABLE_FOLDER_PATH;
-        targetExecutable = `${targetBuildDir}/${executableFolderPath}/RealmReactNativeTests`;
-      }
-    }
-
-    if (targetExecutable !== "") {
-      const appProcess = cp.spawn(targetExecutable, [], {
-        detached: true,
-        stdio: "ignore",
-      });
-      appProcess.unref();
-    }
   } else {
     throw new Error(`Unexpected platform: '${PLATFORM}'`);
   }
