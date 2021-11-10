@@ -52,7 +52,7 @@ stage('check') {
 
     // Abort early if files didn't change outside of specific locations,
     // since these will has been migrated to GitHub actions.
-    skipBuild = exclusivelyChanged(['^packages/', '^integration-tests/', '\\.md$'])
+    skipBuild = exclusivelyChanged(['^\\.github/', '^packages/', '^integration-tests/', '\\.md$'])
     if (skipBuild) {
       currentBuild.result = 'SUCCESS'
       echo 'Stopped since there were only changes to files that are uninteresting or already being tested using GitHub Actions'
