@@ -6,9 +6,18 @@ env:
 on:
   pull_request:
     paths:
-      # Only run when the PR changes realm-react
-      - ".github/workflows/pr-realm-react.yml"
+      - "*"
+      - "lib/**"
+      - "src/**"
+      - "types/**"
+      - "react-native/**"
+      - "vendor/**"
+      # Integration tests
+      - "integration-tests/**"
       - "packages/realm-react/**"
+      - ".github/workflows/pr-realm-react.yml"
+      # No need to run when updating documentation
+      - "!**.md"
 jobs:
   job:
     name: Build & test
@@ -42,7 +51,6 @@ jobs:
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
 
-      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - name: Install realm node dependencies
         run: npm ci --ignore-scripts
 
