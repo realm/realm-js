@@ -28,58 +28,54 @@
 // add a mapping for it. We also add it to the list of watched folders, so
 // that any changes to it are picked up by hot reloading.
 
-const path = require('path');
-const fs = require('fs');
-const exclusionList = require('metro-config/src/defaults/exclusionList');
+const path = require("path");
+const fs = require("fs");
+const exclusionList = require("metro-config/src/defaults/exclusionList");
 
 function readJson(...pathSegments) {
   const filePath = path.join(...pathSegments);
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
 function getLinkedDependencies(packagePath, exclude = new Set()) {
-  const packageJson = readJson(packagePath, 'package.json');
-  const nodeModulesPath = path.join(packagePath, 'node_modules');
+  const packageJson = readJson(packagePath, "package.json");
+  const nodeModulesPath = path.join(packagePath, "node_modules");
   const files = fs.readdirSync(nodeModulesPath, {
-    encoding: 'utf8',
+    encoding: "utf8",
     withFileTypes: true,
   });
   // Symbolically linked packages directly in the node_modules directory.
   const directLinks = files
-    .filter(f => f.isSymbolicLink())
-    .map(({name}) => ({
+    .filter((f) => f.isSymbolicLink())
+    .map(({ name }) => ({
       name,
       path: fs.realpathSync(path.join(nodeModulesPath, name)),
     }));
   // Symbolically linked packages within an "@" scoped directory
   const scopedLinks = files
-    .filter(f => f.name.startsWith('@'))
-    .map(parent => {
+    .filter((f) => f.name.startsWith("@"))
+    .map((parent) => {
       const parentPath = path.join(nodeModulesPath, parent.name);
       const children = fs.readdirSync(parentPath, {
-        encoding: 'utf8',
+        encoding: "utf8",
         withFileTypes: true,
       });
       return children
-        .filter(f => f.isSymbolicLink())
-        .map(({name}) => ({
-          name: parent.name + '/' + name,
+        .filter((f) => f.isSymbolicLink())
+        .map(({ name }) => ({
+          name: parent.name + "/" + name,
           path: fs.realpathSync(path.join(parentPath, name)),
         }));
     })
     .flat();
   const combinedLinks = [...directLinks, ...scopedLinks];
-  const links = combinedLinks.map(({name, path: linkPath}) => {
-    const linkPackageJson = readJson(linkPath, 'package.json');
-    const peerDependencies = Object.keys(
-      linkPackageJson.peerDependencies || {},
-    );
-    return {name, path: linkPath, peerDependencies};
+  const links = combinedLinks.map(({ name, path: linkPath }) => {
+    const linkPackageJson = readJson(linkPath, "package.json");
+    const peerDependencies = Object.keys(linkPackageJson.peerDependencies || {});
+    return { name, path: linkPath, peerDependencies };
   });
   // We're only interested in actual dependencies
-  const dependencyLinks = links.filter(
-    ({name}) => name in packageJson.dependencies && !exclude.has(name),
-  );
+  const dependencyLinks = links.filter(({ name }) => name in packageJson.dependencies && !exclude.has(name));
   // Recurse
   // Ensure we don't visit this package again
   exclude.add(packageJson.name);
@@ -93,39 +89,27 @@ function getLinkedDependencies(packagePath, exclude = new Set()) {
 }
 
 const linkedDependencies = getLinkedDependencies(__dirname);
-console.log(
-  `Linked dependencies: ${linkedDependencies.map(({name}) => name).join(', ')}`,
-);
+console.log(`Linked dependencies: ${linkedDependencies.map(({ name }) => name).join(", ")}`);
 
-const watchFolders = linkedDependencies.map(pkg => pkg.path);
+const watchFolders = linkedDependencies.map((pkg) => pkg.path);
 
 const blockedPaths = [];
 for (const pkg of linkedDependencies) {
   // Block the links
-  blockedPaths.push(path.join(__dirname, 'node_modules', pkg.name));
+  blockedPaths.push(path.join(__dirname, "node_modules", pkg.name));
   // Block any peer dependencies of the links
-  blockedPaths.push(
-    ...pkg.peerDependencies.map(peer =>
-      path.join(pkg.path, 'node_modules', peer),
-    ),
-  );
+  blockedPaths.push(...pkg.peerDependencies.map((peer) => path.join(pkg.path, "node_modules", peer)));
 }
 // Turn paths into regular expressions
-const blockList = blockedPaths.map(
-  pkgPath => new RegExp(`^${escape(pkgPath)}\\/.*$`),
-);
+const blockList = blockedPaths.map((pkgPath) => new RegExp(`^${escape(pkgPath)}\\/.*$`));
 
 const peerNodeModules = {};
-const allPeerDependencies = linkedDependencies.flatMap(
-  pkg => pkg.peerDependencies,
-);
-const unresolvedPeerDependencies = new Set(
-  allPeerDependencies.filter(name => !(name in linkedDependencies)),
-);
+const allPeerDependencies = linkedDependencies.flatMap((pkg) => pkg.peerDependencies);
+const unresolvedPeerDependencies = new Set(allPeerDependencies.filter((name) => !(name in linkedDependencies)));
 // Locate the package providing every unresolved peer dependency
 for (const peer of unresolvedPeerDependencies) {
   for (const pkg of linkedDependencies) {
-    const potentialPath = path.join(pkg.path, 'node_modules', peer);
+    const potentialPath = path.join(pkg.path, "node_modules", peer);
     if (fs.existsSync(potentialPath)) {
       peerNodeModules[peer] = potentialPath;
       break;
@@ -136,7 +120,7 @@ for (const peer of unresolvedPeerDependencies) {
 // This will resolve all modules exposed by the react-native app and fall back to resolved peer dependencies
 const extraNodeModules = new Proxy(peerNodeModules, {
   get(target, name, receiver) {
-    const potentialPath = path.join(__dirname, 'node_modules', name);
+    const potentialPath = path.join(__dirname, "node_modules", name);
     if (fs.existsSync(potentialPath)) {
       return potentialPath;
     } else if (name in target) {

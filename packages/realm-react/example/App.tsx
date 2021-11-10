@@ -1,19 +1,36 @@
-import React, {useCallback, useMemo} from 'react';
-import {SafeAreaView, View, StyleSheet} from 'react-native';
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2021 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+import React, { useCallback, useMemo } from "react";
+import { SafeAreaView, View, StyleSheet } from "react-native";
 
-import TaskContext, {Task} from './app/models/Task';
-import IntroText from './app/components/IntroText';
-import AddTaskForm from './app/components/AddTaskForm';
-import TaskList from './app/components/TaskList';
-import colors from './app/styles/colors';
+import TaskContext, { Task } from "./app/models/Task";
+import IntroText from "./app/components/IntroText";
+import AddTaskForm from "./app/components/AddTaskForm";
+import TaskList from "./app/components/TaskList";
+import colors from "./app/styles/colors";
 
-const {useRealm, useQuery, RealmProvider} = TaskContext;
+const { useRealm, useQuery, RealmProvider } = TaskContext;
 
 function App() {
   const realm = useRealm();
   const result = useQuery(Task);
 
-  const tasks = useMemo(() => result.sorted('createdAt'), [result]);
+  const tasks = useMemo(() => result.sorted("createdAt"), [result]);
 
   const handleAddTask = useCallback(
     (description: string): void => {
@@ -29,7 +46,7 @@ function App() {
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        realm.create('Task', Task.generate(description));
+        realm.create("Task", Task.generate(description));
       });
     },
     [realm],
@@ -78,11 +95,7 @@ function App() {
         {tasks.length === 0 ? (
           <IntroText />
         ) : (
-          <TaskList
-            tasks={tasks}
-            onToggleTaskStatus={handleToggleTaskStatus}
-            onDeleteTask={handleDeleteTask}
-          />
+          <TaskList tasks={tasks} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
         )}
       </View>
     </SafeAreaView>
