@@ -41,11 +41,10 @@ const configuration = {
 };
 
 const useRealm = () => {
-  const [realm, setRealm] = useState<Realm | null>(new Realm(configuration));
+  const [realm, setRealm] = useState(new Realm(configuration));
   useEffect(() => {
     return () => {
-      realm?.close();
-      setRealm(null);
+      realm.close();
     };
   }, [realm, setRealm]);
 
