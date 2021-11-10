@@ -32,8 +32,8 @@ const path = require('path');
 const fs = require('fs');
 const exclusionList = require('metro-config/src/defaults/exclusionList');
 
-function readJson(...pathSegemnts) {
-  const filePath = path.join(...pathSegemnts);
+function readJson(...pathSegments) {
+  const filePath = path.join(...pathSegments);
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
@@ -44,54 +44,40 @@ function getLinkedDependencies(packagePath, exclude = new Set()) {
     encoding: 'utf8',
     withFileTypes: true,
   });
-
+  // Symbolically linked packages directly in the node_modules directory.
+  const directLinks = files
+    .filter(f => f.isSymbolicLink())
+    .map(({name}) => ({
+      name,
+      path: fs.realpathSync(path.join(nodeModulesPath, name)),
+    }));
+  // Symbolically linked packages within an "@" scoped directory
   const scopedLinks = files
-    .filter(f => {
-      if (f.name.startsWith('@')) {
-        const scopedFiles = fs.readdirSync(path.join(nodeModulesPath, f.name), {
-          encoding: 'utf8',
-          withFileTypes: true,
-        });
-        return scopedFiles.filter(sf => sf.isSymbolicLink()).length;
-      }
-      return false;
-    })
-    .map(f => {
-      const scopedFiles = fs.readdirSync(path.join(nodeModulesPath, f.name), {
+    .filter(f => f.name.startsWith('@'))
+    .map(parent => {
+      const parentPath = path.join(nodeModulesPath, parent.name);
+      const children = fs.readdirSync(parentPath, {
         encoding: 'utf8',
         withFileTypes: true,
       });
-      return scopedFiles
-        .filter(sf => sf.isSymbolicLink())
-        .map(symLink => {
-          const linkPath = fs.realpathSync(
-            path.join(nodeModulesPath, f.name, symLink.name),
-          );
-          const linkPackageJson = readJson(linkPath, 'package.json');
-          const peerDependencies = Object.keys(
-            linkPackageJson.peerDependencies || {},
-          );
-          return {
-            name: `${f.name}/${symLink.name}`,
-            path: linkPath,
-            peerDependencies,
-          };
-        });
+      return children
+        .filter(f => f.isSymbolicLink())
+        .map(({name}) => ({
+          name: parent.name + '/' + name,
+          path: fs.realpathSync(path.join(parentPath, name)),
+        }));
     })
     .flat();
-
-  const links = files
-    .filter(f => f.isSymbolicLink())
-    .map(({name}) => {
-      const linkPath = fs.realpathSync(path.join(nodeModulesPath, name));
-      const linkPackageJson = readJson(linkPath, 'package.json');
-      const peerDependencies = Object.keys(
-        linkPackageJson.peerDependencies || {},
-      );
-      return {name, path: linkPath, peerDependencies};
-    });
+  const combinedLinks = [...directLinks, ...scopedLinks];
+  const links = combinedLinks.map(({name, path: linkPath}) => {
+    const linkPackageJson = readJson(linkPath, 'package.json');
+    const peerDependencies = Object.keys(
+      linkPackageJson.peerDependencies || {},
+    );
+    return {name, path: linkPath, peerDependencies};
+  });
   // We're only interested in actual dependencies
-  const dependencyLinks = [...links, ...scopedLinks].filter(
+  const dependencyLinks = links.filter(
     ({name}) => name in packageJson.dependencies && !exclude.has(name),
   );
   // Recurse
