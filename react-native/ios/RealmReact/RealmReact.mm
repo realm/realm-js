@@ -94,7 +94,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 }
 
 - (void)invalidate {
-    realm_hermes_invalidate_caches();
+    realm_jsi_invalidate_caches();
 }
 
 - (void)dealloc {

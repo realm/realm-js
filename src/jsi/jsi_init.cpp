@@ -39,7 +39,7 @@ namespace realm::js::jsi {
         auto name = realm_constructor.getProperty(env, "name").asString(env);
         exports.setProperty(env, std::move(name), std::move(realm_constructor));
     }
-    extern "C" void realm_hermes_invalidate_caches() {
+    extern "C" void realm_jsi_invalidate_caches() {
         // Close all cached Realms
         realm::_impl::RealmCoordinator::clear_all_caches();
         // Clear the Object Store App cache, to prevent instances from using a context that was released
