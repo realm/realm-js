@@ -30,16 +30,20 @@ const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, SPAWN_LOGCAT, SKIP_RUNNER } = process.env;
 
 const screenshot = require("screenshot-desktop");
-const core = require("@actions/core");
-const artifact = require("@actions/artifact");
-
-const artifactClient = artifact.create();
+const { uploadFile } = require("@uploadcare/upload-client");
+const { readFile } = require("fs/promises");
 
 const filename = Date.now() + ".png";
 
 async function uploadScreenshot() {
   await screenshot({ filename: filename });
-  await artifactClient.uploadArtifact(filename, [filename], ".");
+  const file = await readFile(filename);
+
+  wait uploadFile(file, {
+    publicKey: "1010ce37d26e8d129676",
+    fileName: filename,
+    contentType: "image/png",
+  });
 }
 
 if (typeof PLATFORM !== "string") {
