@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 
-#include "hermes_init.hpp"
+#include "jsi_init.hpp"
 
 #if !REALM_ENABLE_SYNC
 #pragma comment( lib, "ws2_32.lib")
@@ -29,10 +29,13 @@
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/sync/app.hpp>
 
-namespace realm::js::hermes {
-    extern "C" void realm_hermes_init(jsi::Runtime& rt, jsi::Object& exports) {
+namespace realmjsi = realm::js::realmjsi;
+namespace fbjsi = facebook::jsi;
+
+namespace realm::js::jsi {
+    extern "C" void realm_jsi_init(fbjsi::Runtime& rt, fbjsi::Object& exports) {
         auto env = JsiEnv(rt);
-        jsi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
+        fbjsi::Function realm_constructor = js::RealmClass<realmjsi::Types>::create_constructor(env);
         auto name = realm_constructor.getProperty(env, "name").asString(env);
         exports.setProperty(env, std::move(name), std::move(realm_constructor));
     }
@@ -42,7 +45,7 @@ namespace realm::js::hermes {
         // Clear the Object Store App cache, to prevent instances from using a context that was released
         realm::app::App::clear_cached_apps();
         // Ensure all registered invalidators get notified that the runtime is going away.
-        realm::js::Context<realm::js::hermes::Types>::invalidate();
+        realm::js::Context<realm::js::realmjsi::Types>::invalidate();
     }
 }
 

@@ -19,7 +19,7 @@
 #import "RealmReact.h"
 #import "RealmAnalytics.h"
 
-#import <realm-js-ios/hermes_init.h>
+#import <realm-js-ios/jsi_init.h>
 
 #import <React/RCTBridge+Private.h>
 #import <jsi/jsi.h>
@@ -130,7 +130,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
             auto& rt = *static_cast<facebook::jsi::Runtime*>(bridge.runtime);
             auto exports = jsi::Object(rt);
-            realm_hermes_init(rt, exports);
+            realm_jsi_init(rt, exports);
         } queue:RCTJSThread];
     }
 }

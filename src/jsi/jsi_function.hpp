@@ -18,32 +18,32 @@
 
 #pragma once
 
-#include "hermes_types.hpp"
+#include "jsi_types.hpp"
 
 namespace realm {
 namespace js {
 
 template <>
-inline JsiVal hermes::Function::call(JsiEnv env, const JsiFunc& function, size_t argc, const JsiVal arguments[]) {
+inline JsiVal realmjsi::Function::call(JsiEnv env, const JsiFunc& function, size_t argc, const JsiVal arguments[]) {
     return env(function->call(env, env.args(arguments, argc), argc));
 }
 
 template <>
-inline JsiVal hermes::Function::call(JsiEnv env, const JsiFunc& function, const JsiObj& this_object, size_t argc, const JsiVal arguments[]) {
+inline JsiVal realmjsi::Function::call(JsiEnv env, const JsiFunc& function, const JsiObj& this_object, size_t argc, const JsiVal arguments[]) {
     return env(function->callWithThis(env, this_object, env.args(arguments, argc), argc));
 }
 
 template <>
-inline JsiVal hermes::Function::callback(JsiEnv env, const JsiFunc& function, size_t argc, const JsiVal arguments[]) {
+inline JsiVal realmjsi::Function::callback(JsiEnv env, const JsiFunc& function, size_t argc, const JsiVal arguments[]) {
     return env(function->call(env, env.args(arguments, argc), argc));
 }
 template <>
-inline JsiVal hermes::Function::callback(JsiEnv env, const JsiFunc& function, const JsiObj& this_object, size_t argc, const JsiVal arguments[]) {
+inline JsiVal realmjsi::Function::callback(JsiEnv env, const JsiFunc& function, const JsiObj& this_object, size_t argc, const JsiVal arguments[]) {
     return env(function->callWithThis(env, this_object, env.args(arguments, argc), argc));
 }
 
 template <>
-inline JsiObj hermes::Function::construct(JsiEnv env, const JsiFunc& function, size_t argc, const JsiVal arguments[]) {
+inline JsiObj realmjsi::Function::construct(JsiEnv env, const JsiFunc& function, size_t argc, const JsiVal arguments[]) {
     return env(function->callAsConstructor(env, env.args(arguments, argc), argc).asObject(env));
 }
 

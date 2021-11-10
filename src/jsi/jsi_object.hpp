@@ -18,11 +18,19 @@
 
 #pragma once
 
-#include "hermes_types.hpp"
-#include "hermes_string.hpp"
+#include "jsi_types.hpp"
+#include "jsi_string.hpp"
 
 namespace realm {
 namespace js {
+
+namespace hermes {
+    // forward-declare JSI ObjectWrap from jsi_class.hpp
+    template<typename ClassType>
+        class ObjectWrap;
+}
+
+namespace fbjsi = facebook::jsi;
 
 #if 0
 inline napi_property_attributes operator|(napi_property_attributes a, PropertyAttributes b) {
@@ -46,26 +54,26 @@ inline napi_property_attributes operator|(napi_property_attributes a, PropertyAt
 #endif
 
 template<>
-inline JsiVal hermes::Object::get_property(JsiEnv env, const JsiObj& object, StringData key) {
+inline JsiVal realmjsi::Object::get_property(JsiEnv env, const JsiObj& object, StringData key) {
     return env(object->getProperty(env, propName(env, key)));
 }
 
 template<>
-inline JsiVal hermes::Object::get_property(JsiEnv env, const JsiObj& object, const hermes::String &key) {
+inline JsiVal realmjsi::Object::get_property(JsiEnv env, const JsiObj& object, const realmjsi::String &key) {
     return env(object->getProperty(env, propName(env, key)));
 }
 
 template<>
-inline JsiVal hermes::Object::get_property(JsiEnv env, const JsiObj& object, uint32_t index) {
+inline JsiVal realmjsi::Object::get_property(JsiEnv env, const JsiObj& object, uint32_t index) {
     if (object->isArray(env))
         return env(object->asArray(env).getValueAtIndex(env, index));
-    return hermes::Object::get_property(env, object, std::to_string(index));
+    return realmjsi::Object::get_property(env, object, std::to_string(index));
 }
 
 template<>
-inline void hermes::Object::set_property(JsiEnv env, JsiObj& object, const hermes::String& key, const JsiVal& value, PropertyAttributes attributes) {
+inline void realmjsi::Object::set_property(JsiEnv env, JsiObj& object, const realmjsi::String& key, const JsiVal& value, PropertyAttributes attributes) {
     if (attributes) {
-        auto desc = jsi::Object(env);
+        auto desc = fbjsi::Object(env);
         desc.setProperty(env, "configurable", !(attributes & DontDelete));
         desc.setProperty(env, "enumerable", !(attributes & DontEnum));
         desc.setProperty(env, "writable", !(attributes & ReadOnly));
@@ -84,18 +92,18 @@ inline void hermes::Object::set_property(JsiEnv env, JsiObj& object, const herme
 }
 
 template<>
-inline void hermes::Object::set_property(JsiEnv env, JsiObj& object, uint32_t index, const JsiVal& value) {
+inline void realmjsi::Object::set_property(JsiEnv env, JsiObj& object, uint32_t index, const JsiVal& value) {
     if (object->isArray(env))
         return object->asArray(env).setValueAtIndex(env, index, value);
-    return hermes::Object::set_property(env, object, std::to_string(index), value);
+    return realmjsi::Object::set_property(env, object, std::to_string(index), value);
 }
 
 template<>
-inline std::vector<hermes::String> hermes::Object::get_property_names(JsiEnv env, const JsiObj& object) {
+inline std::vector<realmjsi::String> realmjsi::Object::get_property_names(JsiEnv env, const JsiObj& object) {
     auto namesArray = object->getPropertyNames(env);
 
     size_t count = namesArray.length(env);
-    std::vector<hermes::String> names;
+    std::vector<realmjsi::String> names;
     names.reserve(count);
 
     for (size_t i = 0; i < count; i++) {
@@ -106,25 +114,25 @@ inline std::vector<hermes::String> hermes::Object::get_property_names(JsiEnv env
 }
 
 template<>
-inline JsiVal hermes::Object::get_prototype(JsiEnv env, const JsiObj& object) {
+inline JsiVal realmjsi::Object::get_prototype(JsiEnv env, const JsiObj& object) {
     auto objClass = env->global().getPropertyAsObject(env, "Object");
     return env(objClass.getPropertyAsFunction(env, "getPrototypeOf").callWithThis(env, objClass, object));
 }
 
 template<>
-inline void hermes::Object::set_prototype(JsiEnv env, const JsiObj& object, const JsiVal& prototype) {
+inline void realmjsi::Object::set_prototype(JsiEnv env, const JsiObj& object, const JsiVal& prototype) {
     auto objClass = env->global().getPropertyAsObject(env, "Object");
     objClass.getPropertyAsFunction(env, "setPrototypeOf").callWithThis(env, objClass, object, prototype);
 }
 
 template<>
-inline JsiObj hermes::Object::create_empty(JsiEnv env) {
+inline JsiObj realmjsi::Object::create_empty(JsiEnv env) {
     return JsiObj(env);
 }
 
 template<>
-inline JsiObj hermes::Object::create_array(JsiEnv env, uint32_t length, const JsiVal values[]) {
-    jsi::Array array = jsi::Array(env, length);
+inline JsiObj realmjsi::Object::create_array(JsiEnv env, uint32_t length, const JsiVal values[]) {
+    fbjsi::Array array = fbjsi::Array(env, length);
     for (uint32_t i = 0; i < length; i++) {
         array.setValueAtIndex(env, i, values[i]);
     }
@@ -132,25 +140,25 @@ inline JsiObj hermes::Object::create_array(JsiEnv env, uint32_t length, const Js
 }
 
 template<>
-inline JsiObj hermes::Object::create_date(JsiEnv env, double time) {
+inline JsiObj realmjsi::Object::create_date(JsiEnv env, double time) {
     return env(env->global().getPropertyAsFunction(env, "Date").callAsConstructor(env, time).asObject(env));
 }
 
 template<>
 template<typename ClassType>
-inline JsiObj hermes::Object::create_instance(JsiEnv env, typename ClassType::Internal* internal) {
+inline JsiObj realmjsi::Object::create_instance(JsiEnv env, typename ClassType::Internal* internal) {
     return hermes::ObjectWrap<ClassType>::create_instance(env, internal);
 }
 
 template<>
 template<typename ClassType>
-inline JsiObj hermes::Object::create_instance_by_schema(JsiEnv env, JsiFunc& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
+inline JsiObj realmjsi::Object::create_instance_by_schema(JsiEnv env, JsiFunc& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
     return hermes::ObjectWrap<ClassType>::create_instance_by_schema(env, constructor, schema, internal);
 }
 
 template<>
 template<typename ClassType>
-inline JsiObj hermes::Object::create_instance_by_schema(JsiEnv env, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
+inline JsiObj realmjsi::Object::create_instance_by_schema(JsiEnv env, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
     return hermes::ObjectWrap<ClassType>::create_instance_by_schema(env, schema, internal);
 }
 
@@ -161,35 +169,35 @@ inline void on_context_destroy(JsiEnv env, std::string realmPath) {
 
 template<>
 template<typename ClassType>
-inline bool hermes::Object::is_instance(JsiEnv env, const JsiObj& object) {
+inline bool realmjsi::Object::is_instance(JsiEnv env, const JsiObj& object) {
     return hermes::ObjectWrap<ClassType>::is_instance(env, object);
 }
 
 template<>
 template<typename ClassType>
-inline typename ClassType::Internal* hermes::Object::get_internal(JsiEnv env, const JsiObj& object) {
+inline typename ClassType::Internal* realmjsi::Object::get_internal(JsiEnv env, const JsiObj& object) {
     return hermes::ObjectWrap<ClassType>::get_internal(env, object);
 }
 
 template<>
 template<typename ClassType>
-inline void hermes::Object::set_internal(JsiEnv env, const JsiObj& object, typename ClassType::Internal* internal) {
+inline void realmjsi::Object::set_internal(JsiEnv env, const JsiObj& object, typename ClassType::Internal* internal) {
     return hermes::ObjectWrap<ClassType>::set_internal(env, object, internal);
 }
 
 template<>
-inline void hermes::Object::set_global(JsiEnv env, const hermes::String &key, const JsiVal &value) {
+inline void realmjsi::Object::set_global(JsiEnv env, const realmjsi::String &key, const JsiVal &value) {
     auto global = env.global();
     Object::set_property(env, global, key, value);
 }
 
 template<>
-inline JsiVal hermes::Object::get_global(JsiEnv env, const hermes::String &key) {
+inline JsiVal realmjsi::Object::get_global(JsiEnv env, const realmjsi::String &key) {
     return Object::get_property(env, env.global(), key);
 }
 
 template<>
-inline JsiVal hermes::Exception::value(JsiEnv env, const std::string &message) {
+inline JsiVal realmjsi::Exception::value(JsiEnv env, const std::string &message) {
 	return str(env, message);
 }
 

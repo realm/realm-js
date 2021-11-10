@@ -21,7 +21,7 @@
 #include <android/asset_manager_jni.h>
 #include <jsi/jsi.h>
 
-#include <hermes/hermes_init.h>
+#include <jsi/jsi_init.h>
 #include "platform.hpp"
 #include "jni_utils.hpp"
 #include "hack.hpp"
