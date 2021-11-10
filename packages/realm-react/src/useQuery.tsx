@@ -22,9 +22,7 @@ import { useEffect, useState } from "react";
 export function createUseQuery(useRealm: () => Realm) {
   return function useQuery<T>(type: string | { new (): T }): Realm.Results<T> {
     const realm = useRealm();
-    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object>>(() =>
-      typeof type === "string" ? realm.objects<T>(type) : realm.objects<T>(type),
-    );
+    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object>>(() => realm.objects<T>(type));
 
     useEffect(() => {
       const listenerCallback: Realm.CollectionChangeCallback<T> = (_, changes) => {

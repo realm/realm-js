@@ -1,17 +1,15 @@
-name: Testing Realm React (Pull Request)
+name: Publish Realm React
 
+on:
+  push:
+    tags:
+      - realm-react-v*
 env:
   REALM_DISABLE_ANALYTICS: 1
 
-on:
-  pull_request:
-    paths:
-      # Only run when the PR changes realm-react
-      - ".github/workflows/pr-realm-react.yml"
-      - "packages/realm-react/**"
 jobs:
-  job:
-    name: Build & test
+  test-build-and-publish:
+    name: Test, build & publish
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -59,3 +57,8 @@ jobs:
       - name: Run tests
         working-directory: packages/realm-react
         run: npm run test
+      # Publish the package
+      - run: npm publish
+        working-directory: packages/realm-react
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}

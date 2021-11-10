@@ -1,4 +1,10 @@
-# Realm React ⚛️ 
+<p align="center">
+  <img height="140" src="logo.svg" alt="Realm React Logo"/>
+</p>
+
+<h1 align="center">
+  Realm React
+</h1>
 
 A better way to use Realm with React Native applications.
 
@@ -100,3 +106,16 @@ function MyComponent({someId}){
 ```
 
 
+### Dynamically Updating a Realm Configuration
+
+It is possible to update the realm configuration by setting props on the RealmProvider.  The RealmProvider takes props for all possible realm configuration properties.
+
+For example, one could setup the sync configuration based on a user state:
+
+```tsx
+const [user, setUser] = useState()
+
+//... some logic to get user state
+
+<RealmProvider sync={user, parition}>
+```
