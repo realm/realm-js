@@ -75,7 +75,7 @@ function App() {
     <SafeAreaView style={styles.screen}>
       <View style={styles.content}>
         <AddTaskForm onSubmit={handleAddTask} />
-        {tasks?.length === 0 || !tasks ? (
+        {tasks.length === 0 ? (
           <IntroText />
         ) : (
           <TaskList
