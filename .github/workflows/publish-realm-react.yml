@@ -40,15 +40,16 @@ jobs:
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
 
-      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - name: Install realm node dependencies
         run: npm ci --ignore-scripts
 
-      - name: Bootstrap @realm.io/react
-        run: npx lerna bootstrap --scope @realm.io/react --include-dependencies
-
       - name: Prebuild release binary
         run: npx prebuild
+
+      - name: Bootstrap @realm.io/react
+        run: npx lerna bootstrap --scope @realm.io/react --include-dependencies
+        env:
+          npm_config_realm_local_prebuilds: ${{ github.workspace }}/prebuilds
 
       - name: Build realm react
         working-directory: packages/realm-react
