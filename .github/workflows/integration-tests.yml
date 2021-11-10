@@ -29,6 +29,7 @@ jobs:
   node:
     name: Node.js v${{ matrix.node }} on ${{ matrix.os.name }} (${{ matrix.type }})
     runs-on: ${{ matrix.os.runner }}
+    if: ${{ false }}
     strategy:
       fail-fast: false
       matrix:
@@ -99,6 +100,7 @@ jobs:
   electron-linux:
     name: Electron on Linux
     runs-on: ubuntu-latest
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -147,7 +149,7 @@ jobs:
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   react-native-ios:
     name: React Native on ${{matrix.platform.name}} (${{ matrix.type }})
-    runs-on: macos-latest
+    runs-on: macos-11
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -156,8 +158,8 @@ jobs:
         #type: [Release, Debug]
         type: [Release]
         platform:
-          - name: ios
-            build-configuration: simulator
+          # - name: ios
+          #   build-configuration: simulator
           - name: catalyst
             build-configuration: catalyst
     env:
@@ -193,7 +195,7 @@ jobs:
           key: ${{ github.job }}-${{ matrix.platform.name }}-${{ matrix.type }}
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
-  
+
       # Install and build
       # TODO: Expose a way to skip building the Node.js native module
       - name: Patch package.json to avoid building Node.js native module
@@ -204,6 +206,11 @@ jobs:
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
       # Run the tests
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+        timeout-minutes: 30
       - name: Run tests (${{matrix.platform.name}}/ Native)
         run: npm run test:${{matrix.platform.name}} --prefix integration-tests/environments/react-native
         env:
@@ -224,6 +231,7 @@ jobs:
           RETRY_DELAY: 300000 # 5 min
   react-native-android:
     name: React Native on Android (${{ matrix.type }})
+    if: ${{ false }}
     runs-on: macos-latest
     strategy:
       fail-fast: false

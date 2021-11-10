@@ -35,7 +35,9 @@
     "react-native-fs": "^2.18.0",
     "react-native-progress": "^4.1.2",
     "realm": "*",
-    "realm-integration-tests": "*"
+    "realm-integration-tests": "*",
+    "screenshot-desktop": "^1.12.7",
+    "@uploadcare/upload-client": "^1.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
