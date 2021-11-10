@@ -17,11 +17,15 @@ This library requires `react-native` >= 0.59 and `realm` >= 10.0.0
 
 npm:
 
-```npm install @realm.io/react```
+```
+npm install @realm.io/react
+```
 
 yarn:
 
-```yarn add @realm.io/react```
+```
+yarn add @realm.io/react
+```
 
 
 ## Usage
