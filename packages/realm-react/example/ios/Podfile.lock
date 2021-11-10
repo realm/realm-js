@@ -338,7 +338,7 @@ PODS:
     - React-cxxreact (= 0.65.1)
     - React-jsi (= 0.65.1)
     - React-perflogger (= 0.65.1)
-  - RealmJS (10.8.0):
+  - RealmJS (10.9.1):
     - GCDWebServer
     - React
   - Yoga (1.14.0)
@@ -397,7 +397,7 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - RealmJS (from `../node_modules/realm`)
+  - RealmJS (from `../../../..`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -477,7 +477,7 @@ EXTERNAL SOURCES:
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
   RealmJS:
-    :path: "../node_modules/realm"
+    :path: "../../../.."
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -525,10 +525,10 @@ SPEC CHECKSUMS:
   React-RCTVibration: 92d41c2442e5328cc4d342cd7f78e5876b68bae5
   React-runtimeexecutor: 85187f19dd9c47a7c102f9994f9d14e4dc2110de
   ReactCommon: eafed38eec7b591c31751bfa7494801618460459
-  RealmJS: 7271bc9f8579716260511cb43b0fb6b0321ce206
+  RealmJS: db77f07dbb7bde3754ee19aa3ce16c050b972751
   Yoga: aa0cb45287ebe1004c02a13f279c55a95f1572f4
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: f768cebc1ba0f59bbb71358cef0befc1eb663ab6
+PODFILE CHECKSUM: df32c9135a71d553979feaed16e95d8a2885f31f
 
 COCOAPODS: 1.11.2

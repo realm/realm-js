@@ -36,7 +36,7 @@ export function createUseObject(useRealm: () => Realm) {
         }
       };
       object?.addListener(listenerCallback);
-      return () => object?.removeAllListeners();
+      return () => object?.removeListener(listenerCallback);
     }, [realm, object, type, primaryKey]);
 
     return object;

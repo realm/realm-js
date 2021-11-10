@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "TsExample.app"
-               BlueprintName = "TsExample"
-               ReferencedContainer = "container:TsExample.xcodeproj">
+               BuildableName = "RealmReactExample.app"
+               BlueprintName = "RealmReactExample"
+               ReferencedContainer = "container:RealmReactExample.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "TsExampleTests.xctest"
-               BlueprintName = "TsExampleTests"
-               ReferencedContainer = "container:TsExample.xcodeproj">
+               BuildableName = "RealmReactExampleTests.xctest"
+               BlueprintName = "RealmReactExampleTests"
+               ReferencedContainer = "container:RealmReactExample.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "TsExample.app"
-            BlueprintName = "TsExample"
-            ReferencedContainer = "container:TsExample.xcodeproj">
+            BuildableName = "RealmReactExample.app"
+            BlueprintName = "RealmReactExample"
+            ReferencedContainer = "container:RealmReactExample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "TsExample.app"
-            BlueprintName = "TsExample"
-            ReferencedContainer = "container:TsExample.xcodeproj">
+            BuildableName = "RealmReactExample.app"
+            BlueprintName = "RealmReactExample"
+            ReferencedContainer = "container:RealmReactExample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -28,7 +28,7 @@ export function createRealmProvider(
 ): React.FC<ProviderProps> {
   return ({ children, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
-    const [reconfigure, reconfigureRealm] = useState(0);
+    const [configVersion, setConfigVersion] = useState(0);
 
     const currentRealm = useRef(realm);
     const configuration = useRef<Realm.Configuration>(mergeRealmConfiguration(realmConfig, restProps));
@@ -37,7 +37,7 @@ export function createRealmProvider(
       const combinedConfig = mergeRealmConfiguration(realmConfig, restProps);
       if (!areConfigurationsIdentical(configuration.current, combinedConfig)) {
         configuration.current = combinedConfig;
-        reconfigureRealm((x) => x + 1);
+        setConfigVersion((x) => x + 1);
       }
     }, [restProps]);
 
@@ -47,40 +47,22 @@ export function createRealmProvider(
 
     useEffect(() => {
       const realm = currentRealm.current;
-      let shouldInitRealm = realm === null;
-
-      // if restProps change, then close the realm before reopening it
-      if (realm && !realm.isClosed) {
-        realm.close();
-
-        setRealm(null);
-
-        // We need to keep track of `shouldInitRealm` separately from the `realm` state because even
-        // though we `setRealm(null)` above, the async nature of setting state means the value of `realm`
-        // does not change to `null` until this function has finished executing, so we can't just check
-        // `if (realm === null)` at the end of the function
-        shouldInitRealm = true;
-      }
-
+      const shouldInitRealm = realm === null;
       const initRealm = async () => {
         const openRealm = await Realm.open(configuration.current);
-
         setRealm(openRealm);
       };
-
       if (shouldInitRealm) {
         initRealm().catch(console.error);
       }
-    }, [reconfigure]);
 
-    useEffect(() => {
       return () => {
         if (realm) {
           realm.close();
           setRealm(null);
         }
       };
-    }, [realm, setRealm]);
+    }, [configVersion, realm, setRealm]);
 
     if (!realm) {
       return null;
