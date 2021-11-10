@@ -19,8 +19,8 @@ else
 fi
 
 cd $APP_DIR
-# Install Realm
-npm install realm@$realm_version
+# Install Realm (using --force to ignore potential peerDependencies failures)
+npm install realm@$realm_version --force
 # Run pod-install again
 npx --yes pod-install
 # Overwrite the App.js
