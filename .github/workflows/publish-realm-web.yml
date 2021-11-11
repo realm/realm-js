@@ -19,8 +19,8 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Install npm v7
         run: npm install -g npm@7
-      # Install the root package
-      - run: npm ci
+      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
+      - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages
       - run: npx lerna bootstrap
       # Test the package
