@@ -27,14 +27,14 @@ defaults:
 jobs:
   install:
     name: Installing Realm → React Native (using Xcode v${{matrix.xcode}}, node v${{ matrix.node }}, npm v${{ matrix.npm }})
-    runs-on: macos-latest
+    runs-on: macos-10.15
     strategy:
       fail-fast: false
       matrix:
         # See https://github.com/actions/virtual-environments/blob/main/images/macos/macos-11-Readme.md#xcode
         xcode:
-          - 12.5.1
-          - 13.1
+          - 12.3
+          - 12.4
         npm:
           - 7
         node:
