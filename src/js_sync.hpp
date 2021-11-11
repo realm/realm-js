@@ -25,6 +25,7 @@
 #include "js_collection.hpp"
 #include "js_app.hpp"
 #include "js_user.hpp"
+#include "js_subscriptions.hpp"
 #include "logger.hpp"
 
 #include "platform.hpp"
@@ -40,6 +41,7 @@
 #include <realm/util/logger.hpp>
 #include <realm/util/uri.hpp>
 #include <realm/util/network.hpp>
+#include <stdexcept>
 
 #if REALM_PLATFORM_NODE
 #include <realm/object-store/impl/realm_coordinator.hpp>
@@ -417,9 +419,16 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
             create_object<T, UserClass<T>>(
                 ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
         // TODO: add app id
-        bson::Bson partition_value_bson = bson::parse(session->config().partition_value);
-        Object::set_property(ctx, config, "partitionValue",
-                             Value::from_string(ctx, String::from_bson(partition_value_bson)));
+
+        if (session->config().flx_sync_requested) {
+            Object::set_property(ctx, config, "flexible", Value::from_boolean(ctx, true));
+        }
+        else {
+            bson::Bson partition_value_bson = bson::parse(session->config().partition_value);
+            Object::set_property(ctx, config, "partitionValue",
+                                 Value::from_string(ctx, String::from_bson(partition_value_bson)));
+        }
+
         if (auto dispatcher =
                 session->config()
                     .error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
@@ -813,6 +822,12 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx)
                          attributes);
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx),
                          attributes);
+    Object::set_property(ctx, sync_constructor, "Subscription",
+                         ObjectWrap<T, SubscriptionClass<T>>::create_constructor(ctx), attributes);
+    Object::set_property(ctx, sync_constructor, "Subscriptions",
+                         ObjectWrap<T, SubscriptionsClass<T>>::create_constructor(ctx), attributes);
+    Object::set_property(ctx, sync_constructor, "MutableSubscriptions",
+                         ObjectWrap<T, MutableSubscriptionsClass<T>>::create_constructor(ctx), attributes);
 
     return sync_constructor;
 }
@@ -962,10 +977,21 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             throw std::runtime_error("User is no longer valid.");
         }
 
-        ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
-        std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
+        ValueType flexible_value = Object::get_property(ctx, sync_config_object, "flexible");
+        if (Value::is_boolean(ctx, flexible_value) && Value::to_boolean(ctx, flexible_value)) {
+            if (!Value::is_undefined(ctx, Object::get_property(ctx, sync_config_object, "partitionValue"))) {
+                throw std::runtime_error("'partitionValue' cannot be specified when flexible sync is enabled");
+            }
 
-        config.sync_config = std::make_shared<SyncConfig>(user, std::move(partition_value));
+            config.sync_config = std::make_shared<SyncConfig>(user, SyncConfig::FLXSyncEnabled{});
+        }
+        else {
+            ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
+            std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
+
+            config.sync_config = std::make_shared<SyncConfig>(user, std::move(partition_value));
+        }
+
         config.sync_config->error_handler = std::move(error_handler);
 
         SyncSessionStopPolicy session_stop_policy = SyncSessionStopPolicy::AfterChangesUploaded;

@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { closeAndReopenRealm } from "../../hooks";
+
 export function itUploadsDeletesAndDownloads(): void {
   it("uploads, cleans and downloads", async function (this: RealmContext) {
     if (!this.realm) {
@@ -24,21 +26,13 @@ export function itUploadsDeletesAndDownloads(): void {
     if (!this.config) {
       throw new Error("Expected a 'config' on the mocha context");
     }
+
+    closeAndReopenRealm(this.realm, this.config);
+
     if (!this.realm.syncSession) {
       throw new Error("Expected a 'syncSession' on the realm");
     }
 
-    // Ensure everything has been uploaded
-    await this.realm.syncSession.uploadAllLocalChanges();
-    // Close, delete and download the Realm from the server
-    this.realm.close();
-    // Delete the file
-    Realm.deleteFile(this.config);
-    // Re-open the Realm with the old configuration
-    this.realm = new Realm(this.config);
-    if (!this.realm.syncSession) {
-      throw new Error("Expected a 'syncSession' on the realm");
-    }
     await this.realm.syncSession.downloadAllServerChanges();
   });
 }

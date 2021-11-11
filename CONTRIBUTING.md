@@ -45,7 +45,7 @@ Realm welcomes all contributions! The only requirement we have is that, like man
 
 [Please submit your CLA electronically using our Google form](https://docs.google.com/forms/d/e/1FAIpQLSeQ9ROFaTu9pyrmPhXc-dEnLD84DbLuT_-tPNZDOL9J10tOKQ/viewform) so we can accept your submissions. The GitHub username you file there will need to match that of your Pull Requests. If you have any questions or cannot file the CLA electronically, you can email <help@realm.io>.
 
-### How To: Add a new function 
+### How To: Add a new function
 
 Adding new functionality to Realm JavaScript requires that you modify a few places in the repository. As an example, consider adding a function `crashOnStart()` to the class `Realm`. The subsections below guides you through where and what to add.
 
@@ -89,7 +89,7 @@ In order to call the C++ implementation, the JavaScript engine has to know about
 
 #### Update the RPC protocol
 
-This is required for the Chrome Debugger to work with React Native. If the method added is a pure Javascript function, 
+This is required for the Chrome Debugger to work with React Native. If the method added is a pure Javascript function,
 you can skip this step as it will work automatically. If the method is a C++ method you will
 need to manually update the RPC protocol.
 
@@ -101,7 +101,7 @@ If the method is static method you need to:
 
 * Add function name to `lib/browser/index.js` or the relevant class under `lib/browser/`. It should forward the method
   call to an RPC method, e.g like:
-  
+
 ```
 const Sync = {
     "_myMethod": function(arg) {
@@ -110,7 +110,7 @@ const Sync = {
     // ...
 };
 ```
-  
+
 * Add the RPC sender method to `/lib/browser/rpc.js`.
 * Add the RPC receiver endpoint in `/src/rpc.cpp`.
 
@@ -174,7 +174,7 @@ Debugging and working with the unit tests in an iterative mannner is done the fo
 
 If you want to modify the Javascript in an iterative manner or enable break points you need to do it on the files located in `tests/ReactTestApp/node_modules/realm-tests`. These files are a copy of the original files located in `tests/js` so any changes must manually be copied back. The reason for this is that the React Native Metro Bundler doesn't support symlinks.
 
-The Javascript tests are run twice: once directly in the simulator, and once in Chrome, talking to the simulator via the RPC bridge used for Chrome debugging. When running the Chrome tests you can open the Chrome Developer Tools on the tab that they open to debug the tests themselves. The JS engine running inside the simulator (for both the RPC server and the tests themselves in the non-Chrome test suite) can be debugged using the Safari developer tools.
+The Javascript tests are run twice: once directly in the simulator, and once in Chrome, talking to the simulator via the RPC bridge used for Chrome debugging. When running the Chrome tests you can open the Chrome Developer Tools on the tab that they open to debug the tests themselves. The JS engine running inside the simulator (for bbh the RPC server and the tests themselves in the non-Chrome test suite) can be debugged using the Safari developer tools.
 
 Note that it isn't possible to easily run a single unit test from Xcode. Instead you should disable the tests manually by modifying `tests/ReactTestApp/node_modules/realm-tests/index.js`.
 
@@ -198,3 +198,9 @@ Then run the following to log into the GitHub container registry, entering your 
 ```
 docker login ghcr.io
 ```
+
+### How to: Run the BaaS server locally
+
+It can be useful to run the BaaS server directly, rather than in the docker container, for example to use the latest version from a branch or for debugging.
+
+You can do this by running: `AWS_ACCESS_KEY_ID="???" AWS_SECRET_ACCESS_KEY="???" ./evergreen/install_baas.sh -w baas-work-dir -b master` from the `vendor/realm_core` directory. Logs can be accessed in `baas-work-dir/baas_server.log`.

@@ -1,0 +1,17 @@
+{
+  "name": "local-mongodb",
+  "type": "mongodb",
+  "config": {
+    "flexible_sync": {
+      "state": "enabled",
+      "database_name": "test-database",
+      "queryable_fields_names": [
+        "age",
+        "name"
+      ]
+    }
+  },
+  "secret_config": {
+    "uri": "local-mongodb-uri"
+  }
+}
