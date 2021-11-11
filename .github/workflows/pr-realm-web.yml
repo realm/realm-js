@@ -4,11 +4,14 @@ on:
   pull_request:
     paths:
       # Only run when the PR makes changes to the packages
-      - 'packages/**'
+      - "packages/realm-web/**"
+      - "packages/realm-web-integration-tests/**"
+      - "packages/realm-network-transport/**"
+      - "packages/realm-common/**"
       # Changing types might also affect Realm Web
-      - 'types/**'
+      - "types/**"
       # No need to run when updating documentation
-      - '!**.md'
+      - "!**.md"
 
 env:
   REALM_DISABLE_ANALYTICS: 1
@@ -46,4 +49,4 @@ jobs:
         run: npm run test:github
         working-directory: packages/realm-web-integration-tests
         env:
-          MONGODB_REALM_TEST_SERVER: '2020-11-04' # TODO: Try using 'latest' once it's fixed
+          MONGODB_REALM_TEST_SERVER: "2020-11-04" # TODO: Try using 'latest' once it's fixed

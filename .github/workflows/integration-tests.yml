@@ -193,7 +193,7 @@ jobs:
           key: ${{ github.job }}-${{ matrix.platform.name }}-${{ matrix.type }}
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
-  
+
       # Install and build
       # TODO: Expose a way to skip building the Node.js native module
       - name: Patch package.json to avoid building Node.js native module
