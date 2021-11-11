@@ -92,6 +92,14 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "LLDB Node",
+            "program": "node",
+            "args": ["--expose_gc"],
+            "preLaunchTask": "Build Node Tests"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "LLDB Debug Integration Tests",
             "program": "node",
             "args": [
@@ -103,9 +111,11 @@
                 "src/utils/inject-node-globals.ts",
                 "src/index.ts",
                 "--grep",
-                "${input:integrationTestFilter}"
+                "#removeSubscription"
+                // "${input:integrationTestFilter}"
             ],
-            "cwd": "${workspaceFolder}/integration-tests/tests"
+            "cwd": "${workspaceFolder}/integration-tests/tests",
+            "preLaunchTask": "Build Node Tests"
         }
     ],
     "compounds": [

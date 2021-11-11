@@ -28,6 +28,7 @@
 #include "js_results.hpp"
 #include "js_schema.hpp"
 #include "js_observable.hpp"
+#include "js_subscriptions.hpp"
 #include "platform.hpp"
 
 #if REALM_ENABLE_SYNC
@@ -341,6 +342,7 @@ public:
     static void object_for_object_id(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update_schema(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void get_subscriptions(ContextType, ObjectType, Arguments&, ReturnValue&);
 
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -417,6 +419,7 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"_updateSchema", wrap<update_schema>},
         {"_schemaName", wrap<get_schema_name_from_object>},
+        {"getSubscriptions", wrap<get_subscriptions>},
     };
 
     PropertyMap<T> const properties = {
@@ -869,7 +872,7 @@ void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Argume
 
     auto& config = realm->config();
     if (config.schema_mode == SchemaMode::Immutable || config.schema_mode == SchemaMode::AdditiveExplicit ||
-        config.schema_mode == SchemaMode::ReadOnlyAlternative) {
+        config.schema_mode == SchemaMode::ReadOnly) {
         throw std::runtime_error("Cannot delete model for a read-only or a synced Realm.");
     }
 
@@ -1452,6 +1455,18 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
 
     // Perform the schema update
     realm->update_schema(parsed_schema, realm->schema_version() + 1, nullptr, nullptr, true);
+}
+
+/**
+ * TODO
+ */
+template <typename T>
+void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, Arguments& args,
+                                      ReturnValue& return_value)
+{
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
+    // TODO check if sync config is flexible
+    return_value.set(SubscriptionsClass<T>::create_instance(ctx, realm->get_active_subscription_set()));
 }
 
 template <typename T>

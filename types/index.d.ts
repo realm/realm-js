@@ -113,16 +113,27 @@ declare namespace Realm {
         validateCallback?: SSLVerifyCallback;
     }
 
-    interface SyncConfiguration {
+    interface BaseSyncConfiguration {
         user: User;
-        partitionValue: Realm.App.Sync.PartitionValue;
+        flexible?: boolean | undefined;
         customHttpHeaders?: { [header: string]: string };
-        newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
-        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         ssl?: SSLConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
         error?: ErrorCallback;
     }
+
+    interface FlexibleSyncConfiguration extends BaseSyncConfiguration {
+        flexible: true;
+    }
+
+    interface PartitionSyncConfiguration extends BaseSyncConfiguration {
+        flexible?: false | undefined;
+        partitionValue: Realm.App.Sync.PartitionValue;
+        newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+    }
+
+    type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfiguration;
 
     interface BaseConfiguration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
@@ -133,6 +144,7 @@ declare namespace Realm {
         fifoFilesFallbackPath?: string;
         readOnly?: boolean;
     }
+
 
     interface ConfigurationWithSync extends BaseConfiguration {
         sync: SyncConfiguration;
@@ -576,6 +588,273 @@ declare namespace Realm {
          * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
          */
         const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
+
+        /**
+         * A class representing a single query subscription in a set of Flexible Sync
+         * {@link Subscriptions}. This class contains readonly information about the
+         * subscription – any changes to the set of subscriptions must be carried out
+         * in a {@link Subscriptions.update} callback.
+         */
+        class Subscription {
+            new(): never; // This type isn't supposed to be constructed manually by end users.
+
+            /**
+             * @returns The date when this subscription was created
+             */
+            readonly createdAt: Date;
+
+            /**
+             * @returns The date when this subscription was last updated
+             */
+            readonly updatedAt: Date;
+
+            /**
+             * @returns The name given to this subscription when it was created.
+             * If no name was set, this will return null.
+             * TODO or should this return the query as per original design doc?
+             */
+            readonly name: string | null;
+
+            /**
+             * @returns The type of objects the subscription refers to.
+             */
+            readonly objectType: string;
+
+            /**
+             * @returns The string representation of the query the subscription was created with.
+             * If no filter or sort was specified, this will return "TRUEPREDICATE".
+             */
+            readonly queryString: string;
+        }
+
+        /**
+         * Enum representing the state of a set of subscriptions.
+         */
+        enum SubscriptionsState {
+            /**
+             * The subscription update has been persisted locally, but the server hasn't
+             * yet returned all the data that matched the updated subscription queries.
+             */
+            Pending = "pending",
+
+            /**
+             * The server has acknowledged the subscription and sent all the data that
+             * matched the subscription queries at the time the subscription set was
+             * updated. The server is now in steady-state synchronization mode where it
+             * will stream updates as they come.
+             */
+            Complete = "complete",
+
+            /**
+             * The server has returned an error and synchronization is paused for this
+             * Realm. To view the actual error, use `Subscriptions.error`.
+             * You can still use {@link Subscriptions.update} to update the subscriptions,
+             * and if the new update doesn't trigger an error, synchronization
+             * will be restarted.
+             */
+            Error = "error",
+
+            /**
+             * The subscription set has been superceded by an updated one. This typically means
+             * that someone has called {@link Subscriptions.update} on a different instance
+             * of the `Subscriptions`. You should not use a superseded subscription set,
+             * and instead obtain a new instance by calling `getSubscriptions()`.
+             */
+            Superceded = "superceded",
+        }
+
+        /**
+         * Options for `Subscriptions.add`.
+         */
+        interface SubscriptionOptions {
+            /**
+             * Sets the name of the subscription being added. This allows you to later refer
+             * to the subscription by name, e.g. when calling {@link MutableSubscriptions.removeByName}.
+             */
+            name?: string;
+
+            /**
+             * By default, adding a subscription with the same name as an existing one
+             * but a different query will update the existing subscription with the new
+             * query. If `throwOnUpdate` is set to true, adding a subscription with the
+             * same name but a different query will instead throw an exception.
+             * Adding a subscription with the same name and query is always a no-op.
+             */
+            throwOnUpdate?: boolean;
+        }
+
+        abstract class BaseSubscriptions {
+            new(): never; // This type isn't supposed to be constructed manually by end users.
+
+            /**
+             * @returns `true` if there are no subscriptions in the set, `false` otherwise.
+             */
+            readonly empty: boolean;
+
+            /**
+             * @returns The version of the subscription set. This is incremented every time an
+             * {@link update} is applied.
+             */
+            readonly version: number;
+
+            /**
+             * @returns A readonly array snapshot of all the subscriptions in the set.
+             * Any changes to the set of subscriptions must be performed in an {@link update}
+             * callback.
+             */
+            snapshot(): ReadonlyArray<Subscription>;
+
+            /**
+             * Find a subscription by name.
+             * @param name The name to search for.
+             * @returns The named subscription, or `null` if the subscription is not found.
+             */
+            findByName(name: string): Subscription | null;
+
+            /**
+             * Find a subscription by query. Will match both named and unnamed subscriptions.
+             * @param query The query to search for, represented as a {@link Realm.Results} instance,
+             * e.g. `Realm.objects("Cat").filtered("age > 10")`.
+             * @returns The subscription with the specified query, or null if the subscription is not found.
+             */
+            find<T>(query: Realm.Results<T & Realm.Object>): Subscription | null;
+
+            /**
+             * @returns The state of the subscription set.
+             */
+            readonly state: SubscriptionsState;
+
+            /**
+             * @returns If `state` is {@link SubscriptionsState.Error}, this is a {@link Realm.SyncError}
+             * representing why the subscription set is in an error state. `null` if there is no error.
+             */
+            readonly error: Realm.SyncError | null;
+        }
+
+        /**
+         * A class representing the set of all active Flexible Sync subscriptions for a Realm
+         * instance.
+         *
+         * The server will continuously evaluate the queries that the instance is subscribed to
+         * and will send data that matches them, as well as remove data that no longer does.
+         *
+         * The set of subscriptions can only be updated inside a {@link Subscriptions.update} callback.
+         * Attempting to call any methods which mutate the set (e.g. {@link MutableSubscriptions.add})
+         * outside of an {@link update} callback will throw an exception.
+         *
+         * Note that a given `Subscriptions` instance is immutable – calling {@link update} returns a
+         * new `Subscriptions` instance with the updated subscription set, the original instance
+         * will remain unchanged (but with a `state` of {@link SubscriptionsState.Superceded}
+         * once synchronized).
+         */
+        class Subscriptions extends BaseSubscriptions {
+            /**
+             * Wait for the server to acknowledge this set of subscriptions and return the
+             * matching objects.
+             * If `state` is {@link SubscriptionsState.Complete}, the promise will be resolved immediately.
+             * If `state` is {@link SubscriptionsState.Error}, the promise will be rejected immediately.
+            // TODO error if updated while syncing
+             *
+             * @returns A promise which is resolved when synchronization is complete, or is
+             * rejected if there is an error during synchronisation.
+             */
+            waitForSynchronization: () => Promise<void>;
+
+            /**
+             * Update the subscription set, returning an updated version of it. Note that
+             * subscription sets are immutable, i.e. the original subscription set will be
+             * unchanged.
+             *
+             * Adding or removing subscriptions from the set set must be performed inside
+             * the callback argument of this method, and the mutating methods must be called on
+             * the `mutableSubs` argument rather than the original `Subscriptions`. Any changes
+             * to the subscriptions after the callback has executed will be batched and sent
+             * to the server, at which point you can {@link waitForSynchronization} to wait for the
+             * new data to be available.
+             *
+             * Example:
+             * ```
+             * const newSubs = subs.update(mutableSubs => {
+             *   mutableSubs.add(realm.objects("Cat").filtered("age > 10"));
+             * });
+             * await newSubs.waitForSynchronization();
+             * // `realm` will now return the expected results based on the updated subscriptions
+             * ```
+             *
+             * @param callback A callback function which receives a {@link MutableSubscriptions}
+             * instance as its only argument, which can be used to add or remove subscriptions from
+             * the set.
+             * @returns A new {@link Subscriptions} instance containing the updated set of subscriptions.
+             */
+            update: (callback: (mutableSubs: MutableSubscriptions) => void) => Subscriptions;
+        }
+
+        /**
+         * The mutable version of a given subscription set. The mutable methods of a given
+         * {@link Subscriptions} instance can only be accessed from inside the {@link update} callback
+         * (see {@link Subscriptions.update}), and will throw if accessed outside of this scope.
+         */
+        interface MutableSubscriptions extends BaseSubscriptions {
+            new(): never; // This type isn't supposed to be constructed manually by end users.
+
+            /**
+             * Adds a query to the set of active subscriptions. The query will be joined via
+             * an OR operator with any existing queries for the same type. A query is represented
+             * by a `Realm.Results` instance returned from `realm.objects`, for example:
+             * `mutableSubs.add(realm.objects("Cat").filtered("age > 10"));`.
+             *
+             * @param query A `Realm.Results` instance representing the query to subscribe to.
+             * @param options An optional `SubscriptionOptions` object containing options to
+             * use when adding this subscription (e.g. to give the subscription a name).
+             * @returns A `Subscription` instance for the new subscription.
+             * @throws If called outside a {@link Subscriptions.update} callback.
+             */
+            add: <T>(query: Realm.Results<T & Realm.Object>, options?: SubscriptionOptions) => Subscription;
+
+            /**
+             * Removes a subscription with the given query from the subscription set.
+             *
+             * @param query A `Realm.Results` instance representing the query to remove a subscription to.
+             * @returns `true` if the subscription was removed, `false` if it was not found.
+             * @throws If called outside a {@link Subscriptions.update} callback.
+             */
+            remove: <T>(query: Realm.Results<T & Realm.Object>) => boolean;
+
+            /**
+             * Removes a subscription with the given name from the subscription set.
+             *
+             * @param name The name of the subscription to remove.
+             * @returns `true` if the subscription was removed, `false` if it was not found.
+             * @throws If called outside a {@link Subscriptions.update} callback.
+             */
+            removeByName: (name: string) => boolean;
+
+            /**
+             * Removes the specified subscription from the subscription set.
+             *
+             * @param subscription The `Subscription` instance to remove.
+             * @returns `true` if the subscription was removed, `false` if it was not found.
+             * @throws If called outside a {@link Subscriptions.update} callback.
+             */
+            removeSubscription: (subscription: Subscription) => boolean;
+
+            /**
+             * Removes all subscriptions for the specified object type from the subscription set.
+             *
+             * @param objectType The string name of the object type to remove all subscriptions for.
+             * @returns The number of subscriptions removed.
+             * @throws If called outside a {@link Subscriptions.update} callback.
+             */
+            removeByObjectType: (objectType: string) => number;
+
+            /**
+             * Removes all subscriptions from the subscription set.
+             *
+             * @returns The number of subscriptions removed.
+             * @throws If called outside a {@link Subscriptions.update} callback.
+             */
+            removeAll: () => number;
+        }
     }
 
     namespace BSON {
@@ -748,8 +1027,8 @@ declare class Realm {
      * @returns {T | undefined}
      */
     objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: Realm.PrimaryKey): T | undefined;
-    
-    // Combined definitions 
+
+    // Combined definitions
     objectForPrimaryKey<T>(type: string | {new(...arg: any[]): T; }, key: Realm.PrimaryKey): (T & Realm.Object) | undefined;
 
     /**
@@ -764,7 +1043,7 @@ declare class Realm {
      */
     objects<T extends Realm.Object>(type: {new(...arg: any[]): T; }): Realm.Results<T>;
 
-    // Combined definitions 
+    // Combined definitions
     objects<T>(type: string | {new(...arg: any[]): T; }): Realm.Results<T & Realm.Object>;
 
     /**
@@ -822,6 +1101,9 @@ declare class Realm {
      * @returns void
      */
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
+
+    // TODO
+    getSubscriptions: () => Realm.App.Sync.Subscriptions;
 
     /**
      * Update the schema of the Realm.
