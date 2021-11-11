@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - install-tests/react-native/**
+      - .github/workflows/install-test-react-native.yml
   # Every day at 9:00 CET
   schedule:
     - cron: "0 8 * * *"
