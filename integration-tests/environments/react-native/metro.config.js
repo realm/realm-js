@@ -32,8 +32,8 @@ const path = require("path");
 const fs = require("fs");
 const exclusionList = require("metro-config/src/defaults/exclusionList");
 
-function readJson(...pathSegemnts) {
-  const filePath = path.join(...pathSegemnts);
+function readJson(...pathSegments) {
+  const filePath = path.join(...pathSegments);
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
@@ -41,14 +41,30 @@ function getLinkedDependencies(packagePath, exclude = new Set()) {
   const packageJson = readJson(packagePath, "package.json");
   const nodeModulesPath = path.join(packagePath, "node_modules");
   const files = fs.readdirSync(nodeModulesPath, { encoding: "utf8", withFileTypes: true });
-  const links = files
+  // Symbolically linked packages directly in the node_modules directory.
+  const directLinks = files
     .filter((f) => f.isSymbolicLink())
-    .map(({ name }) => {
-      const linkPath = fs.realpathSync(path.join(nodeModulesPath, name));
-      const linkPackageJson = readJson(linkPath, "package.json");
-      const peerDependencies = Object.keys(linkPackageJson.peerDependencies || {});
-      return { name, path: linkPath, peerDependencies };
-    });
+    .map(({ name }) => ({ name, path: fs.realpathSync(path.join(nodeModulesPath, name)) }));
+  // Symbolically linked packages within an "@" scoped directory
+  const scopedLinks = files
+    .filter((f) => f.name.startsWith("@"))
+    .map((parent) => {
+      const parentPath = path.join(nodeModulesPath, parent.name);
+      const children = fs.readdirSync(parentPath, { encoding: "utf8", withFileTypes: true });
+      return children
+        .filter((f) => f.isSymbolicLink())
+        .map(({ name }) => ({
+          name: parent.name + "/" + name,
+          path: fs.realpathSync(path.join(parentPath, name)),
+        }));
+    })
+    .flat();
+  const combinedLinks = [...directLinks, ...scopedLinks];
+  const links = combinedLinks.map(({ name, path: linkPath }) => {
+    const linkPackageJson = readJson(linkPath, "package.json");
+    const peerDependencies = Object.keys(linkPackageJson.peerDependencies || {});
+    return { name, path: linkPath, peerDependencies };
+  });
   // We're only interested in actual dependencies
   const dependencyLinks = links.filter(({ name }) => name in packageJson.dependencies && !exclude.has(name));
   // Recurse

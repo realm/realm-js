@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+1.5.0 Release notes (2021-11-11)
 =============================================================
 
 ### Breaking Changes
