@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const { createServer } = require("http");
+
+const TIMEOUT = 5 * 60 * 1000; // 5 minutes (although it shouldn't really take more than a minute)
 const PORT = 3000;
 const EXPECTED_MESSAGE = "Persons are Alice, Bob, Charlie";
 
@@ -40,4 +42,4 @@ createServer((req, res) => {
 setTimeout(() => {
   console.log("It took too long for the app to send the message");
   process.exit(1);
-}, 60000);
+}, TIMEOUT);
