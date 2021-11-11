@@ -39,7 +39,7 @@ export function openRealmHook(config: LocalConfiguration | SyncedConfiguration =
         path,
         sync: {
           user: this.user,
-          partitionValue: nonce,
+          ...(!config.sync.flexible && { partitionValue: nonce }),
           _sessionStopPolicy: "immediately",
           ...config.sync,
         },

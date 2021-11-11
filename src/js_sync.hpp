@@ -25,6 +25,7 @@
 #include "js_collection.hpp"
 #include "js_app.hpp"
 #include "js_user.hpp"
+#include "js_subscriptions.hpp"
 #include "logger.hpp"
 
 #include "platform.hpp"
@@ -58,8 +59,9 @@ namespace realm {
 namespace js {
 
 // simple utility method
-template<typename T>
-static std::string partition_value_bson_to_string(typename T::Context ctx, typename T::Value partition_value_value) {
+template <typename T>
+static std::string partition_value_bson_to_string(typename T::Context ctx, typename T::Value partition_value_value)
+{
     bson::Bson partition_bson;
     if (Value<T>::is_string(ctx, partition_value_value)) {
         std::string pv = Value<T>::validated_to_string(ctx, partition_value_value);
@@ -69,8 +71,9 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
         double pv = Value<T>::validated_to_number(ctx, partition_value_value);
         double integerPart;
         double fractionalPart = modf(pv, &integerPart);
-        if (pv > JS_MAX_SAFE_INTEGER  || pv < -JS_MAX_SAFE_INTEGER || fabs(fractionalPart) > 0.0) {
-            throw std::runtime_error("partitionValue of type 'number' must be an integer in the range: Number.MIN_SAFE_INTEGER to Number.MAX_SAFE_INTEGER.");
+        if (pv > JS_MAX_SAFE_INTEGER || pv < -JS_MAX_SAFE_INTEGER || fabs(fractionalPart) > 0.0) {
+            throw std::runtime_error("partitionValue of type 'number' must be an integer in the range: "
+                                     "Number.MIN_SAFE_INTEGER to Number.MAX_SAFE_INTEGER.");
         }
         partition_bson = bson::Bson(static_cast<int64_t>(integerPart));
     }
@@ -98,7 +101,7 @@ static std::string partition_value_bson_to_string(typename T::Context ctx, typen
 
 using WeakSession = std::weak_ptr<realm::SyncSession>;
 
-template<typename T>
+template <typename T>
 class SessionClass : public ClassDefinition<T, WeakSession> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -119,24 +122,24 @@ public:
 
     static FunctionType create_constructor(ContextType);
 
-    static void get_config(ContextType, ObjectType, ReturnValue &);
-    static void get_user(ContextType, ObjectType, ReturnValue &);
-    static void get_state(ContextType, ObjectType, ReturnValue &);
-    static void get_connection_state(ContextType, ObjectType, ReturnValue &);
+    static void get_config(ContextType, ObjectType, ReturnValue&);
+    static void get_user(ContextType, ObjectType, ReturnValue&);
+    static void get_state(ContextType, ObjectType, ReturnValue&);
+    static void get_connection_state(ContextType, ObjectType, ReturnValue&);
 
-    static void simulate_error(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void add_progress_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-    static void remove_progress_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-    static void add_state_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-    static void remove_state_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-    static void add_connection_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-    static void remove_connection_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-    static void is_connected(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-    static void resume(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-    static void pause(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
-//    static void override_server(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void wait_for_download_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void wait_for_upload_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void simulate_error(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void add_progress_notification(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue&);
+    static void remove_progress_notification(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue&);
+    static void add_state_notification(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue&);
+    static void remove_state_notification(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue&);
+    static void add_connection_notification(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue&);
+    static void remove_connection_notification(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue&);
+    static void is_connected(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue&);
+    static void resume(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue&);
+    static void pause(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue&);
+    //    static void override_server(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void wait_for_download_completion(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void wait_for_upload_completion(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     // TODO: add app or appId property
     PropertyMap<T> const properties = {
@@ -166,17 +169,22 @@ private:
     static void wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments& args);
 };
 
-template<typename T>
+template <typename T>
 class SyncSessionErrorHandlerFunctor {
 public:
     SyncSessionErrorHandlerFunctor(typename T::Context ctx, typename T::Function error_func)
-    : m_ctx(Context<T>::get_global_context(ctx))
-    , m_func(ctx, error_func)
-    { }
+        : m_ctx(Context<T>::get_global_context(ctx))
+        , m_func(ctx, error_func)
+    {
+    }
 
-    typename T::Function func() const { return m_func; }
+    typename T::Function func() const
+    {
+        return m_func;
+    }
 
-    void operator()(std::shared_ptr<SyncSession> session, SyncError error) {
+    void operator()(std::shared_ptr<SyncSession> session, SyncError error)
+    {
         HANDLESCOPE(m_ctx)
 
         std::string name = "Error";
@@ -184,7 +192,9 @@ public:
 
         if (error.is_client_reset_requested()) {
             auto config_object = Object<T>::create_empty(m_ctx);
-            Object<T>::set_property(m_ctx, config_object, "path", Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]));
+            Object<T>::set_property(
+                m_ctx, config_object, "path",
+                Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]));
             Object<T>::set_property(m_ctx, config_object, "readOnly", Value<T>::from_boolean(m_ctx, true));
             Object<T>::set_property(m_ctx, error_object, "config", config_object);
             name = "ClientReset";
@@ -193,7 +203,8 @@ public:
         Object<T>::set_property(m_ctx, error_object, "name", Value<T>::from_string(m_ctx, name));
         Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
         Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
-        Object<T>::set_property(m_ctx, error_object, "category", Value<T>::from_string(m_ctx, error.error_code.category().name()));
+        Object<T>::set_property(m_ctx, error_object, "category",
+                                Value<T>::from_string(m_ctx, error.error_code.category().name()));
         Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error.error_code.value()));
 
         auto user_info = Object<T>::create_empty(m_ctx);
@@ -209,6 +220,7 @@ public:
 
         Function<T>::callback(m_ctx, m_func, 2, arguments);
     }
+
 private:
     const Protected<typename T::GlobalContext> m_ctx;
     const Protected<typename T::Function> m_func;
@@ -222,20 +234,21 @@ template <typename T>
 class SSLVerifyCallbackSyncThreadFunctor {
 public:
     SSLVerifyCallbackSyncThreadFunctor(typename T::Context ctx, typename T::Function ssl_verify_func)
-    : m_ctx(Context<T>::get_global_context(ctx))
-    , m_func(ctx, ssl_verify_func)
-    , m_event_loop_dispatcher {SSLVerifyCallbackSyncThreadFunctor<T>::main_loop_handler}
-    , m_mutex{new std::mutex}
-    , m_cond_var{new std::condition_variable}
+        : m_ctx(Context<T>::get_global_context(ctx))
+        , m_func(ctx, ssl_verify_func)
+        , m_event_loop_dispatcher{SSLVerifyCallbackSyncThreadFunctor<T>::main_loop_handler}
+        , m_mutex{new std::mutex}
+        , m_cond_var{new std::condition_variable}
     {
     }
 
     // This function is called on the sync client's event loop thread.
-    bool operator ()(const std::string& server_address, util::network::Endpoint::port_type server_port, const char* pem_data, size_t pem_size, int preverify_ok, int depth)
+    bool operator()(const std::string& server_address, util::network::Endpoint::port_type server_port,
+                    const char* pem_data, size_t pem_size, int preverify_ok, int depth)
     {
-        const std::string pem_certificate {pem_data, pem_size};
+        const std::string pem_certificate{pem_data, pem_size};
         {
-            std::lock_guard<std::mutex> lock {*m_mutex};
+            std::lock_guard<std::mutex> lock{*m_mutex};
             m_ssl_certificate_callback_done = false;
         }
 
@@ -247,7 +260,9 @@ public:
             // Wait for the return value of the callback function on the node.js main thread.
             // The sync client blocks during this wait.
             std::unique_lock<std::mutex> lock(*m_mutex);
-            m_cond_var->wait(lock, [this] { return this->m_ssl_certificate_callback_done; });
+            m_cond_var->wait(lock, [this] {
+                return this->m_ssl_certificate_callback_done;
+            });
             ssl_certificate_accepted = m_ssl_certificate_accepted;
         }
 
@@ -258,30 +273,31 @@ public:
     // main_loop_handler calls the user callback (m_func) and sends the return value
     // back to the sync client's event loop thread through a condition variable.
     static void main_loop_handler(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
-                                  const std::string& server_address,
-                                  util::network::Endpoint::port_type server_port,
-                                  const std::string& pem_certificate,
-                                  int preverify_ok,
-                                  int depth)
+                                  const std::string& server_address, util::network::Endpoint::port_type server_port,
+                                  const std::string& pem_certificate, int preverify_ok, int depth)
     {
         const Protected<typename T::GlobalContext>& ctx = this_object->m_ctx;
-		HANDLESCOPE(ctx)
+        HANDLESCOPE(ctx)
 
 
         typename T::Object ssl_certificate_object = Object<T>::create_empty(ctx);
-        Object<T>::set_property(ctx, ssl_certificate_object, "serverAddress", Value<T>::from_string(ctx, server_address));
-        Object<T>::set_property(ctx, ssl_certificate_object, "serverPort", Value<T>::from_number(ctx, double(server_port)));
-        Object<T>::set_property(ctx, ssl_certificate_object, "pemCertificate", Value<T>::from_string(ctx, pem_certificate));
-        Object<T>::set_property(ctx, ssl_certificate_object, "acceptedByOpenSSL", Value<T>::from_boolean(ctx, preverify_ok != 0));
+        Object<T>::set_property(ctx, ssl_certificate_object, "serverAddress",
+                                Value<T>::from_string(ctx, server_address));
+        Object<T>::set_property(ctx, ssl_certificate_object, "serverPort",
+                                Value<T>::from_number(ctx, double(server_port)));
+        Object<T>::set_property(ctx, ssl_certificate_object, "pemCertificate",
+                                Value<T>::from_string(ctx, pem_certificate));
+        Object<T>::set_property(ctx, ssl_certificate_object, "acceptedByOpenSSL",
+                                Value<T>::from_boolean(ctx, preverify_ok != 0));
         Object<T>::set_property(ctx, ssl_certificate_object, "depth", Value<T>::from_number(ctx, double(depth)));
 
         const int argc = 1;
-        typename T::Value arguments[argc] = { ssl_certificate_object };
+        typename T::Value arguments[argc] = {ssl_certificate_object};
         typename T::Value ret_val = Function<T>::callback(ctx, this_object->m_func, 1, arguments);
         bool ret_val_bool = Value<T>::to_boolean(ctx, ret_val);
 
         {
-            std::lock_guard<std::mutex> lock {*this_object->m_mutex};
+            std::lock_guard<std::mutex> lock{*this_object->m_mutex};
             this_object->m_ssl_certificate_callback_done = true;
             this_object->m_ssl_certificate_accepted = ret_val_bool;
         }
@@ -294,11 +310,9 @@ private:
     const Protected<typename T::GlobalContext> m_ctx;
     const Protected<typename T::Function> m_func;
     util::EventLoopDispatcher<void(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
-                                   const std::string& server_address,
-                                   util::network::Endpoint::port_type server_port,
-                                   const std::string& pem_certificate,
-                                   int preverify_ok,
-                                   int depth)> m_event_loop_dispatcher;
+                                   const std::string& server_address, util::network::Endpoint::port_type server_port,
+                                   const std::string& pem_certificate, int preverify_ok, int depth)>
+        m_event_loop_dispatcher;
     bool m_ssl_certificate_callback_done = false;
     bool m_ssl_certificate_accepted = false;
     std::shared_ptr<std::mutex> m_mutex;
@@ -306,8 +320,10 @@ private:
 };
 
 // TODO: We should move this function to js_user.hpp but hard due to circular dependency
-template<typename T>
-void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_object, Arguments& args,
+                                            ReturnValue& return_value)
+{
     args.validate_count(1);
 
     User<T>* internal = get_internal<T, UserClass<T>>(ctx, this_object);
@@ -316,51 +332,65 @@ void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_obj
     }
 
     auto user = internal->get();
-    //user.get();
+    // user.get();
     if (auto session = user->session_for_on_disk_path(Value::validated_to_string(ctx, args[0]))) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
-    } else {
+    }
+    else {
         return_value.set_undefined();
     }
 }
 
-template<typename T>
-void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue& return_value)
+{
     if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
         ObjectType config = Object::create_empty(ctx);
-        Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
+        Object::set_property(
+            ctx, config, "user",
+            create_object<T, UserClass<T>>(
+                ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
         // TODO: add app id
         bson::Bson partition_value_bson = bson::parse(session->config().partition_value);
-        Object::set_property(ctx, config, "partitionValue", Value::from_string(ctx, String::from_bson(partition_value_bson)));
-        if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
+        Object::set_property(ctx, config, "partitionValue",
+                             Value::from_string(ctx, String::from_bson(partition_value_bson)));
+        if (auto dispatcher =
+                session->config()
+                    .error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());
             }
         }
         if (!session->config().custom_http_headers.empty()) {
             ObjectType custom_http_headers_object = Object::create_empty(ctx);
-            for (auto it = session->config().custom_http_headers.begin(); it != session->config().custom_http_headers.end(); ++it) {
+            for (auto it = session->config().custom_http_headers.begin();
+                 it != session->config().custom_http_headers.end(); ++it) {
                 Object::set_property(ctx, custom_http_headers_object, it->first, Value::from_string(ctx, it->second));
             }
             Object::set_property(ctx, config, "custom_http_headers", custom_http_headers_object);
         }
         return_value.set(config);
-    } else {
+    }
+    else {
         return_value.set_undefined();
     }
 }
 
-template<typename T>
-void SessionClass<T>::get_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::get_user(ContextType ctx, ObjectType object, ReturnValue& return_value)
+{
     if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
-        return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
-    } else {
+        return_value.set(create_object<T, UserClass<T>>(
+            ctx, new User<T>(session->config().user, nullptr))); // FIXME: nullptr is not an app object
+    }
+    else {
         return_value.set_undefined();
     }
 }
 
-template<typename T>
-void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue& return_value)
+{
     static const std::string invalid("invalid");
     static const std::string inactive("inactive");
     static const std::string active("active");
@@ -370,33 +400,40 @@ void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue 
     if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
         if (session->state() == SyncSession::State::Inactive) {
             return_value.set(inactive);
-        } else {
+        }
+        else {
             return_value.set(active);
         }
     }
 }
 
-template<typename T>
-std::string SessionClass<T>::get_connection_state_value(SyncSession::ConnectionState state) {
-    switch(state) {
-        case SyncSession::ConnectionState::Disconnected: return "disconnected";
-        case SyncSession::ConnectionState::Connecting: return "connecting";
-        case SyncSession::ConnectionState::Connected: return "connected";
-		default:
-			REALM_UNREACHABLE();
+template <typename T>
+std::string SessionClass<T>::get_connection_state_value(SyncSession::ConnectionState state)
+{
+    switch (state) {
+        case SyncSession::ConnectionState::Disconnected:
+            return "disconnected";
+        case SyncSession::ConnectionState::Connecting:
+            return "connecting";
+        case SyncSession::ConnectionState::Connected:
+            return "connected";
+        default:
+            REALM_UNREACHABLE();
     }
 }
 
-template<typename T>
-void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, ReturnValue& return_value)
+{
     return_value.set(get_connection_state_value(SyncSession::ConnectionState::Disconnected));
     if (auto session = get_internal<T, SessionClass<T>>(ctx, object)->lock()) {
         return_value.set(get_connection_state_value(session->connection_state()));
     }
 }
 
-template<typename T>
-void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &) {
+template <typename T>
+void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue&)
+{
     args.validate_count(2);
 
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
@@ -406,8 +443,10 @@ void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Ar
     }
 }
 
-template<typename T>
-void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                ReturnValue& return_value)
+{
     args.validate_count(3);
 
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
@@ -422,7 +461,8 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
             direction = SyncSession::ProgressDirection::upload;
         }
         else {
-            throw std::invalid_argument("Invalid argument 'direction'. Only 'download' and 'upload' progress notification directions are supported");
+            throw std::invalid_argument("Invalid argument 'direction'. Only 'download' and 'upload' progress "
+                                        "notification directions are supported");
         }
 
         bool is_streaming = false;
@@ -433,7 +473,8 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
             is_streaming = false;
         }
         else {
-            throw std::invalid_argument("Invalid argument 'mode'. Only 'reportIndefinitely' and 'forCurrentlyOutstandingWork' progress notification modes are supported");
+            throw std::invalid_argument("Invalid argument 'mode'. Only 'reportIndefinitely' and "
+                                        "'forCurrentlyOutstandingWork' progress notification modes are supported");
         }
 
         auto callback_function = Value::validated_to_function(ctx, args[2], "callback");
@@ -443,28 +484,33 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
         std::function<ProgressHandler> progressFunc;
 
-        util::EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
-            HANDLESCOPE(protected_ctx)
-            ValueType callback_arguments[2] = {
-                Value::from_number(protected_ctx, transferred_bytes),
-                Value::from_number(protected_ctx, transferrable_bytes),
-            };
+        util::EventLoopDispatcher<ProgressHandler> progress_handler(
+            [=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
+                HANDLESCOPE(protected_ctx)
+                ValueType callback_arguments[2] = {
+                    Value::from_number(protected_ctx, transferred_bytes),
+                    Value::from_number(protected_ctx, transferrable_bytes),
+                };
 
-            Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
-        });
+                Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
+            });
 
         progressFunc = std::move(progress_handler);
 
-        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), direction, is_streaming);
+        auto registrationToken =
+            session->register_progress_notifier(std::move(progressFunc), direction, is_streaming);
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
         Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
-        Object::set_property(ctx, callback_function, "_registrationToken", Value::from_number(protected_ctx, registrationToken), attributes);
+        Object::set_property(ctx, callback_function, "_registrationToken",
+                             Value::from_number(protected_ctx, registrationToken), attributes);
     }
 }
 
-template<typename T>
-void SessionClass<T>::remove_progress_notification(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::remove_progress_notification(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                   ReturnValue& return_value)
+{
     args.validate_count(1);
     auto callback_function = Value::validated_to_function(ctx, args[0], "callback");
     auto syncSessionProp = Object::get_property(ctx, callback_function, "_syncSession");
@@ -481,8 +527,10 @@ void SessionClass<T>::remove_progress_notification(ContextType ctx, ObjectType t
     }
 }
 
-template<typename T>
-void SessionClass<T>::add_connection_notification(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::add_connection_notification(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                  ReturnValue& return_value)
+{
     args.validate_count(1);
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         auto callback_function = Value::validated_to_function(ctx, args[0], "callback");
@@ -492,14 +540,15 @@ void SessionClass<T>::add_connection_notification(ContextType ctx, ObjectType th
 
         std::function<ConnectionHandler> connectionFunc;
 
-        util::EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
-            HANDLESCOPE(protected_ctx)
-            ValueType callback_arguments[2] = {
-                Value::from_string(protected_ctx, get_connection_state_value(new_state)),
-                Value::from_string(protected_ctx, get_connection_state_value(old_state)),
-            };
-            Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
-        });
+        util::EventLoopDispatcher<ConnectionHandler> connection_handler(
+            [=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
+                HANDLESCOPE(protected_ctx)
+                ValueType callback_arguments[2] = {
+                    Value::from_string(protected_ctx, get_connection_state_value(new_state)),
+                    Value::from_string(protected_ctx, get_connection_state_value(old_state)),
+                };
+                Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
+            });
 
         connectionFunc = std::move(connection_handler);
 
@@ -507,12 +556,15 @@ void SessionClass<T>::add_connection_notification(ContextType ctx, ObjectType th
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
         Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
-        Object::set_property(ctx, callback_function, "_connectionNotificationToken", Value::from_number(protected_ctx, notificationToken), attributes);
+        Object::set_property(ctx, callback_function, "_connectionNotificationToken",
+                             Value::from_number(protected_ctx, notificationToken), attributes);
     }
 }
 
-template<typename T>
-void SessionClass<T>::remove_connection_notification(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::remove_connection_notification(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                     ReturnValue& return_value)
+{
     args.validate_count(1);
     auto callback_function = Value::validated_to_function(ctx, args[0], "callback");
     auto syncSessionProp = Object::get_property(ctx, callback_function, "_syncSession");
@@ -528,22 +580,25 @@ void SessionClass<T>::remove_connection_notification(ContextType ctx, ObjectType
     }
 }
 
-template<typename T>
-void SessionClass<T>::is_connected(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::is_connected(ContextType ctx, ObjectType this_object, Arguments& args,
+                                   ReturnValue& return_value)
+{
     args.validate_count(0);
     return_value.set(false);
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         auto state = session->state();
         auto connection_state = session->connection_state();
-        if (connection_state == SyncSession::ConnectionState::Connected
-            && (state == SyncSession::State::Active || state == SyncSession::State::Dying)) {
+        if (connection_state == SyncSession::ConnectionState::Connected &&
+            (state == SyncSession::State::Active || state == SyncSession::State::Dying)) {
             return_value.set(true);
         }
     }
 }
 
-template<typename T>
-void SessionClass<T>::resume(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::resume(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(0);
     return_value.set(false);
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
@@ -551,8 +606,9 @@ void SessionClass<T>::resume(ContextType ctx, ObjectType this_object, Arguments&
     }
 }
 
-template<typename T>
-void SessionClass<T>::pause(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+template <typename T>
+void SessionClass<T>::pause(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(0);
     return_value.set(false);
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
@@ -577,26 +633,28 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
     }
 }*/
 
-template<typename T>
-void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments &args) {
+template <typename T>
+void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object,
+                                          Arguments& args)
+{
     args.validate_count(1);
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
         auto callback = Value::validated_to_function(ctx, args[0]);
 
-        util::EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler([
-            ctx=Protected(Context<T>::get_global_context(ctx)),
-            callback=Protected(ctx, callback)
-        ](std::error_code error) {
-            HANDLESCOPE(ctx);
-            Function<T>::callback(ctx, callback, {
-                !error ? Value::from_undefined(ctx) : Object::create_obj(ctx, {
-                    {"message", Value::from_string(ctx, error.message())},
-                    {"errorCode", Value::from_number(ctx, error.value())},
-                })
+        util::EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler(
+            [ctx = Protected(Context<T>::get_global_context(ctx)),
+             callback = Protected(ctx, callback)](std::error_code error) {
+                HANDLESCOPE(ctx);
+                Function<T>::callback(
+                    ctx, callback,
+                    {!error ? Value::from_undefined(ctx)
+                            : Object::create_obj(ctx, {
+                                                          {"message", Value::from_string(ctx, error.message())},
+                                                          {"errorCode", Value::from_number(ctx, error.value())},
+                                                      })});
             });
-        });
 
-        switch(direction) {
+        switch (direction) {
             case Upload:
                 session->wait_for_upload_completion(std::move(completion_handler));
                 break;
@@ -610,17 +668,21 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
     }
 }
 
-template<typename T>
-void SessionClass<T>::wait_for_upload_completion(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue&) {
+template <typename T>
+void SessionClass<T>::wait_for_upload_completion(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                 ReturnValue&)
+{
     wait_for_completion(Direction::Upload, ctx, this_object, args);
 }
 
-template<typename T>
-void SessionClass<T>::wait_for_download_completion(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue&) {
+template <typename T>
+void SessionClass<T>::wait_for_download_completion(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                   ReturnValue&)
+{
     wait_for_completion(Direction::Download, ctx, this_object, args);
 }
 
-template<typename T>
+template <typename T>
 class SyncClass : public ClassDefinition<T, void*> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
@@ -639,19 +701,20 @@ public:
 
     static FunctionType create_constructor(ContextType);
 
-    static void set_sync_log_level(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void set_sync_logger(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void set_sync_user_agent(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void initiate_client_reset(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void reconnect(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void has_existing_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void enable_multiplexing(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void deserialize_change_set(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void get_all_sync_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void get_sync_session(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void set_sync_log_level(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void set_sync_logger(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void set_sync_user_agent(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void initiate_client_reset(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void reconnect(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void has_existing_sessions(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void enable_multiplexing(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void deserialize_change_set(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void get_all_sync_sessions(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void get_sync_session(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     // private
-    static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
+    static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object,
+                                     Realm::Config&);
     static void populate_sync_config_for_ssl(ContextType, ObjectType, SyncConfig&);
 
     MethodMap<T> const static_methods = {
@@ -668,19 +731,28 @@ public:
     };
 };
 
-template<typename T>
-inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
+template <typename T>
+inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx)
+{
     FunctionType sync_constructor = ObjectWrap<T, SyncClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
-    Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
-    Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
+    Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx),
+                         attributes);
+    Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx),
+                         attributes);
+    Object::set_property(ctx, sync_constructor, "Subscription",
+                         ObjectWrap<T, SubscriptionClass<T>>::create_constructor(ctx), attributes);
+    Object::set_property(ctx, sync_constructor, "Subscriptions",
+                         ObjectWrap<T, SubscriptionsClass<T>>::create_constructor(ctx), attributes);
 
     return sync_constructor;
 }
 
-template<typename T>
-void SyncClass<T>::get_sync_session(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void SyncClass<T>::get_sync_session(ContextType ctx, ObjectType this_object, Arguments& args,
+                                    ReturnValue& return_value)
+{
     args.validate_count(2);
 
     auto user_object = Value::validated_to_object(ctx, args[0], "user");
@@ -698,8 +770,10 @@ void SyncClass<T>::get_sync_session(ContextType ctx, ObjectType this_object, Arg
     return_value.set_null();
 }
 
-template<typename T>
-void SyncClass<T>::get_all_sync_sessions(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void SyncClass<T>::get_all_sync_sessions(ContextType ctx, ObjectType this_object, Arguments& args,
+                                         ReturnValue& return_value)
+{
     args.validate_count(1);
 
     auto user_object = Value::validated_to_object(ctx, args[0], "user");
@@ -712,18 +786,23 @@ void SyncClass<T>::get_all_sync_sessions(ContextType ctx, ObjectType this_object
     return_value.set(Object::create_array(ctx, session_objects));
 }
 
-template<typename T>
-void SyncClass<T>::initiate_client_reset(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
+template <typename T>
+void SyncClass<T>::initiate_client_reset(ContextType ctx, ObjectType this_object, Arguments& args,
+                                         ReturnValue& return_value)
+{
     args.validate_count(2);
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     std::string path = Value::validated_to_string(ctx, args[1]);
     if (!app->sync_manager()->immediately_run_file_actions(std::string(path))) {
-        throw std::runtime_error(util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
+        throw std::runtime_error(
+            util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
     }
 }
 
-template<typename T>
-void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, Arguments& args,
+                                      ReturnValue& return_value)
+{
     args.validate_count(2);
 
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
@@ -733,8 +812,10 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
     app->sync_manager()->set_log_level(level);
 }
 
-template<typename T>
-void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments& args,
+                                   ReturnValue& return_value)
+{
     args.validate_count(2);
 
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
@@ -746,10 +827,8 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
     common::logger::Delegated show_logs = [=](int level, std::string message) {
         HANDLESCOPE(protected_ctx)
 
-        ValueType arguments[2] = {
-            Value::from_number(protected_ctx, level),
-            Value::from_string(protected_ctx, message)
-        };
+        ValueType arguments[2] = {Value::from_number(protected_ctx, level),
+                                  Value::from_string(protected_ctx, message)};
 
         Function::callback(protected_ctx, protected_callback, 2, arguments);
     };
@@ -758,30 +837,36 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
     app->sync_manager()->set_logger_factory(sync_logger);
 }
 
-template<typename T>
-void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, Arguments& args,
+                                       ReturnValue& return_value)
+{
     args.validate_count(2);
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     std::string application_user_agent = Value::validated_to_string(ctx, args[1], "user agent");
     app->sync_manager()->set_user_agent(application_user_agent);
 }
 
-template<typename T>
-void SyncClass<T>::reconnect(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void SyncClass<T>::reconnect(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(1);
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     app->sync_manager()->reconnect();
 }
 
-template<typename T>
-void SyncClass<T>::has_existing_sessions(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
+template <typename T>
+void SyncClass<T>::has_existing_sessions(ContextType ctx, ObjectType this_object, Arguments& args,
+                                         ReturnValue& return_value)
+{
     args.validate_count(1);
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     return_value.set(app->sync_manager()->has_existing_sessions());
 }
 
-template<typename T>
-void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object, Realm::Config& config)
+template <typename T>
+void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object,
+                                        Realm::Config& config)
 {
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
     if (Value::is_boolean(ctx, sync_config_value)) {
@@ -789,13 +874,15 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         if (config.force_sync_history) {
             config.schema_mode = SchemaMode::AdditiveExplicit;
         }
-    } else if (!Value::is_undefined(ctx, sync_config_value)) {
+    }
+    else if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
         std::function<SyncSessionErrorHandler> error_handler;
         ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
         if (!Value::is_undefined(ctx, error_func)) {
-            error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
+            error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
         }
 
         ObjectType user_object = Object::validated_get_object(ctx, sync_config_object, "user");
@@ -804,23 +891,41 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             throw std::runtime_error("User is no longer valid.");
         }
 
-        ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
-        std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
+        ValueType flexible_value = Object::get_property(ctx, sync_config_object, "flexible");
+        if (Value::is_boolean(ctx, flexible_value) && Value::to_boolean(ctx, flexible_value)) {
+            // TODO hack to remove when flexible sync config exists
+            std::string pv = "test";
+            auto partition_bson = bson::Bson(pv);
+            std::ostringstream s;
+            s << partition_bson;
+            std::string partition_value = s.str();
 
-        config.sync_config = std::make_shared<SyncConfig>(user, std::move(partition_value));
+            config.sync_config = std::make_shared<SyncConfig>(user, std::move(partition_value));
+        }
+        else {
+            ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
+            std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
+
+            config.sync_config = std::make_shared<SyncConfig>(user, std::move(partition_value));
+        }
+
         config.sync_config->error_handler = std::move(error_handler);
 
         SyncSessionStopPolicy session_stop_policy = SyncSessionStopPolicy::AfterChangesUploaded;
         ValueType session_stop_policy_value = Object::get_property(ctx, sync_config_object, "_sessionStopPolicy");
         if (!Value::is_undefined(ctx, session_stop_policy_value)) {
-            std::string stop_session = Value::validated_to_string(ctx, session_stop_policy_value, "_sessionStopPolicy");
+            std::string stop_session =
+                Value::validated_to_string(ctx, session_stop_policy_value, "_sessionStopPolicy");
             if (stop_session == std::string("immediately")) {
                 session_stop_policy = SyncSessionStopPolicy::Immediately;
-            } else if (stop_session == std::string("never")) {
+            }
+            else if (stop_session == std::string("never")) {
                 session_stop_policy = SyncSessionStopPolicy::LiveIndefinitely;
-            } else if (stop_session == std::string("after-upload")) {
+            }
+            else if (stop_session == std::string("after-upload")) {
                 session_stop_policy = SyncSessionStopPolicy::AfterChangesUploaded;
-            } else {
+            }
+            else {
                 throw std::invalid_argument("Unknown argument for _sessionStopPolicy: " + stop_session);
             }
         }
@@ -844,9 +949,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         // HTTP proxy: only node is supported
 #ifdef REALM_PLATFORM_NODE
         SyncConfig::ProxyConfig proxy_config;
-        std::vector<std::string> env_vars = { "https_proxy", "HTTPS_PROXY" };
+        std::vector<std::string> env_vars = {"https_proxy", "HTTPS_PROXY"};
         for (auto env_var : env_vars) {
-            char *http_proxy = std::getenv(env_var.c_str());
+            char* http_proxy = std::getenv(env_var.c_str());
             if (http_proxy != NULL) {
                 // https://stackoverflow.com/questions/43906956/split-url-into-host-port-and-resource-c
                 std::string url(http_proxy);
@@ -863,10 +968,13 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
                 if (protocol == "http") {
                     proxy_config.type = SyncConfig::ProxyConfig::Type::HTTP;
-                } else if (protocol == "https") {
+                }
+                else if (protocol == "https") {
                     proxy_config.type = SyncConfig::ProxyConfig::Type::HTTPS;
-                } else {
-                    throw std::runtime_error("Expected either 'http' or 'https' as protocol for " + env_var + " (got " + protocol + ")");
+                }
+                else {
+                    throw std::runtime_error("Expected either 'http' or 'https' as protocol for " + env_var +
+                                             " (got " + protocol + ")");
                 }
                 proxy_config.address = std::move(host);
                 proxy_config.port = static_cast<std::uint_fast16_t>(atoi(port.c_str()));
@@ -890,7 +998,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     }
 }
 
-template<typename T>
+template <typename T>
 void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType config_object, SyncConfig& config)
 {
     ValueType validate_ssl = Object::get_property(ctx, config_object, "validate");
@@ -905,16 +1013,19 @@ void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType conf
 
     ValueType validate_callback = Object::get_property(ctx, config_object, "validateCallback");
     if (Value::is_function(ctx, validate_callback)) {
-        config.ssl_verify_callback = SSLVerifyCallbackSyncThreadFunctor<T> { ctx, Value::to_function(ctx, validate_callback) };
+        config.ssl_verify_callback =
+            SSLVerifyCallbackSyncThreadFunctor<T>{ctx, Value::to_function(ctx, validate_callback)};
     }
 }
 
-template<typename T>
-void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+template <typename T>
+void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, Arguments& args,
+                                       ReturnValue& return_value)
+{
     args.validate_count(1);
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     app->sync_manager()->enable_session_multiplexing();
 }
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm

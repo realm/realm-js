@@ -113,9 +113,8 @@ declare namespace Realm {
         validateCallback?: SSLVerifyCallback;
     }
 
-    interface SyncConfiguration {
+    interface BaseSyncConfiguration {
         user: User;
-        partitionValue: Realm.App.Sync.PartitionValue;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
@@ -123,6 +122,18 @@ declare namespace Realm {
         _sessionStopPolicy?: SessionStopPolicy;
         error?: ErrorCallback;
     }
+
+    interface FlexibleSyncConfiguration extends BaseSyncConfiguration {
+        // This isn't quite right as this matches flexible: false too, can't work out how to do it properly
+        flexible: boolean;
+    }
+
+    interface PartitionSyncConfiguration extends BaseSyncConfiguration {
+        flexible?: never;
+        partitionValue: Realm.App.Sync.PartitionValue;
+    }
+
+    type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfiguration;
 
     interface BaseConfiguration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
@@ -133,6 +144,7 @@ declare namespace Realm {
         fifoFilesFallbackPath?: string;
         readOnly?: boolean;
     }
+
 
     interface ConfigurationWithSync extends BaseConfiguration {
         sync: SyncConfiguration;
@@ -576,6 +588,109 @@ declare namespace Realm {
          * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
          */
         const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
+
+        // A single subscription
+        class Subscription {
+            new(): never; // This type isn't supposed to be constructed manually by end users.
+
+            // When the subscription was created. Recorded automatically.
+            readonly createdAt: Date;
+
+            // When the subscription was last updated. Recorded automatically.
+            readonly updatedAt: Date;
+
+            // Name of the subscription; if not specified it will return
+            // the query as a string.
+            readonly name: string;
+
+            // The type of objects the subscription operates on.
+            readonly objectType: string;
+
+            // The RQL representation of the query the subscription was created with.
+            readonly queryString: string;
+        }
+
+        enum SubscriptionState {
+            Uncommitted = "uncommitted",
+            Pending = "pending",
+            Bootstrapping = "bootstrapping",
+            Complete = "complete",
+            Error = "error",
+            Superceded = "superceded",
+        }
+
+        // Options for SubscriptionSet.add
+        interface SubscriptionOptions {
+            // Name of the subscription, optional.
+            name?: string;
+
+            // Whether to update an existing subscription. If set to false, trying to
+            // add a subscription with the same name but different query will throw.
+            // Defaults to true if undefined.
+            // Adding an identical subscription (query+name) is a no-op.
+            updateExisting?: boolean;
+        }
+
+        // A collection of subscriptions. Mutating it can only happen in an update callback.
+        class Subscriptions {
+            new(): never; // This type isn't supposed to be constructed manually by end users.
+
+            // Returns true if there are no subscriptions in the set
+            readonly empty: boolean;
+
+            // The version of the subscription set
+            readonly version: number;
+
+            // Get a read-only snapshot of the subscriptions in the array
+            getSubscriptions(): ReadonlyArray<Subscription>;
+
+            // Find a subscription by name. Return null if not found.
+            findByName(name: string): Subscription | null;
+
+            // Find a subscription by query. Return null if not found.
+            // Will match both named and unnamed subscriptions.
+            find<T>(query: Realm.Results<T & Realm.Object>): Subscription | null;
+
+            // The state of this collection - is it acknowledged by the server and
+            // has the data been downloaded locally?
+            readonly state: SubscriptionState;
+
+            // The exception containing information for why the state of the SubscriptionSet
+            // is set to Error. If the state is not set to Error, this will be null.
+            readonly error: Realm.SyncError | null;
+
+            // Wait for the server to acknowledge and send all the data associated
+            // with this collection of subscriptions. If the State is Complete, this method
+            // will return immediately. If the State is Error, this will throw an error
+            // immediately. If someone updates the Realm subscriptions while waiting,
+            // this will throw a specific error.
+            waitForSynchronization: () => Promise<void>;
+
+            // Creates a transaction and updates this subscription set,
+            // returning the new updated subscription set
+            update: (callback: (mutableSubs: MutableSubscriptions) => void) => Subscriptions;
+        }
+
+        interface MutableSubscriptions extends Subscriptions {
+            // Add a query to the list of subscriptions. Optionally, provide a name
+            // and other parameters.
+            add: <T>(query: Realm.Results<T & Realm.Object>, options?: SubscriptionOptions) => Subscription;
+
+            // Remove a subscription by name. Returns false if not found.
+            removeByName: (name: string) => boolean;
+
+            // Remove a subscription by query. Returns false if not found.
+            remove: <T>(query: Realm.Results<T & Realm.Object>) => boolean;
+
+            // Remove a concrete subscription. Returns false if not found.
+            removeSubscription: <T>(subscription: Subscription) => boolean;
+
+            // Remove all subscriptions. Returns number of removed subscriptions.
+            removeAll: () => number;
+
+            // Remove all subscriptions for object type. Returns number of removed subscriptions.
+            removeByObjectType: (objectType: string) => number;
+        }
     }
 
     namespace BSON {
@@ -748,8 +863,8 @@ declare class Realm {
      * @returns {T | undefined}
      */
     objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: Realm.PrimaryKey): T | undefined;
-    
-    // Combined definitions 
+
+    // Combined definitions
     objectForPrimaryKey<T>(type: string | {new(...arg: any[]): T; }, key: Realm.PrimaryKey): (T & Realm.Object) | undefined;
 
     /**
@@ -764,7 +879,7 @@ declare class Realm {
      */
     objects<T extends Realm.Object>(type: {new(...arg: any[]): T; }): Realm.Results<T>;
 
-    // Combined definitions 
+    // Combined definitions
     objects<T>(type: string | {new(...arg: any[]): T; }): Realm.Results<T & Realm.Object>;
 
     /**
@@ -822,6 +937,9 @@ declare class Realm {
      * @returns void
      */
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
+
+    // TODO
+    getSubscriptions: () => Realm.App.Sync.Subscriptions;
 
     /**
      * Update the schema of the Realm.

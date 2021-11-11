@@ -45,3 +45,4 @@ require("./tests/bson");
 require("./tests/dictionary");
 require("./tests/credentials/anonymous");
 require("./tests/sync/mixed");
+require("./tests/sync/flexible");

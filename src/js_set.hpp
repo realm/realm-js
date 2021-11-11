@@ -450,7 +450,7 @@ void SetClass<T>::validate_value(ContextType ctx, realm::object_store::Set &set,
  * @param set \ref realm::object_store::Set that contains the valid value type
  * @param value \ref ValueType that is to be checked whether it is valid for the set
  * @param args None -- must be empty
- * @param return_value \ref ReturnValue wrapping a a new Set instance created by the snapshot
+ * @param return_value \ref ReturnValue wrapping a new Set instance created by the snapshot
  */
 template<typename T>
 void SetClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
