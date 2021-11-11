@@ -1,7 +1,11 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+<<<<<<< HEAD
 * Support arithmetic operations (+, -, *, /) in queries. Operands can be properties and/or constants of numeric types (`int`, `float`, `double` or `Decimal128`). You can now say something like `(age + 5) * 2 > child.age`.
+=======
+* Added beta support for flexible sync. See the [backend](https://docs.mongodb.com/realm/sync/data-access-patterns/flexible-sync/) and [SDK](https://docs.mongodb.com/realm/sdk/node/fundamentals/realms/realm-sync/#flexible-sync) documentation for more information. Please report any issues with the beta through Github.
+>>>>>>> da0635d2 (Flexible sync implementation)
 
 ### Fixed
 * Opening a Realm with a schema that has an orphaned embedded object type performed an extra empty write transaction. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115), since v10.5.0)
@@ -18,6 +22,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgraded Realm Core from v11.7.0 to v11.8.0. ([#4207](https://github.com/realm/realm-js/issues/4207))
 * Removed `.dir-locals.el`. Please configure Emacs to use `clang-format` e.g. https://github.com/SavchenkoValeriy/emacs-clang-format-plus.
 * Enabled `strictNullChecks` for integration tests
+* Upgraded Realm Core from v11.7.0 to v11.8.0.
 
 10.11.0 Release notes (2021-12-21)
 =============================================================

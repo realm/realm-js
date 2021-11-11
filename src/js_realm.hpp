@@ -28,6 +28,7 @@
 #include "js_results.hpp"
 #include "js_schema.hpp"
 #include "js_observable.hpp"
+#include "js_subscriptions.hpp"
 #include "platform.hpp"
 
 #if REALM_ENABLE_SYNC
@@ -341,6 +342,7 @@ public:
     static void object_for_object_id(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update_schema(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void get_subscriptions(ContextType, ObjectType, Arguments&, ReturnValue&);
 
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -417,6 +419,7 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"_updateSchema", wrap<update_schema>},
         {"_schemaName", wrap<get_schema_name_from_object>},
+        {"getSubscriptions", wrap<get_subscriptions>},
     };
 
     PropertyMap<T> const properties = {
@@ -1452,6 +1455,32 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
 
     // Perform the schema update
     realm->update_schema(parsed_schema, realm->schema_version() + 1, nullptr, nullptr, true);
+}
+
+/**
+ * @brief Get the latest set of flexible sync subscriptions.
+ *
+ * @exception std::runtime_error if flexible sync is not enabled
+ */
+template <typename T>
+void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, Arguments& args,
+                                      ReturnValue& return_value)
+{
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
+    auto config = realm->config();
+
+    if (!config.sync_config) {
+        throw std::runtime_error("getSubscriptions() can only be called if flexible sync is enabled, but sync is "
+                                 "currently disabled for your app. Specify { flexible: true } in your sync config.");
+    }
+
+    if (!config.sync_config->flx_sync_requested) {
+        throw std::runtime_error("getSubscriptions() can only be called if flexible sync is enabled, but partition "
+                                 "based sync is currently enabled for your app. Specify { flexible: true } in your "
+                                 "sync config and remove any `partitionValue`.");
+    }
+
+    return_value.set(SubscriptionsClass<T>::create_instance(ctx, realm->get_latest_subscription_set()));
 }
 
 template <typename T>

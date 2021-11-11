@@ -1,8 +1,7 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"target": "es2018",
-		"module": "commonjs",
+		"target": "ES5",
 		"noEmit": false,
 		"declaration": true,
 		"outDir": "./dist"
