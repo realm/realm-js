@@ -10,6 +10,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * New consistent API for `EmailPasswordAuth` methods, using a single object dictionary rather than positional arguments, to fix inconsistencies and make usage clearer. The existing API is being deprecated (see above). ([#3943](https://github.com/realm/realm-js/issues/3943))
 
 ### Fixed
+* Aligned implementation with API documentation and TS defs: `timeOutBehavior` should be `"openLocalRealm"`. (since v10.0.0)
 * Using `sort`, `distinct`, or `limit` as property name in query expression would cause an `Invalid predicate` error. ([realm/realm-java#7545](https://github.com/realm/realm-java/issues/7545), since v10.0.2)
 * Fixed a rare assertion failure or deadlock when a sync session. ([realm/realm-core#4931](https://github.com/realm/realm-core/issues/4931))
 * Fixed a rare segfault which could trigger if a user was being logged out while the access token refresh response comes in. ([realm/realm-core#4944](https://github.com/realm/realm-core/issues/4944), since v10.0.0)

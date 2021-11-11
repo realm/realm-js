@@ -339,7 +339,7 @@ module.exports = {
           newRealmFileBehavior: {
             type: "downloadBeforeOpen",
             timeOut: 0,
-            timeOutBehavior: "openLocal",
+            timeOutBehavior: "openLocalRealm",
           },
         },
       };
@@ -420,7 +420,7 @@ module.exports = {
           existingRealmFileBehavior: {
             type: "downloadBeforeOpen",
             timeOut: 0,
-            timeOutBehavior: "openLocal",
+            timeOutBehavior: "openLocalRealm",
           },
         },
       };
@@ -566,7 +566,7 @@ module.exports = {
           user,
           partitionValue,
           _sessionStopPolicy: "immediately",
-          newRealmFileBehavior: { type: "openLocal", timeOutBehavior: "foo" }, // this should fail
+          newRealmFileBehavior: { type: "openLocalRealm", timeOutBehavior: "foo" }, // this should fail
         },
       }),
     );
@@ -578,7 +578,7 @@ module.exports = {
           user,
           partitionValue,
           _sessionStopPolicy: "immediately",
-          newRealmFileBehavior: { type: "openLocal", timeOut: "bar" }, // this should fail
+          newRealmFileBehavior: { type: "openLocalRealm", timeOut: "bar" }, // this should fail
         },
       }),
     );
