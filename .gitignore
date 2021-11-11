@@ -50,6 +50,8 @@ local.properties
 
 # Visual Studio Code
 .vscode
+compile_commands.json
+.cache
 
 # Tests
 object-server-for-testing/
