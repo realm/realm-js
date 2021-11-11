@@ -46,8 +46,8 @@ export function createRealmProvider(
     }, [realm]);
 
     useEffect(() => {
-      const realm = currentRealm.current;
-      const shouldInitRealm = realm === null;
+      const realmRef = currentRealm.current;
+      const shouldInitRealm = realmRef === null;
       const initRealm = async () => {
         const openRealm = await Realm.open(configuration.current);
         setRealm(openRealm);
