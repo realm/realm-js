@@ -202,7 +202,7 @@ jobs:
       # Build the iOS xcframework
       - run: ./scripts/build-ios.sh -c ${{ matrix.type }} ${{matrix.platform.build-configuration}}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
-      - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
+      - run: npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
       # Run the tests
       - name: Run tests (${{matrix.platform.name}}/ Native)
         run: npm run test:${{matrix.platform.name}} --prefix integration-tests/environments/react-native
@@ -210,6 +210,8 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
+          RETRIES: 5
+          RETRY_DELAY: 300000 # 5 min
       - name: Run tests (${{matrix.platform.name}} / Chrome Debugging)
         if: ${{ false }}
         run: npm run test:${{matrix.platform.name}}:chrome --prefix integration-tests/environments/react-native
@@ -218,6 +220,8 @@ jobs:
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           HEADLESS_DEBUGGER: true
+          RETRIES: 5
+          RETRY_DELAY: 300000 # 5 min
   react-native-android:
     name: React Native on Android (${{ matrix.type }})
     runs-on: macos-latest
@@ -274,7 +278,7 @@ jobs:
       # Build the Android shared object file
       - run: ANDROID_NDK=$ANDROID_NDK_HOME node scripts/build-android.js --arch=x86 --build-type=${{ matrix.type }}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
-      - run: npx lerna bootstrap --scope '{realm-integration-tests,realm-react-native-tests}' --include-dependencies
+      - run: npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
       # Run the tests
       - name: Run tests (Android / Native)
         uses: reactivecircus/android-emulator-runner@v2

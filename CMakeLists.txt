@@ -1,3 +1,5 @@
+include(CheckCXXCompilerFlag)
+
 # compiling for Node.js, need to set up toolchains before project() call
 if(DEFINED CMAKE_JS_VERSION)
     if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
@@ -35,6 +37,21 @@ if(CCACHE_PROGRAM)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
 endif()
 
+# Copied from Realm Core's CMakeList.txt
+function(add_cxx_flag_if_supported flag)
+    if(flag MATCHES "^-Wno-")
+        # Compilers ignore unknown -Wno-foo flags, so look for -Wfoo instead.
+        string(REPLACE "-Wno-" "-W" check_flag ${flag})
+    else()
+        set(check_flag ${flag})
+    endif()
+
+    check_cxx_compiler_flag(${check_flag} HAVE${check_flag})
+    if(HAVE${check_flag})
+        add_compile_options($<$<COMPILE_LANGUAGE:CXX>:${flag}>)
+    endif()
+endfunction()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -47,6 +64,13 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 if(DEFINED CMAKE_JS_VERSION)
     include(NodeJSTargets)
+endif()
+
+if (NOT MSVC)
+    # Ninja buffers output so we need to tell the compiler to use colors even though stdout isn't a tty.
+    if(CMAKE_GENERATOR STREQUAL "Ninja")
+        add_cxx_flag_if_supported(-fdiagnostics-color)
+    endif()
 endif()
 
 option(REALM_JS_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)

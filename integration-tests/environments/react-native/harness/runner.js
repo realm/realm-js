@@ -15,7 +15,6 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-const cp = require("child_process");
 const puppeteer = require("puppeteer");
 
 const rn = require("./react-native-cli");
@@ -27,7 +26,12 @@ const logcat = require("./logcat");
 const IOS_DEVICE_NAME = "realm-js-integration-tests";
 const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 
-const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, SPAWN_LOGCAT, SKIP_RUNNER } = process.env;
+const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, SPAWN_LOGCAT, SKIP_RUNNER, RETRY_DELAY, RETRIES } = process.env;
+
+// If attempting a retry, wait for 1 minute before retrying
+const retryDelay = parseInt(RETRY_DELAY || "60000", 10);
+// Defaulting to zero retries
+const retries = parseInt(RETRIES || 0, 10);
 
 if (typeof PLATFORM !== "string") {
   throw new Error("Expected a 'PLATFORM' environment variable");
@@ -126,7 +130,7 @@ async function launchDebugger(headless) {
   }
 }
 
-async function run(headless, spawnLogcat) {
+async function run(headless, spawnLogcat, retries, retryDelay) {
   // Ensure the simulator is booted and ready for the app to start
   ensureSimulator();
 
@@ -136,66 +140,31 @@ async function run(headless, spawnLogcat) {
   }
 
   console.log("Starting the app");
-  if (PLATFORM === "android") {
-    // Start the log cat (skipping any initial pid from an old run)
-    if (spawnLogcat) {
-      logcat.start("com.realmreactnativetests", true).catch(console.error);
-    }
-    // Ask React Native to run the android app
-    rn.sync("run-android", "--no-packager");
-  } else if (PLATFORM === "ios") {
-    // Ask React Native to run the ios app
-    rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
-  } else if (PLATFORM === "catalyst") {
-    // Ask React Native to run the ios app
-    const myMacDeviceId = xcode.getMyMacDeviceId();
-
-    // This will just build the app, but not launch it
-    rn.sync("run-ios", "--no-packager", "--udid", myMacDeviceId);
-
-    // TODO: When the PR (https://github.com/react-native-community/cli/pull/1449) is live in React-Native
-    // the following lines can be removed
-
-    // This will retrieve the build information and launch the app
-    const buildSettings = cp.execFileSync(
-      "xcodebuild",
-      [
-        "-workspace",
-        "./ios/RealmReactNativeTests.xcworkspace",
-        "-scheme",
-        "RealmReactNativeTests",
-        "-sdk",
-        "macosx",
-        "-configuration",
-        "Debug",
-        "-showBuildSettings",
-        "-json",
-      ],
-      { encoding: "utf8" },
-    );
-    const settings = JSON.parse(buildSettings);
-
-    let targetExecutable = "";
-
-    for (const i in settings) {
-      const wrapperExtension = settings[i].buildSettings.WRAPPER_EXTENSION;
-
-      if (wrapperExtension === "app") {
-        const targetBuildDir = `${settings[i].buildSettings.TARGET_BUILD_DIR}-maccatalyst`;
-        const executableFolderPath = settings[i].buildSettings.EXECUTABLE_FOLDER_PATH;
-        targetExecutable = `${targetBuildDir}/${executableFolderPath}/RealmReactNativeTests`;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (PLATFORM === "android") {
+      // Start the log cat (skipping any initial pid from an old run)
+      if (spawnLogcat) {
+        logcat.start("com.realmreactnativetests", true).catch(console.error);
       }
+      // Ask React Native to build and run the app
+      rn.sync("run-android", "--no-packager");
+    } else if (PLATFORM === "ios") {
+      // Ask React Native to build and run the app
+      rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
+    } else if (PLATFORM === "catalyst") {
+      const myMacDeviceId = xcode.getMyMacDeviceId();
+      // Ask React Native to build and run the app
+      rn.sync("run-ios", "--no-packager", "--udid", myMacDeviceId);
+    } else {
+      throw new Error(`Unexpected platform: '${PLATFORM}'`);
     }
-
-    if (targetExecutable !== "") {
-      const appProcess = cp.spawn(targetExecutable, [], {
-        detached: true,
-        stdio: "ignore",
-      });
-      appProcess.unref();
+    if (attempt < retries) {
+      console.log(`Waiting ${retryDelay}ms before retrying`);
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      console.log(`Tests didn't complete while waiting for ${retryDelay}ms. Retrying!`);
+    } else {
+      console.log("No (more) retries ...");
     }
-  } else {
-    throw new Error(`Unexpected platform: '${PLATFORM}'`);
   }
 }
 
@@ -208,9 +177,10 @@ if (module.parent === null) {
     console.log("Skipping the runner - you're on your own");
     process.exit(0);
   }
+
   const headlessDebugger = optionalStringToBoolean(HEADLESS_DEBUGGER);
   const spawnLogcat = optionalStringToBoolean(SPAWN_LOGCAT);
-  run(headlessDebugger, spawnLogcat).catch((err) => {
+  run(headlessDebugger, spawnLogcat, retries, retryDelay).catch((err) => {
     console.error(err.stack);
     process.exit(1);
   });

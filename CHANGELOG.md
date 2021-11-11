@@ -11,6 +11,12 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Aligned implementation with API documentation and TS defs: `timeOutBehavior` should be `"openLocalRealm"`. (since v10.0.0)
+* Using `sort`, `distinct`, or `limit` as property name in query expression would cause an `Invalid predicate` error. ([realm/realm-java#7545](https://github.com/realm/realm-java/issues/7545), since v10.0.2)
+* Fixed a rare assertion failure or deadlock when a sync session. ([realm/realm-core#4931](https://github.com/realm/realm-core/issues/4931))
+* Fixed a rare segfault which could trigger if a user was being logged out while the access token refresh response comes in. ([realm/realm-core#4944](https://github.com/realm/realm-core/issues/4944), since v10.0.0)
+* Fixed a user being left in the logged in state when the user's refresh token expires. ([realm/realm-core#4882](https://github.com/realm/realm-core/issues/4882), since v10.0.0)
+* Allow for `EPERM` to be returned from `fallocate()`. This improves support for running on Linux environments with interesting file systems, like AWS Lambda. Thanks to [@ztane](https://github.com/ztane) for reporting and suggesting a fix. ([realm/realm-core#4957](https://github.com/realm/realm-core/issues/4957) and [#1832](https://github.com/realm/realm-js/issues/1832))
+* Sync progress notifiers would not trigger when the downloadable bytes size would equal 0. ([realm/realm-core#4989](https://github.com/realm/realm-core/pull/4989), since v10.3.0-rc.1)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -22,9 +28,13 @@ x.x.x Release notes (yyyy-MM-dd)
 * Adding use of [ccache](https://ccache.dev/) in build scripts, XCode projects and the integration tests GHA workflow.
 * Dropped using `install-local` in the integration tests, in favour of a more involved Metro configuration.
 * Add combined type definition for Realm.object and Realm.objectForPrimaryKey so they can be cleanly wrapped.
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.4.1 to v10.5.2.
+* Change Apple/Linux temporary directory to default to the environment's `TMPDIR` if available. This is primarily used by tests. ([realm/realm-core#4921](https://github.com/realm/realm-core/issues/4921))
+* Adding colorized compiler diagnostics if using Ninja.
+* Upgraded Realm Core from v11.4.1 to v10.6.0.
+* Change Apple/Linux temporary directory to default to the environment's `TMPDIR` if available. This is primarily used by tests. ([realm/realm-core#4921](https://github.com/realm/realm-core/issues/4921))
+* Minor speed improvement in property setters. ([#4058](https://github.com/realm/realm-js/pull/4058) and [realm/realm-core#5011](https://github.com/realm/realm-core/pull/5011))
+* Adding use of [ccache](https://ccache.dev/) in build scripts, XCode projects and the integration tests GHA workflow.
 
 10.9.1 Release notes (2021-10-20)
 =============================================================
