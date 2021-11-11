@@ -183,7 +183,7 @@ You should check that VS Code is using the workspace version of TypeScript rathe
 1. Open the `realm-js` root directory in VS Code and open any TypeScript file
 2. Press Shift+Cmd+P to open the command palette
 3. Start typing `select typescript version` to select the `TypeScript: Select TypeScript Version` command
-4. Ensure `Use Workspace Version` is elected.
+4. Ensure `Use Workspace Version` is selected.
 
 #### C++
 

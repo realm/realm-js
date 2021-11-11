@@ -42,6 +42,7 @@ export const PersonSchema: Realm.ObjectSchema = {
 export class Person extends Realm.Object implements IPerson {
   _id: Realm.BSON.ObjectId;
   name: string;
+  nonQueryable?: string;
   age: number;
   friends: Realm.List<Person>;
   dogs: Realm.Collection<Dog>;
