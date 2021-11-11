@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.10.0 Release notes (2021-11-11)
 =============================================================
 
 ### Deprecations
@@ -25,16 +25,13 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Adding use of [ccache](https://ccache.dev/) in build scripts, XCode projects and the integration tests GHA workflow.
-* Dropped using `install-local` in the integration tests, in favour of a more involved Metro configuration.
-* Add combined type definition for Realm.object and Realm.objectForPrimaryKey so they can be cleanly wrapped.
-* Upgraded Realm Core from v11.4.1 to v10.5.2.
-* Change Apple/Linux temporary directory to default to the environment's `TMPDIR` if available. This is primarily used by tests. ([realm/realm-core#4921](https://github.com/realm/realm-core/issues/4921))
-* Adding colorized compiler diagnostics if using Ninja.
 * Upgraded Realm Core from v11.4.1 to v10.6.0.
-* Change Apple/Linux temporary directory to default to the environment's `TMPDIR` if available. This is primarily used by tests. ([realm/realm-core#4921](https://github.com/realm/realm-core/issues/4921))
+* Added use of [ccache](https://ccache.dev/) in build scripts, XCode projects and the integration tests GHA workflow.
+* Dropped using `install-local` in the integration tests, in favour of a more involved Metro configuration.
+* Added combined type definition for Realm.object and Realm.objectForPrimaryKey so they can be cleanly wrapped.
+* Changed Apple/Linux temporary directory to default to the environment's `TMPDIR` if available. This is primarily used by tests. ([realm/realm-core#4921](https://github.com/realm/realm-core/issues/4921))
+* Added colorized compiler diagnostics if using Ninja.
 * Minor speed improvement in property setters. ([#4058](https://github.com/realm/realm-js/pull/4058) and [realm/realm-core#5011](https://github.com/realm/realm-core/pull/5011))
-* Adding use of [ccache](https://ccache.dev/) in build scripts, XCode projects and the integration tests GHA workflow.
 
 10.9.1 Release notes (2021-10-20)
 =============================================================
