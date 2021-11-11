@@ -78,6 +78,7 @@ Examples of context variables used:
 - The "react-native" environment looks for additional context variables (use the `./environment/react-native` NPM scripts to control this):
   - `mode=native`: Run the tests natively (default)
   - `mode=chrome-debugging`: Run tests using the legacy chrome-debugger.
+  - `syncLogLevel=all` to show all sync client debug output.
 
 As an example, to iterate on the performence tests, run the `./tests` (on Node.js) skipping tests that require a server as well as the integration tests and enable performance tests:
 
