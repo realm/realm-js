@@ -52,10 +52,10 @@ jobs:
       - name: Install React Native & Realm
         run: ./install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
       - name: Run test (iOS)
-        run: ./run-test.sh ios
-      - name: Run test (Android)
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          target: google_apis
-          script: ./run-test.sh android
+        run: ./run-ios.sh
+      # - name: Run test (Android)
+      #   uses: reactivecircus/android-emulator-runner@v2
+      #   with:
+      #     api-level: 29
+      #     target: google_apis
+      #     script: ./run-android.sh
