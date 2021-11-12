@@ -20,5 +20,9 @@ xcrun simctl bootstatus $DEVICE_UDID
 cd $APP_DIR
 # Run the app
 npx react-native run-ios --udid $DEVICE_UDID
+# Run the app again, as a work around an unidentified lunching issue on CI
+if [ "$CI" == "true" ]; then
+  npx react-native run-ios --udid $DEVICE_UDID
+fi
 # Start listening for the app
 node ../listen.js

@@ -51,6 +51,8 @@ jobs:
         run: npm install -g npm@7
       - name: Install React Native & Realm
         run: ./install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
+      - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
+        run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
       - name: Run test (iOS)
         run: ./run-ios.sh
       # - name: Run test (Android)
