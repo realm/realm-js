@@ -90,7 +90,7 @@ struct Arguments<realmjsi::Types> {
     }
 };
 
-namespace hermes {  // TODO / XXX:  Rename this namespace
+namespace realmjsi {  // realm::js::realmjsi
 
 inline std::optional<fbjsi::Object> ObjectGetOwnPropertyDescriptor(JsiEnv env, const fbjsi::Object& target, const std::string& name) {
     auto obj = js::globalType(env, "Object");
@@ -571,36 +571,36 @@ private:
     }
 };
 
-} // realmjsi
+} // namespace realm::js::realmjsi
 
 template<typename ClassType>
-    class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::hermes::ObjectWrap<ClassType> {};
+    class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::realmjsi::ObjectWrap<ClassType> {};
 
-template<hermes::ArgumentsMethodType F>
+template<realmjsi::ArgumentsMethodType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count) {
     auto env = JsiEnv(rt);
-    auto result = hermes::ReturnValue(env);
-    auto arguments = hermes::Arguments{env, count, args};
+    auto result = realmjsi::ReturnValue(env);
+    auto arguments = realmjsi::Arguments{env, count, args};
 
     F(env, env(thisVal).asObject(), arguments, result);
     return std::move(result).ToValue();
 }
 
-template<hermes::PropertyType::GetterType F>
+template<realmjsi::PropertyType::GetterType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count) {
     auto env = JsiEnv(rt);
-    auto result = hermes::ReturnValue(env);
-    auto arguments = hermes::Arguments{env, count, args};
+    auto result = realmjsi::ReturnValue(env);
+    auto arguments = realmjsi::Arguments{env, count, args};
     arguments.validate_count(0);
 
     F(env, env(thisVal).asObject(), result);
     return std::move(result).ToValue();
 }
 
-template<hermes::PropertyType::SetterType F>
+template<realmjsi::PropertyType::SetterType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count) {
     auto env = JsiEnv(rt);
-    auto arguments = hermes::Arguments{env, count, args};
+    auto arguments = realmjsi::Arguments{env, count, args};
     arguments.validate_count(1);
 
     F(env, env(thisVal).asObject(), JsiVal(env, args[0]));
@@ -608,38 +608,38 @@ fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::
     return fbjsi::Value();
 }
 
-template<hermes::IndexPropertyType::GetterType F>
+template<realmjsi::IndexPropertyType::GetterType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value&, const fbjsi::Value* args, size_t count) {
     REALM_ASSERT_RELEASE(count == 2);
     auto env = JsiEnv(rt);
-    auto out = hermes::ReturnValue(env);
+    auto out = realmjsi::ReturnValue(env);
     F(env, env(args[0]).asObject(), uint32_t(args[1].asNumber()), out);
     return std::move(out).ToValue();
 }
 
-template<hermes::IndexPropertyType::SetterType F>
+template<realmjsi::IndexPropertyType::SetterType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value&, const fbjsi::Value* args, size_t count) {
     REALM_ASSERT_RELEASE(count == 3);
     auto env = JsiEnv(rt);
     return fbjsi::Value(F(env, env(args[0]).asObject(), uint32_t(args[1].asNumber()), env(args[2])));
 }
 
-template<hermes::StringPropertyType::GetterType F>
+template<realmjsi::StringPropertyType::GetterType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const realmjsi::String& str) {
     auto env = JsiEnv(rt);
-    auto result = hermes::ReturnValue(env);
+    auto result = realmjsi::ReturnValue(env);
     F(env, env(thisVal).asObject(), str, result);
     return std::move(result).ToValue();
 }
 
-template<hermes::StringPropertyType::SetterType F>
+template<realmjsi::StringPropertyType::SetterType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const realmjsi::String& str, const fbjsi::Value& value) {
     auto env = JsiEnv(rt);
     F(env, env(thisVal).asObject(), str, env(value));
     return fbjsi::Value();
 }
 
-template<hermes::StringPropertyType::EnumeratorType F>
+template<realmjsi::StringPropertyType::EnumeratorType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count) {
     // This is only used in the JSC impl.
     REALM_UNREACHABLE();

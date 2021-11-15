@@ -24,7 +24,7 @@
 namespace realm {
 namespace js {
 
-namespace hermes {
+namespace realmjsi {
     // forward-declare JSI ObjectWrap from jsi_class.hpp
     template<typename ClassType>
         class ObjectWrap;
@@ -147,42 +147,42 @@ inline JsiObj realmjsi::Object::create_date(JsiEnv env, double time) {
 template<>
 template<typename ClassType>
 inline JsiObj realmjsi::Object::create_instance(JsiEnv env, typename ClassType::Internal* internal) {
-    return hermes::ObjectWrap<ClassType>::create_instance(env, internal);
+    return realmjsi::ObjectWrap<ClassType>::create_instance(env, internal);
 }
 
 template<>
 template<typename ClassType>
 inline JsiObj realmjsi::Object::create_instance_by_schema(JsiEnv env, JsiFunc& constructor, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
-    return hermes::ObjectWrap<ClassType>::create_instance_by_schema(env, constructor, schema, internal);
+    return realmjsi::ObjectWrap<ClassType>::create_instance_by_schema(env, constructor, schema, internal);
 }
 
 template<>
 template<typename ClassType>
 inline JsiObj realmjsi::Object::create_instance_by_schema(JsiEnv env, const realm::ObjectSchema& schema, typename ClassType::Internal* internal) {
-    return hermes::ObjectWrap<ClassType>::create_instance_by_schema(env, schema, internal);
+    return realmjsi::ObjectWrap<ClassType>::create_instance_by_schema(env, schema, internal);
 }
 
 template<typename ClassType>
 inline void on_context_destroy(JsiEnv env, std::string realmPath) {
-    hermes::ObjectWrap<ClassType>::on_context_destroy(env, realmPath);
+    realmjsi::ObjectWrap<ClassType>::on_context_destroy(env, realmPath);
 }
 
 template<>
 template<typename ClassType>
 inline bool realmjsi::Object::is_instance(JsiEnv env, const JsiObj& object) {
-    return hermes::ObjectWrap<ClassType>::is_instance(env, object);
+    return realmjsi::ObjectWrap<ClassType>::is_instance(env, object);
 }
 
 template<>
 template<typename ClassType>
 inline typename ClassType::Internal* realmjsi::Object::get_internal(JsiEnv env, const JsiObj& object) {
-    return hermes::ObjectWrap<ClassType>::get_internal(env, object);
+    return realmjsi::ObjectWrap<ClassType>::get_internal(env, object);
 }
 
 template<>
 template<typename ClassType>
 inline void realmjsi::Object::set_internal(JsiEnv env, const JsiObj& object, typename ClassType::Internal* internal) {
-    return hermes::ObjectWrap<ClassType>::set_internal(env, object, internal);
+    return realmjsi::ObjectWrap<ClassType>::set_internal(env, object, internal);
 }
 
 template<>
