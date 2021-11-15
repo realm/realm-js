@@ -26,7 +26,7 @@ RCT_NO_LAUNCH_PACKAGER=1 xcodebuild \
   -scheme ReactNativeTestApp \
   -derivedDataPath ./build \
   -destination id=$DEVICE_UDID \
-  RCT_NO_LAUNCH_PACKAGER+xxx="true" \
+  -quiet \
   # Enabling ccached builds
   CC="$PROJECT_ROOT/scripts/ccache-clang.sh" \
   CXX="$PROJECT_ROOT/scripts/ccache-clang++.sh"
@@ -41,7 +41,7 @@ xcrun simctl install $DEVICE_UDID $APP_BUILD_PATH
 # npx retry --retries 5 --factor 1 --max-timeout $RETRY_TIMEOUT -- \
 
 # Starting the listening server, Metro bundler and delayed launch of the app.
-npx concurrently --kill-others --names "listen,metro,app" \
+npx concurrently --kill-others --success "first" --names "listen,metro,app" \
   "node ../listen.js" \
   "react-native start" \
   "sleep 5; xcrun simctl launch --console-pty $DEVICE_UDID $APP_BUNDLE_ID"
