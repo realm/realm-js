@@ -18,11 +18,9 @@ open -a Simulator --args -CurrentDeviceUDID $DEVICE_UDID
 xcrun simctl bootstatus $DEVICE_UDID
 
 cd $APP_DIR
+# Retry 30 * 60 * 1000
+RETRY_TIMEOUT=1800000
 # Run the app
-npx react-native run-ios --udid $DEVICE_UDID
-# Run the app again, as a work around an unidentified lunching issue on CI
-if [ "$CI" == "true" ]; then
-  npx react-native run-ios --udid $DEVICE_UDID
-fi
-# Start listening for the app
-node ../listen.js
+npx concurrently --names "listen,rn" \
+  "node ../listen.js" \
+  "npx retry --retries 5 --factor 1 --max-timeout $RETRY_TIMEOUT -- react-native run-ios --udid $DEVICE_UDID"
