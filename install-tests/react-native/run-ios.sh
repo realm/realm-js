@@ -27,7 +27,6 @@ RCT_NO_LAUNCH_PACKAGER=1 xcodebuild \
   -scheme ReactNativeTestApp \
   -derivedDataPath ./build \
   -destination id=$DEVICE_UDID \
-  -quiet \
   CC="$PROJECT_ROOT/scripts/ccache-clang.sh" \
   CXX="$PROJECT_ROOT/scripts/ccache-clang++.sh"
 
