@@ -19,6 +19,7 @@ open -a Simulator --args -CurrentDeviceUDID $DEVICE_UDID
 xcrun simctl bootstatus $DEVICE_UDID
 
 cd $APP_DIR
+
 # Build the app
 RCT_NO_LAUNCH_PACKAGER=1 xcodebuild \
   -workspace ios/ReactNativeTestApp.xcworkspace \
@@ -30,17 +31,13 @@ RCT_NO_LAUNCH_PACKAGER=1 xcodebuild \
   # Enabling ccached builds
   CC="$PROJECT_ROOT/scripts/ccache-clang.sh" \
   CXX="$PROJECT_ROOT/scripts/ccache-clang++.sh"
+
 # Install the app onto the device
 APP_BUNDLE_ID=org.reactjs.native.example.ReactNativeTestApp
 APP_BUILD_PATH=./build/Build/Products/Debug-iphonesimulator/ReactNativeTestApp.app
 xcrun simctl install $DEVICE_UDID $APP_BUILD_PATH
-# Run the app
 
-# Retry 30 * 60 * 1000
-# RETRY_TIMEOUT=1800000
-# npx retry --retries 5 --factor 1 --max-timeout $RETRY_TIMEOUT -- \
-
-# Starting the listening server, Metro bundler and delayed launch of the app.
+# Run the app: Starting the listening server, Metro bundler and delayed launch of the app.
 npx concurrently --kill-others --success "first" --names "listen,metro,app" \
   "node ../listen.js" \
   "react-native start" \
