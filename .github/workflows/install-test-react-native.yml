@@ -53,6 +53,8 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1
         with:
           key: install-test
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
       - name: Install React Native & Realm
         run: ./install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
