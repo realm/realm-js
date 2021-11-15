@@ -20,7 +20,7 @@ xcrun simctl bootstatus $DEVICE_UDID
 
 cd $APP_DIR
 
-# Build the app
+# Build the app (ccache enabled)
 RCT_NO_LAUNCH_PACKAGER=1 xcodebuild \
   -workspace ios/ReactNativeTestApp.xcworkspace \
   -configuration Debug \
@@ -28,7 +28,6 @@ RCT_NO_LAUNCH_PACKAGER=1 xcodebuild \
   -derivedDataPath ./build \
   -destination id=$DEVICE_UDID \
   -quiet \
-  # Enabling ccached builds
   CC="$PROJECT_ROOT/scripts/ccache-clang.sh" \
   CXX="$PROJECT_ROOT/scripts/ccache-clang++.sh"
 
