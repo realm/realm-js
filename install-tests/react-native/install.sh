@@ -20,7 +20,7 @@ fi
 
 cd $APP_DIR
 # Install CLI tools and Realm (using --force to ignore potential peerDependencies failures)
-npm install concurrently retry-cli pod-install realm@$realm_version --force
+npm install ios-simulator concurrently retry-cli pod-install realm@$realm_version --force
 # Run pod-install again
 npx pod-install
 # Overwrite the App.js
