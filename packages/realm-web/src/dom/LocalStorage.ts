@@ -26,32 +26,32 @@ export class LocalStorage implements Storage {
   /**
    * Internal state of the storage.
    */
-  private readonly window: Window;
+  private readonly global: typeof globalThis;
 
   /**
    * Constructs a LocalStorage using the global window.
    */
   constructor() {
-    if (typeof window === "object") {
-      this.window = window;
+    if (typeof globalThis.localStorage === "object") {
+      this.global = globalThis;
     } else {
-      throw new Error("Cannot use LocalStorage without a global window object");
+      throw new Error("Cannot use LocalStorage without a global localStorage object");
     }
   }
 
   /** @inheritdoc */
   public get(key: string): string | null {
-    return this.window.localStorage.getItem(key);
+    return this.global.localStorage.getItem(key);
   }
 
   /** @inheritdoc */
   public set(key: string, value: string): void {
-    return this.window.localStorage.setItem(key, value);
+    return this.global.localStorage.setItem(key, value);
   }
 
   /** @inheritdoc */
   public remove(key: string): void {
-    return this.window.localStorage.removeItem(key);
+    return this.global.localStorage.removeItem(key);
   }
 
   /** @inheritdoc */
@@ -63,25 +63,25 @@ export class LocalStorage implements Storage {
   public clear(prefix?: string): void {
     const keys = [];
     // Iterate all keys to find the once have a matching prefix.
-    for (let i = 0; i < this.window.localStorage.length; i++) {
-      const key = this.window.localStorage.key(i);
+    for (let i = 0; i < this.global.localStorage.length; i++) {
+      const key = this.global.localStorage.key(i);
       if (key && (!prefix || key.startsWith(prefix))) {
         keys.push(key);
       }
     }
     // Remove the items in a seperate loop to avoid updating while iterating.
     for (const key of keys) {
-      this.window.localStorage.removeItem(key);
+      this.global.localStorage.removeItem(key);
     }
   }
 
   /** @inheritdoc */
   public addListener(listener: StorageChangeListener): void {
-    return this.window.addEventListener("storage", listener);
+    return this.global.addEventListener("storage", listener);
   }
 
   /** @inheritdoc */
   public removeListener(listener: StorageChangeListener): void {
-    return this.window.removeEventListener("storage", listener);
+    return this.global.removeEventListener("storage", listener);
   }
 }
