@@ -1,3 +1,18 @@
+?.?.? Release notes (2020-??-??)
+=============================================================
+
+### Breaking Changes
+* None
+
+### Enhancements
+* None
+
+### Fixed
+* Using `globalThis` instead of `window` global. This fix runtime issues when the package is bundled and loaded into a Cloudflare Worker. ([#4084](https://github.com/realm/realm-js/pull/4084), since 0.5.0)
+
+### Internal
+* None
+
 1.5.0 Release notes (2021-11-11)
 =============================================================
 
