@@ -5,8 +5,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * A sync user's Realm was not deleted when the user was removed if the Realm path was too long such that it triggered the fallback hashed name (this is OS dependant but is 300 characters on linux). ([realm/realm-core#4187](https://github.com/realm/realm-core/issues/4187), since  v10.0.0-beta.10)
-* Don't keep trying to refresh the access token if the client's clock is more than 30 minutes fast. ([realm/realm-core#4941](https://github.com/realm/realm-core/issues/4941), since v10.0.0)
-* Don't sleep the sync thread artificially if an auth request fails. This could be observed as a UI hang on React Native applications when sync tries to connect after being offline for more than 30 minutes. ([#3882](https://github.com/realm/realm-js/issues/3882), since v10.0.0)
+* Fixed a bug where opening a synced Realm would hang if the device's clock is more than 30 minutes fast. ([realm/realm-core#4941](https://github.com/realm/realm-core/issues/4941), since v10.0.0)
+* Fixed a bug where an app hangs if it tries to connect after being offline for more than 30 minutes. ([#3882](https://github.com/realm/realm-js/issues/3882), since v10.0.0)
 
 
 ### Compatibility
@@ -16,9 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.6.0 to v11.6.1.
 
 10.10.0 Release notes (2021-11-11)
 =============================================================
