@@ -33,21 +33,21 @@ void set_default_realm_file_directory(std::string dir);
 std::string default_realm_file_directory();
 
 // create the directories for the given filename
-void ensure_directory_exists_for_file(const std::string &file);
+void ensure_directory_exists_for_file(const std::string& file);
 
 // copy all realm files from resources directory to default realm dir
 void copy_bundled_realm_files();
 
 // remove all realm files in the given directory
-void remove_realm_files_from_directory(const std::string &directory);
+void remove_realm_files_from_directory(const std::string& directory);
 
 // remove file at the given path
-void remove_file(const std::string &path);
+void remove_file(const std::string& path);
 
 // remove directory at the given path
-void remove_directory(const std::string &path);
+void remove_directory(const std::string& path);
 
 // print something
 void print(const char* fmt, ...);
 
-}
+} // namespace realm

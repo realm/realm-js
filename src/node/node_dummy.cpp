@@ -23,8 +23,17 @@ extern "C" void node_module_register(void* mod) {}
 
 namespace node {
 namespace Buffer {
-    bool HasInstance(v8::Local<v8::Value> val) { return false; }
-    char* Data(v8::Local<v8::Value> val) { return nullptr; }
-    size_t Length(v8::Local<v8::Value> val) { return 0; }
+bool HasInstance(v8::Local<v8::Value> val)
+{
+    return false;
 }
+char* Data(v8::Local<v8::Value> val)
+{
+    return nullptr;
 }
+size_t Length(v8::Local<v8::Value> val)
+{
+    return 0;
+}
+} // namespace Buffer
+} // namespace node

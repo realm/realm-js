@@ -31,25 +31,28 @@ namespace js {
 
 static std::string s_default_path = "";
 
-std::string default_path() {
+std::string default_path()
+{
     if (s_default_path.empty()) {
         s_default_path = realm::default_realm_file_directory() +
 #if defined(WIN32) && WIN32
-            '\\'
+                         '\\'
 #else
-            '/'
+                         '/'
 #endif
-            + "default.realm";
+                         + "default.realm";
     }
     return s_default_path;
 }
 
-void set_default_path(std::string path) {
+void set_default_path(std::string path)
+{
     s_default_path = path;
 }
 
 static std::string s_test_files_path;
-void clear_test_state() {
+void clear_test_state()
+{
     realm::_impl::RealmCoordinator::clear_all_caches();
     realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
 #if REALM_ENABLE_SYNC
@@ -134,5 +137,5 @@ std::string TypeErrorException::type_string(Property const& prop)
 }
 
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm

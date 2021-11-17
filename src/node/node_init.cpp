@@ -21,30 +21,32 @@
 #include "napi.h"
 
 #if !REALM_ENABLE_SYNC
-#pragma comment( lib, "ws2_32.lib")
-#pragma comment (lib, "crypt32");
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "crypt32");
 #endif
 
 #include "js_realm.hpp"
 
- namespace realm {
- namespace node {
+namespace realm {
+namespace node {
 
- static void napi_init(Napi::Env env, Napi::Object exports) {
-	node_class_init(env);
+static void napi_init(Napi::Env env, Napi::Object exports)
+{
+    node_class_init(env);
 
-	Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
+    Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
 
-	std::string name = realm_constructor.Get("name").As<Napi::String>();
-	exports.Set(Napi::String::New(env, name), realm_constructor);
+    std::string name = realm_constructor.Get("name").As<Napi::String>();
+    exports.Set(Napi::String::New(env, name), realm_constructor);
 }
 
-} // node
-} // realm
+} // namespace node
+} // namespace realm
 
- static Napi::Object NAPI_Init(Napi::Env env, Napi::Object exports) {
-	 realm::node::napi_init(env, exports);
-	 return exports;
- }
+static Napi::Object NAPI_Init(Napi::Env env, Napi::Object exports)
+{
+    realm::node::napi_init(env, exports);
+    return exports;
+}
 
 NODE_API_MODULE(realm, NAPI_Init)

@@ -28,7 +28,7 @@ namespace types {
 
 enum Type {
     NotImplemented = -100,
-    Object = 16,    // We translate TypedLink (16) -> Object 
+    Object = 16, // We translate TypedLink (16) -> Object
     Undefined = -2,
     Null = -1,
     Integer = 0,

@@ -25,5 +25,3 @@ struct Subscriber {
     virtual Napi::Function callback() const = 0;
     virtual ~Subscriber() = default;
 };
-
-

@@ -24,10 +24,11 @@
 namespace realm {
 namespace js {
 
-template<>
-inline Napi::Value node::Exception::value(Napi::Env env, const std::string &message) {
-	return Napi::String::New(env, message);
+template <>
+inline Napi::Value node::Exception::value(Napi::Env env, const std::string& message)
+{
+    return Napi::String::New(env, message);
 }
-    
-} // js
-} // realm
+
+} // namespace js
+} // namespace realm

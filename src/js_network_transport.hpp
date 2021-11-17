@@ -29,14 +29,15 @@ using ResponseHandlerCompletionCallback = std::function<void(const app::Response
 
 class ResponseHandler {
 public:
-    ResponseHandler(ResponseHandlerCompletionCallback callback) {
+    ResponseHandler(ResponseHandlerCompletionCallback callback)
+    {
         m_completion_callback = callback;
     }
 
     ResponseHandlerCompletionCallback m_completion_callback;
 };
 
-template<typename T>
+template <typename T>
 class ResponseHandlerClass : public ClassDefinition<T, ResponseHandler> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
@@ -56,8 +57,8 @@ public:
     static FunctionType create_constructor(ContextType);
     static ObjectType create_instance(ContextType, ResponseHandlerCompletionCallback);
 
-    static void on_success(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void on_error(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void on_success(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void on_error(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"onSuccess", wrap<on_success>},
@@ -65,20 +66,25 @@ public:
     };
 };
 
-template<typename T>
-inline typename T::Function ResponseHandlerClass<T>::create_constructor(ContextType ctx) {
+template <typename T>
+inline typename T::Function ResponseHandlerClass<T>::create_constructor(ContextType ctx)
+{
     FunctionType response_handler_constructor = ObjectWrap<T, ResponseHandlerClass<T>>::create_constructor(ctx);
     return response_handler_constructor;
 }
 
 template <typename T>
-typename T::Object ResponseHandlerClass<T>::create_instance(ContextType ctx, ResponseHandlerCompletionCallback completion_callback) {
+typename T::Object ResponseHandlerClass<T>::create_instance(ContextType ctx,
+                                                            ResponseHandlerCompletionCallback completion_callback)
+{
     return create_object<T, ResponseHandlerClass<T>>(ctx, new ResponseHandler(std::move(completion_callback)));
 }
 
 
-template<typename T>
-void ResponseHandlerClass<T>::on_success(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+template <typename T>
+void ResponseHandlerClass<T>::on_success(ContextType ctx, ObjectType this_object, Arguments& args,
+                                         ReturnValue& return_value)
+{
     static const String response_status_code = "statusCode";
     static const String response_headers = "headers";
     static const String response_body = "body";
@@ -117,8 +123,10 @@ void ResponseHandlerClass<T>::on_success(ContextType ctx, ObjectType this_object
 }
 
 
-template<typename T>
-void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+template <typename T>
+void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, Arguments& args,
+                                       ReturnValue& return_value)
+{
     static const String status_code = "statusCode";
     static const String error_message = "errorMessage";
     static const String network_message = "message";
@@ -137,12 +145,15 @@ void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, 
     ValueType message_code_object = Object::get_property(ctx, error_object, error_message);
     ValueType network_message_code_object = Object::get_property(ctx, error_object, network_message);
     // There's two paths to reporting errors respectively:
-    // 1) we've found the expected status fields, pass through the http_status_code and the raw body, and let object-store code attempt to parse it
-    // 2) set custom_status_code to something non-zero and object-store will propagate the body as is, this will happen if we're dealing with a raw NetworkTransport error
-    // we choose 2 for now because it seems to be the most descriptive
+    // 1) we've found the expected status fields, pass through the http_status_code and the raw body, and let
+    // object-store code attempt to parse it 2) set custom_status_code to something non-zero and object-store will
+    // propagate the body as is, this will happen if we're dealing with a raw NetworkTransport error we choose 2 for
+    // now because it seems to be the most descriptive
     if (!Value::is_undefined(ctx, status_code_object) && !Value::is_undefined(ctx, message_code_object)) {
-        http_status_code = static_cast<int>(Value::validated_to_number(ctx, Object::get_property(ctx, error_object, status_code), "statusCode"));
-        body = Value::validated_to_string(ctx, Object::get_property(ctx, error_object, error_message), "errorMessage");
+        http_status_code = static_cast<int>(
+            Value::validated_to_number(ctx, Object::get_property(ctx, error_object, status_code), "statusCode"));
+        body =
+            Value::validated_to_string(ctx, Object::get_property(ctx, error_object, error_message), "errorMessage");
     }
     else if (!Value::is_undefined(ctx, network_message_code_object)) {
         custom_status_code = -1;
@@ -156,7 +167,7 @@ void ResponseHandlerClass<T>::on_error(ContextType ctx, ObjectType this_object, 
 }
 
 
-template<typename T>
+template <typename T>
 struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -170,72 +181,85 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
 
     // Creates a dispatcher to pass into the constructor. This must be called from the JS thread, even if
     // the NetworkTransport will be constructed elsewhere.
-    static Dispatcher make_dispatcher() {
+    static Dispatcher make_dispatcher()
+    {
         // This is just a thin "run any function" dispatcher to allow the actual logic to be executed
         // to live in a more natural location (send_request_to_server).
-        return util::EventLoopDispatcher([] (std::function<void()> func) {
+        return util::EventLoopDispatcher([](std::function<void()> func) {
             func();
         });
     }
 
-    using SendRequestHandler = void(ContextType m_ctx, const app::Request request, std::function<void(const app::Response)> completion_callback);
+    using SendRequestHandler = void(ContextType m_ctx, const app::Request request,
+                                    std::function<void(const app::Response)> completion_callback);
 
-    // Work around of https://developercommunity.visualstudio.com/t/const-init-of-function-pointers-from-lambdas/1383098
-    // This needs to be a plain function pointer to ensure that AppClass::transport_factory is correctly initialized on MSVC builds.
-    // Otherwise you will get a `bad_function_call` exception.
-    using NetworkTransportFactory = std::unique_ptr<app::GenericNetworkTransport>(*)(ContextType, Dispatcher);
+    // Work around of
+    // https://developercommunity.visualstudio.com/t/const-init-of-function-pointers-from-lambdas/1383098 This needs
+    // to be a plain function pointer to ensure that AppClass::transport_factory is correctly initialized on MSVC
+    // builds. Otherwise you will get a `bad_function_call` exception.
+    using NetworkTransportFactory = std::unique_ptr<app::GenericNetworkTransport> (*)(ContextType, Dispatcher);
 
-    JavaScriptNetworkTransport(ContextType ctx, Dispatcher eld) : m_ctx(ctx), m_dispatcher(std::move(eld)) {};
+    JavaScriptNetworkTransport(ContextType ctx, Dispatcher eld)
+        : m_ctx(ctx)
+        , m_dispatcher(std::move(eld)){};
 
-    static ObjectType makeRequest(ContextType ctx, const app::Request& request) {
+    static ObjectType makeRequest(ContextType ctx, const app::Request& request)
+    {
         ObjectType headers_object = Object::create_empty(ctx);
         for (auto header : request.headers) {
             Object::set_property(ctx, headers_object, header.first, Value::from_string(ctx, header.second));
         }
-        auto request_object = Object::create_obj(ctx, {
-            {"method", Value::from_string(ctx, fromHttpMethod(request.method))},
-            {"url", Value::from_string(ctx, request.url)},
-            {"timeoutMs", Value::from_number(ctx, request.timeout_ms)},
-            {"headers", headers_object}
-        });
+        auto request_object =
+            Object::create_obj(ctx, {{"method", Value::from_string(ctx, fromHttpMethod(request.method))},
+                                     {"url", Value::from_string(ctx, request.url)},
+                                     {"timeoutMs", Value::from_number(ctx, request.timeout_ms)},
+                                     {"headers", headers_object}});
         if (!request.body.empty()) {
             Object::set_property(ctx, request_object, "body", Value::from_string(ctx, request.body));
         }
         return request_object;
     }
 
-    void send_request_to_server(app::Request request, std::function<void(const app::Response)> completion_callback) override {
-        m_dispatcher([ctx = m_ctx,
-                      request = std::move(request),
-                      completion_callback = std::move(completion_callback)
-                     ] () mutable {
-                HANDLESCOPE(ctx);
+    void send_request_to_server(app::Request request,
+                                std::function<void(const app::Response)> completion_callback) override
+    {
+        m_dispatcher([ctx = m_ctx, request = std::move(request),
+                      completion_callback = std::move(completion_callback)]() mutable {
+            HANDLESCOPE(ctx);
 
-                ObjectType realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
-                ValueType network_transport = Object::get_property(ctx, realm_constructor, "_networkTransport");
+            ObjectType realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+            ValueType network_transport = Object::get_property(ctx, realm_constructor, "_networkTransport");
 
-                Object::call_method(ctx, Value::to_object(ctx, network_transport), "fetchWithCallbacks", {
-                    makeRequest(ctx, request),
-                    ResponseHandlerClass<T>::create_instance(ctx, std::move(completion_callback)),
-                });
-            });
+            Object::call_method(ctx, Value::to_object(ctx, network_transport), "fetchWithCallbacks",
+                                {
+                                    makeRequest(ctx, request),
+                                    ResponseHandlerClass<T>::create_instance(ctx, std::move(completion_callback)),
+                                });
+        });
     }
 
 private:
     ContextType m_ctx;
     Dispatcher m_dispatcher;
 
-    std::string static fromHttpMethod(app::HttpMethod method) {
+    std::string static fromHttpMethod(app::HttpMethod method)
+    {
         switch (method) {
-            case app::HttpMethod::get:   return "GET";
-            case app::HttpMethod::put:   return "PUT";
-            case app::HttpMethod::post:  return "POST";
-            case app::HttpMethod::del:   return "DELETE";
-            case app::HttpMethod::patch: return "PATCH";
-            default: throw std::runtime_error("Unknown HttpMethod argument");
+            case app::HttpMethod::get:
+                return "GET";
+            case app::HttpMethod::put:
+                return "PUT";
+            case app::HttpMethod::post:
+                return "POST";
+            case app::HttpMethod::del:
+                return "DELETE";
+            case app::HttpMethod::patch:
+                return "PATCH";
+            default:
+                throw std::runtime_error("Unknown HttpMethod argument");
         }
     }
 };
 
-}
-}
+} // namespace js
+} // namespace realm

@@ -27,9 +27,7 @@ namespace jni_util {
 // Util functions for JNI.
 class JniUtils {
 public:
-    ~JniUtils()
-    {
-    }
+    ~JniUtils() {}
 
     // Call this only once in JNI_OnLoad.
     static void initialize(JavaVM* vm, jint vm_version) noexcept;
@@ -53,7 +51,7 @@ private:
     jint m_vm_version;
 };
 
-} // namespace realm
 } // namespace jni_util
+} // namespace realm
 
 #endif // REALM_JNI_UTIL_JNI_UTILS_HPP

@@ -23,6 +23,6 @@ namespace jni_util {
 // Workaround bugs on some devices.
 void hack_init();
 
-}
-}
+} // namespace jni_util
+} // namespace realm
 #endif // REALM_JNI_UTIL_HACK_HPP
