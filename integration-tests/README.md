@@ -71,6 +71,12 @@ When running the environments individually the test suite's TypeScript is not au
 npm run build:watch --prefix tests
 ```
 
+## Running tests with a C++ debugger attached
+
+In order to debug the tests with `lldb` attached to debug C++, you can use the VS Code launch configuration `LLDB Debug Integration Tests`.
+
+This bypasses the usual startup script (as this spawns a child process for the tests, which stops `lldb` working), so you need to have the app importer running separately when doing this: `npm run app-importer` from the `integration-tests/tests` directory.
+
 ---
 
 ## Maintaining the tests
