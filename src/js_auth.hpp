@@ -25,9 +25,10 @@ namespace js {
 // JavaScript used by the auth providers EmailPassword, APIKeys, etc. No objects
 // will ever be created of the type.
 
-class Auth { };
+class Auth {
+};
 
-template<typename T>
+template <typename T>
 class AuthClass : public ClassDefinition<T, Auth> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -39,13 +40,13 @@ public:
     static FunctionType create_constructor(ContextType);
 };
 
-template<typename T>
-inline typename T::Function AuthClass<T>::create_constructor(ContextType ctx) {
+template <typename T>
+inline typename T::Function AuthClass<T>::create_constructor(ContextType ctx)
+{
     FunctionType constructor = ObjectWrap<T, AuthClass<T>>::create_constructor(ctx);
     return constructor;
 }
 
 
-
-}
-}
+} // namespace js
+} // namespace realm

@@ -32,7 +32,7 @@
 namespace realm {
 namespace js {
 
-template<typename JSEngine>
+template <typename JSEngine>
 class NativeAccessor;
 
 namespace dictionary {
@@ -43,7 +43,8 @@ namespace dictionary {
  * @param prop (mutable) Property object that will be changed to be correct for \ref Dictionary
  * @exception std::logic_error Thrown if the the prop argument contains an invalid property configuration
  */
-inline static void derive_property_type(StringData const &object_name, Property &prop) {
+inline static void derive_property_type(StringData const& object_name, Property& prop)
+{
     using realm::PropertyType;
 
     if (prop.object_type == "bool") {
@@ -92,23 +93,31 @@ inline static void derive_property_type(StringData const &object_name, Property 
     }
     else {
         if (is_nullable(prop.type)) {
-            throw std::logic_error(util::format("Dictionary property '%1.%2' cannot be optional", object_name, prop.name));
+            throw std::logic_error(
+                util::format("Dictionary property '%1.%2' cannot be optional", object_name, prop.name));
         }
         if (is_array(prop.type)) {
-            throw std::logic_error(util::format("Dictionary property '%1.%2' must have a non-list value type", object_name, prop.name));
+            throw std::logic_error(
+                util::format("Dictionary property '%1.%2' must have a non-list value type", object_name, prop.name));
         }
         prop.type = PropertyType::Object | PropertyType::Dictionary | PropertyType::Nullable;
     }
-}  // derive_property_type()
+} // derive_property_type()
 
-};  // dictionary namespace
+}; // namespace dictionary
 
 
-template<typename T>
+template <typename T>
 class Dictionary : public realm::object_store::Dictionary {
 public:
-    Dictionary(Dictionary const& dictionary) : realm::object_store::Dictionary(dictionary) {}
-    Dictionary(const realm::object_store::Dictionary &dictionary) : realm::object_store::Dictionary(dictionary) {}
+    Dictionary(Dictionary const& dictionary)
+        : realm::object_store::Dictionary(dictionary)
+    {
+    }
+    Dictionary(const realm::object_store::Dictionary& dictionary)
+        : realm::object_store::Dictionary(dictionary)
+    {
+    }
     Dictionary(Dictionary&&) = default;
     Dictionary& operator=(Dictionary&&) = default;
     Dictionary& operator=(Dictionary const&) = default;
@@ -116,7 +125,7 @@ public:
     std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_listeners;
 };
 
-template<typename T>
+template <typename T>
 struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>, CollectionClass<T>> {
     using Type = T;
     using ContextType = typename T::Context;
@@ -132,20 +141,20 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>, Collection
     static ObjectType create_instance(ContextType, realm::object_store::Dictionary);
 
     // methods
-    static void getter(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void setter(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void remove(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void has(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void keys(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void set(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void getter(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void setter(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void remove(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void has(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void keys(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void set(ContextType, ObjectType, Arguments&, ReturnValue&);
     // observables
-    static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void remove_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void remove_all_listeners(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void add_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void remove_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     // helpers
-    static ValueType create_dictionary_change_set(ContextType, DictionaryChangeSet const &);
-    static void validate_value(ContextType, const realm::object_store::Dictionary &, ValueType);
+    static ValueType create_dictionary_change_set(ContextType, DictionaryChangeSet const&);
+    static void validate_value(ContextType, const realm::object_store::Dictionary&, ValueType);
 
     std::string const name = "Dictionary";
 
@@ -162,30 +171,36 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>, Collection
     };
 };
 
-template<typename T>
-typename T::Object DictionaryClass<T>::create_instance(ContextType ctx, realm::object_store::Dictionary dictionary) {
+template <typename T>
+typename T::Object DictionaryClass<T>::create_instance(ContextType ctx, realm::object_store::Dictionary dictionary)
+{
     auto object = create_object<T, DictionaryClass<T>>(ctx, new realm::js::Dictionary<T>(std::move(dictionary)));
 
     ObjectType realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
-    FunctionType realm_dictionary_proxy = Value::to_function(ctx, Object::get_property(ctx, realm_constructor, "DictionaryProxy"));
-    ValueType arguments [] = { object };
+    FunctionType realm_dictionary_proxy =
+        Value::to_function(ctx, Object::get_property(ctx, realm_constructor, "DictionaryProxy"));
+    ValueType arguments[] = {object};
     return Value::to_object(ctx, Function<T>::call(ctx, realm_dictionary_proxy, 1, arguments));
 }
 
-template<typename T>
-void DictionaryClass<T>::validate_value(ContextType ctx, const realm::object_store::Dictionary &dictionary, ValueType value) {
+template <typename T>
+void DictionaryClass<T>::validate_value(ContextType ctx, const realm::object_store::Dictionary& dictionary,
+                                        ValueType value)
+{
     auto type = dictionary.get_type();
     StringData object_type;
     if (type == realm::PropertyType::Object) {
         object_type = dictionary.get_object_schema().name;
     }
     if (!Value::is_valid_for_property_type(ctx, value, type, object_type)) {
-        throw TypeErrorException("Property", object_type ? object_type : local_string_for_property_type(type), Value::to_string(ctx, value));
+        throw TypeErrorException("Property", object_type ? object_type : local_string_for_property_type(type),
+                                 Value::to_string(ctx, value));
     }
 }
 
-template<typename T>
-void DictionaryClass<T>::setter(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void DictionaryClass<T>::setter(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(2);
 
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
@@ -199,8 +214,9 @@ void DictionaryClass<T>::setter(ContextType ctx, ObjectType this_object, Argumen
     return_value.set(this_object);
 }
 
-template<typename T>
-void DictionaryClass<T>::getter(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void DictionaryClass<T>::getter(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(1);
 
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
@@ -210,16 +226,19 @@ void DictionaryClass<T>::getter(ContextType ctx, ObjectType this_object, Argumen
         if (dictionary->contains(key)) {
             NativeAccessor<T> accessor(ctx, *dictionary);
             return_value.set(dictionary->get(accessor, key));
-        } else {
+        }
+        else {
             return_value.set_undefined();
         }
-    } else {
+    }
+    else {
         return_value.set_undefined();
     }
 }
 
-template<typename T>
-void DictionaryClass<T>::set(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void DictionaryClass<T>::set(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(1);
 
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
@@ -230,8 +249,9 @@ void DictionaryClass<T>::set(ContextType ctx, ObjectType this_object, Arguments 
     return_value.set(this_object);
 }
 
-template<typename T>
-void DictionaryClass<T>::remove(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void DictionaryClass<T>::remove(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_maximum(1);
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
     if (Value::is_string(ctx, args[0])) {
@@ -258,16 +278,18 @@ void DictionaryClass<T>::remove(ContextType ctx, ObjectType this_object, Argumen
     return_value.set(this_object);
 }
 
-template<typename T>
-void DictionaryClass<T>::has(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void DictionaryClass<T>::has(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_maximum(1);
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
     std::string key = Value::validated_to_string(ctx, args[0]);
     return_value.set(dictionary->contains(key));
 }
 
-template<typename T>
-void DictionaryClass<T>::keys(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void DictionaryClass<T>::keys(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_maximum(0);
     auto dictionary = *get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
@@ -282,12 +304,15 @@ void DictionaryClass<T>::keys(ContextType ctx, ObjectType this_object, Arguments
     return_value.set(keys);
 }
 
-template<typename T>
-typename T::Value DictionaryClass<T>::create_dictionary_change_set(ContextType ctx, DictionaryChangeSet const& change_set) {
+template <typename T>
+typename T::Value DictionaryClass<T>::create_dictionary_change_set(ContextType ctx,
+                                                                   DictionaryChangeSet const& change_set)
+{
     ObjectType object = Object::create_empty(ctx);
     std::vector<ValueType> scratch;
 
-    scratch.reserve(std::max({change_set.deletions.size(), change_set.insertions.size(), change_set.modifications.size()}));
+    scratch.reserve(
+        std::max({change_set.deletions.size(), change_set.insertions.size(), change_set.modifications.size()}));
     auto make_object_array = [&](auto const& keys) {
         scratch.clear();
         for (auto mixed_item : keys) {
@@ -297,14 +322,16 @@ typename T::Value DictionaryClass<T>::create_dictionary_change_set(ContextType c
     };
 
     return Object::create_obj(ctx, {
-        {"deletions", make_object_array(change_set.deletions)},
-        {"insertions", make_object_array(change_set.insertions)},
-        {"modifications", make_object_array(change_set.modifications)},
-    });
+                                       {"deletions", make_object_array(change_set.deletions)},
+                                       {"insertions", make_object_array(change_set.insertions)},
+                                       {"modifications", make_object_array(change_set.modifications)},
+                                   });
 }
 
-template<typename T>
-void DictionaryClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void DictionaryClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args,
+                                      ReturnValue& return_value)
+{
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
     args.validate_maximum(1);
@@ -312,26 +339,28 @@ void DictionaryClass<T>::add_listener(ContextType ctx, ObjectType this_object, A
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    auto token = dictionary->add_key_based_notification_callback([=](DictionaryChangeSet const& change_set, std::exception_ptr exception) {
-        HANDLESCOPE(protected_ctx)
+    auto token = dictionary->add_key_based_notification_callback(
+        [=](DictionaryChangeSet const& change_set, std::exception_ptr exception) {
+            HANDLESCOPE(protected_ctx)
 
-        ValueType arguments[] {
-            DictionaryClass<T>::create_instance(protected_ctx, *dictionary),
-            DictionaryClass<T>::create_dictionary_change_set(protected_ctx, change_set)
-        };
+            ValueType arguments[]{DictionaryClass<T>::create_instance(protected_ctx, *dictionary),
+                                  DictionaryClass<T>::create_dictionary_change_set(protected_ctx, change_set)};
 
-        Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
-    });
+            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+        });
     dictionary->m_listeners.emplace_back(protected_callback, std::move(token));
 }
 
-template<typename T>
-void DictionaryClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void DictionaryClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments& args,
+                                         ReturnValue& return_value)
+{
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
     args.validate_maximum(1);
     auto callback = Value::validated_to_function(ctx, args[0]);
-    auto protected_function = Protected<FunctionType>(ctx, callback); // Protecting for comparison, not to extend lifetime.
+    auto protected_function =
+        Protected<FunctionType>(ctx, callback); // Protecting for comparison, not to extend lifetime.
 
     auto& listeners = dictionary->m_listeners;
     auto compare = [&](auto&& func_and_tok) {
@@ -341,13 +370,15 @@ void DictionaryClass<T>::remove_listener(ContextType ctx, ObjectType this_object
 }
 
 
-template<typename T>
-void DictionaryClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void DictionaryClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments& args,
+                                              ReturnValue& return_value)
+{
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
 
     args.validate_maximum(0);
     dictionary->m_listeners.clear();
 }
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm

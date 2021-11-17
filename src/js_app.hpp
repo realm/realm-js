@@ -36,7 +36,7 @@ using SharedUser = std::shared_ptr<realm::SyncUser>;
 namespace realm {
 namespace js {
 
-template<typename T>
+template <typename T>
 class AppClass : public ClassDefinition<T, SharedApp> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -54,12 +54,14 @@ class AppClass : public ClassDefinition<T, SharedApp> {
 
 public:
     const std::string name = "App";
-    
+
     /**
-     * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network requests.
-     * Exposed to allow other components (ex the RPCServer) to override the underlying implementation.
+     * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network
+     * requests. Exposed to allow other components (ex the RPCServer) to override the underlying implementation.
      */
-    static inline NetworkTransportFactory transport_generator = +[] (ContextType ctx, typename NetworkTransport::Dispatcher eld) -> std::unique_ptr<app::GenericNetworkTransport> {
+    static inline NetworkTransportFactory transport_generator =
+        +[](ContextType ctx,
+            typename NetworkTransport::Dispatcher eld) -> std::unique_ptr<app::GenericNetworkTransport> {
         return std::make_unique<NetworkTransport>(ctx, std::move(eld));
     };
 
@@ -69,7 +71,7 @@ public:
     static inline std::string platform_os = "unknown-os";
     static inline std::string platform_version = "?.?.?";
 
-    static void constructor(ContextType, ObjectType, Arguments &);
+    static void constructor(ContextType, ObjectType, Arguments&);
     static FunctionType create_constructor(ContextType);
     static ObjectType create_instance(ContextType, SharedApp);
 
@@ -78,17 +80,15 @@ public:
      */
     static std::string get_user_agent();
 
-    static void get_app_id(ContextType, ObjectType, ReturnValue &);
-    static void get_email_password_auth(ContextType, ObjectType, ReturnValue &);
-    static void get_current_user(ContextType, ObjectType, ReturnValue &);
-    static void get_all_users(ContextType, ObjectType, ReturnValue &);
+    static void get_app_id(ContextType, ObjectType, ReturnValue&);
+    static void get_email_password_auth(ContextType, ObjectType, ReturnValue&);
+    static void get_current_user(ContextType, ObjectType, ReturnValue&);
+    static void get_all_users(ContextType, ObjectType, ReturnValue&);
 
-    PropertyMap<T> const properties = {
-        {"id", {wrap<get_app_id>, nullptr}},
-        {"emailPasswordAuth", {wrap<get_email_password_auth>, nullptr}},
-        {"currentUser", {wrap<get_current_user>, nullptr}},
-        {"allUsers", {wrap<get_all_users>, nullptr}}
-    };
+    PropertyMap<T> const properties = {{"id", {wrap<get_app_id>, nullptr}},
+                                       {"emailPasswordAuth", {wrap<get_email_password_auth>, nullptr}},
+                                       {"currentUser", {wrap<get_current_user>, nullptr}},
+                                       {"allUsers", {wrap<get_all_users>, nullptr}}};
 
     static void log_in(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -106,24 +106,24 @@ public:
     };
 
     MethodMap<T> const static_methods = {
-        {"_clearAppCache", wrap<clear_app_cache>},
-        {"_getApp", wrap<get_app>},
-        {"_setVersions", wrap<set_versions>}
-    };
+        {"_clearAppCache", wrap<clear_app_cache>}, {"_getApp", wrap<get_app>}, {"_setVersions", wrap<set_versions>}};
 };
 
-template<typename T>
-inline typename T::Function AppClass<T>::create_constructor(ContextType ctx) {
+template <typename T>
+inline typename T::Function AppClass<T>::create_constructor(ContextType ctx)
+{
     return ObjectWrap<T, AppClass<T>>::create_constructor(ctx);
 }
 
-template<typename T>
-inline typename T::Object AppClass<T>::create_instance(ContextType ctx, SharedApp app) {
+template <typename T>
+inline typename T::Object AppClass<T>::create_instance(ContextType ctx, SharedApp app)
+{
     return create_object<T, AppClass<T>>(ctx, new SharedApp(app));
 }
 
-template<typename T>
-void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args) {
+template <typename T>
+void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args)
+{
     static const String config_id = "id";
     static const String config_base_url = "baseUrl";
     static const String config_timeout = "timeout";
@@ -151,12 +151,14 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 
         ValueType config_base_url_value = Object::get_property(ctx, config_object, config_base_url);
         if (!Value::is_undefined(ctx, config_base_url_value)) {
-            config.base_url = util::Optional<std::string>(Value::validated_to_string(ctx, config_base_url_value, "baseUrl"));
+            config.base_url =
+                util::Optional<std::string>(Value::validated_to_string(ctx, config_base_url_value, "baseUrl"));
         }
 
         ValueType config_timeout_value = Object::get_property(ctx, config_object, config_timeout);
         if (!Value::is_undefined(ctx, config_timeout_value)) {
-            config.default_request_timeout_ms = util::Optional<uint64_t>(Value::validated_to_number(ctx, config_timeout_value, "timeout"));
+            config.default_request_timeout_ms =
+                util::Optional<uint64_t>(Value::validated_to_number(ctx, config_timeout_value, "timeout"));
         }
 
         ValueType config_app_value = Object::get_property(ctx, config_object, config_app);
@@ -165,12 +167,14 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 
             ValueType config_app_name_value = Object::get_property(ctx, config_app_object, config_app_name);
             if (!Value::is_undefined(ctx, config_app_name_value)) {
-                config.local_app_name = util::Optional<std::string>(Value::validated_to_string(ctx, config_app_name_value, "name"));
+                config.local_app_name =
+                    util::Optional<std::string>(Value::validated_to_string(ctx, config_app_name_value, "name"));
             }
 
             ValueType config_app_version_value = Object::get_property(ctx, config_app_object, config_app_version);
             if (!Value::is_undefined(ctx, config_app_version_value)) {
-                config.local_app_version = util::Optional<std::string>(Value::validated_to_string(ctx, config_app_version_value, "version"));
+                config.local_app_version =
+                    util::Optional<std::string>(Value::validated_to_string(ctx, config_app_version_value, "version"));
             }
         }
     }
@@ -180,13 +184,14 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     else {
         throw std::runtime_error("Expected either a configuration object or an app id string.");
     }
-    
-    config.transport = AppClass<T>::transport_generator(Protected(Context::get_global_context(ctx)), NetworkTransport::make_dispatcher());
+
+    config.transport = AppClass<T>::transport_generator(Protected(Context::get_global_context(ctx)),
+                                                        NetworkTransport::make_dispatcher());
 
     config.platform = platform_os;
     config.platform_version = platform_version;
     config.sdk_version = "RealmJS/" + package_version;
-    
+
     auto realm_file_directory = default_realm_file_directory();
     ensure_directory_exists_for_file(realm_file_directory);
 
@@ -200,19 +205,23 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(app));
 }
 
-template<typename T>
-std::string AppClass<T>::get_user_agent() {
-    return "RealmJS/" + package_version + " (" + platform_context + ", " + platform_os + ", v" + platform_version + ")";
+template <typename T>
+std::string AppClass<T>::get_user_agent()
+{
+    return "RealmJS/" + package_version + " (" + platform_context + ", " + platform_os + ", v" + platform_version +
+           ")";
 }
 
-template<typename T>
-void AppClass<T>::get_app_id(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
+template <typename T>
+void AppClass<T>::get_app_id(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
+{
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
     return_value.set(Value::from_string(ctx, app->config().app_id));
 }
 
-template<typename T>
-void AppClass<T>::log_in(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void AppClass<T>::log_in(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_maximum(2);
 
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
@@ -221,29 +230,33 @@ void AppClass<T>::log_in(ContextType ctx, ObjectType this_object, Arguments &arg
     auto callback_function = Value::validated_to_function(ctx, args[1]);
 
     app::AppCredentials app_credentials = *get_internal<T, CredentialsClass<T>>(ctx, credentials_object);
-    
-    app->log_in_with_credentials(app_credentials, Function::wrap_callback_result_first(ctx, this_object, callback_function,
-        [app] (ContextType ctx, SharedUser user) {
-            REALM_ASSERT_RELEASE(user);
-            return UserClass<T>::create_instance(ctx, std::move(user), std::move(app));
-        }));
 
+    app->log_in_with_credentials(app_credentials,
+                                 Function::wrap_callback_result_first(
+                                     ctx, this_object, callback_function, [app](ContextType ctx, SharedUser user) {
+                                         REALM_ASSERT_RELEASE(user);
+                                         return UserClass<T>::create_instance(ctx, std::move(user), std::move(app));
+                                     }));
 }
 
-template<typename T>
-void AppClass<T>::get_all_users(ContextType ctx, ObjectType this_object, ReturnValue& return_value) {
+template <typename T>
+void AppClass<T>::get_all_users(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
+{
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
 
     auto users = Object::create_empty(ctx);
     for (auto user : app->all_users()) {
         auto&& identity = user->identity();
-        Object::set_property(ctx, users, identity, create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), app)), ReadOnly | DontDelete);
+        Object::set_property(ctx, users, identity,
+                             create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), app)),
+                             ReadOnly | DontDelete);
     }
     return_value.set(users);
 }
 
-template<typename T>
-void AppClass<T>::get_current_user(ContextType ctx, ObjectType this_object, ReturnValue& return_value) {
+template <typename T>
+void AppClass<T>::get_current_user(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
+{
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
     auto user = app->current_user();
     if (user) {
@@ -254,8 +267,9 @@ void AppClass<T>::get_current_user(ContextType ctx, ObjectType this_object, Retu
     }
 }
 
-template<typename T>
-void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+template <typename T>
+void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(1);
 
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
@@ -265,8 +279,9 @@ void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments
     return_value.set(Value::from_undefined(ctx));
 }
 
-template<typename T>
-void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+template <typename T>
+void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(2);
 
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
@@ -276,20 +291,23 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
     app->remove_user(*user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
-template<typename T>
-void AppClass<T>::get_email_password_auth(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
+template <typename T>
+void AppClass<T>::get_email_password_auth(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
+{
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
     return_value.set(EmailPasswordAuthClass<T>::create_instance(ctx, app));
 }
 
-template<typename T>
-void AppClass<T>::clear_app_cache(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+template <typename T>
+void AppClass<T>::clear_app_cache(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(0);
     realm::app::App::clear_cached_apps();
 }
 
-template<typename T>
-void AppClass<T>::get_app(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+template <typename T>
+void AppClass<T>::get_app(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(1);
     auto app_id = Value::validated_to_string(ctx, args[0]);
     if (auto app = app::App::get_cached_app(app_id)) {
@@ -300,8 +318,9 @@ void AppClass<T>::get_app(ContextType ctx, ObjectType this_object, Arguments &ar
     }
 }
 
-template<typename T>
-void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value) {
+template <typename T>
+void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
     args.validate_count(1);
     auto versions = Value::validated_to_object(ctx, args[0]);
     AppClass<T>::package_version = Object::validated_get_string(ctx, versions, "packageVersion");
@@ -310,5 +329,5 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
     AppClass<T>::platform_version = Object::validated_get_string(ctx, versions, "platformVersion");
 }
 
-}
-}
+} // namespace js
+} // namespace realm

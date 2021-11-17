@@ -28,20 +28,21 @@ namespace common {
 
 template <typename GetterSetter>
 class JavascriptObject {
-   private:
+private:
     Napi::Env context;
     Napi::Reference<Napi::Object> ref_object;
-    ObjectObserver *observer = nullptr;
-    IOCollection *collection = nullptr;
+    ObjectObserver* observer = nullptr;
+    IOCollection* collection = nullptr;
     std::vector<std::string> keys;
 
     template <class T>
     using ObjectAPI = realm::js::Object<T>;
     using Property = realm::js::PropertyAttributes;
 
-    bool remove_key(std::string &key) {
+    bool remove_key(std::string& key)
+    {
         int index = -1;
-        for (auto const &_key : keys) {
+        for (auto const& _key : keys) {
             index++;
             if (key == _key) {
                 keys.erase(keys.begin() + index);
@@ -51,33 +52,39 @@ class JavascriptObject {
         return false;
     }
 
-   public:
+public:
     JavascriptObject(Napi::Env _ctx, std::string name = "js_object")
-        : context{_ctx} {
-        ref_object =
-            Napi::Reference<Napi::Object>::New(Napi::Object::New(context));
+        : context{_ctx}
+    {
+        ref_object = Napi::Reference<Napi::Object>::New(Napi::Object::New(context));
     }
 
-    void set_collection(IOCollection *_collection) { collection = _collection; }
+    void set_collection(IOCollection* _collection)
+    {
+        collection = _collection;
+    }
 
-    void set_observer(ObjectObserver *_observer) { observer = _observer; }
+    void set_observer(ObjectObserver* _observer)
+    {
+        observer = _observer;
+    }
 
     template <class VM, void callback(method::Arguments)>
-    void add_method(std::string &&name) {
+    void add_method(std::string&& name)
+    {
         auto object = get();
 
-        auto method = [=](const auto &info) {
-            callback({info.Env(), observer, collection, info.Length(),
-                      NodeCallbackWrapper(info)});
+        auto method = [=](const auto& info) {
+            callback({info.Env(), observer, collection, info.Length(), NodeCallbackWrapper(info)});
         };
 
         auto method_function = Napi::Function::New(context, method, name);
 
-        ObjectAPI<VM>::set_property(context, object, name, method_function,
-                                    Property::DontEnum);
+        ObjectAPI<VM>::set_property(context, object, name, method_function, Property::DontEnum);
     }
 
-    void add_key(std::string key) {
+    void add_key(std::string key)
+    {
         auto _object = get();
         /*
          * NAPI_enumerable: Enables JSON.stringify(object) and other JS stuff
@@ -87,18 +94,17 @@ class JavascriptObject {
          * fields, very handy to reflect object-dictionary mutations.
          *
          */
-        auto rules = static_cast<napi_property_attributes>(napi_enumerable |
-                                                           napi_configurable);
+        auto rules = static_cast<napi_property_attributes>(napi_enumerable | napi_configurable);
 
-        auto Getter = [=](std::string &key) {
-            return [=](const auto &info) mutable {
+        auto Getter = [=](std::string& key) {
+            return [=](const auto& info) mutable {
                 GetterSetter gs{collection};
                 return gs.get(accessor::Arguments{info.Env(), key.c_str()});
             };
         };
 
-        auto Setter = [=](std::string &key) {
-            return [=](const auto &info) mutable {
+        auto Setter = [=](std::string& key) {
+            return [=](const auto& info) mutable {
                 GetterSetter gs{collection};
                 gs.set(accessor::Arguments{info.Env(), key.c_str(), info[0]});
             };
@@ -107,8 +113,7 @@ class JavascriptObject {
         /*
          * https://github.com/nodejs/node-addon-api/blob/main/doc/property_descriptor.md
          */
-        auto descriptor = Napi::PropertyDescriptor::Accessor(
-            context, _object, key, Getter(key), Setter(key), rules);
+        auto descriptor = Napi::PropertyDescriptor::Accessor(context, _object, key, Getter(key), Setter(key), rules);
 
         // https://github.com/nodejs/node-addon-api/blob/main/doc/object.md#defineproperty
         _object.DefineProperty(descriptor);
@@ -117,15 +122,23 @@ class JavascriptObject {
     }
 
     template <typename RemovalCallback, typename Self>
-    void finalize(RemovalCallback &&callback, Self *self) {
+    void finalize(RemovalCallback&& callback, Self* self)
+    {
         auto object = get();
-        object.AddFinalizer([callback](auto, void *data_ref) { callback(); },
-                            self);
+        object.AddFinalizer(
+            [callback](auto, void* data_ref) {
+                callback();
+            },
+            self);
     }
 
-    std::vector<std::string> &get_properties() { return keys; }
+    std::vector<std::string>& get_properties()
+    {
+        return keys;
+    }
 
-    void remove_accessor(std::string &key) {
+    void remove_accessor(std::string& key)
+    {
         Napi::Object obj = get();
 
         if (remove_key(key)) {
@@ -134,18 +147,24 @@ class JavascriptObject {
         }
     }
 
-    Napi::Object get() { return ref_object.Value(); }
+    Napi::Object get()
+    {
+        return ref_object.Value();
+    }
 
-    bool is_alive(){
+    bool is_alive()
+    {
         return !get().IsUndefined();
     }
 
-    Napi::Object create() {
+    Napi::Object create()
+    {
         // Only necessary to keep compatibility with the JSCore.
         return get();
     }
 
-    ~JavascriptObject() {
+    ~JavascriptObject()
+    {
         if (!ref_object.IsEmpty()) {
             // Liberate any retained object.
             // https://github.com/nodejs/node-addon-api/blob/main/doc/reference.md
@@ -153,5 +172,5 @@ class JavascriptObject {
         }
     }
 };
-}  // namespace common
-}  // namespace realm
+} // namespace common
+} // namespace realm

@@ -42,80 +42,76 @@ static std::string s_default_realm_directory;
 
 namespace realm {
 
-    void set_default_realm_file_directory(std::string dir)
-    {
-        s_default_realm_directory = dir;
-    }
-
-    void set_asset_manager(AAssetManager* asset_manager)
-    {
-        s_asset_manager = asset_manager;
-    }
-
-    std::string default_realm_file_directory()
-    {
-        return s_default_realm_directory;
-    }
-
-    void ensure_directory_exists_for_file(const std::string &file)
-    {
-
-    }
-    
-    void copy_bundled_realm_files()
-    {
-        AAssetDir* assetDir = AAssetManager_openDir(s_asset_manager, "");
-        const char* filename = nullptr;
-
-        while ((filename = AAssetDir_getNextFileName(assetDir)) != nullptr) {
-            if (is_realm_file(filename)) {
-                AAsset* asset = AAssetManager_open(s_asset_manager, filename, AASSET_MODE_STREAMING);
-
-                char buf[BUFSIZ];
-                int nb_read = 0;
-
-                auto dest_filename = s_default_realm_directory + '/' + filename;
-                if (access(dest_filename.c_str(), F_OK ) == -1) {
-                    // file doesn't exist, copy
-                    FILE* out = fopen(dest_filename.c_str(), "w");
-                    while ((nb_read = AAsset_read(asset, buf, BUFSIZ)) > 0) {
-                        fwrite(buf, nb_read, 1, out);
-                    }
-                    fclose(out);
-                }
-                AAsset_close(asset);
-            }
-        }
-        AAssetDir_close(assetDir);
-    }
-
-    void remove_realm_files_from_directory(const std::string &directory)
-    {
-        std::string cmd = "rm " + s_default_realm_directory + "/*.realm " +
-                          s_default_realm_directory + "/*.realm.lock";
-        system(cmd.c_str());
-    }
-
-    void remove_directory(const std::string &path)
-    {
-        std::string cmd_clear_dir = "rm " + path + "/*";
-        system(cmd_clear_dir.c_str());
-
-        std::string cmd_rmdir = "rmdir " + path;
-        system(cmd_rmdir.c_str());
-    }
-
-    void remove_file(const std::string &path)
-    {
-        std::string cmd = "rm " + path;
-        system(cmd.c_str());
-    }
-
-    void print(const char* fmt, ...)
-    {
-        va_list vl;
-        va_start(vl, fmt);
-        __android_log_vprint(ANDROID_LOG_INFO, "RealmJS", fmt, vl);
-        va_end(vl);
-    }
+void set_default_realm_file_directory(std::string dir)
+{
+    s_default_realm_directory = dir;
 }
+
+void set_asset_manager(AAssetManager* asset_manager)
+{
+    s_asset_manager = asset_manager;
+}
+
+std::string default_realm_file_directory()
+{
+    return s_default_realm_directory;
+}
+
+void ensure_directory_exists_for_file(const std::string& file) {}
+
+void copy_bundled_realm_files()
+{
+    AAssetDir* assetDir = AAssetManager_openDir(s_asset_manager, "");
+    const char* filename = nullptr;
+
+    while ((filename = AAssetDir_getNextFileName(assetDir)) != nullptr) {
+        if (is_realm_file(filename)) {
+            AAsset* asset = AAssetManager_open(s_asset_manager, filename, AASSET_MODE_STREAMING);
+
+            char buf[BUFSIZ];
+            int nb_read = 0;
+
+            auto dest_filename = s_default_realm_directory + '/' + filename;
+            if (access(dest_filename.c_str(), F_OK) == -1) {
+                // file doesn't exist, copy
+                FILE* out = fopen(dest_filename.c_str(), "w");
+                while ((nb_read = AAsset_read(asset, buf, BUFSIZ)) > 0) {
+                    fwrite(buf, nb_read, 1, out);
+                }
+                fclose(out);
+            }
+            AAsset_close(asset);
+        }
+    }
+    AAssetDir_close(assetDir);
+}
+
+void remove_realm_files_from_directory(const std::string& directory)
+{
+    std::string cmd = "rm " + s_default_realm_directory + "/*.realm " + s_default_realm_directory + "/*.realm.lock";
+    system(cmd.c_str());
+}
+
+void remove_directory(const std::string& path)
+{
+    std::string cmd_clear_dir = "rm " + path + "/*";
+    system(cmd_clear_dir.c_str());
+
+    std::string cmd_rmdir = "rmdir " + path;
+    system(cmd_rmdir.c_str());
+}
+
+void remove_file(const std::string& path)
+{
+    std::string cmd = "rm " + path;
+    system(cmd.c_str());
+}
+
+void print(const char* fmt, ...)
+{
+    va_list vl;
+    va_start(vl, fmt);
+    __android_log_vprint(ANDROID_LOG_INFO, "RealmJS", fmt, vl);
+    va_end(vl);
+}
+} // namespace realm

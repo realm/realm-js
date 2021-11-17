@@ -26,14 +26,15 @@ namespace rpc {
 
 class RPCServerImpl;
 class RPCServer {
-  public:
+public:
     RPCServer();
     ~RPCServer();
     std::string perform_request(std::string const& name, std::string const& json_args);
     bool try_run_task();
-  private:
+
+private:
     std::unique_ptr<RPCServerImpl> m_impl;
 };
 
-} // rpc
-} // realm
+} // namespace rpc
+} // namespace realm

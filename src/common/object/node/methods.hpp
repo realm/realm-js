@@ -22,41 +22,45 @@
 #include "common/object/observer.hpp"
 
 
-
-auto NodeCallbackWrapper(const Napi::CallbackInfo &values) {
-    return [&](int index) -> Napi::Value { return values[index]; };
+auto NodeCallbackWrapper(const Napi::CallbackInfo& values)
+{
+    return [&](int index) -> Napi::Value {
+        return values[index];
+    };
 }
 namespace method {
-    struct Arguments {
-        Napi::Env context;
-        ObjectObserver *observer = nullptr;
-        IOCollection *collection = nullptr;
-        size_t argumentCount;
-        std::function<Napi::Value(int index)> callback;
+struct Arguments {
+    Napi::Env context;
+    ObjectObserver* observer = nullptr;
+    IOCollection* collection = nullptr;
+    size_t argumentCount;
+    std::function<Napi::Value(int index)> callback;
 
-        Napi::Value get(int index,
-                        std::string msg = "Missing argument for method call.") {
-            if (index >= argumentCount) {
-                Napi::Error::New(context, msg.c_str());
-            }
-
-            return callback(index);
+    Napi::Value get(int index, std::string msg = "Missing argument for method call.")
+    {
+        if (index >= argumentCount) {
+            Napi::Error::New(context, msg.c_str());
         }
 
-        void throw_error(std::string&& message){
-            throw Napi::Error::New(context, message);
-        }
-    };
-}
+        return callback(index);
+    }
 
-namespace accessor{
-    struct Arguments{
-        Napi::Env context;
-        std::string property_name;
-        Napi::Value value;
-
-        void throw_error(std::string&& message){
-            throw Napi::Error::New(context, message);
-        }
-    };
+    void throw_error(std::string&& message)
+    {
+        throw Napi::Error::New(context, message);
+    }
 };
+} // namespace method
+
+namespace accessor {
+struct Arguments {
+    Napi::Env context;
+    std::string property_name;
+    Napi::Value value;
+
+    void throw_error(std::string&& message)
+    {
+        throw Napi::Error::New(context, message);
+    }
+};
+}; // namespace accessor

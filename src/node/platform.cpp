@@ -29,15 +29,17 @@ namespace realm {
 class UVException : public std::runtime_error {
 public:
     UVException(uv_errno_t error)
-    : std::runtime_error(uv_strerror(error))
-    , m_error(error)
-    { }
+        : std::runtime_error(uv_strerror(error))
+        , m_error(error)
+    {
+    }
 
     const uv_errno_t m_error;
 };
 
 struct FileSystemRequest : uv_fs_t {
-    ~FileSystemRequest() {
+    ~FileSystemRequest()
+    {
         uv_fs_req_cleanup(this);
     }
 };
@@ -46,10 +48,10 @@ struct FileSystemRequest : uv_fs_t {
 std::string default_realm_file_directory()
 {
 #ifdef _WIN32
-  /* MAX_PATH is in characters, not bytes. Make sure we have enough headroom. */
-  char buf[MAX_PATH * 4];
+    /* MAX_PATH is in characters, not bytes. Make sure we have enough headroom. */
+    char buf[MAX_PATH * 4];
 #else
-  char buf[PATH_MAX];
+    char buf[PATH_MAX];
 #endif
 
     size_t cwd_len = sizeof(buf);
@@ -61,7 +63,7 @@ std::string default_realm_file_directory()
     return std::string(buf, cwd_len);
 }
 
-void ensure_directory_exists_for_file(const std::string &file_path)
+void ensure_directory_exists_for_file(const std::string& file_path)
 {
     size_t pos = 0;
 
@@ -85,11 +87,12 @@ void copy_bundled_realm_files()
     throw std::runtime_error("Realm for Node does not support this method.");
 }
 
-inline bool ends_with(const std::string& str, const std::string& suffix) {
+inline bool ends_with(const std::string& str, const std::string& suffix)
+{
     return str.size() > suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-void remove_realm_files_from_directory(const std::string &dir_path)
+void remove_realm_files_from_directory(const std::string& dir_path)
 {
     FileSystemRequest scandir_req;
     if (uv_fs_scandir(uv_default_loop(), &scandir_req, dir_path.c_str(), 0, nullptr) < 0) {
@@ -122,16 +125,17 @@ void remove_realm_files_from_directory(const std::string &dir_path)
                     throw UVException(static_cast<uv_errno_t>(management_rmdir_req.result));
                 }
             }
-        } else {
+        }
+        else {
             static std::string realm_extension(".realm");
             static std::string realm_note_extension(".realm.note");
             static std::string realm_lock_extension(".realm.lock");
             static std::string realm_log_extension(".realm.log");
             static std::string realm_log_a_extension(".realm.log_a"); // legacy
             static std::string realm_log_b_extension(".realm.log_b"); // legacy
-            if (ends_with(path, realm_extension) || ends_with(path, realm_note_extension)
-                || ends_with(path, realm_lock_extension) || ends_with(path, realm_log_extension)
-                || ends_with(path, realm_log_a_extension) || ends_with(path, realm_log_b_extension)) {
+            if (ends_with(path, realm_extension) || ends_with(path, realm_note_extension) ||
+                ends_with(path, realm_lock_extension) || ends_with(path, realm_log_extension) ||
+                ends_with(path, realm_log_a_extension) || ends_with(path, realm_log_b_extension)) {
                 FileSystemRequest delete_req;
                 if (uv_fs_unlink(uv_default_loop(), &delete_req, path.c_str(), nullptr) != 0) {
                     throw UVException(static_cast<uv_errno_t>(delete_req.result));
@@ -141,14 +145,15 @@ void remove_realm_files_from_directory(const std::string &dir_path)
     }
 }
 
-void remove_directory(const std::string &path)
+void remove_directory(const std::string& path)
 {
     FileSystemRequest exists_req;
     if (uv_fs_stat(uv_default_loop(), &exists_req, path.c_str(), nullptr) != 0) {
         if (exists_req.result == UV_ENOENT) {
             // path doesn't exist, ignore
             return;
-        } else {
+        }
+        else {
             throw UVException(static_cast<uv_errno_t>(exists_req.result));
         }
     }
@@ -174,14 +179,15 @@ void remove_directory(const std::string &path)
 }
 
 
-void remove_file(const std::string &path)
+void remove_file(const std::string& path)
 {
     FileSystemRequest exists_req;
     if (uv_fs_stat(uv_default_loop(), &exists_req, path.c_str(), nullptr) != 0) {
         if (exists_req.result == UV_ENOENT) {
             // path doesn't exist, ignore
             return;
-        } else {
+        }
+        else {
             throw UVException(static_cast<uv_errno_t>(exists_req.result));
         }
     }
@@ -202,4 +208,4 @@ void print(const char* fmt, ...)
     va_end(vl);
 }
 
-} // realm
+} // namespace realm

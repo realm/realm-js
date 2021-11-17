@@ -11,81 +11,101 @@ using namespace std;
 using namespace realm;
 
 
-struct MockedCollection: public IOCollection{
+struct MockedCollection : public IOCollection {
     double N = 1000;
-    MockedCollection(double start): N{start} {}
-    realm::Mixed get(std::string) override{
+    MockedCollection(double start)
+        : N{start}
+    {
+    }
+    realm::Mixed get(std::string) override
+    {
         return realm::Mixed(N);
     }
 
-    void set(std::string key, realm::Mixed val) override{
+    void set(std::string key, realm::Mixed val) override
+    {
         N = val.get_double();
     }
 
-    void remove(std::string key) override {
+    void remove(std::string key) override
+    {
         N = 0;
     }
 
-    bool contains(std::string key) override {
+    bool contains(std::string key) override
+    {
         return true;
     }
 };
 
 struct MockedGetterSetter {
-    IOCollection *collection{nullptr};
+    IOCollection* collection{nullptr};
 
-    MockedGetterSetter(IOCollection *_collection): collection{_collection}{}
+    MockedGetterSetter(IOCollection* _collection)
+        : collection{_collection}
+    {
+    }
 
-    void set(accessor::Arguments args) {
+    void set(accessor::Arguments args)
+    {
         double N = JSValueToNumber(args.context, args.value, nullptr);
         collection->set("N", realm::Mixed(N));
 
-        if(N == -1){
+        if (N == -1) {
             args.throw_error("Error: No Negative Number Please.");
         }
     }
 
-    JSValueRef get(accessor::Arguments args) {
+    JSValueRef get(accessor::Arguments args)
+    {
         return JSValueMakeNumber(args.context, collection->get(args.property_name).get_double());
     }
 
-    ~MockedGetterSetter(){}
+    ~MockedGetterSetter() {}
 };
 
 struct TNull : public ObjectObserver {
-    IOCollection* get_collection() { return nullptr; }
+    IOCollection* get_collection()
+    {
+        return nullptr;
+    }
 };
 
 struct T1 : public ObjectObserver {
     int call_count = 0;
-    void subscribe(std::unique_ptr<Subscriber>) { call_count++; }
+    void subscribe(std::unique_ptr<Subscriber>)
+    {
+        call_count++;
+    }
 
-    void remove_subscription(std::unique_ptr<Subscriber>) {
+    void remove_subscription(std::unique_ptr<Subscriber>)
+    {
         call_count++;
         // Making Sure that unsubscribe_all & subscribe has been successfully
         // invoked.
         REQUIRE(call_count == 3);
     }
-    void unsubscribe_all() { call_count++; }
+    void unsubscribe_all()
+    {
+        call_count++;
+    }
 
-    static void test_for_null_data_method(method::Arguments arguments) {
-        SECTION(
-            "This callback should have null values for observer and "
-            "collection.") {
+    static void test_for_null_data_method(method::Arguments arguments)
+    {
+        SECTION("This callback should have null values for observer and "
+                "collection.") {
             REQUIRE(true == JSValueIsBoolean(arguments.context, arguments.get(0)));
             REQUIRE(arguments.collection == nullptr);
             REQUIRE(arguments.observer == nullptr);
         }
     }
 
-    static void removeTest(method::Arguments args){
+    static void removeTest(method::Arguments args) {}
 
-    }
-
-    static void methods(method::Arguments args) {
-        SECTION(
-            "This callback should have non-null values for observer and "
-            "collection.") {
+    static void methods(method::Arguments args)
+    {
+        SECTION("This callback should have non-null values for observer and "
+                "collection.") {
 
             auto context = args.context;
 
@@ -112,17 +132,14 @@ struct T1 : public ObjectObserver {
 };
 
 TEST_CASE("Testing Logger#get_level") {
-    REQUIRE(realm::common::logger::Logger::get_level("all") ==
-            realm::common::logger::LoggerLevel::all);
-    REQUIRE(realm::common::logger::Logger::get_level("debug") ==
-            realm::common::logger::LoggerLevel::debug);
-    REQUIRE_THROWS_WITH(realm::common::logger::Logger::get_level("coffeebabe"),
-                        "Bad log level");
+    REQUIRE(realm::common::logger::Logger::get_level("all") == realm::common::logger::LoggerLevel::all);
+    REQUIRE(realm::common::logger::Logger::get_level("debug") == realm::common::logger::LoggerLevel::debug);
+    REQUIRE_THROWS_WITH(realm::common::logger::Logger::get_level("coffeebabe"), "Bad log level");
 }
 
-JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
-                size_t argumentCount, const JSValueRef arguments[],
-                JSValueRef* exception) {
+JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount,
+                const JSValueRef arguments[], JSValueRef* exception)
+{
     SECTION("The Object should contain accessor *X* and method *doSomething*") {
         REQUIRE(JSValueIsBoolean(ctx, arguments[0]) == true);
         bool val = JSValueToBoolean(ctx, arguments[0]);
@@ -138,16 +155,15 @@ JSValueRef Test(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
 
     test_accessor(dictionary, 'X', 666)  // Will look for the field X and 666.
  */
-JSValueRef TestingGetterSetter(JSContextRef ctx, JSObjectRef function,
-                        JSObjectRef thisObject, size_t argumentCount,
-                        const JSValueRef arguments[], JSValueRef* exception) {
+JSValueRef TestingGetterSetter(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount,
+                               const JSValueRef arguments[], JSValueRef* exception)
+{
     SECTION("Testing accessors I/O for input X") {
         auto accessor_name = JSC_VM::s("X");
         REQUIRE(true == JSValueIsObject(ctx, arguments[0]));
 
         auto obj = (JSObjectRef)arguments[0];
-        REQUIRE(true ==
-                JSObjectHasProperty(ctx, obj, (JSStringRef)arguments[1]));
+        REQUIRE(true == JSObjectHasProperty(ctx, obj, (JSStringRef)arguments[1]));
 
         JSValueRef v = JSObjectGetProperty(ctx, obj, accessor_name, NULL);
         REQUIRE(true == JSValueIsNumber(ctx, v));
@@ -159,7 +175,8 @@ JSValueRef TestingGetterSetter(JSContextRef ctx, JSObjectRef function,
     return JSValueMakeUndefined(ctx);
 }
 
-void TestingEnumeration(std::string& str_param) {
+void TestingEnumeration(std::string& str_param)
+{
     const char* payload = "{\"X\":666,\"A\":666,\"B\":666,\"C\":666}";
     const char* _str = str_param.c_str();
 
@@ -171,7 +188,8 @@ void TestingEnumeration(std::string& str_param) {
         REQUIRE(e1 == e2);
     }
 }
-void TestingExceptionMessage(std::string& str_param) {
+void TestingExceptionMessage(std::string& str_param)
+{
     const char* payload = "Error: No Negative Number Please.";
     const char* _str = str_param.c_str();
 
@@ -224,7 +242,6 @@ TEST_CASE("Testing Object creation on JavascriptCore.") {
     });
 
     JSObjectRef null_dict_js_object = null_dict->create();
-
 
 
     // Adds object to the JS global scope. This way we can call the functions

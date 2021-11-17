@@ -23,39 +23,61 @@
 namespace realm {
 namespace js {
 
-template<>
+template <>
 class String<jsc::Types> {
     using StringType = String<jsc::Types>;
 
     JSStringRef m_str;
 
-  public:
-    static bson::Bson to_bson(StringType stringified_ejson) {
+public:
+    static bson::Bson to_bson(StringType stringified_ejson)
+    {
         return bson::parse(std::string(stringified_ejson));
     }
 
-    static String from_bson(const bson::Bson& bson) {
+    static String from_bson(const bson::Bson& bson)
+    {
         return String(bson.to_string());
     }
 
-    String(const char *s) : m_str(JSStringCreateWithUTF8CString(s)) {}
-    String(const JSStringRef &s) : m_str(JSStringRetain(s)) {}
-    String(StringData str) : String(str.data()) {}
-    String(const std::string& str) : String(str.c_str()) {}
-    String(const StringType &o) : String(o.m_str) {}
-    String(StringType &&o) : m_str(o.m_str) {
+    String(const char* s)
+        : m_str(JSStringCreateWithUTF8CString(s))
+    {
+    }
+    String(const JSStringRef& s)
+        : m_str(JSStringRetain(s))
+    {
+    }
+    String(StringData str)
+        : String(str.data())
+    {
+    }
+    String(const std::string& str)
+        : String(str.c_str())
+    {
+    }
+    String(const StringType& o)
+        : String(o.m_str)
+    {
+    }
+    String(StringType&& o)
+        : m_str(o.m_str)
+    {
         o.m_str = nullptr;
     }
-    ~String() {
+    ~String()
+    {
         if (m_str) {
             JSStringRelease(m_str);
         }
     }
 
-    operator JSStringRef() const {
+    operator JSStringRef() const
+    {
         return m_str;
     }
-    operator std::string() const {
+    operator std::string() const
+    {
         size_t max_size = JSStringGetMaximumUTF8CStringSize(m_str);
         std::string string;
         string.resize(max_size);
@@ -63,6 +85,6 @@ class String<jsc::Types> {
         return string;
     }
 };
-    
-} // js
-} // realm
+
+} // namespace js
+} // namespace realm

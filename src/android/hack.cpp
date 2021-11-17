@@ -27,16 +27,16 @@
 
 #if REALM_WRAP_MEMMOVE
 extern "C" {
-void* __wrap_memmove(void *dest, const void *src, size_t n);
-void* __real_memmove(void *dest, const void *src, size_t n);
+void* __wrap_memmove(void* dest, const void* src, size_t n);
+void* __real_memmove(void* dest, const void* src, size_t n);
 
-void* __wrap_memcpy(void *dest, const void *src, size_t n);
-void* __real_memcpy(void *dest, const void *src, size_t n);
+void* __wrap_memcpy(void* dest, const void* src, size_t n);
+void* __real_memcpy(void* dest, const void* src, size_t n);
 }
 
 using namespace realm::jni_util;
 
-typedef void* (*MemMoveFunc)(void *dest, const void *src, size_t n);
+typedef void* (*MemMoveFunc)(void* dest, const void* src, size_t n);
 static MemMoveFunc s_wrap_memmove_ptr = &__real_memmove;
 static MemMoveFunc s_wrap_memcpy_ptr = &__real_memcpy;
 
@@ -71,12 +71,12 @@ static void* hacked_memcpy(void* s1, const void* s2, size_t n)
     return static_cast<void*>(s1);
 }
 
-void* __wrap_memmove(void *dest, const void *src, size_t n)
+void* __wrap_memmove(void* dest, const void* src, size_t n)
 {
     return (*s_wrap_memmove_ptr)(dest, src, n);
 }
 
-void* __wrap_memcpy(void *dest, const void *src, size_t n)
+void* __wrap_memcpy(void* dest, const void* src, size_t n)
 {
     return (*s_wrap_memcpy_ptr)(dest, src, n);
 }
@@ -93,9 +93,10 @@ static void check_memmove()
     size_t len = strlen(array);
     void* ptr = __real_memmove(array + 1, array, len - 1);
     if (ptr != array + 1 || strncmp(array, "FFooba", len) != 0) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "memmove is broken on this device. Switching to the builtin implementation.");
+        __android_log_print(ANDROID_LOG_DEBUG, "JSRealm",
+                            "memmove is broken on this device. Switching to the builtin implementation.");
         s_wrap_memmove_ptr = &hacked_memmove;
-        s_wrap_memcpy_ptr  = &hacked_memcpy;
+        s_wrap_memcpy_ptr = &hacked_memcpy;
     }
     free(array);
 }
@@ -111,6 +112,5 @@ void hack_init()
 #endif
 }
 
-}
-}
-
+} // namespace jni_util
+} // namespace realm

@@ -23,50 +23,53 @@
 #include "common/collection.hpp"
 
 namespace JSCUtil {
-    struct Error{
-        static JSValueRef handle(JSContextRef context, std::string&& message){
-            JSStringRef _str = JSStringCreateWithUTF8CString(message.c_str());
-            JSValueRef msg = JSValueMakeString(context, _str);
-            return JSObjectMakeError(context, 1, &msg, NULL);
+struct Error {
+    static JSValueRef handle(JSContextRef context, std::string&& message)
+    {
+        JSStringRef _str = JSStringCreateWithUTF8CString(message.c_str());
+        JSValueRef msg = JSValueMakeString(context, _str);
+        return JSObjectMakeError(context, 1, &msg, NULL);
+    }
+};
+}; // namespace JSCUtil
+
+namespace method {
+struct Arguments {
+    JSContextRef context;
+    ObjectObserver* observer = nullptr;
+    IOCollection* collection = nullptr;
+    size_t argumentCount;
+    const JSValueRef* values{nullptr};
+    JSValueRef* exception;
+
+    JSValueRef get(int index, std::string msg = "Missing argument for method call.")
+    {
+        if (index >= argumentCount) {
+            throw std::runtime_error(msg);
         }
-    };
+
+        return values[index];
+    }
+
+    void throw_error(std::string&& message)
+    {
+        *exception = JSCUtil::Error::handle(context, std::move(message));
+    }
 };
 
-namespace method{
-    struct Arguments {
-        JSContextRef context;
-        ObjectObserver *observer = nullptr;
-        IOCollection *collection = nullptr;
-        size_t argumentCount;
-        const JSValueRef *values{nullptr};
-        JSValueRef *exception;
+}; // namespace method
 
-        JSValueRef get(int index,
-                       std::string msg = "Missing argument for method call.") {
-            if (index >= argumentCount) {
-                throw std::runtime_error(msg);
-            }
+namespace accessor {
+struct Arguments {
+    JSContextRef context;
+    JSObjectRef object;
+    std::string property_name;
+    JSValueRef value;
+    JSValueRef* exception;
 
-            return values[index];
-        }
-
-        void throw_error(std::string&& message){
-            *exception = JSCUtil::Error::handle(context, std::move(message));
-        }
-    };
-
+    void throw_error(std::string&& message)
+    {
+        *exception = JSCUtil::Error::handle(context, std::move(message));
+    }
 };
-
-namespace accessor{
-    struct Arguments{
-        JSContextRef context;
-        JSObjectRef object;
-        std::string property_name;
-        JSValueRef value;
-        JSValueRef *exception;
-
-        void throw_error(std::string&& message){
-            *exception = JSCUtil::Error::handle(context, std::move(message));
-        }
-    };
-};
+}; // namespace accessor

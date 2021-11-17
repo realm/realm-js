@@ -21,16 +21,18 @@
 #include "common/object/interfaces.hpp"
 
 
-
 template <typename VM>
 struct NoBuilder {
     using ContextType = typename VM::Context;
     ContextType context;
-    NoBuilder(ContextType _context) : context{_context} {};
+    NoBuilder(ContextType _context)
+        : context{_context} {};
 };
 
-class NoData {};
-class EmptyGetterSetters{};
+class NoData {
+};
+class EmptyGetterSetters {
+};
 
 struct NoNotificationsStrategy {
     int empty{0};

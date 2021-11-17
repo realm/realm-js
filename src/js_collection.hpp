@@ -29,16 +29,17 @@
 namespace realm {
 namespace js {
 
-template<typename T>
+template <typename T>
 class RealmObject;
 
-template<typename T>
+template <typename T>
 struct RealmObjectClass;
 
 // Empty class that merely serves as useful type for now.
-class Collection {};
+class Collection {
+};
 
-template<typename T>
+template <typename T>
 struct CollectionClass : ClassDefinition<T, Collection, ObservableClass<T>> {
     using ContextType = typename T::Context;
     using ValueType = typename T::Value;
@@ -48,12 +49,17 @@ struct CollectionClass : ClassDefinition<T, Collection, ObservableClass<T>> {
 
     std::string const name = "Collection";
 
-    static inline ValueType create_collection_change_set(ContextType ctx, StringData object_type, const ObjectChangeSet &change_set, realm::SharedRealm old_realm, realm::SharedRealm new_realm);
-    static inline ValueType create_collection_change_set(ContextType ctx, const CollectionChangeSet &change_set);
+    static inline ValueType create_collection_change_set(ContextType ctx, StringData object_type,
+                                                         const ObjectChangeSet& change_set,
+                                                         realm::SharedRealm old_realm, realm::SharedRealm new_realm);
+    static inline ValueType create_collection_change_set(ContextType ctx, const CollectionChangeSet& change_set);
 };
 
-template<typename T>
-typename T::Value CollectionClass<T>::create_collection_change_set(ContextType ctx, StringData object_type, const ObjectChangeSet &change_set, realm::SharedRealm old_realm, realm::SharedRealm new_realm)
+template <typename T>
+typename T::Value CollectionClass<T>::create_collection_change_set(ContextType ctx, StringData object_type,
+                                                                   const ObjectChangeSet& change_set,
+                                                                   realm::SharedRealm old_realm,
+                                                                   realm::SharedRealm new_realm)
 {
     ObjectType object = Object::create_empty(ctx);
     std::vector<ValueType> scratch;
@@ -92,8 +98,9 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
     return object;
 }
 
-template<typename T>
-typename T::Value CollectionClass<T>::create_collection_change_set(ContextType ctx, const CollectionChangeSet &change_set)
+template <typename T>
+typename T::Value CollectionClass<T>::create_collection_change_set(ContextType ctx,
+                                                                   const CollectionChangeSet& change_set)
 {
     ObjectType object = Object::create_empty(ctx);
     std::vector<ValueType> scratch;
@@ -122,5 +129,5 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
     return object;
 }
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm
