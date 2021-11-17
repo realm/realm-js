@@ -1,0 +1,4 @@
+{
+  "name": "empty-package-to-avoid-react-native-cli-confusions",
+  "see": "https://github.com/react-native-community/cli/issues/1493"
+}

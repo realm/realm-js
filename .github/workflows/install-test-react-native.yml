@@ -1,0 +1,69 @@
+name: Install test (React Native)
+
+on:
+  # Any change to these files
+  push:
+    paths:
+      - install-tests/react-native/**
+      - .github/workflows/install-test-react-native.yml
+  # Every day at 9:00 CET
+  schedule:
+    - cron: "0 8 * * *"
+  # You can also activate this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      react-native-version:
+        description: The version of React Native to install
+        required: true
+        default: next
+      realm-version:
+        description: The version of Realm to install
+        required: true
+        default: latest
+
+defaults:
+  run:
+    working-directory: install-tests/react-native
+
+jobs:
+  install:
+    name: Installing Realm → React Native (using Xcode v${{matrix.xcode}}, node v${{ matrix.node }}, npm v${{ matrix.npm }})
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # See https://github.com/actions/virtual-environments/blob/main/images/macos/macos-11-Readme.md#xcode
+        xcode:
+          # - 12.5
+          - 13.1
+        npm:
+          - 7
+        node:
+          - 14
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install npm v7
+        run: npm install -g npm@7
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: install-test
+      - name: Prepend ccache executables to the PATH
+        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
+      - name: Install React Native & Realm
+        run: ./install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
+      - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
+        run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
+      - name: Run test (iOS)
+        run: ./run-ios.sh
+      # - name: Run test (Android)
+      #   uses: reactivecircus/android-emulator-runner@v2
+      #   with:
+      #     api-level: 29
+      #     target: google_apis
+      #     script: ./run-android.sh
