@@ -5,6 +5,7 @@
         "plugin:jsdoc/recommended"
     ],
     "rules": {
+        "no-restricted-globals": ["error", "window", "global"],
         "@typescript-eslint/explicit-function-return-type": "off",
         "jsdoc/require-param-type": "off",
         "jsdoc/require-returns-type": "off",

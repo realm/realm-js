@@ -25,4 +25,6 @@ const tsConfigPath = path.resolve(__dirname, "../src/tests/tsconfig.json");
 process.env.TS_NODE_PROJECT = tsConfigPath;
 console.log(`Loading TypeScript configuration from ${tsConfigPath}`);
 
+// We can disable no-restricted-globals, since we know this will run on node.js
+// eslint-disable-next-line no-restricted-globals
 global.__SDK_VERSION__ = "0.0.0-test";
