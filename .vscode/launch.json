@@ -89,6 +89,24 @@
             ],
             "cwd": "${workspaceFolder}/tests"
         },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB Debug Integration Tests",
+            "program": "node",
+            "args": [
+                "--expose_gc",
+                "node_modules/mocha/bin/mocha",
+                "--require",
+                "ts-node/register/transpile-only",
+                "--require",
+                "src/utils/inject-node-globals.ts",
+                "src/index.ts",
+                "--grep",
+                "${input:integrationTestFilter}"
+            ],
+            "cwd": "${workspaceFolder}/integration-tests/tests"
+        }
     ],
     "compounds": [
         {
@@ -111,6 +129,12 @@
             "id": "testFilter",
             "type": "promptString",
             "default": ".",
+            "description": "Filtering used to limit what tests are run"
+        },
+        {
+            "id": "integrationTestFilter",
+            "type": "promptString",
+            "default": "",
             "description": "Filtering used to limit what tests are run"
         }
     ]
