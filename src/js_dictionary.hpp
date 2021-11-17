@@ -25,7 +25,6 @@
 #include "js_results.hpp"
 #include "js_types.hpp"
 #include "js_util.hpp"
-#include "js_mixed.hpp"
 
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/dictionary.hpp>

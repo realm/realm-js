@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "js_mixed.hpp"
-
 #include "hermes_types.hpp"
 #include "hermes_string.hpp"
 
@@ -74,7 +72,7 @@ template<>
         }
 
         void set(realm::Mixed mixed) {
-            m_value = jsi::Value(m_env, TypeMixed<hermes::Types>::get_instance().wrap(m_env, mixed));
+            m_value = Value<hermes::Types>::from_mixed(m_env, nullptr, mixed).get();
         }
 
         void set_null() {
