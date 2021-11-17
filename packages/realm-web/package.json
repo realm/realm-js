@@ -46,9 +46,9 @@
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@realm.io/common": "^0.1.1",
-    "bson": "^4.2.0",
-    "detect-browser": "^5.1.1",
-    "js-base64": "^2.6.3"
+    "bson": "^4.5.4",
+    "detect-browser": "^5.2.1",
+    "js-base64": "^3.7.2"
   },
   "optionalDependencies": {
     "abort-controller": "^3.0.0",
@@ -61,7 +61,7 @@
     "@rollup/plugin-typescript": "^4.1.1",
     "@types/chai": "^4.2.9",
     "@types/fs-extra": "^8.1.0",
-    "@types/js-base64": "^2.3.2",
+    "@types/js-base64": "^3.3.1",
     "@types/mocha": "^7.0.1",
     "@types/node": "^13.7.6",
     "abort-controller": "^3.0.0",

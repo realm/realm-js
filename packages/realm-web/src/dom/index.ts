@@ -25,20 +25,36 @@ declare global {
 export * from "../index";
 
 import { setEnvironment, Environment } from "../environment";
-
+import { MemoryStorage } from "../storage/MemoryStorage";
 import { OAuth2Helper } from "../OAuth2Helper";
+
 import { LocalStorage } from "./LocalStorage";
 export { LocalStorage };
 
 const browser = detect();
 
-const environment: Environment = {
-  defaultStorage: new LocalStorage().prefix("realm-web"),
-  openWindow: (url) => window.open(url),
+const DefaultStorage = "localStorage" in globalThis ? LocalStorage : MemoryStorage;
 
+/**
+ * Attempt to use the browser to open a window
+ *
+ * @param url The url to open a window to.
+ * @returns Then newly create window.
+ */
+function openWindow(url: string) {
+  if (typeof globalThis.open === "function") {
+    return globalThis.open(url);
+  } else {
+    console.log(`Please open ${url}`);
+    return null;
+  }
+}
+
+const environment: Environment = {
+  defaultStorage: new DefaultStorage().prefix("realm-web"),
+  openWindow,
   platform: browser?.name || "web",
   platformVersion: browser?.version || "0.0.0",
-
   TextDecoder,
 };
 
@@ -50,7 +66,7 @@ setEnvironment(environment);
  * @param location An optional location to use (defaults to the windows current location).
  * @param storage Optional storage used to save any results from the location.
  */
-export function handleAuthRedirect(location = window.location, storage = environment.defaultStorage): void {
+export function handleAuthRedirect(location = globalThis.location, storage = environment.defaultStorage): void {
   try {
     const queryString = location.hash.substr(1); // Strip the initial # from the hash
     OAuth2Helper.handleRedirect(queryString, storage);

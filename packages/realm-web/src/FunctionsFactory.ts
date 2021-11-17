@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { Base64 } from "js-base64";
+
 import { Fetcher } from "./Fetcher";
 import { serialize } from "./utils/ejson";
 import { encodeQueryString } from "./utils/string";
