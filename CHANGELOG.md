@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.10.1 Release notes (2021-11-18)
 =============================================================
 ### Enhancements
 * None.
