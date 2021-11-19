@@ -19,6 +19,7 @@ Both the eslint plugin and formatting on save can be enabled via the UI or you c
 
 ```json
 "eslint.format.enable": true,
+"eslint.validate": ["typescript", "typescriptreact", "javascript"],
 "editor.formatOnSave": true
 ```
 
