@@ -12,6 +12,7 @@ To help yourself keep your code passing linters at all times, it's highly recomm
 ### Visual Studio Code
 
 - Install and enable the ["eslint" extension for VS Code](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint).
+- Disable any other code formatting extensions (such as Prettier / [`esbenp.prettier-vscode`](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)) for the workspace, as they might interfere with the format enforced by eslint.
 - Make sure you've enabled "format on save" on your workspace.
 
 Both the eslint plugin and formatting on save can be enabled via the UI or you can <kbd>Cmd</kbd> + <kbd>P</kbd>, type *"> Preferences Open Workspace Settings (JSON)"* and paste in the following in the `settings` object:
