@@ -20,30 +20,29 @@
 
 import React from 'react';
 
-import {
-    Platform,
-    StatusBar,
-} from 'react-native';
+import {Platform, StatusBar} from 'react-native';
 import TodoItemsView from './todo-itemsview';
 
 export default class ItemsScreen extends React.Component {
-    static navigationOptions = {
-        title: 'Current list',
-    };
+  static navigationOptions = {
+    title: 'Current list',
+  };
 
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
 
-    componentWillMount() {
-        if (Platform.OS == 'ios') {
-            StatusBar.setBarStyle('light-content');
-        }
+  componentWillMount() {
+    if (Platform.OS == 'ios') {
+      StatusBar.setBarStyle('light-content');
     }
+  }
 
-    render() {
-        let properties = {};
-        return <TodoItemsView items={this.props.route.params.items} {...properties} />;
-    }
+  render() {
+    let properties = {};
+    return (
+      <TodoItemsView items={this.props.route.params.items} {...properties} />
+    );
+  }
 }
