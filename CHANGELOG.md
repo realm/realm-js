@@ -16,7 +16,7 @@ NOTE: This is an early (alpha) release with Hermes/JSI support: We expect crashe
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* None.
+* Restructured C++ namespaces and files to reflect that we support JSI, not just Hermes.
 
 10.20.0-alpha.1 Release notes (2021-9-22)
 =============================================================
