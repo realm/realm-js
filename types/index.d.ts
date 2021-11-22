@@ -199,6 +199,20 @@ declare namespace Realm {
         isValid(): boolean;
 
         /**
+         * @returns boolean
+         */
+        _isFrozen(): boolean;
+
+        /**
+         * @returns number
+         */
+        _version(): number;
+
+        _freeze<T>(): T & Realm.Object;
+
+        _realm: Realm;
+
+        /**
          * @returns ObjectSchema
          */
         objectSchema(): ObjectSchema;
@@ -641,6 +655,8 @@ declare class Realm {
     readonly schemaVersion: number;
     readonly isInTransaction: boolean;
     readonly isClosed: boolean;
+
+    toStr(): string;
 
     readonly syncSession: Realm.App.Sync.Session | null;
 
