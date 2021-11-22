@@ -32,7 +32,7 @@
 
 namespace realm {
 
-namespace jsi = facebook::jsi;
+namespace fbjsi = facebook::jsi;
 
 namespace js {
 class JsiVal;
@@ -42,26 +42,26 @@ class JsiFunc;
 
 class JsiEnv {
 public:
-    /*implicit*/JsiEnv(jsi::Runtime& rt) : m_rt(&rt) {}
-    /*implicit*/ operator jsi::Runtime&() const {
+    /*implicit*/JsiEnv(fbjsi::Runtime& rt) : m_rt(&rt) {}
+    /*implicit*/ operator fbjsi::Runtime&() const {
         return *m_rt;
     }
 
-    jsi::Runtime* operator->() const {
+    fbjsi::Runtime* operator->() const {
         return m_rt;
     }
-    jsi::Runtime& get() const {
+    fbjsi::Runtime& get() const {
         return *m_rt;
     }
 
-    JsiVal operator()(const jsi::Value&) const;
-    JsiVal operator()(jsi::Value&&) const;
-    JsiObj operator()(const jsi::Object&) const;
-    JsiObj operator()(jsi::Object&&) const;
-    JsiString operator()(const jsi::String&) const;
-    JsiString operator()(jsi::String&&) const;
-    JsiFunc operator()(const jsi::Function&) const;
-    JsiFunc operator()(jsi::Function&&) const;
+    JsiVal operator()(const fbjsi::Value&) const;
+    JsiVal operator()(fbjsi::Value&&) const;
+    JsiObj operator()(const fbjsi::Object&) const;
+    JsiObj operator()(fbjsi::Object&&) const;
+    JsiString operator()(const fbjsi::String&) const;
+    JsiString operator()(fbjsi::String&&) const;
+    JsiFunc operator()(const fbjsi::Function&) const;
+    JsiFunc operator()(fbjsi::Function&&) const;
 
     JsiVal null() const;
     JsiVal undefined() const;
@@ -69,7 +69,7 @@ public:
     JsiObj global() const;
 
     /** Warning, this can only appear directly as an argument to callFoo(), not assigned to a variable! */
-    const jsi::Value* args(const JsiVal* argv, size_t argc, std::vector<jsi::Value>&& buf = {}) const;
+    const fbjsi::Value* args(const JsiVal* argv, size_t argc, std::vector<fbjsi::Value>&& buf = {}) const;
 
     friend bool operator==(const JsiEnv& a, const JsiEnv& b) {
         return a.m_rt == b.m_rt;
@@ -79,7 +79,7 @@ public:
     JsiObj obj(std::pair<const char*, Vals>... pairs);
 
 private:
-    jsi::Runtime* m_rt;
+    fbjsi::Runtime* m_rt;
 };
 
 template <typename T, typename CRTP>
@@ -120,30 +120,30 @@ protected:
     T m_val;
 };
 
-class JsiString : public JsiWrap<jsi::String, JsiString> {
+class JsiString : public JsiWrap<fbjsi::String, JsiString> {
 public:
     using JsiWrap::JsiWrap;
-    JsiString(JsiEnv env, const jsi::String& val) : JsiWrap(env, jsi::Value(env, val).getString(env)) {}
+    JsiString(JsiEnv env, const fbjsi::String& val) : JsiWrap(env, fbjsi::Value(env, val).getString(env)) {}
 };
 
-class JsiFunc : public JsiWrap<jsi::Function, JsiFunc> {
+class JsiFunc : public JsiWrap<fbjsi::Function, JsiFunc> {
 public:
     using JsiWrap::JsiWrap;
-    JsiFunc(JsiEnv env, const jsi::Function& val) : JsiWrap(env, jsi::Value(env, val).getObject(env).getFunction(env)) {}
+    JsiFunc(JsiEnv env, const fbjsi::Function& val) : JsiWrap(env, fbjsi::Value(env, val).getObject(env).getFunction(env)) {}
 };
 
-class JsiObj : public JsiWrap<jsi::Object, JsiObj> {
+class JsiObj : public JsiWrap<fbjsi::Object, JsiObj> {
 public:
     using JsiWrap::JsiWrap;
-    JsiObj(JsiEnv env, const jsi::Object& val) : JsiWrap(env, jsi::Value(env, val).getObject(env)) {}
+    JsiObj(JsiEnv env, const fbjsi::Object& val) : JsiWrap(env, fbjsi::Value(env, val).getObject(env)) {}
     /*implicit*/ JsiObj(JsiFunc f) : JsiWrap(f.env(), std::move(f).get()) {}
-    explicit JsiObj(JsiEnv env) : JsiWrap(env, jsi::Object(env)) {}
+    explicit JsiObj(JsiEnv env) : JsiWrap(env, fbjsi::Object(env)) {}
 };
 
-class JsiVal : public JsiWrap<jsi::Value, JsiVal> {
+class JsiVal : public JsiWrap<fbjsi::Value, JsiVal> {
 public:
     using JsiWrap::JsiWrap;
-    JsiVal(JsiEnv env, const jsi::Value& val) : JsiWrap(env, jsi::Value(env, val)) {}
+    JsiVal(JsiEnv env, const fbjsi::Value& val) : JsiWrap(env, fbjsi::Value(env, val)) {}
     /*implicit*/ JsiVal(JsiString val) : JsiWrap(val.env(), std::move(val).get()) {}
     /*implicit*/ JsiVal(JsiFunc val) : JsiWrap(val.env(), std::move(val).get()) {}
     /*implicit*/ JsiVal(JsiObj val) : JsiWrap(val.env(), std::move(val).get()) {}
@@ -152,25 +152,25 @@ public:
     JsiObj asObject() && { return {env(), std::move(get()).asObject(env())} ;}
 };
 
-inline JsiVal JsiEnv::operator()(const jsi::Value& val) const { return {*this, val}; }
-inline JsiVal JsiEnv::operator()(jsi::Value&& val) const { return {*this, std::move(val)}; }
-inline JsiObj JsiEnv::operator()(const jsi::Object& val) const { return {*this, val}; }
-inline JsiObj JsiEnv::operator()(jsi::Object&& val) const { return {*this, std::move(val)}; }
-inline JsiString JsiEnv::operator()(const jsi::String& val) const { return {*this, val}; }
-inline JsiString JsiEnv::operator()(jsi::String&& val) const { return {*this, std::move(val)}; }
-inline JsiFunc JsiEnv::operator()(const jsi::Function& val) const { return {*this, val}; }
-inline JsiFunc JsiEnv::operator()(jsi::Function&& val) const { return {*this, std::move(val)}; }
+inline JsiVal JsiEnv::operator()(const fbjsi::Value& val) const { return {*this, val}; }
+inline JsiVal JsiEnv::operator()(fbjsi::Value&& val) const { return {*this, std::move(val)}; }
+inline JsiObj JsiEnv::operator()(const fbjsi::Object& val) const { return {*this, val}; }
+inline JsiObj JsiEnv::operator()(fbjsi::Object&& val) const { return {*this, std::move(val)}; }
+inline JsiString JsiEnv::operator()(const fbjsi::String& val) const { return {*this, val}; }
+inline JsiString JsiEnv::operator()(fbjsi::String&& val) const { return {*this, std::move(val)}; }
+inline JsiFunc JsiEnv::operator()(const fbjsi::Function& val) const { return {*this, val}; }
+inline JsiFunc JsiEnv::operator()(fbjsi::Function&& val) const { return {*this, std::move(val)}; }
 
 inline JsiVal JsiEnv::null() const {
-    return {*this, jsi::Value::null()};
+    return {*this, fbjsi::Value::null()};
 }
 inline JsiVal JsiEnv::undefined() const {
-    return {*this, jsi::Value::undefined()};
+    return {*this, fbjsi::Value::undefined()};
 }
 inline JsiObj JsiEnv::global() const {
     return {*this, m_rt->global()};
 }
-inline const jsi::Value* JsiEnv::args(const JsiVal* argv, size_t argc, std::vector<jsi::Value>&& buf) const {
+inline const fbjsi::Value* JsiEnv::args(const JsiVal* argv, size_t argc, std::vector<fbjsi::Value>&& buf) const {
     // Special case for 0 or 1 arguments to avoid any copies and allocations.
     if (argc == 0)
         return nullptr;
@@ -187,12 +187,12 @@ inline const jsi::Value* JsiEnv::args(const JsiVal* argv, size_t argc, std::vect
 
 template <typename... Vals>
 JsiObj JsiEnv::obj(std::pair<const char*, Vals>... pairs) {
-    auto obj = jsi::Object(*this);
+    auto obj = fbjsi::Object(*this);
     (..., obj.setProperty(*this, pairs.first, std::move(pairs.second)));
     return (*this)(std::move(obj));
 }
 
-namespace hermes {
+namespace realmjsi {
 struct Types {
 	using Context = JsiEnv;
 	using GlobalContext = JsiEnv;
@@ -201,7 +201,7 @@ struct Types {
 	using String = JsiString;
 	using Function = JsiFunc;
 
-	using JsiFunctionCallback = jsi::Value(*)(jsi::Runtime& rt, const jsi::Value& thisVal, const jsi::Value* args, size_t count);
+	using JsiFunctionCallback = fbjsi::Value(*)(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count);
 
 	using JsiIndexGetterCallback = JsiFunctionCallback;
 	using JsiIndexSetterCallback = JsiFunctionCallback;
@@ -219,10 +219,10 @@ struct Types {
 	using IndexPropertyGetterCallback = JsiIndexGetterCallback;
 	using IndexPropertySetterCallback = JsiIndexSetterCallback;
 
-	using StringPropertyGetterCallback = jsi::Value(*)(jsi::Runtime&, const jsi::Value&, const js::String<Types>&);
-	using StringPropertySetterCallback = jsi::Value(*)(jsi::Runtime&, const jsi::Value&, const js::String<Types>&, const jsi::Value&);
+	using StringPropertyGetterCallback = fbjsi::Value(*)(fbjsi::Runtime&, const fbjsi::Value&, const js::String<Types>&);
+	using StringPropertySetterCallback = fbjsi::Value(*)(fbjsi::Runtime&, const fbjsi::Value&, const js::String<Types>&, const fbjsi::Value&);
 	using StringPropertyEnumeratorCallback = JsiStringPropertyEnumeratorCallback;
-};
+};  // struct Types
 
 template<typename ClassType>
 class ObjectWrap;
@@ -235,15 +235,15 @@ using Object = js::Object<Types>;
 using Exception = js::Exception<Types>;
 using ReturnValue = js::ReturnValue<Types>;
 
-} // hermes
+} // realmjsi
 
 
 template<>
-inline hermes::Types::Context hermes::Context::get_global_context(hermes::Types::Context env) {
+inline realmjsi::Types::Context realmjsi::Context::get_global_context(realmjsi::Types::Context env) {
 	return env;
 }
 
-inline jsi::Function globalType(jsi::Runtime& env, const char* name) {
+inline fbjsi::Function globalType(fbjsi::Runtime& env, const char* name) {
     return env.global().getPropertyAsFunction(env, name);
 }
 

@@ -18,14 +18,16 @@
 
 #pragma once
 
-#include "hermes_types.hpp"
+#include "jsi_types.hpp"
 
 namespace realm {
 namespace js {
 
+namespace fbjsi = facebook::jsi;
+
 template<>
-class String<hermes::Types> {
-    using StringType = String<hermes::Types>;
+class String<realmjsi::Types> {
+    using StringType = String<realmjsi::Types>;
 
     std::string m_str;
 
@@ -54,17 +56,17 @@ class String<hermes::Types> {
         return m_str;
     }
 
-    jsi::String ToString(jsi::Runtime* env) {
-        return jsi::String::createFromUtf8(*env, m_str);
+    fbjsi::String ToString(fbjsi::Runtime* env) {
+        return fbjsi::String::createFromUtf8(*env, m_str);
     }
 };
 
-inline jsi::PropNameID propName(JsiEnv env, StringData name) {
-    return jsi::PropNameID::forUtf8(env, reinterpret_cast<const uint8_t*>(name.data()), name.size());
+inline fbjsi::PropNameID propName(JsiEnv env, StringData name) {
+    return fbjsi::PropNameID::forUtf8(env, reinterpret_cast<const uint8_t*>(name.data()), name.size());
 }
 
 inline JsiString str(JsiEnv env, StringData name) {
-    return env(jsi::String::createFromUtf8(env, reinterpret_cast<const uint8_t*>(name.data()), name.size()));
+    return env(fbjsi::String::createFromUtf8(env, reinterpret_cast<const uint8_t*>(name.data()), name.size()));
 }
 
 } // js

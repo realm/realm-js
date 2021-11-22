@@ -17,11 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-
-#include "hermes_types.hpp"
-#include "hermes_return_value.hpp"
-#include "hermes_string.hpp"
-#include "hermes_object.hpp"
+#include "jsi_types.hpp"
+#include "jsi_return_value.hpp"
+#include "jsi_string.hpp"
+#include "jsi_object.hpp"
 
 #include "js_class.hpp"
 #include "js_util.hpp"
@@ -41,13 +40,15 @@ struct RealmObjectClass;
 template<typename T>
 class RealmClass;
 
+namespace fbjsi = facebook::jsi;
+
 template<>
-struct Arguments<hermes::Types> {
+struct Arguments<realmjsi::Types> {
     const std::vector<JsiVal> valStorage;
     const JsiEnv ctx;
     const size_t count;
     const JsiVal* const value;
-    Arguments(JsiEnv env, size_t argc, const jsi::Value* argv)
+    Arguments(JsiEnv env, size_t argc, const fbjsi::Value* argv)
         : valStorage([&] {
             std::vector<JsiVal> out;
             out.reserve(argc);
@@ -89,9 +90,9 @@ struct Arguments<hermes::Types> {
     }
 };
 
-namespace hermes {
+namespace realmjsi {  // realm::js::realmjsi
 
-inline std::optional<jsi::Object> ObjectGetOwnPropertyDescriptor(JsiEnv env, const jsi::Object& target, const std::string& name) {
+inline std::optional<fbjsi::Object> ObjectGetOwnPropertyDescriptor(JsiEnv env, const fbjsi::Object& target, const std::string& name) {
     auto obj = js::globalType(env, "Object");
     auto res = obj.getPropertyAsFunction(env, "getOwnPropertyDescriptor").callWithThis(env, obj, target, name);
     if (!res.isObject())
@@ -99,18 +100,18 @@ inline std::optional<jsi::Object> ObjectGetOwnPropertyDescriptor(JsiEnv env, con
     return std::move(res).getObject(env);
 }
 
-inline void ObjectSetPrototypeOf(JsiEnv env, const jsi::Value& target, const jsi::Value& proto) {
+inline void ObjectSetPrototypeOf(JsiEnv env, const fbjsi::Value& target, const fbjsi::Value& proto) {
     auto obj = js::globalType(env, "Object");
     obj.getPropertyAsFunction(env, "setPrototypeOf").callWithThis(env, obj, target, proto);
 }
 
-inline void defineProperty(JsiEnv env, const jsi::Object& target, StringData name, const jsi::Object& descriptor) {
+inline void defineProperty(JsiEnv env, const fbjsi::Object& target, StringData name, const fbjsi::Object& descriptor) {
     auto objClass = js::globalType(env, "Object");
     objClass.getPropertyAsFunction(env, "defineProperty")
             .callWithThis(env, objClass, target, str(env, name), descriptor);
 };
 
-inline void copyProperty(JsiEnv env, const jsi::Object& from, const jsi::Object& to, const std::string& name) {
+inline void copyProperty(JsiEnv env, const fbjsi::Object& from, const fbjsi::Object& to, const std::string& name) {
     auto prop = ObjectGetOwnPropertyDescriptor(env, from, name);
     REALM_ASSERT_RELEASE(prop);
     defineProperty(env, to, "name", *prop);
@@ -119,18 +120,18 @@ inline void copyProperty(JsiEnv env, const jsi::Object& from, const jsi::Object&
 inline constexpr const char g_internal_field[] = "__Realm_internal";
 
 template<typename T>
-using ClassDefinition = js::ClassDefinition<js::hermes::Types, T>;
+using ClassDefinition = js::ClassDefinition<js::realmjsi::Types, T>;
 
-using ConstructorType = js::ConstructorType<js::hermes::Types>;
-using ArgumentsMethodType = js::ArgumentsMethodType<js::hermes::Types>;
-using ReturnValue = js::ReturnValue<js::hermes::Types>;
-using Arguments = js::Arguments<js::hermes::Types>;
-using PropertyType = js::PropertyType<js::hermes::Types>;
-using IndexPropertyType = js::IndexPropertyType<js::hermes::Types>;
-using StringPropertyType = js::StringPropertyType<js::hermes::Types>;
+using ConstructorType = js::ConstructorType<js::realmjsi::Types>;
+using ArgumentsMethodType = js::ArgumentsMethodType<js::realmjsi::Types>;
+using ReturnValue = js::ReturnValue<js::realmjsi::Types>;
+using Arguments = js::Arguments<js::realmjsi::Types>;
+using PropertyType = js::PropertyType<js::realmjsi::Types>;
+using IndexPropertyType = js::IndexPropertyType<js::realmjsi::Types>;
+using StringPropertyType = js::StringPropertyType<js::realmjsi::Types>;
 
 template <typename T>
-class Wrapper : public jsi::HostObject {
+class Wrapper : public fbjsi::HostObject {
 public:
     template <typename... Args, typename = std::enable_if_t<std::is_constructible_v<T, Args...>>>
     Wrapper(Args&&... args) : obj(std::forward<Args>(args)...) {}
@@ -149,12 +150,12 @@ inline T& unwrap(const std::shared_ptr<Wrapper<T>>& wrapper) {
 }
 
 template <typename T>
-inline T& unwrap(JsiEnv env, const jsi::Object& wrapper) {
+inline T& unwrap(JsiEnv env, const fbjsi::Object& wrapper) {
     return unwrap<T>(wrapper.getHostObject<Wrapper<T>>(env));
 }
 
 template <typename T>
-inline T& unwrap(JsiEnv env, const jsi::Value& wrapper) {
+inline T& unwrap(JsiEnv env, const fbjsi::Value& wrapper) {
     return unwrap<T>(env, wrapper.asObject(env));
 }
 
@@ -175,12 +176,12 @@ inline T* unwrapUnique(JsiEnv env, const U& arg) {
 
 template <typename T>
 JsiObj wrap(JsiEnv env, T arg) {
-    return env(jsi::Object::createFromHostObject(env, std::make_shared<Wrapper<T>>(std::move(arg))));
+    return env(fbjsi::Object::createFromHostObject(env, std::make_shared<Wrapper<T>>(std::move(arg))));
 }
 
 template <typename T, typename... Args, typename = std::enable_if_t<std::is_constructible_v<T, Args...>>>
 JsiObj wrap(JsiEnv env, Args&&... args) {
-    return env(jsi::Object::createFromHostObject(env, std::make_shared<Wrapper<T>>(std::forward<Args>(args)...)));
+    return env(fbjsi::Object::createFromHostObject(env, std::make_shared<Wrapper<T>>(std::forward<Args>(args)...)));
 }
 
 template <typename T>
@@ -203,16 +204,16 @@ public:
 
         auto nativeFunc = 
             !bool(s_type.constructor)
-            ? jsi::Value()
-            : jsi::Function::createFromHostFunction(
+            ? fbjsi::Value()
+            : fbjsi::Function::createFromHostFunction(
                 env, propName(env, s_type.name), /* XXX paramCount */0,
-                [](jsi::Runtime& rt, const jsi::Value&, const jsi::Value* args, size_t count) -> jsi::Value {
+                [](fbjsi::Runtime& rt, const fbjsi::Value&, const fbjsi::Value* args, size_t count) -> fbjsi::Value {
                     REALM_ASSERT_RELEASE(count >= 1);
                     auto env = JsiEnv(rt);
                     auto& s_type = get_class();
                     auto arguments = Arguments{env, count - 1, args + 1};
                     s_type.constructor(env, env(args[0]).asObject(), arguments);
-                    return jsi::Value();
+                    return fbjsi::Value();
                 });
 
         s_ctor = env(globalType(env, "Function")
@@ -237,14 +238,14 @@ public:
             .asObject(env).asFunction(env)
         );
 
-        js::Context<js::hermes::Types>::register_invalidator([] {
+        js::Context<js::realmjsi::Types>::register_invalidator([] {
             // Ensure the static constructor is destructed when the runtime goes away.
             // This is to avoid the reassignment of s_ctor throwing because the runtime has disappeared.
             s_ctor.reset();
         });
 
         for (auto&& [name, prop] : s_type.static_properties) {
-            auto desc = jsi::Object(env);
+            auto desc = fbjsi::Object(env);
             if (prop.getter) {
                 desc.setProperty(env, "get", funcVal(env, "get_" + name, 0, prop.getter));
             }
@@ -255,7 +256,7 @@ public:
         }
 
         for (auto&& [name, method] : s_type.static_methods) {
-            auto desc = jsi::Object(env);
+            auto desc = fbjsi::Object(env);
             desc.setProperty(env, "value", funcVal(env, name, /* XXX paramCount */ 0, method));
             defineProperty(env, *s_ctor, name, desc);
         }
@@ -263,7 +264,7 @@ public:
         auto proto = (*s_ctor)->getPropertyAsObject(env, "prototype");
 
         for (auto&& [name, prop] : s_type.properties) {
-            auto desc = jsi::Object(env);
+            auto desc = fbjsi::Object(env);
             if (prop.getter) {
                 desc.setProperty(env, "get", funcVal(env, "get_" + name, 0, prop.getter));
             }
@@ -274,7 +275,7 @@ public:
         }
 
         for (auto&& [name, method] : s_type.methods) {
-            auto desc = jsi::Object(env);
+            auto desc = fbjsi::Object(env);
             desc.setProperty(env, "value", funcVal(env, name, /* XXX paramCount */ 0, method));
             defineProperty(env, proto, name, desc);
         }
@@ -288,8 +289,8 @@ public:
                 throw std::runtime_error("undefined 'prototype' on parent constructor");
             }
 
-            ObjectSetPrototypeOf(env, jsi::Value(env, proto), jsi::Value(std::move(parentProto)));
-            ObjectSetPrototypeOf(env, jsi::Value(env, s_ctor->get()), jsi::Value(std::move(parentCtor.get())));
+            ObjectSetPrototypeOf(env, fbjsi::Value(env, proto), fbjsi::Value(std::move(parentProto)));
+            ObjectSetPrototypeOf(env, fbjsi::Value(env, s_ctor->get()), fbjsi::Value(std::move(parentCtor.get())));
         }
         
         if (s_type.index_accessor) {
@@ -298,7 +299,7 @@ public:
 
             // XXX Do we want to trap things like ownKeys() and getOwnPropertyDescriptors() to support for...in?
             auto [getter, setter] = s_type.index_accessor;
-            auto desc = jsi::Object(env);
+            auto desc = fbjsi::Object(env);
             desc.setProperty(
                 env,
                 "value",
@@ -394,30 +395,30 @@ public:
     static Internal* get_internal(JsiEnv env, const JsiObj& object) {
         auto internal = object->getProperty(env, g_internal_field);
         if (internal.isUndefined()) {
-            if constexpr (std::is_same_v<T, RealmObjectClass<hermes::Types>>) // XXX comment why
+            if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>) // XXX comment why
                 return nullptr;
-            throw jsi::JSError(env, "no internal field");
+            throw fbjsi::JSError(env, "no internal field");
         }
         if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
-            throw jsi::JSError(env, "calling method on wrong type of object");
+            throw fbjsi::JSError(env, "calling method on wrong type of object");
         }
         return unwrapUnique<Internal>(env, std::move(internal));
     }
     static void set_internal(JsiEnv env, const JsiObj& object, Internal* data) {
-        auto desc = jsi::Object(env);
+        auto desc = fbjsi::Object(env);
         desc.setProperty(env, "value", wrapUnique(env, data));
         desc.setProperty(env, "configurable", true);
         defineProperty(env, object, g_internal_field, desc);
     }
 
 private:
-    static jsi::Value funcVal(JsiEnv env, const std::string& name, size_t args, jsi::HostFunctionType&& func) {
+    static fbjsi::Value funcVal(JsiEnv env, const std::string& name, size_t args, fbjsi::HostFunctionType&& func) {
         if (!func)
-            return jsi::Value();
-        return jsi::Value(jsi::Function::createFromHostFunction(env, propName(env, name), uint32_t(args), std::move(func)));
+            return fbjsi::Value();
+        return fbjsi::Value(fbjsi::Function::createFromHostFunction(env, propName(env, name), uint32_t(args), std::move(func)));
     };
 
-    static void defineSchemaProperties(JsiEnv env, const jsi::Object& constructorPrototype, const realm::ObjectSchema& schema, bool redefine) {
+    static void defineSchemaProperties(JsiEnv env, const fbjsi::Object& constructorPrototype, const realm::ObjectSchema& schema, bool redefine) {
         // Do the same thing for all computed and persisted properties
         auto loopBody = [&] (const Property& property) {
             const auto& name = property.public_name.empty() ? property.name : property.public_name;
@@ -426,17 +427,17 @@ private:
                 return;
             }
 
-            auto desc = jsi::Object(env);
+            auto desc = fbjsi::Object(env);
             desc.setProperty(env, "enumerable", true);
 
-            desc.setProperty(env, "get", funcVal(env, "get_" + name, 0, [name = String(name)] (jsi::Runtime& rt, const jsi::Value& thisVal, const jsi::Value* args, size_t count) {
+            desc.setProperty(env, "get", funcVal(env, "get_" + name, 0, [name = String(name)] (fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count) {
                 if (count != 0)
-                    throw jsi::JSError(rt, "getters take no arguments");
+                    throw fbjsi::JSError(rt, "getters take no arguments");
 		return get_class().string_accessor.getter(rt, thisVal, name);
             }));
-            desc.setProperty(env, "set", funcVal(env, "set_" + name, 1, [name = String(name)] (jsi::Runtime& rt, const jsi::Value& thisVal, const jsi::Value* args, size_t count) {
+            desc.setProperty(env, "set", funcVal(env, "set_" + name, 1, [name = String(name)] (fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count) {
                 if (count != 1)
-                    throw jsi::JSError(rt, "setters take exactly 1 argument");
+                    throw fbjsi::JSError(rt, "setters take exactly 1 argument");
 		return get_class().string_accessor.setter(rt, thisVal, name, args[0]);
             }));
 
@@ -451,13 +452,13 @@ private:
         auto& s_schemaObjectTypes = get_schemaObjectTypes();
         auto& s_class = get_class();
 
-        bool isRealmObjectClass = std::is_same_v<T, RealmObjectClass<hermes::Types>>;
+        bool isRealmObjectClass = std::is_same_v<T, RealmObjectClass<realmjsi::Types>>;
         if (!isRealmObjectClass) {
-            throw jsi::JSError(env, "Creating instances by schema is supported for RealmObjectClass only");
+            throw fbjsi::JSError(env, "Creating instances by schema is supported for RealmObjectClass only");
         }
 
         if (!internal) {
-            throw jsi::JSError(env, "RealmObjectClass requires an internal realm object when creating instances by schema");
+            throw fbjsi::JSError(env, "RealmObjectClass requires an internal realm object when creating instances by schema");
         }
 
         REALM_ASSERT_RELEASE(!s_class.index_accessor); // assume we don't need a ProxyWrapper
@@ -508,7 +509,7 @@ private:
             bool schemaExists = schemaObjects.count(schemaName);
             if (schemaExists) {
                 //check if constructors have changed for the same schema object and name
-                if (!jsi::Function::strictEquals(env, schemaObjects.at(schemaName), constructor)) {
+                if (!fbjsi::Function::strictEquals(env, schemaObjects.at(schemaName), constructor)) {
                     schemaExists = false;
                     schemaObjects.erase(schemaName);
                 }
@@ -546,11 +547,11 @@ private:
         const auto& schemaObjectCtor = schemaObjects.at(schemaName);
         auto instanceVal = schemaObjectCtor.callAsConstructor(env);
         if (!instanceVal.isObject()) {
-            throw jsi::JSError(env, "Realm object constructor must not return another value");
+            throw fbjsi::JSError(env, "Realm object constructor must not return another value");
         }
         auto instance = env(std::move(instanceVal).getObject(env));
         if (!instance->instanceOf(env, schemaObjectCtor)) {
-            throw jsi::JSError(env, "Realm object constructor must not return another value");
+            throw fbjsi::JSError(env, "Realm object constructor must not return another value");
         }
 
         set_internal(env, instance, internal);
@@ -565,83 +566,83 @@ private:
 
     inline static auto& get_schemaObjectTypes() {
         // XXX this being static prevents using multiple runtimes.
-        static std::unordered_map<std::string, std::unordered_map<std::string, jsi::Function>> s_schemaObjectTypes;
+        static std::unordered_map<std::string, std::unordered_map<std::string, fbjsi::Function>> s_schemaObjectTypes;
         return s_schemaObjectTypes;
     }
 };
 
-} // hermes
+} // namespace realm::js::realmjsi
 
 template<typename ClassType>
-    class ObjectWrap<hermes::Types, ClassType> : public hermes::ObjectWrap<ClassType> {};
+    class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::realmjsi::ObjectWrap<ClassType> {};
 
-template<hermes::ArgumentsMethodType F>
-jsi::Value wrap(jsi::Runtime& rt, const jsi::Value& thisVal, const jsi::Value* args, size_t count) {
+template<realmjsi::ArgumentsMethodType F>
+fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count) {
     auto env = JsiEnv(rt);
-    auto result = hermes::ReturnValue(env);
-    auto arguments = hermes::Arguments{env, count, args};
+    auto result = realmjsi::ReturnValue(env);
+    auto arguments = realmjsi::Arguments{env, count, args};
 
     F(env, env(thisVal).asObject(), arguments, result);
     return std::move(result).ToValue();
 }
 
-template<hermes::PropertyType::GetterType F>
-jsi::Value wrap(jsi::Runtime& rt, const jsi::Value& thisVal, const jsi::Value* args, size_t count) {
+template<realmjsi::PropertyType::GetterType F>
+fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count) {
     auto env = JsiEnv(rt);
-    auto result = hermes::ReturnValue(env);
-    auto arguments = hermes::Arguments{env, count, args};
+    auto result = realmjsi::ReturnValue(env);
+    auto arguments = realmjsi::Arguments{env, count, args};
     arguments.validate_count(0);
 
     F(env, env(thisVal).asObject(), result);
     return std::move(result).ToValue();
 }
 
-template<hermes::PropertyType::SetterType F>
-jsi::Value wrap(jsi::Runtime& rt, const jsi::Value& thisVal, const jsi::Value* args, size_t count) {
+template<realmjsi::PropertyType::SetterType F>
+fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count) {
     auto env = JsiEnv(rt);
-    auto arguments = hermes::Arguments{env, count, args};
+    auto arguments = realmjsi::Arguments{env, count, args};
     arguments.validate_count(1);
 
     F(env, env(thisVal).asObject(), JsiVal(env, args[0]));
 
-    return jsi::Value();
+    return fbjsi::Value();
 }
 
-template<hermes::IndexPropertyType::GetterType F>
-jsi::Value wrap(jsi::Runtime& rt, const jsi::Value&, const jsi::Value* args, size_t count) {
+template<realmjsi::IndexPropertyType::GetterType F>
+fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value&, const fbjsi::Value* args, size_t count) {
     REALM_ASSERT_RELEASE(count == 2);
     auto env = JsiEnv(rt);
-    auto out = hermes::ReturnValue(env);
+    auto out = realmjsi::ReturnValue(env);
     F(env, env(args[0]).asObject(), uint32_t(args[1].asNumber()), out);
     return std::move(out).ToValue();
 }
 
-template<hermes::IndexPropertyType::SetterType F>
-jsi::Value wrap(jsi::Runtime& rt, const jsi::Value&, const jsi::Value* args, size_t count) {
+template<realmjsi::IndexPropertyType::SetterType F>
+fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value&, const fbjsi::Value* args, size_t count) {
     REALM_ASSERT_RELEASE(count == 3);
     auto env = JsiEnv(rt);
-    return jsi::Value(F(env, env(args[0]).asObject(), uint32_t(args[1].asNumber()), env(args[2])));
+    return fbjsi::Value(F(env, env(args[0]).asObject(), uint32_t(args[1].asNumber()), env(args[2])));
 }
 
-template<hermes::StringPropertyType::GetterType F>
-jsi::Value wrap(jsi::Runtime& rt, const jsi::Value& thisVal, const hermes::String& str) {
+template<realmjsi::StringPropertyType::GetterType F>
+fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const realmjsi::String& str) {
     auto env = JsiEnv(rt);
-    auto result = hermes::ReturnValue(env);
+    auto result = realmjsi::ReturnValue(env);
     F(env, env(thisVal).asObject(), str, result);
     return std::move(result).ToValue();
 }
 
-template<hermes::StringPropertyType::SetterType F>
-jsi::Value wrap(jsi::Runtime& rt, const jsi::Value& thisVal, const hermes::String& str, const jsi::Value& value) {
+template<realmjsi::StringPropertyType::SetterType F>
+fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const realmjsi::String& str, const fbjsi::Value& value) {
     auto env = JsiEnv(rt);
     F(env, env(thisVal).asObject(), str, env(value));
-    return jsi::Value();
+    return fbjsi::Value();
 }
 
-template<hermes::StringPropertyType::EnumeratorType F>
-jsi::Value wrap(jsi::Runtime& rt, const jsi::Value& thisVal, const jsi::Value* args, size_t count) {
+template<realmjsi::StringPropertyType::EnumeratorType F>
+fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count) {
     // This is only used in the JSC impl.
     REALM_UNREACHABLE();
 }
 
-} // realm::js
+} // namespace realm::js
