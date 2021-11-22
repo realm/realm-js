@@ -52,12 +52,12 @@ describe("Immutable Realm", () => {
         });
       });
 
-      expect(john._isFrozen).equals(false);
+      expect(john._isFrozen()).equals(false);
       const frozenJohn = john._freeze<IPerson>();
-      expect(john._isFrozen).equals(false);
-      expect(frozenJohn._isFrozen).equals(true);
-      expect(john._version).equals(3);
-      expect(frozenJohn._version).equals(3);
+      expect(john._isFrozen()).equals(false);
+      expect(frozenJohn._isFrozen()).equals(true);
+      expect(john._version()).equals(3);
+      expect(frozenJohn._version()).equals(3);
 
       realm.write(() => {
         john.age = 43;
@@ -65,9 +65,9 @@ describe("Immutable Realm", () => {
 
       expect(john.age).equals(43);
       expect(frozenJohn.age).equals(42);
-      expect(frozenJohn._isFrozen).equals(true);
-      expect(john._version).equals(4);
-      expect(frozenJohn._version).equals(3);
+      expect(frozenJohn._isFrozen()).equals(true);
+      expect(john._version()).equals(4);
+      expect(frozenJohn._version()).equals(3);
     });
     it("are imutable", () => {
       const realm = new Realm({ schema });
@@ -75,8 +75,9 @@ describe("Immutable Realm", () => {
 
       // aliceA is {name: "alice", age: undefined}
       const aliceA = realm.objectForPrimaryKey<IPerson>("Person", "alice");
+      console.log("XXXX: ", aliceA.age);
 
-      expect(aliceA.age).equals(undefined);
+      expect(aliceA.age).equals(null);
       // Object is only mutable inside a write transaction
       realm.write(() => {
         // TODO: So this is where we will add the writeable code when its ready
@@ -89,7 +90,7 @@ describe("Immutable Realm", () => {
         aliceA.age = 21;
       });
 
-      expect(aliceA.age).equals(undefined);
+      expect(aliceA.age).equals(null);
 
       // If we pull it out again the priperties gets updated
       const aliceB = realm.objectForPrimaryKey<IPerson>("Person", "alice");
