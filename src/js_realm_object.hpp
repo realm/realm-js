@@ -29,10 +29,10 @@ struct RealmObjectClass;
 #include <realm/object-store/object_store.hpp>
 
 #include "js_class.hpp"
-#include "js_types.hpp"
-#include "js_util.hpp"
 #include "js_realm.hpp"
 #include "js_schema.hpp"
+#include "js_types.hpp"
+#include "js_util.hpp"
 
 namespace realm {
 namespace js {
@@ -74,6 +74,9 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
     static std::vector<String> get_property_names(ContextType, ObjectType);
 
     static void is_valid(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void is_frozen(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void freeze(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void version(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_object_schema(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void linking_objects(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void linking_objects_count(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -97,6 +100,9 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
 
     MethodMap<T> const methods = {
         {"isValid", wrap<is_valid>},
+        {"_isFrozen", wrap<is_frozen>},
+        {"_version", wrap<version>},
+        {"_freeze", wrap<freeze>},
         {"objectSchema", wrap<get_object_schema>},
         {"linkingObjects", wrap<linking_objects>},
         {"linkingObjectsCount", wrap<linking_objects_count>},
@@ -125,6 +131,39 @@ void RealmObjectClass<T>::is_valid(ContextType ctx, ObjectType this_object, Argu
 }
 
 template <typename T>
+void RealmObjectClass<T>::is_frozen(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue& return_value)
+{
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+    return_value.set(realm_object->is_frozen());
+}
+
+template <typename T>
+void RealmObjectClass<T>::version(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue& return_value)
+{
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+    uint32_t version = realm_object->realm()->read_transaction_version().version;
+    return_value.set(version);
+}
+
+template <typename T>
+void RealmObjectClass<T>::freeze(ContextType ctx, ObjectType this_object, Arguments&, ReturnValue& return_value)
+{
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+    auto realm = realm_object->realm();
+    auto frozen_realm = realm->freeze();
+    auto frozen_object = realm_object->freeze(frozen_realm);
+    return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(frozen_object)));
+}
+
 void RealmObjectClass<T>::get_object_schema(ContextType ctx, ObjectType this_object, Arguments&,
                                             ReturnValue& return_value)
 {
