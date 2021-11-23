@@ -203,6 +203,8 @@ jobs:
       - run: ./scripts/build-ios.sh -c ${{ matrix.type }} ${{matrix.platform.build-configuration}}
       # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
       - run: npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
+      - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
+        run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
       # Run the tests
       - name: Run tests (${{matrix.platform.name}}/ Native)
         run: npm run test:${{matrix.platform.name}} --prefix integration-tests/environments/react-native
