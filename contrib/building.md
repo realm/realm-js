@@ -144,6 +144,8 @@ cd realm-js
 git submodule update --init --recursive
 ```
 
+In order to improve the accuracy of `git blame` locally by ignoring commits in which the code was reformatted by an automated tool, run: `git config blame.ignoreRevsFile .gitignore-revs` from inside the repository.
+
 ### Cloning the repository on Windows
 
 On Windows the RealmJS repo should be cloned with symlinks enabled:
