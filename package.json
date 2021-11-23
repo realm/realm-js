@@ -72,12 +72,15 @@
     "test-runner:mocha": "cd tests/test-runners/mocha && npm install --build-from-source=realm && npm test",
     "test-runner:jest": "cd tests/test-runners/jest && npm install --build-from-source=realm && npm test",
     "test-runners": "npm run test-runner:ava && npm run test-runner:mocha && npm run test-runner:jest",
-    "check-environment": "node scripts/check-environment.js"
+    "check-environment": "node scripts/check-environment.js",
+    "lint:cpp": "find src -name \"*.?pp\" | grep -v \"src/test/catch\" | xargs clang-format --dry-run --Werror",
+    "lint:fix:cpp": "find src -name \"*.?pp\" | grep -v \"src/test/catch\" | xargs clang-format -i"
   },
   "dependencies": {
     "@realm.io/common": "^0.1.1",
     "bindings": "^1.5.0",
     "bson": "4.4.1",
+    "clang-format": "^1.6.0",
     "command-line-args": "^5.1.1",
     "deepmerge": "2.1.0",
     "deprecated-react-native-listview": "0.0.6",

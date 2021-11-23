@@ -23,3 +23,5 @@ jobs:
         run: npm run lerna:bootstrap
       - name: Run linting of subpackages
         run: npm run lerna:lint -- --no-bail --concurrency 1 --stream --no-prefix
+      - name: Run linting of C++ code
+        run: npm run lint:cpp

@@ -1,6 +1,6 @@
 # Building Realm JS
 
-<!-- TOC generated with https://github.com/ekalinin/github-markdown-toc: gh-md-toc --insert contrib/building.md -->
+<!-- TOC generated with https://github.com/ekalinin/github-markdown-toc: gh-md-toc --insert --no-backup contrib/building.md -->
 
 <!--ts-->
 * [Building Realm JS](#building-realm-js)
@@ -25,6 +25,8 @@
       * [Modern tests](#modern-tests)
       * [Legacy tests](#legacy-tests)
       * [Linting the source code](#linting-the-source-code)
+         * [JS](#js)
+         * [C++](#c)
          * [Testing on Windows](#testing-on-windows)
          * [Node version setup](#node-version-setup)
    * [Debugging the tests](#debugging-the-tests)
@@ -33,7 +35,7 @@
       * [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
    * [Testing against real apps](#testing-against-real-apps)
 
-<!-- Added by: tom.duncalf, at: Thu 11 Nov 2021 15:24:58 GMT -->
+<!-- Added by: tom.duncalf, at: Tue 23 Nov 2021 10:03:05 GMT -->
 
 <!--te-->
 
@@ -278,7 +280,13 @@ scripts/test.sh node
 
 ### Linting the source code
 
-Run `npm run lint` to lint the source code using `eslint`.
+#### JS
+
+Run `npm run lint` to lint the JS source code using `eslint`.
+
+#### C++
+
+Run `npm run lint:cpp` to lint the C++ source code using `clang-format`. We use a `.clang-format` based on the one from `realm-core`, but should feel free to modify if required.
 
 #### Testing on Windows
 
