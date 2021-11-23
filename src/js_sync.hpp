@@ -28,8 +28,10 @@
 #include "logger.hpp"
 
 #include "platform.hpp"
+#include "realm/object-store/shared_realm.hpp"
 #include <realm/sync/config.hpp>
 #include <realm/sync/protocol.hpp>
+#include <realm/sync/client_base.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
@@ -178,24 +180,22 @@ class ClientResyncBeforeFunctor {
 
     typename T::Function func() const { return m_func; }
 
-    void operator()(TransactionRef local, TransactionRef remote) {
-        HANDLESCOPE(m_ctx);
-
-        SharedRealm local_realm;
-        SharedRealm remote_realm;
+    void operator()(SharedRealm local_realm, SharedRealm remote_realm) {
+        HANDLESCOPE(m_ctx)
 
         typename T::Value arguments[] = {
             create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(local_realm)),
             create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(remote_realm)),
         };
         Function<T>::callback(m_ctx, m_func, 2, arguments);
+        local_realm->close();
+        remote_realm->close();
     }
 
   private:
     const Protected<typename T::GlobalContext> m_ctx;
     const Protected<typename T::Function> m_func;
 };
-
 
 template <typename T>
 class ClientResyncAfterFunctor {
@@ -207,16 +207,14 @@ class ClientResyncAfterFunctor {
 
     typename T::Function func() const { return m_func; }
 
-    void operator()(TransactionRef local) {
-        HANDLESCOPE(m_ctx);
-
-        SharedRealm local_realm;
+    void operator()(SharedRealm local_realm) {
+        HANDLESCOPE(m_ctx)
 
         typename T::Value arguments[] = {
             create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(local_realm)),
         };
-
         Function<T>::callback(m_ctx, m_func, 1, arguments);
+        local_realm->close();
     }
 
   private:
@@ -489,12 +487,16 @@ void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, R
 template <typename T>
 void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue&)
 {
-    args.validate_count(2);
+    args.validate_count(4);
 
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
-        std::error_code error_code(Value::validated_to_number(ctx, args[0]), realm::sync::protocol_error_category());
+        int err_code = Value::validated_to_number(ctx, args[0]);
         std::string message = Value::validated_to_string(ctx, args[1]);
-        SyncSession::OnlyForTesting::handle_error(*session, SyncError(error_code, message, false));
+        std::string type = Value::validated_to_string(ctx, args[2]);
+        bool is_fatal = Value::validated_to_boolean(ctx, args[3]);
+
+        std::error_code error_code(err_code, type == "realm::sync::ProtocolError"?realm::sync::protocol_error_category():realm::sync::client_error_category());
+        SyncSession::OnlyForTesting::handle_error(*session, std::move(SyncError(error_code, message, is_fatal)));
     }
 }
 
@@ -979,7 +981,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         // The default setting is manual
 
         const std::string client_resync_manual = "manual";
-        const std::string client_resync_seamless = "seamless";
+        const std::string client_resync_discard_local = "discardLocal";
         config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
         ValueType client_resync_value = Object::get_property(ctx, sync_config_object, "clientReset");
         if (!Value::is_undefined(ctx, client_resync_value)) {
@@ -990,24 +992,24 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             if (client_resync_mode == client_resync_manual) {
               config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
             }
-            else if (client_resync_mode == client_resync_seamless) {
-              config.sync_config->client_resync_mode = realm::ClientResyncMode::SeamlessLoss;
+            else if (client_resync_mode == client_resync_discard_local) {
+              config.sync_config->client_resync_mode = realm::ClientResyncMode::DiscardLocal;
             }
             else {
                 throw std::invalid_argument("Unknown argument for clientReset.mode");
             }
 
-            std::function<void(TransactionRef local, TransactionRef remote)> client_resync_before_handler;
-            ValueType client_resync_before_value = Object::get_property(ctx, sync_config_object, "clientResyncBefore");
+            std::function<void(SharedRealm local, SharedRealm remote)> client_resync_before_handler;
+            ValueType client_resync_before_value = Object::get_property(ctx, client_resync_object, "clientResyncBefore");
             if (!Value::is_undefined(ctx, client_resync_before_value)) {
-                client_resync_before_handler = util::EventLoopDispatcher<void(TransactionRef, TransactionRef)>(ClientResyncBeforeFunctor<T>(ctx, Value::validated_to_function(ctx, client_resync_before_value)));
+                client_resync_before_handler = util::EventLoopDispatcher<void(SharedRealm, SharedRealm)>(ClientResyncBeforeFunctor<T>(ctx, Value::validated_to_function(ctx, client_resync_before_value)));
             }
             config.sync_config->notify_before_client_reset = std::move(client_resync_before_handler);
 
-            std::function<void(TransactionRef local)> client_resync_after_handler;
-            ValueType client_resync_after_value = Object::get_property(ctx, sync_config_object, "clientResyncAfter");
+            std::function<void(SharedRealm local)> client_resync_after_handler;
+            ValueType client_resync_after_value = Object::get_property(ctx, client_resync_object, "clientResyncAfter");
             if (!Value::is_undefined(ctx, client_resync_after_value)) {
-                client_resync_after_handler = util::EventLoopDispatcher<void(TransactionRef)>(ClientResyncAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_resync_after_value)));
+                client_resync_after_handler = util::EventLoopDispatcher<void(SharedRealm)>(ClientResyncAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_resync_after_value)));
             }
             config.sync_config->notify_after_client_reset = std::move(client_resync_after_handler);
           }

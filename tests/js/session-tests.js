@@ -30,6 +30,7 @@ const TestCase = require("./asserts");
 const Utils = require("./test-utils");
 let schemas = require("./schemas");
 const AppConfig = require("./support/testConfig");
+const { resolve } = require("path");
 
 const REALM_MODULE_PATH = require.resolve("realm");
 
@@ -542,9 +543,10 @@ module.exports = {
         const config = getSyncConfiguration(user, partition);
         config.sync.error = (sender, error) => {
           try {
+            console.log(JSON.stringify(error));
             TestCase.assertEqual(error.name, "ClientReset");
-            TestCase.assertDefined(error.config);
-            TestCase.assertNotEqual(error.config.path, "");
+            TestCase.assertEqual(error.message, "Simulate Client Reset");
+            TestCase.assertEqual(error.code, 211); // 211 -> diverging histories
             const path = realm.path;
             realm.close();
             Realm.App.Sync.initiateClientReset(app, path);
@@ -558,10 +560,97 @@ module.exports = {
         const session = realm.syncSession;
 
         TestCase.assertEqual(session.config.error, config.sync.error);
-        session._simulateError(211, "ClientReset"); // 211 -> divering histories
+        session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
       });
     });
   },
+
+  testClientResetDiscardLocalFailed() {
+    if (!platformSupported) {
+      return;
+    }
+
+    // if client reset fails, the error handler is called
+    // and the two before/after handlers are not called
+    // we simulate the failure by error code 132
+    const partition = Utils.genPartition();
+    let creds = Realm.Credentials.anonymous();
+    let app = new Realm.App(appConfig);
+    return new Promise((resolve, reject) => {
+      return app.logIn(creds).then((user) => {
+        const config = getSyncConfiguration(user, partition);
+        config.sync.clientReset = {
+          mode: "discardLocal",
+          clientResyncBefore: (localRealm, remoteRealm) => {
+            reject("clientResyncBefore");
+          },
+          clientResyncAfter: (localRealm) => {
+            reject("clientResyncAfter");
+          },
+        };
+        config.sync.error = (sender, error) => {
+          resolve();
+        };
+
+        Realm.open(config).then((realm) => {
+          realm.syncSession._simulateError(132, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 132 -> automatic client reset failed
+        });
+      });
+    });
+  },
+
+  testClientResetDiscardLocal() {
+    if (!platformSupported) {
+      return;
+    }
+
+    // (i)   using a client reset in "DiscardLocal" mode, a fresh copy
+    //       of the Realm will be downloaded (resync)
+    // (ii)  two callback will be called, while the sync error handler is not
+    // (iii) after the reset, the Realm can be used as before
+
+    let beforeCalled = false;
+    let afterCalled = false;
+
+    const partition = Utils.genPartition();
+    let creds = Realm.Credentials.anonymous();
+    let app = new Realm.App(appConfig);
+    return new Promise((resolve, reject) => {
+      return app.logIn(creds).then((user) => {
+        const config = getSyncConfiguration(user, partition);
+        config.sync.clientReset = {
+          mode: "discardLocal",
+          clientResyncBefore: (localRealm, remoteRealm) => {
+            beforeCalled = true;
+            TestCase.assertEqual(localRealm.objects("Dog").length, 1, "local");
+            TestCase.assertEqual(remoteRealm.objects("Dog").length, 1, "remote");
+            TestCase.assertNotEqual(remoteRealm.path, localRealm.path);
+          },
+          clientResyncAfter: (localRealm) => {
+            afterCalled = true;
+            TestCase.assertEqual(localRealm.objects("Dog").length, 1, "local");
+          },
+        };
+        config.sync.error = (sender, error) => {
+          reject(`error: ${JSON.stringify(error)}`);
+        };
+
+        Realm.open(config).then((realm) => {
+          realm.write(() => {
+            realm.create("Dog", { _id: new ObjectId(), name: "Lassy" });
+          });
+          realm.syncSession._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false);
+          setTimeout(() => {
+            TestCase.assertTrue(beforeCalled, "before");
+            TestCase.assertTrue(afterCalled, "after");
+            TestCase.assertEqual(realm.objects("Dog").length, 1);
+            resolve();
+          }, 1000);
+        });
+      });
+    });
+  },
+
 
   testAddConnectionNotification() {
     const partition = Utils.genPartition();
