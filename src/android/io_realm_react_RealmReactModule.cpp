@@ -29,14 +29,14 @@
 using namespace realm::rpc;
 using namespace realm::jni_util;
 
-static RPCServer *s_rpc_server;
+static RPCServer* s_rpc_server;
 extern bool realmContextInjected;
 jclass ssl_helper_class;
 
-namespace realm {    
-    // set the AssetManager used to access bundled files within the APK
-    void set_asset_manager(AAssetManager* assetManager);
-}
+namespace realm {
+// set the AssetManager used to access bundled files within the APK
+void set_asset_manager(AAssetManager* assetManager);
+} // namespace realm
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*)
 {
@@ -70,13 +70,14 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void*)
     }
 }
 
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
-  (JNIEnv *env, jclass, jstring fileDir, jobject javaAssetManager)
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory(JNIEnv* env, jclass,
+                                                                                         jstring fileDir,
+                                                                                         jobject javaAssetManager)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "setDefaultRealmFileDirectory");
 
     // Get the assetManager in case we want to copy files from the APK (assets)
-    AAssetManager *assetManager = AAssetManager_fromJava(env, javaAssetManager);
+    AAssetManager* assetManager = AAssetManager_fromJava(env, javaAssetManager);
     if (assetManager == NULL) {
         __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Error loading the AssetManager");
     }
@@ -87,11 +88,11 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
     realm::set_default_realm_file_directory(strFileDir);
     env->ReleaseStringUTFChars(fileDir, strFileDir);
 
-    __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Absolute path: %s", realm::default_realm_file_directory().c_str());
+    __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Absolute path: %s",
+                        realm::default_realm_file_directory().c_str());
 }
 
-JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugModeRealmJsContext
-  (JNIEnv *, jclass)
+JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugModeRealmJsContext(JNIEnv*, jclass)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "setupChromeDebugModeRealmJsContext");
     if (s_rpc_server) {
@@ -101,8 +102,9 @@ JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugMod
     return (jlong)s_rpc_server;
 }
 
-JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebugCommand
-  (JNIEnv *env, jclass, jstring chrome_cmd, jstring chrome_args)
+JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebugCommand(JNIEnv* env, jclass,
+                                                                                         jstring chrome_cmd,
+                                                                                         jstring chrome_args)
 {
     const char* cmd = env->GetStringUTFChars(chrome_cmd, NULL);
     const char* args = env->GetStringUTFChars(chrome_args, NULL);
@@ -112,21 +114,18 @@ JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebu
     return env->NewStringUTF(response.c_str());
 }
 
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_tryRunTask
-(JNIEnv *env, jclass)
+JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_tryRunTask(JNIEnv* env, jclass)
 {
-  jboolean result = s_rpc_server->try_run_task();
-  return result;
+    jboolean result = s_rpc_server->try_run_task();
+    return result;
 }
 
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected
-    (JNIEnv *env, jclass)
+JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected(JNIEnv* env, jclass)
 {
     return realmContextInjected;
 }
 
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag
-  (JNIEnv *env, jclass)
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag(JNIEnv* env, jclass)
 {
     realmContextInjected = false;
 }

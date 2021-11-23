@@ -49,7 +49,7 @@ struct Types {
     using StringPropertyEnumeratorCallback = JSObjectGetPropertyNamesCallback;
 };
 
-template<typename ClassType>
+template <typename ClassType>
 class ObjectWrap;
 
 using String = js::String<Types>;
@@ -60,5 +60,5 @@ using Object = js::Object<Types>;
 using Exception = js::Exception<Types>;
 using ReturnValue = js::ReturnValue<Types>;
 
-} // jsc
-} // realm
+} // namespace jsc
+} // namespace realm

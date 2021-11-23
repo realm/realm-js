@@ -25,42 +25,57 @@
 namespace realm {
 namespace js {
 
-template<>
+template <>
 class String<node::Types> {
     using StringType = String<node::Types>;
 
     std::string m_str;
 
-  public:
-    static bson::Bson to_bson(StringType stringified_ejson) {
+public:
+    static bson::Bson to_bson(StringType stringified_ejson)
+    {
         return bson::parse(std::string(stringified_ejson));
     }
 
-    static std::string from_bson(const bson::Bson& bson) {
+    static std::string from_bson(const bson::Bson& bson)
+    {
         return bson.to_string();
     }
 
-    String(const char* s) : m_str(s) {}
-    String(const std::string& s) : m_str(s) {}
+    String(const char* s)
+        : m_str(s)
+    {
+    }
+    String(const std::string& s)
+        : m_str(s)
+    {
+    }
     String(const Napi::String& s);
-    String(Napi::String&& s) : String(s) {}
+    String(Napi::String&& s)
+        : String(s)
+    {
+    }
 
-    operator std::string() const& {
+    operator std::string() const&
+    {
         return m_str;
     }
 
-    operator std::string() && {
+    operator std::string() &&
+    {
         return std::move(m_str);
     }
 
-    Napi::String ToString(Napi::Env env) {
-		return Napi::String::New(env, m_str);
+    Napi::String ToString(Napi::Env env)
+    {
+        return Napi::String::New(env, m_str);
     }
 };
 
-inline String<node::Types>::String(const Napi::String& s) {
-	m_str = s.Utf8Value();
+inline String<node::Types>::String(const Napi::String& s)
+{
+    m_str = s.Utf8Value();
 }
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm

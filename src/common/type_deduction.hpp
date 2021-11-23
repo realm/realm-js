@@ -23,73 +23,80 @@
 #include "types.hpp"
 
 
-
 namespace realm {
 namespace js {
 
 class GenericTypeDeductionImpl {
-   private:
+private:
     std::map<types::Type, std::string> realm_to_js_map;
     std::map<std::string, types::Type> js_to_realm_map;
 
-    auto reverse_deduction_types_map() {
+    auto reverse_deduction_types_map()
+    {
         std::map<std::string, types::Type> ret;
         for (auto& [type, key] : realm_to_js_map) {
-            ret[key] = type;  // camel_case version.
+            ret[key] = type; // camel_case version.
             std::string lower_case_key;
             // in-place lower case, we want to support multiple variation of the
             // types written names.
-            std::transform(key.begin(), key.end(), key.begin(),
-                           [](unsigned char chr) { return std::tolower(chr); });
+            std::transform(key.begin(), key.end(), key.begin(), [](unsigned char chr) {
+                return std::tolower(chr);
+            });
             ret[key] = type;
         }
         return ret;
     }
 
-   public:
-    GenericTypeDeductionImpl() {
-        realm_to_js_map = {
-            {types::String, "String"},       {types::Integer, "Int"},
-            {types::Float, "Float"},         {types::Double, "Double"},
-            {types::Decimal, "Decimal128"},  {types::Boolean, "Bool"},
-            {types::ObjectId, "ObjectId"},   {types::Object, "Object"},
-            {types::UUID, "UUID"},       {types::Object, "Object"},
-            {types::Undefined, "Undefined"}, {types::Null, "Null"}};
+public:
+    GenericTypeDeductionImpl()
+    {
+        realm_to_js_map = {{types::String, "String"},     {types::Integer, "Int"},         {types::Float, "Float"},
+                           {types::Double, "Double"},     {types::Decimal, "Decimal128"},  {types::Boolean, "Bool"},
+                           {types::ObjectId, "ObjectId"}, {types::Object, "Object"},       {types::UUID, "UUID"},
+                           {types::Object, "Object"},     {types::Undefined, "Undefined"}, {types::Null, "Null"}};
         js_to_realm_map = reverse_deduction_types_map();
     }
 
-    static GenericTypeDeductionImpl& get_instance() {
+    static GenericTypeDeductionImpl& get_instance()
+    {
         static GenericTypeDeductionImpl instance;
         return instance;
     }
 
-    bool realm_type_exist(std::string const& type) {
+    bool realm_type_exist(std::string const& type)
+    {
         return js_to_realm_map.find(type) != js_to_realm_map.end();
     }
 
-    types::Type realm_type(std::string const& type) {
+    types::Type realm_type(std::string const& type)
+    {
         return js_to_realm_map[type];
     }
 
-    std::string javascript_type(types::Type value) {
+    std::string javascript_type(types::Type value)
+    {
         return realm_to_js_map[value];
     }
 
     template <typename MixedValue>
-    types::Type from(MixedValue mixed) {
-        if(mixed.is_null()) return types::Type::Null;
+    types::Type from(MixedValue mixed)
+    {
+        if (mixed.is_null())
+            return types::Type::Null;
 
         int realm_type = static_cast<int>(mixed.get_type());
         return static_cast<types::Type>(realm_type);
     }
 
-    types::Type from(DataType data_type) {
+    types::Type from(DataType data_type)
+    {
         int realm_type = static_cast<int>(data_type);
         return static_cast<types::Type>(realm_type);
     }
 
     template <typename T, typename Ctx, typename Val>
-    types::Type typeof(Ctx context, Val& value) {
+    types::Type typeof(Ctx context, Val& value)
+    {
         using Value = js::Value<T>;
 
         if (Value::is_null(context, value)) {
@@ -110,8 +117,7 @@ class GenericTypeDeductionImpl {
         if (Value::is_undefined(context, value)) {
             return types::Undefined;
         }
-        if (Value::is_array_buffer(context, value) ||
-            Value::is_array_buffer(context, value)) {
+        if (Value::is_array_buffer(context, value) || Value::is_array_buffer(context, value)) {
             return types::Binary;
         }
         if (Value::is_decimal128(context, value)) {
@@ -135,7 +141,8 @@ class GenericTypeDeductionImpl {
  * Here we encapsulate some type deduction capabilities for all supported
  * Javascript environments.
  */
-struct TypeDeduction : GenericTypeDeductionImpl {};
+struct TypeDeduction : GenericTypeDeductionImpl {
+};
 
-}  // namespace js
-}  // namespace realm
+} // namespace js
+} // namespace realm

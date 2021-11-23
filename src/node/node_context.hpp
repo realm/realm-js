@@ -24,9 +24,10 @@
 namespace realm {
 namespace js {
 
-template<>
-inline Napi::Env node::Context::get_global_context(Napi::Env env) {
-	return env;
+template <>
+inline Napi::Env node::Context::get_global_context(Napi::Env env)
+{
+    return env;
 }
-} // js
-} // realm
+} // namespace js
+} // namespace realm

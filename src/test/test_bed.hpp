@@ -31,54 +31,59 @@ struct JSC_VM {
     JSObjectRef globalObject;
     vector<JSStringRef> strings;
 
-    JSC_VM() {
+    JSC_VM()
+    {
         group = JSContextGroupCreate();
         globalContext = JSGlobalContextCreateInGroup(group, nullptr);
         globalObject = JSContextGetGlobalObject(globalContext);
     }
 
-    void set_obj_prop(std::string name, JSObjectRef fn) {
+    void set_obj_prop(std::string name, JSObjectRef fn)
+    {
         JSStringRef _name = str(name);
-        JSObjectSetProperty(globalContext, globalObject, _name, fn,
-                            kJSPropertyAttributeNone, nullptr);
+        JSObjectSetProperty(globalContext, globalObject, _name, fn, kJSPropertyAttributeNone, nullptr);
     }
 
-    JSStringRef str(std::string str) {
+    JSStringRef str(std::string str)
+    {
         auto _str = JSStringCreateWithUTF8CString(str.c_str());
         strings.push_back(_str);
         return _str;
     }
 
-    void load_into_vm(std::string file_name) {
+    void load_into_vm(std::string file_name)
+    {
         std::ifstream t(file_name);
         std::stringstream buffer;
         buffer << t.rdbuf();
 
         vm(buffer.str());
     }
-    void vm(std::string&& script) {
-        SECTION("Virtual machine should end in a clean state.")
-        {
+    void vm(std::string&& script)
+    {
+        SECTION("Virtual machine should end in a clean state.") {
             auto _script = str(script);
             auto ret = JSEvaluateScript(globalContext, _script, nullptr, nullptr, 1, nullptr);
             REQUIRE(ret != NULL);
         }
     }
 
-    static JSStringRef s(std::string str) {
+    static JSStringRef s(std::string str)
+    {
         return JSStringCreateWithUTF8CString(str.c_str());
     }
 
 
-    JSObjectRef make_gbl_fn(std::string&& fn_name, JSObjectCallAsFunctionCallback fn) {
+    JSObjectRef make_gbl_fn(std::string&& fn_name, JSObjectCallAsFunctionCallback fn)
+    {
         JSStringRef _fn_name = str(fn_name);
-        JSObjectRef _fn =
-            JSObjectMakeFunctionWithCallback(globalContext, _fn_name, fn);
+        JSObjectRef _fn = JSObjectMakeFunctionWithCallback(globalContext, _fn_name, fn);
         set_obj_prop(fn_name, _fn);
         return _fn;
     }
 
-    ~JSC_VM() {
+    ~JSC_VM()
+    {
         for (auto str : strings) {
             JSStringRelease(str);
         }
@@ -87,9 +92,10 @@ struct JSC_VM {
     }
 };
 
-struct TestTools{
+struct TestTools {
 
-    static std::string __to_string(JSContextRef context, JSValueRef value) {
+    static std::string __to_string(JSContextRef context, JSValueRef value)
+    {
         std::string str;
         JSStringRef valueAsString = JSValueToStringCopy(context, value, NULL);
         size_t sizeUTF8 = JSStringGetMaximumUTF8CStringSize(valueAsString);
@@ -99,13 +105,14 @@ struct TestTools{
         return str;
     }
 
-    static void Load(JSC_VM& vm){
+    static void Load(JSC_VM& vm)
+    {
         vm.make_gbl_fn("print", &TestTools::Print);
     }
 
-    static JSValueRef Print(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
-                     size_t argumentCount, const JSValueRef arguments[],
-                     JSValueRef* exception) {
+    static JSValueRef Print(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount,
+                            const JSValueRef arguments[], JSValueRef* exception)
+    {
 
         std::string str = __to_string(ctx, arguments[0]);
         printf("printing: %s \n", str.c_str());
@@ -114,29 +121,29 @@ struct TestTools{
 
     template <void callback(std::string&)>
     static JSValueRef SimpleJSStringFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
-                            size_t argumentCount, const JSValueRef arguments[],
-                            JSValueRef* exception) {
+                                             size_t argumentCount, const JSValueRef arguments[],
+                                             JSValueRef* exception)
+    {
 
         std::string str = __to_string(ctx, arguments[0]);
         callback(str);
         return JSValueMakeUndefined(ctx);
     }
-
 };
 
 
 struct AccessorsTest {
-    IOCollection *N;
+    IOCollection* N;
 
     template <typename ContextType>
-    auto get(ContextType context, std::string key_name) {
+    auto get(ContextType context, std::string key_name)
+    {
         return N->get(context, key_name);
     }
 
     template <typename ContextType, typename ValueType>
-    auto set(ContextType context, std::string key_name, ValueType value) {
-       N->set(context, key_name, value);
+    auto set(ContextType context, std::string key_name, ValueType value)
+    {
+        N->set(context, key_name, value);
     }
 };
-
-

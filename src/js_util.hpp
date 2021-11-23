@@ -28,34 +28,34 @@
 namespace realm {
 namespace js {
 
-enum class AggregateFunc {
-    Min,
-    Max,
-    Sum,
-    Avg
-};
+enum class AggregateFunc { Min, Max, Sum, Avg };
 
-template<typename T>
+template <typename T>
 class RealmDelegate;
 
-template<typename T>
-static inline RealmDelegate<T> *get_delegate(realm::Realm *realm) {
-    return static_cast<RealmDelegate<T> *>(realm->m_binding_context.get());
+template <typename T>
+static inline RealmDelegate<T>* get_delegate(realm::Realm* realm)
+{
+    return static_cast<RealmDelegate<T>*>(realm->m_binding_context.get());
 }
 
-static const char *local_string_for_property_type(realm::PropertyType type)
+static const char* local_string_for_property_type(realm::PropertyType type)
 {
     switch (type & ~realm::PropertyType::Flags) {
         // Override naming given by ObjectStore
-        case realm::PropertyType::ObjectId: return "objectId";
-        case realm::PropertyType::Decimal: return "decimal128";
+        case realm::PropertyType::ObjectId:
+            return "objectId";
+        case realm::PropertyType::Decimal:
+            return "decimal128";
 
-        default: return string_for_property_type(type);
+        default:
+            return string_for_property_type(type);
     }
 }
 
-template<typename T>
-static inline T stot(const std::string &s) {
+template <typename T>
+static inline T stot(const std::string& s)
+{
     std::istringstream iss(s);
     T value;
     iss >> value;
@@ -65,7 +65,8 @@ static inline T stot(const std::string &s) {
     return value;
 }
 
-static inline uint32_t validated_positive_index(std::string string) {
+static inline uint32_t validated_positive_index(std::string string)
+{
     int64_t index = stot<int64_t>(string);
     if (index < 0) {
         throw std::out_of_range(std::string("Index ") + string + " cannot be less than zero.");
@@ -76,27 +77,31 @@ static inline uint32_t validated_positive_index(std::string string) {
     return static_cast<uint32_t>(index);
 }
 
-static inline void validate_argument_count(size_t count, size_t expected, const char *message = nullptr) {
+static inline void validate_argument_count(size_t count, size_t expected, const char* message = nullptr)
+{
     if (count != expected) {
         throw std::invalid_argument(message ? message : "Invalid arguments");
     }
 }
 
-static inline void validate_argument_count(size_t count, size_t min, size_t max, const char *message = nullptr) {
+static inline void validate_argument_count(size_t count, size_t min, size_t max, const char* message = nullptr)
+{
     if (count < min || count > max) {
         throw std::invalid_argument(message ? message : "Invalid arguments");
     }
 }
 
-static inline void validate_argument_count_at_least(size_t count, size_t expected, const char *message = nullptr) {
+static inline void validate_argument_count_at_least(size_t count, size_t expected, const char* message = nullptr)
+{
     if (count < expected) {
         throw std::invalid_argument(message ? message : "Invalid arguments");
     }
 }
 
-template<typename T, AggregateFunc func>
+template <typename T, AggregateFunc func>
 void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::ObjectType this_object,
-                                     typename T::Arguments &args, typename T::ReturnValue &return_value) {
+                                     typename T::Arguments& args, typename T::ReturnValue& return_value)
+{
 
     auto list = get_internal<typename T::Type, T>(ctx, this_object);
 
@@ -106,8 +111,8 @@ void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::Ob
         std::string property_name = T::Value::validated_to_string(ctx, args[0]);
         const Property* property = object_schema.property_for_name(property_name);
         if (!property) {
-            throw std::invalid_argument(util::format("Property '%1' does not exist on object '%2'",
-                                                     property_name, object_schema.name));
+            throw std::invalid_argument(
+                util::format("Property '%1' does not exist on object '%2'", property_name, object_schema.name));
         }
         column = property->column_key;
     }
@@ -132,5 +137,5 @@ void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::Ob
     }
 }
 
-} // js
-} // realm
+} // namespace js
+} // namespace realm

@@ -24,12 +24,13 @@ namespace realm {
 namespace js {
 
 // Empty class that merely serves as useful type for now.
-class Observable {};
+class Observable {
+};
 
-template<typename T>
+template <typename T>
 struct ObservableClass : ClassDefinition<T, Observable> {
     std::string const name = "Observable";
 };
-    
-} // js
-} // realm
+
+} // namespace js
+} // namespace realm

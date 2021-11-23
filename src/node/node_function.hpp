@@ -25,28 +25,38 @@ namespace realm {
 namespace js {
 
 template <>
-inline Napi::Value node::Function::call(Napi::Env env, const Napi::Function& function, const Napi::Object& this_object, size_t argc, const Napi::Value arguments[]) {
-	auto recv = this_object.IsEmpty() ? env.Global() : this_object;
+inline Napi::Value node::Function::call(Napi::Env env, const Napi::Function& function,
+                                        const Napi::Object& this_object, size_t argc, const Napi::Value arguments[])
+{
+    auto recv = this_object.IsEmpty() ? env.Global() : this_object;
 
-	std::vector<napi_value> args(const_cast<const Napi::Value*>(arguments), const_cast<const Napi::Value*>(arguments) + argc);
-	auto result = function.Call(recv, args);
-	return result;
+    std::vector<napi_value> args(const_cast<const Napi::Value*>(arguments),
+                                 const_cast<const Napi::Value*>(arguments) + argc);
+    auto result = function.Call(recv, args);
+    return result;
 }
 
 template <>
-inline Napi::Value node::Function::callback(Napi::Env env, const Napi::Function& function, const Napi::Object& this_object, size_t argc, const Napi::Value arguments[]) {
-	auto recv = this_object.IsEmpty() ? env.Global() : this_object;
-	
-	std::vector<napi_value> args(const_cast<const Napi::Value*>(arguments), const_cast<const Napi::Value*>(arguments) + argc);
-	auto result = function.MakeCallback(recv, args);
-	return result;
+inline Napi::Value node::Function::callback(Napi::Env env, const Napi::Function& function,
+                                            const Napi::Object& this_object, size_t argc,
+                                            const Napi::Value arguments[])
+{
+    auto recv = this_object.IsEmpty() ? env.Global() : this_object;
+
+    std::vector<napi_value> args(const_cast<const Napi::Value*>(arguments),
+                                 const_cast<const Napi::Value*>(arguments) + argc);
+    auto result = function.MakeCallback(recv, args);
+    return result;
 }
 
 template <>
-inline Napi::Object node::Function::construct(Napi::Env env, const Napi::Function& function, size_t argc, const Napi::Value arguments[]) {
-	std::vector<napi_value> args(const_cast<const Napi::Value*>(arguments), const_cast<const Napi::Value*>(arguments) + argc);
-	auto result = function.New(args);
-	return result;
+inline Napi::Object node::Function::construct(Napi::Env env, const Napi::Function& function, size_t argc,
+                                              const Napi::Value arguments[])
+{
+    std::vector<napi_value> args(const_cast<const Napi::Value*>(arguments),
+                                 const_cast<const Napi::Value*>(arguments) + argc);
+    auto result = function.New(args);
+    return result;
 }
 
 } // namespace js
