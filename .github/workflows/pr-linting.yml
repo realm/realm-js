@@ -24,4 +24,4 @@ jobs:
       - name: Run linting of subpackages
         run: npm run lerna:lint -- --no-bail --concurrency 1 --stream --no-prefix
       - name: Run linting of C++ code
-        run: for i in `find src -name "*.?pp" | grep -v catch`; do clang-format --dry-run --Werror $i; done
+        run: npm run lint:cpp
