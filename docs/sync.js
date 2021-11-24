@@ -35,6 +35,15 @@
  */
 
 /**
+ * This describes the options to configure client reset.
+ * @typedef {Object} Realm.App.Sync~ClientResetConfiguration
+ * @property {string} mode - Either "manual" (deprecated, see also `Realm.App.Sync.initiateClientReset()`) or "discardLocal" (download a fresh copy from the server).
+ * @property {callback(localRealm, remoteRealm)|null} [clientResetBefore] - called before sync initiate client reset.
+ * @property {callback(localRealm)|null} [clientResetAfter] - called after client reset has been executed.
+ * @since {10.11.0}
+ */
+
+/**
  * This describes the different options used to create a {@link Realm} instance with MongoDB Realm synchronization.
  * @typedef {Object} Realm.App.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
@@ -42,13 +51,14 @@
  * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key.
  * @property {callback(session, syncError)} [error] - A callback function which is called in error situations.
  *    The callback is passed two arguments: `session` and `syncError`. If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set
- *    and `syncError.readOnly` is true. Otherwise, `syncError` can have up to five properties:
+ *    and `syncError.readOnly` is true (deprecated, see `Realm.App.Sync~ClientResetConfiguration`). Otherwise, `syncError` can have up to five properties:
  *    `name`, `message`, `isFatal`, `category`, and `code`.
  * @property {Object} [customHttpHeaders] - A map (string, string) of custom HTTP headers.
  * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
        If not set, the Realm will be downloaded before opened.
  * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
  *    file to complete and then open. If not set, the Realm will be downloaded before opened.
+ * @property {Realm.App.Sync~ClientResetConfiguration|null} [clientReset] - Configuration of Client Reset
  */
 
 /**
@@ -262,6 +272,7 @@ class Sync {
    * will be present in the local recovery copy of the Realm file. The re-downloaded Realm will
    * initially contain only the data present at the time the Realm was synchronized up on the server.
    *
+   * @deprecated
    * @param {Realm.App} [app] - The app where the Realm was opened.
    * @param {string} [path] - The path to the Realm to reset.
    * Throws error if reset is not possible.
