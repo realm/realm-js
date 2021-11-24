@@ -42,7 +42,7 @@ jobs:
       - name: Docker Login
         uses: azure/docker-login@v1
         with:
-          login-server: docker.pkg.github.com
+          login-server: ghcr.io
           username: realm-ci
           password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
       - name: Run integration tests
