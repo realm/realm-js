@@ -73,8 +73,8 @@
     "test-runner:jest": "cd tests/test-runners/jest && npm install --build-from-source=realm && npm test",
     "test-runners": "npm run test-runner:ava && npm run test-runner:mocha && npm run test-runner:jest",
     "check-environment": "node scripts/check-environment.js",
-    "lint:cpp": "find src -name \"*.?pp\" | grep -v \"src/test/catch\" | xargs clang-format --dry-run --Werror",
-    "lint:fix:cpp": "find src -name \"*.?pp\" | grep -v \"src/test/catch\" | xargs clang-format -i"
+    "lint:cpp": "find src -name \"*.?pp\" | xargs clang-format --dry-run --Werror",
+    "lint:fix:cpp": "find src -name \"*.?pp\" | xargs clang-format -i"
   },
   "dependencies": {
     "@realm.io/common": "^0.1.1",
