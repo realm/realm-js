@@ -39,6 +39,14 @@ describe("Immutable Realm", () => {
   beforeEach(() => {
     Realm.clearTestState();
   });
+  describe("realm configuration", () => {
+    it("can be set to immutable", () => {
+      const realm = new Realm({ schema: [PersonSchema], immutable: true });
+      expect(realm._isImmutable).equals(true);
+      const realm2 = new Realm({ schema: [PersonSchema], immutable: false });
+      expect(realm2._isImmutable).equals(false);
+    });
+  });
 
   describe("Objects", () => {
     it("to be freezable", () => {

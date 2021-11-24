@@ -656,6 +656,7 @@ declare class Realm {
     readonly schemaVersion: number;
     readonly isInTransaction: boolean;
     readonly isClosed: boolean;
+    readonly _isImmutable: boolean;
 
     toStr(): string;
 

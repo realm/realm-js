@@ -356,6 +356,7 @@ public:
     static void get_read_only(ContextType, ObjectType, ReturnValue&);
     static void get_is_in_transaction(ContextType, ObjectType, ReturnValue&);
     static void get_is_closed(ContextType, ObjectType, ReturnValue&);
+    static void get_is_immutable(ContextType, ObjectType, ReturnValue&);
 #if REALM_ENABLE_SYNC
     static void get_sync_session(ContextType, ObjectType, ReturnValue&);
 #endif
@@ -429,6 +430,7 @@ public:
         {"readOnly", {wrap<get_read_only>, nullptr}},
         {"isInTransaction", {wrap<get_is_in_transaction>, nullptr}},
         {"isClosed", {wrap<get_is_closed>, nullptr}},
+        {"_isImmutable", {wrap<get_is_immutable>, nullptr}},
 #if REALM_ENABLE_SYNC
         {"syncSession",
          { wrap<get_sync_session>,
@@ -964,6 +966,14 @@ template <typename T>
 void RealmClass<T>::get_is_closed(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
     return_value.set(get_internal<T, RealmClass<T>>(ctx, object)->get()->is_closed());
+}
+
+template <typename T>
+void RealmClass<T>::get_is_immutable(ContextType ctx, ObjectType object, ReturnValue& return_value)
+{
+    auto realm = get_internal<T, RealmClass<T>>(ctx, object)->get();
+    RealmDelegate<T>* js_binding_context = dynamic_cast<RealmDelegate<T>*>(realm->m_binding_context.get());
+    return_value.set(js_binding_context->m_immutable);
 }
 
 #if REALM_ENABLE_SYNC
