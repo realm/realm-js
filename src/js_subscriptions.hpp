@@ -415,6 +415,10 @@ void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Argu
 
     auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
 
+    if (subs->is_mutable) {
+        throw std::runtime_error("`update` cannot be called on a mutable subscription set.");
+    }
+
     try {
         HANDLESCOPE(protected_ctx);
 

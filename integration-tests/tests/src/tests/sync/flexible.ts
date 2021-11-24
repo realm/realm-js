@@ -224,101 +224,111 @@ describe("Flexible sync", function () {
 
           expect(subs.find(this.realm.objects("Person"))).to.deep.equal(sub);
         });
+      });
 
-        describe("#state", function () {
-          it("is Pending by default", function (this: RealmContext) {
-            const subs = this.realm.getSubscriptions();
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Pending);
-          });
-
-          // TODO test that uncommitted/pending/bootstrapping all map to pending
-          // TODO test Superceded when we update the set
-          // TODO can you call waitForSync on a superceeded set?
-          // TOOD do we want to duplicate tests from waitForSynchronization here?
+      describe("#state", function () {
+        it("is Pending by default", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
         });
 
-        describe("#error", function () {
-          it("is null by default", function (this: RealmContext) {
-            const subs = this.realm.getSubscriptions();
-            expect(subs.error).to.be.null;
-          });
+        xit("is Superceeded after an update is synchronised", async function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
 
-          // TODO waiting on core - currently calling waitForSynchronization crashes when test times out
-          xit("is null if there was no error synchronising subscriptions", async function (this: RealmContext) {
-            const { subs } = addPersonSubscription(this);
-            await subs.waitForSynchronization();
+          const { subs: newSubs } = addPersonSubscription(this);
+          await newSubs.waitForSynchronization();
 
-            expect(subs.error).to.be.null;
-          });
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Superceded);
+        });
 
-          xit("is contains the error if there was an error synchronising subscriptions", async function (this: RealmContext) {
-            const { subs } = addPersonSubscription(this);
-            // TODO simulate error
-            await subs.waitForSynchronization();
+        // TODO test that uncommitted/pending/bootstrapping all map to pending
+        // TODO can you call waitForSync on a superceeded set?
+        // TOOD do we want to duplicate tests from waitForSynchronization here?
+      });
 
-            expect(subs.error).to.be.instanceOf(Error);
-            // TODO check more stuff about the error
-          });
+      describe("#error", function () {
+        it("is null by default", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          expect(subs.error).to.be.null;
         });
 
         // TODO waiting on core - currently calling waitForSynchronization crashes when test times out
-        xdescribe("#waitForSynchronization", function () {
-          it("returns a promise", async function (this: RealmContext) {
-            const { subs } = addPersonSubscription(this);
+        xit("is null if there was no error synchronising subscriptions", async function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this);
+          await subs.waitForSynchronization();
 
-            expect(subs.waitForSynchronization()).to.be.instanceOf(Promise);
-          });
-
-          it("waits for subscriptions to be in a complete state", async function (this: RealmContext) {
-            const { subs } = addPersonSubscription(this);
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Pending);
-
-            await subs.waitForSynchronization();
-
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Complete);
-          });
-
-          it("resolves if subscriptions are already in a complete state", async function (this: RealmContext) {
-            const { subs } = addPersonSubscription(this);
-            await subs.waitForSynchronization();
-            await subs.waitForSynchronization();
-
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Complete);
-          });
-
-          it("throws if there is an error synchronising subscriptions", async function (this: RealmContext) {
-            const { subs } = addPersonSubscription(this);
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Pending);
-
-            // TODO simulate error
-            await subs.waitForSynchronization();
-
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Error);
-          });
-
-          it("throws if another client updates subscriptions while waiting for synchronisation", function (this: RealmContext) {
-            // TODO what is the proper way to do this?
-            const otherClientRealm = new Realm({ schema: [PersonSchema], sync: { flexible: true, user: this.user } });
-
-            const { subs } = addPersonSubscription(this);
-
-            const otherClientSubs = otherClientRealm.getSubscriptions();
-
-            expect(
-              Promise.all([
-                otherClientSubs.update((mutableSubs) => {
-                  mutableSubs.add(this.realm.objects("Person"));
-                }),
-                subs.waitForSynchronization(),
-              ]),
-            ).throws("xxx");
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Error);
-          });
+          expect(subs.error).to.be.null;
         });
 
-        describe("#update", function () {
-          // TODO handle rollback
+        xit("is contains the error if there was an error synchronising subscriptions", async function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this);
+          // TODO simulate error
+          await subs.waitForSynchronization();
 
+          expect(subs.error).to.be.instanceOf(Error);
+          // TODO check more stuff about the error
+        });
+      });
+
+      // TODO waiting on core - currently calling waitForSynchronization crashes when test times out
+      xdescribe("#waitForSynchronization", function () {
+        it("returns a promise", async function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this);
+
+          expect(subs.waitForSynchronization()).to.be.instanceOf(Promise);
+        });
+
+        it("waits for subscriptions to be in a complete state", async function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this);
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
+
+          await subs.waitForSynchronization();
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+        });
+
+        it("resolves if subscriptions are already in a complete state", async function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this);
+          await subs.waitForSynchronization();
+          await subs.waitForSynchronization();
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+        });
+
+        it("throws if there is an error synchronising subscriptions", async function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this);
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
+
+          // TODO simulate error
+          await subs.waitForSynchronization();
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+        });
+
+        it("throws if another client updates subscriptions while waiting for synchronisation", function (this: RealmContext) {
+          // TODO what is the proper way to do this?
+          const otherClientRealm = new Realm({ schema: [PersonSchema], sync: { flexible: true, user: this.user } });
+
+          const { subs } = addPersonSubscription(this);
+
+          const otherClientSubs = otherClientRealm.getSubscriptions();
+
+          expect(
+            Promise.all([
+              otherClientSubs.update((mutableSubs) => {
+                mutableSubs.add(this.realm.objects("Person"));
+              }),
+              subs.waitForSynchronization(),
+            ]),
+          ).throws("xxx");
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+        });
+      });
+
+      describe("#update", function () {
+        // TODO handle rollback?
+
+        describe("calling mutating methods outside an update callback", function () {
           it("throws an error if Subscriptions.add is called outside of an update() callback", function (this: RealmContext) {
             const subs = this.realm.getSubscriptions();
 
@@ -367,301 +377,324 @@ describe("Flexible sync", function () {
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
-          describe("#update", function () {
-            it("does not throw an error if Subscriptions.add is called inside a update() callback", function (this: RealmContext) {
-              const subs = this.realm.getSubscriptions();
+          it("throws an error if a mutating method is called outside of an update() callback by holding a reference to the MutableSubscriptions", function (this: RealmContext) {
+            const subs = this.realm.getSubscriptions();
+            let mutableSubs: Realm.App.Sync.MutableSubscriptions;
 
-              // expect(() => {
+            subs.update((m) => {
+              mutableSubs = m;
+            });
+
+            expect(() => {
+              mutableSubs.add(this.realm.objects("Person"));
+            }).throws("Subscriptions can only be added inside an `update` callback.");
+          });
+
+          it("throws if update is called on a MutableSubscriptions instance", function (this: RealmContext) {
+            const subs = this.realm.getSubscriptions();
+
+            expect(() => {
               subs.update((mutableSubs) => {
-                mutableSubs.add(this.realm.objects("Person"));
-              });
-              // }).to.not.throw();
-            });
-
-            it("does not throw an error if Subscriptions.remove is called inside a update() callback", function (this: RealmContext) {
-              const { sub, subs } = addPersonSubscription(this);
-
-              expect(() => {
-                subs.update((mutableSubs) => {
-                  mutableSubs.removeSubscription(sub);
+                mutableSubs.update(() => {
+                  // This should throw
                 });
-              }).to.not.throw();
-            });
-
-            it("returns an updated Subscriptions instance", function (this: RealmContext) {
-              const subs = this.realm.getSubscriptions();
-              const newSubs = subs.update((mutableSubs) => {
-                mutableSubs.add(this.realm.objects("Person"));
               });
-
-              expect(newSubs.snapshot()).to.have.length(1);
-            });
-
-            it("does not mutate the original Subscriptions instance", function (this: RealmContext) {
-              const subs = this.realm.getSubscriptions();
-              subs.update((mutableSubs) => {
-                mutableSubs.add(this.realm.objects("Person"));
-              });
-
-              expect(subs.snapshot()).to.have.length(0);
-            });
-
-            it("does not wait for subscriptions to be in a ready state", function (this: RealmContext) {
-              const subs = this.realm.getSubscriptions();
-              subs.update((mutableSubs) => {
-                mutableSubs.add(this.realm.objects("Person"));
-              });
-
-              expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Pending);
-            });
-
-            it("handles multiple updates in a single batch", function (this: RealmContext) {
-              const { subs, query } = addPersonSubscription(this);
-
-              const newSubs = subs.update((mutableSubs) => {
-                mutableSubs.remove(query);
-                mutableSubs.add(this.realm.objects("Person").filtered("age < 10"));
-                mutableSubs.add(this.realm.objects("Person").filtered("age > 20"));
-                mutableSubs.add(this.realm.objects("Dog").filtered("age > 30"));
-              });
-
-              expect(newSubs.snapshot()).to.have.length(3);
-
-              expect(newSubs.snapshot()[0].queryString).to.equal("age < 10");
-              expect(newSubs.snapshot()[0].objectType).to.equal("Person");
-
-              expect(newSubs.snapshot()[1].queryString).to.equal("age > 20");
-              expect(newSubs.snapshot()[1].objectType).to.equal("Person");
-
-              expect(newSubs.snapshot()[2].queryString).to.equal("age > 30");
-              expect(newSubs.snapshot()[2].objectType).to.equal("Dog");
-            });
+            }).to.throw("`update` cannot be called on a mutable subscription set.");
           });
         });
 
-        // TODO test `snapshot`
+        it("does not throw an error if Subscriptions.add is called inside a update() callback", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
 
-        describe("#add", function () {
-          // Behaviour is mostly tested in #find and #findByName - TODO should we retest?
-
-          it("returns a subscription object", function (this: RealmContext) {
-            const { sub } = addPersonSubscription(this);
-            expect(sub).is.instanceOf(Realm.App.Sync.Subscription);
-          });
-
-          describe("#throwOnUpdate", function () {
-            it("does not throw if a subscription with the same name and same query is added, and throwOnUpdate is true", function (this: RealmContext) {
-              const query = this.realm.objects("Dog");
-              const { subs } = addSubscription(this, query, { name: "test" });
-
-              expect(() => {
-                subs.update((mutableSubs) => {
-                  mutableSubs.add(query, { name: "test", throwOnUpdate: true });
-                });
-              }).to.not.throw();
+          expect(() => {
+            subs.update((mutableSubs) => {
+              mutableSubs.add(this.realm.objects("Person"));
             });
-
-            it("throws and does not add the subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", function (this: RealmContext) {
-              const { subs } = addPersonSubscription(this, { name: "test" });
-              const query = this.realm.objects("Dog");
-
-              expect(() => {
-                subs.update((mutableSubs) => {
-                  mutableSubs.add(query, { name: "test", throwOnUpdate: true });
-                });
-              }).to.throw(
-                "A subscription with the name 'test' already exists but has a different query. If you meant to update it, remove `throwOnUpdate: true` from the subscription options.",
-              );
-
-              expect(subs.find(query)).to.be.null;
-            });
-
-            function testThrowOnUpdateFalse(
-              _this: Partial<RealmContext>,
-              addOptions: Realm.App.Sync.SubscriptionOptions = {},
-            ) {
-              const { subs } = addPersonSubscription(_this, { name: "test" });
-              const query = _this.realm.objects("Dog");
-
-              expect(() => {
-                subs.update((mutableSubs) => {
-                  mutableSubs.add(query, { name: "test", ...addOptions });
-                });
-              }).to.not.throw;
-            }
-
-            it("updates the existing subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", function (this: RealmContext) {
-              testThrowOnUpdateFalse(this, { throwOnUpdate: false });
-            });
-
-            it("updates the existing subscription if a subscription with the same name but different query is added, and throwOnUpdate is not specified", function (this: RealmContext) {
-              testThrowOnUpdateFalse(this);
-            });
-          });
+          }).to.not.throw();
         });
 
-        describe("#removeByName", function () {
-          it("returns false and does not remove any subscriptions if the subscription is not found", function (this: RealmContext) {
-            const { subs } = addPersonSubscription(this);
+        it("does not throw an error if Subscriptions.remove is called inside a update() callback", function (this: RealmContext) {
+          const { sub, subs } = addPersonSubscription(this);
 
-            const newSubs = subs.update((mutableSubs) => {
-              expect(mutableSubs.removeByName("test")).to.be.false;
-            });
-
-            expect(newSubs.empty).to.be.false;
-          });
-
-          it("returns true and removes the subscription if the subscription is found", function (this: RealmContext) {
-            const { subs } = addPersonSubscription(this, { name: "test" });
-
-            const newSubs = subs.update((mutableSubs) => {
-              expect(mutableSubs.removeByName("test")).to.be.true;
-            });
-
-            expect(newSubs.empty).to.be.true;
-          });
-        });
-
-        describe("#remove", function () {
-          it("returns false and does not remove any subscriptions if the subscription for the query is not found", function (this: RealmContext) {
-            const query = this.realm.objects("Person");
-            const query2 = this.realm.objects("Dog");
-
-            const { subs } = addSubscription(this, query);
-
-            const newSubs = subs.update((mutableSubs) => {
-              expect(mutableSubs.remove(query2)).to.be.false;
-            });
-
-            expect(newSubs.empty).to.be.false;
-          });
-
-          it("returns true and removes the subscription for the query if it is found", function (this: RealmContext) {
-            const { subs, query } = addPersonSubscription(this);
-
-            const newSubs = subs.update((mutableSubs) => {
-              expect(mutableSubs.remove(query)).to.be.true;
-            });
-
-            expect(newSubs.empty).to.be.true;
-          });
-        });
-
-        describe("#removeSubscription", function () {
-          it("returns false if the subscription is not found", function (this: RealmContext) {
-            const { subs, sub } = addPersonSubscription(this);
-            let newSubs = subs.update((mutableSubs) => {
-              mutableSubs.add(this.realm.objects("Dog"));
-            });
-            newSubs = newSubs.update((mutableSubs) => {
+          expect(() => {
+            subs.update((mutableSubs) => {
               mutableSubs.removeSubscription(sub);
             });
+          }).to.not.throw();
+        });
 
-            newSubs = newSubs.update((mutableSubs) => {
-              expect(mutableSubs.removeSubscription(sub)).to.be.false;
-            });
-
-            expect(newSubs.empty).to.be.false;
+        it("returns an updated Subscriptions instance", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          const newSubs = subs.update((mutableSubs) => {
+            mutableSubs.add(this.realm.objects("Person"));
           });
 
-          // TODO waiting on https://jira.mongodb.org/browse/RCORE-874
-          it("returns true and removes the subscription if the subscription is found", function (this: RealmContext) {
-            const { subs, sub } = addPersonSubscription(this);
+          expect(newSubs.snapshot()).to.have.length(1);
+        });
 
-            const newSubs = subs.update((mutableSubs) => {
-              expect(mutableSubs.removeSubscription(sub)).to.be.true;
-            });
+        it("does not mutate the original Subscriptions instance", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          subs.update((mutableSubs) => {
+            mutableSubs.add(this.realm.objects("Person"));
+          });
 
-            expect(newSubs.empty).to.be.true;
+          expect(subs.snapshot()).to.have.length(0);
+        });
+
+        it("does not wait for subscriptions to be in a ready state", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          subs.update((mutableSubs) => {
+            mutableSubs.add(this.realm.objects("Person"));
+          });
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
+        });
+
+        it("handles multiple updates in a single batch", function (this: RealmContext) {
+          const { subs, query } = addPersonSubscription(this);
+
+          const newSubs = subs.update((mutableSubs) => {
+            mutableSubs.remove(query);
+            mutableSubs.add(this.realm.objects("Person").filtered("age < 10"));
+            mutableSubs.add(this.realm.objects("Person").filtered("age > 20"));
+            mutableSubs.add(this.realm.objects("Dog").filtered("age > 30"));
+          });
+
+          expect(newSubs.snapshot()).to.have.length(3);
+
+          expect(newSubs.snapshot()[0].queryString).to.equal("age < 10");
+          expect(newSubs.snapshot()[0].objectType).to.equal("Person");
+
+          expect(newSubs.snapshot()[1].queryString).to.equal("age > 20");
+          expect(newSubs.snapshot()[1].objectType).to.equal("Person");
+
+          expect(newSubs.snapshot()[2].queryString).to.equal("age > 30");
+          expect(newSubs.snapshot()[2].objectType).to.equal("Dog");
+        });
+      });
+
+      // TODO test `snapshot`
+
+      describe("#add", function () {
+        // Behaviour is mostly tested in #find and #findByName - TODO should we retest?
+
+        it("returns a subscription object", function (this: RealmContext) {
+          const { sub } = addPersonSubscription(this);
+          expect(sub).is.instanceOf(Realm.App.Sync.Subscription);
+        });
+
+        describe("#throwOnUpdate", function () {
+          it("does not throw if a subscription with the same name and same query is added, and throwOnUpdate is true", function (this: RealmContext) {
+            const query = this.realm.objects("Dog");
+            const { subs } = addSubscription(this, query, { name: "test" });
+
+            expect(() => {
+              subs.update((mutableSubs) => {
+                mutableSubs.add(query, { name: "test", throwOnUpdate: true });
+              });
+            }).to.not.throw();
+          });
+
+          it("throws and does not add the subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", function (this: RealmContext) {
+            const { subs } = addPersonSubscription(this, { name: "test" });
+            const query = this.realm.objects("Dog");
+
+            expect(() => {
+              subs.update((mutableSubs) => {
+                mutableSubs.add(query, { name: "test", throwOnUpdate: true });
+              });
+            }).to.throw(
+              "A subscription with the name 'test' already exists but has a different query. If you meant to update it, remove `throwOnUpdate: true` from the subscription options.",
+            );
+
+            expect(subs.find(query)).to.be.null;
+          });
+
+          function testThrowOnUpdateFalse(
+            _this: Partial<RealmContext>,
+            addOptions: Realm.App.Sync.SubscriptionOptions = {},
+          ) {
+            const { subs } = addPersonSubscription(_this, { name: "test" });
+            const query = _this.realm.objects("Dog");
+
+            expect(() => {
+              subs.update((mutableSubs) => {
+                mutableSubs.add(query, { name: "test", ...addOptions });
+              });
+            }).to.not.throw;
+          }
+
+          it("updates the existing subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", function (this: RealmContext) {
+            testThrowOnUpdateFalse(this, { throwOnUpdate: false });
+          });
+
+          it("updates the existing subscription if a subscription with the same name but different query is added, and throwOnUpdate is not specified", function (this: RealmContext) {
+            testThrowOnUpdateFalse(this);
+          });
+        });
+      });
+
+      describe("#removeByName", function () {
+        it("returns false and does not remove any subscriptions if the subscription is not found", function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this);
+
+          const newSubs = subs.update((mutableSubs) => {
+            expect(mutableSubs.removeByName("test")).to.be.false;
+          });
+
+          expect(newSubs.empty).to.be.false;
+        });
+
+        it("returns true and removes the subscription if the subscription is found", function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this, { name: "test" });
+
+          const newSubs = subs.update((mutableSubs) => {
+            expect(mutableSubs.removeByName("test")).to.be.true;
+          });
+
+          expect(newSubs.empty).to.be.true;
+        });
+      });
+
+      describe("#remove", function () {
+        it("returns false and does not remove any subscriptions if the subscription for the query is not found", function (this: RealmContext) {
+          const query = this.realm.objects("Person");
+          const query2 = this.realm.objects("Dog");
+
+          const { subs } = addSubscription(this, query);
+
+          const newSubs = subs.update((mutableSubs) => {
+            expect(mutableSubs.remove(query2)).to.be.false;
+          });
+
+          expect(newSubs.empty).to.be.false;
+        });
+
+        it("returns true and removes the subscription for the query if it is found", function (this: RealmContext) {
+          const { subs, query } = addPersonSubscription(this);
+
+          const newSubs = subs.update((mutableSubs) => {
+            expect(mutableSubs.remove(query)).to.be.true;
+          });
+
+          expect(newSubs.empty).to.be.true;
+        });
+      });
+
+      describe("#removeSubscription", function () {
+        it("returns false if the subscription is not found", function (this: RealmContext) {
+          const { subs, sub } = addPersonSubscription(this);
+          let newSubs = subs.update((mutableSubs) => {
+            mutableSubs.add(this.realm.objects("Dog"));
+          });
+          newSubs = newSubs.update((mutableSubs) => {
+            mutableSubs.removeSubscription(sub);
+          });
+
+          newSubs = newSubs.update((mutableSubs) => {
+            expect(mutableSubs.removeSubscription(sub)).to.be.false;
+          });
+
+          expect(newSubs.empty).to.be.false;
+        });
+
+        // TODO waiting on https://jira.mongodb.org/browse/RCORE-874
+        it("returns true and removes the subscription if the subscription is found", function (this: RealmContext) {
+          const { subs, sub } = addPersonSubscription(this);
+
+          const newSubs = subs.update((mutableSubs) => {
+            expect(mutableSubs.removeSubscription(sub)).to.be.true;
+          });
+
+          expect(newSubs.empty).to.be.true;
+        });
+      });
+
+      describe("#removeAll", function () {
+        it("returns 0 if no subscriptions exist", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+
+          subs.update((mutableSubs) => {
+            expect(mutableSubs.removeAll()).to.equal(0);
           });
         });
 
-        describe("#removeAll", function () {
-          it("returns 0 if no subscriptions exist", function (this: RealmContext) {
-            const subs = this.realm.getSubscriptions();
+        it("removes all subscriptions and returns the number of subscriptions removed", function (this: RealmContext) {
+          addPersonSubscription(this);
+          const { subs } = addSubscription(this, this.realm.objects("Person").filtered("age > 10"));
 
-            subs.update((mutableSubs) => {
-              expect(mutableSubs.removeAll()).to.equal(0);
-            });
+          const newSubs = subs.update((mutableSubs) => {
+            expect(mutableSubs.removeAll()).to.equal(2);
           });
 
-          it("removes all subscriptions and returns the number of subscriptions removed", function (this: RealmContext) {
-            addPersonSubscription(this);
-            const { subs } = addSubscription(this, this.realm.objects("Person").filtered("age > 10"));
+          expect(newSubs.empty).to.be.true;
+        });
+      });
 
-            const newSubs = subs.update((mutableSubs) => {
-              expect(mutableSubs.removeAll()).to.equal(2);
-            });
+      describe("#removeByObjectType", function () {
+        it("returns 0 if no subscriptions for the object type exist", function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this);
 
-            expect(newSubs.empty).to.be.true;
+          const newSubs = subs.update((mutableSubs) => {
+            expect(mutableSubs.removeByObjectType("Dog")).to.equal(0);
           });
+
+          expect(newSubs.empty).to.be.false;
         });
 
-        describe("#removeByObjectType", function () {
-          it("returns 0 if no subscriptions for the object type exist", function (this: RealmContext) {
-            const { subs } = addPersonSubscription(this);
+        // TODO https://jira.mongodb.org/browse/RCORE-878
+        it("removes all subscriptions for the object type and returns the number of subscriptions removed", function (this: RealmContext) {
+          addPersonSubscription(this);
+          addSubscription(this, this.realm.objects("Person").filtered("age > 10"));
+          const { subs } = addSubscription(this, this.realm.objects("Dog"));
 
-            const newSubs = subs.update((mutableSubs) => {
-              expect(mutableSubs.removeByObjectType("Dog")).to.equal(0);
-            });
-
-            expect(newSubs.empty).to.be.false;
+          const newSubs = subs.update((mutableSubs) => {
+            expect(mutableSubs.removeByObjectType("Person")).to.equal(2);
           });
 
-          // TODO https://jira.mongodb.org/browse/RCORE-878
-          it("removes all subscriptions for the object type and returns the number of subscriptions removed", function (this: RealmContext) {
-            addPersonSubscription(this);
-            addSubscription(this, this.realm.objects("Person").filtered("age > 10"));
-            const { subs } = addSubscription(this, this.realm.objects("Dog"));
+          expect(newSubs.empty).to.be.false;
+        });
+      });
 
-            const newSubs = subs.update((mutableSubs) => {
-              expect(mutableSubs.removeByObjectType("Person")).to.equal(2);
-            });
+      describe("multi-client behaviour", function () {
+        // TODO Is this worth testing? Implied by immutability...
+        it("does not automatically update if another client updates subscriptions after we call getSubscriptions", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          expect(subs.empty).to.be.true;
 
-            expect(newSubs.empty).to.be.false;
+          // TODO what is the proper way to do this?
+          const otherClientRealm = new Realm({
+            schema: [PersonSchema],
+            sync: { flexible: true, user: this.user },
           });
+          const otherClientSubs = otherClientRealm.getSubscriptions();
+          const newOtherClientSubs = otherClientSubs.update((mutableSubs) => {
+            mutableSubs.add(otherClientRealm.objects("Person"));
+          });
+
+          // TODO prob need to get a new snapshot, is this test even valid
+          expect(newOtherClientSubs.empty).to.be.false;
+          expect(subs.empty).to.be.true;
         });
 
-        describe("multi-client behaviour", function () {
-          // TODO Is this worth testing? Implied by immutability...
-          it("does not automatically update if another client updates subscriptions after we call getSubscriptions", function (this: RealmContext) {
-            const subs = this.realm.getSubscriptions();
-            expect(subs.empty).to.be.true;
+        it("sees another client's updated subscriptions if we call getSubscriptions after they are modified", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          expect(subs.empty).to.be.true;
 
-            // TODO what is the proper way to do this?
-            const otherClientRealm = new Realm({
-              schema: [PersonSchema],
-              sync: { flexible: true, user: this.user },
-            });
-            const otherClientSubs = otherClientRealm.getSubscriptions();
-            const newOtherClientSubs = otherClientSubs.update((mutableSubs) => {
-              mutableSubs.add(otherClientRealm.objects("Person"));
-            });
-
-            // TODO prob need to get a new snapshot, is this test even valid
-            expect(newOtherClientSubs.empty).to.be.false;
-            expect(subs.empty).to.be.true;
+          // TODO what is the proper way to do this?
+          const otherClientRealm = new Realm({
+            schema: [PersonSchema],
+            sync: { flexible: true, user: this.user },
+          });
+          const otherClientSubs = otherClientRealm.getSubscriptions();
+          const newOtherClientSubs = otherClientSubs.update((mutableSubs) => {
+            mutableSubs.add(otherClientRealm.objects("Person"));
           });
 
-          it("sees another client's updated subscriptions if we call getSubscriptions after they are modified", function (this: RealmContext) {
-            const subs = this.realm.getSubscriptions();
-            expect(subs.empty).to.be.true;
+          const newSubs = this.realm.getSubscriptions();
 
-            // TODO what is the proper way to do this?
-            const otherClientRealm = new Realm({
-              schema: [PersonSchema],
-              sync: { flexible: true, user: this.user },
-            });
-            const otherClientSubs = otherClientRealm.getSubscriptions();
-            const newOtherClientSubs = otherClientSubs.update((mutableSubs) => {
-              mutableSubs.add(otherClientRealm.objects("Person"));
-            });
-
-            const newSubs = this.realm.getSubscriptions();
-
-            expect(newOtherClientSubs.empty).to.be.false;
-            expect(newSubs.empty).to.be.false;
-          });
+          expect(newOtherClientSubs.empty).to.be.false;
+          expect(newSubs.empty).to.be.false;
         });
       });
     });
