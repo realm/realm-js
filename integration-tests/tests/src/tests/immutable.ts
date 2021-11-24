@@ -42,7 +42,7 @@ describe("Immutable Realm", () => {
 
   describe("Objects", () => {
     it("to be freezable", () => {
-      const realm = new Realm({ schema: [PersonSchema] });
+      const realm = new Realm({ schema: [PersonSchema], immutable: true });
       let john: IPerson & Realm.Object;
 
       realm.write(() => {
@@ -75,7 +75,6 @@ describe("Immutable Realm", () => {
 
       // aliceA is {name: "alice", age: undefined}
       const aliceA = realm.objectForPrimaryKey<IPerson>("Person", "alice");
-      console.log("XXXX: ", aliceA.age);
 
       expect(aliceA.age).equals(null);
       // Object is only mutable inside a write transaction
@@ -218,7 +217,7 @@ describe("Immutable Realm", () => {
       const realm = new Realm({ schema });
       createPersons(realm);
 
-      const aliceA = realm.objectForPrimaryKey("Person", "alice");
+      const aliceA = realm.objectForPrimaryKey<IPerson>("Person", "alice");
       realm.write(() => {
         // TODO: We would need to apply the `realm.writeable` here?
         aliceA.age = 21;

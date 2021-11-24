@@ -164,6 +164,7 @@ void RealmObjectClass<T>::freeze(ContextType ctx, ObjectType this_object, Argume
     return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(frozen_object)));
 }
 
+template <typename T>
 void RealmObjectClass<T>::get_object_schema(ContextType ctx, ObjectType this_object, Arguments&,
                                             ReturnValue& return_value)
 {

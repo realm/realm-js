@@ -186,6 +186,7 @@ public:
 
     ObjectDefaultsMap m_defaults;
     ConstructorMap m_constructors;
+    bool m_immutable = false;
 
 private:
     Protected<GlobalContextType> m_context;
@@ -362,11 +363,11 @@ public:
     // static methods
     static void constructor(ContextType, ObjectType, Arguments&);
     static SharedRealm create_shared_realm(ContextType, realm::Realm::Config, bool, ObjectDefaultsMap&&,
-                                           ConstructorMap&&);
+                                           ConstructorMap&&, bool);
     static bool get_realm_config(ContextType ctx, size_t argc, const ValueType arguments[], realm::Realm::Config&,
-                                 ObjectDefaultsMap&, ConstructorMap&);
+                                 ObjectDefaultsMap&, ConstructorMap&, bool&);
     static void set_binding_context(ContextType ctx, std::shared_ptr<Realm> const& realm, bool schema_updated,
-                                    ObjectDefaultsMap&& defaults, ConstructorMap&& constructors);
+                                    ObjectDefaultsMap&& defaults, ConstructorMap&& constructors, bool immutable);
 
     static void schema_version(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void clear_test_state(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -573,7 +574,7 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx)
 template <typename T>
 bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueType arguments[],
                                      realm::Realm::Config& config, ObjectDefaultsMap& defaults,
-                                     ConstructorMap& constructors)
+                                     ConstructorMap& constructors, bool& immutable)
 {
     bool schema_updated = false;
 
@@ -740,6 +741,12 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 config.disable_format_upgrade =
                     Value::validated_to_boolean(ctx, disable_format_upgrade_value, "disableFormatUpgrade");
             }
+
+            static const String immutable_mode_string = "immutable";
+            ValueType immutable_mode_value = Object::get_property(ctx, object, immutable_mode_string);
+            if (!Value::is_undefined(ctx, immutable_mode_value)) {
+                immutable = Value::validated_to_boolean(ctx, immutable_mode_value);
+            }
         }
     }
 
@@ -756,28 +763,31 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Argumen
     realm::Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
-    bool schema_updated = get_realm_config(ctx, args.count, args.value, config, defaults, constructors);
-    auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
+    bool immutable;
+    bool schema_updated = get_realm_config(ctx, args.count, args.value, config, defaults, constructors, immutable);
+    auto realm =
+        create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors), immutable);
 
     set_internal<T, RealmClass<T>>(ctx, this_object, new SharedRealm(realm));
 }
 
 template <typename T>
 SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Config config, bool schema_updated,
-                                               ObjectDefaultsMap&& defaults, ConstructorMap&& constructors)
+                                               ObjectDefaultsMap&& defaults, ConstructorMap&& constructors,
+                                               bool immutable)
 {
     config.scheduler = realm::util::Scheduler::make_default();
 
     SharedRealm realm;
     realm = realm::Realm::get_shared_realm(config);
-    set_binding_context(ctx, realm, schema_updated, std::move(defaults), std::move(constructors));
+    set_binding_context(ctx, realm, schema_updated, std::move(defaults), std::move(constructors), immutable);
 
     return realm;
 }
 
 template <typename T>
 void RealmClass<T>::set_binding_context(ContextType ctx, std::shared_ptr<Realm> const& realm, bool schema_updated,
-                                        ObjectDefaultsMap&& defaults, ConstructorMap&& constructors)
+                                        ObjectDefaultsMap&& defaults, ConstructorMap&& constructors, bool immutable)
 {
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
     if (!realm->m_binding_context) {
@@ -793,6 +803,8 @@ void RealmClass<T>::set_binding_context(ContextType ctx, std::shared_ptr<Realm> 
         js_binding_context->m_defaults = std::move(defaults);
         js_binding_context->m_constructors = std::move(constructors);
     }
+
+    js_binding_context->m_immutable = immutable;
 }
 
 template <typename T>
@@ -983,7 +995,9 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
-    bool schema_updated = get_realm_config(ctx, args.count - 1, args.value, config, defaults, constructors);
+    bool immutable;
+    bool schema_updated =
+        get_realm_config(ctx, args.count - 1, args.value, config, defaults, constructors, immutable);
 
     if (!config.sync_config) {
         throw std::logic_error("_asyncOpen can only be used on a synchronized Realm.");
@@ -1038,7 +1052,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
             auto def = std::move(defaults);
             auto ctor = std::move(constructors);
             const SharedRealm realm = Realm::get_shared_realm(std::move(realm_ref), util::Scheduler::make_default());
-            set_binding_context(protected_ctx, realm, schema_updated, std::move(def), std::move(ctor));
+            set_binding_context(protected_ctx, realm, schema_updated, std::move(def), std::move(ctor), immutable);
             ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
 
             ValueType callback_arguments[2] = {
