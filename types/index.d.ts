@@ -590,10 +590,9 @@ declare namespace Realm {
         const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
 
         /**
-         * A class representing a single query subscription for Flexible Sync.
-         * This class contains readonly information about the subscription –
-         * any changes to the set of subscriptions must be carried out in a
-         * `Subscriptions.update` callback.
+         * A class representing a single query subscription for Flexible Sync. This class contains
+         * readonly information about the subscription – any changes to the set of subscriptions
+         * must be carried out in a `Subscriptions.update` callback.
          */
         class Subscription {
             new(): never; // This type isn't supposed to be constructed manually by end users.
@@ -672,31 +671,57 @@ declare namespace Realm {
              */
             name?: string;
 
-            // Whether to update an existing subscription. If set to false, trying to
-            // add a subscription with the same name but different query will throw.
-            // Defaults to true if undefined.
-            // Adding an identical subscription (query+name) is a no-op.
+            /**
+             * By default, adding a subscription with the same name as an existing one
+             * but a different query will update the existing subscription with the new
+             * query. If `throwOnUpdate` is set to true, adding a subscription with the
+             * same name but a different query will instead throw an exception.
+             * Adding a subscription with the same name and query is always a no-op.
+             */
             throwOnUpdate?: boolean;
         }
 
-        // A collection of subscriptions. Mutating it can only happen in an update callback.
+        /**
+         * A class representing the set of all active Flexible Sync subscriptions for a Realm
+         * instance.
+         *
+         * The server will continuously evaluate the queries that the instance is subscribed to
+         * and will send data that matches them, as well as remove data that no longer does.
+         *
+         * The set of subscriptions can only be updated inside a `Subscriptions.update` callback.
+         * Attempting to call any methods which mutate the set (e.g. `add`, `remove`) outside of
+         * an `update` callback will throw an exception.
+         */
         class Subscriptions {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
-            // Returns true if there are no subscriptions in the set
+            /**
+             * Returns true if there are no subscriptions in the set.
+             */
             readonly empty: boolean;
 
-            // The version of the subscription set
+            /**
+             * The version of the subscription set. This is incremented every time an `update`
+             * is applied.
+             */
             readonly version: number;
 
-            // Get a read-only snapshot of the subscriptions in the array
-            getSubscriptions(): ReadonlyArray<Subscription>;
+            /**
+             * Get a readonly array snapshot of all the subscriptions in the set.
+             * Any changes to the set of subscriptions must be performed in an `update` callback.
+             */
+            snapshot(): ReadonlyArray<Subscription>;
 
-            // Find a subscription by name. Return null if not found.
+            /**
+             * Find a subscription by name. Returns null if the subscription is not found.
+             */
             findByName(name: string): Subscription | null;
 
-            // Find a subscription by query. Return null if not found.
-            // Will match both named and unnamed subscriptions.
+            /**
+             * Find a subscription by query, represented as a `Realm.Results` instance, e.g.
+             * `subs.find(Realm.objects("Cat").filtered("age > 10"))`. Will match both named
+             * and unnamed subscriptions. Returns null if the subscription is not found.
+             */
             find<T>(query: Realm.Results<T & Realm.Object>): Subscription | null;
 
             // The state of this collection - is it acknowledged by the server and

@@ -188,7 +188,7 @@ public:
         {"version", {wrap<get_version>, nullptr}},
     };
 
-    static void get_subscriptions(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void snapshot(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void find_by_name(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void find(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -203,7 +203,7 @@ public:
     static void remove_by_object_type(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
-        {"getSubscriptions", wrap<get_subscriptions>},
+        {"snapshot", wrap<snapshot>},
         {"findByName", wrap<find_by_name>},
         {"find", wrap<find>},
         {"update", wrap<update>},
@@ -307,7 +307,7 @@ void SubscriptionsClass<T>::get_version(ContextType ctx, ObjectType this_object,
 }
 
 /**
- * @brief Get a snapshot of the subscriptions in the subscription set
+ * @brief Get an array snapshot of the subscriptions in the subscription set
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
@@ -315,8 +315,8 @@ void SubscriptionsClass<T>::get_version(ContextType ctx, ObjectType this_object,
  * @param return_value \ref ReturnValue wrapping an array of Subscription instances
  */
 template <typename T>
-void SubscriptionsClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, Arguments& args,
-                                              ReturnValue& return_value)
+void SubscriptionsClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments& args,
+                                     ReturnValue& return_value)
 {
     args.validate_count(0);
 

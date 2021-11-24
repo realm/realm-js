@@ -393,7 +393,7 @@ describe("Flexible sync", function () {
                 mutableSubs.add(this.realm.objects("Person"));
               });
 
-              expect(newSubs.getSubscriptions()).to.have.length(1);
+              expect(newSubs.snapshot()).to.have.length(1);
             });
 
             it("does not mutate the original Subscriptions instance", function (this: RealmContext) {
@@ -402,7 +402,7 @@ describe("Flexible sync", function () {
                 mutableSubs.add(this.realm.objects("Person"));
               });
 
-              expect(subs.getSubscriptions()).to.have.length(0);
+              expect(subs.snapshot()).to.have.length(0);
             });
 
             it("does not wait for subscriptions to be in a ready state", function (this: RealmContext) {
@@ -424,21 +424,21 @@ describe("Flexible sync", function () {
                 mutableSubs.add(this.realm.objects("Dog").filtered("age > 30"));
               });
 
-              expect(newSubs.getSubscriptions()).to.have.length(3);
+              expect(newSubs.snapshot()).to.have.length(3);
 
-              expect(newSubs.getSubscriptions()[0].queryString).to.equal("age < 10");
-              expect(newSubs.getSubscriptions()[0].objectType).to.equal("Person");
+              expect(newSubs.snapshot()[0].queryString).to.equal("age < 10");
+              expect(newSubs.snapshot()[0].objectType).to.equal("Person");
 
-              expect(newSubs.getSubscriptions()[1].queryString).to.equal("age > 20");
-              expect(newSubs.getSubscriptions()[1].objectType).to.equal("Person");
+              expect(newSubs.snapshot()[1].queryString).to.equal("age > 20");
+              expect(newSubs.snapshot()[1].objectType).to.equal("Person");
 
-              expect(newSubs.getSubscriptions()[2].queryString).to.equal("age > 30");
-              expect(newSubs.getSubscriptions()[2].objectType).to.equal("Dog");
+              expect(newSubs.snapshot()[2].queryString).to.equal("age > 30");
+              expect(newSubs.snapshot()[2].objectType).to.equal("Dog");
             });
           });
         });
 
-        // TODO test getSubscriptions
+        // TODO test `snapshot`
 
         describe("#add", function () {
           // Behaviour is mostly tested in #find and #findByName - TODO should we retest?
