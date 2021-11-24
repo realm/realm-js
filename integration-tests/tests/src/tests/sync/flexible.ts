@@ -232,7 +232,8 @@ describe("Flexible sync", function () {
           });
 
           // TODO test that uncommitted/pending/bootstrapping all map to pending
-          // TODO handle Superceded etc
+          // TODO test Superceded when we update the set
+          // TODO can you call waitForSync on a superceeded set?
           // TOOD do we want to duplicate tests from waitForSynchronization here?
         });
 
