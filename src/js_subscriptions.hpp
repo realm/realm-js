@@ -401,6 +401,7 @@ void SubscriptionsClass<T>::find(ContextType ctx, ObjectType this_object, Argume
  * the subscription set as its argument, and which updates the subscription set as required
  * @param return_value \ref ReturnValue wrapping a new Subscriptions instance containing the updated
  * subscription set
+ * @exception std::runtime_error Thrown if the \ref SubscriptionsClass is mutable
  */
 template <typename T>
 void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Arguments& args,
@@ -449,6 +450,7 @@ void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Argu
  * @param object \ref ObjectType wrapping the SubscriptionSet
  * @param args \ref A single argument containing a callback to be called when the state is "Complete"
  * @param return_value \ref None
+ * @exception std::runtime_error Thrown if the \ref SubscriptionsClass is mutable
  */
 template <typename T>
 void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType this_object, Arguments& args,
@@ -463,6 +465,10 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
     Protected<typename T::GlobalContext> protected_ctx(js::Context<T>::get_global_context(ctx));
 
     auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+
+    if (subs->is_mutable) {
+        throw std::runtime_error("`waitForSynchronization` cannot be called on a mutable subscription set.");
+    }
 
     subs->get_state_change_notification(realm::sync::SubscriptionSet::State::Complete)
         .get_async([&](StatusWith<realm::sync::SubscriptionSet::State> state) noexcept {

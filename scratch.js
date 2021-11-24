@@ -21,7 +21,7 @@ Dog = {
   },
 };
 
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-eapxk" });
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-zbxbs" });
 user = await app.logIn(Realm.Credentials.anonymous());
 realm = new Realm({
   schema: [Cat, Dog],
@@ -29,6 +29,15 @@ realm = new Realm({
 });
 
 subs = realm.getSubscriptions();
+
+subs.update(async (m) => {
+  try {
+    await m.waitForSynchronization()
+  } catch(e) {
+    console.log('rrrrr')
+  }
+})
+
 await subs.waitForSynchronization();
 
 let sub;

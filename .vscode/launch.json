@@ -111,7 +111,8 @@
                 "src/utils/inject-node-globals.ts",
                 "src/index.ts",
                 "--grep",
-                "${input:integrationTestFilter}"
+                "throws if called on a MutableSubscriptions instance"
+                // "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",
             "preLaunchTask": "Build Node Tests"

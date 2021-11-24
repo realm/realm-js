@@ -271,14 +271,14 @@ describe("Flexible sync", function () {
       });
 
       // TODO waiting on core - currently calling waitForSynchronization crashes when test times out
-      xdescribe("#waitForSynchronization", function () {
-        it("returns a promise", async function (this: RealmContext) {
+      describe("#waitForSynchronization", function () {
+        xit("returns a promise", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
 
           expect(subs.waitForSynchronization()).to.be.instanceOf(Promise);
         });
 
-        it("waits for subscriptions to be in a complete state", async function (this: RealmContext) {
+        xit("waits for subscriptions to be in a complete state", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
 
@@ -287,7 +287,7 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
         });
 
-        it("resolves if subscriptions are already in a complete state", async function (this: RealmContext) {
+        xit("resolves if subscriptions are already in a complete state", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
           await subs.waitForSynchronization();
           await subs.waitForSynchronization();
@@ -295,7 +295,7 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
         });
 
-        it("throws if there is an error synchronising subscriptions", async function (this: RealmContext) {
+        xit("throws if there is an error synchronising subscriptions", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
 
@@ -305,7 +305,7 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
         });
 
-        it("throws if another client updates subscriptions while waiting for synchronisation", function (this: RealmContext) {
+        xit("throws if another client updates subscriptions while waiting for synchronisation", function (this: RealmContext) {
           // TODO what is the proper way to do this?
           const otherClientRealm = new Realm({ schema: [PersonSchema], sync: { flexible: true, user: this.user } });
 
@@ -323,6 +323,17 @@ describe("Flexible sync", function () {
           ).throws("xxx");
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
         });
+
+        it("throws if called on a MutableSubscriptions instance", async function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+
+          subs.update(async (mutableSubs) => {
+            // This should throw
+            expect(async () => {
+              await ((mutableSubs as unknown) as Realm.App.Sync.Subscriptions).waitForSynchronization();
+            }).to.throw("`waitForSynchronization` cannot be called on a mutable subscription set.");
+          });
+        });
       });
 
       describe("#update", function () {
@@ -333,7 +344,7 @@ describe("Flexible sync", function () {
             const subs = this.realm.getSubscriptions();
 
             expect(() => {
-              (subs as Realm.App.Sync.MutableSubscriptions).add(this.realm.objects("Person"));
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).add(this.realm.objects("Person"));
             }).throws("Subscriptions can only be added inside an `update` callback.");
           });
 
@@ -341,7 +352,7 @@ describe("Flexible sync", function () {
             const { subs, query } = addPersonSubscription(this);
 
             expect(() => {
-              (subs as Realm.App.Sync.MutableSubscriptions).remove(query);
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).remove(query);
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
@@ -349,7 +360,7 @@ describe("Flexible sync", function () {
             const { subs } = addPersonSubscription(this);
 
             expect(() => {
-              (subs as Realm.App.Sync.MutableSubscriptions).removeByName("test");
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeByName("test");
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
@@ -357,7 +368,7 @@ describe("Flexible sync", function () {
             const { subs, sub } = addPersonSubscription(this);
 
             expect(() => {
-              (subs as Realm.App.Sync.MutableSubscriptions).removeSubscription(sub);
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeSubscription(sub);
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
@@ -365,7 +376,7 @@ describe("Flexible sync", function () {
             const { subs } = addPersonSubscription(this);
 
             expect(() => {
-              (subs as Realm.App.Sync.MutableSubscriptions).removeAll();
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeAll();
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
@@ -373,7 +384,7 @@ describe("Flexible sync", function () {
             const { subs } = addPersonSubscription(this);
 
             expect(() => {
-              (subs as Realm.App.Sync.MutableSubscriptions).removeByObjectType("test");
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeByObjectType("test");
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
@@ -390,12 +401,12 @@ describe("Flexible sync", function () {
             }).throws("Subscriptions can only be added inside an `update` callback.");
           });
 
-          it("throws if update is called on a MutableSubscriptions instance", function (this: RealmContext) {
+          it("throws if called on a MutableSubscriptions instance", function (this: RealmContext) {
             const subs = this.realm.getSubscriptions();
 
             expect(() => {
               subs.update((mutableSubs) => {
-                mutableSubs.update(() => {
+                ((mutableSubs as unknown) as Realm.App.Sync.Subscriptions).update(() => {
                   // This should throw
                 });
               });

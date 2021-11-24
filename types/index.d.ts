@@ -683,23 +683,7 @@ declare namespace Realm {
             throwOnUpdate?: boolean;
         }
 
-        /**
-         * A class representing the set of all active Flexible Sync subscriptions for a Realm
-         * instance.
-         *
-         * The server will continuously evaluate the queries that the instance is subscribed to
-         * and will send data that matches them, as well as remove data that no longer does.
-         *
-         * The set of subscriptions can only be updated inside a {@link Subscriptions.update} callback.
-         * Attempting to call any methods which mutate the set (e.g. {@link MutableSubscriptions.add})
-         * outside of an {@link update} callback will throw an exception.
-         *
-         * Note that a given `Subscriptions` instance is immutable – calling {@link update} returns a
-         * new `Subscriptions` instance with the updated subscription set, the original instance
-         * will remain unchanged (but with a `state` of {@link SubscriptionsState.Superceded}
-         * once synchronized).
-         */
-        class Subscriptions {
+        abstract class BaseSubscriptions {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
             /**
@@ -745,7 +729,25 @@ declare namespace Realm {
              * representing why the subscription set is in an error state. `null` if there is no error.
              */
             readonly error: Realm.SyncError | null;
+        }
 
+        /**
+         * A class representing the set of all active Flexible Sync subscriptions for a Realm
+         * instance.
+         *
+         * The server will continuously evaluate the queries that the instance is subscribed to
+         * and will send data that matches them, as well as remove data that no longer does.
+         *
+         * The set of subscriptions can only be updated inside a {@link Subscriptions.update} callback.
+         * Attempting to call any methods which mutate the set (e.g. {@link MutableSubscriptions.add})
+         * outside of an {@link update} callback will throw an exception.
+         *
+         * Note that a given `Subscriptions` instance is immutable – calling {@link update} returns a
+         * new `Subscriptions` instance with the updated subscription set, the original instance
+         * will remain unchanged (but with a `state` of {@link SubscriptionsState.Superceded}
+         * once synchronized).
+         */
+        class Subscriptions extends BaseSubscriptions {
             /**
              * Wait for the server to acknowledge this set of subscriptions and return the
              * matching objects.
@@ -792,7 +794,7 @@ declare namespace Realm {
          * {@link Subscriptions} instance can only be accessed from inside the {@link update} callback
          * (see {@link Subscriptions.update}), and will throw if accessed outside of this scope.
          */
-        interface MutableSubscriptions extends Subscriptions {
+        interface MutableSubscriptions extends BaseSubscriptions {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
             /**
