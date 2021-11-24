@@ -9,7 +9,7 @@ Ensure you have access to a running instance of MongoDB Realm.
 To run it locally, ensure you have Docker and your Realm AWS credentials installed and run
 
 ```
-docker run --rm -p 9090:9090 -it docker.pkg.github.com/realm/ci/mongodb-realm-test-server:latest
+docker run --rm -p 9090:9090 -it ghcr.io/realm/ci/mongodb-realm-test-server:latest
 ```
 
 ## Running the tests from Node.js
