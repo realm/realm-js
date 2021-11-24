@@ -189,6 +189,23 @@ module.exports = {
     });
   },
 
+  async testRealmInvalidSyncConfiguration3() {
+    // test if an invalid object is used as user
+    const partition = Utils.genPartition();
+    let credentials = Realm.Credentials.anonymous();
+    let app = new Realm.App(appConfig);
+
+    return new Promise((resolve, reject) => {
+      return app.logIn(credentials).then((user) => {
+        let config = getSyncConfiguration(user, partition);
+        config.sync.user = { username: "John Die" }; // this is an invalid user object
+        return Realm.open(config)
+          .then((e) => reject(JSON.stringify(e)))
+          .catch((e) => { console.log("FISK 101"); resolve() });
+      });
+    });
+  },
+
   testRealmOpen() {
     if (!isNodeProcess) {
       return;
