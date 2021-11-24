@@ -589,46 +589,94 @@ declare namespace Realm {
          */
         const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
 
-        // A single subscription
+        /**
+         * A class representing a single query subscription for Flexible Sync.
+         * This class contains readonly information about the subscription –
+         * any changes to the set of subscriptions must be carried out in a
+         * `Subscriptions.update` callback.
+         */
         class Subscription {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
-            // When the subscription was created. Recorded automatically.
+            /**
+             * The date when this subscription was created
+             */
             readonly createdAt: Date;
 
-            // When the subscription was last updated. Recorded automatically.
+            /**
+             * The date when this subscription was last updated
+             */
             readonly updatedAt: Date;
 
-            // Name of the subscription; if not specified it will return
-            // the query as a string.
-            readonly name: string;
+            /**
+             * The name given to this subscription when it was created.
+             * If no name was set, this will return null.
+             */
+            readonly name: string | null;
 
-            // The type of objects the subscription operates on.
+            /**
+             * The type of objects the subscription refers to.
+             */
             readonly objectType: string;
 
-            // The RQL representation of the query the subscription was created with.
+            /**
+             * The string representation of the query the subscription was created with.
+             * If no filter or sort was specified, this will return "TRUEPREDICATE".
+             */
             readonly queryString: string;
         }
 
+        /**
+         * Enum representing the state of a set of subscriptions.
+         */
         enum SubscriptionState {
-            Uncommitted = "uncommitted",
+            /**
+             * The subscription update has been persisted locally, but the server hasn't
+             * yet returned all the data that matched the updated subscription queries.
+             */
             Pending = "pending",
-            Bootstrapping = "bootstrapping",
+
+            /**
+             * The server has acknowledged the subscription and sent all the data that
+             * matched the subscription queries at the time the subscription set was
+             * updated. The server is now in steady-state synchronization mode where it
+             * will stream updates as they come.
+             */
             Complete = "complete",
+
+            /**
+             * The server has returned an error and synchronization is paused for this
+             * Realm. To view the actual error, use `Subscriptions.error`.
+             * You can still use `Subscriptions.update` to update the subscriptions,
+             * and if the new update doesn't trigger an error, synchronization
+             * will be restarted.
+             */
             Error = "error",
+
+            /**
+             * The subscription set has been superceded by an updated one. This typically means
+             * that someone has called `Subscriptions.update` on a different instance
+             * of the `Subscriptions`. You should not use a superseded subscription set,
+             * and instead obtain a new instance by calling `getSubscriptions()`.
+             */
             Superceded = "superceded",
         }
 
-        // Options for SubscriptionSet.add
+        /**
+         * Options for `Subscriptions.add`.
+         */
         interface SubscriptionOptions {
-            // Name of the subscription, optional.
+            /**
+             * Sets the name of the subscription being added. This allows you to later refer
+             * to the subscription by name, e.g. when calling `Subscriptions.removeByName`.
+             */
             name?: string;
 
             // Whether to update an existing subscription. If set to false, trying to
             // add a subscription with the same name but different query will throw.
             // Defaults to true if undefined.
             // Adding an identical subscription (query+name) is a no-op.
-            updateExisting?: boolean;
+            throwOnUpdate?: boolean;
         }
 
         // A collection of subscriptions. Mutating it can only happen in an update callback.

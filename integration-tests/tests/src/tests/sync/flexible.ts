@@ -99,11 +99,10 @@ describe("Flexible sync", function () {
 
       it("has a default name", function (this: RealmContext) {
         const sub = addPersonSubscription(this).sub;
-        expect(sub.name).to.equal("");
+        expect(sub.name).to.equal(null);
       });
 
       it("has a specified name", function (this: RealmContext) {
-        const sub = addPersonSubscription(this).sub;
         const subWithName = addPersonSubscription(this, { name: "test" }).sub;
         expect(subWithName.name).to.equal("test");
       });
@@ -227,11 +226,12 @@ describe("Flexible sync", function () {
         });
 
         describe("#state", function () {
-          it("is Uncommitted by default", function (this: RealmContext) {
+          it("is Pending by default", function (this: RealmContext) {
             const subs = this.realm.getSubscriptions();
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Uncommitted);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Pending);
           });
 
+          // TODO test that uncommitted/pending/bootstrapping all map to pending
           // TODO handle Superceded etc
           // TOOD do we want to duplicate tests from waitForSynchronization here?
         });
@@ -411,7 +411,7 @@ describe("Flexible sync", function () {
                 mutableSubs.add(this.realm.objects("Person"));
               });
 
-              expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Uncommitted);
+              expect(subs.state).to.equal(Realm.App.Sync.SubscriptionState.Pending);
             });
 
             it("handles multiple updates in a single batch", function (this: RealmContext) {
@@ -448,24 +448,34 @@ describe("Flexible sync", function () {
             expect(sub).is.instanceOf(Realm.App.Sync.Subscription);
           });
 
-          // TODO check if core should provide this functionality
-          describe("updateExisting", function () {
-            it("throws and does not add the subscription if a subscription with the same name but different query is added, and updateExisting is false", function (this: RealmContext) {
+          describe("#throwOnUpdate", function () {
+            it("does not throw if a subscription with the same name and same query is added, and throwOnUpdate is true", function (this: RealmContext) {
+              const query = this.realm.objects("Dog");
+              const { subs } = addSubscription(this, query, { name: "test" });
+
+              expect(() => {
+                subs.update((mutableSubs) => {
+                  mutableSubs.add(query, { name: "test", throwOnUpdate: true });
+                });
+              }).to.not.throw();
+            });
+
+            it("throws and does not add the subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", function (this: RealmContext) {
               const { subs } = addPersonSubscription(this, { name: "test" });
               const query = this.realm.objects("Dog");
 
               expect(() => {
                 subs.update((mutableSubs) => {
-                  mutableSubs.add(query, { name: "test", updateExisting: false });
+                  mutableSubs.add(query, { name: "test", throwOnUpdate: true });
                 });
               }).to.throw(
-                "A subscription with the name 'test' already exists but has a different query. If you meant to update it, remove `updateExisting: false` from the subscription options.",
+                "A subscription with the name 'test' already exists but has a different query. If you meant to update it, remove `throwOnUpdate: true` from the subscription options.",
               );
 
               expect(subs.find(query)).to.be.null;
             });
 
-            function testUpdateExistingTrue(
+            function testThrowOnUpdateFalse(
               _this: Partial<RealmContext>,
               addOptions: Realm.App.Sync.SubscriptionOptions = {},
             ) {
@@ -479,12 +489,12 @@ describe("Flexible sync", function () {
               }).to.not.throw;
             }
 
-            it("updates the existing subscription if a subscription with the same name but different query is added, and updateExisting is true", function (this: RealmContext) {
-              testUpdateExistingTrue(this, { updateExisting: true });
+            it("updates the existing subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", function (this: RealmContext) {
+              testThrowOnUpdateFalse(this, { throwOnUpdate: false });
             });
 
-            it("updates the existing subscription if a subscription with the same name but different query is added, and updateExisting is not specified", function (this: RealmContext) {
-              testUpdateExistingTrue(this);
+            it("updates the existing subscription if a subscription with the same name but different query is added, and throwOnUpdate is not specified", function (this: RealmContext) {
+              testThrowOnUpdateFalse(this);
             });
           });
         });

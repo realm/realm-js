@@ -75,7 +75,7 @@ typename T::Object SubscriptionClass<T>::create_instance(ContextType ctx, realm:
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the Subscription
- * @param return_value \ref ReturnValue wrapping an Date containing the created date
+ * @param return_value \ref ReturnValue wrapping a Date containing the created date
  */
 template <typename T>
 void SubscriptionClass<T>::get_created_at(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
@@ -89,7 +89,7 @@ void SubscriptionClass<T>::get_created_at(ContextType ctx, ObjectType this_objec
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the Subscription
- * @param return_value \ref ReturnValue wrapping an Date containing the updated date
+ * @param return_value \ref ReturnValue wrapping a Date containing the updated date
  */
 template <typename T>
 void SubscriptionClass<T>::get_updated_at(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
@@ -103,13 +103,20 @@ void SubscriptionClass<T>::get_updated_at(ContextType ctx, ObjectType this_objec
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the Subscription
- * @param return_value \ref ReturnValue wrapping an string containing the name
+ * @param return_value \ref ReturnValue wrapping a string containing the name, or null if the name is not set
  */
 template <typename T>
 void SubscriptionClass<T>::get_name(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
     auto sub = get_internal<T, SubscriptionClass<T>>(ctx, this_object);
-    return_value.set(std::string{sub->name()});
+    auto name = sub->name();
+
+    if (name == "") {
+        return_value.set_null();
+    }
+    else {
+        return_value.set(std::string{name});
+    }
 }
 
 /**
@@ -117,7 +124,7 @@ void SubscriptionClass<T>::get_name(ContextType ctx, ObjectType this_object, Ret
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the Subscription
- * @param return_value \ref ReturnValue wrapping an string containing the object type
+ * @param return_value \ref ReturnValue wrapping a string containing the object type
  */
 template <typename T>
 void SubscriptionClass<T>::get_object_type(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
@@ -131,7 +138,7 @@ void SubscriptionClass<T>::get_object_type(ContextType ctx, ObjectType this_obje
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the Subscription
- * @param return_value \ref ReturnValue wrapping an string containing the query string
+ * @param return_value \ref ReturnValue wrapping a string containing the query string
  */
 template <typename T>
 void SubscriptionClass<T>::get_query_string(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
@@ -267,13 +274,9 @@ void SubscriptionsClass<T>::get_state(ContextType ctx, ObjectType this_object, R
     auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
     switch (subs->state()) {
         case sync::SubscriptionSet::State::Uncommitted:
-            return_value.set("uncommitted");
-            break;
         case sync::SubscriptionSet::State::Pending:
-            return_value.set("pending");
-            break;
         case sync::SubscriptionSet::State::Bootstrapping:
-            return_value.set("bootstrapping");
+            return_value.set("pending");
             break;
         case sync::SubscriptionSet::State::Complete:
             return_value.set("complete");
@@ -476,7 +479,7 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
  *   Argument 1: The query to subscribe to, represented as a Results instance
  *   Argument 2: Optional object of options:
  *     - "name" (optional): sets the subscription's name
- *     - "updateExisting" (optional): if false, trying to add a subscription with the same name
+ *     - "throwOnUpdate" (optional): if true, trying to add a subscription with the same name
  *        but different query will throw
  * @param return_value \ref ReturnValue wrapping a Subscription instance for the added subscription
  * @exception std::runtime_error Thrown if the first argument is not a valid Results instance
@@ -489,7 +492,7 @@ void SubscriptionsClass<T>::add(ContextType ctx, ObjectType this_object, Argumen
     auto name_specified = false;
     std::string name;
 
-    auto update_existing = true;
+    auto throw_on_update = false;
 
     args.validate_between(1, 2);
 
@@ -507,10 +510,9 @@ void SubscriptionsClass<T>::add(ContextType ctx, ObjectType this_object, Argumen
             name_specified = true;
         }
 
-        auto update_existing_option = Object::get_property(ctx, options_arg, "updateExisting");
-        if (Value::is_boolean(ctx, update_existing_option) &&
-            Value::to_boolean(ctx, update_existing_option) == false) {
-            update_existing = false;
+        auto throw_on_update_option = Object::get_property(ctx, options_arg, "throwOnUpdate");
+        if (Value::is_boolean(ctx, throw_on_update_option)) {
+            throw_on_update = Value::to_boolean(ctx, throw_on_update_option);
         }
     }
 
@@ -522,13 +524,14 @@ void SubscriptionsClass<T>::add(ContextType ctx, ObjectType this_object, Argumen
     auto results = get_internal<T, ResultsClass<T>>(ctx, results_arg);
     auto query = results->get_query();
 
-    if (!update_existing && name_specified) {
+    if (throw_on_update && name_specified) {
         auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
-        if (subs->find(name) != subs->end()) {
-            // TODO better error messages everywhere?
+        auto existing_sub_it = subs->find(name);
+        if (existing_sub_it != subs->end() && !(existing_sub_it->query_string() == query.get_description() &&
+                                                existing_sub_it->object_class_name() == results->get_object_type())) {
             throw std::runtime_error(util::format(
                 "A subscription with the name '%1' already exists but has a different query. If you meant to update "
-                "it, remove `updateExisting: false` from the subscription options.",
+                "it, remove `throwOnUpdate: true` from the subscription options.",
                 name));
         }
     }
