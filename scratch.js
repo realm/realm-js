@@ -30,14 +30,6 @@ realm = new Realm({
 
 subs = realm.getSubscriptions();
 
-subs.update(async (m) => {
-  try {
-    await m.waitForSynchronization()
-  } catch(e) {
-    console.log('rrrrr')
-  }
-})
-
 await subs.waitForSynchronization();
 
 let sub;

@@ -174,6 +174,36 @@ describe("Flexible sync", function () {
         });
       });
 
+      describe("#snapshot", function () {
+        it("returns an array", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          expect(subs.snapshot()).to.be.instanceOf(Array);
+        });
+
+        it("returns an empty array if there are no subscriptions", function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          expect(subs.snapshot()).to.have.length(0);
+        });
+
+        it("returns an array of subscriptions", function (this: RealmContext) {
+          addPersonSubscription(this);
+          const { subs } = addSubscription(this, this.realm.objects("Person").filtered("age > 10"));
+
+          expect(subs.snapshot()).to.have.length(2);
+          expect(subs.snapshot().every((s) => s instanceof Realm.App.Sync.Subscription)).to.be.true;
+        });
+
+        it("is an immutable snapshot of the subscriptions when snapshot was called", function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this);
+          const snapshot = subs.snapshot();
+          expect(snapshot).to.have.length(1);
+
+          addSubscription(this, this.realm.objects("Person").filtered("age > 10"));
+
+          expect(snapshot).to.have.length(1);
+        });
+      });
+
       describe("#findByName", function () {
         it("returns null if the named subscription does not exist", function (this: RealmContext) {
           expect(this.realm.getSubscriptions().findByName("test")).to.be.null;
@@ -484,18 +514,52 @@ describe("Flexible sync", function () {
         });
       });
 
-      // TODO test `snapshot`
-
       describe("#add", function () {
-        // Behaviour is mostly tested in #find and #findByName - TODO should we retest?
-
         it("returns a subscription object", function (this: RealmContext) {
           const { sub } = addPersonSubscription(this);
           expect(sub).is.instanceOf(Realm.App.Sync.Subscription);
         });
 
+        it("does not add a second identical subscription with no name", function (this: RealmContext) {
+          addPersonSubscription(this);
+          const { subs } = addPersonSubscription(this);
+
+          expect(subs.snapshot()).to.have.lengthOf(1);
+        });
+
+        it("does add a second identical subscription with a different name", function (this: RealmContext) {
+          addPersonSubscription(this, { name: "test1" });
+          const { subs } = addPersonSubscription(this, { name: "test2" });
+
+          expect(subs.snapshot()).to.have.lengthOf(2);
+          expect(subs.snapshot()[0].name).to.equal("test1");
+          expect(subs.snapshot()[1].name).to.equal("test2");
+        });
+
+        it("does not add a second identical subscription with the same name", function (this: RealmContext) {
+          addPersonSubscription(this, { name: "test" });
+          const { subs } = addPersonSubscription(this, { name: "test" });
+
+          expect(subs.snapshot()).to.have.lengthOf(1);
+        });
+
+        it("adds a second subscription with the same object type and a different filter", function (this: RealmContext) {
+          addSubscription(this, this.realm.objects("Person"));
+          const { subs } = addSubscription(this, this.realm.objects("Person").filtered("age > 10"));
+
+          expect(subs.snapshot()).to.have.lengthOf(2);
+        });
+
+        it("updates an existing subscription with the same name and different query", function (this: RealmContext) {
+          addSubscription(this, this.realm.objects("Person"), { name: "test" });
+          const { subs } = addSubscription(this, this.realm.objects("Person").filtered("age > 10"), { name: "test" });
+
+          expect(subs.snapshot()).to.have.lengthOf(1);
+          expect(subs.snapshot()[0].queryString).to.equal("age > 10");
+        });
+
         describe("#throwOnUpdate", function () {
-          it("does not throw if a subscription with the same name and same query is added, and throwOnUpdate is true", function (this: RealmContext) {
+          it("does not throw and does not add a new subscription if a subscription with the same name and same query is added, and throwOnUpdate is true", function (this: RealmContext) {
             const query = this.realm.objects("Dog");
             const { subs } = addSubscription(this, query, { name: "test" });
 
@@ -504,6 +568,8 @@ describe("Flexible sync", function () {
                 mutableSubs.add(query, { name: "test", throwOnUpdate: true });
               });
             }).to.not.throw();
+
+            expect(this.realm.getSubscriptions().snapshot()).to.have.lengthOf(1);
           });
 
           it("throws and does not add the subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", function (this: RealmContext) {
@@ -535,11 +601,11 @@ describe("Flexible sync", function () {
             }).to.not.throw;
           }
 
-          it("updates the existing subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", function (this: RealmContext) {
+          it("does not throw, and updates the existing subscription, if a subscription with the same name but different query is added, and throwOnUpdate is true", function (this: RealmContext) {
             testThrowOnUpdateFalse(this, { throwOnUpdate: false });
           });
 
-          it("updates the existing subscription if a subscription with the same name but different query is added, and throwOnUpdate is not specified", function (this: RealmContext) {
+          it("does not throw, and updates the existing subscription, if a subscription with the same name but different query is added, and throwOnUpdate is not specified", function (this: RealmContext) {
             testThrowOnUpdateFalse(this);
           });
         });
