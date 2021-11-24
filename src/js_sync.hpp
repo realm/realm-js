@@ -171,9 +171,9 @@ private:
 };
 
 template <typename T>
-class ClientResyncBeforeFunctor {
+class ClientResetBeforeFunctor {
   public:
-    ClientResyncBeforeFunctor(typename T::Context ctx, typename T::Function before_func)
+    ClientResetBeforeFunctor(typename T::Context ctx, typename T::Function before_func)
         : m_ctx(Context<T>::get_global_context(ctx))
         , m_func(ctx, before_func)
     { }
@@ -198,9 +198,9 @@ class ClientResyncBeforeFunctor {
 };
 
 template <typename T>
-class ClientResyncAfterFunctor {
+class ClientResetAfterFunctor {
   public:
-    ClientResyncAfterFunctor(typename T::Context ctx, typename T::Function after_func)
+    ClientResetAfterFunctor(typename T::Context ctx, typename T::Function after_func)
         : m_ctx(Context<T>::get_global_context(ctx))
         , m_func(ctx, after_func)
     { }
@@ -976,42 +976,42 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         // Client reset
         //
         // i)  manual: the error handler is called with the proper error code and a client reset is initiated
-        // ii) seamless: the sync client handles it but notifications are send before and after
+        // ii) discardLocal: the sync client handles it but notifications are send before and after
         //
         // The default setting is manual
 
-        const std::string client_resync_manual = "manual";
-        const std::string client_resync_discard_local = "discardLocal";
+        const std::string client_reset_manual = "manual";
+        const std::string client_reset_discard_local = "discardLocal";
         config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
-        ValueType client_resync_value = Object::get_property(ctx, sync_config_object, "clientReset");
-        if (!Value::is_undefined(ctx, client_resync_value)) {
-          auto client_resync_object = Value::validated_to_object(ctx, client_resync_value);
-          ValueType client_resync_mode_value = Object::get_property(ctx, client_resync_object, "mode");
-          if (!Value::is_undefined(ctx, client_resync_mode_value)) {
-            std::string client_resync_mode = Value::validated_to_string(ctx, client_resync_mode_value, "mode");
-            if (client_resync_mode == client_resync_manual) {
+        ValueType client_reset_value = Object::get_property(ctx, sync_config_object, "clientReset");
+        if (!Value::is_undefined(ctx, client_reset_value)) {
+          auto client_reset_object = Value::validated_to_object(ctx, client_reset_value);
+          ValueType client_reset_mode_value = Object::get_property(ctx, client_reset_object, "mode");
+          if (!Value::is_undefined(ctx, client_reset_mode_value)) {
+            std::string client_reset_mode = Value::validated_to_string(ctx, client_reset_mode_value, "mode");
+            if (client_reset_mode == client_reset_manual) {
               config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
             }
-            else if (client_resync_mode == client_resync_discard_local) {
+            else if (client_reset_mode == client_reset_discard_local) {
               config.sync_config->client_resync_mode = realm::ClientResyncMode::DiscardLocal;
             }
             else {
                 throw std::invalid_argument("Unknown argument for clientReset.mode");
             }
 
-            std::function<void(SharedRealm local, SharedRealm remote)> client_resync_before_handler;
-            ValueType client_resync_before_value = Object::get_property(ctx, client_resync_object, "clientResyncBefore");
-            if (!Value::is_undefined(ctx, client_resync_before_value)) {
-                client_resync_before_handler = util::EventLoopDispatcher<void(SharedRealm, SharedRealm)>(ClientResyncBeforeFunctor<T>(ctx, Value::validated_to_function(ctx, client_resync_before_value)));
+            std::function<void(SharedRealm local, SharedRealm remote)> client_reset_before_handler;
+            ValueType client_reset_before_value = Object::get_property(ctx, client_reset_object, "clientResetBefore");
+            if (!Value::is_undefined(ctx, client_reset_before_value)) {
+                client_reset_before_handler = util::EventLoopDispatcher<void(SharedRealm, SharedRealm)>(ClientResetBeforeFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_before_value)));
             }
-            config.sync_config->notify_before_client_reset = std::move(client_resync_before_handler);
+            config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
 
-            std::function<void(SharedRealm local)> client_resync_after_handler;
-            ValueType client_resync_after_value = Object::get_property(ctx, client_resync_object, "clientResyncAfter");
-            if (!Value::is_undefined(ctx, client_resync_after_value)) {
-                client_resync_after_handler = util::EventLoopDispatcher<void(SharedRealm)>(ClientResyncAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_resync_after_value)));
+            std::function<void(SharedRealm local)> client_reset_after_handler;
+            ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "clientResetAfter");
+            if (!Value::is_undefined(ctx, client_reset_after_value)) {
+                client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm)>(ClientResetAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_after_value)));
             }
-            config.sync_config->notify_after_client_reset = std::move(client_resync_after_handler);
+            config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
           }
         }
 

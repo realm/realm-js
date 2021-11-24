@@ -375,7 +375,7 @@ module.exports = {
         const session = realm.syncSession;
 
         TestCase.assertEqual(session.config.error, config.sync.error);
-        session._simulateError(123, "simulated error");
+        session._simulateError(123, "simulated error", "realm::sync::ProtocolError", false);
       });
     });
   },
@@ -581,11 +581,11 @@ module.exports = {
         const config = getSyncConfiguration(user, partition);
         config.sync.clientReset = {
           mode: "discardLocal",
-          clientResyncBefore: (localRealm, remoteRealm) => {
-            reject("clientResyncBefore");
+          clientResetBefore: (localRealm, remoteRealm) => {
+            reject("clientResetBefore");
           },
-          clientResyncAfter: (localRealm) => {
-            reject("clientResyncAfter");
+          clientResetAfter: (localRealm) => {
+            reject("clientResetAfter");
           },
         };
         config.sync.error = (sender, error) => {
@@ -620,13 +620,13 @@ module.exports = {
         const config = getSyncConfiguration(user, partition);
         config.sync.clientReset = {
           mode: "discardLocal",
-          clientResyncBefore: (localRealm, remoteRealm) => {
+          clientResetBefore: (localRealm, remoteRealm) => {
             beforeCalled = true;
             TestCase.assertEqual(localRealm.objects("Dog").length, 1, "local");
             TestCase.assertEqual(remoteRealm.objects("Dog").length, 1, "remote");
             TestCase.assertNotEqual(remoteRealm.path, localRealm.path);
           },
-          clientResyncAfter: (localRealm) => {
+          clientResetAfter: (localRealm) => {
             afterCalled = true;
             TestCase.assertEqual(localRealm.objects("Dog").length, 1, "local");
           },
