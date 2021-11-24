@@ -24,6 +24,7 @@ on:
   push:
     branches:
       - master
+      - hermes
 
 jobs:
   node:
