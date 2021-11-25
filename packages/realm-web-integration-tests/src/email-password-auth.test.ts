@@ -50,7 +50,7 @@ describe("EmailPasswordAuth", () => {
     } catch (err) {
       // We expect this to throw, since we're feading in an invalid token
       expect(err).instanceOf(MongoDBRealmError);
-      expect(err.error).equals("invalid token data");
+      expect((err as MongoDBRealmError).error).equals("invalid token data");
     }
   });
 
@@ -69,7 +69,7 @@ describe("EmailPasswordAuth", () => {
     } catch (err) {
       // We expect this to throw, since users are automatically confirmed with this app configuration
       expect(err).instanceOf(MongoDBRealmError);
-      expect(err.error).equals("already confirmed");
+      expect((err as MongoDBRealmError).error).equals("already confirmed");
     }
   });
 
@@ -89,7 +89,9 @@ describe("EmailPasswordAuth", () => {
       // We expect this to throw, since the app does not currently have custom confirmation enabled
       // TODO:  import an app with custom confirmation enabled
       expect(err).instanceOf(MongoDBRealmError);
-      expect(err.error).equals(`cannot run confirmation for ${email}: automatic confirmation is enabled`);
+      expect((err as MongoDBRealmError).error).equals(
+        `cannot run confirmation for ${email}: automatic confirmation is enabled`,
+      );
     }
   });
 
@@ -108,7 +110,7 @@ describe("EmailPasswordAuth", () => {
     } catch (err) {
       // We expect this to throw, since password resets via email is disabled with this app configuration
       expect(err).instanceOf(MongoDBRealmError);
-      expect(err.error).equals("please use reset password via function");
+      expect((err as MongoDBRealmError).error).equals("please use reset password via function");
     }
   });
 
@@ -127,7 +129,7 @@ describe("EmailPasswordAuth", () => {
     } catch (err) {
       // We expect this to throw, since password resets via functions fail with this app configuration
       expect(err).instanceOf(MongoDBRealmError);
-      expect(err.error).equals(`failed to reset password for user ${email}`);
+      expect((err as MongoDBRealmError).error).equals(`failed to reset password for user ${email}`);
     }
   });
 });
