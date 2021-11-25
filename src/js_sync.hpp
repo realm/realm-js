@@ -881,6 +881,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         ObjectType user_object = Object::validated_get_object(ctx, sync_config_object, "user");
+        if (!(Object::template is_instance<UserClass<T>>(ctx, user_object))) {
+            throw std::invalid_argument("Option 'user' is not a Realm.User object.");
+        }
         SharedUser user = *get_internal<T, UserClass<T>>(ctx, user_object);
         if (user->state() != SyncUser::State::LoggedIn) {
             throw std::runtime_error("User is no longer valid.");

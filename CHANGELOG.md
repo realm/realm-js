@@ -4,9 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
-
+* If the option `user` in a sync configuration was not a `Realm.User` object could lead to a crash. ([#1348](https://github.com/realm/realm-js/issues/1348), since v10.0.0)
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
