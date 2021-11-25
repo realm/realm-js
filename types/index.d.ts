@@ -115,6 +115,7 @@ declare namespace Realm {
 
     interface BaseSyncConfiguration {
         user: User;
+        flexible?: boolean | undefined;
         customHttpHeaders?: { [header: string]: string };
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
@@ -124,12 +125,11 @@ declare namespace Realm {
     }
 
     interface FlexibleSyncConfiguration extends BaseSyncConfiguration {
-        // This isn't quite right as this matches flexible: false too, can't work out how to do it properly
-        flexible: boolean;
+        flexible: true;
     }
 
     interface PartitionSyncConfiguration extends BaseSyncConfiguration {
-        flexible?: never;
+        flexible?: false | undefined;
         partitionValue: Realm.App.Sync.PartitionValue;
     }
 
