@@ -28,8 +28,7 @@
     "node-fetch": "^2.6.1",
     "realm": "*",
     "realm-app-importer": "*",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.2.4"
+    "ts-node": "^10.4.0"
   },
   "dependencies": {
     "chai": "^4.2.0",

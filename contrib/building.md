@@ -13,7 +13,9 @@
             * [ccache](#ccache)
    * [Cloning the repository](#cloning-the-repository)
       * [Cloning the repository on Windows](#cloning-the-repository-on-windows)
-      * [Visual Studio Code setup for C++](#visual-studio-code-setup-for-c)
+      * [Visual Studio Code setup](#visual-studio-code-setup)
+         * [TypeScript](#typescript)
+         * [C++](#c)
    * [Building Realm JS](#building-realm-js-1)
       * [Building for iOS](#building-for-ios)
       * [Building for Android](#building-for-android)
@@ -26,7 +28,7 @@
       * [Legacy tests](#legacy-tests)
       * [Linting the source code](#linting-the-source-code)
          * [JS](#js)
-         * [C++](#c)
+         * [C++](#c-1)
          * [Testing on Windows](#testing-on-windows)
          * [Node version setup](#node-version-setup)
    * [Debugging the tests](#debugging-the-tests)
@@ -35,7 +37,7 @@
       * [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
    * [Testing against real apps](#testing-against-real-apps)
 
-<!-- Added by: tom.duncalf, at: Tue 23 Nov 2021 10:03:05 GMT -->
+<!-- Added by: tom.duncalf, at: Thu 25 Nov 2021 12:07:16 GMT -->
 
 <!--te-->
 
@@ -173,7 +175,20 @@ mklink /j assets "../../../../../data"
 
 Note: If you have cloned the repo previously make sure you remove your `node_modules` directory since it may contain stale dependencies which may cause the build to fail.
 
-### Visual Studio Code setup for C++
+### Visual Studio Code setup
+
+Visual Studio Code is the recommended editor for the best experience working with the Realm JS codebase.
+
+#### TypeScript
+
+You should check that VS Code is using the workspace version of TypeScript rather than the VS Code version. This should be automatically configured but does not always seem to take effect. You can do this by:
+
+1. Open the `realm-js` root directory in VS Code and open any TypeScript file
+2. Press Shift+Cmd+P to open the command palette
+3. Start typing `select typescript version` to select the `TypeScript: Select TypeScript Version` command
+4. Ensure `Use Workspace Version` is elected.
+
+#### C++
 
 If you are using Visual Studio Code as your editor, you can get greatly improved C++ Intellisense by installing the [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension, which should be recommended by VS Code when you open the repository. This should prompt you to disable the built in C++ extensions Intellisense, but if not you should do this in Settings, searching for `cpp intellisense`.
 
