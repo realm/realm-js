@@ -31,7 +31,7 @@ async function startServer() {
       "--name",
       "mongodb-realm-test-server",
       "--publish=9090:9090",
-      `docker.pkg.github.com/realm/ci/mongodb-realm-test-server:${IMAGE_TAG}`,
+      `ghcr.io/realm/ci/mongodb-realm-test-server:${IMAGE_TAG}`,
     ],
     { stdio: ["ignore", "pipe", "inherit"] },
   );
