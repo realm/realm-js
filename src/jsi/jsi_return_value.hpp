@@ -107,11 +107,17 @@ public:
     {
         m_value = fbjsi::Value::undefined();
     }
-    else
+
+    template <typename T>
+    void set(util::Optional<T> value)
     {
-        set_undefined();
+        if (value) {
+            set(std::move(*value));
+        }
+        else {
+            set_undefined();
+        }
     }
-}
 };
 
 } // namespace js
