@@ -532,7 +532,7 @@ describe("Flexible sync", function () {
             mutableSubs.add(this.realm.objects("Person").filtered("age < 10"));
           });
 
-          const newNewSubs = newSubs.update((mutableSubs)=>{
+          const newNewSubs = newSubs.update((mutableSubs) => {
             mutableSubs.add(this.realm.objects("Person").filtered("age > 20"));
             mutableSubs.add(this.realm.objects("Dog").filtered("age > 30"));
           });
@@ -561,8 +561,9 @@ describe("Flexible sync", function () {
 
           await newSubs.waitForSynchronization();
 
-          expect(newSubs.snapshot()).to.have.length(1)
-          expect(newSubs.snapshot()[0].queryString).to.equal("TRUEPREDICATE")
+          expect(newSubs.snapshot()).to.have.length(1);
+          expect(newSubs.snapshot()[0].queryString).to.equal("TRUEPREDICATE");
+        });
       });
 
       describe("#add", function () {
