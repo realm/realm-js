@@ -51,6 +51,32 @@ describe("Flexible sync", function () {
       return { subs, sub, query };
     }
 
+    describe("config", function () {
+      it("accepts a { flexible: true } option", function () {
+        expect(() => {
+          new Realm({ sync: { flexible: true, user: this.user } });
+        }).to.not.throw();
+      });
+
+      it("does not accept { flexible: true } and a partition value", function () {
+        expect(() => {
+          new (Realm as any)({ sync: { flexible: true, user: this.user, partitionValue: "test" } });
+        }).to.throw("'partitionValue' cannot be specified when flexible sync is enabled");
+      });
+
+      it("accepts { flexible: false } and a partition value", function () {
+        expect(() => {
+          new Realm({ sync: { flexible: false, user: this.user, partitionValue: "test" } });
+        }).to.not.throw();
+      });
+
+      it("accepts { flexible: undefined } and a partition value", function () {
+        expect(() => {
+          new Realm({ sync: { flexible: undefined, user: this.user, partitionValue: "test" } });
+        }).to.not.throw();
+      });
+    });
+
     describe("Realm.getSubscriptions()", function () {
       it("returns a Subscriptions instance", function (this: RealmContext) {
         expect(this.realm.getSubscriptions()).to.be.instanceOf(Realm.App.Sync.Subscriptions);

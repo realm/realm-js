@@ -39,6 +39,7 @@
 #include <realm/util/logger.hpp>
 #include <realm/util/uri.hpp>
 #include <realm/util/network.hpp>
+#include <stdexcept>
 
 #if REALM_PLATFORM_NODE
 #include <realm/object-store/impl/realm_coordinator.hpp>
@@ -893,6 +894,10 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         ValueType flexible_value = Object::get_property(ctx, sync_config_object, "flexible");
         if (Value::is_boolean(ctx, flexible_value) && Value::to_boolean(ctx, flexible_value)) {
+            if (!Value::is_undefined(ctx, Object::get_property(ctx, sync_config_object, "partitionValue"))) {
+                throw std::runtime_error("'partitionValue' cannot be specified when flexible sync is enabled");
+            }
+
             // TODO hack to remove when flexible sync config exists
             std::string pv = "test";
             auto partition_bson = bson::Bson(pv);
