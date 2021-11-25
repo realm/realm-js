@@ -189,12 +189,12 @@ Consider adding `--no-clean` to prevent the CocoaPods CLI from deleting the temp
 
 ### How To: Login to the GitHub docker container registry
 
-Testing against the MongoDB Realm server locally requires that you have access to the MongoDB Realm docker image (`docker.pkg.github.com/realm/ci/mongodb-realm-test-server`). To provide your local docker deamon with the credentials necessary to pull the image, you must first authenticate using you GitHub username and an API token.
+Testing against the MongoDB Realm server locally requires that you have access to the MongoDB Realm docker image (`ghcr.io/realm/ci/mongodb-realm-test-server`). To provide your local docker deamon with the credentials necessary to pull the image, you must first authenticate using you GitHub username and an API token.
 
 First navigate to https://github.com/settings/tokens to generate a token - it just needs the `read:packages` scope.
 
 Then run the following to log into the GitHub container registry, entering your GitHub username and the API token that you've just created as password.
 
 ```
-docker login docker.pkg.github.com
+docker login ghcr.io
 ```
