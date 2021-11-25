@@ -185,7 +185,7 @@ describe("Flexible sync", function () {
           expect(subs.snapshot()).to.have.length(0);
         });
 
-        it("returns an array of subscriptions", function (this: RealmContext) {
+        it("returns an array of Subscription objects", function (this: RealmContext) {
           addPersonSubscription(this);
           const { subs } = addSubscription(this, this.realm.objects("Person").filtered("age > 10"));
 
@@ -262,6 +262,21 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
         });
 
+        it("is Complete once synchronisation is complete", async function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          await subs.waitForSynchronization();
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+        });
+
+        it("is Error if there is an error during synchronisation", async function (this: RealmContext) {
+          const subs = this.realm.getSubscriptions();
+          // TODO simulate error
+          await subs.waitForSynchronization();
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+        });
+
         xit("is Superceeded after an update is synchronised", async function (this: RealmContext) {
           const subs = this.realm.getSubscriptions();
 
@@ -271,9 +286,7 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Superceded);
         });
 
-        // TODO test that uncommitted/pending/bootstrapping all map to pending
         // TODO can you call waitForSync on a superceeded set?
-        // TOOD do we want to duplicate tests from waitForSynchronization here?
       });
 
       describe("#error", function () {
@@ -367,8 +380,6 @@ describe("Flexible sync", function () {
       });
 
       describe("#update", function () {
-        // TODO handle rollback?
-
         describe("calling mutating methods outside an update callback", function () {
           it("throws an error if Subscriptions.add is called outside of an update() callback", function (this: RealmContext) {
             const subs = this.realm.getSubscriptions();
@@ -512,6 +523,46 @@ describe("Flexible sync", function () {
           expect(newSubs.snapshot()[2].queryString).to.equal("age > 30");
           expect(newSubs.snapshot()[2].objectType).to.equal("Dog");
         });
+
+        it("handles multiple updates in multiple batches", function (this: RealmContext) {
+          const { subs, query } = addPersonSubscription(this);
+
+          const newSubs = subs.update((mutableSubs) => {
+            mutableSubs.remove(query);
+            mutableSubs.add(this.realm.objects("Person").filtered("age < 10"));
+          });
+
+          const newNewSubs = newSubs.update((mutableSubs)=>{
+            mutableSubs.add(this.realm.objects("Person").filtered("age > 20"));
+            mutableSubs.add(this.realm.objects("Dog").filtered("age > 30"));
+          });
+
+          expect(newNewSubs.snapshot()).to.have.length(3);
+
+          expect(newNewSubs.snapshot()[0].queryString).to.equal("age < 10");
+          expect(newNewSubs.snapshot()[0].objectType).to.equal("Person");
+
+          expect(newNewSubs.snapshot()[1].queryString).to.equal("age > 20");
+          expect(newNewSubs.snapshot()[1].objectType).to.equal("Person");
+
+          expect(newNewSubs.snapshot()[2].queryString).to.equal("age > 30");
+          expect(newNewSubs.snapshot()[2].objectType).to.equal("Dog");
+        });
+
+        xit("does not apply any updates in a batch if one errors", function (this: RealmContext) {
+          const { subs } = addPersonSubscription(this);
+
+          const newSubs = subs.update((mutableSubs) => {
+            mutableSubs.add(this.realm.objects("Person").filtered("age < 10"));
+            // TODO simulate error
+            mutableSubs.add(this.realm.objects("Person").filtered("error > 20"));
+            mutableSubs.add(this.realm.objects("Dog").filtered("age > 30"));
+          });
+
+          await newSubs.waitForSynchronization();
+
+          expect(newSubs.snapshot()).to.have.length(1)
+          expect(newSubs.snapshot()[0].queryString).to.equal("TRUEPREDICATE")
       });
 
       describe("#add", function () {
