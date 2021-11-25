@@ -58,6 +58,6 @@ extern "C" void realm_hermes_invalidate_caches()
     // Ensure all registered invalidators get notified that the runtime is going away.
     realm::js::Context<realmjsi::Types>::invalidate();
 }
-} // namespace realm::js::hermes
+} // namespace realm::js::jsi
 
 // TODO hook up as TurboModule
