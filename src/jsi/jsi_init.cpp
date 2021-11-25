@@ -49,7 +49,6 @@ extern "C" void realm_jsi_invalidate_caches()
     // Ensure all registered invalidators get notified that the runtime is going away.
     realm::js::Context<realm::js::realmjsi::Types>::invalidate();
 }
-}
 extern "C" void realm_hermes_invalidate_caches()
 {
     // Close all cached Realms
@@ -57,7 +56,7 @@ extern "C" void realm_hermes_invalidate_caches()
     // Clear the Object Store App cache, to prevent instances from using a context that was released
     realm::app::App::clear_cached_apps();
     // Ensure all registered invalidators get notified that the runtime is going away.
-    realm::js::Context<realm::js::hermes::Types>::invalidate();
+    realm::js::Context<realmjsi::Types>::invalidate();
 }
 } // namespace realm::js::hermes
 
