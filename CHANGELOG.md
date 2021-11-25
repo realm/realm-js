@@ -1,4 +1,4 @@
-10.20.0-alpha.2 Release notes (2021-??-??)
+10.20.0-alpha.2 Release notes (2021-11-25)
 =============================================================
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
 NOTE: This is an early (alpha) release with Hermes/JSI support: We expect crashes and bugs.
