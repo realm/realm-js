@@ -15,7 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Add `.clang-format` file for formatting C++ code, formatted all existing code and added a lint check for C++.
-* Upgraded `react-native-deprecated-listview` from v0.0.6 to v0.0.7. The listview component is scheduled to be removed at next major version. ([#3977](https://github.com/realm/realm-js/issues/3977))
+* Upgraded `deprecated-react-native-listview` from v0.0.6 to v0.0.7. The listview component is scheduled to be removed at next major version. ([#3977](https://github.com/realm/realm-js/issues/3977))
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
