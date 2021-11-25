@@ -1465,6 +1465,7 @@ void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, A
                                       ReturnValue& return_value)
 {
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
+    // TODO check if sync config is flexible
     return_value.set(SubscriptionsClass<T>::create_instance(ctx, realm->get_active_subscription_set()));
 }
 

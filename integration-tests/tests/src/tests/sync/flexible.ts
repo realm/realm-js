@@ -56,6 +56,18 @@ describe("Flexible sync", function () {
         expect(this.realm.getSubscriptions()).to.be.instanceOf(Realm.App.Sync.Subscriptions);
       });
 
+      // Waiting on core to have ability to check if sync config is flexible
+      xit("throws an error if the Realm does not have a sync config", function (this: RealmContext) {
+        const realm = new Realm({ schema: [PersonSchema] });
+        expect(realm.getSubscriptions()).to.throw("xxx");
+      });
+
+      xit("throws an error if the Realm has a partition based sync config", function (this: RealmContext) {
+        const realm = new Realm({ schema: [PersonSchema], sync: { user: this.user, partitionValue: "test" } });
+        expect(realm.getSubscriptions()).to.throw("xxx");
+      });
+
+      // TODO are these tests a bit redundant?
       it("returns the correct queries when multiple queries are added in a single update call", function (this: RealmContext) {
         let sub1: Realm.App.Sync.Subscription;
         let sub2: Realm.App.Sync.Subscription;
@@ -549,7 +561,7 @@ describe("Flexible sync", function () {
           expect(newNewSubs.snapshot()[2].objectType).to.equal("Dog");
         });
 
-        xit("does not apply any updates in a batch if one errors", function (this: RealmContext) {
+        xit("does not apply any updates in a batch if one errors", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
 
           const newSubs = subs.update((mutableSubs) => {
