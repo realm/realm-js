@@ -17,7 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Add `.clang-format` file for formatting C++ code, formatted all existing code and added a lint check for C++.
 * Updated Docker URL to new canonical URL of `ghcr.io`
 * Excluding the `react-native/android/build` directory from the NPM package.
-* Removed the `examples/ReactExample` app.
+* Removed the `examples/ReactExample` app. See [FindOurDevices](https://github.com/realm/FindOurDevices) for a modern example app.
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
