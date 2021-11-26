@@ -134,7 +134,7 @@ declare namespace Realm {
         ssl?: SSLConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
         error?: ErrorCallback;
-        clientReset: ClientResetConfiguration;
+        clientReset?: ClientResetConfiguration;
     }
 
     interface BaseConfiguration {
