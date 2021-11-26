@@ -18,6 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Updated Docker URL to new canonical URL of `ghcr.io`
 * Excluding the `react-native/android/build` directory from the NPM package.
 * Removed the `examples/ReactExample` app. See [FindOurDevices](https://github.com/realm/FindOurDevices) for a modern example app.
+* Removed undocumented, outdated and unused `ListView` component exported via `realm/react-native`. See [@realm.io/react](https://www.npmjs.com/package/@realm.io/react) for a modern integration with React.
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
