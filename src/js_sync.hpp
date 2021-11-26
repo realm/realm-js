@@ -59,6 +59,9 @@ extern jclass ssl_helper_class;
 namespace realm {
 namespace js {
 
+template <typename T>
+class RealmClass;
+
 // simple utility method
 template <typename T>
 static std::string partition_value_bson_to_string(typename T::Context ctx, typename T::Value partition_value_value)
