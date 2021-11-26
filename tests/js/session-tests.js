@@ -189,7 +189,7 @@ module.exports = {
     });
   },
 
-  async testRealmInvalidSyncConfiguration3() {
+  async testRealmInvalidSyncUser() {
     // test if an invalid object is used as user
     const partition = Utils.genPartition();
     let credentials = Realm.Credentials.anonymous();
@@ -197,12 +197,9 @@ module.exports = {
     let user = app.logIn(credentials);
     let config = getSyncConfiguration(user, partition);
     config.sync.user = { username: "John Doe" }; // this is an invalid user object
-    try {
+    TestCase.assertThrowsAsyncContaining(async () => {
       await Realm.open(config);
-      Promise.reject();
-    } catch (_) {
-      Promise.resolve();
-    }
+    }, "Option 'user' is not a Realm.User object.");
   },
 
   testRealmOpen() {
