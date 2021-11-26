@@ -651,7 +651,6 @@ module.exports = {
     });
   },
 
-
   testAddConnectionNotification() {
     const partition = Utils.genPartition();
     let app = new Realm.App(appConfig);
