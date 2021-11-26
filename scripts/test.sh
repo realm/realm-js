@@ -327,26 +327,6 @@ case "$TARGET" in
   catalystTest ReactTestApp
   stop_server
   ;;
-"react-example")
-  npm ci --ignore-scripts
-  npm run check-environment
-
-  echo "building iOS binaries"
-  ./scripts/build-ios.sh -c $CONFIGURATION simulator
-
-  set_nvm_default
-
-  pushd examples/ReactExample
-  npm ci
-  npm run install-local
-  open_chrome
-  start_packager
-
-  pushd ios
-  pod install
-  xctest ReactExample
-  popd
-  ;;
 "start-server")
   RUN_STITCH_IN_FORGROUND=true
   start_server
@@ -455,7 +435,7 @@ case "$TARGET" in
   ;;
 "all")
   # Run all tests that must pass before publishing.
-  for test in license-check react-example react-tests-android react-tests; do
+  for test in license-check react-tests-android react-tests; do
     for configuration in Debug Release; do
       echo "RUNNING TEST: $test ($configuration)"
       echo '----------------------------------------'
