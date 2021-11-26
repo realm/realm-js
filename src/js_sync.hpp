@@ -171,11 +171,11 @@ private:
 };
 
 template <typename T>
-class ClientResetBeforeFunctor {
+class ClientResetAfterFunctor {
 public:
-    ClientResetBeforeFunctor(typename T::Context ctx, typename T::Function before_func)
+    ClientResetAfterFunctor(typename T::Context ctx, typename T::Function after_func)
         : m_ctx(Context<T>::get_global_context(ctx))
-        , m_func(ctx, before_func)
+        , m_func(ctx, after_func)
     {
     }
 
@@ -203,11 +203,11 @@ private:
 };
 
 template <typename T>
-class ClientResetAfterFunctor {
+class ClientResetBeforeFunctor {
 public:
-    ClientResetAfterFunctor(typename T::Context ctx, typename T::Function after_func)
+    ClientResetBeforeFunctor(typename T::Context ctx, typename T::Function before_func)
         : m_ctx(Context<T>::get_global_context(ctx))
-        , m_func(ctx, after_func)
+        , m_func(ctx, before_func)
     {
     }
 
@@ -1011,21 +1011,21 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                     throw std::invalid_argument("Unknown argument for clientReset.mode");
                 }
 
-                std::function<void(SharedRealm local, SharedRealm remote)> client_reset_before_handler;
+                std::function<void(SharedRealm)> client_reset_before_handler;
                 ValueType client_reset_before_value =
                     Object::get_property(ctx, client_reset_object, "clientResetBefore");
                 if (!Value::is_undefined(ctx, client_reset_before_value)) {
                     client_reset_before_handler =
-                        util::EventLoopDispatcher<void(SharedRealm, SharedRealm)>(ClientResetBeforeFunctor<T>(
+                        util::EventLoopDispatcher<void(SharedRealm)>(ClientResetBeforeFunctor<T>(
                             ctx, Value::validated_to_function(ctx, client_reset_before_value)));
                 }
                 config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
 
-                std::function<void(SharedRealm local)> client_reset_after_handler;
+                std::function<void(SharedRealm, SharedRealm)> client_reset_after_handler;
                 ValueType client_reset_after_value =
                     Object::get_property(ctx, client_reset_object, "clientResetAfter");
                 if (!Value::is_undefined(ctx, client_reset_after_value)) {
-                    client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm)>(
+                    client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, SharedRealm)>(
                         ClientResetAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_after_value)));
                 }
                 config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);

@@ -118,8 +118,8 @@ declare namespace Realm {
         DiscardLocal = "discardLocal",
     }
 
-    type ClientResetBeforeCallback = (localRealm: Realm, remoteRealm: Realm) => void;
-    type ClientResetAfterCallback = (localRealm: Realm) => void;
+    type ClientResetBeforeCallback = (localRealm: Realm) => void;
+    type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
     interface ClientResetConfiguration {
         mode: ClientResetMode;
         clientResetBefore?: ClientResetBeforeCallback;
