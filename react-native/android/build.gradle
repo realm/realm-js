@@ -70,7 +70,7 @@ apply from: 'analytics.gradle'
 import groovy.json.JsonSlurper
 
 def getPackageVersion() {
-    def inputFile = new File(buildscript.sourceFile.getParent() + "/../package.json")
+    def inputFile = new File(buildscript.sourceFile.getParent() + "/../../package.json")
     def packageJson = new JsonSlurper().parseText(inputFile.text)
     return packageJson["version"]
 }
