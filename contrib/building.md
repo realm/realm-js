@@ -1,6 +1,6 @@
 # Building Realm JS
 
-<!-- TOC generated with https://github.com/ekalinin/github-markdown-toc: gh-md-toc --insert --no-backup contrib/building.md -->
+<!-- TOC generated with https://github.com/ekalinin/github-markdown-toc: gh-md-toc --insert --no-backup --hide-footer contrib/building.md -->
 
 <!--ts-->
 * [Building Realm JS](#building-realm-js)
@@ -36,9 +36,6 @@
       * [Debugging Node.js tests using Visual Studio Code](#debugging-nodejs-tests-using-visual-studio-code)
       * [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
    * [Testing against real apps](#testing-against-real-apps)
-
-<!-- Added by: tom.duncalf, at: Thu 25 Nov 2021 12:07:16 GMT -->
-
 <!--te-->
 
 ## Pre-Requisites
