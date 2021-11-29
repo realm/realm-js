@@ -18,7 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Excluding the `react-native/android/build` directory from the NPM package.
 * Removed the `examples/ReactExample` app. See [FindOurDevices](https://github.com/realm/FindOurDevices) for a modern example app.
 * Removed undocumented, outdated and unused `ListView` component exported via `realm/react-native`. See [@realm.io/react](https://www.npmjs.com/package/@realm.io/react) for a modern integration with React.
-* Sending the correct version when submitting analytics requests on Android, as a side-effect of https://github.com/realm/realm-js/pull/4114/files#diff-58e627175b916d5dcb05c3c8bd5b10fb18cd72ce6e40e41d8d1c51e984fe32e8L73-R73.
+* Sending the correct version when submitting analytics requests on Android, as a side-effect of [#4114](https://github.com/realm/realm-js/pull/4114/files#diff-58e627175b916d5dcb05c3c8bd5b10fb18cd72ce6e40e41d8d1c51e984fe32e8L73-R73).
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
