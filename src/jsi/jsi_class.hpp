@@ -233,7 +233,7 @@ public:
         auto nativeFunc = !bool(s_type.constructor)
                               ? fbjsi::Value()
                               : fbjsi::Function::createFromHostFunction(
-                                    env, propName(env, s_type.name), /* XXX paramCount */ 0,
+                                    env, propName(env, s_type.name), /* paramCount verified by callback */ 0,
                                     [](fbjsi::Runtime& rt, const fbjsi::Value&, const fbjsi::Value* args,
                                        size_t count) -> fbjsi::Value {
                                         REALM_ASSERT_RELEASE(count >= 1);
@@ -284,7 +284,7 @@ public:
 
         for (auto&& [name, method] : s_type.static_methods) {
             auto desc = fbjsi::Object(env);
-            desc.setProperty(env, "value", funcVal(env, name, /* XXX paramCount */ 0, method));
+            desc.setProperty(env, "value", funcVal(env, name, /* paramCount must be verified by callback */ 0, method));
             defineProperty(env, *s_ctor, name, desc);
         }
 
@@ -303,7 +303,7 @@ public:
 
         for (auto&& [name, method] : s_type.methods) {
             auto desc = fbjsi::Object(env);
-            desc.setProperty(env, "value", funcVal(env, name, /* XXX paramCount */ 0, method));
+            desc.setProperty(env, "value", funcVal(env, name, /* paramCount must be verified by callback */ 0, method));
             defineProperty(env, proto, name, desc);
         }
 

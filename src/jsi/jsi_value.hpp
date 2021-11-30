@@ -166,7 +166,7 @@ inline bool realmjsi::Value::is_binary(JsiEnv env, const JsiVal& value)
 template <>
 inline bool realmjsi::Value::is_valid(const JsiVal& value)
 {
-    return true; // XXX
+    return (*value) != nullptr;
 }
 
 template <>
@@ -229,7 +229,37 @@ inline JsiVal realmjsi::Value::from_uuid(JsiEnv env, const UUID& uuid)
 template <>
 inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
 {
-    return value->getBool(); // XXX should do conversion.
+    if (value->isBool()) {
+        return value->getBool();
+    }
+
+    // trivial conversions to false
+    if (value->isUndefined() ||
+        value->isNull()) { // ||
+//        value->isNaN()) {  // TODO:  missing check
+            return false;
+    }
+
+    if (value->isObject()) {
+        // not null, as checked above
+        return true;
+    }
+
+    // boolean conversions as specified by https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+    if (value->isNumber() ||
+        value->isString()) {
+        // TODO:  add tests for these -- specifcally the case of numerals 0 and -1
+        fbjsi::String const jsistringval =  value->toString(env);
+        std::string const stringval = jsistringval.utf8(env);
+
+        if (stringval == "" ||
+            stringval == "0" ||
+            stringval == "-0") {
+                return false;
+        }
+        
+        return true;
+    }
 }
 
 template <>
