@@ -53,7 +53,7 @@ async function startServer() {
     process.exit(1);
   });
   // Start reading the STDOUT to determine when the container is ready for connections
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     let output = "";
     /**
      * Handle standard output by looking for a started "Stitch" service.

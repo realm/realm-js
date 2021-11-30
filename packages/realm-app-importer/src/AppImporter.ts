@@ -136,7 +136,7 @@ export class AppImporter {
       const content = fs.readFileSync(filePath, "utf8");
       return JSON.parse(content);
     } catch (err) {
-      throw new Error(`Failed to load JSON (${filePath}): ${err.message}`);
+      throw new Error(`Failed to load JSON (${filePath}): ${(err as Error).message}`);
     }
   }
 
