@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Catching missing libjsi.so when loading the librealm.so and rethrowing a more meaningful error, instructing users to upgrade their version of React Native.
 
 ### Fixed
-* Fixed support of user defined classes that doesn't extend `Realm.Object`.
+* Fixed support of user defined classes that don't extend `Realm.Object`.
 
 ### Compatibility
 * MongoDB Realm Cloud.
