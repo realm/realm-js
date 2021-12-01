@@ -1,0 +1,6 @@
+{
+  "extends": [
+    "@react-native-community",
+    "../../.eslintrc"
+  ]
+}
