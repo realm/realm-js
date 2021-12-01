@@ -20,6 +20,7 @@
 
 #include "jsi_string.hpp"
 #include "jsi_types.hpp"
+#include "realm/util/to_string.hpp"
 //#include "node_buffer.hpp"
 
 namespace realm {
@@ -264,7 +265,7 @@ inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
         return (stringval == "0" || stringval == "-0");
     }
 
-    throw fbjsi::JSError(env, "cannot convert value to boolean");
+    throw fbjsi::JSError(env, util::format("cannot convert type %1 to boolean", Value::typeof(env, value)));
 }
 
 template <>
