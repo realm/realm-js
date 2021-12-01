@@ -51,7 +51,14 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     private final AssetManager assetManager;
 
     static {
-        SoLoader.loadLibrary("realm");
+        try {
+            SoLoader.loadLibrary("realm");
+        } catch (UnsatisfiedLinkError err) {
+            if (err.getMessage().contains("library \"libjsi.so\" not found")) {
+                throw new LinkageError("This version of Realm JS needs at least React Native version 0.66.0", err);
+            }
+            throw err;
+        }
     }
 
     public RealmReactModule(ReactApplicationContext reactContext) {
