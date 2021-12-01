@@ -1,5 +1,7 @@
+
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+
 ### Enhancements
 * `Realm.writeCopyTo()` now supports creating snapshots of synced Realms, thus allowing apps to be shipped with partially-populated synced databases. ([#3782](https://github.com/realm/realm-js/issues/3782)
 * Added beta support for flexible sync ([#4220](https://github.com/realm/realm-js/pull/4220)).
@@ -17,6 +19,26 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * None.
+
+10.20.0-beta.0 Release notes (2021-12-21)
+=============================================================
+NOTE: This release is rebased on our `10.11.0` release and as such contain the same enhancements and fixes.
+
+### Enhancements
+* Catching missing libjsi.so when loading the librealm.so and rethrowing a more meaningful error, instructing users to upgrade their version of React Native.
+
+### Fixed
+* Fixed support of user defined classes that don't extend `Realm.Object`.
+* Fixed throwing "Illegal constructor" when `new` constructing anything other than `Realm` and `Realm.Object`.
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Upgraded Realm Core to v11.7.0.
 
 10.20.0-alpha.2 Release notes (2021-11-25)
 =============================================================

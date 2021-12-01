@@ -162,14 +162,13 @@ module.exports = {
     TestCase.assertEqual(data.a.y, 2, "Should be an equals to a.y = 2");
     TestCase.assertEqual(data.a.z, 4, "Should be an equals to a.z = 4");
 
-    let err = new Error("Property must be of type 'number', got (error)");
-    TestCase.assertThrowsException(
+    TestCase.assertThrowsContaining(
       () => realm.write(() => realm.create(DictIntSchema.name, { a: { c: "error" } })),
-      err,
+      "Property must be of type 'number', got (error)",
     );
-    TestCase.assertThrowsException(
+    TestCase.assertThrowsContaining(
       () => realm.write(() => (data.a = "cc")),
-      new Error("Dictionary.a must be of type 'number{}', got 'string' ('cc')"),
+      "Dictionary.a must be of type 'number{}', got 'string' ('cc')",
     );
 
     realm.close();
@@ -182,13 +181,9 @@ module.exports = {
         a: "wwwww{}",
       },
     };
-    let err = new Error(
-      "Schema validation failed due to the following errors:\n- Property 'Dictionary.a' of type 'dictionary' has unknown object type 'wwwww'",
-    );
-    let _defer = () => {
-      let r = new Realm({ schema: [DictWrongSchema] });
-    };
-    TestCase.assertThrowsException(_defer, err);
+    TestCase.assertThrowsContaining(() => {
+      new Realm({ schema: [DictWrongSchema] });
+    }, "Schema validation failed due to the following errors:\n- Property 'Dictionary.a' of type 'dictionary' has unknown object type 'wwwww'");
   },
 
   testDictionaryMutability() {
@@ -746,8 +741,11 @@ module.exports = {
 
   testDictionaryErrorHandling() {
     let realm = new Realm({ schema: [DictSchema] });
-    let err = new Error("Only Realm instances are supported.");
-    TestCase.assertThrowsException(() => realm.write(() => realm.create(DictSchema.name, { a: { x: {} } })), err);
+    TestCase.assertThrowsContaining(() => {
+      realm.write(() => {
+        realm.create(DictSchema.name, { a: { x: {} } });
+      });
+    }, "Only Realm instances are supported.");
     realm.write(() => realm.create(DictSchema.name, { a: { x: null } }));
     let data = realm.objects(DictSchema.name)[0].a;
     TestCase.assertEqual(data.x, null, "Should be an equals to mutable.x = null");

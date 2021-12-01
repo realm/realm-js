@@ -20,7 +20,7 @@
 
 #include "jsi_string.hpp"
 #include "jsi_types.hpp"
-//#include "node_buffer.hpp"
+#include "realm/util/to_string.hpp"
 
 namespace realm {
 namespace js {
@@ -166,7 +166,7 @@ inline bool realmjsi::Value::is_binary(JsiEnv env, const JsiVal& value)
 template <>
 inline bool realmjsi::Value::is_valid(const JsiVal& value)
 {
-    return true; // XXX
+    return (*value) != nullptr;
 }
 
 template <>
@@ -229,7 +229,40 @@ inline JsiVal realmjsi::Value::from_uuid(JsiEnv env, const UUID& uuid)
 template <>
 inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
 {
-    return value->getBool(); // XXX should do conversion.
+    if (value->isBool()) {
+        return value->getBool();
+    }
+
+    // boolean conversions as specified by
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean ...
+
+    // trivial conversions to false
+    if (value->isUndefined() || value->isNull()) {
+        return false;
+    }
+
+    if (value->isObject()) {
+        // not null, as checked above
+        return true;
+    }
+
+    if (value->isString()) {
+        // only the empty string is false
+        return value->toString(env).utf8(env) != "";
+    }
+
+    if (value->isNumber()) {
+        double const dblval = value->asNumber();
+        if (std::isnan(dblval)) {
+            return false;
+        }
+
+        std::string const stringval = value->toString(env).utf8(env);
+        return (stringval != "0" && stringval != "-0");
+    }
+
+    throw fbjsi::JSError(env,
+                         util::format("TypeError:  cannot convert type %1 to boolean", Value::typeof(env, value)));
 }
 
 template <>
@@ -285,10 +318,37 @@ inline OwnedBinaryData realmjsi::Value::to_binary(JsiEnv env, const JsiVal& valu
     throw std::runtime_error("Can only convert ArrayBuffer and ArrayBufferView objects to binary");
 }
 
+/**
+ * @brief convert a JSI value to an object
+ * Will try to convert a given value to a JavaScript object according to
+ * https://tc39.es/ecma262/#sec-toobject.  Most primitive types will be wrapped
+ * in their corresponding object types (e.g., string -> String).
+ *
+ * @param env JSI runtime environment
+ * @param value JSI value that will be converted to object
+ * @return JsiObj
+ */
 template <>
-inline JsiObj realmjsi::Value::to_object(JsiEnv env, const JsiVal& value)
+inline JsiObj realmjsi::Value::to_object(JsiEnv env, JsiVal const& value)
 {
-    return env(value->asObject(env)); // XXX convert?
+    if (value->isObject()) {
+        return env(value->asObject(env));
+    }
+
+    // trivial non-conversions
+    if (value->isNull() || value->isUndefined()) {
+        throw fbjsi::JSError(env, util::format("TypeError:  cannot convert '%1' to object",
+                                               realmjsi::Value::typeof(env, value))); // throw TypeError
+    }
+
+    // use JavaScript's `Object()` to wrap types in their corresponding object types
+    auto objectCtor = env->global().getPropertyAsFunction(env, "Object");
+    fbjsi::Value wrappedValue = objectCtor.callAsConstructor(env, value);
+    if (!wrappedValue.isObject()) {
+        throw fbjsi::JSError(
+            env, util::format("TypeError:  cannot wrap %1 in Object", realmjsi::Value::typeof(env, value)));
+    }
+    return env(wrappedValue.asObject(env));
 }
 
 template <>
