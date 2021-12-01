@@ -1,54 +1,133 @@
-Realm = require(".");
+// Realm = require(".");
+// Import realm
+Realm = require("../../realm-js");
+environment = {}
+let {importApp} = require('../../realm-js/integration-tests/tests/dist/utils/import-app.js')
 
-Cat = {
-  name: "Cat",
+// Create a new app or import the app that I created
+// appId = "with-db-flx-mxhkz"
+appId = (await importApp('with-db-flx', {}, 'all')).id
+
+// Create schema
+PersonSchema = {
+  name: "Person",
   primaryKey: "_id",
   properties: {
     _id: "objectId",
-    name: "string",
     age: "int",
-    type: "string",
-  },
-};
-Dog = {
-  name: "Dog",
-  primaryKey: "_id",
-  properties: {
-    _id: "objectId",
     name: "string",
-    age: "int",
-    type: "string",
+    friends: "Person[]",
+    bestFriend: "Person"
   },
 };
 
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-tsenv" });
+// Create app and connect
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: appId });
+// Realm.App.Sync.setLogLevel(app, "all");
+
 user = await app.logIn(Realm.Credentials.anonymous());
+
+
+// realm = await Realm.open({
 realm = new Realm({
-  schema: [Cat, Dog],
-  sync: { user, flexible: true, _sessionStopPolicy: "immediately" },
+  schema: [PersonSchema],
+  sync: { user, flexible: true }
+});
+
+
+// Create a subscription
+subs = realm.getSubscriptions()
+subs.snapshot()
+
+subs.update((m) => {
+  sub = m.add(realm.objects("Person").filtered("age > 30"), { name: "test" });
+});
+
+realm.write(() => p1.age++)
+
+realm.write(() => p1 = realm.create("Person", { _id: Realm.BSON.ObjectID(), age: 12, name: "tom2" }))
+
+realm.write(() => p2 = realm.create("Person", { _id: Realm.BSON.ObjectID(), age: 122, name: "tom3", bestFriend: p1 }))
+
+realm.objects('Person').length
+
+
+await realm.getSubscriptions().waitForSynchronization()
+
+subs.snapshot()
+
+realm.getSubscriptions().state
+
+subs.update((m) => {
+  sub = m.add(realm.objects("Person"), { name: "test" });
 });
 
 subs = realm.getSubscriptions();
 
-await subs.waitForSynchronization();
+subs.update((m) => {
+  sub = m.add(realm.objects("Person").filtered("age > 15"), { name: "test2" });
+});
+
+subs.snapshot()
+
+
+subs.update((m) => {
+  sub = m.add(realm.objects("Person").filtered("age > 25"), { name: "test3" });
+});
+
+
+
+
+// TopLevelSchema = {
+//   name: "TopLevel",
+//   primaryKey: "_id",
+//   properties: {
+//     _id: "objectId",
+//     partition: "string?",
+//     non_queryable_field: "string?",
+//     queryable_int_field: "int?",
+//     queryable_str_field: "string?"
+//   }
+// }
+
+
+
+// DogSchema = {
+//   name: "Dog",
+//   primaryKey: "_id",
+//   properties: {
+//     _id: "objectId",
+//     age: "int",
+//     name: "string",
+//   },
+// };
+
+subs.snapshot().length;
+
+// await subs.waitForSynchronization();
 
 let sub;
-// subs =
 
-subs.update(() => {
-  subs.add(realm.objects("Cat").filtered("age > 10"), { name: "test" });
-});
-
-subs.update(() => {
-  subs.add(realm.objects("Cat").filtered("age > 15"), { name: "test2" });
+subs.update((m) => {
+  sub = m.add(realm.objects("TopLevel"))
 });
 
 subs.update((m) => {
-  sub = m.add(realm.objects("Cat").filtered("age > 101"), { name: "test" });
+  sub = m.add(realm.objects("TopLevel").filtered('queryable_int_field > 1'))
 });
 
+realm.objects('TopLevel').length;
+
+realm.write(() => realm.create("TopLevel", { _id: Realm.BSON.ObjectID(), queryable_int_field: 2 }))
+
 subs.update((m) => {
-  sub = m.add(realm.objects("Cat").filtered("age > 15"), { name: "test2" });
+  sub = m.add(realm.objects("TopLevel").filtered('queryable_int_field > 3'))
+});
+
+
+
+subs.update((m) => {
+  sub = m.add(realm.objects("Dog").filtered("age > 15"), { name: "test2" });
 });
 
 

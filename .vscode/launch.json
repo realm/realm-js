@@ -110,8 +110,15 @@
                 "--require",
                 "src/utils/inject-node-globals.ts",
                 "src/index.ts",
+                "--timeout",
+                "100000",
                 "--grep",
-                "#removeSubscription"
+                // "returns a promise"
+                // "#waitForSynchronization"
+                // "synchronising data"
+                // "multi-client behaviour"
+                // "Flexible"
+                "is Complete once synchronisation is complete"
                 // "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",

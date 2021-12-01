@@ -1465,8 +1465,20 @@ void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, A
                                       ReturnValue& return_value)
 {
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
-    // TODO check if sync config is flexible
-    return_value.set(SubscriptionsClass<T>::create_instance(ctx, realm->get_active_subscription_set()));
+    auto config = realm->config();
+
+    if (!config.sync_config) {
+        throw std::runtime_error("getSubscriptions() can only be called if flexible sync is enabled, but sync is "
+                                 "currently disabled for your app. Specify { flexible: true } in your sync config.");
+    }
+
+    if (!config.sync_config->flx_sync_requested) {
+        throw std::runtime_error("getSubscriptions() can only be called if flexible sync is enabled, but partition "
+                                 "based sync is currently enabled for your app. Specify { flexible: true } in your "
+                                 "sync config and remove any `partitionValue`.");
+    }
+
+    return_value.set(SubscriptionsClass<T>::create_instance(ctx, realm->get_latest_subscription_set()));
 }
 
 template <typename T>
