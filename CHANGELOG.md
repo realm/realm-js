@@ -151,6 +151,18 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 * Enabled `strictNullChecks` for integration tests
 * Updated release instructions
 
+10.20.0-beta.0 Release notes (2021-12-21)
+=============================================================
+
+Based on Realm JS v10.11.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.10.1).
+
+### Enhancements
+* Catching missing libjsi.so when loading the librealm.so and rethrowing a more meaningful error, instructing users to upgrade their version of React Native.
+
+### Fixed
+* Fixed support of user defined classes that don't extend `Realm.Object`.
+* Fixed throwing "Illegal constructor" when `new` constructing anything other than `Realm` and `Realm.Object`.
+
 10.11.0 Release notes (2021-12-21)
 =============================================================
 ### Enhancements

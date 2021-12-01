@@ -42,6 +42,7 @@ Pod::Spec.new do |s|
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
   s.source_files           = 'react-native/ios/RealmReact/*.mm'
+  s.public_header_files    = 'react-native/ios/RealmReact/*.h'
 
   s.frameworks             = uses_frameworks ? ['React'] : []
 
@@ -57,8 +58,6 @@ Pod::Spec.new do |s|
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
                                   '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
-                                  '"$(PODS_TARGET_SRCROOT)/src/"',
-                                  '"$(PODS_TARGET_SRCROOT)/src/jsi/"',
                                   '"$(PODS_ROOT)/Headers/Public/React-Core/"'
                                   #"'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting
                                 ].join(' ')
