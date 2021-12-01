@@ -128,7 +128,7 @@ inline void copyProperty(JsiEnv env, const fbjsi::Object& from, const fbjsi::Obj
 {
     auto prop = ObjectGetOwnPropertyDescriptor(env, from, name);
     REALM_ASSERT_RELEASE(prop);
-    defineProperty(env, to, "name", *prop);
+    defineProperty(env, to, name, *prop);
 }
 
 inline constexpr const char g_internal_field[] = "__Realm_internal";
@@ -222,18 +222,48 @@ public:
     using Internal = typename T::Internal;
     using ParentClassType = typename T::Parent;
 
-    // XXX if this is static, it won't support multiple runtimes.
+    // NOTE:  if this is static, it won't support multiple runtimes.
     // Also, may need to suppress destruction.
     inline static std::optional<JsiFunc> s_ctor;
 
+    /**
+     * @brief callback for invalid access to index setters
+     * Throws an error when a users attemps to write to an index on a type that
+     * doesn't support it.
+     *
+     * @return nothing; always throws
+     */
+    static fbjsi::Value readonly_index_setter_callback(fbjsi::Runtime& env, const fbjsi::Value& thisVal,
+                                                       const fbjsi::Value* args, size_t count)
+    {
+        throw fbjsi::JSError(env, "Cannot assign to index");
+    }
+
+    /**
+     * @brief callback for invalid access to property setters
+     * Trows an error when a user attempts to write to a read-only property
+     *
+     * @param propname name of the property the user is trying to write to
+     * @return nothin; always throws
+     */
+    static fbjsi::Value readonly_setter_callback(fbjsi::Runtime& env, const fbjsi::Value& thisVal,
+                                                 const fbjsi::Value* args, size_t count, std::string const& propname)
+    {
+        throw fbjsi::JSError(env, util::format("Cannot assign to read only property '%1'", propname));
+    }
+
     static JsiFunc create_constructor(JsiEnv env)
     {
+        if (s_ctor) {
+            return *s_ctor;
+        }
+
         auto& s_type = get_class();
 
         auto nativeFunc = !bool(s_type.constructor)
                               ? fbjsi::Value()
                               : fbjsi::Function::createFromHostFunction(
-                                    env, propName(env, s_type.name), /* XXX paramCount */ 0,
+                                    env, propName(env, s_type.name), /* paramCount verified by callback */ 0,
                                     [](fbjsi::Runtime& rt, const fbjsi::Value&, const fbjsi::Value* args,
                                        size_t count) -> fbjsi::Value {
                                         REALM_ASSERT_RELEASE(count >= 1);
@@ -248,11 +278,9 @@ public:
                          .call(env, "nativeFunc",
                                util::format(R"(
                       return function %1(...args) {
-                          // "use strict"; 
-                          if (!nativeFunc && false) // XXX only disable check for Realm.Object
-                              throw TypeError("%1() cannot be constructed directly from javascript");
-                          if (!new.target && false) { // XXX find another way to detect this correctly
-                              throw TypeError("%1() must be called as a constructor");
+                          // Allow explicit construction only for classes with a constructor
+                          if (new.target && !nativeFunc) {
+                              throw TypeError("Illegal constructor");
                           }
                           if (nativeFunc)
                               nativeFunc(this, ...args);
@@ -281,12 +309,20 @@ public:
             if (prop.setter) {
                 desc.setProperty(env, "set", funcVal(env, "set_" + name, 1, prop.setter));
             }
+            else {
+                desc.setProperty(
+                    env, "set",
+                    funcVal(env, "set_" + name, 0,
+                            std::bind(ObjectWrap::readonly_setter_callback, std::placeholders::_1,
+                                      std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, name)));
+            }
             defineProperty(env, *s_ctor, name, desc);
         }
 
         for (auto&& [name, method] : s_type.static_methods) {
             auto desc = fbjsi::Object(env);
-            desc.setProperty(env, "value", funcVal(env, name, /* XXX paramCount */ 0, method));
+            desc.setProperty(env, "value",
+                             funcVal(env, name, /* paramCount must be verified by callback */ 0, method));
             defineProperty(env, *s_ctor, name, desc);
         }
 
@@ -300,12 +336,20 @@ public:
             if (prop.setter) {
                 desc.setProperty(env, "set", funcVal(env, "set_" + name, 1, prop.setter));
             }
+            else {
+                desc.setProperty(
+                    env, "set",
+                    funcVal(env, "set_" + name, 0,
+                            std::bind(ObjectWrap::readonly_setter_callback, std::placeholders::_1,
+                                      std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, name)));
+            }
             defineProperty(env, proto, name, desc);
         }
 
         for (auto&& [name, method] : s_type.methods) {
             auto desc = fbjsi::Object(env);
-            desc.setProperty(env, "value", funcVal(env, name, /* XXX paramCount */ 0, method));
+            desc.setProperty(env, "value",
+                             funcVal(env, name, /* paramCount must be verified by callback */ 0, method));
             defineProperty(env, proto, name, desc);
         }
 
@@ -329,10 +373,11 @@ public:
             // XXX Do we want to trap things like ownKeys() and getOwnPropertyDescriptors() to support for...in?
             auto [getter, setter] = s_type.index_accessor;
             auto desc = fbjsi::Object(env);
-            desc.setProperty(env, "value",
-                             globalType(env, "Function")
-                                 .call(env, "getter", "setter", R"(
-                        const integerPattern = /^\d+$/;
+            desc.setProperty(
+                env, "value",
+                globalType(env, "Function")
+                    .call(env, "getter", "setter", R"(
+                        const integerPattern = /^-?\d+$/;
                         function getIndex(prop) {
                             if (typeof prop === "string" && integerPattern.test(prop)) {
                                 return parseInt(prop, 10);
@@ -372,24 +417,26 @@ public:
                                 const index = getIndex(prop);
                                 if (Number.isNaN(index)) {
                                     return Reflect.set(...arguments);
-                                } else if (setter) {
-                                    return setter(target, index, value);
+                                } else if (index < 0) {
+                                    // This mimics realm::js::validated_positive_index
+                                    throw new Error(`Index ${index} cannot be less than zero.`);
                                 } else {
-                                    return false;
+                                    return setter(target, index, value);
                                 }
                             }
                         }
                         return (obj) => new Proxy(obj, handler);
                     )")
-                                 .asObject(env)
-                                 .asFunction(env)
-                                 .call(env, funcVal(env, "getter", 0, getter), funcVal(env, "setter", 1, setter))
-                                 .asObject(env)
-                                 .asFunction(env));
+                    .asObject(env)
+                    .asFunction(env)
+                    .call(env, funcVal(env, "getter", 0, getter),
+                          funcVal(env, "setter", 1, setter ? setter : ObjectWrap::readonly_index_setter_callback))
+                    .asObject(env)
+                    .asFunction(env));
             defineProperty(env, *s_ctor, "_proxyWrapper", desc);
         }
 
-        return env((*s_ctor)->getFunction(env));
+        return *s_ctor;
     }
 
     static JsiObj create_instance(JsiEnv env, Internal* ptr = nullptr)
@@ -432,13 +479,16 @@ public:
     {
         auto internal = object->getProperty(env, g_internal_field);
         if (internal.isUndefined()) {
-            if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>) // XXX comment why
+            // In the case of a user opening a Realm with a class-based model,
+            // the user defined constructor will get called before the "internal" property has been set.
+            if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
                 return nullptr;
             throw fbjsi::JSError(env, "no internal field");
         }
-        if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
-            throw fbjsi::JSError(env, "calling method on wrong type of object");
-        }
+        // The following check is disabled to support user defined classes that doesn't extend Realm.Object
+        // if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
+        //     throw fbjsi::JSError(env, "calling method on wrong type of object");
+        // }
         return unwrapUnique<Internal>(env, std::move(internal));
     }
     static void set_internal(JsiEnv env, const JsiObj& object, Internal* data)
@@ -533,13 +583,10 @@ private:
         if (!maybeConstructor) {
             // 1.Check by name if the constructor is already created for this RealmObject
             if (!schemaObjects.count(schemaName)) {
-
                 // 2.Create the constructor
-
-                // create the RealmObject function by name
-                //  XXX May need to escape/sanitize schema.name to avoid code injection
+                // create an anonymous RealmObject function
                 auto schemaObjectConstructor = globalType(env, "Function")
-                                                   .callAsConstructor(env, "return function " + schema.name + "() {}")
+                                                   .callAsConstructor(env, "return function () {}")
                                                    .asObject(env)
                                                    .asFunction(env)
                                                    .call(env)
@@ -622,7 +669,7 @@ private:
 
     inline static auto& get_schemaObjectTypes()
     {
-        // XXX this being static prevents using multiple runtimes.
+        // NOTE:  this being static prevents using multiple runtimes.
         static std::unordered_map<std::string, std::unordered_map<std::string, fbjsi::Function>> s_schemaObjectTypes;
         return s_schemaObjectTypes;
     }
