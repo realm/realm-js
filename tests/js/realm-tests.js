@@ -1580,22 +1580,22 @@ module.exports = {
   testErrorMessageFromInvalidWrite: function () {
     const realm = new Realm({ schema: [schemas.PersonObject] });
 
-    TestCase.assertThrowsException(() => {
+    TestCase.assertThrowsContaining(() => {
       realm.write(() => {
         const p1 = realm.create("PersonObject", { name: "Ari", age: 10 });
         p1.age = "Ten";
       });
-    }, new Error("PersonObject.age must be of type 'number', got 'string' ('Ten')"));
+    }, "PersonObject.age must be of type 'number', got 'string' ('Ten')");
   },
 
   testErrorMessageFromInvalidCreate: function () {
     const realm = new Realm({ schema: [schemas.PersonObject] });
 
-    TestCase.assertThrowsException(() => {
+    TestCase.assertThrowsContaining(() => {
       realm.write(() => {
-        const p1 = realm.create("PersonObject", { name: "Ari", age: "Ten" });
+        realm.create("PersonObject", { name: "Ari", age: "Ten" });
       });
-    }, new Error("PersonObject.age must be of type 'number', got 'string' ('Ten')"));
+    }, "PersonObject.age must be of type 'number', got 'string' ('Ten')");
   },
 
   testValidTypesForListProperties: function () {
