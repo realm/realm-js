@@ -537,13 +537,10 @@ private:
         if (!maybeConstructor) {
             // 1.Check by name if the constructor is already created for this RealmObject
             if (!schemaObjects.count(schemaName)) {
-
                 // 2.Create the constructor
-
-                // create the RealmObject function by name
-                //  XXX May need to escape/sanitize schema.name to avoid code injection
+                // create an anonymous RealmObject function
                 auto schemaObjectConstructor = globalType(env, "Function")
-                                                   .callAsConstructor(env, "return function " + schema.name + "() {}")
+                                                   .callAsConstructor(env, "return function () {}")
                                                    .asObject(env)
                                                    .asFunction(env)
                                                    .call(env)
