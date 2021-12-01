@@ -332,7 +332,7 @@ public:
             desc.setProperty(env, "value",
                              globalType(env, "Function")
                                  .call(env, "getter", "setter", R"(
-                        const integerPattern = /^\d+$/;
+                        const integerPattern = /^-?\d+$/;
                         function getIndex(prop) {
                             if (typeof prop === "string" && integerPattern.test(prop)) {
                                 return parseInt(prop, 10);
@@ -372,6 +372,9 @@ public:
                                 const index = getIndex(prop);
                                 if (Number.isNaN(index)) {
                                     return Reflect.set(...arguments);
+                                } else if (index < 0) {
+                                    // This mimics realm::js::validated_positive_index
+                                    throw new Error(`Index ${index} cannot be less than zero.`);
                                 } else if (setter) {
                                     return setter(target, index, value);
                                 } else {
