@@ -128,7 +128,7 @@ inline void copyProperty(JsiEnv env, const fbjsi::Object& from, const fbjsi::Obj
 {
     auto prop = ObjectGetOwnPropertyDescriptor(env, from, name);
     REALM_ASSERT_RELEASE(prop);
-    defineProperty(env, to, "name", *prop);
+    defineProperty(env, to, name, *prop);
 }
 
 inline constexpr const char g_internal_field[] = "__Realm_internal";
@@ -439,9 +439,10 @@ public:
                 return nullptr;
             throw fbjsi::JSError(env, "no internal field");
         }
-        if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
-            throw fbjsi::JSError(env, "calling method on wrong type of object");
-        }
+        // The following check is disabled to support user defined classes that doesn't extend Realm.Object
+        // if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
+        //     throw fbjsi::JSError(env, "calling method on wrong type of object");
+        // }
         return unwrapUnique<Internal>(env, std::move(internal));
     }
     static void set_internal(JsiEnv env, const JsiObj& object, Internal* data)
