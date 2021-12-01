@@ -233,10 +233,11 @@ inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
         return value->getBool();
     }
 
+    // boolean conversions as specified by https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean ...
+
     // trivial conversions to false
     if (value->isUndefined() ||
-        value->isNull()) { // ||
-//        value->isNaN()) {  // TODO:  missing check
+        value->isNull()) {
             return false;
     }
 
@@ -245,21 +246,25 @@ inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
         return true;
     }
 
-    // boolean conversions as specified by https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-    if (value->isNumber() ||
-        value->isString()) {
-        // TODO:  add tests for these -- specifcally the case of numerals 0 and -1
+    if (value->isString()) {
+        // only the empty string is false
+        return value->toString(env).utf8(env) == "";
+    }
+
+    if (value->isNumber()) {
+        double const dblval = value->getNumber();
+        if (dblval == std::nan("")) {
+            return false;
+        }
+
+        // TODO:  add tests for these -- specifcally the case of numerals 0 and -0
         fbjsi::String const jsistringval =  value->toString(env);
         std::string const stringval = jsistringval.utf8(env);
 
-        if (stringval == "" ||
-            stringval == "0" ||
-            stringval == "-0") {
-                return false;
-        }
-        
-        return true;
+        return (stringval == "0" || stringval == "-0");
     }
+
+    throw fbjsi::JSError(env, "cannot convert value to boolean");
 }
 
 template <>
@@ -318,6 +323,8 @@ inline OwnedBinaryData realmjsi::Value::to_binary(JsiEnv env, const JsiVal& valu
 template <>
 inline JsiObj realmjsi::Value::to_object(JsiEnv env, const JsiVal& value)
 {
+    // specs:  https://tc39.es/ecma262/#sec-toobject
+    // see to_date
     return env(value->asObject(env)); // XXX convert?
 }
 
