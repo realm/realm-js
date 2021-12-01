@@ -166,9 +166,9 @@ module.exports = {
   testMixedWrongType() {
     let realm = new Realm({ schema: [SingleSchema] });
 
-    TestCase.assertThrowsException(
+    TestCase.assertThrowsContaining(
       () => realm.write(() => realm.create(SingleSchema.name, { a: Object.create({}) })),
-      new Error("Only Realm instances are supported."),
+      "Only Realm instances are supported.",
     );
   },
 
@@ -211,12 +211,11 @@ module.exports = {
     TestCase.assertEqual(objectsBefore.length, 0);
 
     // check if the understandable error message is thrown
-    const error = new Error("A mixed property cannot contain an array of values.");
-    TestCase.assertThrowsException(() => {
+    TestCase.assertThrowsContaining(() => {
       realm.write(() => {
         realm.create("MixedClass", { value: [123, false, "hello"] });
       });
-    }, error);
+    }, "A mixed property cannot contain an array of values.");
 
     //  verify that the transaction has been rolled back
     const objectsAfter = realm.objects(MixedSchema.name);

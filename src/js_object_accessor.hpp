@@ -554,23 +554,21 @@ struct Unbox<JSEngine, Obj> {
 
         auto current_realm = native_accessor->m_realm;
         auto js_object = Value::validated_to_object(native_accessor->m_ctx, value);
-        auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(native_accessor->m_ctx, js_object);
 
-        auto is_ros_instance =
+        auto is_realm_object =
             Object::template is_instance<RealmObjectClass<JSEngine>>(native_accessor->m_ctx, js_object);
 
-        if (is_ros_instance && realm_object && realm_object->realm() == current_realm) {
-            return realm_object->obj();
-        }
-
-        if (is_ros_instance && !policy.copy && !policy.update && !policy.create) {
-            throw std::runtime_error("Realm object is from another Realm");
-        }
-
-        // if our RealmObject isn't in ObjectStore, it's a detached object
-        // (not in to database), and we can't add it
-        if (is_ros_instance && !realm_object) {
-            throw std::runtime_error("Cannot reference a detached instance of Realm.Object");
+        if (is_realm_object) {
+            auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(native_accessor->m_ctx, js_object);
+            if (realm_object && realm_object->realm() == current_realm) {
+                return realm_object->obj();
+            }
+            else if (!policy.copy && !policy.update && !policy.create) {
+                throw std::runtime_error("Realm object is from another Realm");
+            }
+            else if (!realm_object) {
+                throw std::runtime_error("Cannot reference a detached instance of Realm.Object");
+            }
         }
 
         if (!policy.create) {
