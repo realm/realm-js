@@ -773,8 +773,8 @@ module.exports = {
     });
 
     // property that does not exist
-    TestCase.assertThrowsException(() => {
+    TestCase.assertThrowsContaining(() => {
       obj.getPropertyType("foo");
-    }, new Error("No such property: foo"));
+    }, "No such property: foo");
   },
 };
