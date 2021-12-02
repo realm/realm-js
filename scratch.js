@@ -21,7 +21,7 @@ Dog = {
   },
 };
 
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-tsenv" });
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-flx-djhfg" });
 user = await app.logIn(Realm.Credentials.anonymous());
 realm = new Realm({
   schema: [Cat, Dog],

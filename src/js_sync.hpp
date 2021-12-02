@@ -901,7 +901,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 throw std::runtime_error("'partitionValue' cannot be specified when flexible sync is enabled");
             }
 
-            config.sync_config = std::make_shared<SyncConfig>(user, bson::Bson{});
+            config.sync_config = std::make_shared<SyncConfig>(user, SyncConfig::FLXSyncEnabled{});
         }
         else {
             ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
