@@ -945,7 +945,8 @@ describe("Flexible sync", function () {
       const { sub } = await addSubscriptionAndPerson(this, this.realm.objects(PersonSchema.name).filtered("age > 30"));
       expect(this.realm.objects(PersonSchema.name)).to.have.length(1);
 
-      this.realm.getSubscriptions().update((mutableSubs) => {
+      const subs = this.realm.getSubscriptions();
+      subs.update((mutableSubs) => {
         mutableSubs.removeSubscription(sub);
         mutableSubs.add(this.realm.objects(PersonSchema.name).filtered("age < 30"));
       });
@@ -958,7 +959,8 @@ describe("Flexible sync", function () {
       const { sub } = await addSubscriptionAndPerson(this, this.realm.objects(PersonSchema.name));
       expect(this.realm.objects(PersonSchema.name)).to.have.length(1);
 
-      this.realm.getSubscriptions().update((mutableSubs) => {
+      const subs = this.realm.getSubscriptions();
+      subs.update((mutableSubs) => {
         mutableSubs.removeSubscription(sub);
       });
       await subs.waitForSynchronization();
@@ -970,7 +972,8 @@ describe("Flexible sync", function () {
       const { sub } = await addSubscriptionAndPerson(this, this.realm.objects(PersonSchema.name).filtered("age > 30"));
       expect(this.realm.objects(PersonSchema.name)).to.have.length(1);
 
-      this.realm.getSubscriptions().update((mutableSubs) => {
+      const subs = this.realm.getSubscriptions();
+      subs.update((mutableSubs) => {
         mutableSubs.removeSubscription(sub);
         mutableSubs.add(this.realm.objects(PersonSchema.name).filtered("age < 30"));
       });
