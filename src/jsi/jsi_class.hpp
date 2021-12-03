@@ -235,6 +235,10 @@ public:
 
     static JsiFunc create_constructor(JsiEnv env)
     {
+        if (s_ctor) {
+            return *s_ctor;
+        }
+
         auto& s_type = get_class();
 
         auto nativeFunc = !bool(s_type.constructor)
@@ -405,7 +409,7 @@ public:
             defineProperty(env, *s_ctor, "_proxyWrapper", desc);
         }
 
-        return env((*s_ctor)->getFunction(env));
+        return *s_ctor;
     }
 
     static JsiObj create_instance(JsiEnv env, Internal* ptr = nullptr)
