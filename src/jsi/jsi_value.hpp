@@ -234,12 +234,12 @@ inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
         return value->getBool();
     }
 
-    // boolean conversions as specified by https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean ...
+    // boolean conversions as specified by
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean ...
 
     // trivial conversions to false
-    if (value->isUndefined() ||
-        value->isNull()) {
-            return false;
+    if (value->isUndefined() || value->isNull()) {
+        return false;
     }
 
     if (value->isObject()) {
@@ -259,7 +259,7 @@ inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
         }
 
         // TODO:  add tests for these -- specifcally the case of numerals 0 and -0
-        fbjsi::String const jsistringval =  value->toString(env);
+        fbjsi::String const jsistringval = value->toString(env);
         std::string const stringval = jsistringval.utf8(env);
 
         return (stringval == "0" || stringval == "-0");

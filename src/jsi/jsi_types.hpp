@@ -118,7 +118,8 @@ public:
     {
         return &m_val;
     }
-    const T* operator*() const {
+    const T* operator*() const
+    {
         return &m_val;
     }
 
