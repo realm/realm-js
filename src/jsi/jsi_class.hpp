@@ -248,11 +248,9 @@ public:
                          .call(env, "nativeFunc",
                                util::format(R"(
                       return function %1(...args) {
-                          // "use strict"; 
-                          if (!nativeFunc && false) // XXX only disable check for Realm.Object
-                              throw TypeError("%1() cannot be constructed directly from javascript");
-                          if (!new.target && false) { // XXX find another way to detect this correctly
-                              throw TypeError("%1() must be called as a constructor");
+                          // Allow explicit construction only for `Realm` and `Realm.Object`
+                          if (new.target && "%1" !== "Object" && "%1" !== "Realm") {
+                              throw TypeError("Illegal constructor");
                           }
                           if (nativeFunc)
                               nativeFunc(this, ...args);
