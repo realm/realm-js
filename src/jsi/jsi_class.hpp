@@ -226,6 +226,13 @@ public:
     // Also, may need to suppress destruction.
     inline static std::optional<JsiFunc> s_ctor;
 
+    // TODO / FF:  Pass property name along in exception
+    static fbjsi::Value readonly_setter_callback(fbjsi::Runtime& env, const fbjsi::Value& thisVal,
+                                                 const fbjsi::Value* args, size_t count)
+    {
+        throw fbjsi::JSError(env, "Cannot assign to read only property");
+    }
+
     static JsiFunc create_constructor(JsiEnv env)
     {
         auto& s_type = get_class();
@@ -233,7 +240,7 @@ public:
         auto nativeFunc = !bool(s_type.constructor)
                               ? fbjsi::Value()
                               : fbjsi::Function::createFromHostFunction(
-                                    env, propName(env, s_type.name), /* XXX paramCount */ 0,
+                                    env, propName(env, s_type.name), /* paramCount verified by callback */ 0,
                                     [](fbjsi::Runtime& rt, const fbjsi::Value&, const fbjsi::Value* args,
                                        size_t count) -> fbjsi::Value {
                                         REALM_ASSERT_RELEASE(count >= 1);
@@ -279,12 +286,16 @@ public:
             if (prop.setter) {
                 desc.setProperty(env, "set", funcVal(env, "set_" + name, 1, prop.setter));
             }
+            else {
+                desc.setProperty(env, "set", funcVal(env, "set_" + name, 0, ObjectWrap::readonly_setter_callback));
+            }
             defineProperty(env, *s_ctor, name, desc);
         }
 
         for (auto&& [name, method] : s_type.static_methods) {
             auto desc = fbjsi::Object(env);
-            desc.setProperty(env, "value", funcVal(env, name, /* XXX paramCount */ 0, method));
+            desc.setProperty(env, "value",
+                             funcVal(env, name, /* paramCount must be verified by callback */ 0, method));
             defineProperty(env, *s_ctor, name, desc);
         }
 
@@ -298,12 +309,16 @@ public:
             if (prop.setter) {
                 desc.setProperty(env, "set", funcVal(env, "set_" + name, 1, prop.setter));
             }
+            else {
+                desc.setProperty(env, "set", funcVal(env, "set_" + name, 0, ObjectWrap::readonly_setter_callback));
+            }
             defineProperty(env, proto, name, desc);
         }
 
         for (auto&& [name, method] : s_type.methods) {
             auto desc = fbjsi::Object(env);
-            desc.setProperty(env, "value", funcVal(env, name, /* XXX paramCount */ 0, method));
+            desc.setProperty(env, "value",
+                             funcVal(env, name, /* paramCount must be verified by callback */ 0, method));
             defineProperty(env, proto, name, desc);
         }
 
@@ -327,9 +342,10 @@ public:
             // XXX Do we want to trap things like ownKeys() and getOwnPropertyDescriptors() to support for...in?
             auto [getter, setter] = s_type.index_accessor;
             auto desc = fbjsi::Object(env);
-            desc.setProperty(env, "value",
-                             globalType(env, "Function")
-                                 .call(env, "getter", "setter", R"(
+            desc.setProperty(
+                env, "value",
+                globalType(env, "Function")
+                    .call(env, "getter", "setter", R"(
                         const integerPattern = /^-?\d+$/;
                         function getIndex(prop) {
                             if (typeof prop === "string" && integerPattern.test(prop)) {
@@ -373,20 +389,19 @@ public:
                                 } else if (index < 0) {
                                     // This mimics realm::js::validated_positive_index
                                     throw new Error(`Index ${index} cannot be less than zero.`);
-                                } else if (setter) {
-                                    return setter(target, index, value);
                                 } else {
-                                    return false;
+                                    return setter(target, index, value);
                                 }
                             }
                         }
                         return (obj) => new Proxy(obj, handler);
                     )")
-                                 .asObject(env)
-                                 .asFunction(env)
-                                 .call(env, funcVal(env, "getter", 0, getter), funcVal(env, "setter", 1, setter))
-                                 .asObject(env)
-                                 .asFunction(env));
+                    .asObject(env)
+                    .asFunction(env)
+                    .call(env, funcVal(env, "getter", 0, getter),
+                          funcVal(env, "setter", 1, setter ? setter : ObjectWrap::readonly_setter_callback))
+                    .asObject(env)
+                    .asFunction(env));
             defineProperty(env, *s_ctor, "_proxyWrapper", desc);
         }
 
@@ -537,13 +552,10 @@ private:
         if (!maybeConstructor) {
             // 1.Check by name if the constructor is already created for this RealmObject
             if (!schemaObjects.count(schemaName)) {
-
                 // 2.Create the constructor
-
-                // create the RealmObject function by name
-                //  XXX May need to escape/sanitize schema.name to avoid code injection
+                // create an anonymous RealmObject function
                 auto schemaObjectConstructor = globalType(env, "Function")
-                                                   .callAsConstructor(env, "return function " + schema.name + "() {}")
+                                                   .callAsConstructor(env, "return function () {}")
                                                    .asObject(env)
                                                    .asFunction(env)
                                                    .call(env)
