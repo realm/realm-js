@@ -118,6 +118,10 @@ public:
     {
         return &m_val;
     }
+    const T* operator*() const
+    {
+        return &m_val;
+    }
 
     /*implicit*/ operator const T&() const&
     {
