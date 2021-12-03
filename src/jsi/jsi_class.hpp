@@ -433,7 +433,9 @@ public:
     {
         auto internal = object->getProperty(env, g_internal_field);
         if (internal.isUndefined()) {
-            if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>) // XXX comment why
+            // In the case of a user opening a Realm with a class-based model,
+            // the user defined constructor will get called before the "internal" property has been set.
+            if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
                 return nullptr;
             throw fbjsi::JSError(env, "no internal field");
         }
