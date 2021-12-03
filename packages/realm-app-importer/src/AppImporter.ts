@@ -247,8 +247,48 @@ export class AppImporter {
       },
       body,
     });
+
     if (response.ok) {
-      return response.json();
+      const data = await response.json();
+
+      return new Promise((resolve) => {
+        let services = [];
+        const getServices = async () => {
+          console.log(`${url}/${data._id}/services`, `Bearer ${this.accessToken}`);
+          const servicesRepsponse = await fetch(`${url}/${data._id}/services`, {
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+              "content-type": "application/json",
+            },
+          });
+          services = await servicesRepsponse.json();
+
+          if (!services.length) {
+            console.log("Waiting for services...", services);
+            setTimeout(getServices, 1000);
+          } else {
+            console.log("Patching services...");
+            const r = await fetch(`${url}/${data._id}/services/${services[0]._id}/config`, {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${this.accessToken}`,
+                "content-type": "application/json",
+              },
+              body:
+                '{ "sync_query": { "state": "enabled", "database_name": "test-database", "queryable_fields": {} } }',
+            });
+
+            resolve();
+          }
+        };
+
+        setTimeout(async () => {
+          getServices();
+        }, 1000);
+
+        // await new Promise((r) => setTimeout(r, 5000));
+        // return data;
+      });
     } else {
       throw new Error(`Failed to create app named '${name}' in group '${groupId}'`);
     }

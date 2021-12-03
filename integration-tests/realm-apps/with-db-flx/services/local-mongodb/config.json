@@ -1,0 +1,13 @@
+{
+  "name": "local-mongodb",
+  "type": "mongodb",
+  "config": {
+    "sync_query": {
+      "state": "enabled",
+      "database_name": "test-database"
+    }
+  },
+  "secret_config": {
+    "uri": "local-mongodb-uri"
+  }
+}
