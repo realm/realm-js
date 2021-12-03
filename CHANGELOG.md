@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed support of user defined classes that don't extend `Realm.Object`.
+* Fixed throwing "Illegal constructor" when `new` constructing anything other than `Realm` and `Realm.Object`.
 
 ### Compatibility
 * MongoDB Realm Cloud.
