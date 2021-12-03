@@ -147,7 +147,8 @@ export class AppImporter {
               Authorization: `Bearer ${this.accessToken}`,
               "content-type": "application/json",
             },
-            body: '{ "sync_query": { "state": "enabled", "database_name": "test-database", "queryable_fields": {} } }',
+            body:
+              '{ "sync_query": { "state": "enabled", "database_name": "test-database", "queryable_fields": ["Dog"] } }',
           });
 
           console.log(r.status);

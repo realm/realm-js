@@ -11,7 +11,6 @@ PersonSchema = {
   },
 };
 
-
 DogSchema = {
   name: "Dog",
   primaryKey: "_id",
@@ -23,12 +22,15 @@ DogSchema = {
   },
 };
 
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-flx-tgfrg" });
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-flx-wjfly" });
 user = await app.logIn(Realm.Credentials.anonymous());
 realm = new Realm({
   schema: [PersonSchema, DogSchema],
   sync: { user, flexible: true, _sessionStopPolicy: "immediately" },
+  // sync: { user,  partitionValue: "" }
 });
+
+realm.write(() => realm.create("Dog", { _id: Realm.BSON.ObjectID(), age: 20, name: "tom" }))
 
 subs = realm.getSubscriptions();
 
