@@ -148,7 +148,7 @@ export class AppImporter {
               "content-type": "application/json",
             },
             body:
-              '{ "sync_query": { "state": "enabled", "database_name": "test-database", "queryable_fields": ["Dog"] } }',
+              '{ "sync_query": { "state": "enabled", "database_name": "test-database", "queryable_fields": { "Dog": { "age": { "name": "age" } } } } }',
           });
 
           console.log(r.status);
