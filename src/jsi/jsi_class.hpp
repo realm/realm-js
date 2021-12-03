@@ -248,8 +248,8 @@ public:
                          .call(env, "nativeFunc",
                                util::format(R"(
                       return function %1(...args) {
-                          // Allow explicit construction only for `Realm` and `Realm.Object`
-                          if (new.target && "%1" !== "Object" && "%1" !== "Realm") {
+                          // Allow explicit construction only for classes with a constructor
+                          if (new.target && !nativeFunc) {
                               throw TypeError("Illegal constructor");
                           }
                           if (nativeFunc)
