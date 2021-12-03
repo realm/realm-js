@@ -233,7 +233,7 @@ export class AppImporter {
     }
   }
 
-  private async createApp(groupId: string, name: string) {
+  private async createApp(groupId: string, name: string): Promise<any> {
     if (!this.accessToken) {
       throw new Error("Login before calling this method");
     }
@@ -278,7 +278,7 @@ export class AppImporter {
                 '{ "sync_query": { "state": "enabled", "database_name": "test-database", "queryable_fields": {} } }',
             });
 
-            resolve();
+            resolve(data);
           }
         };
 
