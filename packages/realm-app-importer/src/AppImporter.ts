@@ -123,8 +123,46 @@ export class AppImporter {
       "--yes", // Bypass prompts
     );
 
+    return new Promise((resolve) => {
+      let services = [];
+      const servicesUrl = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps/${app._id}/services`;
+      const getServices = async () => {
+        console.log(servicesUrl, `Bearer ${this.accessToken}`);
+        const servicesRepsponse = await fetch(servicesUrl, {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "content-type": "application/json",
+          },
+        });
+        services = await servicesRepsponse.json();
+
+        if (!services.length) {
+          console.log("Waiting for services...", services);
+          setTimeout(getServices, 1000);
+        } else {
+          console.log("Patching services...", `${servicesUrl}/${services[0]._id}/config`);
+          const r = await fetch(`${servicesUrl}/${services[0]._id}/config`, {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+              "content-type": "application/json",
+            },
+            body: '{ "sync_query": { "state": "enabled", "database_name": "test-database", "queryable_fields": {} } }',
+          });
+
+          console.log(r.status);
+          console.log(await r.text());
+          resolve({ appId });
+        }
+      };
+
+      setTimeout(async () => {
+        getServices();
+      }, 1000);
+    });
+
     // Return the app id of the newly created app
-    return { appId };
+    // return { appId };
   }
 
   private get apiUrl() {
@@ -250,45 +288,9 @@ export class AppImporter {
 
     if (response.ok) {
       const data = await response.json();
-
-      return new Promise((resolve) => {
-        let services = [];
-        const getServices = async () => {
-          console.log(`${url}/${data._id}/services`, `Bearer ${this.accessToken}`);
-          const servicesRepsponse = await fetch(`${url}/${data._id}/services`, {
-            headers: {
-              Authorization: `Bearer ${this.accessToken}`,
-              "content-type": "application/json",
-            },
-          });
-          services = await servicesRepsponse.json();
-
-          if (!services.length) {
-            console.log("Waiting for services...", services);
-            setTimeout(getServices, 1000);
-          } else {
-            console.log("Patching services...");
-            const r = await fetch(`${url}/${data._id}/services/${services[0]._id}/config`, {
-              method: "PATCH",
-              headers: {
-                Authorization: `Bearer ${this.accessToken}`,
-                "content-type": "application/json",
-              },
-              body:
-                '{ "sync_query": { "state": "enabled", "database_name": "test-database", "queryable_fields": {} } }',
-            });
-
-            resolve(data);
-          }
-        };
-
-        setTimeout(async () => {
-          getServices();
-        }, 1000);
-
-        // await new Promise((r) => setTimeout(r, 5000));
-        // return data;
-      });
+      // await new Promise((r) => setTimeout(r, 5000));
+      return data;
+      // });
     } else {
       throw new Error(`Failed to create app named '${name}' in group '${groupId}'`);
     }

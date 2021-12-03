@@ -26,7 +26,7 @@ import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 // TODO do we need hto handle getSyncSession?
 
 describe("Flexible sync", function () {
-  importAppBefore("with-db");
+  importAppBefore("with-db-flx");
   authenticateUserBefore();
   openRealmBeforeEach({ schema: [PersonSchema, DogSchema], sync: { flexible: true } });
 

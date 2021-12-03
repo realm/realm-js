@@ -1,30 +1,32 @@
 Realm = require(".");
 
-Cat = {
-  name: "Cat",
+PersonSchema = {
+  name: "Person",
   primaryKey: "_id",
   properties: {
     _id: "objectId",
-    name: "string",
     age: "int",
-    type: "string",
+    name: "string",
+    friends: "Person[]",
   },
 };
-Dog = {
+
+
+DogSchema = {
   name: "Dog",
   primaryKey: "_id",
   properties: {
     _id: "objectId",
-    name: "string",
     age: "int",
-    type: "string",
+    name: "string",
+    owner: "Person",
   },
 };
 
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-awcqz" });
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-flx-tgfrg" });
 user = await app.logIn(Realm.Credentials.anonymous());
 realm = new Realm({
-  schema: [Cat, Dog],
+  schema: [PersonSchema, DogSchema],
   sync: { user, flexible: true, _sessionStopPolicy: "immediately" },
 });
 
@@ -33,22 +35,13 @@ subs = realm.getSubscriptions();
 await subs.waitForSynchronization();
 
 let sub;
-// subs =
 
-subs.update(() => {
-  subs.add(realm.objects("Cat").filtered("age > 10"), { name: "test" });
-});
-
-subs.update(() => {
-  subs.add(realm.objects("Cat").filtered("age > 15"), { name: "test2" });
+subs.update((m) => {
+  sub = m.add(realm.objects("Dog").filtered("age > 101"), { name: "test" });
 });
 
 subs.update((m) => {
-  sub = m.add(realm.objects("Cat").filtered("age > 101"), { name: "test" });
-});
-
-subs.update((m) => {
-  sub = m.add(realm.objects("Cat").filtered("age > 15"), { name: "test2" });
+  sub = m.add(realm.objects("Dog").filtered("age > 15"), { name: "test2" });
 });
 
 
