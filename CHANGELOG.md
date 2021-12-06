@@ -44,8 +44,11 @@ const config = {
 * Removed undocumented, outdated and unused `ListView` component exported via `realm/react-native`. See [@realm.io/react](https://www.npmjs.com/package/@realm.io/react) for a modern integration with React.
 * Sending the correct version when submitting analytics requests on Android, as a side-effect of [#4114](https://github.com/realm/realm-js/pull/4114/files#diff-58e627175b916d5dcb05c3c8bd5b10fb18cd72ce6e40e41d8d1c51e984fe32e8L73-R73).
 * Removed TypeScript dependency from individual sub-packages so all packages share the root version, and updated the root TypeScript version to `4.5.2`.
+<<<<<<< HEAD
 * Consuming TypeScript directly from the integration test environments, instead of transpiling first.
 * Adding a new private `@realm/metro-config` package to share this across any React Native app in our repo that reference other packages via symbolic links.
+=======
+>>>>>>> dc9b6ef61 (Upgrade to Realm Core v11.7.0)
 * Upgraded Realm Core from v11.6.1 to v11.7.0.
 
 10.10.1 Release notes (2021-11-18)
@@ -584,8 +587,12 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
+<<<<<<< HEAD
 * Upgraded Realm Core from v10.1.3 to v10.1.4.
 * Upgraded Realm Sync from v10.1.4 to v10.1.5.
+=======
+* None.
+>>>>>>> dc9b6ef61 (Upgrade to Realm Core v11.7.0)
 
 10.1.0 Release notes (2020-12-8)
 =============================================================
