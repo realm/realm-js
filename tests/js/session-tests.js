@@ -581,10 +581,10 @@ module.exports = {
         const config = getSyncConfiguration(user, partition);
         config.sync.clientReset = {
           mode: "discardLocal",
-          clientResetBefore: (localRealm) => {
+          clientResetBefore: (realm) => {
             reject("clientResetBefore");
           },
-          clientResetAfter: (localRealm, remoteRealm) => {
+          clientResetAfter: (beforeRealm, afterRealm) => {
             reject("clientResetAfter");
           },
         };
@@ -592,8 +592,8 @@ module.exports = {
           resolve();
         };
 
-        Realm.open(config).then((realm) => {
-          realm.syncSession._simulateError(132, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 132 -> automatic client reset failed
+        Realm.open(config).then((r) => {
+          r.syncSession._simulateError(132, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 132 -> automatic client reset failed
         });
       });
     });
@@ -620,30 +620,28 @@ module.exports = {
         const config = getSyncConfiguration(user, partition);
         config.sync.clientReset = {
           mode: "discardLocal",
-          clientResetBefore: (localRealm) => {
+          clientResetBefore: (realm) => {
             beforeCalled = true;
-            TestCase.assertEqual(localRealm.objects("Dog").length, 1, "local");
+            TestCase.assertEqual(realm.objects("Dog").length, 1, "local");
           },
-          clientResetAfter: (localRealm, remoteRealm) => {
+          clientResetAfter: (beforeRealm, afterRealm) => {
             afterCalled = true;
-            TestCase.assertEqual(localRealm.objects("Dog").length, 1, "local");
-            // TestCase.assertEqual(remoteRealm.objects("Dog").length, 1, "remote");
-            // TestCase.assertNotEqual(remoteRealm.path, localRealm.path);
+            TestCase.assertEqual(beforeRealm.objects("Dog").length, 1, "local");
           },
         };
         config.sync.error = (sender, error) => {
           reject(`error: ${JSON.stringify(error)}`);
         };
 
-        Realm.open(config).then((realm) => {
-          realm.write(() => {
-            realm.create("Dog", { _id: new ObjectId(), name: "Lassy" });
+        Realm.open(config).then((r) => {
+          r.write(() => {
+            r.create("Dog", { _id: new ObjectId(), name: "Lassy" });
           });
-          realm.syncSession._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false);
+          r.syncSession._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false);
           setTimeout(() => {
             TestCase.assertTrue(beforeCalled, "before");
             TestCase.assertTrue(afterCalled, "after");
-            TestCase.assertEqual(realm.objects("Dog").length, 1);
+            TestCase.assertEqual(r.objects("Dog").length, 1);
             resolve();
           }, 1000);
         });

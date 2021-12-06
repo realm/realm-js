@@ -196,8 +196,8 @@ public:
             create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm)),
         };
         Function<T>::callback(m_ctx, m_func, 2, arguments);
-        // before_realm->close();
-        // after_realm->close();
+        before_realm->close();
+        after_realm->close();
     }
 
 private:
