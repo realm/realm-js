@@ -3,7 +3,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Added templates for Expo.
-* A new mode `discardLocal` for client reset is introduce. The old behavior is supported (but deprecated) through the `manual` mode. The new mode will discard any local changes, and a fresh copy of the Realm will be downloaded. An example of the configuration:
+* A new mode `discardLocal` for client reset has been introduced. The old behavior is supported (but deprecated) through the `manual` mode. The new mode will discard any local changes, and a fresh copy of the Realm will be downloaded. An example of the configuration:
 
 ```js
 const config = {
@@ -44,11 +44,8 @@ const config = {
 * Removed undocumented, outdated and unused `ListView` component exported via `realm/react-native`. See [@realm.io/react](https://www.npmjs.com/package/@realm.io/react) for a modern integration with React.
 * Sending the correct version when submitting analytics requests on Android, as a side-effect of [#4114](https://github.com/realm/realm-js/pull/4114/files#diff-58e627175b916d5dcb05c3c8bd5b10fb18cd72ce6e40e41d8d1c51e984fe32e8L73-R73).
 * Removed TypeScript dependency from individual sub-packages so all packages share the root version, and updated the root TypeScript version to `4.5.2`.
-<<<<<<< HEAD
 * Consuming TypeScript directly from the integration test environments, instead of transpiling first.
 * Adding a new private `@realm/metro-config` package to share this across any React Native app in our repo that reference other packages via symbolic links.
-=======
->>>>>>> dc9b6ef61 (Upgrade to Realm Core v11.7.0)
 * Upgraded Realm Core from v11.6.1 to v11.7.0.
 
 10.10.1 Release notes (2021-11-18)
