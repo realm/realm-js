@@ -41,12 +41,12 @@ tasks.register('forwardDebugPort', Exec) {
 }
 
 android {
-    compileSdkVersion rootProject.hasProperty("compileSdkVersion") ? rootProject.compileSdkVersion : 28
-    buildToolsVersion rootProject.hasProperty("buildToolsVersion") ? rootProject.buildToolsVersion : "28.0.3"
+    compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : 28
+    buildToolsVersion rootProject.hasProperty('buildToolsVersion') ? rootProject.buildToolsVersion : '28.0.3'
 
     defaultConfig {
-        minSdkVersion rootProject.hasProperty("minSdkVersion") ? rootProject.minSdkVersion : 16
-        targetSdkVersion rootProject.hasProperty("targetSdkVersion") ? rootProject.targetSdkVersion : 28
+        minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 16
+        targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : 28
     }
 
     tasks.withType(JavaCompile) {
@@ -54,25 +54,26 @@ android {
     }
 }
 
-String getAppId () {
-    String myappId;
+String getAppId() {
+    String myappId
     try {
-        String build = new File("$projectDir/../../../android/app/build.gradle").text
-        def matcher = build =~ 'applicationId.*"'
-        def appId = matcher.size() > 0 ? matcher[0].trim() - 'applicationId' - ~/\s/ : '';
+        String build = new File("$projectDir/../../../../android/app/build.gradle").text
+        matcher = build =~ 'applicationId.*"'
+        appId = matcher.size() > 0 ? matcher[0].trim() - 'applicationId' - ~/\s/ : ''
         myappId = appId.replaceAll('"', '')
-    } catch(all) {}
+    } catch (all) { /* silently ignore */ }
     return myappId
-}
+    }
 
 apply from: 'analytics.gradle'
 
 import groovy.json.JsonSlurper
 
-def getPackageVersion() {
-    def inputFile = new File(buildscript.sourceFile.getParent() + "/../../package.json")
-    def packageJson = new JsonSlurper().parseText(inputFile.text)
-    return packageJson["version"]
+String getPackageVersion() {
+    /* groovylint-disable-next-line JavaIoPackageAccess, UnnecessaryGetter */
+    inputFile = new File(buildscript.sourceFile.getParent() + '/../../package.json')
+    packageJson = new JsonSlurper().parseText(inputFile.text)
+    return packageJson['version']
 }
 
 task send(type: SendAnalyticsTask) {
@@ -82,11 +83,11 @@ task send(type: SendAnalyticsTask) {
 
 preBuild.dependsOn send
 
-def dependencyType = "implementation"
+dependencyType = 'implementation'
 try {
-    project.getConfigurations().getByName("implementation")
+    project.getConfigurations().getByName('implementation')
 } catch (UnknownConfigurationException e) {
-    dependencyType = "compile" // Pre 3.0 Android Gradle Plugin
+    dependencyType = 'compile' // Pre 3.0 Android Gradle Plugin
 }
 
 project.dependencies {

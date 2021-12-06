@@ -91,7 +91,7 @@ class SendAnalyticsTask extends DefaultTask {
             }'''
 
     void send() {
-          def url = (ADDRESS_PREFIX + generateJson().bytes.encodeBase64().toString()).toURL()
+          def url = new URL(ADDRESS_PREFIX + generateJson().bytes.encodeBase64().toString())
           def connection = url.openConnection()
           connection.setConnectTimeout(CONNECT_TIMEOUT);
           connection.setReadTimeout(READ_TIMEOUT);
@@ -118,7 +118,7 @@ class SendAnalyticsTask extends DefaultTask {
      */
     private String getAnonymousAppId() {
         byte[] packagesBytes = applicationId?.getBytes()
-        Utils.hexStringify(Utils.sha256Hash(packagesBytes))
+        return Utils.hexStringify(Utils.sha256Hash(packagesBytes))
     }
 }
 
@@ -175,7 +175,7 @@ class ComputerIdentifierGenerator {
     private static String getMacOsIdentifier() {
         NetworkInterface networkInterface = NetworkInterface.getByName("en0")
         byte[] hardwareAddress = networkInterface.getHardwareAddress()
-        Utils.hexStringify(Utils.sha256Hash(hardwareAddress))
+        return Utils.hexStringify(Utils.sha256Hash(hardwareAddress))
     }
 
     private static String getWindowsIdentifier() {
@@ -198,6 +198,7 @@ class ComputerIdentifierGenerator {
         }
 
         result==null?UNKNOWN:Utils.hexStringify(Utils.sha256Hash(result.getBytes()))
+        return result
     }
 }
 
