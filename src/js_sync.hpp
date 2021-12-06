@@ -28,7 +28,7 @@
 #include "logger.hpp"
 
 #include "platform.hpp"
-#include "realm/object-store/shared_realm.hpp"
+#include <realm/object-store/shared_realm.hpp>
 #include <realm/sync/config.hpp>
 #include <realm/sync/protocol.hpp>
 #include <realm/sync/client_base.hpp>
@@ -187,17 +187,17 @@ public:
         return m_func;
     }
 
-    void operator()(SharedRealm local_realm, SharedRealm remote_realm)
+    void operator()(SharedRealm before_realm, SharedRealm after_realm)
     {
         HANDLESCOPE(m_ctx)
 
         typename T::Value arguments[] = {
-            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(local_realm)),
-            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(remote_realm)),
+            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm)),
+            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm)),
         };
         Function<T>::callback(m_ctx, m_func, 2, arguments);
-        local_realm->close();
-        remote_realm->close();
+        // before_realm->close();
+        // after_realm->close();
     }
 
 private:
@@ -1011,7 +1011,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                     config.sync_config->client_resync_mode = realm::ClientResyncMode::DiscardLocal;
                 }
                 else {
-                    throw std::invalid_argument("Unknown argument for clientReset.mode");
+                    throw std::invalid_argument(util::format("Unknown argument '%1' for clientReset.mode. Expected 'manual' or 'discardLocal'.", client_reset_mode));
                 }
 
                 std::function<void(SharedRealm)> client_reset_before_handler;
