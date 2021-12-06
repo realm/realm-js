@@ -24,6 +24,7 @@ on:
   push:
     branches:
       - master
+      - hermes
 
 jobs:
   node:
@@ -146,7 +147,7 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   react-native-ios:
-    name: React Native on ${{matrix.platform.name}} (${{ matrix.type }})
+    name: React Native on ${{matrix.platform.name}} (${{ matrix.type }} using ${{ matrix.platform.engine }})
     runs-on: macos-latest
     timeout-minutes: 60
     strategy:
@@ -157,12 +158,18 @@ jobs:
         type: [Release]
         platform:
           - name: ios
+            engine: hermes
+            build-configuration: simulator
+          - name: ios
+            engine: jsc
             build-configuration: simulator
           - name: catalyst
+            engine: jsc
             build-configuration: catalyst
     env:
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
+      HERMES_ENABLED: ${{ matrix.platform.engine == 'hermes' && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -190,7 +197,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ github.job }}-${{ matrix.platform.name }}-${{ matrix.type }}
+          key: ${{ github.job }}-${{ matrix.platform.engine }}-${{ matrix.platform.name }}-${{ matrix.type }}
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
 
@@ -225,14 +232,20 @@ jobs:
           RETRIES: 5
           RETRY_DELAY: 300000 # 5 min
   react-native-android:
-    name: React Native on Android (${{ matrix.type }})
+    name: React Native on Android (${{ matrix.type }} using ${{ matrix.engine }})
     runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
-        #TODO: Reactivate debug when builds are optimized
-        #type: [Release, Debug]
-        type: [Release]
+        type:
+          - Release
+          # TODO: Reactivate debug when builds are optimized
+          # - Debug
+        engine:
+          - hermes
+          - jsc
+    env:
+      HERMES_ENABLED: ${{ matrix.engine == 'hermes' && 'true' || 'false' }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
@@ -267,7 +280,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ github.job }}-${{ matrix.type }}
+          key: ${{ github.job }}-${{ matrix.engine }}-${{ matrix.type }}
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
 

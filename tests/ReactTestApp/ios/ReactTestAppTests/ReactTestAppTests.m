@@ -19,7 +19,7 @@
 #import <React/RCTLog.h>
 #import <React/RCTRootView.h>
 
-#import <RealmReact/RealmReact.h>
+#import <RealmJS/RealmReact.h>
 
 #import <React/RCTLog.h>
 #import <React/RCTRootView.h>
