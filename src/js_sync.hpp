@@ -1011,7 +1011,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                     config.sync_config->client_resync_mode = realm::ClientResyncMode::DiscardLocal;
                 }
                 else {
-                    throw std::invalid_argument(util::format("Unknown argument '%1' for clientReset.mode. Expected 'manual' or 'discardLocal'.", client_reset_mode));
+                    throw std::invalid_argument(util::format(
+                        "Unknown argument '%1' for clientReset.mode. Expected 'manual' or 'discardLocal'.",
+                        client_reset_mode));
                 }
 
                 std::function<void(SharedRealm)> client_reset_before_handler;
