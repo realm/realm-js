@@ -560,7 +560,8 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* None.
+* Upgraded Realm Core from v10.1.3 to v10.1.4.
+* Upgraded Realm Sync from v10.1.4 to v10.1.5.
 
 10.1.0 Release notes (2020-12-8)
 =============================================================
