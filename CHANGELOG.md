@@ -5,6 +5,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * If the option `user` in a sync configuration was not a `Realm.User` object could lead to a crash. ([#1348](https://github.com/realm/realm-js/issues/1348), since v10.0.0)
+* `@sum` and `@avg` queries on Dictionaries of floats or doubles used too much precision for intermediates, resulting in incorrect rounding. (since v10.3.0-rc.1)
+* Queries of the form `link.collection.@sum = 0` where `link` is `null` matched when `collection` was a List or Set, but not a Dictionary ([realm/realm-core#5080](https://github.com/realm/realm-core/pull/5080), since v10.5.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -20,9 +22,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Removed undocumented, outdated and unused `ListView` component exported via `realm/react-native`. See [@realm.io/react](https://www.npmjs.com/package/@realm.io/react) for a modern integration with React.
 * Sending the correct version when submitting analytics requests on Android, as a side-effect of [#4114](https://github.com/realm/realm-js/pull/4114/files#diff-58e627175b916d5dcb05c3c8bd5b10fb18cd72ce6e40e41d8d1c51e984fe32e8L73-R73).
 * Removed TypeScript dependency from individual sub-packages so all packages share the root version, and updated the root TypeScript version to `4.5.2`.
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.6.1 to v11.7.0.
 
 10.10.1 Release notes (2021-11-18)
 =============================================================
@@ -488,8 +488,6 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Added metrics migration to webhooks.
 
 10.1.4 Release notes (2021-1-27)
@@ -509,8 +507,6 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded OpenSSL v1.1.b to v1.1.1g (Linux).
 
 10.1.3 Release notes (2021-1-15)
@@ -529,8 +525,6 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Sync from v10.1.5 to v10.1.6.
 
 10.1.2 Release notes (2020-12-16)
@@ -548,8 +542,6 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * CI integration updated to use Xcode 12.
 * Support for newest version of Object Store.
 * Push functionality test re-enabled.
@@ -568,8 +560,6 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded Realm Core from v10.1.3 to v10.1.4.
 * Upgraded Realm Sync from v10.1.4 to v10.1.5.
 
@@ -588,8 +578,6 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v10.7.1 to 10.7.1.
-* Upgraded Realm Core from v10.6.0 to 10.7.1
 * Upgraded to Realm Sync from v10.1.3 to v10.1.4
 * The sync client now requires a server that speaks protocol version 2 (Cloud version 20201202 or newer).
 
