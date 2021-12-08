@@ -436,6 +436,24 @@ module.exports = {
     });
   },
 
+  testObjectConversion: function () {
+    const realm = new Realm({ schema: [schemas.TestObject] });
+    TestCase.assertTrue(realm.__to_object("This is a string") instanceof Object, "__to_object should return Object");
+    TestCase.assertTrue(realm.__to_object(12345) instanceof Object, "__to_object should return Object");
+    TestCase.assertTrue(realm.__to_object(false) instanceof Object, "__to_object should return Object");
+    TestCase.assertTrue(realm.__to_object(new Date()) instanceof Object, "__to_object should return Object");
+
+    TestCase.assertThrowsContaining(() => {
+      realm.__to_object(null);
+    }, "TypeError");
+
+    TestCase.assertThrowsContaining(() => {
+      realm.__to_object(undefined);
+    }, "TypeError");
+
+    realm.close();
+  },
+
   testObjectSchema: function () {
     const realm = new Realm({ schema: [schemas.TestObject] });
     var obj;

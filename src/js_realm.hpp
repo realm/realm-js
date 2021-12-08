@@ -342,6 +342,8 @@ public:
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update_schema(ContextType, ObjectType, Arguments&, ReturnValue&);
 
+    static void __to_object(ContextType, ObjectType, Arguments &, ReturnValue &);
+
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments&, ReturnValue&);
 #endif
@@ -417,6 +419,7 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"_updateSchema", wrap<update_schema>},
         {"_schemaName", wrap<get_schema_name_from_object>},
+        {"__to_object", wrap<__to_object>},
     };
 
     PropertyMap<T> const properties = {
@@ -1428,6 +1431,16 @@ void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     return_value.set(object_schema.name);
+}
+
+template <typename T>
+void RealmClass<T>::__to_object(ContextType ctx, ObjectType this_object, Arguments& args,
+                                     ReturnValue& return_value)
+{
+    args.validate_count(1);
+    ObjectType newobj = Value::to_object(ctx, args[0]);
+
+    return_value.set(newobj);
 }
 
 /**

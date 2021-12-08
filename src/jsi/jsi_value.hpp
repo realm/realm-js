@@ -20,6 +20,7 @@
 
 #include "jsi_string.hpp"
 #include "jsi_types.hpp"
+#include "realm/object-store/sync/generic_network_transport.hpp"
 #include "realm/util/to_string.hpp"
 //#include "node_buffer.hpp"
 
@@ -321,12 +322,35 @@ inline OwnedBinaryData realmjsi::Value::to_binary(JsiEnv env, const JsiVal& valu
     throw std::runtime_error("Can only convert ArrayBuffer and ArrayBufferView objects to binary");
 }
 
+/**
+ * @brief convert a JSI value to an object
+ * Will try to convert a given value to a JavaScript object according to 
+ * https://tc39.es/ecma262/#sec-toobject.  Most primitive types will be wrapped
+ * in their corresponding object types (e.g., string -> String).
+ * 
+ * @param env JSI runtime environment
+ * @param value JSI value that will be converted to object
+ * @return JsiObj 
+ */
 template <>
-inline JsiObj realmjsi::Value::to_object(JsiEnv env, const JsiVal& value)
+inline JsiObj realmjsi::Value::to_object(JsiEnv env, JsiVal const &value)
 {
-    // specs:  https://tc39.es/ecma262/#sec-toobject
-    // see to_date
-    return env(value->asObject(env)); // XXX convert?
+    if (value->isObject()) {
+        return env(value->asObject(env));
+    }
+
+    // trivial non-conversions
+    if (value->isNull() || value->isUndefined()) {
+        throw fbjsi::JSError(env, util::format("TypeError:  cannot convert %1 to object", realmjsi::Value::typeof(env, value))); // throw TypeError
+    }
+
+    // use JavaScript's `Object()` to wrap types in their corresponding object types
+    auto objectCtor = env->global().getPropertyAsFunction(env, "Object");
+    fbjsi::Value wrappedValue = objectCtor.callAsConstructor(env, value);
+    if (!wrappedValue.isObject()) {
+        throw fbjsi::JSError(env, util::format("TypeError:  cannot wrap %1 in Object", realmjsi::Value::typeof(env, value)));
+    }
+    return env(wrappedValue.asObject(env));
 }
 
 template <>
