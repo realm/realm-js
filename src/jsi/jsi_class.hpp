@@ -222,7 +222,7 @@ public:
     using Internal = typename T::Internal;
     using ParentClassType = typename T::Parent;
 
-    // XXX if this is static, it won't support multiple runtimes.
+    // NOTE:  if this is static, it won't support multiple runtimes.
     // Also, may need to suppress destruction.
     inline static std::optional<JsiFunc> s_ctor;
 
@@ -664,7 +664,7 @@ private:
 
     inline static auto& get_schemaObjectTypes()
     {
-        // XXX this being static prevents using multiple runtimes.
+        // NOTE:  this being static prevents using multiple runtimes.
         static std::unordered_map<std::string, std::unordered_map<std::string, fbjsi::Function>> s_schemaObjectTypes;
         return s_schemaObjectTypes;
     }
