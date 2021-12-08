@@ -438,19 +438,38 @@ module.exports = {
 
   testObjectConversion: function () {
     const realm = new Realm({ schema: [schemas.TestObject] });
-    TestCase.assertTrue(realm.__to_object("This is a string") instanceof Object, "__to_object should return Object");
-    TestCase.assertTrue(realm.__to_object(12345) instanceof Object, "__to_object should return Object");
-    TestCase.assertTrue(realm.__to_object(false) instanceof Object, "__to_object should return Object");
-    TestCase.assertTrue(realm.__to_object(new Date()) instanceof Object, "__to_object should return Object");
+    TestCase.assertTrue(
+      realm.__to_object("This is a string") instanceof Object,
+      "__to_object(string) should return Object",
+    );
+    TestCase.assertTrue(realm.__to_object(12345) instanceof Object, "__to_object(int) should return Object");
+    TestCase.assertTrue(realm.__to_object(false) instanceof Object, "__to_object(bool) should return Object");
+    TestCase.assertTrue(realm.__to_object(new Date()) instanceof Object, "__to_object(Date) should return Object");
 
-    TestCase.assertThrowsContaining(() => {
+    TestCase.assertThrowsNameOrContaining(() => {
       realm.__to_object(null);
     }, "TypeError");
 
-    TestCase.assertThrowsContaining(() => {
+    TestCase.assertThrowsNameOrContaining(() => {
       realm.__to_object(undefined);
     }, "TypeError");
 
+    realm.close();
+  },
+
+  // tests conversion of various types to boolean as specified in
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+  // it resides here for lack of a better place, and because the direct type conversion
+  // operations have been made available through the Realm object
+  testBooleanConversion: function () {
+    const realm = new Realm({ schema: [schemas.TestObject] });
+    TestCase.assertTrue(realm.__to_boolean("") == false, '__to_boolean("") should return false');
+    TestCase.assertTrue(realm.__to_boolean(0) == false, "__to_boolean(0) should return false");
+    TestCase.assertTrue(realm.__to_boolean(-0) == false, "__to_boolean(-0) should return false");
+    TestCase.assertTrue(realm.__to_boolean(null) == false, "__to_boolean(null) should return false");
+    TestCase.assertTrue(realm.__to_boolean(false) == false, "__to_boolean(false) should return false");
+    TestCase.assertTrue(realm.__to_boolean(NaN) == false, "__to_boolean(NaN) should return false");
+    TestCase.assertTrue(realm.__to_boolean(undefined) == false, "__to_boolean(undefined) should return false");
     realm.close();
   },
 
