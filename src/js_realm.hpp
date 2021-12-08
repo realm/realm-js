@@ -342,7 +342,10 @@ public:
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update_schema(ContextType, ObjectType, Arguments&, ReturnValue&);
 
+    // NOTE:  __to_object and __to_boolean are shims that allow type conversion tests
+    // on unit tests / CI.  They probably shouldn't be available in production
     static void __to_object(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void __to_boolean(ContextType, ObjectType, Arguments &, ReturnValue &);
 
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -419,7 +422,11 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"_updateSchema", wrap<update_schema>},
         {"_schemaName", wrap<get_schema_name_from_object>},
+
+        // NOTE:  __to_object and __to_boolean are shims that allow type conversion tests
+        // on unit tests / CI.  They probably shouldn't be available in production
         {"__to_object", wrap<__to_object>},
+        {"__to_boolean", wrap<__to_boolean>},
     };
 
     PropertyMap<T> const properties = {
@@ -1441,6 +1448,16 @@ void RealmClass<T>::__to_object(ContextType ctx, ObjectType this_object, Argumen
     ObjectType newobj = Value::to_object(ctx, args[0]);
 
     return_value.set(newobj);
+}
+
+template <typename T>
+void RealmClass<T>::__to_boolean(ContextType ctx, ObjectType this_object, Arguments& args,
+                                     ReturnValue& return_value)
+{
+    args.validate_count(1);
+    bool is_bool = Value::to_boolean(ctx, args[0]);
+
+    return_value.set(is_bool);
 }
 
 /**

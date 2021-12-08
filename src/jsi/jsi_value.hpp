@@ -250,12 +250,12 @@ inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
 
     if (value->isString()) {
         // only the empty string is false
-        return value->toString(env).utf8(env) == "";
+        return value->toString(env).utf8(env) != "";
     }
 
     if (value->isNumber()) {
-        double const dblval = value->getNumber();
-        if (dblval == std::nan("")) {
+        double const dblval = value->asNumber();
+        if (std::isnan(dblval)) {
             return false;
         }
 
@@ -263,10 +263,10 @@ inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
         fbjsi::String const jsistringval = value->toString(env);
         std::string const stringval = jsistringval.utf8(env);
 
-        return (stringval == "0" || stringval == "-0");
+        return (stringval != "0" && stringval != "-0");
     }
 
-    throw fbjsi::JSError(env, util::format("cannot convert type %1 to boolean", Value::typeof(env, value)));
+    throw fbjsi::JSError(env, util::format("TypeError:  cannot convert type %1 to boolean", Value::typeof(env, value)));
 }
 
 template <>
@@ -341,7 +341,7 @@ inline JsiObj realmjsi::Value::to_object(JsiEnv env, JsiVal const &value)
 
     // trivial non-conversions
     if (value->isNull() || value->isUndefined()) {
-        throw fbjsi::JSError(env, util::format("TypeError:  cannot convert %1 to object", realmjsi::Value::typeof(env, value))); // throw TypeError
+        throw fbjsi::JSError(env, util::format("TypeError:  cannot convert '%1' to object", realmjsi::Value::typeof(env, value))); // throw TypeError
     }
 
     // use JavaScript's `Object()` to wrap types in their corresponding object types
