@@ -1,7 +1,7 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '10.0'
+platform :ios, '11.0'
 
 target 'ReactTestApp' do
   config = use_native_modules!
@@ -11,11 +11,6 @@ target 'ReactTestApp' do
     # to enable hermes on iOS, change `false` to `true` and then install pods
     :hermes_enabled => false
   )
-
-  # Since this is a project within RealmJS, we need to add the pod manually.
-  # This is due to the fact that its not a dependecy in our package.json and
-  # the automatic linking will not pick it up.
-  pod 'RealmJS', :path => '../../../', :inhibit_warnings => true
 
   target 'ReactTestAppTests' do
     inherit! :complete
@@ -30,11 +25,18 @@ target 'ReactTestApp' do
 
   post_install do |installer|
     react_native_post_install(installer)
+    __apply_Xcode_12_5_M1_post_install_workaround(installer)
     installer.pods_project.targets.each do |target|
       # Fix bundle targets' 'Signing Certificate' to 'Sign to Run Locally'
       if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"
         target.build_configurations.each do |config|
           config.build_settings['CODE_SIGN_IDENTITY[sdk=macosx*]'] = '-'
+        end
+      end
+      # Applying https://github.com/facebook/folly/issues/1470#issuecomment-943123653
+      if target.name == "RCT-Folly"
+        target.build_configurations.each do |config|
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', 'FOLLY_HAVE_CLOCK_GETTIME=1']
         end
       end
     end
