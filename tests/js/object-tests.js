@@ -470,6 +470,13 @@ module.exports = {
     TestCase.assertTrue(realm.__to_boolean(false) == false, "__to_boolean(false) should return false");
     TestCase.assertTrue(realm.__to_boolean(NaN) == false, "__to_boolean(NaN) should return false");
     TestCase.assertTrue(realm.__to_boolean(undefined) == false, "__to_boolean(undefined) should return false");
+
+    TestCase.assertTrue(realm.__to_boolean("false") == true, '__to_boolean("false") should return true');
+    TestCase.assertTrue(realm.__to_boolean(1) == true, "__to_boolean(1) should return true");
+    TestCase.assertTrue(realm.__to_boolean(-1) == true, "__to_boolean(-1) should return true");
+    TestCase.assertTrue(realm.__to_boolean([]) == true, "__to_boolean([]) should return true");
+    TestCase.assertTrue(realm.__to_boolean(Object()) == true, "__to_boolean(Object()) should return true");
+
     realm.close();
   },
 

@@ -20,9 +20,7 @@
 
 #include "jsi_string.hpp"
 #include "jsi_types.hpp"
-#include "realm/object-store/sync/generic_network_transport.hpp"
 #include "realm/util/to_string.hpp"
-//#include "node_buffer.hpp"
 
 namespace realm {
 namespace js {
