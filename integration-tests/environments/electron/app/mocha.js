@@ -35,7 +35,8 @@ return new Client({
       ...context,
       electron: processType,
     };
-    // Add the integration test suite
+    // Add the integration test suite (in TypeScript)
+    require("ts-node/register/transpile-only");
     require("realm-integration-tests");
   },
 });

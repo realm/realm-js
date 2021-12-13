@@ -2,7 +2,7 @@
   "name": "realm-integration-tests",
   "version": "0.1.0",
   "description": "A set of tests that can run in different environments",
-  "main": "dist/index.js",
+  "main": "src/index.ts",
   "private": true,
   "scripts": {
     "start": "node start.js --watch",
@@ -32,6 +32,7 @@
     "realm-network-transport": "^0.7.0"
   },
   "files": [
-    "/dist"
+    "/dist",
+    "/src"
   ]
 }
