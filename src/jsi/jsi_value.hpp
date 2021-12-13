@@ -264,7 +264,8 @@ inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
         return (stringval != "0" && stringval != "-0");
     }
 
-    throw fbjsi::JSError(env, util::format("TypeError:  cannot convert type %1 to boolean", Value::typeof(env, value)));
+    throw fbjsi::JSError(env,
+                         util::format("TypeError:  cannot convert type %1 to boolean", Value::typeof(env, value)));
 }
 
 template <>
@@ -322,16 +323,16 @@ inline OwnedBinaryData realmjsi::Value::to_binary(JsiEnv env, const JsiVal& valu
 
 /**
  * @brief convert a JSI value to an object
- * Will try to convert a given value to a JavaScript object according to 
+ * Will try to convert a given value to a JavaScript object according to
  * https://tc39.es/ecma262/#sec-toobject.  Most primitive types will be wrapped
  * in their corresponding object types (e.g., string -> String).
- * 
+ *
  * @param env JSI runtime environment
  * @param value JSI value that will be converted to object
- * @return JsiObj 
+ * @return JsiObj
  */
 template <>
-inline JsiObj realmjsi::Value::to_object(JsiEnv env, JsiVal const &value)
+inline JsiObj realmjsi::Value::to_object(JsiEnv env, JsiVal const& value)
 {
     if (value->isObject()) {
         return env(value->asObject(env));
@@ -339,14 +340,16 @@ inline JsiObj realmjsi::Value::to_object(JsiEnv env, JsiVal const &value)
 
     // trivial non-conversions
     if (value->isNull() || value->isUndefined()) {
-        throw fbjsi::JSError(env, util::format("TypeError:  cannot convert '%1' to object", realmjsi::Value::typeof(env, value))); // throw TypeError
+        throw fbjsi::JSError(env, util::format("TypeError:  cannot convert '%1' to object",
+                                               realmjsi::Value::typeof(env, value))); // throw TypeError
     }
 
     // use JavaScript's `Object()` to wrap types in their corresponding object types
     auto objectCtor = env->global().getPropertyAsFunction(env, "Object");
     fbjsi::Value wrappedValue = objectCtor.callAsConstructor(env, value);
     if (!wrappedValue.isObject()) {
-        throw fbjsi::JSError(env, util::format("TypeError:  cannot wrap %1 in Object", realmjsi::Value::typeof(env, value)));
+        throw fbjsi::JSError(
+            env, util::format("TypeError:  cannot wrap %1 in Object", realmjsi::Value::typeof(env, value)));
     }
     return env(wrappedValue.asObject(env));
 }

@@ -344,8 +344,8 @@ public:
 
     // NOTE:  __to_object and __to_boolean are shims that allow type conversion tests
     // on unit tests / CI.  They probably shouldn't be available in production
-    static void __to_object(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void __to_boolean(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void __to_object(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void __to_boolean(ContextType, ObjectType, Arguments&, ReturnValue&);
 
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -1441,8 +1441,7 @@ void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this
 }
 
 template <typename T>
-void RealmClass<T>::__to_object(ContextType ctx, ObjectType this_object, Arguments& args,
-                                     ReturnValue& return_value)
+void RealmClass<T>::__to_object(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
     args.validate_count(1);
     ObjectType newobj = Value::to_object(ctx, args[0]);
@@ -1451,8 +1450,7 @@ void RealmClass<T>::__to_object(ContextType ctx, ObjectType this_object, Argumen
 }
 
 template <typename T>
-void RealmClass<T>::__to_boolean(ContextType ctx, ObjectType this_object, Arguments& args,
-                                     ReturnValue& return_value)
+void RealmClass<T>::__to_boolean(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
     args.validate_count(1);
     bool is_bool = Value::to_boolean(ctx, args[0]);

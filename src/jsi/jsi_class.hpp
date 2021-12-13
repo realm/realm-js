@@ -228,13 +228,13 @@ public:
 
     /**
      * @brief callback for invalid access to index setters
-     * Throws an error when a users attemps to write to an index on a type that 
+     * Throws an error when a users attemps to write to an index on a type that
      * doesn't support it.
-     * 
+     *
      * @return nothing; always throws
      */
     static fbjsi::Value readonly_index_setter_callback(fbjsi::Runtime& env, const fbjsi::Value& thisVal,
-                                                 const fbjsi::Value* args, size_t count)
+                                                       const fbjsi::Value* args, size_t count)
     {
         throw fbjsi::JSError(env, "Cannot assign to index");
     }
@@ -242,12 +242,12 @@ public:
     /**
      * @brief callback for invalid access to property setters
      * Trows an error when a user attempts to write to a read-only property
-     * 
+     *
      * @param propname name of the property the user is trying to write to
      * @return nothin; always throws
      */
     static fbjsi::Value readonly_setter_callback(fbjsi::Runtime& env, const fbjsi::Value& thisVal,
-                                                 const fbjsi::Value* args, size_t count, std::string const &propname)
+                                                 const fbjsi::Value* args, size_t count, std::string const& propname)
     {
         throw fbjsi::JSError(env, util::format("Cannot assign to read only property '%1'", propname));
     }
@@ -310,8 +310,11 @@ public:
                 desc.setProperty(env, "set", funcVal(env, "set_" + name, 1, prop.setter));
             }
             else {
-                desc.setProperty(env, "set", funcVal(env, "set_" + name, 0, 
-                std::bind(ObjectWrap::readonly_setter_callback, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, name)));
+                desc.setProperty(
+                    env, "set",
+                    funcVal(env, "set_" + name, 0,
+                            std::bind(ObjectWrap::readonly_setter_callback, std::placeholders::_1,
+                                      std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, name)));
             }
             defineProperty(env, *s_ctor, name, desc);
         }
@@ -334,8 +337,11 @@ public:
                 desc.setProperty(env, "set", funcVal(env, "set_" + name, 1, prop.setter));
             }
             else {
-                desc.setProperty(env, "set", funcVal(env, "set_" + name, 0,
-                std::bind(ObjectWrap::readonly_setter_callback, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, name)));
+                desc.setProperty(
+                    env, "set",
+                    funcVal(env, "set_" + name, 0,
+                            std::bind(ObjectWrap::readonly_setter_callback, std::placeholders::_1,
+                                      std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, name)));
             }
             defineProperty(env, proto, name, desc);
         }
@@ -424,8 +430,7 @@ public:
                     .asObject(env)
                     .asFunction(env)
                     .call(env, funcVal(env, "getter", 0, getter),
-                          funcVal(env, "setter", 1, setter ? setter : 
-                          ObjectWrap::readonly_index_setter_callback))
+                          funcVal(env, "setter", 1, setter ? setter : ObjectWrap::readonly_index_setter_callback))
                     .asObject(env)
                     .asFunction(env));
             defineProperty(env, *s_ctor, "_proxyWrapper", desc);
