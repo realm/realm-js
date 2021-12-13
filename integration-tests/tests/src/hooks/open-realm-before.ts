@@ -39,14 +39,15 @@ export function openRealmHook(config: LocalConfiguration | SyncedConfiguration =
         path,
         sync: {
           user: this.user,
-          ...(!config.sync.flexible && { partitionValue: nonce }),
+          ...(config.sync.flexible ? { flexible: true } : { partitionValue: nonce }),
           _sessionStopPolicy: "immediately",
           ...config.sync,
         },
       } as Realm.Configuration;
       this.realm = new Realm(this.config);
       // Upload the schema, ensuring a valid connection
-      await this.realm.syncSession.uploadAllLocalChanges();
+      // TODO disabled
+      // await this.realm.syncSession.uploadAllLocalChanges();
     }
   };
 }
