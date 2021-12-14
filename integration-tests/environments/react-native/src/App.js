@@ -185,7 +185,7 @@ export class App extends Component {
           }
         }
         // Require in the integration tests
-        require("realm-integration-tests");
+        require("@realm/integration-tests");
       },
     });
 
