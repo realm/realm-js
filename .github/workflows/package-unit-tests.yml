@@ -29,6 +29,9 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Install npm v7
         run: npm install -g npm@7
-      - run: npx lerna bootstrap --scope '{realm-network-transport,@realm.io/common}' --include-dependencies
+      # Install the root package to get dev-dependencies
+      # (--ignore-scripts to avoid downloading or building the native module)
+      - run: npm ci --ignore-scripts
+      - run: npm run lerna:bootstrap -- --scope '{realm-network-transport,@realm.io/common}' --include-dependencies
       - run: npm test --prefix packages/realm-network-transport
       - run: npm test --prefix packages/realm-common
