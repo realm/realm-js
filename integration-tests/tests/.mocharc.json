@@ -1,4 +1,10 @@
 {
-  "extension": ["ts"],
-  "require": ["ts-node/register/transpile-only", "src/utils/inject-node-globals.ts"]
+  "extension": [
+    "ts",
+    "js"
+  ],
+  "require": [
+    "ts-node/register/transpile-only",
+    "src/utils/inject-node-globals.ts"
+  ]
 }

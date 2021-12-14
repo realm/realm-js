@@ -65,12 +65,6 @@ The tests will re-run when the test suite changes and it has Realm JS installed 
 
 When debugging an error happening only on a specific environment, it's useful to run the tests only for that. Each environment package has a couple of test related NPM scripts. Consult their individual README.md files for instructions on using them.
 
-When running the environments individually the test suite's TypeScript is not automatically transpiled. In that case, open a terminal and run the `build:watch` NPM script of the `./tests` directory to watch the source code of the tests and continually build as they change:
-
-```bash
-npm run build:watch --prefix tests
-```
-
 ## Running tests with a C++ debugger attached
 
 In order to debug the tests with `lldb` attached to debug C++, you can use the VS Code launch configuration `LLDB Debug Integration Tests`.
