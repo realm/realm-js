@@ -67,6 +67,12 @@ async function fetchPlatformData(platform, context, eventName) {
     identifier = sha256("unknown");
   }
 
+  let version;
+  let framework;
+  if (platform === "nodejs") {
+    version = conte
+  }
+
   // payloads for webhook and MixPanel differ slightly
   const payloads = {
     webHook: {
@@ -140,6 +146,10 @@ async function dispatchAnalytics(payload) {
 
 async function submitAnalytics(platform, dryRun, eventName) {
   const context = require("../package.json");
+  if (platform === "nodejs" && context.dependencies && context.dependencies && context.dependencies["react-native"]) {
+    doLog("platform === 'nodejs' and 'react-native' is a dependency");
+    return;
+  }
 
   if (isAnalyticsDisabled()) {
     doLog("Analytics is disabled");
@@ -188,6 +198,7 @@ if (options.dryRun) {
 if (options.log) {
   doLog = (msg) => console.log(msg);
 } else {
+  // eslint-disable-next-line no-unused-vars
   doLog = (_) => {
     /* don't log */
   };
@@ -199,5 +210,3 @@ submitAnalytics(platform, dryRun, eventName).catch((err) => {
     console.log(`Submitting failed: ${err}`);
   }
 });
-
-
