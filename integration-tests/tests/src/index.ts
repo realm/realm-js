@@ -39,6 +39,6 @@ describe.skipIf(environment.integration === false, "Integration tests", () => {
   require("./tests");
 });
 
-describe.skipIf(environment.integration === false, "Integration tests", () => {
+describe.skipIf(environment.performance !== true, "Performance tests", () => {
   require("./performance-tests");
 });

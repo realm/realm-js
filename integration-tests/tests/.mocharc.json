@@ -5,6 +5,6 @@
   ],
   "require": [
     "ts-node/register/transpile-only",
-    "src/utils/inject-node-globals.ts"
+    "src/node/inject-globals.ts"
   ]
 }
