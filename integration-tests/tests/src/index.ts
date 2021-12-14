@@ -35,13 +35,10 @@ import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
 global.describe.skipIf = suiteSkipIf;
 global.it.skipIf = testSkipIf;
 
-require("./tests/import-app-util");
-require("./tests/realm-constructor");
-require("./tests/serialization");
-require("./tests/objects");
-require("./tests/iterators");
-require("./tests/dynamic-schema-updates");
-require("./tests/bson");
-require("./tests/dictionary");
-require("./tests/credentials/anonymous");
-require("./tests/sync/mixed");
+describe.skipIf(environment.integration === false, "Integration tests", () => {
+  require("./tests");
+});
+
+describe.skipIf(environment.integration === false, "Integration tests", () => {
+  require("./performance-tests");
+});
