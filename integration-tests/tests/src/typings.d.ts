@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+type BennySummary = Awaited<ReturnType<typeof import("benny").suite>>;
+
 interface fs {
   exists: (path: string) => boolean;
 }
@@ -59,6 +61,12 @@ type UserContext = { user: Realm.User } & Mocha.Context;
 type RealmContext = {
   realm: Realm;
   config: Realm.Configuration;
+} & Mocha.Context;
+type RealmObjectContext<T = Record<string, unknown>> = {
+  object: Realm.Object & T;
+} & RealmContext;
+type BenchmarkContext = {
+  summary?: BennySummary;
 } & Mocha.Context;
 
 interface Console {

@@ -25,3 +25,23 @@ global.fs = require("fs-extra") as typeof global.fs;
 global.path = require("path") as typeof global.path;
 global.title = "Realm JS development-mode";
 global.environment = { node: true };
+
+function parseValue(value: string | undefined) {
+  if (typeof value === "undefined" || value === "true") {
+    return true;
+  } else if (value === "false") {
+    return false;
+  } else {
+    return value;
+  }
+}
+
+const { CONTEXT } = process.env;
+if (CONTEXT) {
+  for (const pair of CONTEXT.split(",")) {
+    const [key, value] = pair.split("=");
+    if (key) {
+      environment[key] = parseValue(value);
+    }
+  }
+}
