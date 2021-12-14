@@ -31,12 +31,12 @@
     "realm-app-importer": "*"
   },
   "dependencies": {
+    "@realm/integration-tests": "*",
     "fs-extra": "^9.1.0",
     "mocha": "^8.3.2",
     "mocha-remote-client": "^1.4.3",
     "node-fetch": "^2.6.1",
-    "realm": "*",
-    "realm-integration-tests": "*"
+    "realm": "*"
   },
   "build": {
     "appId": "io.realm.realm-js.electron-tests",

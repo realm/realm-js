@@ -10,6 +10,7 @@
     "app-importer": "realm-app-importer serve ../../realm-apps"
   },
   "dependencies": {
+    "@realm/integration-tests": "*",
     "command-line-args": "^4.0.6",
     "fs-extra": "^7.0.1",
     "https-proxy-agent": "^2.2.3",
@@ -20,8 +21,7 @@
     "mocha-remote-cli": "^1.4.3",
     "mocha-remote-client": "^1.4.3",
     "node-fetch": "^2.6.1",
-    "realm": "*",
-    "realm-integration-tests": "*"
+    "realm": "*"
   },
   "devDependencies": {
     "cmake-js": "^6.1.0",

@@ -189,7 +189,6 @@ Open the `package.json` of both `react-native` and `react-native-backup`:
 
 1. compare (to see if any dependencies are missing from the list above),
 2. copy over the scripts
-3. copy over the `realm` and `realm-integration-tests` "local dependencies".
 4. delete anything "jest" related.
 
 Install dependencies again to run the `prepare` script (from the root of the repository):
