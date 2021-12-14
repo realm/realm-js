@@ -32,7 +32,6 @@
     "realm-network-transport": "^0.7.0"
   },
   "files": [
-    "/dist",
     "/src"
   ]
 }
