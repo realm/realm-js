@@ -67,7 +67,11 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
         this.object = this.realm.create(objectSchemaName, {
           [propertyName]: typeof value === "function" ? value(this.realm) : value,
         });
+        // Override toJSON to prevent this being serialized by Mocha Remote
+        Object.defineProperty(this.object, "toJSON", { value: () => ({}) });
       });
+      // Override toJSON to prevent this being serialized by Mocha Remote
+      Object.defineProperty(this.realm, "toJSON", { value: () => ({}) });
     },
     test(this: RealmObjectContext) {
       const value = this.object[propertyName];
