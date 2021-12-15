@@ -16,47 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import BM from "benchmark";
+import { benchmark, BenchmarkOpts } from "../bench";
 
 import { openRealmBefore } from "../hooks";
-
-type Options = ConstructorParameters<typeof BM.Suite>[1];
 
 // Increase the following `performanceMaxTime` value to increase confidence
 const { performanceMaxTime } = environment;
 const maxTimeMs = parseInt(typeof performanceMaxTime === "string" ? performanceMaxTime : "1000", 10);
 
-export function benchmark(title: string, fn: () => void | Promise<void>, options?: Options): void {
+const DEFAULT_OPTIONS: Partial<BenchmarkOpts> = { output: false, iter: 1000, size: 1000 };
+
+export function itPerforms(title: string, fn: () => void, options?: Partial<BenchmarkOpts>): void {
   it(title, async function (this: Partial<BenchmarkContext> & Mocha.Context) {
-    this.timeout(maxTimeMs + 1000).slow(maxTimeMs * 3);
-    // For some (still to be discovered) reason, require("lodash") returns `null` when called from runInContext inside `benchmark`
-    const Benchmark = BM.runInContext({ _: require("lodash") }) as typeof BM;
-    if (!Benchmark.Suite) {
-      throw new Error("Failed to load Benchmark correctly");
-    }
-
-    const suite = new Benchmark.Suite(undefined, {
-      ...options,
-    }).add(title, fn.bind(this), {
-      maxTime: maxTimeMs / 1000,
+    this.timeout("1m").slow("1m");
+    const result = benchmark(fn.bind(this), { ...DEFAULT_OPTIONS, ...options });
+    const hz = (result.iter * result.size) / (result.total / 1000);
+    const ops = hz.toLocaleString("en-US", {
+      maximumFractionDigits: 0,
     });
-
-    this.benchmark = await new Promise<BM>((resolve, reject) => {
-      suite
-        .on("complete", ({ target }: { target: BM }) => {
-          const ops = target.hz.toLocaleString(undefined, {
-            maximumFractionDigits: 0,
-          });
-          const rme = Number(target.stats.rme.toFixed(2));
-          this.test.title += ` (${ops} ops/sec, ±${rme}%)`;
-          resolve(target);
-        })
-        .on("error", (err: unknown) => {
-          console.error({ err });
-          reject(err);
-        })
-        .run();
-    });
+    const sd = Number(result.sd.toFixed(2));
+    this.test.title += ` (${ops} ops/sec, ±${sd}%)`;
+    this.result = result;
   });
 }
 
@@ -76,7 +56,7 @@ export function describePerformance(title: string, parameters: PerformanceTestPa
       schema: parameters.schema,
     });
     before(parameters.before);
-    benchmark(parameters.benchmarkTitle, parameters.test);
+    itPerforms(parameters.benchmarkTitle, parameters.test);
     after(function (this: BenchmarkContext) {
       // console.log(this.summary);
     });

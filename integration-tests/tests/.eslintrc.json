@@ -5,5 +5,8 @@
   ],
   "rules": {
     "@typescript-eslint/no-explicit-any": "off"
-  }
+  },
+  "ignorePatterns": [
+    "src/bench/rolledup.js"
+  ]
 }
