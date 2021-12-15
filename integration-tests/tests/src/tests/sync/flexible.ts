@@ -26,7 +26,7 @@ import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 // TODO do we need hto handle getSyncSession?
 
 describe("Flexible sync", function () {
-  importAppBefore("with-db-flx");
+  importAppBefore("with-db-flx", {}, "all");
   authenticateUserBefore();
   openRealmBeforeEach({ schema: [PersonSchema, DogSchema], sync: { flexible: true } });
 
@@ -226,10 +226,17 @@ describe("Flexible sync", function () {
           expect(subs.snapshot()).to.have.length(0);
         });
 
-        it("returns an array of Subscription objects", function (this: RealmContext) {
+        it("returns an array of Subscription objects", async function (this: RealmContext) {
+          console.log("add1");
           addPersonSubscription(this);
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+          console.log("add2");
           const { subs } = addSubscription(this, this.realm.objects(PersonSchema.name).filtered("age > 10"));
+          await new Promise((resolve) => setTimeout(resolve, 5000));
 
+          console.log(subs.snapshot().map((s) => s.queryString));
+          // PROBLEM: subs are not updated - is this because server can't handle query change messages?
+          //[mocha] Connection[1]: Session[1]: Received QUERY_ERROR "Client provided query with bad syntax: unknown table "Person"" (error_code=300, query_version=1)
           expect(subs.snapshot()).to.have.length(2);
           expect(subs.snapshot().every((s) => s instanceof Realm.App.Sync.Subscription)).to.be.true;
         });

@@ -1,5 +1,5 @@
-// Realm = require(".");
-Realm = require("./realm-js");
+Realm = require(".");
+// Realm = require("./realm-js");
 
 DogSchema = {
   name: "Dog",
@@ -23,7 +23,7 @@ TopLevelSchema = {
   }
 }
 
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "basic_flx_connect-ghxcx" });
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-flx-kejpp" });
 Realm.App.Sync.setLogLevel(app, "all");
 
 user = await app.logIn(Realm.Credentials.anonymous());
@@ -42,6 +42,12 @@ let sub;
 subs.update((m) => {
   sub = m.add(realm.objects("TopLevel").filtered('queryable_int_field > 1'))
 });
+
+
+subs.update((m) => {
+  sub = m.add(realm.objects("TopLevel").filtered('queryable_int_field > 3'))
+});
+
 
 subs.update((m) => {
   sub = m.add(realm.objects("Dog").filtered("age > 101"), { name: "test" });
