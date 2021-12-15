@@ -420,7 +420,7 @@ describe("Flexible sync", function () {
           subs.update(async (mutableSubs) => {
             // This should throw
             expect(async () => {
-              await ((mutableSubs as unknown) as Realm.App.Sync.Subscriptions).waitForSynchronization();
+              await (mutableSubs as unknown as Realm.App.Sync.Subscriptions).waitForSynchronization();
             }).to.throw("`waitForSynchronization` cannot be called on a mutable subscription set.");
           });
         });
@@ -432,7 +432,7 @@ describe("Flexible sync", function () {
             const subs = this.realm.getSubscriptions();
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).add(this.realm.objects(PersonSchema.name));
+              (subs as unknown as Realm.App.Sync.MutableSubscriptions).add(this.realm.objects(PersonSchema.name));
             }).throws("Subscriptions can only be added inside an `update` callback.");
           });
 
@@ -440,7 +440,7 @@ describe("Flexible sync", function () {
             const { subs, query } = addPersonSubscription(this);
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).remove(query);
+              (subs as unknown as Realm.App.Sync.MutableSubscriptions).remove(query);
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
@@ -448,7 +448,7 @@ describe("Flexible sync", function () {
             const { subs } = addPersonSubscription(this);
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeByName("test");
+              (subs as unknown as Realm.App.Sync.MutableSubscriptions).removeByName("test");
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
@@ -456,7 +456,7 @@ describe("Flexible sync", function () {
             const { subs, sub } = addPersonSubscription(this);
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeSubscription(sub);
+              (subs as unknown as Realm.App.Sync.MutableSubscriptions).removeSubscription(sub);
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
@@ -464,7 +464,7 @@ describe("Flexible sync", function () {
             const { subs } = addPersonSubscription(this);
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeAll();
+              (subs as unknown as Realm.App.Sync.MutableSubscriptions).removeAll();
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
@@ -472,7 +472,7 @@ describe("Flexible sync", function () {
             const { subs } = addPersonSubscription(this);
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeByObjectType("test");
+              (subs as unknown as Realm.App.Sync.MutableSubscriptions).removeByObjectType("test");
             }).throws("Subscriptions can only be removed inside an `update` callback.");
           });
 
@@ -494,7 +494,7 @@ describe("Flexible sync", function () {
 
             expect(() => {
               subs.update((mutableSubs) => {
-                ((mutableSubs as unknown) as Realm.App.Sync.Subscriptions).update(() => {
+                (mutableSubs as unknown as Realm.App.Sync.Subscriptions).update(() => {
                   // This should throw
                 });
               });

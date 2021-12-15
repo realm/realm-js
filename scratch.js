@@ -1,15 +1,15 @@
-Realm = require(".");
-// Realm = require("./realm-js");
+// Realm = require(".");
+Realm = require("../../realm-js");
 
-DogSchema = {
-  name: "Dog",
-  primaryKey: "_id",
-  properties: {
-    _id: "objectId",
-    age: "int",
-    name: "string",
-  },
-};
+// DogSchema = {
+//   name: "Dog",
+//   primaryKey: "_id",
+//   properties: {
+//     _id: "objectId",
+//     age: "int",
+//     name: "string",
+//   },
+// };
 
 TopLevelSchema = {
   name: "TopLevel",
@@ -23,7 +23,7 @@ TopLevelSchema = {
   }
 }
 
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-flx-kejpp" });
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: "basic_flx_connect-ydrps" });
 Realm.App.Sync.setLogLevel(app, "all");
 
 user = await app.logIn(Realm.Credentials.anonymous());
@@ -35,14 +35,23 @@ realm = new Realm({
 
 subs = realm.getSubscriptions();
 
+subs.snapshot().length;
+
 // await subs.waitForSynchronization();
 
 let sub;
 
 subs.update((m) => {
+  sub = m.add(realm.objects("TopLevel"))
+});
+
+subs.update((m) => {
   sub = m.add(realm.objects("TopLevel").filtered('queryable_int_field > 1'))
 });
 
+realm.objects('TopLevel').length;
+
+realm.write(() => realm.create("TopLevel", { _id: Realm.BSON.ObjectID(), queryable_int_field: 2 }))
 
 subs.update((m) => {
   sub = m.add(realm.objects("TopLevel").filtered('queryable_int_field > 3'))
