@@ -16,37 +16,47 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { suite, add, cycle, configure } from "benny";
+import BM from "benchmark";
 
 import { openRealmBefore } from "../hooks";
 
-type Config = Parameters<typeof configure>[0];
+type Options = ConstructorParameters<typeof BM.Suite>[1];
 
 // Increase the following `performanceMaxTime` value to increase confidence
 const { performanceMaxTime } = environment;
 const maxTimeMs = parseInt(typeof performanceMaxTime === "string" ? performanceMaxTime : "1000", 10);
 
-export function benchmark(title: string, fn: () => void | Promise<void>, config?: Config): void {
-  it(title, async function (this: BenchmarkContext) {
+export function benchmark(title: string, fn: () => void | Promise<void>, options?: Options): void {
+  it(title, async function (this: Partial<BenchmarkContext> & Mocha.Context) {
     this.timeout(maxTimeMs + 1000).slow(maxTimeMs * 3);
-    this.summary = await suite(
-      title,
-      configure({
-        cases: {
-          maxTime: maxTimeMs / 1000,
-          ...config?.cases,
-        },
-        ...config,
-      }),
-      add(title, fn.bind(this)),
-      cycle((result) => {
-        const ops = result.ops.toLocaleString(undefined, {
-          maximumFractionDigits: 0,
-        });
-        const margin = result.margin;
-        this.test.title += ` (${ops} ops/sec, ±${margin}%)`;
-      }),
-    );
+    // For some (still to be discovered) reason, require("lodash") returns `null` when called from runInContext inside `benchmark`
+    const Benchmark = BM.runInContext({ _: require("lodash") }) as typeof BM;
+    if (!Benchmark.Suite) {
+      throw new Error("Failed to load Benchmark correctly");
+    }
+
+    const suite = new Benchmark.Suite(undefined, {
+      ...options,
+    }).add(title, fn.bind(this), {
+      maxTime: maxTimeMs / 1000,
+    });
+
+    this.benchmark = await new Promise<BM>((resolve, reject) => {
+      suite
+        .on("complete", ({ target }: { target: BM }) => {
+          const ops = target.hz.toLocaleString(undefined, {
+            maximumFractionDigits: 0,
+          });
+          const rme = Number(target.stats.rme.toFixed(2));
+          this.test.title += ` (${ops} ops/sec, ±${rme}%)`;
+          resolve(target);
+        })
+        .on("error", (err: unknown) => {
+          console.error({ err });
+          reject(err);
+        })
+        .run();
+    });
   });
 }
 

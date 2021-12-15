@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-type BennySummary = Awaited<ReturnType<typeof import("benny").suite>>;
+type Benchmark = import("benchmark");
 
 interface fs {
   exists: (path: string) => boolean;
@@ -66,7 +66,7 @@ type RealmObjectContext<T = Record<string, unknown>> = {
   object: Realm.Object & T;
 } & RealmContext;
 type BenchmarkContext = {
-  summary?: BennySummary;
+  benchmark: Benchmark;
 } & Mocha.Context;
 
 interface Console {
