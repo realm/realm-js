@@ -1,3 +1,5 @@
 template/ios/Podfile.lock
 template/ios/*.xcworkspace
 template/.expo
+template/android/build
+template/android/app/build

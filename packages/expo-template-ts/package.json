@@ -1,6 +1,6 @@
 {
   "name": "@realm/expo-template-ts",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.1",
   "description": "Expo Template Realm TS",
   "scripts": {
     "lint": "cd template && npm run lint"
@@ -17,3 +17,4 @@
   },
   "license": "Apache-2.0"
 }
+
