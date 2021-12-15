@@ -1,0 +1,4 @@
+template/ios/Podfile.lock
+template/ios/Pods
+template/android/build
+template/android/app/build
