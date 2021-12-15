@@ -257,10 +257,7 @@ inline bool realmjsi::Value::to_boolean(JsiEnv env, const JsiVal& value)
             return false;
         }
 
-        // TODO:  add tests for these -- specifcally the case of numerals 0 and -0
-        fbjsi::String const jsistringval = value->toString(env);
-        std::string const stringval = jsistringval.utf8(env);
-
+        std::string const stringval = value->toString(env).utf8(env);
         return (stringval != "0" && stringval != "-0");
     }
 
