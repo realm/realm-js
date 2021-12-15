@@ -178,10 +178,13 @@ export class App extends Component {
           chromeDebugging: mode === "chrome-debugging",
         };
         // Make the tests reinitializable, to allow test running on changes to the "realm" package
-        const modules = require.getModules();
-        for (const [, m] of Object.entries(modules)) {
-          if (m.verboseName.startsWith("../../tests/")) {
-            m.isInitialized = false;
+        // Probing the existance of `getModules` as this only exists in debug mode
+        if ("getModules" in require) {
+          const modules = require.getModules();
+          for (const [, m] of Object.entries(modules)) {
+            if (m.verboseName.startsWith("../../tests/")) {
+              m.isInitialized = false;
+            }
           }
         }
         // Require in the integration tests
