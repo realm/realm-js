@@ -44,7 +44,7 @@ public:
         , m_isValue(false)
     {
         napi_status status = napi_create_reference(env, value, 1, &m_ref);
-        if (status == napi_object_expected) {
+        if (status == napi_object_expected || status == napi_invalid_arg) {
             m_isValue = true;
             Napi::Object object = Napi::Object::New(m_env);
             object.Set("value", value);
