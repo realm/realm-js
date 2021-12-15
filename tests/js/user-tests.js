@@ -279,7 +279,7 @@ module.exports = {
     const validPassword = "password123456";
     await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
 
-    const newPassword = "password654321";
+    const newPassword = "realm_tests_do_reset654321";
     await app.emailPasswordAuth.callResetPasswordFunction({ email: validEmail, password: newPassword });
 
     // see if we can log in
