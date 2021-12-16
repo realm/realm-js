@@ -527,6 +527,24 @@ module.exports = {
       .then(() => TestCase.assertTrue(progressCalled));
   },
 
+  // test that it is possible to register a custom logging function on a
+  // Sync session, and that it is invoked when a session is established
+  async testCustomSessionLogging() {
+    const partition = Utils.genPartition();
+    let credentials = Realm.Credentials.anonymous();
+    let app = new Realm.App(appConfig);
+    let user = await app.logIn(credentials);
+    let config = getSyncConfiguration(user, partition);
+
+    let loggerInvoked = false;
+    Realm.App.Sync.setLogLevel(app, "info"); // "all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"
+    Realm.App.Sync.setLogger(app, (level, message) => (loggerInvoked = true));
+    const realm = await Realm.open(config);
+    realm.close();
+
+    TestCase.assertTrue(loggerInvoked, "Custom logger should have been invoked");
+  },
+
   testClientReset() {
     // FIXME: try to enable for React Native
     if (!platformSupported) {
