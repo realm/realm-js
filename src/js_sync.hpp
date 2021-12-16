@@ -828,6 +828,7 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
         Function::callback(protected_ctx, protected_callback, 2, arguments);
     };
 
+    show_logs(90, "fwe");
     auto sync_logger = common::logger::Logger::build_sync_logger(show_logs);
     app->sync_manager()->set_logger_factory(sync_logger);
 }
