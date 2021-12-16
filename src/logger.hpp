@@ -74,8 +74,8 @@ class IOSLogger {
 class SyncLoggerDelegator : public util::RootLogger {
 public:
     SyncLoggerDelegator() = delete;
-    SyncLoggerDelegator(Delegated &&delegate) : loggerDelegate(delegate) {
-    };
+    SyncLoggerDelegator(Delegated&& delegate)
+        : loggerDelegate(delegate){};
 
     void delegate()
     {
@@ -141,9 +141,9 @@ public:
         throw std::runtime_error("Bad log level");
     }
 
-    static SyncClientConfig::LoggerFactory build_sync_logger(Delegated &&log_fn)
+    static SyncClientConfig::LoggerFactory build_sync_logger(Delegated&& log_fn)
     {
-        return [captured_logger = std::move(log_fn)] (realm::util::Logger::Level level) mutable {
+        return [captured_logger = std::move(log_fn)](realm::util::Logger::Level level) mutable {
             auto logger = std::make_unique<SyncLoggerDelegator>(std::move(captured_logger));
             logger->set_level_threshold(level);
             logger->delegate();
