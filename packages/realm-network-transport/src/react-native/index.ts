@@ -23,3 +23,8 @@ import { AbortController, Fetch } from "../types";
 
 DefaultNetworkTransport.fetch = globalThis.fetch.bind(globalThis) as Fetch;
 DefaultNetworkTransport.AbortController = globalThis.AbortController as AbortController;
+// Setting this non-standard option to enable text streaming
+// See https://github.com/react-native-community/fetch#enable-text-streaming
+DefaultNetworkTransport.extraFetchOptions = {
+  reactNative: { textStreaming: true },
+};

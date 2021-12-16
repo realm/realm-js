@@ -29,6 +29,7 @@ import type {
 export class DefaultNetworkTransport implements NetworkTransport {
   public static fetch: Fetch;
   public static AbortController: AbortController;
+  public static extraFetchOptions: Record<string, unknown> | undefined;
 
   public static DEFAULT_HEADERS = {
     "Content-Type": "application/json",
@@ -69,6 +70,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
     try {
       // We'll await the response to catch throw our own error
       return await DefaultNetworkTransport.fetch(url, {
+        ...DefaultNetworkTransport.extraFetchOptions,
         signal, // Used to signal timeouts
         ...rest,
       });
