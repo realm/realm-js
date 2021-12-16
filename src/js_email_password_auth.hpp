@@ -194,8 +194,8 @@ void EmailPasswordAuthClass<T>::call_reset_password_function(ContextType ctx, Ob
     auto details = Value::validated_to_object(ctx, args[0], "resetDetails");
     auto email = Object::validated_get_string(ctx, details, "email", "email");
     auto password = Object::validated_get_string(ctx, details, "password", "password");
-    auto stringified_ejson_args = Value::validated_to_string(ctx, args[2], "args");
-    auto callback = Value::validated_to_function(ctx, args[3], "callback");
+    auto stringified_ejson_args = Value::validated_to_string(ctx, args[1], "args");
+    auto callback = Value::validated_to_function(ctx, args[2], "callback");
 
     auto bson_args = String::to_bson(stringified_ejson_args);
 
