@@ -272,6 +272,24 @@ module.exports = {
     TestCase.assertEqual(err.message, "already confirmed", "User should already be confirmed.");
   },
 
+  async testResetPassword() {
+    let app = new Realm.App(appConfig);
+
+    const validEmail = randomVerifiableEmail();
+    const validPassword = "password123456";
+    await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
+
+    const newPassword = "realm_tests_do_reset654321";
+    await app.emailPasswordAuth.callResetPasswordFunction({ email: validEmail, password: newPassword });
+
+    // see if we can log in
+    let creds = Realm.Credentials.emailPassword(validEmail, newPassword);
+    let user = await app.logIn(creds);
+    TestCase.assertTrue(user instanceof Realm.User);
+
+    await user.logOut();
+  },
+
   async testFunctions() {
     let app = new Realm.App(appConfig);
     let credentials = Realm.Credentials.anonymous();
