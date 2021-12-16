@@ -6,7 +6,7 @@
     "./header.eslintrc"
   ],
   "env": {
-    "es2017": true
+    "es2020": true
   },
   "parserOptions": {
     "ecmaVersion": 2018
