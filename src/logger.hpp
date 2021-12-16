@@ -77,10 +77,8 @@ public:
     SyncLoggerDelegator(Delegated &&delegate) : loggerDelegate(delegate) {
     };
 
-//    void delegate(Delegated& delegate)
     void delegate()
     {
-//        m_scheduler->set_notify_callback([this, delegate] {
         m_scheduler->set_notify_callback([this] {
             std::queue<Entry> popped;
             {
@@ -145,8 +143,8 @@ public:
 
     static SyncClientConfig::LoggerFactory build_sync_logger(Delegated &&log_fn)
     {
-        return [log_func = std::move(log_fn)] (realm::util::Logger::Level level) mutable {
-            auto logger = std::make_unique<SyncLoggerDelegator>(std::move(log_func));
+        return [captured_logger = std::move(log_fn)] (realm::util::Logger::Level level) mutable {
+            auto logger = std::make_unique<SyncLoggerDelegator>(std::move(captured_logger));
             logger->set_level_threshold(level);
             logger->delegate();
             return logger;
