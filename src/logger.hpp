@@ -75,14 +75,7 @@ class SyncLoggerDelegator : public util::RootLogger {
 public:
     SyncLoggerDelegator() = delete;
     SyncLoggerDelegator(Delegated &&delegate) : loggerDelegate(delegate) {
-        std::cout << "Allocating SyncLoggerDelegator" << std::endl;
-        loggerDelegate(500, "Random stuff");
     };
-    ~SyncLoggerDelegator()
-    {
-//        throw std::bad_typeid();
-        std::cout << "De-alloc SyncLoggerDelegator" << std::endl;
-    }
 
 //    void delegate(Delegated& delegate)
     void delegate()
@@ -150,20 +143,15 @@ public:
         throw std::runtime_error("Bad log level");
     }
 
-    static SyncClientConfig::LoggerFactory build_sync_logger(Delegated&& log_fn)
+    static SyncClientConfig::LoggerFactory build_sync_logger(Delegated &&log_fn)
     {
-        myDelegate = std::move(log_fn);
-        return [&log_fn](realm::util::Logger::Level level) {
-            log_fn(55, "fwoijrfeo");
-            auto logger = std::make_unique<SyncLoggerDelegator>(log_fn);
+        return [log_func = std::move(log_fn)] (realm::util::Logger::Level level) mutable {
+            auto logger = std::make_unique<SyncLoggerDelegator>(std::move(log_func));
             logger->set_level_threshold(level);
-//            logger->delegate(log_fn);
             logger->delegate();
             return logger;
         };
     }
-
-    Delegated &myDelegate;
 };
 
 } // namespace logger
