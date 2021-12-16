@@ -8,6 +8,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * `@sum` and `@avg` queries on Dictionaries of floats or doubles used too much precision for intermediates, resulting in incorrect rounding. (since v10.3.0-rc.1)
 * Queries of the form `link.collection.@sum = 0` where `link` is `null` matched when `collection` was a List or Set, but not a Dictionary ([realm/realm-core#5080](https://github.com/realm/realm-core/pull/5080), since v10.5.0)
 * Fix Realm for versions of Node greater than 14.
+* Type methods defined in `collection-methods.js` no longer throw `Realm not defined` errors in some environments ([#4029](https://github.com/realm/realm-js/issues/4029), [#3991](https://github.com/realm/realm-js/issues/3991), since v10.5.0)
+* Fixed a bug in `Realm.App.emailPasswordAuth.callResetPasswordFunction()` which could lead to the error `Error: Error: resetDetails must be of type 'object', got (user@example.com)`. ([#4143](https://github.com/realm/realm-js/issues/4143), since v10.10.0)
+=======
 
 ### Compatibility
 * MongoDB Realm Cloud.
