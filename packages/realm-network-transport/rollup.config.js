@@ -64,6 +64,21 @@ export default [
     ],
   },
   {
+    input: "src/react-native/index.ts",
+    output: [
+      {
+        file: pkg["react-native"],
+        format: "es",
+      },
+    ],
+    plugins: [
+      typescript({
+        tsconfig: "src/react-native/tsconfig.json",
+      }),
+      nodeResolve(),
+    ],
+  },
+  {
     input: "types/generated/index.d.ts",
     output: {
       file: pkg.types,
