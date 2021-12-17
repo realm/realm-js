@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./import-app-util";
 import "./realm-constructor";
 import "./serialization";
 import "./objects";
