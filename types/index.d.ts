@@ -113,6 +113,18 @@ declare namespace Realm {
         validateCallback?: SSLVerifyCallback;
     }
 
+    enum ClientResetMode {
+        Manual = "manual",
+        DiscardLocal = "discardLocal",
+    }
+
+    type ClientResetBeforeCallback = (localRealm: Realm) => void;
+    type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
+    interface ClientResetConfiguration {
+        mode: ClientResetMode;
+        clientResetBefore?: ClientResetBeforeCallback;
+        clientResetAfter?: ClientResetAfterCallback;
+    }
     interface SyncConfiguration {
         user: User;
         partitionValue: Realm.App.Sync.PartitionValue;
@@ -122,6 +134,7 @@ declare namespace Realm {
         ssl?: SSLConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
         error?: ErrorCallback;
+        clientReset?: ClientResetConfiguration;
     }
 
     interface BaseConfiguration {
@@ -466,6 +479,9 @@ declare namespace Realm {
         code: number;
     }
 
+    /**
+     * @deprecated
+     */
     interface ClientResetError {
         name: "ClientReset";
         path: string;
@@ -748,8 +764,8 @@ declare class Realm {
      * @returns {T | undefined}
      */
     objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: Realm.PrimaryKey): T | undefined;
-    
-    // Combined definitions 
+
+    // Combined definitions
     objectForPrimaryKey<T>(type: string | {new(...arg: any[]): T; }, key: Realm.PrimaryKey): (T & Realm.Object) | undefined;
 
     /**
@@ -764,7 +780,7 @@ declare class Realm {
      */
     objects<T extends Realm.Object>(type: {new(...arg: any[]): T; }): Realm.Results<T>;
 
-    // Combined definitions 
+    // Combined definitions
     objects<T>(type: string | {new(...arg: any[]): T; }): Realm.Results<T & Realm.Object>;
 
     /**

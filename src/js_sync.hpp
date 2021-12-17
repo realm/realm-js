@@ -28,8 +28,10 @@
 #include "logger.hpp"
 
 #include "platform.hpp"
+#include <realm/object-store/shared_realm.hpp>
 #include <realm/sync/config.hpp>
 #include <realm/sync/protocol.hpp>
+#include <realm/sync/client_base.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
@@ -56,6 +58,9 @@ extern jclass ssl_helper_class;
 
 namespace realm {
 namespace js {
+
+template <typename T>
+class RealmClass;
 
 // simple utility method
 template <typename T>
@@ -166,6 +171,68 @@ private:
     enum Direction { Upload, Download };
     static std::string get_connection_state_value(SyncSession::ConnectionState state);
     static void wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments& args);
+};
+
+template <typename T>
+class ClientResetAfterFunctor {
+public:
+    ClientResetAfterFunctor(typename T::Context ctx, typename T::Function after_func)
+        : m_ctx(Context<T>::get_global_context(ctx))
+        , m_func(ctx, after_func)
+    {
+    }
+
+    typename T::Function func() const
+    {
+        return m_func;
+    }
+
+    void operator()(SharedRealm before_realm, SharedRealm after_realm)
+    {
+        HANDLESCOPE(m_ctx)
+
+        typename T::Value arguments[] = {
+            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm)),
+            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm)),
+        };
+        Function<T>::callback(m_ctx, m_func, 2, arguments);
+        before_realm->close();
+        after_realm->close();
+    }
+
+private:
+    const Protected<typename T::GlobalContext> m_ctx;
+    const Protected<typename T::Function> m_func;
+};
+
+template <typename T>
+class ClientResetBeforeFunctor {
+public:
+    ClientResetBeforeFunctor(typename T::Context ctx, typename T::Function before_func)
+        : m_ctx(Context<T>::get_global_context(ctx))
+        , m_func(ctx, before_func)
+    {
+    }
+
+    typename T::Function func() const
+    {
+        return m_func;
+    }
+
+    void operator()(SharedRealm local_realm)
+    {
+        HANDLESCOPE(m_ctx)
+
+        typename T::Value arguments[] = {
+            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(local_realm)),
+        };
+        Function<T>::callback(m_ctx, m_func, 1, arguments);
+        local_realm->close();
+    }
+
+private:
+    const Protected<typename T::GlobalContext> m_ctx;
+    const Protected<typename T::Function> m_func;
 };
 
 template <typename T>
@@ -433,12 +500,18 @@ void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, R
 template <typename T>
 void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue&)
 {
-    args.validate_count(2);
+    args.validate_count(4);
 
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
-        std::error_code error_code(Value::validated_to_number(ctx, args[0]), realm::sync::protocol_error_category());
+        int err_code = Value::validated_to_number(ctx, args[0]);
         std::string message = Value::validated_to_string(ctx, args[1]);
-        SyncSession::OnlyForTesting::handle_error(*session, SyncError(error_code, message, false));
+        std::string type = Value::validated_to_string(ctx, args[2]);
+        bool is_fatal = Value::validated_to_boolean(ctx, args[3]);
+
+        std::error_code error_code(err_code, type == "realm::sync::ProtocolError"
+                                                 ? realm::sync::protocol_error_category()
+                                                 : realm::sync::client_error_category());
+        SyncSession::OnlyForTesting::handle_error(*session, std::move(SyncError(error_code, message, is_fatal)));
     }
 }
 
@@ -915,6 +988,55 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
         config.sync_config->stop_policy = session_stop_policy;
 
+        // Client reset
+        //
+        // i)  manual: the error handler is called with the proper error code and a client reset is initiated
+        // ii) discardLocal: the sync client handles it but notifications are send before and after
+        //
+        // The default setting is manual
+
+        const std::string client_reset_manual = "manual";
+        const std::string client_reset_discard_local = "discardLocal";
+        config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
+        ValueType client_reset_value = Object::get_property(ctx, sync_config_object, "clientReset");
+        if (!Value::is_undefined(ctx, client_reset_value)) {
+            auto client_reset_object = Value::validated_to_object(ctx, client_reset_value);
+            ValueType client_reset_mode_value = Object::get_property(ctx, client_reset_object, "mode");
+            if (!Value::is_undefined(ctx, client_reset_mode_value)) {
+                std::string client_reset_mode = Value::validated_to_string(ctx, client_reset_mode_value, "mode");
+                if (client_reset_mode == client_reset_manual) {
+                    config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
+                }
+                else if (client_reset_mode == client_reset_discard_local) {
+                    config.sync_config->client_resync_mode = realm::ClientResyncMode::DiscardLocal;
+                }
+                else {
+                    throw std::invalid_argument(util::format(
+                        "Unknown argument '%1' for clientReset.mode. Expected 'manual' or 'discardLocal'.",
+                        client_reset_mode));
+                }
+
+                std::function<void(SharedRealm)> client_reset_before_handler;
+                ValueType client_reset_before_value =
+                    Object::get_property(ctx, client_reset_object, "clientResetBefore");
+                if (!Value::is_undefined(ctx, client_reset_before_value)) {
+                    client_reset_before_handler =
+                        util::EventLoopDispatcher<void(SharedRealm)>(ClientResetBeforeFunctor<T>(
+                            ctx, Value::validated_to_function(ctx, client_reset_before_value)));
+                }
+                config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
+
+                std::function<void(SharedRealm, SharedRealm)> client_reset_after_handler;
+                ValueType client_reset_after_value =
+                    Object::get_property(ctx, client_reset_object, "clientResetAfter");
+                if (!Value::is_undefined(ctx, client_reset_after_value)) {
+                    client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, SharedRealm)>(
+                        ClientResetAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_after_value)));
+                }
+                config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
+            }
+        }
+
         // Custom HTTP headers
         ValueType sync_custom_http_headers_value = Object::get_property(ctx, sync_config_object, "customHttpHeaders");
         if (!Value::is_undefined(ctx, sync_custom_http_headers_value)) {
@@ -976,7 +1098,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             populate_sync_config_for_ssl(ctx, ssl_config_object, *config.sync_config);
         }
 
-        config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
         config.schema_mode = SchemaMode::AdditiveExplicit;
         config.path = user->sync_manager()->path_for_realm(*(config.sync_config));
     }

@@ -1,7 +1,23 @@
+
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Added templates for Expo.
+* A new mode `discardLocal` for client reset has been introduced. The old behavior is supported (but deprecated) through the `manual` mode. The new mode will discard any local changes, and a fresh copy of the Realm will be downloaded. An example of the configuration:
+
+```js
+const config = {
+  // ...
+  sync: {
+    // ...
+    clientReset: {
+      mode: "discardLocal",
+      clientResyncBefore: (realm) => { /* ... */ },
+      clientResyncAfter: (beforeRealm, afterRealm) => { /* ... */ },
+    },
+  },
+};
+```
 
 ### Fixed
 * If the option `user` in a sync configuration was not a `Realm.User` object could lead to a crash. ([#1348](https://github.com/realm/realm-js/issues/1348), since v10.0.0)
@@ -568,8 +584,12 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
+<<<<<<< HEAD
 * Upgraded Realm Core from v10.1.3 to v10.1.4.
 * Upgraded Realm Sync from v10.1.4 to v10.1.5.
+=======
+* None.
+>>>>>>> dc9b6ef61 (Upgrade to Realm Core v11.7.0)
 
 10.1.0 Release notes (2020-12-8)
 =============================================================
