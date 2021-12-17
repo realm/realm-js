@@ -536,13 +536,24 @@ module.exports = {
     let user = await app.logIn(credentials);
     let config = getSyncConfiguration(user, partition);
 
-    let loggerInvoked = false;
-    Realm.App.Sync.setLogLevel(app, "info"); // "all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"
-    Realm.App.Sync.setLogger(app, (level, message) => (loggerInvoked = true));
-    const realm = await Realm.open(config);
-    realm.close();
+    const logLevelStr = "info"; // "all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"
+    const logLevelNum = 4; // == "info", see index.d.ts, logger.hpp for definitions
 
-    TestCase.assertTrue(loggerInvoked, "Custom logger should have been invoked");
+    const promisedLog = new Promise((resolve) => {
+      Realm.App.Sync.setLogLevel(app, logLevelStr);
+      Realm.App.Sync.setLogger(app, (level, message) => {
+        if (level == logLevelNum && message.includes("Connection") && message.includes("Session")) {
+          // we should, at some point, receive a log message that looks like
+          // Connection[1]: Session[1]: client_reset_config = false, Realm exists = true, client reset = false
+          resolve(true);
+        }
+      });
+    });
+
+    const realm = await Realm.open(config);
+    const loggerInvoked = await promisedLog;
+    realm.close();
+    TestCase.assertTrue(loggerInvoked, `Custom logger should have registered an '${logLevelStr}' message`);
   },
 
   testClientReset() {
