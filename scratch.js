@@ -1,39 +1,65 @@
 // Realm = require(".");
 Realm = require("../../realm-js");
 
-// DogSchema = {
-//   name: "Dog",
-//   primaryKey: "_id",
-//   properties: {
-//     _id: "objectId",
-//     age: "int",
-//     name: "string",
-//   },
-// };
-
-TopLevelSchema = {
-  name: "TopLevel",
+PersonSchema = {
+  name: "Person",
   primaryKey: "_id",
   properties: {
     _id: "objectId",
-    partition: "string?",
-    non_queryable_field: "string?",
-    queryable_int_field: "int?",
-    queryable_str_field: "string?"
-  }
-}
+    age: "int",
+    name: "string",
+  },
+};
 
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "td_test_2" });
+
+DogSchema = {
+  name: "Dog",
+  primaryKey: "_id",
+  properties: {
+    _id: "objectId",
+    age: "int",
+    name: "string",
+  },
+};
+
+
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: "basic_flx_connect-ytdal" });
 Realm.App.Sync.setLogLevel(app, "all");
 
 user = await app.logIn(Realm.Credentials.anonymous());
 
 realm = new Realm({
-  schema: [TopLevelSchema],
+  // schema: [PersonSchema],
+  schema: [DogSchema],
   sync: { user, flexible: true }
 });
 
+
+
+
 subs = realm.getSubscriptions();
+
+subs.update((m) => {
+  sub = m.add(realm.objects("Dog"), { name: "test" });
+});
+
+realm.write(() => realm.create("Dog", { _id: Realm.BSON.ObjectID(), age: 122, name: "tom2" }))
+
+
+
+// TopLevelSchema = {
+//   name: "TopLevel",
+//   primaryKey: "_id",
+//   properties: {
+//     _id: "objectId",
+//     partition: "string?",
+//     non_queryable_field: "string?",
+//     queryable_int_field: "int?",
+//     queryable_str_field: "string?"
+//   }
+// }
+
+
 
 subs.snapshot().length;
 
@@ -58,11 +84,6 @@ subs.update((m) => {
 });
 
 
-subs.update((m) => {
-  sub = m.add(realm.objects("Dog").filtered("age > 101"), { name: "test" });
-});
-
-realm.write(() => realm.create("Dog", { _id: Realm.BSON.ObjectID(), age: 20, name: "tom" }))
 
 subs.update((m) => {
   sub = m.add(realm.objects("Dog").filtered("age > 15"), { name: "test2" });

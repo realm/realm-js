@@ -4,7 +4,11 @@
   "config": {
     "sync_query": {
       "state": "enabled",
-      "database_name": "test-database"
+      "database_name": "test-database",
+      "queryable_fields_names": [
+        "age",
+        "name"
+      ]
     }
   },
   "secret_config": {

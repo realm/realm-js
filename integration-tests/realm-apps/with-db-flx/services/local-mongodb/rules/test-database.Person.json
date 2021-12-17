@@ -1,0 +1,31 @@
+{
+  "database": "test-database",
+  "collection": "Person",
+  "roles": [{
+      "name": "default",
+      "apply_when": {},
+      "write": true,
+      "insert": true,
+      "delete": true,
+      "additional_fields": {}
+  }],
+    "schema": {
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "age": {
+        "bsonType": "long"
+      },
+      "name": {
+        "bsonType": "string"
+      }
+    },
+    "required": [
+      "_id",
+      "age",
+      "name"
+    ],
+    "title": "Person"
+  }
+}
