@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "chai": "^4.2.0",
-    "realm-network-transport": "^0.7.0"
+    "realm-network-transport": "^0.7.1"
   },
   "files": [
     "/src"

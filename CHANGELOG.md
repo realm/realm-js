@@ -10,7 +10,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fix Realm for versions of Node greater than 14.
 * Type methods defined in `collection-methods.js` no longer throw `Realm not defined` errors in some environments ([#4029](https://github.com/realm/realm-js/issues/4029), [#3991](https://github.com/realm/realm-js/issues/3991), since v10.5.0)
 * Fixed a bug in `Realm.App.emailPasswordAuth.callResetPasswordFunction()` which could lead to the error `Error: Error: resetDetails must be of type 'object', got (user@example.com)`. ([#4143](https://github.com/realm/realm-js/issues/4143), since v10.10.0)
-=======
+* Fixed `MongoDBCollection#watch` on React Native (https://github.com/realm/realm-js/issues/3494, since v10.0.0). To use this, you must install:
+  1. Polyfills for `fetch`, `ReadableStream` and `TextDecoder`: https://www.npmjs.com/package/react-native-polyfill-globals
+  2. Babel plugin enabling async generator syntax: https://npmjs.com/package/@babel/plugin-proposal-async-generator-functions
 
 ### Compatibility
 * MongoDB Realm Cloud.

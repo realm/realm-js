@@ -1,17 +1,14 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"types": [
-			"node-fetch",
-			"abort-controller"
-		],
 		"lib": [
-			"ES2015"
+			"ES2015",
+			"DOM"
 		]
 	},
 	"exclude": [
+		"../node/*",
 		"../dom/*",
-		"../react-native/*",
 		"../**/*.test.ts"
 	]
 }
