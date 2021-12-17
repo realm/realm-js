@@ -147,7 +147,24 @@ export class AppImporter {
               Authorization: `Bearer ${this.accessToken}`,
               "content-type": "application/json",
             },
-            body: '{ "sync_query": { "state": "enabled", "database_name": "test-database", "queryable_fields_names": ["age"] } }',
+            body: JSON.stringify({
+              sync_query: {
+                state: "enabled",
+                database_name: "test-database",
+                permissions: {
+                  defaultRoles: [
+                    {
+                      applyWhen: {},
+                      name: "all",
+                      read: true,
+                      write: true,
+                    },
+                  ],
+                  rules: {},
+                },
+                queryable_fields_names: ["age"],
+              },
+            }),
           });
 
           console.log(r.status);

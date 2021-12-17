@@ -23,7 +23,7 @@ TopLevelSchema = {
   }
 }
 
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "basic_flx_connect-ydrps" });
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: "td_test_2" });
 Realm.App.Sync.setLogLevel(app, "all");
 
 user = await app.logIn(Realm.Credentials.anonymous());
