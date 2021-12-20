@@ -36,8 +36,9 @@ function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }: TaskListProps) {
         keyExtractor={(task) => task._id.toString()}
         renderItem={({ item }) => (
           <TaskItem
-            description={item.description}
-            isComplete={item.isComplete}
+            // description={item.description}
+            // isComplete={item.isComplete}
+            task={item}
             onToggleStatus={() => onToggleTaskStatus(item)}
             onDelete={() => onDeleteTask(item)}
             // Don't spread the Realm item as such: {...item}
