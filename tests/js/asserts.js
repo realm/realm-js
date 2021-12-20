@@ -177,25 +177,6 @@ module.exports = {
       func();
     } catch (e) {
       caught = true;
-      if (!e.message.includes(expectedMessage)) {
-        throw new TestFailureError(
-          `Expected exception "${expectedMessage}" not thrown - instead caught: "${e}"`,
-          depth,
-        );
-      }
-    }
-
-    if (!caught) {
-      throw new TestFailureError(`Expected exception "${expectedMessage}" not thrown`, depth);
-    }
-  },
-
-  assertThrowsNameOrContaining: function (func, expectedMessage, depth) {
-    let caught = false;
-    try {
-      func();
-    } catch (e) {
-      caught = true;
       if (!e.message.includes(expectedMessage) && !e.name.includes(expectedMessage)) {
         throw new TestFailureError(
           `Expected exception "${expectedMessage}" not thrown - instead caught: "${e}"`,

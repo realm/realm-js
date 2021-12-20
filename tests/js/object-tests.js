@@ -438,19 +438,25 @@ module.exports = {
 
   testObjectConversion: function () {
     const realm = new Realm({ schema: [schemas.TestObject] });
-    TestCase.assertTrue(
-      realm.__to_object("This is a string") instanceof Object,
-      "__to_object(string) should return Object",
+    TestCase.assertInstanceOf(
+      realm.__to_object("This is a string"), String,
+      "__to_object(string) should return String Object",
     );
-    TestCase.assertTrue(realm.__to_object(12345) instanceof Object, "__to_object(int) should return Object");
-    TestCase.assertTrue(realm.__to_object(false) instanceof Object, "__to_object(bool) should return Object");
-    TestCase.assertTrue(realm.__to_object(new Date()) instanceof Object, "__to_object(Date) should return Object");
+    TestCase.assertTrue(
+      realm.__to_object("Foo") == String("Foo"),
+      '__to_object(string("Foo")) should return String("Foo") Object',
+    );
+    TestCase.assertInstanceOf(realm.__to_object(12345), Number, "__to_object(int) should return Number Object");
+    TestCase.assertTrue(realm.__to_object(12345) == Number(12345), "__to_object(int(12345)) should return Number(12345) Object");
+    TestCase.assertInstanceOf(realm.__to_object(false), Boolean, "__to_object(bool) should return Boolean Object");
+    TestCase.assertTrue(realm.__to_object(false) == Boolean(false), "__to_object(bool(false)) should return Boolean(false) Object");
+    TestCase.assertInstanceOf(realm.__to_object(new Date()), Date, "__to_object(Date) should return Date Object");
 
-    TestCase.assertThrowsNameOrContaining(() => {
+    TestCase.assertThrowsContaining(() => {
       realm.__to_object(null);
     }, "TypeError");
 
-    TestCase.assertThrowsNameOrContaining(() => {
+    TestCase.assertThrowsContaining(() => {
       realm.__to_object(undefined);
     }, "TypeError");
 
@@ -463,19 +469,19 @@ module.exports = {
   // operations have been made available through the Realm object
   testBooleanConversion: function () {
     const realm = new Realm({ schema: [schemas.TestObject] });
-    TestCase.assertTrue(realm.__to_boolean("") == false, '__to_boolean("") should return false');
-    TestCase.assertTrue(realm.__to_boolean(0) == false, "__to_boolean(0) should return false");
-    TestCase.assertTrue(realm.__to_boolean(-0) == false, "__to_boolean(-0) should return false");
-    TestCase.assertTrue(realm.__to_boolean(null) == false, "__to_boolean(null) should return false");
-    TestCase.assertTrue(realm.__to_boolean(false) == false, "__to_boolean(false) should return false");
-    TestCase.assertTrue(realm.__to_boolean(NaN) == false, "__to_boolean(NaN) should return false");
-    TestCase.assertTrue(realm.__to_boolean(undefined) == false, "__to_boolean(undefined) should return false");
+    TestCase.assertEqual(realm.__to_boolean(""), false, '__to_boolean("") should return false');
+    TestCase.assertEqual(realm.__to_boolean(0), false, "__to_boolean(0) should return false");
+    TestCase.assertEqual(realm.__to_boolean(-0), false, "__to_boolean(-0) should return false");
+    TestCase.assertEqual(realm.__to_boolean(null), false, "__to_boolean(null) should return false");
+    TestCase.assertEqual(realm.__to_boolean(false), false, "__to_boolean(false) should return false");
+    TestCase.assertEqual(realm.__to_boolean(NaN), false, "__to_boolean(NaN) should return false");
+    TestCase.assertEqual(realm.__to_boolean(undefined), false, "__to_boolean(undefined) should return false");
 
-    TestCase.assertTrue(realm.__to_boolean("false") == true, '__to_boolean("false") should return true');
-    TestCase.assertTrue(realm.__to_boolean(1) == true, "__to_boolean(1) should return true");
-    TestCase.assertTrue(realm.__to_boolean(-1) == true, "__to_boolean(-1) should return true");
-    TestCase.assertTrue(realm.__to_boolean([]) == true, "__to_boolean([]) should return true");
-    TestCase.assertTrue(realm.__to_boolean(Object()) == true, "__to_boolean(Object()) should return true");
+    TestCase.assertEqual(realm.__to_boolean("false"), true, '__to_boolean("false") should return true');
+    TestCase.assertEqual(realm.__to_boolean(1), true, "__to_boolean(1) should return true");
+    TestCase.assertEqual(realm.__to_boolean(-1), true, "__to_boolean(-1) should return true");
+    TestCase.assertEqual(realm.__to_boolean([]), true, "__to_boolean([]) should return true");
+    TestCase.assertEqual(realm.__to_boolean(Object()), true, "__to_boolean(Object()) should return true");
 
     realm.close();
   },
