@@ -222,15 +222,34 @@ public:
     using Internal = typename T::Internal;
     using ParentClassType = typename T::Parent;
 
-    // XXX if this is static, it won't support multiple runtimes.
+    // NOTE:  if this is static, it won't support multiple runtimes.
     // Also, may need to suppress destruction.
     inline static std::optional<JsiFunc> s_ctor;
 
-    // TODO / FF:  Pass property name along in exception
-    static fbjsi::Value readonly_setter_callback(fbjsi::Runtime& env, const fbjsi::Value& thisVal,
-                                                 const fbjsi::Value* args, size_t count)
+    /**
+     * @brief callback for invalid access to index setters
+     * Throws an error when a users attemps to write to an index on a type that
+     * doesn't support it.
+     *
+     * @return nothing; always throws
+     */
+    static fbjsi::Value readonly_index_setter_callback(fbjsi::Runtime& env, const fbjsi::Value& thisVal,
+                                                       const fbjsi::Value* args, size_t count)
     {
-        throw fbjsi::JSError(env, "Cannot assign to read only property");
+        throw fbjsi::JSError(env, "Cannot assign to index");
+    }
+
+    /**
+     * @brief callback for invalid access to property setters
+     * Trows an error when a user attempts to write to a read-only property
+     *
+     * @param propname name of the property the user is trying to write to
+     * @return nothin; always throws
+     */
+    static fbjsi::Value readonly_setter_callback(fbjsi::Runtime& env, const fbjsi::Value& thisVal,
+                                                 const fbjsi::Value* args, size_t count, std::string const& propname)
+    {
+        throw fbjsi::JSError(env, util::format("Cannot assign to read only property '%1'", propname));
     }
 
     static JsiFunc create_constructor(JsiEnv env)
@@ -291,7 +310,11 @@ public:
                 desc.setProperty(env, "set", funcVal(env, "set_" + name, 1, prop.setter));
             }
             else {
-                desc.setProperty(env, "set", funcVal(env, "set_" + name, 0, ObjectWrap::readonly_setter_callback));
+                desc.setProperty(
+                    env, "set",
+                    funcVal(env, "set_" + name, 0,
+                            std::bind(ObjectWrap::readonly_setter_callback, std::placeholders::_1,
+                                      std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, name)));
             }
             defineProperty(env, *s_ctor, name, desc);
         }
@@ -314,7 +337,11 @@ public:
                 desc.setProperty(env, "set", funcVal(env, "set_" + name, 1, prop.setter));
             }
             else {
-                desc.setProperty(env, "set", funcVal(env, "set_" + name, 0, ObjectWrap::readonly_setter_callback));
+                desc.setProperty(
+                    env, "set",
+                    funcVal(env, "set_" + name, 0,
+                            std::bind(ObjectWrap::readonly_setter_callback, std::placeholders::_1,
+                                      std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, name)));
             }
             defineProperty(env, proto, name, desc);
         }
@@ -403,7 +430,7 @@ public:
                     .asObject(env)
                     .asFunction(env)
                     .call(env, funcVal(env, "getter", 0, getter),
-                          funcVal(env, "setter", 1, setter ? setter : ObjectWrap::readonly_setter_callback))
+                          funcVal(env, "setter", 1, setter ? setter : ObjectWrap::readonly_index_setter_callback))
                     .asObject(env)
                     .asFunction(env));
             defineProperty(env, *s_ctor, "_proxyWrapper", desc);
@@ -642,7 +669,7 @@ private:
 
     inline static auto& get_schemaObjectTypes()
     {
-        // XXX this being static prevents using multiple runtimes.
+        // NOTE:  this being static prevents using multiple runtimes.
         static std::unordered_map<std::string, std::unordered_map<std::string, fbjsi::Function>> s_schemaObjectTypes;
         return s_schemaObjectTypes;
     }
