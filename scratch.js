@@ -11,26 +11,13 @@ PersonSchema = {
   },
 };
 
-
-DogSchema = {
-  name: "Dog",
-  primaryKey: "_id",
-  properties: {
-    _id: "objectId",
-    age: "int",
-    name: "string",
-  },
-};
-
-
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "basic_flx_connect-ytdal" });
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-flx-ijapw" });
 Realm.App.Sync.setLogLevel(app, "all");
 
 user = await app.logIn(Realm.Credentials.anonymous());
 
 realm = new Realm({
-  // schema: [PersonSchema],
-  schema: [DogSchema],
+  schema: [PersonSchema],
   sync: { user, flexible: true }
 });
 
@@ -38,12 +25,17 @@ realm = new Realm({
 
 
 subs = realm.getSubscriptions();
+subs.snapshot()
 
 subs.update((m) => {
-  sub = m.add(realm.objects("Dog"), { name: "test" });
+  sub = m.add(realm.objects("Person"), { name: "test" });
 });
 
-realm.write(() => realm.create("Dog", { _id: Realm.BSON.ObjectID(), age: 122, name: "tom2" }))
+subs.update((m) => {
+  sub = m.add(realm.objects("Person").filtered("age > 15"), { name: "test2" });
+});
+
+realm.write(() => realm.create("Person", { _id: Realm.BSON.ObjectID(), age: 122, name: "tom2" }))
 
 
 
@@ -60,6 +52,16 @@ realm.write(() => realm.create("Dog", { _id: Realm.BSON.ObjectID(), age: 122, na
 // }
 
 
+
+// DogSchema = {
+//   name: "Dog",
+//   primaryKey: "_id",
+//   properties: {
+//     _id: "objectId",
+//     age: "int",
+//     name: "string",
+//   },
+// };
 
 subs.snapshot().length;
 
