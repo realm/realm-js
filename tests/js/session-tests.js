@@ -528,6 +528,34 @@ module.exports = {
       .then(() => TestCase.assertTrue(progressCalled));
   },
 
+  // test that it is possible to register a custom logging function on a
+  // Sync session, and that it is invoked when a session is established
+  async testCustomSessionLogging() {
+    const partition = Utils.genPartition();
+    let credentials = Realm.Credentials.anonymous();
+    let app = new Realm.App(appConfig);
+    let user = await app.logIn(credentials);
+    let config = getSyncConfiguration(user, partition);
+
+    const logLevelStr = "info"; // "all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"
+    const logLevelNum = 4; // == "info", see index.d.ts, logger.hpp for definitions
+
+    const promisedLog = new Promise((resolve) => {
+      Realm.App.Sync.setLogLevel(app, logLevelStr);
+      Realm.App.Sync.setLogger(app, (level, message) => {
+        if (level == logLevelNum && message.includes("Connection") && message.includes("Session")) {
+          // we should, at some point, receive a log message that looks like
+          // Connection[1]: Session[1]: client_reset_config = false, Realm exists = true, client reset = false
+          resolve(true);
+        }
+      });
+    });
+
+    const realm = await Realm.open(config);
+    await promisedLog;
+    realm.close();
+  },
+
   testClientReset() {
     // FIXME: try to enable for React Native
     if (!platformSupported) {

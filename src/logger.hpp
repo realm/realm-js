@@ -72,9 +72,13 @@ class IOSLogger {
 
 class SyncLoggerDelegator : public util::RootLogger {
 public:
-    void delegate(Delegated& delegate)
+    SyncLoggerDelegator() = delete;
+    SyncLoggerDelegator(Delegated&& delegate)
+        : loggerDelegate(delegate){};
+
+    void delegate()
     {
-        m_scheduler->set_notify_callback([this, delegate] {
+        m_scheduler->set_notify_callback([this] {
             std::queue<Entry> popped;
             {
                 std::lock_guard<std::mutex> lock(m_mutex); // Throws
@@ -83,7 +87,7 @@ public:
 
             while (!popped.empty()) {
                 Entry& entry = popped.front();
-                delegate(static_cast<int>(entry.first), entry.second);
+                loggerDelegate(static_cast<int>(entry.first), entry.second);
                 popped.pop();
             }
         });
@@ -136,12 +140,12 @@ public:
         throw std::runtime_error("Bad log level");
     }
 
-    static SyncClientConfig::LoggerFactory build_sync_logger(Delegated& log_fn)
+    static SyncClientConfig::LoggerFactory build_sync_logger(Delegated&& log_fn)
     {
-        return [&log_fn](realm::util::Logger::Level level) {
-            auto logger = std::make_unique<SyncLoggerDelegator>();
+        return [captured_logger = std::move(log_fn)](realm::util::Logger::Level level) mutable {
+            auto logger = std::make_unique<SyncLoggerDelegator>(std::move(captured_logger));
             logger->set_level_threshold(level);
-            logger->delegate(log_fn);
+            logger->delegate();
             return logger;
         };
     }
