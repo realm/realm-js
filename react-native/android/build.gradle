@@ -54,34 +54,7 @@ android {
     }
 }
 
-String getAppId() {
-    String myappId
-    try {
-        String build = new File("$projectDir/../../../../android/app/build.gradle").text
-        matcher = build =~ 'applicationId.*"'
-        appId = matcher.size() > 0 ? matcher[0].trim() - 'applicationId' - ~/\s/ : ''
-        myappId = appId.replaceAll('"', '')
-    } catch (all) { /* silently ignore */ }
-    return myappId
-    }
-
-apply from: 'analytics.gradle'
-
 import groovy.json.JsonSlurper
-
-String getPackageVersion() {
-    /* groovylint-disable-next-line JavaIoPackageAccess, UnnecessaryGetter */
-    inputFile = new File(buildscript.sourceFile.getParent() + '/../../package.json')
-    packageJson = new JsonSlurper().parseText(inputFile.text)
-    return packageJson['version']
-}
-
-task send(type: SendAnalyticsTask) {
-    applicationId = getAppId()
-    version = getPackageVersion().trim()
-}
-
-preBuild.dependsOn send
 
 dependencyType = 'implementation'
 try {
