@@ -551,9 +551,8 @@ module.exports = {
     });
 
     const realm = await Realm.open(config);
-    const loggerInvoked = await promisedLog;
+    await promisedLog;
     realm.close();
-    TestCase.assertTrue(loggerInvoked, `Custom logger should have registered an '${logLevelStr}' message`);
   },
 
   testClientReset() {
