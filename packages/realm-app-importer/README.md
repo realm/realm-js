@@ -47,12 +47,16 @@ Positionals:
 Options:
   --version              Show version number                           [boolean]
   --help                 Show help                                     [boolean]
-  --base-url             Base url of the stitch server to import the app into
-                                     [string] [default: "http://localhost:9090"]
-  --username             Username of an administrative user
+  --base-url             Base url of the MongoDB Realm server to import the app
+                         into        [string] [default: "http://localhost:9090"]
+  --username             Username of an adminstrative user
                                     [string] [default: "unique_user@domain.com"]
-  --password             Password of an administrative user
+  --password             Password of an adminstrative user
                                                   [string] [default: "password"]
+  --public-api-key       Public part of API key with adminstrative privileges
+                                                                        [string]
+  --private-api-key      Private part of API key with adminstrative privileges
+                                                                        [string]
   --config               Path for the realm-cli configuration to temporarily
                          store credentials    [string] [default: "realm-config"]
   --apps-directory-path  Path to temporarily copy the app while importing it
@@ -70,6 +74,16 @@ When using the `import` command, a consuming integration test can to get a hold 
 1. the consuming test harness can use the package programmatically, instantiating the `AppImporter` class and calling its `importApp` method, which returns a `Promise<{ appId: string }>`.
 2. the `--app-id-path` runtime option saves the app id to a file, which can be read by the test harness.
 3. the `--app-id-port` runtime option starts up a web-server on the specified port and serves the app id as a text response.
+
+### Environment variables
+
+Many of the runtime option's default values are configurable using environment variables:
+
+- `--base-url` via `REALM_BASE_URL`
+- `--username` via `REALM_USERNAME`
+- `--password` via `REALM_PASSWORD`
+- `--publicKey` via `REALM_PUBLIC_KEY`
+- `--privateKey` via `REALM_PRIVATE_KEY`
 
 ## Exporting an app
 
