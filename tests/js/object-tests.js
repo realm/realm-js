@@ -777,4 +777,19 @@ module.exports = {
       obj.getPropertyType("foo");
     }, new Error("No such property: foo"));
   },
+
+  testObjectEquality: function () {
+    const realm = new Realm({ schema: [schemas.StringOnly] });
+
+    let obj1;
+    realm.write(function () {
+      obj1 = realm.create(schemas.StringOnly.name, { stringCol: "foo" });
+    });
+
+    let obj2 = realm.objects(schemas.StringOnly.name)[0];
+
+    TestCase.assertTrue(Object.is(obj1, obj2));
+
+    realm.close();
+  },
 };
