@@ -1,7 +1,7 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"target": "ES5",
+		"target": "es2018",
 		"noEmit": false,
 		"declaration": true,
 		"outDir": "./dist"
