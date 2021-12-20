@@ -71,6 +71,14 @@ When using the `import` command, a consuming integration test can to get a hold 
 2. the `--app-id-path` runtime option saves the app id to a file, which can be read by the test harness.
 3. the `--app-id-port` runtime option starts up a web-server on the specified port and serves the app id as a text response.
 
+### Environment variables
+
+Many of the runtime option's default values are configurable using environment variables:
+
+- `--base-url` via `REALM_BASE_URL`
+- `--username` via `REALM_USERNAME`
+- `--password` via `REALM_PASSWORD`
+
 ## Exporting an app
 
 Ensure you have the official Stitch CLI installed in your project as a dev-dependency,

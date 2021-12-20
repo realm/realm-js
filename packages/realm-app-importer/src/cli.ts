@@ -106,17 +106,17 @@ yargs
         })
         .option("base-url", {
           type: "string",
-          default: "http://localhost:9090",
+          default: process.env.REALM_BASE_URL || "http://localhost:9090",
           description: "Base url of the MongoDB Realm server to import the app into",
         })
         .option("username", {
           type: "string",
-          default: "unique_user@domain.com",
+          default: process.env.REALM_USERNAME || "unique_user@domain.com",
           description: "Username of an adminstrative user",
         })
         .option("password", {
           type: "string",
-          default: "password",
+          default: process.env.REALM_PASSWORD || "password",
           description: "Password of an adminstrative user",
         })
         .option("config", {
