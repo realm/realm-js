@@ -35,7 +35,11 @@ import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
 global.describe.skipIf = suiteSkipIf;
 global.it.skipIf = testSkipIf;
 
-import "./utils/import-app.test";
+// Using `require` instead of `import` here to ensure the Mocha globals (including `skipIf`) are set
+
+describe("Test Harness", () => {
+  require("./utils/import-app.test");
+});
 
 // Simplify once https://github.com/kraenhansen/mocha-remote/issues/58 gets solved
 describe.skipIf(environment.integration === false || environment.integration === "false", "Integration tests", () => {
