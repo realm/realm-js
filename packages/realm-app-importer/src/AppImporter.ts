@@ -31,10 +31,21 @@ export type TemplateReplacements = Record<string, Record<string, unknown>>;
 
 /* eslint-disable no-console */
 
+export type Credentials =
+  | {
+      kind: "api-key";
+      publicKey: string;
+      privateKey: string;
+    }
+  | {
+      kind: "username-password";
+      username: string;
+      password: string;
+    };
+
 export interface AppImporterOptions {
   baseUrl: string;
-  username: string;
-  password: string;
+  credentials: Credentials;
   realmConfigPath: string;
   appsDirectoryPath: string;
   cleanUp?: boolean;
@@ -42,17 +53,15 @@ export interface AppImporterOptions {
 
 export class AppImporter {
   private readonly baseUrl: string;
-  private readonly username: string;
-  private readonly password: string;
+  private readonly credentials: Credentials;
   private readonly realmConfigPath: string;
   private readonly appsDirectoryPath: string;
 
   private accessToken: string | undefined;
 
-  constructor({ baseUrl, username, password, realmConfigPath, appsDirectoryPath, cleanUp = true }: AppImporterOptions) {
+  constructor({ baseUrl, credentials, realmConfigPath, appsDirectoryPath, cleanUp = true }: AppImporterOptions) {
     this.baseUrl = baseUrl;
-    this.username = username;
-    this.password = password;
+    this.credentials = credentials;
     this.realmConfigPath = realmConfigPath;
     this.appsDirectoryPath = appsDirectoryPath;
 
@@ -182,22 +191,50 @@ export class AppImporter {
     cp.execFileSync(cliPath, args, { stdio: "inherit" });
   }
 
-  private async logIn() {
-    const url = `${this.apiUrl}/auth/providers/local-userpass/login`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        username: this.username,
-        password: this.password,
-      }),
-    });
-    // Store the access and refresh tokens
-    const responseBody = await response.json();
-    this.accessToken = responseBody.access_token;
+  private performLogIn() {
+    const { credentials } = this;
+    console.log(credentials);
+    if (credentials.kind === "api-key") {
+      return fetch(`${this.apiUrl}/auth/providers/mongodb-cloud/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          username: credentials.publicKey,
+          apiKey: credentials.privateKey,
+        }),
+      });
+    } else if (credentials.kind === "username-password") {
+      return fetch(`${this.apiUrl}/auth/providers/local-userpass/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          username: credentials.username,
+          password: credentials.password,
+        }),
+      });
+    } else {
+      throw new Error(`Unexpected credentials: ${credentials}`);
+    }
+  }
 
-    // Write the stitch config file
-    this.saveStitchConfig(this.username, responseBody.refresh_token, responseBody.access_token);
+  private async logIn() {
+    // Store the access and refresh tokens
+    const response = await this.performLogIn();
+    const responseBody = await response.json();
+    if (response.ok) {
+      console.log("responseBody", responseBody);
+      this.accessToken = responseBody.access_token;
+      // Write the stitch config file
+      const { credentials } = this;
+      this.saveStitchConfig(
+        credentials.kind === "api-key" ? credentials.publicKey : credentials.username,
+        responseBody.refresh_token,
+        responseBody.access_token,
+      );
+    } else {
+      const message = responseBody.error || "No reason";
+      throw new Error(`Failed to log in: ${message}`);
+    }
   }
 
   private saveStitchConfig(username: string, refreshToken: string, accessToken: string) {
@@ -224,10 +261,14 @@ export class AppImporter {
     }
   }
 
-  private async getGroupId() {
+  private async getGroupId(): Promise<string> {
     const profile = await this.getProfile();
-    if (typeof profile === "object" && profile.roles.length === 1) {
-      return profile.roles[0].group_id;
+    const groupIds: string[] = profile.roles
+      .filter((r: Record<string, unknown>) => r.group_id)
+      .map((r: Record<string, unknown>) => r.group_id);
+    const uniqueGroupIds = [...new Set(groupIds)];
+    if (uniqueGroupIds.length === 1) {
+      return uniqueGroupIds[0];
     } else {
       throw new Error("Expected user to have a role in a single group");
     }
