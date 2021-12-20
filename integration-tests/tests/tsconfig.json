@@ -22,5 +22,8 @@
 	"include": [
 		"src/typings.d.ts",
 		"src/**/*.ts"
+	],
+	"exclude": [
+		"src/node"
 	]
 }

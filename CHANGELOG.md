@@ -46,6 +46,7 @@ const config = {
 * Removed TypeScript dependency from individual sub-packages so all packages share the root version, and updated the root TypeScript version to `4.5.2`.
 * Consuming TypeScript directly from the integration test environments, instead of transpiling first.
 * Adding a new private `@realm/metro-config` package to share this across any React Native app in our repo that reference other packages via symbolic links.
+* Added a performance test suite to the integration test.
 * Upgraded Realm Core from v11.6.1 to v11.7.0.
 
 10.10.1 Release notes (2021-11-18)

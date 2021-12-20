@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+type BenchmarkResult = import("@thi.ng/bench").BenchmarkResult;
+
 interface fs {
   exists: (path: string) => boolean;
 }
@@ -59,6 +61,12 @@ type UserContext = { user: Realm.User } & Mocha.Context;
 type RealmContext = {
   realm: Realm;
   config: Realm.Configuration;
+} & Mocha.Context;
+type RealmObjectContext<T = Record<string, unknown>> = {
+  object: Realm.Object & T;
+} & RealmContext;
+type BenchmarkContext = {
+  result: BenchmarkResult;
 } & Mocha.Context;
 
 interface Console {

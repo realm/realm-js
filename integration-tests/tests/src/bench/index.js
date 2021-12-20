@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,21 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const os = require("os");
-const { Client } = require("mocha-remote-client");
-
-global.client = new Client({
-  title: `Node.js v${process.versions.node} on ${os.platform()}`,
-  tests(context) {
-    // Exposing the Realm constructor as a global
-    global.fs = require("fs-extra");
-    global.path = require("path");
-    global.environment = { ...context, node: true };
-
-    // Add the integration test suite (in TypeScript)
-    require("ts-node/register/transpile-only");
-    require("@realm/integration-tests");
-  },
-});
-
-// TODO: Setup a watch to re-run when the tests change
+/* eslint-env node */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+module.exports = require("./rolledup");

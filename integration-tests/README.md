@@ -56,10 +56,34 @@ npm start -- --grep "Realm#constructor"
 ```
 
 It's advised to use two open terminals:
-* One running `npm start` (from the `./tests` directory) to continuously run the integration tests when code change.
+* One running `npm start --prefix tests` (from the `integration-tests` directory) to continuously run the integration tests when code change.
 * Another occasionally running `npm run build` (from the project root directory) when changes are made to the C++ source-code of Realm JS
 
 The tests will re-run when the test suite changes and it has Realm JS installed as a symbolic link and will therefore run the latest Realm JS javascript code when the tests run. To reload the native module, you will however need to kill and restart the process running in the second terminal.
+
+### Setting context
+
+The test suite expects "context" variables to determine what tests to skip, based on platform etc.
+
+This is controlled via an environment variable:
+- `CONTEXT` when running from the `./tests` directory.
+- `MOCHA_REMOTE_CONTEXT` when running from a `./environments/*` directory.
+
+To set context variables, simply set the environment variable (seperate multiple values with comma `,` and keys from values with equal-sign `=`). You can skip the `=` and value to indicate a `true` boolean value. As an example: To set the value `key1` to `value1` and `key2` to `true`, run with the context environment variable set to `key1=value1,key2`.
+
+Examples of context variables used:
+- `missingServer`: Skip tests that require a running BaaS server.
+- `performance`: Disabled skipping of the "Performance tests" suite.
+- `integration=false`: Skip the integration test (which performance tests are not considered a part of).
+- The "react-native" environment looks for additional context variables (use the `./environment/react-native` NPM scripts to control this):
+  - `mode=native`: Run the tests natively (default)
+  - `mode=chrome-debugging`: Run tests using the legacy chrome-debugger.
+
+As an example, to iterate on the performence tests, run the `./tests` (on Node.js) skipping tests that require a server as well as the integration tests and enable performance tests:
+
+```bash
+CONTEXT=missingServer,integration=false,performance npm start --prefix ./tests
+```
 
 ### Running tests in a specific environment
 

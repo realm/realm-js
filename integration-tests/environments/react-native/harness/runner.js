@@ -163,7 +163,7 @@ async function run(headless, spawnLogcat, retries, retryDelay) {
       await new Promise((resolve) => setTimeout(resolve, retryDelay));
       console.log(`Tests didn't complete while waiting for ${retryDelay}ms. Retrying!`);
     } else {
-      console.log("No (more) retries ...");
+      console.log("This was the final attempt to launch the app ...");
     }
   }
 }

@@ -18,7 +18,7 @@
 import { App } from "realm";
 import { expect } from "chai";
 
-import { importApp } from "../utils/import-app";
+import { importApp } from "./import-app";
 
 describe.skipIf(environment.missingServer, "importApp utility", function () {
   this.slow(2000);
