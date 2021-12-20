@@ -439,7 +439,8 @@ module.exports = {
   testObjectConversion: function () {
     const realm = new Realm({ schema: [schemas.TestObject] });
     TestCase.assertInstanceOf(
-      realm.__to_object("This is a string"), String,
+      realm.__to_object("This is a string"),
+      String,
       "__to_object(string) should return String Object",
     );
     TestCase.assertTrue(
@@ -447,9 +448,15 @@ module.exports = {
       '__to_object(string("Foo")) should return String("Foo") Object',
     );
     TestCase.assertInstanceOf(realm.__to_object(12345), Number, "__to_object(int) should return Number Object");
-    TestCase.assertTrue(realm.__to_object(12345) == Number(12345), "__to_object(int(12345)) should return Number(12345) Object");
+    TestCase.assertTrue(
+      realm.__to_object(12345) == Number(12345),
+      "__to_object(int(12345)) should return Number(12345) Object",
+    );
     TestCase.assertInstanceOf(realm.__to_object(false), Boolean, "__to_object(bool) should return Boolean Object");
-    TestCase.assertTrue(realm.__to_object(false) == Boolean(false), "__to_object(bool(false)) should return Boolean(false) Object");
+    TestCase.assertTrue(
+      realm.__to_object(false) == Boolean(false),
+      "__to_object(bool(false)) should return Boolean(false) Object",
+    );
     TestCase.assertInstanceOf(realm.__to_object(new Date()), Date, "__to_object(Date) should return Date Object");
 
     TestCase.assertThrowsContaining(() => {
