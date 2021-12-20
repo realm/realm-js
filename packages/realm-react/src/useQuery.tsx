@@ -17,17 +17,67 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function createUseQuery(useRealm: () => Realm) {
   return function useQuery<T>(type: string | { new (): T }): Realm.Results<T> {
     const realm = useRealm();
     const [collection, setCollection] = useState<Realm.Results<T & Realm.Object>>(() => realm.objects<T>(type));
+    const collectionCache = useRef(new Map());
+
+    const collectionHandler = {
+      // @ts-ignore
+      get: function (target, key) {
+        // Pass functions through
+        if (typeof target[key] === "function") {
+          return function () {
+            return target[key].apply(target, arguments);
+          };
+        }
+
+        // If the key is not numeric, pass it through
+        if (!/^-?\d+$/.test(key)) {
+          return target[key];
+        }
+
+        // If the key is numeric, check if we have a cached object for this key
+        const index = Number(key);
+
+        // If we do, return it...
+        if (collectionCache.current.get(index)) {
+          return collectionCache.current.get(index);
+        }
+
+        // If not then this index has either not been accessed before, or has been invalidated due
+        // to a modification. Fetch it from the collection and store it in the cache
+        const object = target[index];
+        collectionCache.current.set(index, object);
+
+        return object;
+      },
+    };
 
     useEffect(() => {
       const listenerCallback: Realm.CollectionChangeCallback<T> = (_, changes) => {
-        if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
-          setCollection(realm.objects<T>(type));
+        if (changes.deletions.length > 0 || changes.insertions.length > 0) {
+          // Item was added or deleted, for now just clear the cache entirely (maybe you could do something cleverer)
+          collectionCache.current = new Map();
+
+          // And return a new proxy to the collection
+          const collectionProxy = new Proxy(realm.objects<T>(type), collectionHandler);
+          setCollection(collectionProxy);
+          // setCollection(realm.objects<T>(type));
+        } else if (changes.newModifications.length > 0) {
+          // Item(s) were modified, just clear them from the cache so that we return new instances for them
+
+          changes.newModifications.forEach((index) => {
+            // @ts-ignore
+            collectionCache.current.delete(index);
+          });
+
+          // And return a new proxy to the collection (forces re-render)
+          const collectionProxy = new Proxy(realm.objects<T>(type), collectionHandler);
+          setCollection(collectionProxy);
         }
       };
 

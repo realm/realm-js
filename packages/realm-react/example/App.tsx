@@ -30,7 +30,7 @@ function App() {
   const realm = useRealm();
   const result = useQuery(Task);
 
-  const tasks = useMemo(() => result.sorted("createdAt"), [result]);
+  const tasks = result; // useMemo(() => result.sorted("createdAt"), [result]);
 
   const handleAddTask = useCallback(
     (description: string): void => {
