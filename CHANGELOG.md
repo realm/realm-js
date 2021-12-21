@@ -1,8 +1,8 @@
-
+10.11.0 Release notes (2021-12-21)
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Added templates for Expo.
+* Added templates for Expo (https://www.npmjs.com/package/@realm/expo-template-js and https://www.npmjs.com/package/@realm/expo-template-ts).
 * A new mode `discardLocal` for client reset has been introduced. The old behavior is supported (but deprecated) through the `manual` mode. The new mode will discard any local changes, and a fresh copy of the Realm will be downloaded. An example of the configuration:
 
 ```js
@@ -23,10 +23,10 @@ const config = {
 * If the option `user` in a sync configuration was not a `Realm.User` object could lead to a crash. ([#1348](https://github.com/realm/realm-js/issues/1348), since v10.0.0)
 * `@sum` and `@avg` queries on Dictionaries of floats or doubles used too much precision for intermediates, resulting in incorrect rounding. (since v10.3.0-rc.1)
 * Queries of the form `link.collection.@sum = 0` where `link` is `null` matched when `collection` was a List or Set, but not a Dictionary ([realm/realm-core#5080](https://github.com/realm/realm-core/pull/5080), since v10.5.0)
-* Fix Realm for versions of Node greater than 14.
+* Fix Realm for versions of Node greater than 14. ([#4149](https://github.com/realm/realm-js/pull/4149))
 * Type methods defined in `collection-methods.js` no longer throw `Realm not defined` errors in some environments ([#4029](https://github.com/realm/realm-js/issues/4029), [#3991](https://github.com/realm/realm-js/issues/3991), since v10.5.0)
 * Fixed a bug in `Realm.App.emailPasswordAuth.callResetPasswordFunction()` which could lead to the error `Error: Error: resetDetails must be of type 'object', got (user@example.com)`. ([#4143](https://github.com/realm/realm-js/issues/4143), since v10.10.0)
-* Using a custom logger on Sync sessions could trigger a segmentation fault ([#4121](https://github.com/realm/realm-js/issues/4121), since v10.5.0)
+* Using a custom logger on Sync sessions could trigger a segmentation fault. ([#4121](https://github.com/realm/realm-js/issues/4121), since v10.5.0)
 * Fixed `MongoDBCollection#watch` on React Native (https://github.com/realm/realm-js/issues/3494, since v10.0.0). To use this, you must install:
   1. Polyfills for `fetch`, `ReadableStream` and `TextDecoder`: https://www.npmjs.com/package/react-native-polyfill-globals
   2. Babel plugin enabling async generator syntax: https://npmjs.com/package/@babel/plugin-proposal-async-generator-functions
@@ -586,12 +586,8 @@ NOTE: This release has a number of fixes compared to v10.3.0-rc.1. For a complet
 * File format: generates Realms with format v20 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 for synced Realms).
 
 ### Internal
-<<<<<<< HEAD
 * Upgraded Realm Core from v10.1.3 to v10.1.4.
 * Upgraded Realm Sync from v10.1.4 to v10.1.5.
-=======
-* None.
->>>>>>> dc9b6ef61 (Upgrade to Realm Core v11.7.0)
 
 10.1.0 Release notes (2020-12-8)
 =============================================================
