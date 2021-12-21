@@ -26,7 +26,7 @@ import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 // TODO do we need hto handle getSyncSession?
 
 describe("Flexible sync", function () {
-  importAppBefore("with-db-flx", {}, "all");
+  importAppBefore("with-db-flx", {}); //, "all");
   authenticateUserBefore();
   openRealmBeforeEach({ schema: [PersonSchema, DogSchema], sync: { flexible: true } });
 
@@ -42,7 +42,6 @@ describe("Flexible sync", function () {
     query: Realm.Results<any>,
     options: Realm.App.Sync.SubscriptionOptions = undefined,
   ) {
-    console.log("lets go");
     const subs = _this.realm.getSubscriptions();
     let sub: Realm.App.Sync.Subscription;
 
@@ -86,14 +85,18 @@ describe("Flexible sync", function () {
       });
 
       // Waiting on core to have ability to check if sync config is flexible
-      xit("throws an error if the Realm does not have a sync config", function (this: RealmContext) {
+      it("throws an error if the Realm does not have a sync config", function (this: RealmContext) {
         const realm = new Realm({ schema: [PersonSchema] });
-        expect(realm.getSubscriptions()).to.throw("xxx");
+        expect(() => realm.getSubscriptions()).to.throw(
+          "getSubscriptions() can only be called if flexible sync is enabled, but sync is currently disabled for your app. Specify { flexible: true } in your sync config.",
+        );
       });
 
-      xit("throws an error if the Realm has a partition based sync config", function (this: RealmContext) {
+      it("throws an error if the Realm has a partition based sync config", function (this: RealmContext) {
         const realm = new Realm({ schema: [PersonSchema], sync: { user: this.user, partitionValue: "test" } });
-        expect(realm.getSubscriptions()).to.throw("xxx");
+        expect(() => realm.getSubscriptions()).to.throw(
+          "getSubscriptions() can only be called if flexible sync is enabled, but partition based sync is currently enabled for your app. Specify { flexible: true } in your sync config and remove any `partitionValue`.",
+        );
       });
 
       // TODO are these tests a bit redundant?
@@ -228,13 +231,9 @@ describe("Flexible sync", function () {
         });
 
         it("returns an array of Subscription objects", async function (this: RealmContext) {
-          console.log("add1");
           addPersonSubscription(this);
-          console.log("add2");
           const { subs } = addSubscription(this, this.realm.objects(PersonSchema.name).filtered("age > 10"));
 
-          // PROBLEM: subs are not updated - is this because server can't handle query change messages?
-          //[mocha] Connection[1]: Session[1]: Received QUERY_ERROR "Client provided query with bad syntax: unknown table "Person"" (error_code=300, query_version=1)
           expect(subs.snapshot()).to.have.length(2);
           expect(subs.snapshot().every((s) => s instanceof Realm.App.Sync.Subscription)).to.be.true;
         });

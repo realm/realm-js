@@ -1,6 +1,14 @@
 // Realm = require(".");
+// Import realm
 Realm = require("../../realm-js");
+environment = {}
+let {importApp} = require('../../realm-js/integration-tests/tests/dist/utils/import-app.js')
 
+// Create a new app or import the app that I created
+appId = "with-db-flx-lugzk"
+// appId = (await importApp('with-db-flx', {}, 'all')).id
+
+// Create schema
 PersonSchema = {
   name: "Person",
   primaryKey: "_id",
@@ -8,34 +16,63 @@ PersonSchema = {
     _id: "objectId",
     age: "int",
     name: "string",
+    friends: "Person[]",
+    bestFriend: "Person"
   },
 };
 
-app = new Realm.App({ baseUrl: "http://localhost:9090", id: "with-db-flx-ijapw" });
+// Create app and connect
+app = new Realm.App({ baseUrl: "http://localhost:9090", id: appId });
 Realm.App.Sync.setLogLevel(app, "all");
 
 user = await app.logIn(Realm.Credentials.anonymous());
 
+
+// realm = await Realm.open({
 realm = new Realm({
   schema: [PersonSchema],
-  sync: { user, flexible: true }
+  // sync: { user, flexible: true }
 });
 
 
-
-
+// Create a subscription
 subs = realm.getSubscriptions();
+subs.update((m) => {
+  sub = m.add(realm.objects("Person"), { name: "test" });
+});
+
+realm.write(() => p1.age++)
+
+realm.write(() => p1 = realm.create("Person", { _id: Realm.BSON.ObjectID(), age: 122, name: "tom2" }))
+
+realm.write(() => p2 = realm.create("Person", { _id: Realm.BSON.ObjectID(), age: 122, name: "tom3", bestFriend: p1 }))
+
+realm.objects('Person').length
+
+
+await realm.getSubscriptions().waitForSynchronization()
+
 subs.snapshot()
+
+realm.getSubscriptions().state
 
 subs.update((m) => {
   sub = m.add(realm.objects("Person"), { name: "test" });
 });
 
+subs = realm.getSubscriptions();
+
 subs.update((m) => {
   sub = m.add(realm.objects("Person").filtered("age > 15"), { name: "test2" });
 });
 
-realm.write(() => realm.create("Person", { _id: Realm.BSON.ObjectID(), age: 122, name: "tom2" }))
+subs.snapshot()
+
+
+subs.update((m) => {
+  sub = m.add(realm.objects("Person").filtered("age > 25"), { name: "test3" });
+});
+
 
 
 

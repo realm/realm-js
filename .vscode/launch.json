@@ -111,7 +111,7 @@
                 "src/utils/inject-node-globals.ts",
                 "src/index.ts",
                 "--grep",
-                "#removeSubscription"
+                "throws an error if the Realm does not have a sync config"
                 // "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",
