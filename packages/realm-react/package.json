@@ -1,5 +1,5 @@
 {
-  "name": "@realm.io/react",
+  "name": "@realm/react",
   "version": "0.1.0",
   "description": "React specific hooks and implementation helpers for Realm",
   "main": "dist/index.js",
@@ -12,7 +12,8 @@
     "lint": "eslint --ext .tsx ."
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "realm": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
@@ -36,8 +37,7 @@
     "prettier": "^2.3.2",
     "react": "^17.0.2",
     "react-native": "^0.65.1",
-    "react-test-renderer": "^17.0.2",
-    "realm": "*"
+    "react-test-renderer": "^17.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
