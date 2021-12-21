@@ -44,14 +44,14 @@ export function createUseQuery(useRealm: () => Realm) {
         const index = Number(key);
 
         // If we do, return it...
-        if (collectionCache.current.get(index)) {
-          return collectionCache.current.get(index);
+        if (collectionCache.current.get(index) && collectionCache.current.get(index).deref()) {
+          return collectionCache.current.get(index).deref();
         }
 
         // If not then this index has either not been accessed before, or has been invalidated due
         // to a modification. Fetch it from the collection and store it in the cache
         const object = target[index];
-        collectionCache.current.set(index, object);
+        collectionCache.current.set(index, new WeakRef(object));
 
         return object;
       },
