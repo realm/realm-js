@@ -1,5 +1,7 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.20.0-beta.0 Release notes (2021-12-21)
 =============================================================
+NOTE: This release is rebased on our `10.11.0` release and as such contain the same enhancements and fixes.
+
 ### Enhancements
 * Catching missing libjsi.so when loading the librealm.so and rethrowing a more meaningful error, instructing users to upgrade their version of React Native.
 
@@ -14,9 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core to v11.7.0.
 
 10.20.0-alpha.2 Release notes (2021-11-25)
 =============================================================
