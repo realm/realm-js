@@ -19,7 +19,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 
 10.11.0 Release notes (2021-12-21)
-x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Added templates for Expo (https://www.npmjs.com/package/@realm/expo-template-js and https://www.npmjs.com/package/@realm/expo-template-ts).
