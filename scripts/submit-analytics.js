@@ -57,7 +57,7 @@ function sha256(data) {
  * @param {string} platform The platform
  * @returns {Object} Analytics payload
  */
-async function fetchPlatformData(platform, context, eventName) {
+async function fetchPlatformData(context) {
   const os = require("os");
   const { machineId } = require("node-machine-id");
   const environment = utils.getEnvironment();
@@ -67,16 +67,18 @@ async function fetchPlatformData(platform, context, eventName) {
     identifier = sha256("unknown");
   }
 
-  let version;
-  let framework;
-  if (platform === "nodejs") {
-    version = conte
+  let framework = "node.js";
+
+  // check for React Native
+  if (context.dependencies && context.dependencies["react-native"]) {
+    framework = "react-native";
   }
 
-  // payloads for webhook and MixPanel differ slightly
+  // check for electron
+
   const payloads = {
     webHook: {
-      event: eventName,
+      event: "install",
       properties: {
         token: "aab85907a13e1ff44a95be539d9942a9",
         "JS Analytics Version": 2,
@@ -144,19 +146,14 @@ async function dispatchAnalytics(payload) {
   });
 }
 
-async function submitAnalytics(platform, dryRun, eventName) {
+async function submitAnalytics(dryRun) {
   const context = require("../package.json");
-  if (platform === "nodejs" && context.dependencies && context.dependencies && context.dependencies["react-native"]) {
-    doLog("platform === 'nodejs' and 'react-native' is a dependency");
-    return;
-  }
-
   if (isAnalyticsDisabled()) {
     doLog("Analytics is disabled");
     return;
   }
 
-  const payload = await fetchPlatformData(platform, context, eventName);
+  const payload = await fetchPlatformData(context);
   doLog(`payload: ${JSON.stringify(payload)}`);
 
   if (dryRun) {
@@ -170,25 +167,11 @@ async function submitAnalytics(platform, dryRun, eventName) {
   ]);
 }
 
-/* Validate that the platform is support */
-const validatePlatform = (platform) => {
-  const validPlatforms = ["android", "ios", "nodejs"];
-  if (validPlatforms.includes(platform)) {
-    throw new Error(`Invalid platform ${platform} - support platforms ${validPlatforms}`);
-  }
-};
-
 const optionDefinitions = [
-  { name: "platform", type: validatePlatform, multiple: false, description: "Platform" },
   { name: "dryRun", type: Boolean, multiple: false, description: "If true, don't submit analytics" },
   { name: "log", type: Boolean, multiple: false, description: "If true, print log messages" }];
 
 const options = commandLineArgs(optionDefinitions, { camelCase: true });
-
-let platform = "nodejs";
-if (options.platform) {
-  platform = options.platform;
-}
 
 let dryRun = false;
 if (options.dryRun) {
@@ -204,8 +187,7 @@ if (options.log) {
   };
 }
 
-const eventName = platform === "nodejs" ? "Install" : "Build";
-submitAnalytics(platform, dryRun, eventName).catch((err) => {
+submitAnalytics(dryRun).catch((err) => {
   if (options.log) {
     console.log(`Submitting failed: ${err}`);
   }
