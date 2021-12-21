@@ -193,7 +193,6 @@ export class AppImporter {
 
   private performLogIn() {
     const { credentials } = this;
-    console.log(credentials);
     if (credentials.kind === "api-key") {
       return fetch(`${this.apiUrl}/auth/providers/mongodb-cloud/login`, {
         method: "POST",
@@ -222,7 +221,6 @@ export class AppImporter {
     const response = await this.performLogIn();
     const responseBody = await response.json();
     if (response.ok) {
-      console.log("responseBody", responseBody);
       this.accessToken = responseBody.access_token;
       // Write the stitch config file
       const { credentials } = this;
