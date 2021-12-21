@@ -26,7 +26,7 @@ import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 // TODO do we need hto handle getSyncSession?
 
 describe("Flexible sync", function () {
-  importAppBefore("with-db-flx", {}); //, "all");
+  importAppBefore("with-db-flx", {}, "all");
   authenticateUserBefore();
   openRealmBeforeEach({ schema: [PersonSchema, DogSchema], sync: { flexible: true } });
 
@@ -308,9 +308,11 @@ describe("Flexible sync", function () {
 
         it("is Complete once synchronisation is complete", async function (this: RealmContext) {
           const subs = this.realm.getSubscriptions();
+          addPersonSubscription(this);
           await subs.waitForSynchronization();
 
-          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+          // expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+          expect(this.realm.getSubscriptions().state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
         });
 
         xit("is Error if there is an error during synchronisation", async function (this: RealmContext) {

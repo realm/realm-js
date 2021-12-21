@@ -110,6 +110,8 @@
                 "--require",
                 "src/utils/inject-node-globals.ts",
                 "src/index.ts",
+                "--timeout",
+                "100000",
                 "--grep",
                 "is Complete once synchronisation is complete"
                 // "${input:integrationTestFilter}"

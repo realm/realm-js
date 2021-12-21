@@ -488,9 +488,9 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
         [=](StatusWith<realm::sync::SubscriptionSet::State> state) noexcept {
             HANDLESCOPE(protected_ctx)
             std::cout << "YO YO " << std::endl;
-            // ValueType arguments[]{Value::from_undefined(protected_ctx)};
+            ValueType arguments[]{Value::from_undefined(protected_ctx)};
 
-            // Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, arguments);
+            Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, arguments);
         });
 
     state_change_func = std::move(state_change_handler);
