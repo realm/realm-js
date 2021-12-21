@@ -173,6 +173,7 @@ class SubscriptionsClass : public ClassDefinition<T, Subscriptions<T>> {
 
 public:
     const std::string name = "Subscriptions";
+    using StateChangeHandler = void(StatusWith<realm::sync::SubscriptionSet::State> state);
 
     static ObjectType create_instance(ContextType, realm::sync::SubscriptionSet);
 
@@ -469,11 +470,11 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
 {
     args.validate_count(1);
 
-    FunctionType callback = Value::validated_to_function(ctx, args[0], "callback");
+    auto callback_function = Value::validated_to_function(ctx, args[0], "callback");
 
-    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<FunctionType> protected_callback(ctx, callback_function);
     Protected<ObjectType> protected_this(ctx, this_object);
-    Protected<typename T::GlobalContext> protected_ctx(js::Context<T>::get_global_context(ctx));
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
 
@@ -481,13 +482,20 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
         throw std::runtime_error("`waitForSynchronization` cannot be called on a mutable subscription set.");
     }
 
-    subs->get_state_change_notification(realm::sync::SubscriptionSet::State::Complete)
-        .get_async([&](StatusWith<realm::sync::SubscriptionSet::State> state) noexcept {
-            HANDLESCOPE(protected_ctx);
-            ValueType arguments[]{Value::from_undefined(protected_ctx)};
+    std::function<StateChangeHandler> state_change_func;
 
-            Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, arguments);
+    util::EventLoopDispatcher<StateChangeHandler> state_change_handler(
+        [=](StatusWith<realm::sync::SubscriptionSet::State> state) noexcept {
+            HANDLESCOPE(protected_ctx)
+            std::cout << "YO YO " << std::endl;
+            // ValueType arguments[]{Value::from_undefined(protected_ctx)};
+
+            // Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, arguments);
         });
+
+    state_change_func = std::move(state_change_handler);
+
+    subs->get_state_change_notification(realm::sync::SubscriptionSet::State::Complete).get_async(state_change_func);
 }
 
 /**

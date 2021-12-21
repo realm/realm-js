@@ -306,7 +306,7 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
         });
 
-        xit("is Complete once synchronisation is complete", async function (this: RealmContext) {
+        it("is Complete once synchronisation is complete", async function (this: RealmContext) {
           const subs = this.realm.getSubscriptions();
           await subs.waitForSynchronization();
 
