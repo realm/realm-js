@@ -1,5 +1,5 @@
 {
-  "name": "react-native-template-realm-ts",
+  "name": "@realm/react-native-template-ts",
   "version": "0.0.7",
   "description": "React Native Template Realm TS",
   "scripts": {
@@ -17,3 +17,4 @@
   },
   "license": "Apache-2.0"
 }
+
