@@ -485,10 +485,16 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
     std::function<StateChangeHandler> state_change_func;
 
     util::EventLoopDispatcher<StateChangeHandler> state_change_handler(
-        [=](StatusWith<realm::sync::SubscriptionSet::State> state) noexcept {
+        [=](StatusWith<realm::sync::SubscriptionSet::State> state) {
             HANDLESCOPE(protected_ctx)
-            std::cout << "YO YO " << std::endl;
             ValueType arguments[]{Value::from_undefined(protected_ctx)};
+
+            // TODO CRASH if we don't await
+            auto current_subs = get_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this);
+            auto new_subs = current_subs->get_updated_version();
+
+            set_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this,
+                                                   new Subscriptions<T>(std::move(new_subs)));
 
             Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, arguments);
         });

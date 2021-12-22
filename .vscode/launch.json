@@ -113,7 +113,10 @@
                 "--timeout",
                 "100000",
                 "--grep",
-                "is Complete once synchronisation is complete"
+                // "returns a promise"
+                // "#waitForSynchronization"
+                "Flexible"
+                // "is Complete once synchronisation is complete"
                 // "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",

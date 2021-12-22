@@ -18,6 +18,7 @@
 
 import { expect } from "chai";
 import Realm, { BSON } from "realm";
+import { setTimeout } from "timers/promises";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
@@ -26,7 +27,8 @@ import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 // TODO do we need hto handle getSyncSession?
 
 describe("Flexible sync", function () {
-  importAppBefore("with-db-flx", {}, "all");
+  importAppBefore("with-db-flx", {});
+  // importAppBefore("with-db-flx", {}, "all");
   authenticateUserBefore();
   openRealmBeforeEach({ schema: [PersonSchema, DogSchema], sync: { flexible: true } });
 
@@ -307,12 +309,10 @@ describe("Flexible sync", function () {
         });
 
         it("is Complete once synchronisation is complete", async function (this: RealmContext) {
-          const subs = this.realm.getSubscriptions();
-          addPersonSubscription(this);
+          const { subs } = addPersonSubscription(this);
           await subs.waitForSynchronization();
 
-          // expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
-          expect(this.realm.getSubscriptions().state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
         });
 
         xit("is Error if there is an error during synchronisation", async function (this: RealmContext) {
@@ -327,7 +327,7 @@ describe("Flexible sync", function () {
           const subs = this.realm.getSubscriptions();
 
           const { subs: newSubs } = addPersonSubscription(this);
-          await subs.waitForSynchronization();
+          await newSubs.waitForSynchronization();
 
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Superceded);
         });
@@ -342,14 +342,14 @@ describe("Flexible sync", function () {
         });
 
         // TODO waiting on core - currently calling waitForSynchronization crashes when test times out
-        xit("is null if there was no error synchronising subscriptions", async function (this: RealmContext) {
+        it("is null if there was no error synchronising subscriptions", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
           await subs.waitForSynchronization();
 
           expect(subs.error).to.be.null;
         });
 
-        xit("is contains the error if there was an error synchronising subscriptions", async function (this: RealmContext) {
+        it("contains the error if there was an error synchronising subscriptions", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
           // TODO simulate error
           await subs.waitForSynchronization();
@@ -360,14 +360,16 @@ describe("Flexible sync", function () {
       });
 
       // TODO waiting on core - currently calling waitForSynchronization crashes when test times out
-      describe("#waitForSynchronization", function () {
+      describe("#waitForSynchronization", async function () {
         xit("returns a promise", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
 
-          expect(subs.waitForSynchronization()).to.be.instanceOf(Promise);
+          // BOOM
+          subs.waitForSynchronization();
+          // expect(subs.waitForSynchronization()).to.be.instanceOf(Promise);
         });
 
-        xit("waits for subscriptions to be in a complete state", async function (this: RealmContext) {
+        it("waits for subscriptions to be in a complete state", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
 
@@ -376,7 +378,7 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
         });
 
-        xit("resolves if subscriptions are already in a complete state", async function (this: RealmContext) {
+        it("resolves if subscriptions are already in a complete state", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
           await subs.waitForSynchronization();
           await subs.waitForSynchronization();
@@ -384,7 +386,7 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
         });
 
-        xit("throws if there is an error synchronising subscriptions", async function (this: RealmContext) {
+        it("throws if there is an error synchronising subscriptions", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
 
@@ -394,7 +396,7 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
         });
 
-        xit("throws if another client updates subscriptions while waiting for synchronisation", function (this: RealmContext) {
+        it("throws if another client updates subscriptions while waiting for synchronisation", function (this: RealmContext) {
           // TODO what is the proper way to do this?
           const otherClientRealm = new Realm({ schema: [PersonSchema], sync: { flexible: true, user: this.user } });
 
@@ -413,7 +415,7 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
         });
 
-        it("throws if called on a MutableSubscriptions instance", async function (this: RealmContext) {
+        xit("throws if called on a MutableSubscriptions instance", async function (this: RealmContext) {
           const subs = this.realm.getSubscriptions();
 
           subs.update(async (mutableSubs) => {
@@ -596,15 +598,18 @@ describe("Flexible sync", function () {
           expect(subs.snapshot()[2].objectType).to.equal(DogSchema.name);
         });
 
-        xit("does not apply any updates in a batch if one errors", async function (this: RealmContext) {
+        it("does not apply any updates in a batch if one errors", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
 
-          subs.update((mutableSubs) => {
-            mutableSubs.add(this.realm.objects(PersonSchema.name).filtered("age < 10"));
-            // TODO simulate error
-            mutableSubs.add(this.realm.objects(PersonSchema.name).filtered("error > 20"));
-            mutableSubs.add(this.realm.objects(DogSchema.name).filtered("age > 30"));
-          });
+          try {
+            subs.update((mutableSubs) => {
+              mutableSubs.add(this.realm.objects(PersonSchema.name).filtered("age < 10"));
+              mutableSubs.add(this.realm.objects(PersonSchema.name).filtered("error > 20"));
+              mutableSubs.add(this.realm.objects(DogSchema.name).filtered("age > 30"));
+            });
+          } catch (e) {
+            // Error is expected as `error` field does not exist
+          }
 
           await subs.waitForSynchronization();
 
