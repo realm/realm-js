@@ -338,7 +338,7 @@ PODS:
     - React-cxxreact (= 0.65.1)
     - React-jsi (= 0.65.1)
     - React-perflogger (= 0.65.1)
-  - RealmJS (10.9.1):
+  - RealmJS (10.10.1):
     - GCDWebServer
     - React
   - Yoga (1.14.0)
@@ -525,7 +525,7 @@ SPEC CHECKSUMS:
   React-RCTVibration: 92d41c2442e5328cc4d342cd7f78e5876b68bae5
   React-runtimeexecutor: 85187f19dd9c47a7c102f9994f9d14e4dc2110de
   ReactCommon: eafed38eec7b591c31751bfa7494801618460459
-  RealmJS: db77f07dbb7bde3754ee19aa3ce16c050b972751
+  RealmJS: 2925b36a86fc179b0b58ad48386e43eb95188e9a
   Yoga: aa0cb45287ebe1004c02a13f279c55a95f1572f4
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 

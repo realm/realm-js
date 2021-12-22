@@ -15,9 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm from "realm";
-import { createRealmContext } from "@realm.io/react";
-
+import { Realm, createRealmContext } from "@realm/react";
 export class Task extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
   description!: string;

@@ -49,3 +49,5 @@ export const createRealmContext: CreateRealmContext = (realmConfig: Realm.Config
     useObject,
   };
 };
+
+export { Realm };

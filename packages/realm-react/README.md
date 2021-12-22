@@ -13,18 +13,18 @@ Setting up Realm in a React Native application has historically been complex. Re
 
 ## Installation
 
-This library requires `react-native` >= 0.59 and `realm` >= 10.0.0
+This library requires `react-native` >= 0.59 and `realm` >= 10
 
 npm:
 
 ```
-npm install @realm.io/react
+npm install realm @realm/react
 ```
 
 yarn:
 
 ```
-yarn add @realm.io/react
+yarn add realm @realm/react
 ```
 
 
@@ -35,7 +35,7 @@ Create a Realm context object with `createRealmContext`.  It takes a Realm confi
 
 ```typescript
 // realm.ts
-import {createRealmContext} from '@realm.io/react';
+import {Realm, createRealmContext} from '@realm/react';
 
 class Task extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
@@ -108,7 +108,6 @@ function MyComponent({someId}){
   return ...
 }
 ```
-
 
 ### Dynamically Updating a Realm Configuration
 
