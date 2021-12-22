@@ -1,0 +1,24 @@
+{
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
+  },
+  "dependencies": {
+    "expo": "^44.0.0",
+    "expo-dev-client": "~0.7.2",
+    "expo-splash-screen": "~0.14.0",
+    "expo-status-bar": "~1.2.0",
+    "expo-updates": "~0.11.2",
+    "react": "17.0.1",
+    "react-native": "0.64.3",
+    "react-native-get-random-values": "~1.7.0",
+    "realm": "^10.11.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.9"
+  },
+  "name": "@realm/expo-template-js",
+  "version": "0.0.2",
+  "description": "Expo Template Realm Js"
+}
