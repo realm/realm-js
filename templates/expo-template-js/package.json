@@ -5,6 +5,7 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
+    "@realm/react": "^0.1.0",
     "expo": "^44.0.0",
     "expo-dev-client": "~0.7.2",
     "expo-splash-screen": "~0.14.0",
@@ -19,6 +20,6 @@
     "@babel/core": "^7.12.9"
   },
   "name": "@realm/expo-template-js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Expo Template Realm Js"
 }

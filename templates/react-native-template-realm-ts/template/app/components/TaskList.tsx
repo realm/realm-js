@@ -1,8 +1,8 @@
 import React from 'react';
 import {View, FlatList, StyleSheet} from 'react-native';
-import Realm from 'realm';
+import { Realm } from '@realm/react';
 
-import Task from '../models/Task';
+import { Task } from '../models/Task';
 import TaskItem from './TaskItem';
 
 interface TaskListProps {

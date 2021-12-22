@@ -1,84 +1,19 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
-import {SafeAreaView, View, StyleSheet} from 'react-native';
-import Realm from 'realm';
+import React, { useCallback, useMemo } from "react";
+import { SafeAreaView, View, StyleSheet } from "react-native";
 
-import Task from './app/models/Task';
-import IntroText from './app/components/IntroText';
-import AddTaskForm from './app/components/AddTaskForm';
-import TaskList from './app/components/TaskList';
-import colors from './app/styles/colors';
+import TaskContext, { Task } from "./app/models/Task";
+import IntroText from "./app/components/IntroText";
+import AddTaskForm from "./app/components/AddTaskForm";
+import TaskList from "./app/components/TaskList";
+import colors from "./app/styles/colors";
+
+const { useRealm, useQuery, RealmProvider } = TaskContext;
 
 function App() {
-  // The tasks will be set once the realm has opened and the collection has been queried.
-  const [tasks, setTasks] = useState<Realm.Results<Task> | []>([]);
-  // We store a reference to our realm using useRef that allows us to access it via
-  // realmRef.current for the component's lifetime without causing rerenders if updated.
-  const realmRef = useRef<Realm | null>(null);
-  // The first time we query the Realm tasks collection we add a listener to it.
-  // We store the listener in "subscriptionRef" to be able to remove it when the component unmounts.
-  const subscriptionRef = useRef<Realm.Results<Task> | null>(null);
+  const realm = useRealm();
+  const result = useQuery(Task);
 
-  const openRealm = useCallback(async (): Promise<void> => {
-    try {
-      // Open a local realm file with the schema(s) that are a part of this realm.
-      const config = {
-        schema: [Task.schema],
-        // Uncomment the line below to specify that this Realm should be deleted if a migration is needed.
-        // (This option is not available on synced realms and is NOT suitable for production when set to true)
-        // deleteRealmIfMigrationNeeded: true   // default is false
-      };
-
-      // Since this is a non-sync realm (there is no "sync" field defined in the "config" object),
-      // the realm will be opened synchronously when calling "Realm.open"
-      const realm = await Realm.open(config);
-      realmRef.current = realm;
-
-      // When querying a realm to find objects (e.g. realm.objects('Tasks')) the result we get back
-      // and the objects in it are "live" and will always reflect the latest state.
-      const tasksResults: Realm.Results<Task> = realm.objects('Task');
-      if (tasksResults?.length) {
-        setTasks(tasksResults);
-      }
-
-      // Live queries and objects emit notifications when something has changed that we can listen for.
-      subscriptionRef.current = tasksResults;
-      tasksResults.addListener((/*collection, changes*/) => {
-        // If wanting to handle deletions, insertions, and modifications differently you can access them through
-        // the two arguments. (Always handle them in the following order: deletions, insertions, modifications)
-        // If using collection listener (1st arg is the collection):
-        // e.g. changes.insertions.forEach((index) => console.log('Inserted item: ', collection[index]));
-        // If using object listener (1st arg is the object):
-        // e.g. changes.changedProperties.forEach((prop) => console.log(`${prop} changed to ${object[prop]}`));
-
-        // By querying the objects again, we get a new reference to the Result and triggers
-        // a rerender by React. Setting the tasks to either 'tasks' or 'collection' (from the
-        // argument) will not trigger a rerender since it is the same reference
-        setTasks(realm.objects('Task'));
-      });
-    } catch (err) {
-      console.error('Error opening realm: ', err.message);
-    }
-  }, [realmRef, setTasks]);
-
-  const closeRealm = useCallback((): void => {
-    const subscription = subscriptionRef.current;
-    subscription?.removeAllListeners();
-    subscriptionRef.current = null;
-
-    const realm = realmRef.current;
-    // If having listeners on the realm itself, also remove them using:
-    // realm?.removeAllListeners();
-    realm?.close();
-    realmRef.current = null;
-    setTasks([]);
-  }, [realmRef]);
-
-  useEffect(() => {
-    openRealm();
-
-    // Return a cleanup callback to close the realm to prevent memory leaks
-    return closeRealm;
-  }, [openRealm, closeRealm]);
+  const tasks = useMemo(() => result.sorted("createdAt"), [result]);
 
   const handleAddTask = useCallback(
     (description: string): void => {
@@ -93,18 +28,16 @@ function App() {
       // may occasionally be online during short time spans we want to increase the probability
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
-      const realm = realmRef.current;
-      realm?.write(() => {
-        realm?.create('Task', Task.generate(description));
+      realm.write(() => {
+        realm.create("Task", Task.generate(description));
       });
     },
-    [realmRef],
+    [realm],
   );
 
   const handleToggleTaskStatus = useCallback(
     (task: Task): void => {
-      const realm = realmRef.current;
-      realm?.write(() => {
+      realm.write(() => {
         // Normally when updating a record in a NoSQL or SQL database, we have to type
         // a statement that will later be interpreted and used as instructions for how
         // to update the record. But in RealmDB, the objects are "live" because they are
@@ -123,20 +56,19 @@ function App() {
       //   task.isComplete = !task.isComplete;
       // });
     },
-    [realmRef],
+    [realm],
   );
 
   const handleDeleteTask = useCallback(
     (task: Task): void => {
-      const realm = realmRef.current;
-      realm?.write(() => {
-        realm?.delete(task);
+      realm.write(() => {
+        realm.delete(task);
 
         // Alternatively if passing the ID as the argument to handleDeleteTask:
         // realm?.delete(realm?.objectForPrimaryKey('Task', id));
       });
     },
-    [realmRef],
+    [realm],
   );
 
   return (
@@ -146,11 +78,7 @@ function App() {
         {tasks.length === 0 ? (
           <IntroText />
         ) : (
-          <TaskList
-            tasks={tasks}
-            onToggleTaskStatus={handleToggleTaskStatus}
-            onDeleteTask={handleDeleteTask}
-          />
+          <TaskList tasks={tasks} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
         )}
       </View>
     </SafeAreaView>
@@ -169,4 +97,15 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+function AppWrapper() {
+  if (!RealmProvider) {
+    return null;
+  }
+  return (
+    <RealmProvider>
+      <App />
+    </RealmProvider>
+  );
+}
+
+export default AppWrapper;
