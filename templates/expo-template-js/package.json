@@ -19,6 +19,6 @@
     "@babel/core": "^7.12.9"
   },
   "name": "@realm/expo-template-js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Expo Template Realm Js"
 }

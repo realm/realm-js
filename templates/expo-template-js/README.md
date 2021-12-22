@@ -10,7 +10,7 @@ Simple Expo template to quickly get started with Realm and Realm types.
 
 ## 🚀 How to use
 
-> `npx create-react-native-app MyAwesomeRealmApp -t https://github.com/realm/realm-js --template-path packages/expo-template-js
+> `npx expo-cli MyAwesomeRealmApp -t @realm/expo-template-js`
 
 - Run `expo start --dev-client`, try it out.
 
