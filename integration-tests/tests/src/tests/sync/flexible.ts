@@ -396,7 +396,7 @@ describe("Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
         });
 
-        it("throws if another client updates subscriptions while waiting for synchronisation", function (this: RealmContext) {
+        xit("throws if another client updates subscriptions while waiting for synchronisation", function (this: RealmContext) {
           // TODO what is the proper way to do this?
           const otherClientRealm = new Realm({ schema: [PersonSchema], sync: { flexible: true, user: this.user } });
 
@@ -598,7 +598,7 @@ describe("Flexible sync", function () {
           expect(subs.snapshot()[2].objectType).to.equal(DogSchema.name);
         });
 
-        it("does not apply any updates in a batch if one errors", async function (this: RealmContext) {
+        xit("does not apply any updates in a batch if one errors", async function (this: RealmContext) {
           const { subs } = addPersonSubscription(this);
 
           try {

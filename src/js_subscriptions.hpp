@@ -490,8 +490,8 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
             ValueType arguments[]{Value::from_undefined(protected_ctx)};
 
             // TODO CRASH if we don't await
-            auto current_subs = get_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this);
-            auto new_subs = current_subs->get_updated_version();
+            // auto current_subs = get_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this);
+            auto new_subs = subs->get_subscription_store()->get_by_version(subs->version());
 
             set_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this,
                                                    new Subscriptions<T>(std::move(new_subs)));
