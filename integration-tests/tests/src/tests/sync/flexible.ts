@@ -993,4 +993,6 @@ describe("Flexible sync", function () {
       expect(this.realm.objects(PersonSchema.name)).to.have.length(0);
     });
   });
+
+  // Adding an item which doesn't match the filter should result in an erase: REALMC-10860
 });
