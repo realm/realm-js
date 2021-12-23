@@ -6,33 +6,41 @@
   <img alt="Supports Expo Android" longdesc="Supports Expo Android" src="https://img.shields.io/badge/Android-4630EB.svg?style=flat-square&logo=ANDROID&labelColor=A4C639&logoColor=fff" />
 </p>
 
-Simple Expo template to quickly get started with Realm and Realm types.
+Simple Expo template to quickly get started with Realm.
 
 ## 🚀 How to use
 
-> `npx expo-cli MyAwesomeRealmApp -t @realm/expo-template-js`
+```
+npx expo-cli MyAwesomeRealmApp -t @realm/expo-template-js
+```
 
 - Run `expo start --dev-client`, try it out.
 
-## 🏗 Build with EAS
+## ☁️ Build in the cloud
 
-You can easily use this project with `EAS` - just follow the steps below.
+- [Building with EAS](https://docs.expo.dev/eas/)
 
-### ⚙️ Prepare project
+## 🏃 How to build and run locally
 
-- adjust value of `ios.bundleIdentifier` and `android.package` in `app.json`
-- run `eas build:configure`
-
-### 💪 Build whatever you want
-
-This example comes with two pre-configured build types: `release` (a production version of your app - ready to be uploaded to stores), `with-dev-client` (a development version of your app that can be shared with your teammates).
-
-To build the app with the dev client, just run `eas build --profile with-dev-client`.
-
-> **Note**: the `with-dev-client` uses the **internal distribution** on **iOS**. That's why, you need to add your device to be able to install the built app. To do it, you can use `eas device:create`.
-
-**For more information about EAS, check out [documentation](https://docs.expo.dev/eas/).**
+- [Setup development Environment](https://reactnative.dev/docs/environment-setup)
+- Build/Run on iOS 🍎
+```
+yarn ios
+```
+```
+npm run ios
+```
+- Build/Run on Android 🤖
+```
+yarn android
+```
+```
+npm run android
+```
 
 ## 📝 Notes
 
+- [Setting up Sync](https://docs.mongodb.com/realm/sdk/react-native/quick-start/)
+- [Realm JS Documentation](https://docs.mongodb.com/realm/sdk/react-native/)
 - [Development Client docs](https://docs.expo.dev/clients/introduction/)
+- [Building with EAS](https://docs.expo.dev/eas/)

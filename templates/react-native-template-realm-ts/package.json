@@ -1,6 +1,6 @@
 {
   "name": "@realm/react-native-template-ts",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "description": "React Native Template Realm TS",
   "scripts": {
     "lint": "cd template && npm run lint"
@@ -17,4 +17,3 @@
   },
   "license": "Apache-2.0"
 }
-
