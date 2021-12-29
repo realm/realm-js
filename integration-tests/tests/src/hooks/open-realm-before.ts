@@ -27,8 +27,9 @@ type SyncedConfiguration = Omit<Realm.Configuration, "sync"> & {
 export async function openRealm(
   partialConfig: LocalConfiguration | SyncedConfiguration = {},
   user: Realm.User,
+  nonce?: string,
 ): Promise<{ config: Realm.Configuration; realm: Realm }> {
-  const nonce = new Realm.BSON.ObjectID().toHexString();
+  if (!nonce) nonce = new Realm.BSON.ObjectID().toHexString();
   const path = `temp-${nonce}.realm`;
 
   if (!partialConfig.sync) {
@@ -52,7 +53,7 @@ export async function openRealm(
       await realm.syncSession.uploadAllLocalChanges();
     }
 
-    return { config, realm };
+    return { config, realm, nonce };
   }
 }
 
@@ -64,6 +65,8 @@ export function openRealmHook(config: LocalConfiguration | SyncedConfiguration =
       const result = await openRealm(config, this.user);
       this.realm = result.realm;
       this.config = result.config;
+      // TODO neater way to do this? "reopen realm" call?
+      this.nonce = result.nonce;
     }
   };
 }

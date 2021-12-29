@@ -870,7 +870,8 @@ describe("Flexible sync", function () {
           });
         });
 
-        describe("multi-client behaviour", function () {
+        // Not sure this is needed any more as subs are not persisted between clients
+        xdescribe("multi-client behaviour", function () {
           let otherClientRealm: Realm;
           let otherClientConfig: Realm.Configuration;
 
@@ -916,6 +917,18 @@ describe("Flexible sync", function () {
 
             expect(otherClientSubs.empty).to.be.false;
             expect(newSubs.empty).to.be.false;
+          });
+        });
+
+        describe("persistence", function () {
+          it("persists subscriptions when the Realm is reopened", async function (this: RealmContext) {
+            addPersonSubscription(this);
+            expect(this.realm.getSubscriptions().snapshot()).to.have.length(1);
+
+            this.realm.close();
+
+            const { realm } = await openRealm(realmConfig, this.user, this.nonce);
+            expect(realm.getSubscriptions().snapshot()).to.have.length(1);
           });
         });
       });
