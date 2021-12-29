@@ -37,8 +37,11 @@ export async function importRealmApp() {
   } else {
     const importer = new AppImporter({
       baseUrl,
-      username: MDB_REALM_USERNAME,
-      password: MDB_REALM_PASSWORD,
+      credentials: {
+        kind: "username-password",
+        username: MDB_REALM_USERNAME,
+        password: MDB_REALM_PASSWORD,
+      },
       appsDirectoryPath: path.resolve(__dirname, "../imported-apps"),
       realmConfigPath: path.resolve(__dirname, "../realm-config"),
       cleanUp: !MDB_REALM_SKIP_CLEANUP,
