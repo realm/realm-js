@@ -492,18 +492,21 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
             // TODO CRASH if we don't await
             // auto current_subs = get_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this);
 
-            // TODO crashes sometimes lol - wait for proper solution
-            // auto new_subs = subs->get_subscription_store()->get_by_version(subs->version());
+            // TODO crashes sometimes lol - wait for proper solution. or is the crash a test timeout?
+            auto new_subs = subs->get_subscription_store()->get_by_version(subs->version());
 
-            // set_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this,
-            //                                        new Subscriptions<T>(std::move(new_subs)));
+            set_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this,
+                                                   new Subscriptions<T>(std::move(new_subs)));
 
             Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, arguments);
         });
 
     state_change_func = std::move(state_change_handler);
 
-    subs->get_state_change_notification(realm::sync::SubscriptionSet::State::Complete).get_async(state_change_func);
+    subs->get_state_change_notification(realm::sync::SubscriptionSet::State::Complete)
+        .get_async([=](StatusWith<realm::sync::SubscriptionSet::State> state) noexcept {
+            state_change_func(state);
+        });
 }
 
 /**

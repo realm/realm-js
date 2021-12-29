@@ -22,14 +22,18 @@ import Realm, { BSON } from "realm";
 import {
   authenticateUserBefore,
   authenticateUserBeforeEach,
+  closeRealm,
   importAppBefore,
   importAppBeforeEach,
+  openRealm,
   openRealmBeforeEach,
 } from "../../hooks";
 import { DogSchema, IPerson, Person, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 
 // TODO do we need hto handle getSyncSession?
+
+const realmConfig = { schema: [PersonSchema, DogSchema], sync: { flexible: true } };
 
 describe("Flexible sync", function () {
   function addPersonSubscription(
@@ -58,7 +62,7 @@ describe("Flexible sync", function () {
     importAppBefore("with-db-flx", {});
     // importAppBefore("with-db-flx", {}, "all");
     authenticateUserBefore();
-    openRealmBeforeEach({ schema: [PersonSchema, DogSchema], sync: { flexible: true } });
+    openRealmBeforeEach(realmConfig);
 
     describe("setup", function () {
       describe("config", function () {
@@ -867,16 +871,25 @@ describe("Flexible sync", function () {
         });
 
         describe("multi-client behaviour", function () {
+          let otherClientRealm: Realm;
+          let otherClientConfig: Realm.Configuration;
+
+          beforeEach(async function () {
+            const result = await openRealm(realmConfig, this.user);
+            otherClientRealm = result.realm;
+            otherClientConfig = result.config;
+          });
+
+          this.afterEach(function () {
+            closeRealm(otherClientRealm, otherClientConfig);
+          });
+
           // TODO Is this worth testing? Implied by immutability...
           it("does not automatically update if another client updates subscriptions after we call getSubscriptions", function (this: RealmContext) {
             const subs = this.realm.getSubscriptions();
             expect(subs.empty).to.be.true;
 
             // TODO what is the proper way to do this?
-            const otherClientRealm = new Realm({
-              schema: [PersonSchema],
-              sync: { flexible: true, user: this.user },
-            });
             const otherClientSubs = otherClientRealm.getSubscriptions();
             otherClientSubs.update((mutableSubs) => {
               mutableSubs.add(otherClientRealm.objects(PersonSchema.name));
@@ -887,19 +900,17 @@ describe("Flexible sync", function () {
             expect(subs.empty).to.be.true;
           });
 
-          it("sees another client's updated subscriptions if we call getSubscriptions after they are modified", function (this: RealmContext) {
+          it("sees another client's updated subscriptions if we call getSubscriptions after they are modified", async function (this: RealmContext) {
             const subs = this.realm.getSubscriptions();
             expect(subs.empty).to.be.true;
 
             // TODO what is the proper way to do this?
-            const otherClientRealm = new Realm({
-              schema: [PersonSchema],
-              sync: { flexible: true, user: this.user },
-            });
             const otherClientSubs = otherClientRealm.getSubscriptions();
             otherClientSubs.update((mutableSubs) => {
               mutableSubs.add(otherClientRealm.objects(PersonSchema.name));
             });
+
+            await subs.waitForSynchronization();
 
             const newSubs = this.realm.getSubscriptions();
 

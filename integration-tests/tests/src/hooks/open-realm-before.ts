@@ -24,57 +24,77 @@ type SyncedConfiguration = Omit<Realm.Configuration, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
+export async function openRealm(
+  partialConfig: LocalConfiguration | SyncedConfiguration = {},
+  user: Realm.User,
+): Promise<{ config: Realm.Configuration; realm: Realm }> {
+  const nonce = new Realm.BSON.ObjectID().toHexString();
+  const path = `temp-${nonce}.realm`;
+
+  if (!partialConfig.sync) {
+    const config = { ...partialConfig, path } as LocalConfiguration;
+    return { config, realm: new Realm(config) };
+  } else {
+    const config = {
+      ...partialConfig,
+      path,
+      sync: {
+        user: user,
+        ...(partialConfig.sync.flexible ? { flexible: true } : { partitionValue: nonce }),
+        _sessionStopPolicy: "immediately",
+        ...partialConfig.sync,
+      },
+    } as Realm.Configuration;
+    const realm = new Realm(config);
+
+    // Upload the schema, ensuring a valid connection
+    if (!config.sync.flexible) {
+      await realm.syncSession.uploadAllLocalChanges();
+    }
+
+    return { config, realm };
+  }
+}
+
 export function openRealmHook(config: LocalConfiguration | SyncedConfiguration = {}) {
-  return async function openRealm(this: Partial<RealmContext> & Mocha.Context): Promise<void> {
-    const nonce = new Realm.BSON.ObjectID().toHexString();
-    const path = `temp-${nonce}.realm`;
+  return async function openRealmHandler(this: Partial<RealmContext> & Mocha.Context): Promise<void> {
     if (this.realm) {
       throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
-    } else if (!config.sync) {
-      this.config = { ...config, path } as LocalConfiguration;
-      this.realm = new Realm(this.config);
     } else {
-      this.config = {
-        ...config,
-        path,
-        sync: {
-          user: this.user,
-          ...(config.sync.flexible ? { flexible: true } : { partitionValue: nonce }),
-          _sessionStopPolicy: "immediately",
-          ...config.sync,
-        },
-      } as Realm.Configuration;
-      this.realm = new Realm(this.config);
-      // Upload the schema, ensuring a valid connection
-      // TODO disabled
-      // await this.realm.syncSession.uploadAllLocalChanges();
+      const result = await openRealm(config, this.user);
+      this.realm = result.realm;
+      this.config = result.config;
     }
   };
 }
 
-export function closeRealm(this: RealmContext): void {
-  if (this.realm) {
-    this.realm.close();
-    delete this.realm;
+export function closeRealm(realm: Realm, config?: Realm.Configuration): void {
+  if (realm) {
+    realm.close();
   } else {
-    throw new Error("Expected a 'realm' in the context");
+    throw new Error("Expected a 'realm' to close");
   }
-  if (this.config) {
-    Realm.deleteFile(this.config);
-    delete this.config;
+  if (config) {
+    Realm.deleteFile(config);
   } else {
-    throw new Error("Expected a 'config' in the context");
+    throw new Error("Expected a 'config' to close");
   }
   // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
   Realm.clearTestState();
 }
 
+export function closeThisRealm(this: RealmContext): void {
+  closeRealm(this.realm, this.config);
+  delete this.realm;
+  delete this.config;
+}
+
 export function openRealmBeforeEach(config: LocalConfiguration | SyncedConfiguration = {}): void {
   beforeEach(openRealmHook(config));
-  afterEach(closeRealm);
+  afterEach(closeThisRealm);
 }
 
 export function openRealmBefore(config: LocalConfiguration | SyncedConfiguration = {}): void {
   before(openRealmHook(config));
-  after(closeRealm);
+  after(closeThisRealm);
 }
