@@ -5,8 +5,8 @@ environment = {}
 let {importApp} = require('../../realm-js/integration-tests/tests/dist/utils/import-app.js')
 
 // Create a new app or import the app that I created
-appId = "with-db-flx-lugzk"
-// appId = (await importApp('with-db-flx', {}, 'all')).id
+// appId = "with-db-flx-lugzk"
+appId = (await importApp('with-db-flx', {}, 'all')).id
 
 // Create schema
 PersonSchema = {
@@ -31,14 +31,14 @@ user = await app.logIn(Realm.Credentials.anonymous());
 // realm = await Realm.open({
 realm = new Realm({
   schema: [PersonSchema],
-  // sync: { user, flexible: true }
+  sync: { user, flexible: true }
 });
 
 
 // Create a subscription
 subs = realm.getSubscriptions();
 subs.update((m) => {
-  sub = m.add(realm.objects("Person"), { name: "test" });
+  sub = m.add(realm.objects("Person").filtered("age < 30"), { name: "test" });
 });
 
 realm.write(() => p1.age++)

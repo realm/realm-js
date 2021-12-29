@@ -491,10 +491,12 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
 
             // TODO CRASH if we don't await
             // auto current_subs = get_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this);
-            auto new_subs = subs->get_subscription_store()->get_by_version(subs->version());
 
-            set_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this,
-                                                   new Subscriptions<T>(std::move(new_subs)));
+            // TODO crashes sometimes lol - wait for proper solution
+            // auto new_subs = subs->get_subscription_store()->get_by_version(subs->version());
+
+            // set_internal<T, SubscriptionsClass<T>>(protected_ctx, protected_this,
+            //                                        new Subscriptions<T>(std::move(new_subs)));
 
             Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, arguments);
         });

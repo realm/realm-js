@@ -115,7 +115,8 @@
                 "--grep",
                 // "returns a promise"
                 // "#waitForSynchronization"
-                "Flexible"
+                "synchronising data"
+                // "Flexible"
                 // "is Complete once synchronisation is complete"
                 // "${input:integrationTestFilter}"
             ],
