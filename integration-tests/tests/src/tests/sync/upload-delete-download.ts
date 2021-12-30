@@ -16,6 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+export function closeAndReopenRealm(_this): Promise<void> {
+  if (!_this.realm) {
+    throw new Error("Expected a 'realm' on the mocha context");
+  }
+  // Close, delete and download the Realm from the server
+  _this.realm.close();
+  // Delete the file
+  Realm.deleteFile(_this.config);
+  // Re-open the Realm with the old configuration
+  _this.realm = new Realm(_this.config);
+}
+
 export async function uploadDownloadDelete(_this): Promise<void> {
   console.log("HELLLLO");
   if (!_this.realm) {

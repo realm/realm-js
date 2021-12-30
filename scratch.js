@@ -5,8 +5,8 @@ environment = {}
 let {importApp} = require('../../realm-js/integration-tests/tests/dist/utils/import-app.js')
 
 // Create a new app or import the app that I created
-appId = "with-db-flx-mxhkz"
-// appId = (await importApp('with-db-flx', {}, 'all')).id
+// appId = "with-db-flx-mxhkz"
+appId = (await importApp('with-db-flx', {}, 'all')).id
 
 // Create schema
 PersonSchema = {
@@ -23,7 +23,7 @@ PersonSchema = {
 
 // Create app and connect
 app = new Realm.App({ baseUrl: "http://localhost:9090", id: appId });
-Realm.App.Sync.setLogLevel(app, "all");
+// Realm.App.Sync.setLogLevel(app, "all");
 
 user = await app.logIn(Realm.Credentials.anonymous());
 

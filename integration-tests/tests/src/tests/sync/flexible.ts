@@ -29,7 +29,7 @@ import {
   openRealmBeforeEach,
 } from "../../hooks";
 import { DogSchema, IPerson, Person, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
-import { itUploadsDeletesAndDownloads, uploadDownloadDelete } from "./upload-delete-download";
+import { closeAndReopenRealm, itUploadsDeletesAndDownloads, uploadDownloadDelete } from "./upload-delete-download";
 
 // TODO do we need hto handle getSyncSession?
 
@@ -989,7 +989,7 @@ describe("Flexible sync", function () {
       expect(this.realm.objectForPrimaryKey(PersonSchema.name, person._id)).to.be.undefined;
     });
 
-    it("starts syncing items when a subscription is added", async function (this: RealmContext) {
+    it("syncs existing items when a subscription is added", async function (this: RealmContext) {
       let person: Person;
 
       const realm = this.realm;
@@ -999,9 +999,12 @@ describe("Flexible sync", function () {
       const id = person._id;
 
       addPersonSubscription(this);
-      console.log("xxx");
+      await this.realm.getSubscriptions().waitForSynchronization();
 
-      await uploadDownloadDelete(this);
+      closeAndReopenRealm(this);
+      expect(this.realm.objectForPrimaryKey(PersonSchema.name, id)).to.be.undefined;
+
+      addPersonSubscription(this);
       await this.realm.getSubscriptions().waitForSynchronization();
 
       expect(this.realm.objectForPrimaryKey(PersonSchema.name, id)).to.not.be.undefined;
