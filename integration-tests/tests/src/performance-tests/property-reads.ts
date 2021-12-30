@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
+import { testContext } from "../tests/testContext";
 
 import { describePerformance } from "../utils/benchmark";
 
@@ -62,19 +63,19 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
   describePerformance(`reading property of type '${typeName}'`, {
     schema: [defaultSchema, ...schema],
     benchmarkTitle: `reads ${type}`,
-    before(this: Partial<RealmObjectContext> & RealmContext & Mocha.Context) {
-      this.realm.write(() => {
-        this.object = this.realm.create(objectSchemaName, {
-          [propertyName]: typeof value === "function" ? value(this.realm) : value,
+    before() {
+      testContext.realm.write(() => {
+        testContext.object = testContext.realm.create(objectSchemaName, {
+          [propertyName]: typeof value === "function" ? value(testContext.realm) : value,
         });
         // Override toJSON to prevent this being serialized by Mocha Remote
-        Object.defineProperty(this.object, "toJSON", { value: () => ({}) });
+        Object.defineProperty(testContext.object, "toJSON", { value: () => ({}) });
       });
       // Override toJSON to prevent this being serialized by Mocha Remote
-      Object.defineProperty(this.realm, "toJSON", { value: () => ({}) });
+      Object.defineProperty(testContext.realm, "toJSON", { value: () => ({}) });
     },
-    test(this: RealmObjectContext) {
-      const value = this.object[propertyName];
+    test() {
+      const value = testContext.object[propertyName];
       if (typeof value === "undefined") {
         // Performing a check to avoid the get of the property to be optimized away
         throw new Error("Expected a value");

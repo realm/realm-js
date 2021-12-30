@@ -16,11 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { Credentials } from "realm";
+import { testContext } from "../tests/testContext";
 
 export function authenticateUserBefore(): void {
-  before(async function (this: AppContext & Partial<UserContext>) {
-    if (this.app) {
-      this.user = this.app.currentUser || (await this.app.logIn(Credentials.anonymous()));
+  before(async function () {
+    if (testContext.app) {
+      testContext.user = testContext.app.currentUser || (await testContext.app.logIn(Credentials.anonymous()));
     } else {
       throw new Error("Missing app on context. Did you forget to use the importAppBefore hook?");
     }

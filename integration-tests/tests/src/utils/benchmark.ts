@@ -27,7 +27,7 @@ const maxTimeMs = parseInt(typeof performanceMaxTime === "string" ? performanceM
 const DEFAULT_OPTIONS: Partial<BenchmarkOpts> = { output: false, iter: 1000, size: 1000 };
 
 export function itPerforms(title: string, fn: () => void, options?: Partial<BenchmarkOpts>): void {
-  it(title, async function (this: Partial<BenchmarkContext> & Mocha.Context) {
+  it(title, async function () {
     this.timeout("1m").slow("1m");
     const result = benchmark(fn.bind(this), { ...DEFAULT_OPTIONS, ...options });
     const hz = (result.iter * result.size) / (result.total / 1000);
@@ -45,9 +45,9 @@ type PerformanceTestParameters = {
   // Schema to use when opening the Realm
   schema: Realm.ObjectSchema[];
   // Prepare the realm to be tested (creating any objects that shouldn't be a part of the operation)
-  before(this: RealmContext): void;
+  before(): void;
   // Perform the actual test
-  test(this: RealmObjectContext): void;
+  test(): void;
 };
 
 export function describePerformance(title: string, parameters: PerformanceTestParameters): void {
@@ -57,7 +57,7 @@ export function describePerformance(title: string, parameters: PerformanceTestPa
     });
     before(parameters.before);
     itPerforms(parameters.benchmarkTitle, parameters.test);
-    after(function (this: BenchmarkContext) {
+    after(function () {
       // console.log(this.summary);
     });
   });

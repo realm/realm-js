@@ -19,13 +19,14 @@ import { expect } from "chai";
 import { Credentials, User } from "realm";
 
 import { importAppBefore } from "../../hooks";
+import { testContext } from "../testContext";
 
 describe.skipIf(environment.missingServer, "anonymous credentials", () => {
   importAppBefore("simple");
 
-  it("authenticates", async function (this: AppContext) {
+  it("authenticates", async function () {
     const credentials = Credentials.anonymous();
-    const user = await this.app.logIn(credentials);
+    const user = await testContext.app.logIn(credentials);
     expect(user).instanceOf(User);
   });
 });

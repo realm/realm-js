@@ -19,6 +19,7 @@ import { expect } from "chai";
 import Realm from "realm";
 
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
+import { testContext } from "../testContext";
 
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 
@@ -74,33 +75,33 @@ function describeRoundtrip(typeName: string, value: Value, testValue: ValueTeste
       sync: { partitionValue: "mixed-test" },
     });
 
-    it("writes", function (this: RealmContext) {
-      this._id = new Realm.BSON.ObjectId();
-      this.realm.write(() => {
-        this.value = typeof value === "function" ? value(this.realm) : value;
-        this.realm.create<MixedClass>("MixedClass", {
-          _id: this._id,
-          value: this.value,
+    it("writes", function () {
+      testContext._id = new Realm.BSON.ObjectId();
+      testContext.realm.write(() => {
+        testContext.value = typeof value === "function" ? value(testContext.realm) : value;
+        testContext.realm.create<MixedClass>("MixedClass", {
+          _id: testContext._id,
+          value: testContext.value,
           // Adding a few other unrelated elements to the list
-          list: [this.value, 123, false, "something-else"],
+          list: [testContext.value, 123, false, "something-else"],
         });
       });
     });
 
     itUploadsDeletesAndDownloads();
 
-    it("reads", function (this: RealmContext) {
-      const obj = this.realm.objectForPrimaryKey<MixedClass>("MixedClass", this._id);
+    it("reads", function () {
+      const obj = testContext.realm.objectForPrimaryKey<MixedClass>("MixedClass", testContext._id);
       expect(typeof obj).equals("object");
       // Test the single value
-      performTest(obj.value, this.value);
+      performTest(obj.value, testContext.value);
       // Test the list of values
       expect(obj.list.length).equals(4);
       const firstElement = obj.list[0];
-      performTest(firstElement, this.value);
+      performTest(firstElement, testContext.value);
       // No need to keep these around
-      delete this._id;
-      delete this.value;
+      delete testContext._id;
+      delete testContext.value;
     });
   });
 }

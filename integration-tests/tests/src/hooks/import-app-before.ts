@@ -15,6 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+import { testContext } from "../tests/testContext";
 import { importApp, TemplateReplacements } from "../utils/import-app";
 
 export function importAppBefore(
@@ -22,13 +23,13 @@ export function importAppBefore(
   replacements: TemplateReplacements = {},
   logLevel: Realm.App.Sync.LogLevel = "warn",
 ): void {
-  before(async function (this: Partial<AppContext> & Mocha.Context) {
+  before(async function () {
     this.timeout(10000);
-    if (this.app) {
+    if (testContext.app) {
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
-      this.app = await importApp(name, replacements);
-      Realm.App.Sync.setLogLevel(this.app, logLevel);
+      testContext.app = await importApp(name, replacements);
+      Realm.App.Sync.setLogLevel(testContext.app, logLevel);
     }
   });
 }

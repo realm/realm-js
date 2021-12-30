@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
+import { testContext } from "../tests/testContext";
 
 // Either the sync property is left out (local Realm)
 type LocalConfiguration = Omit<Realm.Configuration, "sync"> & { sync?: never };
@@ -25,42 +26,42 @@ type SyncedConfiguration = Omit<Realm.Configuration, "sync"> & {
 };
 
 export function openRealmHook(config: LocalConfiguration | SyncedConfiguration = {}) {
-  return async function openRealm(this: Partial<RealmContext> & Mocha.Context): Promise<void> {
+  return async function openRealm(): Promise<void> {
     const nonce = new Realm.BSON.ObjectID().toHexString();
     const path = `temp-${nonce}.realm`;
-    if (this.realm) {
+    if (testContext.realm) {
       throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
     } else if (!config.sync) {
-      this.config = { ...config, path } as LocalConfiguration;
-      this.realm = new Realm(this.config);
+      testContext.config = { ...config, path } as LocalConfiguration;
+      testContext.realm = new Realm(testContext.config);
     } else {
-      this.config = {
+      testContext.config = {
         ...config,
         path,
         sync: {
-          user: this.user,
+          user: testContext.user,
           partitionValue: nonce,
           _sessionStopPolicy: "immediately",
           ...config.sync,
         },
       } as Realm.Configuration;
-      this.realm = new Realm(this.config);
+      testContext.realm = new Realm(testContext.config);
       // Upload the schema, ensuring a valid connection
-      await this.realm.syncSession.uploadAllLocalChanges();
+      await testContext.realm.syncSession.uploadAllLocalChanges();
     }
   };
 }
 
-export function closeRealm(this: RealmContext): void {
-  if (this.realm) {
-    this.realm.close();
-    delete this.realm;
+export function closeRealm(): void {
+  if (testContext.realm) {
+    testContext.realm.close();
+    delete testContext.realm;
   } else {
     throw new Error("Expected a 'realm' in the context");
   }
-  if (this.config) {
-    Realm.deleteFile(this.config);
-    delete this.config;
+  if (testContext.config) {
+    Realm.deleteFile(testContext.config);
+    delete testContext.config;
   } else {
     throw new Error("Expected a 'config' in the context");
   }

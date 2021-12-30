@@ -20,6 +20,7 @@ import { expect } from "chai";
 import Realm from "realm";
 
 import { openRealmBefore } from "../hooks";
+import { testContext } from "./testContext";
 
 type Item<ValueType = Realm.Mixed> = {
   dict: Realm.Dictionary<ValueType>;
@@ -42,17 +43,17 @@ describe("Dictionary", () => {
       ],
     });
 
-    it("can be used as a property type in a schema", function (this: RealmContext) {
-      expect(this.realm.isClosed).equals(false);
-      const dictSchemaProperty = this.realm.schema[0].properties.dict as Realm.ObjectSchemaProperty;
+    it("can be used as a property type in a schema", function () {
+      expect(testContext.realm.isClosed).equals(false);
+      const dictSchemaProperty = testContext.realm.schema[0].properties.dict as Realm.ObjectSchemaProperty;
       expect(typeof dictSchemaProperty).equals("object");
       expect(dictSchemaProperty.type).equals("dictionary");
       expect(dictSchemaProperty.objectType).equals("mixed");
     });
 
-    it("is an instance of Dictionary", function (this: RealmContext) {
-      this.realm.write(() => {
-        const item = this.realm.create<Item>("Item", {});
+    it("is an instance of Dictionary", function () {
+      testContext.realm.write(() => {
+        const item = testContext.realm.create<Item>("Item", {});
         expect(item.dict instanceof Realm.Dictionary);
       });
     });
@@ -66,26 +67,26 @@ describe("Dictionary", () => {
       "removeAllListeners",
     ];
     for (const name of methodNames) {
-      it(`exposes a method named '${name}'`, function (this: RealmContext) {
-        this.realm.write(() => {
-          const item = this.realm.create<Item>("Item", {});
+      it(`exposes a method named '${name}'`, function () {
+        testContext.realm.write(() => {
+          const item = testContext.realm.create<Item>("Item", {});
           expect(typeof item.dict[name]).equals("function");
         });
       });
     }
 
-    it("can store string values using string keys", function (this: RealmContext) {
-      this.realm.write(() => {
-        const item = this.realm.create<Item>("Item", {});
+    it("can store string values using string keys", function () {
+      testContext.realm.write(() => {
+        const item = testContext.realm.create<Item>("Item", {});
         item.dict.key1 = "hello";
         expect(item.dict.key1).equals("hello");
       });
     });
 
-    it("can store number values using string keys", function (this: RealmContext) {
-      this.realm.write(() => {
+    it("can store number values using string keys", function () {
+      testContext.realm.write(() => {
         // Creation
-        const item = this.realm.create<Item<number>>("Item", {
+        const item = testContext.realm.create<Item<number>>("Item", {
           dict: { key1: 0 },
         });
         expect(item.dict).deep.equals({ key1: 0 });
@@ -101,10 +102,10 @@ describe("Dictionary", () => {
       });
     });
 
-    it("can store boolean values using string keys", function (this: RealmContext) {
-      this.realm.write(() => {
+    it("can store boolean values using string keys", function () {
+      testContext.realm.write(() => {
         // Creation
-        const item = this.realm.create<Item>("Item", {
+        const item = testContext.realm.create<Item>("Item", {
           dict: {
             key1: true,
             key2: false,
@@ -124,12 +125,12 @@ describe("Dictionary", () => {
       });
     });
 
-    it("can store object link values using string keys", function (this: RealmContext) {
-      this.realm.write(() => {
-        const alice = this.realm.create("Person", { name: "Alice" });
-        const bob = this.realm.create("Person", { name: "Bob" });
+    it("can store object link values using string keys", function () {
+      testContext.realm.write(() => {
+        const alice = testContext.realm.create("Person", { name: "Alice" });
+        const bob = testContext.realm.create("Person", { name: "Bob" });
         // Creation
-        const item = this.realm.create<Item>("Item", {
+        const item = testContext.realm.create<Item>("Item", {
           dict: {
             key1: alice,
           },
@@ -145,56 +146,56 @@ describe("Dictionary", () => {
       });
     });
 
-    it("is spreadable", function (this: RealmContext) {
-      this.realm.write(() => {
-        const item = this.realm.create<Item>("Item", { dict: { key1: "hi" } });
+    it("is spreadable", function () {
+      testContext.realm.write(() => {
+        const item = testContext.realm.create<Item>("Item", { dict: { key1: "hi" } });
         expect({ ...item.dict, key2: "hello" }).deep.equals({ key1: "hi", key2: "hello" });
       });
     });
 
-    it("can JSON.stringify", function (this: RealmContext) {
-      this.realm.write(() => {
+    it("can JSON.stringify", function () {
+      testContext.realm.write(() => {
         const values: DictValues = {
           key1: "hello",
           key2: 1234,
           key3: false,
           key4: null,
         };
-        const item = this.realm.create<Item>("Item", { dict: values });
+        const item = testContext.realm.create<Item>("Item", { dict: values });
         const stringifiedAndParsed = JSON.parse(JSON.stringify(item.dict));
         expect(stringifiedAndParsed).deep.equals(values);
       });
     });
 
-    it("can JSON.stringify via the object", function (this: RealmContext) {
-      this.realm.write(() => {
+    it("can JSON.stringify via the object", function () {
+      testContext.realm.write(() => {
         const values: DictValues = {
           key1: "hello",
           key2: 1234,
           key3: false,
           key4: null,
         };
-        const item = this.realm.create<Item>("Item", { dict: values });
+        const item = testContext.realm.create<Item>("Item", { dict: values });
         const stringifiedAndParsed = JSON.parse(JSON.stringify(item));
         expect(stringifiedAndParsed).deep.equals({ dict: values });
       });
     });
 
     // TODO: Unskip once https://github.com/realm/realm-core/issues/4805 is fixed
-    it.skip("throws a meaningful error if accessed after deletion", function (this: RealmContext) {
-      this.realm.write(() => {
-        const item = this.realm.create<Item>("Item", {});
+    it.skip("throws a meaningful error if accessed after deletion", function () {
+      testContext.realm.write(() => {
+        const item = testContext.realm.create<Item>("Item", {});
         const dict = item.dict;
-        this.realm.delete(item);
+        testContext.realm.delete(item);
         expect(() => {
           JSON.stringify(dict);
         }).throws("Access to invalidated Dictionary object");
       });
     });
 
-    it("can have values deleted", function (this: RealmContext) {
-      this.realm.write(() => {
-        const item = this.realm.create<Item>("Item", {
+    it("can have values deleted", function () {
+      testContext.realm.write(() => {
+        const item = testContext.realm.create<Item>("Item", {
           dict: { key1: "hi" },
         });
         expect(item.dict).deep.equals({ key1: "hi" });
@@ -228,18 +229,18 @@ describe("Dictionary", () => {
         ],
       });
 
-      it("can initialize", function (this: RealmContext) {
-        this.realm.write(() => {
-          const values = typeof goodValues === "function" ? goodValues(this.realm) : goodValues;
-          const item = this.realm.create<Item>("Item", { dict: values });
+      it("can initialize", function () {
+        testContext.realm.write(() => {
+          const values = typeof goodValues === "function" ? goodValues(testContext.realm) : goodValues;
+          const item = testContext.realm.create<Item>("Item", { dict: values });
           expect(item.dict).deep.equals(values);
         });
       });
 
-      it("can assign", function (this: RealmContext) {
-        this.realm.write(() => {
-          const item = this.realm.create<Item>("Item", {});
-          const values = typeof goodValues === "function" ? goodValues(this.realm) : goodValues;
+      it("can assign", function () {
+        testContext.realm.write(() => {
+          const item = testContext.realm.create<Item>("Item", {});
+          const values = typeof goodValues === "function" ? goodValues(testContext.realm) : goodValues;
           for (const [k, v] of Object.entries(values)) {
             item.dict[k] = v;
           }
@@ -247,10 +248,10 @@ describe("Dictionary", () => {
         });
       });
 
-      it("fails if type mismatch", function (this: RealmContext) {
-        this.realm.write(() => {
+      it("fails if type mismatch", function () {
+        testContext.realm.write(() => {
           expect(() => {
-            this.realm.create<Item>("Item", {
+            testContext.realm.create<Item>("Item", {
               dict: badValues,
             });
           }).throws(expectedError);
