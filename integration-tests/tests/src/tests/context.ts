@@ -20,6 +20,8 @@ import { expect } from "chai";
 import { resetTestContext, testContext } from "./testContext";
 
 describe("testContext behaviour", function () {
+  after(resetTestContext);
+
   describe("native mocha 'this' context", function () {
     it("has no initial value at the start of the test suite", function () {
       expect(this.testValue).to.be.undefined;
@@ -61,6 +63,8 @@ describe("testContext behaviour", function () {
 });
 
 describe("testContext behaviour in another suite", function () {
+  after(resetTestContext);
+
   describe("native mocha 'this' context", function () {
     it("has no initial value at the start of the test suite", function () {
       expect(this.testValue).to.be.undefined;
@@ -75,6 +79,8 @@ describe("testContext behaviour in another suite", function () {
 });
 
 describe("testContext behaviour in nested suite", function () {
+  after(resetTestContext);
+
   describe("native mocha 'this' context", function () {
     it("has no initial value at the start of the test suite", function () {
       expect(this.testValue).to.be.undefined;
