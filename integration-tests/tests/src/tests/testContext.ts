@@ -16,14 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./realm-constructor";
-import "./serialization";
-import "./objects";
-import "./iterators";
-import "./dynamic-schema-updates";
-import "./bson";
-import "./dictionary";
-import "./credentials/anonymous";
-import "./sync/mixed";
-
-import "./context";
+export const testContext: Partial<RealmContext> = {};
