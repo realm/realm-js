@@ -22,6 +22,7 @@ import Realm, { BSON } from "realm";
 import {
   authenticateUserBefore,
   authenticateUserBeforeEach,
+  closeAndReopenRealm,
   closeRealm,
   importAppBefore,
   importAppBeforeEach,
@@ -29,9 +30,9 @@ import {
   openRealmBeforeEach,
 } from "../../hooks";
 import { DogSchema, IPerson, Person, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
-import { closeAndReopenRealm, itUploadsDeletesAndDownloads, uploadDownloadDelete } from "./upload-delete-download";
 
 // TODO do we need hto handle getSyncSession?
+// TODO check we can update query
 
 const realmConfig = { schema: [PersonSchema, DogSchema], sync: { flexible: true } };
 
@@ -816,9 +817,10 @@ describe("Flexible sync", function () {
           });
         });
 
-        it("removes all subscriptions and returns the number of subscriptions removed", function (this: RealmContext) {
+        it("removes all subscriptions and returns the number of subscriptions removed", async function (this: RealmContext) {
           addPersonSubscription(this);
           const { subs } = addSubscription(this, this.realm.objects(PersonSchema.name).filtered("age > 10"));
+          await subs.waitForSynchronization();
 
           subs.update((mutableSubs) => {
             expect(mutableSubs.removeAll()).to.equal(2);
@@ -933,44 +935,60 @@ describe("Flexible sync", function () {
   });
 
   describe("synchronising data", function () {
-    function addPersonAndWaitForSync(_this: Partial<RealmContext>) {
+    async function addPersonAndWaitForSync(_this: Partial<RealmContext>) {
       let person: Person;
       _this.realm.write(function () {
         person = _this.realm.create<IPerson>(PersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
       });
 
-      itUploadsDeletesAndDownloads();
+      await _this.realm.getSubscriptions().waitForSynchronization();
 
-      return person;
+      return { person, id: person._id };
     }
 
-    async function addSubscriptionAndPerson(_this: Partial<RealmContext>, query: Realm.Results<any>) {
-      const { subs, sub } = addSubscription(_this, query);
-      // TODO this is never happening
-      // await subs.waitForSynchronization();
+    async function addSubscriptionAndPersonAndReopenRealm(
+      _this: Partial<RealmContext>,
+      queryFn: any,
+      // subsUpdateFn: (mutableSubs: Realm.App.Sync.MutableSubscriptions) => void,
+    ) {
+      _this.realm.getSubscriptions().update((m) => m.add(queryFn(_this.realm)));
+      await _this.realm.getSubscriptions().waitForSynchronization();
 
-      const person = addPersonAndWaitForSync(_this);
+      const { id } = await addPersonAndWaitForSync(_this);
 
-      return { sub, person };
+      closeAndReopenRealm(_this);
+      expect(_this.realm.objectForPrimaryKey(PersonSchema.name, id)).to.be.undefined;
+
+      _this.realm.getSubscriptions().update((m) => m.add(queryFn(_this.realm)));
+      await _this.realm.getSubscriptions().waitForSynchronization();
+
+      return { id };
     }
 
     it("syncs added items to a subscribed collection", async function (this: RealmContext) {
-      const { person } = await addSubscriptionAndPerson(this, this.realm.objects(PersonSchema.name));
+      const { id } = await addSubscriptionAndPersonAndReopenRealm(this, (r) => r.objects(PersonSchema.name));
 
-      expect(this.realm.objectForPrimaryKey(PersonSchema.name, person._id)).to.not.be.undefined;
+      expect(this.realm.objectForPrimaryKey(PersonSchema.name, id)).to.not.be.undefined;
     });
 
     it("syncs added items to a subscribed collection with a filter", async function (this: RealmContext) {
-      const { person } = await addSubscriptionAndPerson(
-        this,
-        this.realm.objects(PersonSchema.name).filtered("age > 30"),
+      const { id } = await addSubscriptionAndPersonAndReopenRealm(this, (r) =>
+        r.objects(PersonSchema.name).filtered("age > 30"),
       );
 
-      expect(this.realm.objectForPrimaryKey(PersonSchema.name, person._id)).to.not.be.undefined;
+      expect(this.realm.objectForPrimaryKey(PersonSchema.name, id)).to.not.be.undefined;
+    });
+
+    it("does not sync added items not matching the filter", async function (this: RealmContext) {
+      const { id } = await addSubscriptionAndPersonAndReopenRealm(this, (r) =>
+        r.objects(PersonSchema.name).filtered("age < 30"),
+      );
+
+      expect(this.realm.objectForPrimaryKey(PersonSchema.name, id)).to.be.undefined;
     });
 
     // Waiting on https://jira.mongodb.org/browse/REALMC-10860
-    xit("does not sync added items not matching the filter", async function (this: RealmContext) {
+    xit("deletes local items not matching the filter", async function (this: RealmContext) {
       const { person } = await addSubscriptionAndPerson(
         this,
         this.realm.objects(PersonSchema.name).filtered("age < 30"),

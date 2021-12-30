@@ -16,37 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export function closeAndReopenRealm(_this): Promise<void> {
-  if (!_this.realm) {
-    throw new Error("Expected a 'realm' on the mocha context");
-  }
-  // Close, delete and download the Realm from the server
-  _this.realm.close();
-  // Delete the file
-  Realm.deleteFile(_this.config);
-  // Re-open the Realm with the old configuration
-  _this.realm = new Realm(_this.config);
-}
-
-export async function uploadDownloadDelete(_this): Promise<void> {
-  console.log("HELLLLO");
-  if (!_this.realm) {
-    throw new Error("Expected a 'realm' on the mocha context");
-  }
-  // Ensure everything has been uploaded
-  await _this.realm.syncSession.uploadAllLocalChanges();
-  // Close, delete and download the Realm from the server
-  _this.realm.close();
-  // Delete the file
-  Realm.deleteFile(_this.config);
-  // Re-open the Realm with the old configuration
-  _this.realm = new Realm(_this.config);
-  console.log("&&*&&&&:", _this.config);
-  await _this.realm.syncSession.downloadAllServerChanges();
-}
+import { closeAndReopenRealm } from "../../hooks";
 
 export function itUploadsDeletesAndDownloads(): void {
   it("uploads, cleans and downloads", async function (this: RealmContext) {
-    await uploadDownloadDelete(this);
+    closeAndReopenRealm(_this);
+    await _this.realm.syncSession.downloadAllServerChanges();
   });
 }

@@ -92,6 +92,18 @@ export function closeThisRealm(this: RealmContext): void {
   delete this.config;
 }
 
+export function closeAndReopenRealm(_this: RealmContext): void {
+  if (!_this.realm) {
+    throw new Error("Expected a 'realm' on the mocha context");
+  }
+  // Close, delete and download the Realm from the server
+  _this.realm.close();
+  // Delete the file
+  Realm.deleteFile(_this.config);
+  // Re-open the Realm with the old configuration
+  _this.realm = new Realm(_this.config);
+}
+
 export function openRealmBeforeEach(config: LocalConfiguration | SyncedConfiguration = {}): void {
   beforeEach(openRealmHook(config));
   afterEach(closeThisRealm);
