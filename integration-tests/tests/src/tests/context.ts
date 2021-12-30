@@ -59,3 +59,17 @@ describe("testContext behaviour", function () {
     });
   });
 });
+
+describe("testContext behaviour in another suite", function () {
+  describe("native mocha 'this' context", function () {
+    it("has no initial value at the start of the test suite", function () {
+      expect(this.testValue).to.be.undefined;
+    });
+  });
+
+  describe("singleton 'testContext' context", function () {
+    it("has no initial value at the start of the test suite", function () {
+      expect(testContext.testValue).to.be.undefined;
+    });
+  });
+});
