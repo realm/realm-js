@@ -15,11 +15,12 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+import { resetTestContext } from "./tests/testContext";
 
-// hmm, https://www.npmjs.com/package/mocha-ctx/v/1.0.0-a.0
-
-export let testContext: Partial<RealmContext> & Partial<AppContext> & Partial<UserContext> = {};
-
-export const resetTestContext = (): void => {
-  testContext = {};
+export const mochaHooks = {
+  // This doesn't work as it cannot run after only every outer describe
+  // after() {
+  //   console.log("AFTER");
+  //   resetTestContext();
+  // },
 };

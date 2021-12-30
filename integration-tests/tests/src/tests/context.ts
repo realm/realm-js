@@ -20,8 +20,6 @@ import { expect } from "chai";
 import { resetTestContext, testContext } from "./testContext";
 
 describe("testContext behaviour", function () {
-  after(() => resetTestContext());
-
   describe("native mocha 'this' context", function () {
     it("has no initial value at the start of the test suite", function () {
       expect(this.testValue).to.be.undefined;
@@ -72,6 +70,42 @@ describe("testContext behaviour in another suite", function () {
   describe("singleton 'testContext' context", function () {
     it("has no initial value at the start of the test suite", function () {
       expect(testContext.testValue).to.be.undefined;
+    });
+  });
+});
+
+describe("testContext behaviour in nested suite", function () {
+  describe("native mocha 'this' context", function () {
+    it("has no initial value at the start of the test suite", function () {
+      expect(this.testValue).to.be.undefined;
+    });
+
+    it("can store a value on the context", function () {
+      this.testValue = 123;
+      expect(this.testValue).to.equal(123);
+    });
+
+    describe("testContext behaviour in nested suite", function () {
+      it("has an initial value at the start of the nested test suite", function () {
+        expect(this.testValue).to.equal(123);
+      });
+    });
+  });
+
+  describe("singleton 'testContext' context", function () {
+    it("has no initial value at the start of the test suite", function () {
+      expect(testContext.testValue).to.be.undefined;
+    });
+
+    it("can store a value on the context", function () {
+      testContext.testValue = 123;
+      expect(testContext.testValue).to.equal(123);
+    });
+
+    describe("testContext behaviour in nested suite", function () {
+      it("has an initial value at the start of the nested test suite", function () {
+        expect(testContext.testValue).to.equal(123);
+      });
     });
   });
 });
