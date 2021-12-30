@@ -16,4 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export const testContext: Partial<RealmContext> & Partial<AppContext> & Partial<UserContext> = {};
+export let testContext: Partial<RealmContext> & Partial<AppContext> & Partial<UserContext> = {};
+
+export const resetTestContext = (): void => {
+  testContext = {};
+};

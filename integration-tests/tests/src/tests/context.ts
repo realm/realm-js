@@ -17,9 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { testContext } from "./testContext";
+import { resetTestContext, testContext } from "./testContext";
 
 describe("testContext behaviour", function () {
+  after(() => resetTestContext());
+
   describe("native mocha 'this' context", function () {
     it("has no initial value at the start of the test suite", function () {
       expect(this.testValue).to.be.undefined;
