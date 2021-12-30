@@ -946,7 +946,7 @@ describe("Flexible sync", function () {
       return { person, id: person._id };
     }
 
-    async function addSubscriptionAndPersonAndReopenRealm(
+    async function addPersonAndResyncWithSubscription(
       _this: Partial<RealmContext>,
       queryFn: any,
       // subsUpdateFn: (mutableSubs: Realm.App.Sync.MutableSubscriptions) => void,
@@ -966,13 +966,13 @@ describe("Flexible sync", function () {
     }
 
     it("syncs added items to a subscribed collection", async function (this: RealmContext) {
-      const { id } = await addSubscriptionAndPersonAndReopenRealm(this, (r) => r.objects(PersonSchema.name));
+      const { id } = await addPersonAndResyncWithSubscription(this, (r) => r.objects(PersonSchema.name));
 
       expect(this.realm.objectForPrimaryKey(PersonSchema.name, id)).to.not.be.undefined;
     });
 
     it("syncs added items to a subscribed collection with a filter", async function (this: RealmContext) {
-      const { id } = await addSubscriptionAndPersonAndReopenRealm(this, (r) =>
+      const { id } = await addPersonAndResyncWithSubscription(this, (r) =>
         r.objects(PersonSchema.name).filtered("age > 30"),
       );
 
@@ -980,7 +980,7 @@ describe("Flexible sync", function () {
     });
 
     it("does not sync added items not matching the filter", async function (this: RealmContext) {
-      const { id } = await addSubscriptionAndPersonAndReopenRealm(this, (r) =>
+      const { id } = await addPersonAndResyncWithSubscription(this, (r) =>
         r.objects(PersonSchema.name).filtered("age < 30"),
       );
 
