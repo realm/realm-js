@@ -8,6 +8,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Compatibility
+* Removed `deprecated-react-native-listview` from root package.json
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
