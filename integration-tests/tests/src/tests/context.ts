@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+// See https://github.com/mochajs/mocha/blob/master/test/unit/context.spec.js
+
 import { expect } from "chai";
 import { resetTestContext, testContext } from "./testContext";
 
@@ -95,6 +97,12 @@ describe("testContext behaviour in nested suite", function () {
       it("has an initial value at the start of the nested test suite", function () {
         expect(this.testValue).to.equal(123);
       });
+    });
+  });
+
+  describe("outside nested context where native mocha 'this' context was set", function () {
+    it("has no initial value outside of the scope where its value was set", function () {
+      expect(this.testValue).to.be.undefined;
     });
   });
 
