@@ -63,7 +63,7 @@ describe("context issue", function () {
 
     it("test 2 is not ok", async function () {
       // If the openRealmBeforeEach is at the top level, then this.realm is the realm created
-      // at "*** 1" above (which has gone out of scope).
+      // at "*** 1" above (which is somehow broken...)
       // If the openRealmBeforeEach is in this describe block, then this.realm is the realm created
       // in openRealmHook, as expected.
 

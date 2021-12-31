@@ -26,3 +26,4 @@ import "./dictionary";
 import "./credentials/anonymous";
 import "./sync/mixed";
 import "./context-issue";
+import "./context-issue-no-realm";
