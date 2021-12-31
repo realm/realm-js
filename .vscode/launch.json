@@ -99,11 +99,15 @@
                 "node_modules/mocha/bin/mocha",
                 "--require",
                 "ts-node/register/transpile-only",
+                "--require",
+                "src/node/inject-globals.ts",
                 "src/index.ts",
                 "--grep",
-                "${input:integrationTestFilter}"
+                "context issue"
+                // "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",
+            "preLaunchTask": "Build Node Tests"
         }
     ],
     "compounds": [
