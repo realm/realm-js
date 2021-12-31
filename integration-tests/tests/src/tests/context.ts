@@ -20,10 +20,30 @@
 
 import { expect } from "chai";
 import { resetTestContext, testContext } from "./testContext";
+import mocha from "mocha";
+
+// const origBefore = mocha.Suite.prototype.beforeEach;
+// mocha.Suite.prototype.beforeEach = (...args) => {
+//   console.log("hiya");
+//   origBefore.apply(this, args);
+// };
+
+// mocha.suite.beforeEach(function () {
+//   console.log("sweet");
+// });
+
+// const runner = mocha.run();
+// runner.on("pass", () => console.log("pass"));
+
+// mocha.suite.
+
+// it("testContext  top level", () => {});
+
+// describe("testContext one level", () => {
+//   it("one level", () => {});
+// });
 
 describe("testContext behaviour", function () {
-  after(resetTestContext);
-
   describe("native mocha 'this' context", function () {
     it("has no initial value at the start of the test suite", function () {
       expect(this.testValue).to.be.undefined;
@@ -45,7 +65,7 @@ describe("testContext behaviour", function () {
   });
 
   describe("singleton 'testContext' context", function () {
-    it("has no initial value at the start of the test suite", function () {
+    it("xhas no initial value at the start of the test suite", function () {
       expect(testContext.testValue).to.be.undefined;
     });
 
@@ -65,8 +85,6 @@ describe("testContext behaviour", function () {
 });
 
 describe("testContext behaviour in another suite", function () {
-  after(resetTestContext);
-
   describe("native mocha 'this' context", function () {
     it("has no initial value at the start of the test suite", function () {
       expect(this.testValue).to.be.undefined;
@@ -75,14 +93,13 @@ describe("testContext behaviour in another suite", function () {
 
   describe("singleton 'testContext' context", function () {
     it("has no initial value at the start of the test suite", function () {
+      console.log(testContext);
       expect(testContext.testValue).to.be.undefined;
     });
   });
 });
 
 describe("testContext behaviour in nested suite", function () {
-  after(resetTestContext);
-
   describe("native mocha 'this' context", function () {
     it("has no initial value at the start of the test suite", function () {
       expect(this.testValue).to.be.undefined;

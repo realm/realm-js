@@ -15,9 +15,39 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { resetTestContext } from "./tests/testContext";
+
+import { getTestContext, testContext } from "./tests/testContext";
+
+let lastSuite;
 
 export const mochaHooks = {
+  before() {
+    lastSuite = undefined;
+  },
+
+  beforeEach() {
+    let currentDepth = 0;
+    let suite = this.currentTest.parent;
+    // console.log(suite);
+    const isSameSuiteAsLastTest = lastSuite === suite;
+
+    while (suite.parent) {
+      // console.log(suite.parent.title);
+      currentDepth++;
+      suite = suite.parent;
+    }
+
+    // console.log(currentDepth); //this.currentTest.parent);
+    // console.log("before");
+
+    getTestContext().setDepth(currentDepth - 1, !isSameSuiteAsLastTest);
+    lastSuite = this.currentTest.parent;
+  },
+
+  afterEach() {
+    // console.log("after");
+    // getTestContext().decrementDepth();
+  },
   // This doesn't work as it cannot run after only every outer describe
   // after() {
   //   console.log("AFTER");
