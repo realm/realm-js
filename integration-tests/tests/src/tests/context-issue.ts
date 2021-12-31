@@ -55,7 +55,8 @@ describe("context issue", function () {
       this.realm = undefined;
 
       await openRealm(this as any, config); // *** 1
-      console.log("after open", this.realm.id, this.realm.syncSession);
+      console.log("after open, new realm is", this.realm.id, this.realm.syncSession);
+      this.realm.write(() => this.realm.create("MixedClass", { _id: new Realm.BSON.ObjectId(), value: "123" }));
 
       expect(this.realm.syncSession).to.not.be.null;
     });

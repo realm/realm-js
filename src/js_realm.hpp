@@ -348,6 +348,7 @@ public:
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue&);
+    static void get_id(ContextType, ObjectType, ReturnValue&);
     static void get_path(ContextType, ObjectType, ReturnValue&);
     static void get_schema_version(ContextType, ObjectType, ReturnValue&);
     static void get_schema(ContextType, ObjectType, ReturnValue&);
@@ -420,6 +421,7 @@ public:
     };
 
     PropertyMap<T> const properties = {
+        {"id", {wrap<get_id>, nullptr}},
         {"empty", {wrap<get_empty>, nullptr}},
         {"path", {wrap<get_path>, nullptr}},
         {"schemaVersion", {wrap<get_schema_version>, nullptr}},
@@ -901,6 +903,13 @@ void RealmClass<T>::set_default_path(ContextType ctx, ObjectType object, ValueTy
 }
 
 template <typename T>
+void RealmClass<T>::get_id(ContextType ctx, ObjectType object, ReturnValue& return_value)
+{
+    SharedRealm& realm = *get_internal<T, RealmClass<T>>(ctx, object);
+    return_value.set(realm->id);
+}
+
+template <typename T>
 void RealmClass<T>::get_empty(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
     SharedRealm& realm = *get_internal<T, RealmClass<T>>(ctx, object);
@@ -1358,6 +1367,7 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object
 template <typename T>
 void RealmClass<T>::close(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
+    std::cerr << "Closing realm " << this_object.Get("id").ToString().Utf8Value().c_str() << std::endl;
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
