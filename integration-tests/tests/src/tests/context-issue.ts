@@ -37,14 +37,14 @@ const config = {
 describe("context issue", function () {
   importAppBefore("with-db");
   authenticateUserBefore();
-  // openRealmBeforeEach(config);
+  openRealmBeforeEach(config);
 
   it("is ok", function () {
     // expect(this.realm.syncSession).to.not.be.null;
   });
 
   describe("inner suite", function () {
-    openRealmBeforeEach(config);
+    // openRealmBeforeEach(config);
 
     it("test 1 is ok", async function () {
       console.log("before open", this.realm.id, this.realm.syncSession);
@@ -61,7 +61,9 @@ describe("context issue", function () {
     });
 
     it("test 2 is not ok", async function () {
-      console.log(this.realm.id, this.realm.syncSession);
+      console.log("start of test 2", this.realm.id, this.realm.syncSession);
+
+      this.realm.write(() => this.realm.create("MixedClass", { _id: new Realm.BSON.ObjectId(), value: "123" }));
       expect(this.realm.syncSession).to.not.be.null;
     });
   });

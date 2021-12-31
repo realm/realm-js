@@ -53,10 +53,8 @@ export async function openRealm(_this: Partial<RealmContext> & Mocha.Context, co
 
 export function openRealmHook(config: LocalConfiguration | SyncedConfiguration = {}) {
   return async function () {
-    console.log("before hook");
-
     await openRealm(this, config);
-    console.log(this.realm.id, this.realm.syncSession);
+    console.log("before hook", this.realm.id, this.realm.syncSession);
   };
 }
 
