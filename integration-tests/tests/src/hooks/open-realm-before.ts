@@ -24,30 +24,34 @@ type SyncedConfiguration = Omit<Realm.Configuration, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
+export async function openRealm(_this: Partial<RealmContext> & Mocha.Context, config: any): Promise<void> {
+  const nonce = new Realm.BSON.ObjectID().toHexString();
+  const path = `temp-${nonce}.realm`;
+  if (_this.realm) {
+    throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
+  } else if (!config.sync) {
+    _this.config = { ...config, path } as LocalConfiguration;
+    _this.realm = new Realm(_this.config);
+  } else {
+    _this.config = {
+      ...config,
+      path,
+      sync: {
+        user: _this.user,
+        partitionValue: nonce,
+        _sessionStopPolicy: "immediately",
+        ...config.sync,
+      },
+    } as Realm.Configuration;
+    _this.realm = new Realm(_this.config);
+    // Upload the schema, ensuring a valid connection
+    await _this.realm.syncSession.uploadAllLocalChanges();
+  }
+}
+
 export function openRealmHook(config: LocalConfiguration | SyncedConfiguration = {}) {
-  return async function openRealm(this: Partial<RealmContext> & Mocha.Context): Promise<void> {
-    const nonce = new Realm.BSON.ObjectID().toHexString();
-    const path = `temp-${nonce}.realm`;
-    if (this.realm) {
-      throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
-    } else if (!config.sync) {
-      this.config = { ...config, path } as LocalConfiguration;
-      this.realm = new Realm(this.config);
-    } else {
-      this.config = {
-        ...config,
-        path,
-        sync: {
-          user: this.user,
-          partitionValue: nonce,
-          _sessionStopPolicy: "immediately",
-          ...config.sync,
-        },
-      } as Realm.Configuration;
-      this.realm = new Realm(this.config);
-      // Upload the schema, ensuring a valid connection
-      await this.realm.syncSession.uploadAllLocalChanges();
-    }
+  return function () {
+    openRealm(this, config);
   };
 }
 
