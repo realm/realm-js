@@ -44,7 +44,7 @@ export async function openRealm(_this: Partial<RealmContext> & Mocha.Context, co
       },
     } as Realm.Configuration;
     _this.realm = new Realm(_this.config);
-    _this.realm.id = Math.random();
+    (_this.realm as any).id = Math.random();
 
     // Upload the schema, ensuring a valid connection
     await _this.realm.syncSession.uploadAllLocalChanges();

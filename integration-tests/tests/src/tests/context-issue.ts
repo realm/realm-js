@@ -54,13 +54,18 @@ describe("context issue", function () {
       delete this.realm;
       this.realm = undefined;
 
-      await openRealm(this, config);
+      await openRealm(this as any, config); // *** 1
       console.log("after open", this.realm.id, this.realm.syncSession);
 
       expect(this.realm.syncSession).to.not.be.null;
     });
 
     it("test 2 is not ok", async function () {
+      // If the openRealmBeforeEach is at the top level, then this.realm is the realm created
+      // at "*** 1" above (which has gone out of scope).
+      // If the openRealmBeforeEach is in this describe block, then this.realm is the realm created
+      // in openRealmHook, as expected.
+
       console.log("start of test 2", this.realm.id, this.realm.syncSession);
 
       this.realm.write(() => this.realm.create("MixedClass", { _id: new Realm.BSON.ObjectId(), value: "123" }));
