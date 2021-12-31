@@ -44,14 +44,19 @@ export async function openRealm(_this: Partial<RealmContext> & Mocha.Context, co
       },
     } as Realm.Configuration;
     _this.realm = new Realm(_this.config);
+    _this.realm.id = Math.random();
+
     // Upload the schema, ensuring a valid connection
     await _this.realm.syncSession.uploadAllLocalChanges();
   }
 }
 
 export function openRealmHook(config: LocalConfiguration | SyncedConfiguration = {}) {
-  return function () {
-    openRealm(this, config);
+  return async function () {
+    console.log("before hook");
+
+    await openRealm(this, config);
+    console.log(this.realm.id, this.realm.syncSession);
   };
 }
 

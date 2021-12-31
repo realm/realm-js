@@ -37,14 +37,17 @@ const config = {
 describe("context issue", function () {
   importAppBefore("with-db");
   authenticateUserBefore();
-  openRealmBeforeEach(config);
+  // openRealmBeforeEach(config);
 
   it("is ok", function () {
-    expect(this.realm.syncSession).to.not.be.null;
+    // expect(this.realm.syncSession).to.not.be.null;
   });
 
   describe("inner suite", function () {
+    openRealmBeforeEach(config);
+
     it("test 1 is ok", async function () {
+      console.log("before open", this.realm.id, this.realm.syncSession);
       expect(this.realm.syncSession).to.not.be.null;
 
       this.realm.close();
@@ -52,19 +55,13 @@ describe("context issue", function () {
       this.realm = undefined;
 
       await openRealm(this, config);
+      console.log("after open", this.realm.id, this.realm.syncSession);
 
       expect(this.realm.syncSession).to.not.be.null;
     });
 
     it("test 2 is not ok", async function () {
-      expect(this.realm.syncSession).to.not.be.null;
-
-      this.realm.close();
-      delete this.realm;
-      this.realm = undefined;
-
-      await openRealm(this, config);
-
+      console.log(this.realm.id, this.realm.syncSession);
       expect(this.realm.syncSession).to.not.be.null;
     });
   });
