@@ -35,7 +35,7 @@ export const PersonSchema: Realm.ObjectSchema = {
     _id: "objectId",
     age: "int",
     name: "string",
-    // friends: "Person[]",
+    friends: "Person[]",
   },
 };
 
@@ -43,8 +43,8 @@ export class Person extends Realm.Object implements IPerson {
   _id: Realm.BSON.ObjectId;
   name: string;
   age: number;
-  // friends: Realm.List<Person>;
-  // dogs: Realm.Collection<Dog>;
+  friends: Realm.List<Person>;
+  dogs: Realm.Collection<Dog>;
 
   static schema: Realm.ObjectSchema = PersonSchema;
 }

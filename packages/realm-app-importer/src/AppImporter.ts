@@ -123,6 +123,7 @@ export class AppImporter {
       "--yes", // Bypass prompts
     );
 
+    // Temporary hack to enable flexible sync on the app created
     return new Promise((resolve) => {
       let services = [];
       const servicesUrl = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps/${app._id}/services`;

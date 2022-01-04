@@ -21,17 +21,14 @@ import Realm, { BSON } from "realm";
 
 import {
   authenticateUserBefore,
-  authenticateUserBeforeEach,
   closeAndReopenRealm,
-  closeRealm,
   importAppBefore,
-  importAppBeforeEach,
   openRealm,
   openRealmBeforeEach,
 } from "../../hooks";
 import { DogSchema, IPerson, Person, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 
-// TODO do we need hto handle getSyncSession?
+// TODO do we need to handle getSyncSession?
 // TODO check we can update query
 
 const realmConfig = { schema: [PersonSchema, DogSchema], sync: { flexible: true } };
@@ -865,56 +862,6 @@ describe("Flexible sync", function () {
           });
 
           expect(subs.snapshot()).to.have.length(1);
-        });
-      });
-
-      // Not sure this is needed any more as subs are not persisted between clients
-      xdescribe("multi-client behaviour", function () {
-        let otherClientRealm: Realm;
-        let otherClientConfig: Realm.Configuration;
-
-        beforeEach(async function () {
-          const result = await openRealm(realmConfig, this.user);
-          otherClientRealm = result.realm;
-          otherClientConfig = result.config;
-        });
-
-        this.afterEach(function () {
-          closeRealm(otherClientRealm, otherClientConfig);
-        });
-
-        // TODO Is this worth testing? Implied by immutability...
-        it("does not automatically update if another client updates subscriptions after we call getSubscriptions", function (this: RealmContext) {
-          const subs = this.realm.getSubscriptions();
-          expect(subs.empty).to.be.true;
-
-          // TODO what is the proper way to do this?
-          const otherClientSubs = otherClientRealm.getSubscriptions();
-          otherClientSubs.update((mutableSubs) => {
-            mutableSubs.add(otherClientRealm.objects(PersonSchema.name));
-          });
-
-          // TODO prob need to get a new snapshot, is this test even valid
-          expect(otherClientSubs.empty).to.be.false;
-          expect(subs.empty).to.be.true;
-        });
-
-        it("sees another client's updated subscriptions if we call getSubscriptions after they are modified", async function (this: RealmContext) {
-          const subs = this.realm.getSubscriptions();
-          expect(subs.empty).to.be.true;
-
-          // TODO what is the proper way to do this?
-          const otherClientSubs = otherClientRealm.getSubscriptions();
-          otherClientSubs.update((mutableSubs) => {
-            mutableSubs.add(otherClientRealm.objects(PersonSchema.name));
-          });
-
-          await subs.waitForSynchronization();
-
-          const newSubs = this.realm.getSubscriptions();
-
-          expect(otherClientSubs.empty).to.be.false;
-          expect(newSubs.empty).to.be.false;
         });
       });
 

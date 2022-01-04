@@ -97,7 +97,7 @@ export function closeAndReopenRealm(realm: Realm, config: Realm.Configuration): 
   realm.close();
   // Delete the file
   Realm.deleteFile(config);
-  // Re-open the Realm with the old configuration
+  // Re-open a new Realm with the old configuration
   return new Realm(config);
 }
 
