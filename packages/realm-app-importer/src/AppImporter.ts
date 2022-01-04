@@ -31,10 +31,21 @@ export type TemplateReplacements = Record<string, Record<string, unknown>>;
 
 /* eslint-disable no-console */
 
+export type Credentials =
+  | {
+      kind: "api-key";
+      publicKey: string;
+      privateKey: string;
+    }
+  | {
+      kind: "username-password";
+      username: string;
+      password: string;
+    };
+
 export interface AppImporterOptions {
   baseUrl: string;
-  username: string;
-  password: string;
+  credentials: Credentials;
   realmConfigPath: string;
   appsDirectoryPath: string;
   cleanUp?: boolean;
@@ -42,17 +53,15 @@ export interface AppImporterOptions {
 
 export class AppImporter {
   private readonly baseUrl: string;
-  private readonly username: string;
-  private readonly password: string;
+  private readonly credentials: Credentials;
   private readonly realmConfigPath: string;
   private readonly appsDirectoryPath: string;
 
   private accessToken: string | undefined;
 
-  constructor({ baseUrl, username, password, realmConfigPath, appsDirectoryPath, cleanUp = true }: AppImporterOptions) {
+  constructor({ baseUrl, credentials, realmConfigPath, appsDirectoryPath, cleanUp = true }: AppImporterOptions) {
     this.baseUrl = baseUrl;
-    this.username = username;
-    this.password = password;
+    this.credentials = credentials;
     this.realmConfigPath = realmConfigPath;
     this.appsDirectoryPath = appsDirectoryPath;
 
@@ -123,62 +132,6 @@ export class AppImporter {
       "--yes", // Bypass prompts
     );
 
-    // Temporary hack to enable flexible sync on the app created
-    // return new Promise((resolve) => {
-    //   let services = [];
-    //   const servicesUrl = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps/${app._id}/services`;
-    //   const getServices = async () => {
-    //     console.log(servicesUrl, `Bearer ${this.accessToken}`);
-    //     const servicesRepsponse = await fetch(servicesUrl, {
-    //       headers: {
-    //         Authorization: `Bearer ${this.accessToken}`,
-    //         "content-type": "application/json",
-    //       },
-    //     });
-    //     services = await servicesRepsponse.json();
-
-    //     if (!services.length) {
-    //       console.log("Waiting for services...", services);
-    //       setTimeout(getServices, 1000);
-    //     } else {
-    //       console.log("Patching services...", `${servicesUrl}/${services[0]._id}/config`);
-    //       const r = await fetch(`${servicesUrl}/${services[0]._id}/config`, {
-    //         method: "PATCH",
-    //         headers: {
-    //           Authorization: `Bearer ${this.accessToken}`,
-    //           "content-type": "application/json",
-    //         },
-    //         body: JSON.stringify({
-    //           sync_query: {
-    //             state: "enabled",
-    //             database_name: "test-database",
-    //             permissions: {
-    //               defaultRoles: [
-    //                 {
-    //                   applyWhen: {},
-    //                   name: "all",
-    //                   read: true,
-    //                   write: true,
-    //                 },
-    //               ],
-    //               rules: {},
-    //             },
-    //             queryable_fields_names: ["age"],
-    //           },
-    //         }),
-    //       });
-
-    //       console.log(r.status);
-    //       console.log(await r.text());
-    //       resolve({ appId });
-    //     }
-    //   };
-
-    //   setTimeout(async () => {
-    //     getServices();
-    //   }, 1000);
-    // });
-
     // Return the app id of the newly created app
     return { appId };
   }
@@ -238,22 +191,48 @@ export class AppImporter {
     cp.execFileSync(cliPath, args, { stdio: "inherit" });
   }
 
-  private async logIn() {
-    const url = `${this.apiUrl}/auth/providers/local-userpass/login`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        username: this.username,
-        password: this.password,
-      }),
-    });
-    // Store the access and refresh tokens
-    const responseBody = await response.json();
-    this.accessToken = responseBody.access_token;
+  private performLogIn() {
+    const { credentials } = this;
+    if (credentials.kind === "api-key") {
+      return fetch(`${this.apiUrl}/auth/providers/mongodb-cloud/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          username: credentials.publicKey,
+          apiKey: credentials.privateKey,
+        }),
+      });
+    } else if (credentials.kind === "username-password") {
+      return fetch(`${this.apiUrl}/auth/providers/local-userpass/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          username: credentials.username,
+          password: credentials.password,
+        }),
+      });
+    } else {
+      throw new Error(`Unexpected credentials: ${credentials}`);
+    }
+  }
 
-    // Write the stitch config file
-    this.saveStitchConfig(this.username, responseBody.refresh_token, responseBody.access_token);
+  private async logIn() {
+    // Store the access and refresh tokens
+    const response = await this.performLogIn();
+    const responseBody = await response.json();
+    if (response.ok) {
+      this.accessToken = responseBody.access_token;
+      // Write the stitch config file
+      const { credentials } = this;
+      this.saveStitchConfig(
+        credentials.kind === "api-key" ? credentials.publicKey : credentials.username,
+        responseBody.refresh_token,
+        responseBody.access_token,
+      );
+    } else {
+      const message = responseBody.error || "No reason";
+      throw new Error(`Failed to log in: ${message}`);
+    }
   }
 
   private saveStitchConfig(username: string, refreshToken: string, accessToken: string) {
@@ -280,16 +259,20 @@ export class AppImporter {
     }
   }
 
-  private async getGroupId() {
+  private async getGroupId(): Promise<string> {
     const profile = await this.getProfile();
-    if (typeof profile === "object" && profile.roles.length === 1) {
-      return profile.roles[0].group_id;
+    const groupIds: string[] = profile.roles
+      .filter((r: Record<string, unknown>) => r.group_id)
+      .map((r: Record<string, unknown>) => r.group_id);
+    const uniqueGroupIds = [...new Set(groupIds)];
+    if (uniqueGroupIds.length === 1) {
+      return uniqueGroupIds[0];
     } else {
       throw new Error("Expected user to have a role in a single group");
     }
   }
 
-  private async createApp(groupId: string, name: string): Promise<any> {
+  private async createApp(groupId: string, name: string) {
     if (!this.accessToken) {
       throw new Error("Login before calling this method");
     }
@@ -303,12 +286,8 @@ export class AppImporter {
       },
       body,
     });
-
     if (response.ok) {
-      const data = await response.json();
-      // await new Promise((r) => setTimeout(r, 5000));
-      return data;
-      // });
+      return response.json();
     } else {
       throw new Error(`Failed to create app named '${name}' in group '${groupId}'`);
     }
