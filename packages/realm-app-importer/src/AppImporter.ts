@@ -124,63 +124,63 @@ export class AppImporter {
     );
 
     // Temporary hack to enable flexible sync on the app created
-    return new Promise((resolve) => {
-      let services = [];
-      const servicesUrl = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps/${app._id}/services`;
-      const getServices = async () => {
-        console.log(servicesUrl, `Bearer ${this.accessToken}`);
-        const servicesRepsponse = await fetch(servicesUrl, {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-            "content-type": "application/json",
-          },
-        });
-        services = await servicesRepsponse.json();
+    // return new Promise((resolve) => {
+    //   let services = [];
+    //   const servicesUrl = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps/${app._id}/services`;
+    //   const getServices = async () => {
+    //     console.log(servicesUrl, `Bearer ${this.accessToken}`);
+    //     const servicesRepsponse = await fetch(servicesUrl, {
+    //       headers: {
+    //         Authorization: `Bearer ${this.accessToken}`,
+    //         "content-type": "application/json",
+    //       },
+    //     });
+    //     services = await servicesRepsponse.json();
 
-        if (!services.length) {
-          console.log("Waiting for services...", services);
-          setTimeout(getServices, 1000);
-        } else {
-          console.log("Patching services...", `${servicesUrl}/${services[0]._id}/config`);
-          const r = await fetch(`${servicesUrl}/${services[0]._id}/config`, {
-            method: "PATCH",
-            headers: {
-              Authorization: `Bearer ${this.accessToken}`,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({
-              sync_query: {
-                state: "enabled",
-                database_name: "test-database",
-                permissions: {
-                  defaultRoles: [
-                    {
-                      applyWhen: {},
-                      name: "all",
-                      read: true,
-                      write: true,
-                    },
-                  ],
-                  rules: {},
-                },
-                queryable_fields_names: ["age"],
-              },
-            }),
-          });
+    //     if (!services.length) {
+    //       console.log("Waiting for services...", services);
+    //       setTimeout(getServices, 1000);
+    //     } else {
+    //       console.log("Patching services...", `${servicesUrl}/${services[0]._id}/config`);
+    //       const r = await fetch(`${servicesUrl}/${services[0]._id}/config`, {
+    //         method: "PATCH",
+    //         headers: {
+    //           Authorization: `Bearer ${this.accessToken}`,
+    //           "content-type": "application/json",
+    //         },
+    //         body: JSON.stringify({
+    //           sync_query: {
+    //             state: "enabled",
+    //             database_name: "test-database",
+    //             permissions: {
+    //               defaultRoles: [
+    //                 {
+    //                   applyWhen: {},
+    //                   name: "all",
+    //                   read: true,
+    //                   write: true,
+    //                 },
+    //               ],
+    //               rules: {},
+    //             },
+    //             queryable_fields_names: ["age"],
+    //           },
+    //         }),
+    //       });
 
-          console.log(r.status);
-          console.log(await r.text());
-          resolve({ appId });
-        }
-      };
+    //       console.log(r.status);
+    //       console.log(await r.text());
+    //       resolve({ appId });
+    //     }
+    //   };
 
-      setTimeout(async () => {
-        getServices();
-      }, 1000);
-    });
+    //   setTimeout(async () => {
+    //     getServices();
+    //   }, 1000);
+    // });
 
     // Return the app id of the newly created app
-    // return { appId };
+    return { appId };
   }
 
   private get apiUrl() {
