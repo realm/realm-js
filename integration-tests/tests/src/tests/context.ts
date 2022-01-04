@@ -65,7 +65,7 @@ describe("testContext behaviour", function () {
   });
 
   describe("singleton 'testContext' context", function () {
-    it("xhas no initial value at the start of the test suite", function () {
+    it("has no initial value at the start of the test suite", function () {
       expect(testContext.testValue).to.be.undefined;
     });
 
@@ -93,7 +93,6 @@ describe("testContext behaviour in another suite", function () {
 
   describe("singleton 'testContext' context", function () {
     it("has no initial value at the start of the test suite", function () {
-      console.log(testContext);
       expect(testContext.testValue).to.be.undefined;
     });
   });
@@ -110,9 +109,18 @@ describe("testContext behaviour in nested suite", function () {
       expect(this.testValue).to.equal(123);
     });
 
-    describe("testContext behaviour in nested suite", function () {
+    describe("native mocha 'this' behaviour in nested suite", function () {
       it("has an initial value at the start of the nested test suite", function () {
         expect(this.testValue).to.equal(123);
+      });
+
+      it("can store a value on the context", function () {
+        this.testValue = 456;
+        expect(this.testValue).to.equal(456);
+      });
+
+      it("can access the stored value in another test in the same run", function () {
+        expect(this.testValue).to.equal(456);
       });
     });
   });
@@ -133,8 +141,63 @@ describe("testContext behaviour in nested suite", function () {
       expect(testContext.testValue).to.equal(123);
     });
 
-    describe("testContext behaviour in nested suite", function () {
+    describe("singleton 'testContext' context behaviour in nested suite", function () {
       it("has an initial value at the start of the nested test suite", function () {
+        expect(testContext.testValue).to.equal(123);
+      });
+
+      it("can store a value on the context", function () {
+        testContext.testValue = 456;
+        expect(testContext.testValue).to.equal(456);
+      });
+
+      it("can access the stored value in another test in the same run", function () {
+        expect(testContext.testValue).to.equal(456);
+      });
+    });
+  });
+
+  describe("outside nested context where testContext context was set", function () {
+    it("has no initial value outside of the scope where its value was set", function () {
+      expect(testContext.testValue).to.be.undefined;
+    });
+  });
+});
+
+describe("testContext behaviour with beforeEach in nested suite", function () {
+  describe("native mocha 'this'", function () {
+    beforeEach(function () {
+      this.testValue = 123;
+    });
+
+    describe("nested suite", function () {
+      it("can store a value on the context", function () {
+        this.testValue = 456;
+        expect(this.testValue).to.equal(456);
+      });
+
+      // Gotcha? The `this` we modified in the previous test is not actually the
+      // same `this` we referred to in beforeEach, it is a copy that we then,
+      // modify, so this has not been reset as we might intuitvely expect
+      it("does not have its value reset by the beforeEach", function () {
+        expect(this.testValue).to.equal(456);
+      });
+    });
+  });
+
+  describe("singleton 'testContext' context", function () {
+    beforeEach(function () {
+      testContext.testValue = 123;
+    });
+
+    describe("nested suite", function () {
+      it("can store a value on the context", function () {
+        testContext.testValue = 456;
+        expect(testContext.testValue).to.equal(456);
+      });
+
+      // Beahviour differs here, I think this is more intuitive perhaps!
+      it("does have its value reset by the beforeEach", function () {
         expect(testContext.testValue).to.equal(123);
       });
     });

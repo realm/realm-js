@@ -16,73 +16,36 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Prior art: https://www.npmjs.com/package/mocha-ctx/v/1.0.0-a.0
-
-// export let testContext: Partial<RealmContext> & Partial<AppContext> & Partial<UserContext> = {};
-
-// export const resetTestContext = (): void => {
-//   testContext = {};
-// };
-
-// class Context {
-//   _data = {} as Record<number, Record<string, any>>;
-//   _depth = 0;
-
-//   constructor() {
-//     console.log("new context");
-//   }
-
-//   incrementDepth = () => {
-//     console.log("incrementDepth", this._depth);
-//     this._depth++;
-//     console.log("incrementDepth after", this._depth);
-//   };
-
-//   decrementDepth = () => {
-//     console.log("decrementDepth", this._depth);
-
-//     delete this._data[this._depth];
-//     this._depth--;
-
-//     console.log("decrementDepth after", this._depth);
-//   };
-// }
-
-// const context = new Context();
-
-global.context = {
+// Use a global object for the context data so that it persists across "hot reloads",
+// otherwise the tests end up referring to a new context after hot reload (as mocha
+// clears the require cache) but the testContextHooks still refer to the old context
+// (as they are only required at startup)
+global._testContextData = {
   _data: {} as Record<number, Record<string, any>>,
   _depth: 0,
   _self: Math.random(),
 };
 
-const makeContextHandler = (): ProxyHandler<typeof context> => {
-  console.log("make");
+type TestContext = typeof global._testContextData;
 
+const makeContextHandler = (): ProxyHandler<TestContext> => {
   return {
     get: function (target, prop) {
-      // console.log("get", prop, target._self);
-
-      // if (prop === "incrementDepth") {
-      //   return function () {
-      //     console.log("inc");
-      //     target._depth++;
-      //   };
-      // } else if (prop === "decrementDepth") {
-      //   return function () {
-      //     delete target._data[target._depth];
-      //     target._depth--;
-      //   };
-      // }
-
+      // Called by the beforeEach testContextHook to tell it the "depth" of
+      // the current test (how many nested levels of test suite it is in).
+      // This allows context data to be stored heirachically, so an inner test
+      // can override the value of an outer test, but its value is reset once
+      // we exit that "level".
       if (prop === "setDepth") {
-        return function (newDepth, clearCurrentLevel) {
-          console.log({ newDepth, clearCurrentLevel }, target);
+        return function (newDepth: number, clearCurrentLevel: boolean) {
+          // If the new depth is lower than the current depth, delete any data
+          // stored at levels above the current depth
           for (let i = target._depth; i > newDepth; i--) {
-            // console.log('deete', i)
             delete target._data[i];
           }
 
+          // If we move into a new test suite at the same depth level, we want
+          // to clear the current level too
           if (clearCurrentLevel) {
             delete target._data[newDepth];
           }
@@ -91,21 +54,12 @@ const makeContextHandler = (): ProxyHandler<typeof context> => {
         };
       }
 
-      // if (typeof target[prop] === "function") {
-      // return function () {
-      //   return target[prop].apply(target, arguments);
-      // };
-      // }
-
-      // console.log(target._data, target._depth);
-
-      // console.log(target, prop, target.depth);
-      console.log("get", target._data);
+      // Check for the requested property at the current depth level, if not check
+      // every depth level above
       for (let i = target._depth; i > 0; i--) {
         const data = target._data[i] ? target._data[i][prop] : undefined;
-        console.log({ i, data, x: target._data[i], all: target._data });
 
-        if (data) {
+        if (data !== undefined) {
           return data;
         }
       }
@@ -113,22 +67,24 @@ const makeContextHandler = (): ProxyHandler<typeof context> => {
       return undefined;
     },
 
+    // Set a given property at the current depth level
     set: function (target, prop, value) {
-      // console.log("set", /*target,*/ prop, value, target._depth, target._self);
       if (!target._data[target._depth]) {
         target._data[target._depth] = [];
       }
 
       target._data[target._depth][prop] = value;
 
-      // console.log(target._data, target._depth);
-
       return true;
     },
   };
 };
 
-global.testContext = new Proxy(context, makeContextHandler());
+// Global for the same reason as global._testContextData
+global._testContext = new Proxy(global._testContextData, makeContextHandler());
 
-export const testContext = global.testContext;
-export const getTestContext = () => global.testContext;
+export const testContext = global._testContext;
+
+// testContextHooks need to use this getter in order to ensure they are working with
+// the newest context when a hot reload occurs
+export const getTestContext = () => global._testContext;

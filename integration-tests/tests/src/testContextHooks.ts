@@ -16,11 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { getTestContext, testContext } from "./tests/testContext";
+import { getTestContext } from "./tests/testContext";
 
+// Keep a reference to the suite of the last test we ran, so we can
+// check whether the current test is from the same suite or not
 let lastSuite;
 
 export const mochaHooks = {
+  // When we enter a new test suite, reset lastSuite to undefined so that
+  // we know to also reset the current depth level
   before() {
     lastSuite = undefined;
   },
@@ -28,29 +32,16 @@ export const mochaHooks = {
   beforeEach() {
     let currentDepth = 0;
     let suite = this.currentTest.parent;
-    // console.log(suite);
     const isSameSuiteAsLastTest = lastSuite === suite;
 
+    // Walk up the test's suite's parents to work out the nesting depth
     while (suite.parent) {
-      // console.log(suite.parent.title);
       currentDepth++;
       suite = suite.parent;
     }
 
-    // console.log(currentDepth); //this.currentTest.parent);
-    // console.log("before");
-
+    // Update the test context with the new depth
     getTestContext().setDepth(currentDepth - 1, !isSameSuiteAsLastTest);
     lastSuite = this.currentTest.parent;
   },
-
-  afterEach() {
-    // console.log("after");
-    // getTestContext().decrementDepth();
-  },
-  // This doesn't work as it cannot run after only every outer describe
-  // after() {
-  //   console.log("AFTER");
-  //   resetTestContext();
-  // },
 };
