@@ -96,4 +96,15 @@ describe("useQuery", () => {
       expect(collection?.[2]).toMatchObject(dog3);
     }
   });
+  it("returns the same collection reference if there are no changes", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog"));
+    const collection = result.current;
+
+    expect(collection).not.toBeNull();
+    expect(collection?.length).toBe(6);
+
+    if (collection !== undefined) {
+      expect(collection?.[0]).toEqual(collection?.[0]);
+    }
+  });
 });
