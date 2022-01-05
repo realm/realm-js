@@ -17,62 +17,67 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 
 export function createUseQuery(useRealm: () => Realm) {
   return function useQuery<T>(type: string | { new (): T }): Realm.Results<T> {
     const realm = useRealm();
-    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object>>(() => realm.objects<T>(type));
     const collectionCache = useRef(new Map());
+    const indexToIdMap = useRef<string[]>([]);
 
-    const collectionHandler = {
-      // @ts-ignore
-      get: function (target, key) {
-        // Pass functions through
-        if (typeof target[key] === "function") {
-          return function () {
-            return target[key].apply(target, arguments);
-          };
-        }
+    const collectionHandler = useMemo(() => {
+      return {
+        // @ts-ignore
+        get: function (target, key) {
+          // Pass functions through
+          if (typeof target[key] === "function") {
+            return function () {
+              return target[key].apply(target, arguments);
+            };
+          }
 
-        // If the key is not numeric, pass it through
-        if (!/^-?\d+$/.test(key)) {
-          return target[key];
-        }
+          // If the key is not numeric, pass it through
+          if (!/^-?\d+$/.test(key)) {
+            return target[key];
+          }
 
-        // If the key is numeric, check if we have a cached object for this key
-        const index = Number(key);
+          // If the key is numeric, check if we have a cached object for this key
+          const index = Number(key);
+          const object = target[index];
+          const id = object._objectId();
 
-        // If we do, return it...
-        if (collectionCache.current.get(index) && collectionCache.current.get(index).deref()) {
-          return collectionCache.current.get(index).deref();
-        }
+          // If we do, return it...
+          if (collectionCache.current.get(id) && collectionCache.current.get(id).deref()) {
+            return collectionCache.current.get(id).deref();
+          }
 
-        // If not then this index has either not been accessed before, or has been invalidated due
-        // to a modification. Fetch it from the collection and store it in the cache
-        const object = target[index];
-        collectionCache.current.set(index, new WeakRef(object));
+          // If not then this index has either not been accessed before, or has been invalidated due
+          // to a modification. Fetch it from the collection and store it in the cache
+          collectionCache.current.set(id, new WeakRef(object));
+          indexToIdMap.current[index] = id;
+          return object;
+        },
+      };
+    }, []);
 
-        return object;
-      },
-    };
+    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object>>(
+      () => new Proxy(realm.objects<T>(type), collectionHandler),
+    );
 
     useEffect(() => {
       const listenerCallback: Realm.CollectionChangeCallback<T> = (_, changes) => {
-        if (changes.deletions.length > 0 || changes.insertions.length > 0) {
-          // Item was added or deleted, for now just clear the cache entirely (maybe you could do something cleverer)
-          collectionCache.current = new Map();
+        if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
+          // Item(s) were deleted, remove their reference from the indexToIdMap and clear them from the cache
+          changes.deletions.forEach((index) => {
+            const [id] = indexToIdMap.current.splice(index, 1);
+            collectionCache.current.delete(id);
+          });
 
-          // And return a new proxy to the collection
-          const collectionProxy = new Proxy(realm.objects<T>(type), collectionHandler);
-          setCollection(collectionProxy);
-          // setCollection(realm.objects<T>(type));
-        } else if (changes.newModifications.length > 0) {
           // Item(s) were modified, just clear them from the cache so that we return new instances for them
-
           changes.newModifications.forEach((index) => {
+            const id = indexToIdMap.current[index];
             // @ts-ignore
-            collectionCache.current.delete(index);
+            collectionCache.current.delete(id);
           });
 
           // And return a new proxy to the collection (forces re-render)
@@ -88,7 +93,7 @@ export function createUseQuery(useRealm: () => Realm) {
           collection.removeListener(listenerCallback);
         }
       };
-    }, [realm, collection, type]);
+    }, [realm, collection, type, collectionHandler]);
 
     return collection;
   };
