@@ -19,7 +19,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Realm from "realm";
 import { render, waitFor, fireEvent, act } from "@testing-library/react-native";
-import { View, TextInput, TouchableHighlight, Text, FlatList } from "react-native";
+import { View, TextInput, TouchableHighlight, Text, FlatList, ListRenderItem } from "react-native";
 import "@testing-library/jest-native/extend-expect";
 import { ReactTestInstance } from "react-test-renderer";
 import { createUseQuery } from "../useQuery";
@@ -90,14 +90,16 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
   return children;
 };
 
-const Item: React.FC<{ index: number; item: IObject & Realm.Object }> = ({ index, item }) => {
+const Item: React.FC<{ item: IObject & Realm.Object }> = React.memo(({ item }) => {
   renderCounter();
   const realm = useRealm();
   return (
-    <View testID={`result${index}`}>
-      <View testID={`name${index}`}>{item.name}</View>
+    <View testID={`result${item.id}`}>
+      <View testID={`name${item.id}`}>
+        <Text>{item.name}</Text>
+      </View>
       <TextInput
-        testID={`inputComponent${index}`}
+        testID={`input${item.id}`}
         value={item.name}
         onChangeText={(text) => {
           realm.write(() => {
@@ -106,7 +108,7 @@ const Item: React.FC<{ index: number; item: IObject & Realm.Object }> = ({ index
         }}
       ></TextInput>
       <TouchableHighlight
-        testID={`deleteButton${index}`}
+        testID={`deleteButton${item.id}`}
         onPress={() => {
           realm.write(() => {
             realm.delete(item);
@@ -117,17 +119,14 @@ const Item: React.FC<{ index: number; item: IObject & Realm.Object }> = ({ index
       </TouchableHighlight>
     </View>
   );
-};
+});
 
 const TestComponent = () => {
-  const collection = useQuery<IObject>("Object");
+  const collection = useQuery<IObject & Realm.Object>("Object");
 
-  const renderItem = useCallback(({ index, item }) => <Item index={index} item={item} />, []);
+  const renderItem = useCallback(({ item }) => <Item item={item} />, []);
 
   const keyExtractor = useCallback((item) => item.id, []);
-  if (!collection) {
-    return null;
-  }
 
   return <FlatList testID={"list"} data={collection} keyExtractor={keyExtractor} renderItem={renderItem} />;
 };
@@ -145,37 +144,39 @@ describe("useQuery", () => {
     expect(renderCounter).toHaveBeenCalledTimes(10);
   });
   it("change to data will rerender", async () => {
-    const { getByTestId } = render(<App />);
+    const { getByTestId, getByText } = render(<App />);
 
-    const element = getByTestId("result1");
-    const [nameElement, inputComponent] = element.children;
+    const nameElement = getByTestId("name1");
+    const input = getByTestId("input1");
 
     expect(nameElement).toHaveTextContent("1");
     expect(renderCounter).toHaveBeenCalledTimes(10);
 
-    await act(async () => {
-      fireEvent.changeText(inputComponent as ReactTestInstance, "pencil");
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
+    fireEvent.changeText(input as ReactTestInstance, "apple");
 
-    expect(nameElement).toHaveTextContent("pencil");
-    expect(renderCounter).toHaveBeenCalledTimes(20);
+    await waitFor(() => getByText("apple"));
+
+    expect(nameElement).toHaveTextContent("apple");
+    expect(renderCounter).toHaveBeenCalledTimes(11);
   });
 
   it("handles deletions", async () => {
     const { getByTestId } = render(<App />);
 
-    const element = getByTestId("result1");
-    const [nameElement, , deletionComponent] = element.children;
+    const deleteButton = getByTestId("deleteButton1");
+    const nameElement = getByTestId("name1");
 
     expect(nameElement).toHaveTextContent("1");
     expect(renderCounter).toHaveBeenCalledTimes(10);
 
-    await act(async () => {
-      fireEvent.press(deletionComponent as ReactTestInstance);
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
+    fireEvent.press(deleteButton as ReactTestInstance);
 
-    expect(renderCounter).toHaveBeenCalledTimes(20);
+    await waitFor(() => getByTestId("result10"));
+
+    expect(renderCounter).toHaveBeenCalledTimes(11);
+  });
+
+  it("handles implicit updates", () => {
+    expect(true).toEqual(true);
   });
 });
