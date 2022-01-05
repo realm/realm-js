@@ -8,7 +8,9 @@
             "name": "Build Realm Android",
             "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/scripts/build-android.js",
-            "args": ["--arch=x86"],
+            "args": [
+                "--arch=x86"
+            ],
             "request": "launch",
             "type": "node"
         },
@@ -43,7 +45,9 @@
             "preLaunchTask": "rebuild-node-tests",
             "cwd": "${workspaceRoot}/tests",
             "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
-            "runtimeArgs": ["--expose_gc"],
+            "runtimeArgs": [
+                "--expose_gc"
+            ],
             "args": [
                 "spec/unit_tests.js",
                 "--filter=."
@@ -55,7 +59,9 @@
             "name": "Debug Node Unit Tests",
             "cwd": "${workspaceRoot}/tests",
             "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
-            "runtimeArgs": ["--expose_gc"],
+            "runtimeArgs": [
+                "--expose_gc"
+            ],
             "args": [
                 "spec/unit_tests.js",
                 "--filter=."
@@ -66,7 +72,7 @@
             "request": "launch",
             "name": "Start Stitch in Docker",
             "cwd": "${workspaceRoot}/scripts",
-            "preLaunchTask": "start_stitch",
+            "preLaunchTask": "start_stitch"
         },
         {
             "type": "node",
@@ -106,6 +112,23 @@
                 "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests"
+        },
+        {
+            "type": "node",
+            "name": "vscode-jest-tests",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "disableOptimisticBPs": true,
+            "cwd": "${workspaceFolder}/packages/realm-react",
+            "runtimeExecutable": "npm",
+            "args": [
+                "run",
+                "test",
+                "--",
+                "--runInBand",
+                "--watchAll=false"
+            ]
         }
     ],
     "compounds": [
