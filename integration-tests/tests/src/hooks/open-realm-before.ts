@@ -54,19 +54,16 @@ export function openRealmHook(config: LocalConfiguration | SyncedConfiguration =
   };
 }
 
-export function closeRealm(this: RealmContext): void {
+export function closeRealm(this: Partial<RealmContext> & Mocha.Context): void {
   if (this.realm) {
     this.realm.close();
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore Ignore error as we ensure the realm is reopened
     delete this.realm;
   } else {
     throw new Error("Expected a 'realm' in the context");
   }
+
   if (this.config) {
     Realm.deleteFile(this.config);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore Ignore error as we ensure the config is recreated
     delete this.config;
   } else {
     throw new Error("Expected a 'config' in the context");

@@ -33,10 +33,9 @@ describe("Realm objects", () => {
   describe("Interface & object literal", () => {
     it("can be created", () => {
       const realm = new Realm({ schema: [PersonSchema] });
-      let john!: IPerson;
 
-      realm.write(() => {
-        john = realm.create<IPerson>(PersonSchema.name, {
+      const john = realm.write(() => {
+        return realm.create<IPerson>(PersonSchema.name, {
           name: "John Doe",
           age: 42,
         });
@@ -51,10 +50,9 @@ describe("Realm objects", () => {
 
     it("can have it's properties read", () => {
       const realm = new Realm({ schema: [PersonSchema] });
-      let john!: IPerson;
 
-      realm.write(() => {
-        john = realm.create<IPerson>(PersonSchema.name, {
+      const john = realm.write(() => {
+        return realm.create<IPerson>(PersonSchema.name, {
           name: "John Doe",
           age: 42,
         });
@@ -87,11 +85,10 @@ describe("Realm objects", () => {
 
     it("can be updated", () => {
       const realm = new Realm({ schema: [PersonSchemaWithId] });
-      let john!: IPersonWithId;
       const _id = new Realm.BSON.ObjectId();
 
-      realm.write(() => {
-        john = realm.create<IPersonWithId>(PersonSchemaWithId.name, {
+      const john = realm.write(() => {
+        return realm.create<IPersonWithId>(PersonSchemaWithId.name, {
           _id,
           name: "John Doe",
           age: 42,
@@ -161,10 +158,9 @@ describe("Realm objects", () => {
   describe("Class Model", () => {
     it("can be created", () => {
       const realm = new Realm({ schema: [Person] });
-      let john!: Person;
 
-      realm.write(() => {
-        john = realm.create(Person, {
+      const john = realm.write(() => {
+        return realm.create(Person, {
           name: "John Doe",
           age: 42,
         });
@@ -213,11 +209,10 @@ describe("Realm objects", () => {
 
     it("can be updated", () => {
       const realm = new Realm({ schema: [PersonWithId] });
-      let john!: PersonWithId;
       const _id = new Realm.BSON.ObjectId();
 
-      realm.write(() => {
-        john = realm.create(PersonWithId, {
+      const john = realm.write(() => {
+        return realm.create(PersonWithId, {
           _id,
           name: "John Doe",
           age: 42,
