@@ -96,3 +96,10 @@ body:
         Which debugger for React Native: ..
     validations:
       required: false
+  - type: input
+    id: cocoapods
+    attributes:
+      label: Cocoapods version
+      description: Cocoapods version (for iOS)
+    validations:
+      required: false
