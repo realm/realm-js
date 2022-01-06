@@ -18,6 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Removed `.dir-locals.el`. Please configure Emacs to use `clang-format` e.g. https://github.com/SavchenkoValeriy/emacs-clang-format-plus.
+* Enabled `strictNullChecks` for integration tests
 
 10.11.0 Release notes (2021-12-21)
 =============================================================

@@ -33,7 +33,7 @@ describe("Realm objects", () => {
   describe("Interface & object literal", () => {
     it("can be created", () => {
       const realm = new Realm({ schema: [PersonSchema] });
-      let john: IPerson;
+      let john!: IPerson;
 
       realm.write(() => {
         john = realm.create<IPerson>(PersonSchema.name, {
@@ -51,7 +51,7 @@ describe("Realm objects", () => {
 
     it("can have it's properties read", () => {
       const realm = new Realm({ schema: [PersonSchema] });
-      let john: IPerson;
+      let john!: IPerson;
 
       realm.write(() => {
         john = realm.create<IPerson>(PersonSchema.name, {
@@ -77,6 +77,7 @@ describe("Realm objects", () => {
       });
 
       const john = realm.objectForPrimaryKey<IPersonWithId>(PersonSchemaWithId.name, _id);
+      if (!john) throw new Error("Object not found");
 
       expect(john).instanceOf(Realm.Object);
       expect(john._id.equals(_id)).equals(true);
@@ -86,7 +87,7 @@ describe("Realm objects", () => {
 
     it("can be updated", () => {
       const realm = new Realm({ schema: [PersonSchemaWithId] });
-      let john: IPersonWithId;
+      let john!: IPersonWithId;
       const _id = new Realm.BSON.ObjectId();
 
       realm.write(() => {
@@ -160,7 +161,7 @@ describe("Realm objects", () => {
   describe("Class Model", () => {
     it("can be created", () => {
       const realm = new Realm({ schema: [Person] });
-      let john: Person;
+      let john!: Person;
 
       realm.write(() => {
         john = realm.create(Person, {
@@ -202,6 +203,7 @@ describe("Realm objects", () => {
       });
 
       const john = realm.objectForPrimaryKey(PersonWithId, _id);
+      if (!john) throw new Error("Object not found");
 
       expect(john).instanceOf(PersonWithId);
       expect(john._id.equals(_id)).equals(true);
@@ -211,7 +213,7 @@ describe("Realm objects", () => {
 
     it("can be updated", () => {
       const realm = new Realm({ schema: [PersonWithId] });
-      let john: PersonWithId;
+      let john!: PersonWithId;
       const _id = new Realm.BSON.ObjectId();
 
       realm.write(() => {
