@@ -17,28 +17,33 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useMemo, useReducer } from "react";
+
+const numericRegEx = /^-?\d+$/;
+
+export type UseQueryCollection<T> = Realm.Results<T & Realm.Object> & { version?: number };
 
 export function createUseQuery(useRealm: () => Realm) {
-  return function useQuery<T>(type: string | { new (): T }): Realm.Results<T> {
+  return function useQuery<T>(type: string | { new (): T }): UseQueryCollection<T> {
     const realm = useRealm();
     const collectionCache = useRef(new Map());
+
+    // TODO: Since the listener doesn't return the objectId, we need to store it in reference to its index
+    // Refactor this when listeners return ObjectIds
     const indexToIdMap = useRef<string[]>([]);
 
-    const collectionHandler = useMemo(() => {
+    const collectionHandler = useMemo<ProxyHandler<Realm.Results<T & Realm.Object>>>(() => {
       return {
-        // @ts-ignore
         get: function (target, key) {
           // Pass functions through
-          if (typeof target[key] === "function") {
-            return function () {
-              return target[key].apply(target, arguments);
-            };
+          const value = Reflect.get(target, key);
+          if (typeof value === "function") {
+            return value.bind(target);
           }
 
           // If the key is not numeric, pass it through
-          if (!/^-?\d+$/.test(key)) {
-            return target[key];
+          if (typeof key === "symbol" || !numericRegEx.test(key)) {
+            return value;
           }
 
           // If the key is numeric, check if we have a cached object for this key
@@ -48,7 +53,9 @@ export function createUseQuery(useRealm: () => Realm) {
 
           // If we do, return it...
           if (collectionCache.current.get(id) && collectionCache.current.get(id).deref()) {
-            return collectionCache.current.get(id).deref();
+            const collection = collectionCache.current.get(id).deref();
+            // if the colleciton was garbage collected, skip return and store the updated reference
+            if (collection) return collection;
           }
 
           // If not then this index has either not been accessed before, or has been invalidated due
@@ -60,9 +67,13 @@ export function createUseQuery(useRealm: () => Realm) {
       };
     }, []);
 
-    const [collection, setCollection] = useState<Realm.Results<T & Realm.Object>>(
-      () => new Proxy(realm.objects<T>(type), collectionHandler),
-    );
+    const [rerenderCount, forceRerender] = useReducer((x) => x + 1, 0);
+
+    const collection = useMemo<UseQueryCollection<T>>(() => new Proxy(realm.objects<T>(type), collectionHandler), [
+      type,
+      collectionHandler,
+      realm,
+    ]);
 
     useEffect(() => {
       const listenerCallback: Realm.CollectionChangeCallback<T> = (_, changes) => {
@@ -76,13 +87,10 @@ export function createUseQuery(useRealm: () => Realm) {
           // Item(s) were modified, just clear them from the cache so that we return new instances for them
           changes.newModifications.forEach((index) => {
             const id = indexToIdMap.current[index];
-            // @ts-ignore
             collectionCache.current.delete(id);
           });
 
-          // And return a new proxy to the collection (forces re-render)
-          const collectionProxy = new Proxy(realm.objects<T>(type), collectionHandler);
-          setCollection(collectionProxy);
+          forceRerender();
         }
       };
 
@@ -94,6 +102,8 @@ export function createUseQuery(useRealm: () => Realm) {
         }
       };
     }, [realm, collection, type, collectionHandler]);
+
+    collection.version = rerenderCount;
 
     return collection;
   };

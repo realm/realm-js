@@ -140,7 +140,8 @@
                 "test",
                 "--",
                 "--runInBand",
-                "--watchAll=false"
+                "--watchAll=false",
+                "--testNamePattern=${input:testNamePattern}"
             ]
         }
     ],
@@ -172,6 +173,12 @@
             "type": "promptString",
             "default": "",
             "description": "Filtering used to limit what tests are run"
+        },
+        {
+            "id": "testNamePattern",
+            "type": "promptString",
+            "default": "",
+            "description": "Jest test name pattern for filtering by test description name"
         }
     ]
 }
