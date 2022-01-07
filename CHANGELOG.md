@@ -59,6 +59,7 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 * Removed `.dir-locals.el`. Please configure Emacs to use `clang-format` e.g. https://github.com/SavchenkoValeriy/emacs-clang-format-plus.
 * Enabled `strictNullChecks` for integration tests
 * Updated release instructions
+* Submitting [analytics](https://github.com/realm/realm-js/blob/master/README.md#analytics) as postinstall script.
 
 10.11.0 Release notes (2021-12-21)
 =============================================================
