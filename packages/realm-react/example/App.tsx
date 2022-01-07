@@ -15,8 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import React, { useCallback, useMemo } from "react";
-import { SafeAreaView, View, StyleSheet } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { SafeAreaView, View, StyleSheet, Button, Text } from "react-native";
 
 import TaskContext, { Task } from "./app/models/Task";
 import IntroText from "./app/components/IntroText";
@@ -26,11 +26,14 @@ import colors from "./app/styles/colors";
 
 const { useRealm, useQuery, RealmProvider } = TaskContext;
 
+const actions = ["insert", "delete", "toggle"];
+
 function App() {
   const realm = useRealm();
   const result = useQuery(Task);
+  const [runRandom, setRunRandom] = useState(false);
 
-  const tasks = result; // useMemo(() => result.sorted("createdAt"), [result]);
+  const tasks = result; //useMemo(() => result.sorted("createdAt"), [result]);
 
   const handleAddTask = useCallback(
     (description: string): void => {
@@ -88,9 +91,96 @@ function App() {
     [realm],
   );
 
+  useEffect(() => {
+    let intervalId: NodeJS.Timer | null = null;
+    if (runRandom) {
+      intervalId = setInterval(() => {
+        const actionIndex = Math.floor(Math.random() * actions.length);
+        const taskIndex = Math.floor(Math.random() * tasks.length);
+        switch (actions[actionIndex]) {
+          case "insert":
+            realm.write(() => realm.create(Task, Task.generate(`${taskIndex}`)));
+            //console.log("inserting: ", taskIndex);
+            break;
+          case "delete":
+            if (tasks.length > 0) {
+              realm.write(() => realm.delete(tasks[taskIndex]));
+              //console.log("deleting: ", taskIndex);
+            }
+            break;
+          case "toggle":
+            if (tasks.length > 0) {
+              realm.write(() => {
+                tasks[taskIndex].isComplete = !tasks[taskIndex].isComplete;
+              });
+              //console.log("toggling: ", taskIndex);
+            }
+            break;
+        }
+      }, 1);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [runRandom]);
+
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.content}>
+        <Button title={runRandom ? "pause" : "start"} onPress={() => setRunRandom(!runRandom)} />
+        <Button
+          title={"fill"}
+          onPress={() => {
+            realm.write(() => {
+              for (let i = 0; i < 100; i++) {
+                realm.create(Task, Task.generate(`${i}`));
+              }
+            });
+          }}
+        />
+        <Button
+          title={"delete random"}
+          onPress={() => {
+            realm.write(() => {
+              for (let i = 0; i < 100; i++) {
+                if (tasks.length > 0) {
+                  const t = realm.objects(Task);
+                  const rand = Math.floor(Math.random() * t.length);
+                  const randT = t[rand];
+                  realm.delete(randT);
+                }
+              }
+            });
+          }}
+        />
+        <Button
+          title={"toggle random"}
+          onPress={() => {
+            realm.write(() => {
+              for (let i = 0; i < tasks.length / 4; i++) {
+                if (tasks.length > 0) {
+                  const t = realm.objects(Task);
+                  const rand = Math.floor(Math.random() * t.length);
+                  const randT = t[rand];
+                  randT.isComplete = !randT.isComplete;
+                }
+              }
+            });
+          }}
+        />
+        <Button
+          title={"delete all"}
+          onPress={() => {
+            setRunRandom(false);
+            realm.write(() => {
+              realm.deleteAll();
+            });
+          }}
+        />
+        <Text style={{ color: "white" }}>{tasks.length}</Text>
         <AddTaskForm onSubmit={handleAddTask} />
         {tasks.length === 0 ? (
           <IntroText />
