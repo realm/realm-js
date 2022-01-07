@@ -19,7 +19,7 @@
 import { createContext } from "react";
 import Realm from "realm";
 import { createUseRealm } from "./useRealm";
-import { createUseQuery } from "./useQuery";
+import { createUseQuery, UseQueryCollection } from "./useQuery";
 import { createUseObject } from "./useObject";
 import { createRealmProvider } from "./RealmProvider";
 
@@ -50,4 +50,4 @@ export const createRealmContext: CreateRealmContext = (realmConfig: Realm.Config
   };
 };
 
-export { Realm };
+export { Realm, UseQueryCollection };
