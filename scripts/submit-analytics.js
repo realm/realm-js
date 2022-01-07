@@ -18,6 +18,7 @@
 
 const commandLineArgs = require("command-line-args");
 const utils = require("../lib/utils");
+const fs = require("fs");
 
 let doLog; // placeholder for logger function
 
@@ -54,13 +55,12 @@ function sha256(data) {
 
 /**
  * Collect analytics data from the runtime system
- * @param {string} platform The platform
+ * @param {Object} context The app's package.json parsed as an object
  * @returns {Object} Analytics payload
  */
 async function fetchPlatformData(context) {
   const os = require("os");
   const { machineId } = require("node-machine-id");
-  const environment = utils.getEnvironment();
 
   let identifier = await machineId();
   if (!identifier) {
@@ -68,13 +68,28 @@ async function fetchPlatformData(context) {
   }
 
   let framework = "node.js";
+  let frameworkVersion = process.version;
+  let jsEngine = "v8";
 
-  // check for React Native
   if (context.dependencies && context.dependencies["react-native"]) {
     framework = "react-native";
+    frameworkVersion = context.dependencies["react-native"];
+    try {
+      const podfile = fs.readFileSync("../../ios/Podfile", "utf8");
+      if (podfile.includes("hermes_enabled => true")) {
+        jsEngine = "hermes";
+      } else {
+        jsEngine = "jsc";
+      }
+    } catch (err) {
+      doLog(`Cannot read ios/Podfile: ${err}`);
+      jsEngine = "unknown";
+    }
   }
-
-  // check for electron
+  if (context.dependencies && context.dependencies["electron"]) {
+    framework = "electron";
+    frameworkVersion = context.dependencies["electron"];
+  }
 
   const payloads = {
     webHook: {
@@ -86,11 +101,13 @@ async function fetchPlatformData(context) {
         "Anonymized Machine Identifier": identifier,
         "Anonymized Application ID": sha256(__dirname),
         Binding: "javascript",
-        Target: environment,
         Version: context.version,
         Language: "javascript",
-        "OS Type": os.platform(),
-        "OS Version": os.release(),
+        Framework: framework,
+        "Framework Version": frameworkVersion,
+        "JavaScript Engine": jsEngine,
+        "Host OS Type": os.platform(),
+        "Host OS Version": os.release(),
         "Node.js version": process.version,
       },
     },
@@ -147,7 +164,7 @@ async function dispatchAnalytics(payload) {
 }
 
 async function submitAnalytics(dryRun) {
-  const context = require("../package.json");
+  const context = require("../../../package.json");
   if (isAnalyticsDisabled()) {
     doLog("Analytics is disabled");
     return;
@@ -187,8 +204,6 @@ if (options.log) {
   };
 }
 
-submitAnalytics(dryRun).catch((err) => {
-  if (options.log) {
-    console.log(`Submitting failed: ${err}`);
-  }
-});
+(async function () {
+  await submitAnalytics(dryRun);
+})();

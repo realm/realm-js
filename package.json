@@ -75,7 +75,7 @@
     "check-environment": "node scripts/check-environment.js",
     "lint:cpp": "find src -name \"*.?pp\" | xargs clang-format --dry-run --Werror",
     "lint:fix:cpp": "find src -name \"*.?pp\" | xargs clang-format -i",
-    "postinstall": "scripts/submit-analytics.js"
+    "postinstall": "node scripts/submit-analytics.js"
   },
   "dependencies": {
     "@realm.io/common": "^0.1.1",
