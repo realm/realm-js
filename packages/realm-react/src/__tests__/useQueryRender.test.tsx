@@ -38,7 +38,7 @@ interface IObject {
   name: string;
 }
 
-const testCollection = new Array(1000).fill(undefined).map((_, index) => ({ id: index, name: `${index}` }));
+const testCollection = new Array(15).fill(undefined).map((_, index) => ({ id: index, name: `${index}` }));
 
 const configuration: Realm.Configuration = {
   schema: [ObjectSchema],
@@ -128,10 +128,18 @@ const TestComponent = () => {
 
   const keyExtractor = useCallback((item) => item.id, []);
 
-  return <FlatList testID={"list"} data={collection} keyExtractor={keyExtractor} renderItem={renderItem} />;
+  return (
+    <FlatList
+      testID={"list"}
+      data={collection}
+      extraData={collection.version}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+    />
+  );
 };
 
-describe("useQuery", () => {
+describe("useQueryRender", () => {
   afterEach(() => {
     renderCounter.mockClear();
     Realm.clearTestState();
@@ -176,7 +184,7 @@ describe("useQuery", () => {
     expect(renderCounter).toHaveBeenCalledTimes(11);
   });
 
-  it("handles implicit updates", () => {
+  xit("handles implicit updates", () => {
     expect(true).toEqual(true);
   });
 });
