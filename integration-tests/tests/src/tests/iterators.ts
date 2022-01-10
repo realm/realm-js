@@ -168,13 +168,19 @@ describe("Iterating", () => {
 
   describe("linkingObjects collections", () => {
     itCanIterate(() => {
-      return realm.objectForPrimaryKey<IPerson>("Person", "Alice").dogs;
+      const result = realm.objectForPrimaryKey<IPerson>("Person", "Alice");
+      if (!result) throw new Error("Object not found");
+
+      return result.dogs;
     }, ["Max", "Rex"]);
   });
 
   describe("lists", () => {
     itCanIterate(() => {
-      return realm.objectForPrimaryKey<IPerson>("Person", "Bob").friends;
+      const result = realm.objectForPrimaryKey<IPerson>("Person", "Bob");
+      if (!result) throw new Error("Object not found");
+
+      return result.friends;
     }, ["Charlie"]);
   });
 });

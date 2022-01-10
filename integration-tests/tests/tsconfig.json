@@ -17,7 +17,8 @@
 			"mocha",
 			"chai"
 		],
-		"noImplicitAny": true
+		"noImplicitAny": true,
+		"strictNullChecks": true
 	},
 	"include": [
 		"src/typings.d.ts",

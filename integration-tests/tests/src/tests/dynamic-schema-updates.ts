@@ -73,6 +73,8 @@ describe("realm._updateSchema", () => {
     const updatedSchema = [...realm.schema];
     // Locate the Dog schema
     const dogSchema = updatedSchema.find((s) => s.name === "Dog");
+    if (!dogSchema) throw new Error("Schema not found");
+
     // Add a fields property
     dogSchema.properties.friends = "Dog[]";
     // Update the schema

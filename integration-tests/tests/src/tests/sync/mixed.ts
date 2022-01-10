@@ -91,6 +91,8 @@ function describeRoundtrip(typeName: string, value: Value, testValue: ValueTeste
 
     it("reads", function (this: RealmContext) {
       const obj = this.realm.objectForPrimaryKey<MixedClass>("MixedClass", this._id);
+      if (!obj) throw new Error("Object not found");
+
       expect(typeof obj).equals("object");
       // Test the single value
       performTest(obj.value, this.value);

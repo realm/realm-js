@@ -35,7 +35,8 @@ export function itPerforms(title: string, fn: () => void, options?: Partial<Benc
       maximumFractionDigits: 0,
     });
     const sd = Number(result.sd.toFixed(2));
-    this.test.title += ` (${ops} ops/sec, ±${sd}%)`;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.test!.title += ` (${ops} ops/sec, ±${sd}%)`;
     this.result = result;
   });
 }

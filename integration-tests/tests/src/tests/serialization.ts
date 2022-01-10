@@ -484,7 +484,8 @@ describe("JSON serialization", () => {
       afterEach(() => {
         if (realm) {
           realm.write(() => {
-            realm.deleteAll();
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            realm!.deleteAll();
           });
           realm.close();
           realm = null;

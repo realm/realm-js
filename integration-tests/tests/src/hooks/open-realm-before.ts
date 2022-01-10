@@ -46,18 +46,22 @@ export function openRealmHook(config: LocalConfiguration | SyncedConfiguration =
       } as Realm.Configuration;
       this.realm = new Realm(this.config);
       // Upload the schema, ensuring a valid connection
+      if (!this.realm.syncSession) {
+        throw new Error("No syncSession found on realm");
+      }
       await this.realm.syncSession.uploadAllLocalChanges();
     }
   };
 }
 
-export function closeRealm(this: RealmContext): void {
+export function closeRealm(this: Partial<RealmContext> & Mocha.Context): void {
   if (this.realm) {
     this.realm.close();
     delete this.realm;
   } else {
     throw new Error("Expected a 'realm' in the context");
   }
+
   if (this.config) {
     Realm.deleteFile(this.config);
     delete this.config;
