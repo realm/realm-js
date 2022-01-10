@@ -1,3 +1,26 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Breaking change
+* Removed all code related to the legacy Chrome Debugger.
+
+### Enhancements
+* None.
+
+### Fixed
+* None.
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Remove the previous implementation to the JavaScriptCore engine (in `src/jsc`).
+* <Either mention core version or upgrade>
+* <Using Realm Core vX.Y.Z>
+* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+
 10.20.0-beta.0 Release notes (2021-12-21)
 =============================================================
 NOTE: This release is rebased on our `10.11.0` release and as such contain the same enhancements and fixes.
