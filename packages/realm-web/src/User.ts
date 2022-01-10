@@ -96,21 +96,16 @@ export class User<
   /** @inheritdoc */
   public readonly apiKeys: ApiKeyAuth;
 
-  /**
-   * an extended property that may be set, removed or defined by others on an object
-   *  instance statically or as a dynamic getter function
-   * HTTP headers to be sent with mongoClient and functions requests
-   *
-   * @type {Headers}
-   * @memberof User
-   */
-  public headers?: Headers;
-
   private _accessToken: string | null;
   private _refreshToken: string | null;
   private _profile: UserProfile<UserProfileDataType> | undefined;
   private fetcher: Fetcher;
   private storage: UserStorage<UserProfileDataType>;
+
+  /**
+   * HTTP headers to be sent with mongoClient and functions requests
+   */
+  private _context?: Headers;
 
   /**
    * @param parameters Parameters of the user.
@@ -152,6 +147,34 @@ export class User<
     });
     this.apiKeys = new ApiKeyAuth(this.fetcher);
     this.functions = FunctionsFactory.create(this.fetcher) as FunctionsFactoryType & Realm.BaseFunctionsFactory;
+  }
+
+  /**
+   * Headers defined by realm-network-transport, which is a plain string, string map
+   * (Don't confuse with Web Fetch API Headers class)
+   *
+   * @param header Set an HTTP header
+   * @param value Set an HTTP header
+   */
+  public setContext(header: string, value: string | (() => string)): void {
+    this._context = this._context ?? {};
+    if (typeof value === "string") {
+      Object.defineProperty(this._context, header, { enumerable: true, configurable: true, value, writable: false });
+    } else {
+      Object.defineProperty(this._context, header, { enumerable: true, configurable: true, get: value });
+    }
+  }
+  public removeContext(header: string): void {
+    if (this._context && header in this._context) {
+      delete this._context[header];
+      if (!Array.from(Object.keys(this._context)).length) {
+        delete this._context;
+      }
+    }
+  }
+
+  get context(): Headers {
+    return this._context || {};
   }
 
   /**
@@ -341,7 +364,7 @@ export class User<
   }
 
   /** @inheritdoc */
-  public mongoClient(serviceName: string, options?: { headers?: Headers }): Realm.Services.MongoDB {
+  public mongoClient(serviceName: string, options?: { context?: Headers }): Realm.Services.MongoDB {
     if (options) {
       return createMongoDBRemoteService(this.fetcher.clone(options), serviceName);
     }

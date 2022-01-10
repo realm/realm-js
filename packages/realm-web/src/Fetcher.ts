@@ -74,6 +74,9 @@ export type UserContext = {
    * The currently active user.
    */
   currentUser: User | null;
+
+  /** headers to be sent with HTTP requests */
+  context?: Headers;
 };
 
 /**
@@ -84,7 +87,7 @@ export type LocationUrlContext = {
   locationUrl: Promise<string>;
 
   /** headers to be sent with HTTP requests */
-  headers?: Headers;
+  context?: Headers;
 };
 
 type TokenType = "access" | "refresh" | "none";
@@ -135,10 +138,12 @@ export type FetcherConfig = {
    * An optional promise which resolves to the response of the app location request.
    */
   locationUrlContext: LocationUrlContext;
+
   /**
-   * An optional key-value object containing extra custom HTTP headers
+   * Name-value pairs set via constructor option
+   * Will be sent as HTTP headers with mongoClient requests
    */
-  headers?: Headers;
+  context?: Headers;
 };
 
 /**
@@ -206,8 +211,9 @@ export class Fetcher implements LocationUrlContext {
 
   /**
    * HTTP headers providing extra context
+   * More specific and higher precedence than App or User context
    */
-  readonly headers?: Headers;
+  public readonly context?: Headers;
 
   /**
    * @param config A configuration of the fetcher.
@@ -215,16 +221,16 @@ export class Fetcher implements LocationUrlContext {
    * @param config.transport The transport used when fetching.
    * @param config.userContext An object used to determine the requesting user.
    * @param config.locationUrlContext An object used to determine the location / base URL.
-   * @param config.headers Context to be sent as HTTP headers, higher precendence than user or location
+   * @param config.context Context to be sent as HTTP headers, higher precendence than user or location
    */
-  constructor({ appId, transport, userContext, locationUrlContext, headers }: FetcherConfig) {
+  constructor({ appId, transport, userContext, locationUrlContext, context }: FetcherConfig) {
     this.appId = appId;
     this.transport = transport;
     this.userContext = userContext;
     this.locationUrlContext = locationUrlContext;
 
-    if (headers) {
-      this.headers = headers;
+    if (context) {
+      this.context = context;
     }
   }
 
@@ -235,7 +241,7 @@ export class Fetcher implements LocationUrlContext {
       userContext: this.userContext,
       locationUrlContext: this.locationUrlContext,
       ...config,
-      ...("headers" in this && { headers: { ...this.headers, ...config.headers } }),
+      ...("context" in this && { context: { ...this.context, ...config.context } }),
     });
   }
 
@@ -260,9 +266,9 @@ export class Fetcher implements LocationUrlContext {
         url,
         headers: {
           ...Fetcher.buildAuthorizationHeader(user, tokenType),
-          ...this.locationUrlContext.headers,
-          ...user?.headers,
-          ...this.headers,
+          ...this.locationUrlContext.context,
+          ...user?.context,
+          ...this.context,
           ...request.headers,
         },
       });

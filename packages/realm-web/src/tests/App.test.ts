@@ -74,6 +74,19 @@ describe("App", () => {
     expect(app.id).equals("default-app-id");
   });
 
+  it("has a context constructor option", () => {
+    const app = new App({
+      id: "default-app-id",
+      baseUrl: "http://localhost:3000",
+      context: {
+        ["X-Custom-Header"]: "custom-header-value",
+      },
+    });
+    expect(app.context).deep.equals({
+      ["X-Custom-Header"]: "custom-header-value",
+    });
+  });
+
   it("expose a static Credentials factory", () => {
     expect(typeof App.Credentials).not.equals("undefined");
     expect(typeof App.Credentials.anonymous).equals("function");

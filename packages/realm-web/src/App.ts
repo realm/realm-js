@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NetworkTransport, DefaultNetworkTransport, Headers } from "realm-network-transport";
+import { NetworkTransport, DefaultNetworkTransport } from "realm-network-transport";
 import { ObjectId } from "bson";
 
 import { User, UserState } from "./User";
@@ -26,7 +26,7 @@ import { Storage } from "./storage";
 import { AppStorage } from "./AppStorage";
 import { getEnvironment } from "./environment";
 import { AuthResponse, Authenticator } from "./Authenticator";
-import { Fetcher, UserContext } from "./Fetcher";
+import { Fetcher, UserContext, Headers } from "./Fetcher";
 import routes from "./routes";
 import { DeviceInformation, DEVICE_ID_STORAGE_KEY } from "./DeviceInformation";
 
@@ -54,6 +54,10 @@ export interface AppConfiguration extends Realm.AppConfiguration {
    * This can useful when connecting to a server through a reverse proxy, to avoid the location request to make the client "break out" and start requesting another server.
    */
   skipLocationRequest?: boolean;
+  /**
+   * HTTP headers for function calls and data requests
+   */
+  context?: Headers;
 }
 
 /**
@@ -112,14 +116,10 @@ export class App<
   public readonly authenticator: Authenticator;
 
   /**
-   * an extended property that may be set/removed on this object statically,
-   *  or defined as a dynamic getter function
-   * will be sent with mongoClient and functions requests
-   *
-   * @type {Headers}
-   * @memberof User
+   * Name-value pairs set via constructor option
+   * Will be sent as HTTP headers with mongoClient and functions requests
    */
-  public headers?: Headers;
+  public readonly context?: Headers;
 
   /**
    * An array of active and logged-out users.
@@ -177,6 +177,9 @@ export class App<
     const baseStorage = storage || getEnvironment().defaultStorage;
     this.storage = new AppStorage(baseStorage, this.id);
     this.authenticator = new Authenticator(this.fetcher, baseStorage, () => this.deviceInformation);
+    if ("context" in configuration) {
+      this.context = configuration.context;
+    }
     // Hydrate the app state from storage
     try {
       this.hydrate();
