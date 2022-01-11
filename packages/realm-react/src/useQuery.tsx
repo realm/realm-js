@@ -18,16 +18,12 @@
 
 import Realm from "realm";
 import { useEffect, useRef, useMemo, useReducer, useCallback } from "react";
-import { UUID } from "bson";
 
 const numericRegEx = /^-?\d+$/;
 // TODO: refactor this to be react independent
 
-// TODO: Find a way to not export a new type for Collection
-export type UseQueryCollection<T> = Realm.Results<T & Realm.Object> & { version?: number };
-
 export function createUseQuery(useRealm: () => Realm) {
-  return function useQuery<T>(type: string | ({ new (): T } & Realm.ObjectClass)): UseQueryCollection<T> {
+  return function useQuery<T>(type: string | ({ new (): T } & Realm.ObjectClass)): Realm.Results<T & Realm.Object> {
     const realm = useRealm();
     const collectionCache = useRef(new Map());
     //TODO: remove this when we can retrieve a list of changed objectIds
@@ -86,13 +82,12 @@ export function createUseQuery(useRealm: () => Realm) {
       };
     }, [collectionCache, getCacheKey, indexToObjectId]);
 
-    const [rerenderCount, forceRerender] = useReducer((x) => x + 1, 0);
+    const [, forceRerender] = useReducer((x) => x + 1, 0);
 
-    const collection = useMemo<UseQueryCollection<T>>(() => new Proxy(realm.objects<T>(type), collectionHandler), [
-      type,
-      collectionHandler,
-      realm,
-    ]);
+    const collection = useMemo<Realm.Results<T & Realm.Object>>(
+      () => new Proxy(realm.objects<T>(type), collectionHandler),
+      [type, collectionHandler, realm],
+    );
 
     useEffect(() => {
       const listenerCallback: Realm.CollectionChangeCallback<T & Realm.Object> = (_, changes) => {
@@ -129,9 +124,7 @@ export function createUseQuery(useRealm: () => Realm) {
       };
     }, [realm, collection, type, collectionHandler, getCacheKey]);
 
-    // TODO: wrap collection in a proxy object that updates on changes (but doesn't requery the collection)
-    collection.version = rerenderCount;
-
+    // This makes sure the collection has a different reference on a rerender
     return new Proxy(collection, {});
   };
 }

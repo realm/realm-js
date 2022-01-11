@@ -125,7 +125,7 @@ function App() {
         clearInterval(intervalId);
       }
     };
-  }, [runRandom]);
+  }, [runRandom, realm, tasks]);
 
   return (
     <SafeAreaView style={styles.screen}>
