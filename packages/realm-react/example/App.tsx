@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { SafeAreaView, View, StyleSheet, Button, Text } from "react-native";
 
 import TaskContext, { Task } from "./app/models/Task";
@@ -33,7 +33,7 @@ function App() {
   const result = useQuery(Task);
   const [runRandom, setRunRandom] = useState(false);
 
-  const tasks = result; //useMemo(() => result.sorted("createdAt"), [result]);
+  const tasks = result; //useMemo(() => result.sorted("description"), [result]);
 
   const handleAddTask = useCallback(
     (description: string): void => {
@@ -117,7 +117,7 @@ function App() {
             }
             break;
         }
-      }, 1);
+      }, 100);
     }
 
     return () => {
@@ -205,12 +205,20 @@ const styles = StyleSheet.create({
 });
 
 function AppWrapper() {
+  const [showApp1, setShowApp1] = useState(true);
+  const [showApp2, setShowApp2] = useState(true);
+
   if (!RealmProvider) {
     return null;
   }
   return (
     <RealmProvider>
-      <App />
+      <SafeAreaView>
+        <Button title={`${showApp1 ? "hide" : "show"} App 1`} onPress={() => setShowApp1(!showApp1)} />
+        <Button title={`${showApp2 ? "hide" : "show"} App 2`} onPress={() => setShowApp2(!showApp2)} />
+      </SafeAreaView>
+      {showApp1 && <App />}
+      {showApp2 && <App />}
     </RealmProvider>
   );
 }
