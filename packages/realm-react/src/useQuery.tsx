@@ -18,12 +18,25 @@
 
 import Realm from "realm";
 import { useEffect, useRef, useMemo, useReducer, useCallback } from "react";
+<<<<<<< HEAD
 
 const numericRegEx = /^-?\d+$/;
 // TODO: refactor this to be react independent
 
 export function createUseQuery(useRealm: () => Realm) {
   return function useQuery<T>(type: string | ({ new (): T } & Realm.ObjectClass)): Realm.Results<T & Realm.Object> {
+=======
+import { UUID } from "bson";
+
+const numericRegEx = /^-?\d+$/;
+// TODO: refactor this to be react independent
+
+// TODO: Find a way to not export a new type for Collection
+export type UseQueryCollection<T> = Realm.Results<T & Realm.Object> & { version?: number };
+
+export function createUseQuery(useRealm: () => Realm) {
+  return function useQuery<T>(type: string | ({ new (): T } & Realm.ObjectClass)): UseQueryCollection<T> {
+>>>>>>> 56bc8f9a (Use Strong References)
     const realm = useRealm();
     const collectionCache = useRef(new Map());
     //TODO: remove this when we can retrieve a list of changed objectIds
@@ -123,8 +136,15 @@ export function createUseQuery(useRealm: () => Realm) {
         }
       };
     }, [realm, collection, type, collectionHandler, getCacheKey]);
+<<<<<<< HEAD
 
     // This makes sure the collection has a different reference on a rerender
+=======
+
+    // TODO: wrap collection in a proxy object that updates on changes (but doesn't requery the collection)
+    collection.version = rerenderCount;
+
+>>>>>>> 56bc8f9a (Use Strong References)
     return new Proxy(collection, {});
   };
 }
