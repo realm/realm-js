@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Breaking change
-* Removed all code related to the legacy Chrome Debugger.
+* Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
 
 ### Enhancements
 * None.
