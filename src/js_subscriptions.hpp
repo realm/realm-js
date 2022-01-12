@@ -420,8 +420,6 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
 
             subs->refresh();
 
-            auto error = Object::create_obj(ctx, {{"message", Value::from_string(ctx, "asd")}});
-
             auto result =
                 state.is_ok()
                     ? Value::from_undefined(protected_ctx)
