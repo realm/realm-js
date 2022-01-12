@@ -237,7 +237,7 @@ describe("useQueryRender", () => {
       expect(renderCounter).toHaveBeenCalledTimes(10);
     });
   });
-  describe("filtered collections", () => {
+  xdescribe("filtered collections", () => {
     it("an implicit update to an item in the FlatList view area causes a rerender", async () => {
       render(<App type={QueryType.filtered} />);
 
@@ -278,7 +278,7 @@ describe("useQueryRender", () => {
       expect(renderCounter).toHaveBeenCalledTimes(10);
     });
   });
-  describe("sorted collections", () => {
+  xdescribe("sorted collections", () => {
     it("an implicit update to an item in the FlatList view area causes a rerender", async () => {
       render(<App type={QueryType.sorted} />);
 
