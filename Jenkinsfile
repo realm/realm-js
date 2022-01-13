@@ -5,7 +5,8 @@ import groovy.json.JsonOutput
 repoName = 'realm-js'
 
 platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'darwin-arm64', 'linux-x64', 'linux-arm']
-nodeTestVersion = '12.22.5'
+nodeTestVersion = '16.13.1'
+npmVersion = '8.1.2'
 
 //Changing electron versions for testing requires upgrading the spectron dependency in tests/electron/package.json to a specific version.
 //For more see https://www.npmjs.com/package/spectron
@@ -236,8 +237,11 @@ def buildWindows(nodeVersion, arch) {
   return {
     myNode('windows && nodejs') {
       unstash 'source'
-
+      bat "nodist add ${nodeVersion}"
+      bat "nodist npm add ${npmVersion}"
       withEnv([
+        "NODIST_NODE_VERSION=${nodeVersion}",
+        "NODIST_NPM_VERSION=${npmVersion}",
         "_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}",
         "PATH+CMAKE=${tool 'cmake'}\\.."
         ]) {
@@ -505,9 +509,11 @@ def testWindows(nodeVersion) {
     node('windows && nodist') {
       unstash 'source'
       bat "nodist add ${nodeVersion}"
+      bat "nodist npm add ${npmVersion}"
       try {
         withEnv([
-          "NODE_NODIST_VERSION=${nodeVersion}",
+          "NODIST_NODE_VERSION=${nodeVersion}",
+          "NODIST_NPM_VERSION=${npmVersion}",
           "PATH+CMAKE=${tool 'cmake'}\\..",
         ]) {
           // FIXME: remove debug option when the Release builds are working again
