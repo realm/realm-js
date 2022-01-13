@@ -1,11 +1,11 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Support arithmetic operations (+, -, *, /) in queries. Operands can be properties and/or constants of numeric types (`int`, `float`, `double` or `Decimal128`). You can now say something like `(age + 5) * 2 > child.age`.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Opening a Realm with a schema that has an orphaned embedded object type performed an extra empty write transaction. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115), since v10.5.0)
+* Schema validation was missing for embedded objects in sets, resulting in an unhelpful error being thrown if the user attempted to define one. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115))
 
 ### Compatibility
 * Removed `deprecated-react-native-listview` from root package.json
@@ -15,9 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.7.0 to v11.8.0. ([#4207](https://github.com/realm/realm-js/issues/4207))
 * Removed `.dir-locals.el`. Please configure Emacs to use `clang-format` e.g. https://github.com/SavchenkoValeriy/emacs-clang-format-plus.
 * Enabled `strictNullChecks` for integration tests
 
