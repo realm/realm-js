@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Added beta support for flexible sync. See https://docs.?? for more information. Please report any issues with the beta through Github.
+* Added beta support for flexible sync. See the [backend](https://docs.mongodb.com/realm/sync/data-access-patterns/flexible-sync/) and [SDK](https://docs.mongodb.com/realm/sdk/node/fundamentals/realms/realm-sync/#flexible-sync) documentation for more information. Please report any issues with the beta through Github.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

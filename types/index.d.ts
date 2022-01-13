@@ -614,7 +614,7 @@ declare namespace Realm {
         const downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
 
         /**
-         * A class representing a single query subscription in a set of Flexible Sync
+         * Class representing a single query subscription in a set of flexible sync
          * {@link Subscriptions}. This class contains readonly information about the
          * subscription – any changes to the set of subscriptions must be carried out
          * in a {@link Subscriptions.update} callback.
@@ -623,7 +623,7 @@ declare namespace Realm {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
             /**
-             * @returns The ObjectId of the subscriptin
+             * @returns The ObjectId of the subscription
              */
              readonly id: BSON.ObjectId;
 
@@ -656,7 +656,7 @@ declare namespace Realm {
         }
 
         /**
-         * Enum representing the state of a set of subscriptions.
+         * Enum representing the state of a {@link Subscriptions} set.
          */
         enum SubscriptionsState {
             /**
@@ -676,6 +676,7 @@ declare namespace Realm {
             /**
              * The server has returned an error and synchronization is paused for this
              * Realm. To view the actual error, use `Subscriptions.error`.
+             *
              * You can still use {@link Subscriptions.update} to update the subscriptions,
              * and if the new update doesn't trigger an error, synchronization
              * will be restarted.
@@ -686,13 +687,13 @@ declare namespace Realm {
              * The subscription set has been superceded by an updated one. This typically means
              * that someone has called {@link Subscriptions.update} on a different instance
              * of the `Subscriptions`. You should not use a superseded subscription set,
-             * and instead obtain a new instance by calling `getSubscriptions()`.
+             * and instead obtain a new instance by calling {@link Subscriptions.getSubscriptions}.
              */
             Superceded = "superceded",
         }
 
         /**
-         * Options for `Subscriptions.add`.
+         * Options for {@link Subscriptions.add}.
          */
         interface SubscriptionOptions {
             /**
@@ -711,6 +712,10 @@ declare namespace Realm {
             throwOnUpdate?: boolean;
         }
 
+        /**
+         * Class representing the common functionality for the {@link Subscriptions} and
+         * {@link MutableSubscriptions} classes
+         */
         abstract class BaseSubscriptions {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
@@ -734,6 +739,7 @@ declare namespace Realm {
 
             /**
              * Find a subscription by name.
+             *
              * @param name The name to search for.
              * @returns The named subscription, or `null` if the subscription is not found.
              */
@@ -741,6 +747,7 @@ declare namespace Realm {
 
             /**
              * Find a subscription by query. Will match both named and unnamed subscriptions.
+             *
              * @param query The query to search for, represented as a {@link Realm.Results} instance,
              * e.g. `Realm.objects("Cat").filtered("age > 10")`.
              * @returns The subscription with the specified query, or null if the subscription is not found.
@@ -753,14 +760,14 @@ declare namespace Realm {
             readonly state: SubscriptionsState;
 
             /**
-             * @returns If `state` is {@link SubscriptionsState.Error}, this is a {@link Realm.SyncError}
+             * @returns If `state` is {@link SubscriptionsState.Error}, this is a `string`
              * representing why the subscription set is in an error state. `null` if there is no error.
              */
-            readonly error: Realm.SyncError | null;
+            readonly error: string | null;
         }
 
         /**
-         * A class representing the set of all active Flexible Sync subscriptions for a Realm
+         * Class representing the set of all active flexible sync subscriptions for a Realm
          * instance.
          *
          * The server will continuously evaluate the queries that the instance is subscribed to
@@ -773,7 +780,9 @@ declare namespace Realm {
             /**
              * Wait for the server to acknowledge this set of subscriptions and return the
              * matching objects.
+             *
              * If `state` is {@link SubscriptionsState.Complete}, the promise will be resolved immediately.
+             *
              * If `state` is {@link SubscriptionsState.Error}, the promise will be rejected immediately.
              *
              * @returns A promise which is resolved when synchronization is complete, or is
@@ -786,15 +795,19 @@ declare namespace Realm {
              *
              * Adding or removing subscriptions from the set set must be performed inside
              * the callback argument of this method, and the mutating methods must be called on
-             * the `mutableSubs` argument rather than the original `Subscriptions`. Any changes
-             * to the subscriptions after the callback has executed will be batched and sent
-             * to the server, at which point you can {@link waitForSynchronization} to wait for the
-             * new data to be available.
+             * the `mutableSubs` argument rather than the original {@link Subscriptions} instance.
+             *
+             * Any changes to the subscriptions after the callback has executed will be batched and sent
+             * to the server, at which point you can call {@link waitForSynchronization} to wait for
+             * the new data to be available.
              *
              * Example:
              * ```
+             * const subs = realm.getSubscriptions();
              * subs.update(mutableSubs => {
              *   mutableSubs.add(realm.objects("Cat").filtered("age > 10"));
+             *   mutableSubs.add(realm.objects("Dog").filtered("age > 20"));
+             *   mutableSubs.removeByName("personSubs");
              * });
              * await subs.waitForSynchronization();
              * // `realm` will now return the expected results based on the updated subscriptions
@@ -803,27 +816,27 @@ declare namespace Realm {
              * @param callback A callback function which receives a {@link MutableSubscriptions}
              * instance as its only argument, which can be used to add or remove subscriptions from
              * the set.
-             * @returns A new {@link Subscriptions} instance containing the updated set of subscriptions.
              */
-            update: (callback: (mutableSubs: MutableSubscriptions) => void) => Subscriptions;
+            update: (callback: (mutableSubs: MutableSubscriptions) => void) => void;
         }
 
         /**
          * The mutable version of a given subscription set. The mutable methods of a given
-         * {@link Subscriptions} instance can only be accessed from inside the {@link update} callback
-         * (see {@link Subscriptions.update}).
+         * {@link Subscriptions} instance can only be accessed from inside the {@link Subscriptions.update}
+         * callback.
          */
         interface MutableSubscriptions extends BaseSubscriptions {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
             /**
              * Adds a query to the set of active subscriptions. The query will be joined via
-             * an OR operator with any existing queries for the same type. A query is represented
-             * by a `Realm.Results` instance returned from `realm.objects`, for example:
-             * `mutableSubs.add(realm.objects("Cat").filtered("age > 10"));`.
+             * an `OR` operator with any existing queries for the same type.
              *
-             * @param query A `Realm.Results` instance representing the query to subscribe to.
-             * @param options An optional `SubscriptionOptions` object containing options to
+             * A query is represented by a {@link Realm.Results} instance returned from {@link Realm.objects},
+             * for example: `mutableSubs.add(realm.objects("Cat").filtered("age > 10"));`.
+             *
+             * @param query A {@link Realm.Results} instance representing the query to subscribe to.
+             * @param options An optional {@link SubscriptionOptions} object containing options to
              * use when adding this subscription (e.g. to give the subscription a name).
              * @returns A `Subscription` instance for the new subscription.
              */
@@ -832,7 +845,7 @@ declare namespace Realm {
             /**
              * Removes a subscription with the given query from the subscription set.
              *
-             * @param query A `Realm.Results` instance representing the query to remove a subscription to.
+             * @param query A {@link Realm.Results} instance representing the query to remove a subscription to.
              * @returns `true` if the subscription was removed, `false` if it was not found.
              */
             remove: <T>(query: Realm.Results<T & Realm.Object>) => boolean;
@@ -848,7 +861,7 @@ declare namespace Realm {
             /**
              * Removes the specified subscription from the subscription set.
              *
-             * @param subscription The `Subscription` instance to remove.
+             * @param subscription The {@link Subscription} instance to remove.
              * @returns `true` if the subscription was removed, `false` if it was not found.
              */
             removeSubscription: (subscription: Subscription) => boolean;
