@@ -17,20 +17,31 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
-import { useEffect, useRef, useMemo, useReducer } from "react";
+import { useEffect, useRef, useMemo, useReducer, useCallback } from "react";
 
 const numericRegEx = /^-?\d+$/;
-
-export type UseQueryCollection<T> = Realm.Results<T & Realm.Object> & { version?: number };
+// TODO: refactor this to be react independent
 
 export function createUseQuery(useRealm: () => Realm) {
-  return function useQuery<T>(type: string | { new (): T }): UseQueryCollection<T> {
+  return function useQuery<T>(type: string | ({ new (): T } & Realm.ObjectClass)): Realm.Results<T & Realm.Object> {
     const realm = useRealm();
     const collectionCache = useRef(new Map());
+    //TODO: remove this when we can retrieve a list of changed objectIds
+    const indexToObjectId = useRef<string[]>([]);
 
-    // TODO: Since the listener doesn't return the objectId, we need to store it in reference to its index
-    // Refactor this when listeners return ObjectIds
-    const indexToIdMap = useRef<string[]>([]);
+    const typeName = useMemo(() => {
+      if (typeof type === "string") {
+        return type;
+      }
+      return type.schema.name;
+    }, [type]);
+
+    const getCacheKey = useCallback(
+      (id) => {
+        return `${typeName}-${id}`;
+      },
+      [typeName],
+    );
 
     const collectionHandler = useMemo<ProxyHandler<Realm.Results<T & Realm.Object>>>(() => {
       return {
@@ -49,45 +60,55 @@ export function createUseQuery(useRealm: () => Realm) {
           // If the key is numeric, check if we have a cached object for this key
           const index = Number(key);
           const object = target[index];
-          const id = object._objectId();
+          const objectId = object._objectId();
+          const cacheKey = getCacheKey(objectId);
 
           // If we do, return it...
-          if (collectionCache.current.get(id) && collectionCache.current.get(id).deref()) {
-            const collection = collectionCache.current.get(id).deref();
+          if (collectionCache.current.get(cacheKey)) {
+            const collection = collectionCache.current.get(cacheKey);
             // if the colleciton was garbage collected, skip return and store the updated reference
             if (collection) return collection;
           }
 
+          // track the objectId by index
+          indexToObjectId.current[index] = objectId;
+
           // If not then this index has either not been accessed before, or has been invalidated due
           // to a modification. Fetch it from the collection and store it in the cache
-          collectionCache.current.set(id, new WeakRef(object));
-          indexToIdMap.current[index] = id;
+          collectionCache.current.set(cacheKey, object);
+
           return object;
         },
       };
-    }, []);
+    }, [collectionCache, getCacheKey, indexToObjectId]);
 
-    const [rerenderCount, forceRerender] = useReducer((x) => x + 1, 0);
+    const [, forceRerender] = useReducer((x) => x + 1, 0);
 
-    const collection = useMemo<UseQueryCollection<T>>(() => new Proxy(realm.objects<T>(type), collectionHandler), [
-      type,
-      collectionHandler,
-      realm,
-    ]);
+    const collection = useMemo<Realm.Results<T & Realm.Object>>(
+      () => new Proxy(realm.objects<T>(type), collectionHandler),
+      [type, collectionHandler, realm],
+    );
 
     useEffect(() => {
-      const listenerCallback: Realm.CollectionChangeCallback<T> = (_, changes) => {
+      const listenerCallback: Realm.CollectionChangeCallback<T & Realm.Object> = (_, changes) => {
         if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
           // Item(s) were deleted, remove their reference from the indexToIdMap and clear them from the cache
-          changes.deletions.forEach((index) => {
-            const [id] = indexToIdMap.current.splice(index, 1);
-            collectionCache.current.delete(id);
+          // read the indexes from the largest first, to avoid making them invalid while removing them from the array
+          changes.deletions.reverse().forEach((index) => {
+            const [objectId] = indexToObjectId.current.splice(index, 1);
+            if (objectId) {
+              const cacheKey = getCacheKey(objectId);
+              collectionCache.current.delete(cacheKey);
+            }
           });
 
           // Item(s) were modified, just clear them from the cache so that we return new instances for them
-          changes.newModifications.forEach((index) => {
-            const id = indexToIdMap.current[index];
-            collectionCache.current.delete(id);
+          changes.newModifications.reverse().forEach((index) => {
+            const [objectId] = indexToObjectId.current.splice(index, 1);
+            if (objectId) {
+              const cacheKey = getCacheKey(objectId);
+              collectionCache.current.delete(cacheKey);
+            }
           });
 
           forceRerender();
@@ -101,10 +122,9 @@ export function createUseQuery(useRealm: () => Realm) {
           collection.removeListener(listenerCallback);
         }
       };
-    }, [realm, collection, type, collectionHandler]);
+    }, [realm, collection, type, collectionHandler, getCacheKey]);
 
-    collection.version = rerenderCount;
-
-    return collection;
+    // This makes sure the collection has a different reference on a rerender
+    return new Proxy(collection, {});
   };
 }
