@@ -15,7 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.7.0 to v10.8.0. ([#4207](https://github.com/realm/realm-js/issues/4207))
+* Upgraded Realm Core from v11.7.0 to v11.8.0. ([#4207](https://github.com/realm/realm-js/issues/4207))
 * Removed `.dir-locals.el`. Please configure Emacs to use `clang-format` e.g. https://github.com/SavchenkoValeriy/emacs-clang-format-plus.
 * Enabled `strictNullChecks` for integration tests
 
