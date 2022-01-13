@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.12.0 Release notes (2022-1-13)
 =============================================================
 ### Enhancements
 <<<<<<< HEAD

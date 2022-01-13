@@ -1,5 +1,9 @@
 PACKAGE_NAME=realm-js
+<<<<<<< HEAD
 VERSION=10.11.0
+=======
+VERSION=10.12.0-beta
+>>>>>>> 1832fc34 ([10.12.0-beta] bump version)
 REALM_CORE_VERSION=11.8.0
 NAPI_VERSION=4
 OPENSSL_VERSION=1.1.1g
