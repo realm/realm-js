@@ -17,13 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 import React from "react";
 import { View, FlatList, StyleSheet } from "react-native";
-import { UseQueryCollection } from "@realm/react";
 
 import { Task } from "../models/Task";
 import TaskItem from "./TaskItem";
 
 interface TaskListProps {
-  tasks: UseQueryCollection<Task>;
+  tasks: Realm.Results<Task>;
   onToggleTaskStatus: (task: Task) => void;
   onDeleteTask: (task: Task) => void;
 }
@@ -34,7 +33,6 @@ function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }: TaskListProps) {
       <FlatList
         data={tasks}
         keyExtractor={(task) => task._id.toString()}
-        extraData={tasks.version}
         renderItem={({ item }) => (
           <TaskItem
             // description={item.description}
