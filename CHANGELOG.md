@@ -1,11 +1,8 @@
 10.12.0 Release notes (2022-1-13)
 =============================================================
 ### Enhancements
-<<<<<<< HEAD
 * Support arithmetic operations (+, -, *, /) in queries. Operands can be properties and/or constants of numeric types (`int`, `float`, `double` or `Decimal128`). You can now say something like `(age + 5) * 2 > child.age`.
-=======
 * Added beta support for flexible sync. See the [backend](https://docs.mongodb.com/realm/sync/data-access-patterns/flexible-sync/) and [SDK](https://docs.mongodb.com/realm/sdk/node/fundamentals/realms/realm-sync/#flexible-sync) documentation for more information. Please report any issues with the beta through Github.
->>>>>>> da0635d2 (Flexible sync implementation)
 
 ### Fixed
 * Opening a Realm with a schema that has an orphaned embedded object type performed an extra empty write transaction. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115), since v10.5.0)
