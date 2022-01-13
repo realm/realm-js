@@ -435,6 +435,7 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
             .get_async(state_change_func);
     }
     catch (KeyNotFound const& ex) {
+        // waiting on https://github.com/realm/realm-core/issues/5165
         auto error = Object::create_obj(
             ctx, {{"message", Value::from_string(ctx, "`waitForSynchronisation` cannot be called before creating "
                                                       "a subscription set using `update`")}});
