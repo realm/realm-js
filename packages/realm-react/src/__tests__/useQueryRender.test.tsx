@@ -128,15 +128,7 @@ const TestComponent = () => {
 
   const keyExtractor = useCallback((item) => item.id, []);
 
-  return (
-    <FlatList
-      testID={"list"}
-      data={collection}
-      extraData={collection.version}
-      keyExtractor={keyExtractor}
-      renderItem={renderItem}
-    />
-  );
+  return <FlatList testID={"list"} data={collection} keyExtractor={keyExtractor} renderItem={renderItem} />;
 };
 
 describe("useQueryRender", () => {
