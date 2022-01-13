@@ -640,7 +640,6 @@ declare namespace Realm {
             /**
              * @returns The name given to this subscription when it was created.
              * If no name was set, this will return null.
-             * TODO or should this return the query as per original design doc?
              */
             readonly name: string | null;
 
@@ -767,14 +766,8 @@ declare namespace Realm {
          * The server will continuously evaluate the queries that the instance is subscribed to
          * and will send data that matches them, as well as remove data that no longer does.
          *
-         * The set of subscriptions can only be updated inside a {@link Subscriptions.update} callback.
-         * Attempting to call any methods which mutate the set (e.g. {@link MutableSubscriptions.add})
-         * outside of an {@link update} callback will throw an exception.
-         *
-         * Note that a given `Subscriptions` instance is immutable – calling {@link update} returns a
-         * new `Subscriptions` instance with the updated subscription set, the original instance
-         * will remain unchanged (but with a `state` of {@link SubscriptionsState.Superceded}
-         * once synchronized).
+         * The set of subscriptions can only be updated inside a {@link Subscriptions.update} callback,
+         * by calling methods on the corresponding {@link MutableSubscriptions} instance.
          */
         class Subscriptions extends BaseSubscriptions {
             /**
@@ -782,7 +775,6 @@ declare namespace Realm {
              * matching objects.
              * If `state` is {@link SubscriptionsState.Complete}, the promise will be resolved immediately.
              * If `state` is {@link SubscriptionsState.Error}, the promise will be rejected immediately.
-            // TODO error if updated while syncing
              *
              * @returns A promise which is resolved when synchronization is complete, or is
              * rejected if there is an error during synchronisation.
@@ -790,9 +782,7 @@ declare namespace Realm {
             waitForSynchronization: () => Promise<void>;
 
             /**
-             * Update the subscription set, returning an updated version of it. Note that
-             * subscription sets are immutable, i.e. the original subscription set will be
-             * unchanged.
+             * Update the subscription set and change this instance to point to the updated subscription set.
              *
              * Adding or removing subscriptions from the set set must be performed inside
              * the callback argument of this method, and the mutating methods must be called on
@@ -803,10 +793,10 @@ declare namespace Realm {
              *
              * Example:
              * ```
-             * const newSubs = subs.update(mutableSubs => {
+             * subs.update(mutableSubs => {
              *   mutableSubs.add(realm.objects("Cat").filtered("age > 10"));
              * });
-             * await newSubs.waitForSynchronization();
+             * await subs.waitForSynchronization();
              * // `realm` will now return the expected results based on the updated subscriptions
              * ```
              *
@@ -821,7 +811,7 @@ declare namespace Realm {
         /**
          * The mutable version of a given subscription set. The mutable methods of a given
          * {@link Subscriptions} instance can only be accessed from inside the {@link update} callback
-         * (see {@link Subscriptions.update}), and will throw if accessed outside of this scope.
+         * (see {@link Subscriptions.update}).
          */
         interface MutableSubscriptions extends BaseSubscriptions {
             new(): never; // This type isn't supposed to be constructed manually by end users.
@@ -836,7 +826,6 @@ declare namespace Realm {
              * @param options An optional `SubscriptionOptions` object containing options to
              * use when adding this subscription (e.g. to give the subscription a name).
              * @returns A `Subscription` instance for the new subscription.
-             * @throws If called outside a {@link Subscriptions.update} callback.
              */
             add: <T>(query: Realm.Results<T & Realm.Object>, options?: SubscriptionOptions) => Subscription;
 
@@ -845,7 +834,6 @@ declare namespace Realm {
              *
              * @param query A `Realm.Results` instance representing the query to remove a subscription to.
              * @returns `true` if the subscription was removed, `false` if it was not found.
-             * @throws If called outside a {@link Subscriptions.update} callback.
              */
             remove: <T>(query: Realm.Results<T & Realm.Object>) => boolean;
 
@@ -854,7 +842,6 @@ declare namespace Realm {
              *
              * @param name The name of the subscription to remove.
              * @returns `true` if the subscription was removed, `false` if it was not found.
-             * @throws If called outside a {@link Subscriptions.update} callback.
              */
             removeByName: (name: string) => boolean;
 
@@ -863,7 +850,6 @@ declare namespace Realm {
              *
              * @param subscription The `Subscription` instance to remove.
              * @returns `true` if the subscription was removed, `false` if it was not found.
-             * @throws If called outside a {@link Subscriptions.update} callback.
              */
             removeSubscription: (subscription: Subscription) => boolean;
 
@@ -872,7 +858,6 @@ declare namespace Realm {
              *
              * @param objectType The string name of the object type to remove all subscriptions for.
              * @returns The number of subscriptions removed.
-             * @throws If called outside a {@link Subscriptions.update} callback.
              */
             removeByObjectType: (objectType: string) => number;
 
@@ -880,7 +865,6 @@ declare namespace Realm {
              * Removes all subscriptions from the subscription set.
              *
              * @returns The number of subscriptions removed.
-             * @throws If called outside a {@link Subscriptions.update} callback.
              */
             removeAll: () => number;
         }

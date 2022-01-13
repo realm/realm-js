@@ -80,6 +80,3 @@ declare module "*.json" {
   const value: unknown;
   export = value;
 }
-
-// declare function setTimeout(callback: (args: void) => void, ms?: number): NodeJS.Timeout;
-// declare function setInterval(callback: (args: void) => void, ms?: number): NodeJS.Timer;

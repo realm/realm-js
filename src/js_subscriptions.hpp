@@ -27,6 +27,10 @@
 namespace realm {
 namespace js {
 
+
+/**
+ * @brief Wrapper class for a single flexible sync subscrpition
+ */
 template <typename T>
 class Subscription : public realm::sync::Subscription {
 public:
@@ -36,6 +40,9 @@ public:
     }
 };
 
+/**
+ * @brief Class representing a single flexible sync subscrpition
+ */
 template <typename T>
 class SubscriptionClass : public ClassDefinition<T, Subscription<T>> {
     using ContextType = typename T::Context;
@@ -163,6 +170,9 @@ void SubscriptionClass<T>::get_query_string(ContextType ctx, ObjectType this_obj
     return_value.set(std::string{sub->query_string()});
 }
 
+/**
+ * @brief Wrapper class for a flexible sync subscription set
+ */
 template <typename T>
 class Subscriptions : public realm::sync::SubscriptionSet {
 public:
@@ -172,6 +182,9 @@ public:
     }
 };
 
+/**
+ * @brief Class representing a set of flexible sync subcriptions
+ */
 template <typename T>
 class SubscriptionsClass : public ClassDefinition<T, Subscriptions<T>> {
     using ContextType = typename T::Context;
@@ -238,7 +251,7 @@ void SubscriptionsClass<T>::get_empty(ContextType ctx, ObjectType this_object, R
 }
 
 /**
- * @brief Get the error string for the subscription set if any
+ * @brief Get the error string for the subscription set, if any
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
@@ -264,6 +277,7 @@ void SubscriptionsClass<T>::get_error(ContextType ctx, ObjectType this_object, R
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
  * @param return_value \ref ReturnValue wrapping a string representing the current state
+ * @exception std::runtime_error if an unknown state is encountered
  */
 template <typename T>
 void SubscriptionsClass<T>::get_state(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
@@ -363,6 +377,7 @@ void SubscriptionsClass<T>::find_by_name(ContextType ctx, ObjectType this_object
  * @param object \ref ObjectType wrapping the SubscriptionSet
  * @param args \ref A single argument containing the query to find, represented as a Results instance
  * @param return_value \ref ReturnValue wrapping a Subscription if found, null if not
+ * @exception std::runtime_error if the argument is not a Results instance
  */
 template <typename T>
 void SubscriptionsClass<T>::find(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
@@ -391,7 +406,8 @@ void SubscriptionsClass<T>::find(ContextType ctx, ObjectType this_object, Argume
 
 /**
  * @brief Invoke a callback when the subscription set's state becomes "Complete". Will invoke it
- * immediately if the state is already "Complete".
+ * immediately if the state is already "Complete". Will return an error to the callback if the
+ * state is or becomes "Error", or if it is called on before creatting any subscriptions.
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
@@ -435,7 +451,7 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
             .get_async(state_change_func);
     }
     catch (KeyNotFound const& ex) {
-        // waiting on https://github.com/realm/realm-core/issues/5165
+        // Waiting on https://github.com/realm/realm-core/issues/5165 to remove this
         auto error = Object::create_obj(
             ctx, {{"message", Value::from_string(ctx, "`waitForSynchronisation` cannot be called before creating "
                                                       "a subscription set using `update`")}});
@@ -444,6 +460,9 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
     }
 }
 
+/**
+ * @brief Class wrapping a mutable subscription set.
+ */
 template <typename T>
 class MutableSubscriptions : public realm::sync::MutableSubscriptionSet {
 public:
@@ -453,10 +472,13 @@ public:
     }
 };
 
-// The mutable version of a given subscription set. This is not modelled as an
-// inheritance relationship in JS (using the third ClassDefinition template arg
-// to set the parent), because we are not exposing all the methods of Subscriptions
-// so it is not stricly inheritance
+/**
+ * @brief Class representing mutable version of a given subscription set.
+ *
+ * @note This is not modelled as an inheritance relationship in JS (using the third
+ * ClassDefinition template arg to set the parent), because we are not exposing all
+ * the methods of Subscriptions, so it is not stricly inheritance.
+ */
 template <typename T>
 class MutableSubscriptionsClass : public ClassDefinition<T, MutableSubscriptions<T>> {
     using ContextType = typename T::Context;
@@ -510,14 +532,14 @@ typename T::Object MutableSubscriptionsClass<T>::create_instance(ContextType ctx
 }
 
 /**
- * @brief Perform updates to the subscription set in a callback, returning the updated subscription set
+ * @brief Perform updates to the subscription set in a callback, then update this instance
+ * to point to the updated subscription set.
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
  * @param args \ref A single argument containing a callback which receives a mutable version of
  * the subscription set as its argument, and which updates the subscription set as required
- * @param return_value \ref ReturnValue wrapping a new Subscriptions instance containing the updated
- * subscription set
+ * @param return_value \ref None
  */
 template <typename T>
 void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Arguments& args,
@@ -538,7 +560,6 @@ void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Argu
         // Create a mutable copy of this instance (which copies the original and upgrades
         // its internal transaction to a write transaction, so we can make updates to it -
         // SubscriptionSets are otherwise immutable)
-        // auto mutable_subs = subs->make_mutable_copy();
         auto mutable_subs_js = MutableSubscriptionsClass<T>::create_instance(ctx, subs->make_mutable_copy());
         auto mutable_subs = get_internal<T, MutableSubscriptionsClass<T>>(ctx, mutable_subs_js);
 
@@ -552,7 +573,7 @@ void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Argu
         // with the changes we made
         auto new_sub_set = std::move(*mutable_subs).commit();
 
-        // Update this SubscriptionsClass instance to point to the new version
+        // Update this SubscriptionsClass instance to point to the updated version
         set_internal<T, SubscriptionsClass<T>>(ctx, this_object, new Subscriptions<T>(std::move(new_sub_set)));
     }
     catch (...) {
@@ -618,8 +639,7 @@ void MutableSubscriptionsClass<T>::add(ContextType ctx, ObjectType this_object, 
                                                 existing_sub_it->object_class_name() == results->get_object_type())) {
             throw std::runtime_error(
                 util::format("A subscription with the name '%1' already exists but has a different query. If you "
-                             "meant to update "
-                             "it, remove `throwOnUpdate: true` from the subscription options.",
+                             "meant to update it, remove `throwOnUpdate: true` from the subscription options.",
                              name));
         }
     }

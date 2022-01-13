@@ -174,7 +174,7 @@ Debugging and working with the unit tests in an iterative mannner is done the fo
 
 If you want to modify the Javascript in an iterative manner or enable break points you need to do it on the files located in `tests/ReactTestApp/node_modules/realm-tests`. These files are a copy of the original files located in `tests/js` so any changes must manually be copied back. The reason for this is that the React Native Metro Bundler doesn't support symlinks.
 
-The Javascript tests are run twice: once directly in the simulator, and once in Chrome, talking to the simulator via the RPC bridge used for Chrome debugging. When running the Chrome tests you can open the Chrome Developer Tools on the tab that they open to debug the tests themselves. The JS engine running inside the simulator (for bbh the RPC server and the tests themselves in the non-Chrome test suite) can be debugged using the Safari developer tools.
+The Javascript tests are run twice: once directly in the simulator, and once in Chrome, talking to the simulator via the RPC bridge used for Chrome debugging. When running the Chrome tests you can open the Chrome Developer Tools on the tab that they open to debug the tests themselves. The JS engine running inside the simulator (for both the RPC server and the tests themselves in the non-Chrome test suite) can be debugged using the Safari developer tools.
 
 Note that it isn't possible to easily run a single unit test from Xcode. Instead you should disable the tests manually by modifying `tests/ReactTestApp/node_modules/realm-tests/index.js`.
 

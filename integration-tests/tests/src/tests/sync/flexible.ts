@@ -42,7 +42,7 @@ const realmConfig: SyncedConfiguration = {
 };
 
 // Typed as "false" to prevent committing with DEBUG enabled
-const DEBUG: false = false;
+const DEBUG: false = false as const;
 
 describe("Flexible sync", function () {
   function addPersonSubscription(realm: Realm, options: Realm.App.Sync.SubscriptionOptions | undefined = undefined) {

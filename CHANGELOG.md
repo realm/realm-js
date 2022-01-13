@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added beta support for flexible sync. See https://docs.?? for more information. Please report any issues with the beta through Github.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -20,6 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Removed `.dir-locals.el`. Please configure Emacs to use `clang-format` e.g. https://github.com/SavchenkoValeriy/emacs-clang-format-plus.
 * Enabled `strictNullChecks` for integration tests
+* Upgraded Realm Core from v11.7.0 to v11.8.0.
 
 10.11.0 Release notes (2021-12-21)
 =============================================================

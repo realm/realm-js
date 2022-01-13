@@ -1455,10 +1455,13 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
 
     // Perform the schema update
     realm->update_schema(parsed_schema, realm->schema_version() + 1, nullptr, nullptr, true);
+    exception
 }
 
 /**
- * TODO
+ * @brief Get the latest set of flexible sync subscriptions.
+ *
+ * @exception std::runtime_error if flexible sync is not enabled
  */
 template <typename T>
 void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, Arguments& args,
