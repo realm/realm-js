@@ -83,7 +83,7 @@ Currently the following information is reported:
 
 ## Known issues
 
-* The Chrome Debugger does not support `Realm.Set`, `Realm.Dictionary`, `Realm.Mixed` and `Realm.UUID`. Please consider to try out our [Hermes releases](https://github.com/realm/realm-js/issues/3940) and use [Flipper](https://fbflipper.com/) as debugger. 
+* The Chrome Debugger does not support `Realm.Set`, `Realm.Dictionary`, `Realm.Mixed` and `Realm.UUID`. Please consider trying out our [Hermes releases](https://github.com/realm/realm-js/issues/3940) and using [Flipper](https://fbflipper.com/) as debugger. 
 
 ## Code of Conduct
 
