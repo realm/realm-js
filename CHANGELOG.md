@@ -13,7 +13,8 @@
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Fixed version numbering for previous release in `CHANGELOG` (previously stated `12.12.0` instead of `12.12.0-beta.0`)
+* Fixed version numbering for previous release in `CHANGELOG` (previously stated `12.12.0` instead of `12.12.0-beta.0`).
+* Flexible sync integration test changes.
 
 10.12.0-beta.0 Release notes (2022-1-13)
 =============================================================
