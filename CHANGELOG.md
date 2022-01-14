@@ -1,4 +1,21 @@
-10.12.0 Release notes (2022-1-13)
+10.12.0-beta.1 Release notes (2022-1-14)
+=============================================================
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Fixed version numbering for previous release in `CHANGELOG` (previously stated `12.12.0` instead of `12.12.0-beta.0`)
+
+10.12.0-beta.0 Release notes (2022-1-13)
 =============================================================
 ### Enhancements
 * Support arithmetic operations (+, -, *, /) in queries. Operands can be properties and/or constants of numeric types (`int`, `float`, `double` or `Decimal128`). You can now say something like `(age + 5) * 2 > child.age`.
