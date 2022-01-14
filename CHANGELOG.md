@@ -18,6 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgraded Realm Core from v11.7.0 to v11.8.0. ([#4207](https://github.com/realm/realm-js/issues/4207))
 * Removed `.dir-locals.el`. Please configure Emacs to use `clang-format` e.g. https://github.com/SavchenkoValeriy/emacs-clang-format-plus.
 * Enabled `strictNullChecks` for integration tests
+* Updated release instructions
 
 10.11.0 Release notes (2021-12-21)
 =============================================================
