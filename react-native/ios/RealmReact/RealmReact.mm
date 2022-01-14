@@ -22,6 +22,7 @@
 #import <realm-js-ios/jsi_init.h>
 
 #import <React/RCTBridge+Private.h>
+#import <React/RCTInvalidating.h>
 #import <jsi/jsi.h>
 
 #import <objc/runtime.h>
@@ -35,7 +36,7 @@
 - (void *)runtime;
 @end
 
-@interface RealmReact () <RCTBridgeModule>
+@interface RealmReact () <RCTBridgeModule, RCTInvalidating>
 @end
 
 @implementation RealmReact {
@@ -103,10 +104,6 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
-
-    static __weak RealmReact *s_currentModule = nil;
-    [s_currentModule invalidate];
-    s_currentModule = self;
 
     if (objc_lookUpClass("RCTWebSocketExecutor") && [bridge executorClass] == objc_lookUpClass("RCTWebSocketExecutor")) {
         // Skip native initialization when in legacy Chrome debugging mode

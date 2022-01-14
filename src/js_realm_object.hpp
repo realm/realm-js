@@ -41,17 +41,96 @@ template <typename>
 class NativeAccessor;
 
 template <typename T>
+class NotificationHandle;
+
+template <typename T>
+struct NotificationBucket {
+    using IdType = unsigned long long;
+    using ProtectedFunction = Protected<typename T::Function>;
+    using NotificationHandle = NotificationHandle<T>;
+    
+    static inline std::map<IdType, std::vector<std::pair<ProtectedFunction, NotificationToken>>> s_tokens;
+
+    static void emplace(NotificationHandle &handle, ProtectedFunction &&callback, NotificationToken &&token) {
+        if (handle) {
+            s_tokens[handle].emplace_back(std::move(callback), std::move(token));
+        } else {
+            throw std::runtime_error("Cannot emplace notifications using an unset handle");
+        }
+    }
+    
+    static void clear() {
+        s_tokens.clear();
+    }
+    
+    static void erase(NotificationHandle &handle) {
+        if (handle) {
+            s_tokens.erase(handle);
+        }
+    }
+    
+    static void erase(NotificationHandle &handle, ProtectedFunction &&callback) {
+        if (handle) {
+            auto& tokens = s_tokens[handle];
+            auto compare = [&callback](auto&& token) {
+                return typename ProtectedFunction::Comparator()(token.first, callback);
+            };
+            tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
+        } else {
+            throw std::runtime_error("Cannot erase notifications using an unset handle");
+        }
+    }
+};
+
+template <typename T>
+class NotificationHandle {
+    using NotificationBucket = NotificationBucket<T>;
+    using IdType = typename NotificationBucket::IdType;
+    
+    static inline IdType s_next_id = 0;
+    std::optional<IdType> m_id;
+
+public:
+    NotificationHandle() {
+        m_id = s_next_id;
+        if (s_next_id == std::numeric_limits<IdType>::max()) {
+            throw std::overflow_error("No more NotificationHandle ids");
+        }
+        s_next_id += 1;
+    };
+    
+    ~NotificationHandle() {
+        NotificationBucket::erase(*this);
+    }
+    
+    operator IdType() const {
+        return *m_id;
+    };
+    
+    operator bool() const {
+        return m_id.has_value();
+    };
+    
+    NotificationHandle(NotificationHandle &&other) {
+        m_id = std::move(other.m_id);
+        other.m_id.reset();
+    }
+};
+
+
+
+template <typename T>
 class RealmObject : public realm::Object {
 public:
     RealmObject(RealmObject const& obj)
         : realm::Object(obj){};
     RealmObject(realm::Object const& obj)
         : realm::Object(obj){};
-    RealmObject(RealmObject&&) = default;
+    RealmObject(RealmObject &&other) = default;
     RealmObject& operator=(RealmObject&&) = default;
     RealmObject& operator=(RealmObject const&) = default;
-
-    std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
+    
+    NotificationHandle<T> m_notification_handle;
 };
 
 template <typename T>
@@ -66,6 +145,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+    using NotificationBucket = NotificationBucket<T>;
 
     static ObjectType create_instance(ContextType, realm::js::RealmObject<T>);
 
@@ -150,11 +230,10 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
         if (!delegate || !delegate->m_constructors.count(name)) {
             return create_instance_by_schema<T, RealmObjectClass<T>>(ctx, schema, internal);
         }
-
-        FunctionType constructor = delegate->m_constructors.at(name);
-        auto object = create_instance_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, internal);
-
-        return object;
+        else {
+            FunctionType constructor = delegate->m_constructors.at(name);
+            return create_instance_by_schema<T, RealmObjectClass<T>>(ctx, constructor, schema, internal);
+        }
     }
     catch (const std::exception& e) {
         delete internal;
@@ -403,7 +482,8 @@ void RealmObjectClass<T>::add_listener(ContextType ctx, ObjectType this_object, 
         ValueType arguments[]{static_cast<ObjectType>(protected_this), object};
         Function::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
-    realm_object->m_notification_tokens.emplace_back(protected_callback, std::move(token));
+    NotificationBucket::emplace(realm_object->m_notification_handle, std::move(protected_callback), std::move(token));
+    //realm_object->m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
 
 template <typename T>
@@ -413,18 +493,21 @@ void RealmObjectClass<T>::remove_listener(ContextType ctx, ObjectType this_objec
     args.validate_maximum(1);
 
     auto callback = Value::validated_to_function(ctx, args[0]);
-    auto protected_function = Protected<FunctionType>(ctx, callback);
+    auto protected_callback = Protected<FunctionType>(ctx, callback);
 
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, this_object);
     if (!realm_object) {
         throw std::runtime_error("Invalid 'this' object");
     }
 
+    /*
     auto& tokens = realm_object->m_notification_tokens;
     auto compare = [&](auto&& token) {
         return typename Protected<FunctionType>::Comparator()(token.first, protected_function);
     };
     tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
+    */
+    NotificationBucket::erase(realm_object->m_notification_handle, std::move(protected_callback));
 }
 
 template <typename T>
@@ -437,8 +520,9 @@ void RealmObjectClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_
     if (!realm_object) {
         throw std::runtime_error("Invalid 'this' object");
     }
-
-    realm_object->m_notification_tokens.clear();
+    
+    NotificationBucket::erase(realm_object->m_notification_handle);
+    // realm_object->m_notification_tokens.clear();
 }
 
 template <typename T>
