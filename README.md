@@ -28,16 +28,22 @@ The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https:/
 
 To get started with Realm JS for React Native, we have provided a simple template app.
 
+To create a new app with Expo:
+
+```
+npx create-react-native-app --template with-realm ExpoExample
+```
+
 To create a new app from the TypeScript template:
 
 ```
-npx react-native init TsExample --template react-native-template-realm-ts
+npx react-native init TsExample --template @realm/react-native-template-ts
 ```
 
-or to create a new app from the JavaScript template:
+To create a new app from the JavaScript template:
 
 ```
-npx react-native init JsExample --template react-native-template-realm-js
+npx react-native init JsExample --template @realm/react-native-template-js
 ```
 
 ## Getting Help
@@ -83,7 +89,7 @@ Currently the following information is reported:
 
 ## Known issues
 
-* The Chrome Debugger does not support `Realm.Set`, `Realm.Dictionary`, `Realm.Mixed` and `Realm.UUID`. Please consider trying out our [Hermes releases](https://github.com/realm/realm-js/issues/3940) and using [Flipper](https://fbflipper.com/) as debugger. 
+* The Chrome Debugger does not support `Realm.Set`, `Realm.Dictionary`, `Realm.Mixed` and `Realm.UUID`. Please consider trying out our [Hermes releases](https://github.com/realm/realm-js/issues/3940) and using [Flipper](https://fbflipper.com/) as debugger.
 
 ## Code of Conduct
 
