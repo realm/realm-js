@@ -1035,6 +1035,9 @@ describe("Flexible sync", function () {
 
           const { realm } = await openRealm(realmConfig, this.user, this.nonce);
           expect(realm.getSubscriptions().snapshot()).to.have.length(1);
+
+          await realm.getSubscriptions().waitForSynchronization();
+          expect(realm.getSubscriptions().state).to.equal("complete");
         });
       });
     });
