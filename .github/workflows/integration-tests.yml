@@ -221,16 +221,6 @@ jobs:
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           RETRIES: 5
           RETRY_DELAY: 300000 # 5 min
-      - name: Run tests (${{matrix.platform.name}} / Chrome Debugging)
-        if: ${{ false }}
-        run: npm run test:${{matrix.platform.name}}:chrome --prefix integration-tests/environments/react-native
-        env:
-          MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-          MOCHA_REMOTE_EXIT_ON_ERROR: true
-          HEADLESS_DEBUGGER: true
-          RETRIES: 5
-          RETRY_DELAY: 300000 # 5 min
   react-native-android:
     name: React Native on Android (${{ matrix.type }} using ${{ matrix.engine }})
     runs-on: macos-latest
@@ -307,17 +297,4 @@ jobs:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
-          SPAWN_LOGCAT: true
-      - name: Run tests (Android / Chrome Debugging)
-        if: ${{ false }}
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          target: google_apis
-          script: npm run test:android:chrome --prefix integration-tests/environments/react-native
-        env:
-          MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-          MOCHA_REMOTE_EXIT_ON_ERROR: true
-          HEADLESS_DEBUGGER: true
           SPAWN_LOGCAT: true
