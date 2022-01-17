@@ -37,6 +37,10 @@ interface Global extends NodeJS.Global {
   path: path;
   environment: Environment;
   require: Require;
+  /**
+   * The environment might expose a method to suggest a garbage collection.
+   */
+  gc?: () => void;
 }
 
 declare const global: Global;
