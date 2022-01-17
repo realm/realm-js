@@ -75,6 +75,23 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet`. ([#4298](https://github.com/realm/realm-js/pull/4298))
 * Submitting [analytics](https://github.com/realm/realm-js/blob/master/README.md#analytics) as a postinstall script.
 
+10.20.0-beta.1 Release notes (2022-1-27)
+=============================================================
+### Notes
+Based on Realm JS v10.12.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.11.0).
+
+### Breaking change
+* Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
+
+### Enhancements
+* None.
+
+### Fixed
+* Fixed "JSCRuntime destroyed with a dangling API object" assertion when reloading an app in debug mode while running with Hermes engine disabled. ([#4115](https://github.com/realm/realm-js/issues/4115), since 10.20.0-alpha.0)
+
+### Internal
+* Remove the previous implementation to the JavaScriptCore engine (in `src/jsc`).
+
 10.12.0 Release notes (2022-1-24)
 =============================================================
 ### Notes
@@ -116,7 +133,7 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 
 10.20.0-beta.0 Release notes (2021-12-21)
 =============================================================
-
+### Notes
 Based on Realm JS v10.11.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.10.1).
 
 ### Enhancements
@@ -179,6 +196,7 @@ const config = {
 
 10.20.0-alpha.2 Release notes (2021-11-25)
 =============================================================
+### Notes
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
 NOTE: This is an early (alpha) release with Hermes/JSI support: We expect crashes and bugs.
 
@@ -307,6 +325,7 @@ Based on Realm JS v10.10.1: See changelog below for details on enhancements and 
 
 10.20.0-alpha.1 Release notes (2021-9-1)
 =============================================================
+### Notes
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
 NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
 
@@ -342,6 +361,7 @@ Based on Realm JS v10.8.0: See changelog below for details on enhancements and f
 
 10.20.0-alpha.0 Release notes (2021-9-1)
 =============================================================
+### Notes
 NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
 NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
 
