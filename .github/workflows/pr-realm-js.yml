@@ -8,6 +8,7 @@ jobs:
     env:
       npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
       REALM_DISABLE_SYNC_TESTS: true
+      REALM_DISABLE_ANALYTICS: 1
     strategy:
       #fail-fast: false
       matrix:
@@ -119,7 +120,7 @@ jobs:
       # build the c++ library for Android
       - name: Build Android
         if: ${{ (matrix.variant.os == 'android') }}
-        run: npm run build:android
+        run: npm run build:android -- --arch=${{matrix.variant.arch}}
 
       - name: Install the node dependencies in the test folder
         working-directory: ./tests
@@ -224,6 +225,97 @@ jobs:
           privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
           appsPath: ${{ github.workspace }}/Tests/TestApps
           differentiator: realm js
+
+  react-native-android:
+    name: React Native on Android (${{ matrix.type }})
+    needs: [build-and-test]
+    env:
+      MOCHA_REMOTE_TIMEOUT: 10000
+      REALM_DISABLE_ANALYTICS: 1
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        #TODO: Reactivate debug when builds are optimized
+        #type: [Release, Debug]
+        type: [Release]
+    timeout-minutes: 60
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+
+      - name: Setup node version
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Setup NPM version
+        run: npm install -g npm@7
+
+      - name: Get NPM cache directory
+        id: npm-cache-dir
+        run: echo "::set-output name=dir::$(npm config get cache)"
+
+      - name: Restore NPM cache
+        id: npm-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Setup tools
+      - name: Install tools
+        run: brew install watchman
+
+      # download prebuilds
+      - name: Download prebuilds
+        uses: actions/download-artifact@v2
+        with:
+          name: realm-js-prebuilds
+
+      # Install node dependencies
+      - name: Install prebuilds
+        if: steps.cache-prebuild.outputs.cache-hit == 'true'
+        run: npm ci
+
+      # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
+      - name: Bootstrap lerna sub-packages
+        run: npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
+
+      # Run the tests
+      - name: Run tests (Android / Native)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          # ndk: 21.0.6113669
+          # cmake: 3.18.1
+          target: google_apis
+          script: npm run test:android --prefix integration-tests/environments/react-native
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+          MOCHA_REMOTE_EXIT_ON_ERROR: true
+          SPAWN_LOGCAT: true
+
+      - name: Run tests (Android / Chrome Debugging)
+        if: ${{ false }}
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: google_apis
+          script: npm run test:android:chrome --prefix integration-tests/environments/react-native
+        env:
+          MOCHA_REMOTE_CONTEXT: missingServer
+          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+          MOCHA_REMOTE_EXIT_ON_ERROR: true
+          HEADLESS_DEBUGGER: true
+          SPAWN_LOGCAT: true
 
   cleanup-realm-js:
     runs-on: ubuntu-latest
