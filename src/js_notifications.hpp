@@ -45,13 +45,13 @@ class NotificationHandle;
 template <typename T>
 class NotificationBucket {
     using ProtectedFunction = Protected<typename T::Function>;
-
-    static inline std::map<IdType, std::vector<std::pair<ProtectedFunction, NotificationToken>>> s_tokens;
+    using TokensMap = std::map<IdType, std::vector<std::pair<ProtectedFunction, NotificationToken>>>;
 
 public:
     static void emplace(NotificationHandle<T>& handle, ProtectedFunction&& callback, NotificationToken&& token)
     {
         if (handle) {
+            auto& s_tokens = get_tokens();
             s_tokens[handle].emplace_back(std::move(callback), std::move(token));
         }
         else {
@@ -61,12 +61,14 @@ public:
 
     static void clear()
     {
+        auto& s_tokens = get_tokens();
         s_tokens.clear();
     }
 
     static void erase(NotificationHandle<T>& handle)
     {
         if (handle) {
+            auto& s_tokens = get_tokens();
             s_tokens.erase(handle);
         }
     }
@@ -74,6 +76,7 @@ public:
     static void erase(NotificationHandle<T>& handle, ProtectedFunction&& callback)
     {
         if (handle) {
+            auto& s_tokens = get_tokens();
             auto& tokens = s_tokens[handle];
             auto compare = [&callback](auto&& token) {
                 return typename ProtectedFunction::Comparator()(token.first, callback);
@@ -83,6 +86,20 @@ public:
         else {
             throw std::runtime_error("Cannot erase notifications using an unset handle");
         }
+    }
+
+    /**
+     * @brief Get the static tokens object.
+     *
+     * @note We cannot use a simple static object on the namespace, because we are referencing this across multiple
+     * translation units and this could lead to code using this before it's initialized.
+     *
+     * @return auto& A reference to the static map of tokens.
+     */
+    inline static TokensMap& get_tokens()
+    {
+        static TokensMap s_tokens;
+        return s_tokens;
     }
 };
 
