@@ -12,6 +12,7 @@ vendor/
 
 # The sub-packages have their own linting
 /integration-tests/
+/install-tests/
 /packages/
 /examples/
 /tests/ReactTestApp/
