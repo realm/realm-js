@@ -1156,7 +1156,6 @@ module.exports = {
     /*
       Test 1:  check whether calls to `writeCopyTo` are allowed at the right times
     */
-
     let user1 = await app.logIn(credentials1);
     const config1 = {
       sync: {
@@ -1218,7 +1217,6 @@ module.exports = {
       Test 2:  check that a copied realm can be opened by another user, and that
         the contents of the original realm and the copy are as expected
     */
-
     // log in a new user, open the realm copy we created just above
     const user2 = await app.logIn(credentials2);
     const config2 = {
@@ -1278,7 +1276,6 @@ module.exports = {
         partition key.  We expect it to fail because of the mismatch
         in partition keys
     */
-
     const user3 = await app.logIn(credentials3);
     const otherPartition = Utils.genPartition();
     const config3 = {
@@ -1298,6 +1295,96 @@ module.exports = {
 
     TestCase.assertUndefined(realm3);
 
+    realm1.close();
+  },
+
+  /*
+    Test that we can create encrypted copies of a realm, and that only the
+    correct encryption key will allow us to re-open that copy
+  */
+  testSyncWriteCopyToEncrypted: async function () {
+    let app = new Realm.App(appConfig);
+    const credentials1 = await Utils.getRegisteredEmailPassCredentials(app);
+    const credentials2 = await Utils.getRegisteredEmailPassCredentials(app);
+    const partition = Utils.genPartition();
+
+    /*
+      Test 1:  assert that we can create an encrypted copy of a realm and
+        re-open it with a valid key
+    */
+    let user1 = await app.logIn(credentials1);
+    const config1 = {
+      sync: {
+        user: user1,
+        partitionValue: partition,
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+      },
+      schema: [schemas.PersonForSync, schemas.DogForSync],
+    };
+
+    const realm1 = await Realm.open(config1);
+    realm1.write(() => {
+      for (let i = 0; i < 25; i++) {
+        realm1.create("Person", {
+          _id: new ObjectId(),
+          age: i,
+          firstName: "John",
+          lastName: "Smith",
+        });
+      }
+    });
+
+    // sync changes
+    await realm1.syncSession.uploadAllLocalChanges();
+    await realm1.syncSession.downloadAllServerChanges();
+    realm1.syncSession.pause();
+
+    // create encrypted copy
+    const encryptedCopyName = realm1.path + ".copy-encrypted.realm";
+    var encryptionKey = new Int8Array(64);
+    for (let i = 0; i < 64; i++) {
+      encryptionKey[i] = 1;
+    }
+    realm1.writeCopyTo(encryptedCopyName, encryptionKey);
+    await user1.logOut();
+
+    const user2 = await app.logIn(credentials2);
+    let encryptedCopyConfig = {
+      sync: {
+        user: user2,
+        partitionValue: partition,
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+      },
+      path: encryptedCopyName,
+      encryptionKey: encryptionKey,
+      schema: [schemas.PersonForSync, schemas.DogForSync],
+    };
+
+    let encryptedRealmCopy = new Realm(encryptedCopyConfig);
+    TestCase.assertEqual(25, encryptedRealmCopy.objects("Person").length);
+    encryptedRealmCopy.close();
+
+    /*
+      Test2:  check that we cannot open an encrypted realm copy with an
+        invalid encryption key
+    */
+    encryptionKey[0] = 0;
+    encryptedCopyConfig = {
+      sync: {
+        user: user2,
+        partitionValue: partition,
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+      },
+      path: encryptedCopyName,
+      encryptionKey: encryptionKey,
+      schema: [schemas.PersonForSync, schemas.DogForSync],
+    };
+
+    TestCase.assertThrows(() => {
+      encryptedRealmCopy = new Realm(encryptedCopyConfig);
+    }, "Opening realm with wrong encryption key should fail");
+
+    encryptedRealmCopy.close();
     realm1.close();
   },
 };

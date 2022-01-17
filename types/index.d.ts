@@ -832,7 +832,10 @@ declare class Realm {
     compact(): boolean;
 
     /**
-     * Write a copy to destination path
+     * Write a copy of a realm at the destination path.  Any user will be able to open and use
+     * the new copy.  Copying a synced realm will create a snapshot of the realm that can be
+     * opened to resume syncing from the server.  Synced realms must be fully synchronized with
+     * the server before calling `writeCopyTo`.
      * @param path destination path
      * @param encryptionKey encryption key to use
      * @returns void
