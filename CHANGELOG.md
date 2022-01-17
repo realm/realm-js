@@ -7,7 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* None.
+* Fixed "JSCRuntime destroyed with a dangling API object" assertion when reloading an app in debug mode while running with Hermes engine disabled. ([#4115](https://github.com/realm/realm-js/issues/4115), since 10.20.0-alpha.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
