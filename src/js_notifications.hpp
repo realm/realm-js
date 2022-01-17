@@ -45,12 +45,11 @@ class NotificationHandle;
 template <typename T>
 class NotificationBucket {
     using ProtectedFunction = Protected<typename T::Function>;
-    using NotificationHandle = NotificationHandle<T>;
 
     static inline std::map<IdType, std::vector<std::pair<ProtectedFunction, NotificationToken>>> s_tokens;
 
 public:
-    static void emplace(NotificationHandle& handle, ProtectedFunction&& callback, NotificationToken&& token)
+    static void emplace(NotificationHandle<T>& handle, ProtectedFunction&& callback, NotificationToken&& token)
     {
         if (handle) {
             s_tokens[handle].emplace_back(std::move(callback), std::move(token));
@@ -65,14 +64,14 @@ public:
         s_tokens.clear();
     }
 
-    static void erase(NotificationHandle& handle)
+    static void erase(NotificationHandle<T>& handle)
     {
         if (handle) {
             s_tokens.erase(handle);
         }
     }
 
-    static void erase(NotificationHandle& handle, ProtectedFunction&& callback)
+    static void erase(NotificationHandle<T>& handle, ProtectedFunction&& callback)
     {
         if (handle) {
             auto& tokens = s_tokens[handle];
@@ -95,8 +94,6 @@ public:
  */
 template <typename T>
 class NotificationHandle {
-    using NotificationBucket = NotificationBucket<T>;
-
     static inline IdType s_next_id = 0;
     std::optional<IdType> m_id;
 
@@ -120,7 +117,7 @@ public:
      */
     ~NotificationHandle()
     {
-        NotificationBucket::erase(*this);
+        NotificationBucket<T>::erase(*this);
     }
 
     operator IdType() const
