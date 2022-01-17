@@ -22,7 +22,7 @@ import fs from "fs";
 import http from "http";
 import chalk from "chalk";
 
-import { AppImporter } from "./AppImporter";
+import { AppImporter, Credentials } from "./AppImporter";
 import { AppImportServer } from "./AppImportServer";
 
 /* eslint-disable no-console */
@@ -92,6 +92,36 @@ function resolveAppTemplates(paths: string[]): Record<string, string> {
   );
 }
 
+const DEFAULTS = {
+  baseUrl: process.env.REALM_BASE_URL || "http://localhost:9090",
+  username: process.env.REALM_USERNAME || "unique_user@domain.com",
+  password: process.env.REALM_PASSWORD || "password",
+  publicKey: process.env.REALM_PUBLIC_KEY,
+  privateKey: process.env.REALM_PRIVATE_KEY,
+};
+
+type CredentialsOptions = {
+  username: string;
+  password: string;
+  publicKey: string | undefined;
+  privateKey: string | undefined;
+};
+
+/*
+ * Get the credentials from the runtime parameters
+ */
+function getCredentials({ username, password, publicKey, privateKey }: CredentialsOptions): Credentials {
+  if (typeof publicKey === "string" && typeof privateKey === "string") {
+    if (username !== DEFAULTS.username || password !== DEFAULTS.password) {
+      throw new Error("Provide either --username and --password or --api-key, not all three");
+    } else {
+      return { kind: "api-key", publicKey, privateKey };
+    }
+  } else {
+    return { kind: "username-password", username, password };
+  }
+}
+
 yargs
   .command(
     ["import <template-path>", "$0"],
@@ -106,18 +136,28 @@ yargs
         })
         .option("base-url", {
           type: "string",
-          default: "http://localhost:9090",
+          default: DEFAULTS.baseUrl,
           description: "Base url of the MongoDB Realm server to import the app into",
         })
         .option("username", {
           type: "string",
-          default: "unique_user@domain.com",
+          default: DEFAULTS.username,
           description: "Username of an adminstrative user",
         })
         .option("password", {
           type: "string",
-          default: "password",
+          default: DEFAULTS.password,
           description: "Password of an adminstrative user",
+        })
+        .option("public-api-key", {
+          type: "string",
+          default: DEFAULTS.publicKey,
+          description: "Public part of API key with adminstrative privileges",
+        })
+        .option("private-api-key", {
+          type: "string",
+          default: DEFAULTS.privateKey,
+          description: "Private part of API key with adminstrative privileges",
         })
         .option("config", {
           type: "string",
@@ -150,16 +190,18 @@ yargs
       "base-url": baseUrl,
       username,
       password,
+      "public-api-key": publicKey,
+      "private-api-key": privateKey,
       config: realmConfigPath,
       "apps-directory-path": appsDirectoryPath,
       "app-id-path": appIdPath,
       "app-id-port": appIdPort,
       "clean-up": cleanUp,
     }) => {
+      const credentials = getCredentials({ username, password, publicKey, privateKey });
       const importer = new AppImporter({
         baseUrl,
-        username,
-        password,
+        credentials,
         realmConfigPath,
         appsDirectoryPath,
         cleanUp,
@@ -243,6 +285,8 @@ yargs
       "base-url": baseUrl,
       username,
       password,
+      "public-api-key": publicKey,
+      "private-api-key": privateKey,
       config: realmConfigPath,
       "apps-directory-path": appsDirectoryPath,
       "clean-up": cleanUp,
@@ -250,11 +294,10 @@ yargs
       port,
     }) => {
       const appTemplates = resolveAppTemplates(templatePaths);
-
+      const credentials = getCredentials({ username, password, publicKey, privateKey });
       const importer = new AppImporter({
         baseUrl,
-        username,
-        password,
+        credentials,
         realmConfigPath,
         appsDirectoryPath,
         cleanUp,
