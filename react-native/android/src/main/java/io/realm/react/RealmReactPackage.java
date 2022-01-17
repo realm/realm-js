@@ -31,7 +31,6 @@ import java.util.Map;
 public class RealmReactPackage extends TurboReactPackage implements ReactPackage {
     @Override
     public NativeModule getModule(String name, final ReactApplicationContext reactContext) {
-        Log.d("RealmJS", "Asked to get module " + name);
         if (name.equals(RealmReactModule.NAME)) {
             return new RealmReactModule(reactContext);
         } else {
@@ -41,7 +40,6 @@ public class RealmReactPackage extends TurboReactPackage implements ReactPackage
 
     @Override
     public ReactModuleInfoProvider getReactModuleInfoProvider() {
-        Log.d("RealmJS", "Asked to getReactModuleInfoProvider");
         return new ReactModuleInfoProvider() {
             @Override
             public Map<String, ReactModuleInfo> getReactModuleInfos() {

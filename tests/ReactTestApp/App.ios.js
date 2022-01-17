@@ -25,6 +25,9 @@ export default class ReactTests extends React.Component {
   render() {
     return (
       <View style={styles.container}>
+        <Text>
+          Engine: {global.HermesInternal ? 'Hermes' : 'JavaScriptCore'}
+        </Text>
         <TouchableHighlight style={styles.button} onPress={tests.runTests}>
           <Text>Tap to Run Tests</Text>
         </TouchableHighlight>
