@@ -18,12 +18,12 @@
 import Realm from "realm";
 import { cachedCollection } from "../cachedCollection";
 
-class Object extends Realm.Object {
+class TestObject extends Realm.Object {
   id!: number;
   name!: string;
 
   static schema = {
-    name: "Object",
+    name: "TestObject",
     primaryKey: "id",
     properties: {
       id: "int",
@@ -33,11 +33,12 @@ class Object extends Realm.Object {
 }
 
 const realmConfig: Realm.Configuration = {
-  schema: [Object],
+  schema: [TestObject],
   path: "testArtifacts/cachedCollection",
   deleteRealmIfMigrationNeeded: true,
 };
 
+//TODO: It would be better not to have to rely on this, but at the moment I see no other alternatives
 function forceSynchronousNotifications(realm: Realm) {
   // Starting a transaction will force all listeners to advance to the latest version
   // and deliver notifications. We don't need to commit the transaction for this to work.
@@ -51,14 +52,38 @@ const testCollection = new Array(TEST_COLLECTION_SIZE)
   .fill(undefined)
   .map((_, index) => ({ id: index, name: `${index}` }));
 
-describe("cachedCollection", () => {
+const FILTER_ARGS: [string] = ["id > 10"];
+const SORTED_ARGS: [string, boolean] = ["id", true];
+
+enum QueryType {
+  filtered,
+  sorted,
+  normal,
+}
+
+describe.each`
+  queryTypeName | queryType
+  ${"normal"}   | ${QueryType.normal}
+  ${"sorted"}   | ${QueryType.sorted}
+  ${"filtered"} | ${QueryType.filtered}
+`("cachedCollection: $queryTypeName", ({ queryType }) => {
   const cacheMap = new Map();
   let realm = new Realm(realmConfig);
+  function getTestCollection(queryType: QueryType) {
+    switch (queryType) {
+      case QueryType.filtered:
+        return realm.objects(TestObject).filtered(...FILTER_ARGS);
+      case QueryType.sorted:
+        return realm.objects(TestObject).sorted(...SORTED_ARGS);
+      case QueryType.normal:
+        return realm.objects(TestObject);
+    }
+  }
 
   beforeEach(() => {
     realm = new Realm(realmConfig);
     realm.write(() => {
-      testCollection.forEach((object) => realm.create("Object", object));
+      testCollection.forEach((object) => realm.create(TestObject, object));
     });
   });
 
@@ -74,7 +99,7 @@ describe("cachedCollection", () => {
 
   it("caches accessed objects", async () => {
     const updateFunction = jest.fn();
-    const { collection, tearDown } = cachedCollection(realm.objects(Object), updateFunction, cacheMap);
+    const { collection, tearDown } = cachedCollection(getTestCollection(queryType), updateFunction, cacheMap);
 
     expect(cacheMap.size).toBe(0);
 
@@ -91,12 +116,12 @@ describe("cachedCollection", () => {
 
   it("updates on all changes", async () => {
     const updateFunction = jest.fn();
-    const { collection, tearDown } = cachedCollection(realm.objects(Object), updateFunction, cacheMap);
+    const { collection, tearDown } = cachedCollection(getTestCollection(queryType), updateFunction, cacheMap);
 
     expect(updateFunction).toBeCalledTimes(0);
 
     const newItem = realm.write(() => {
-      return realm.create(Object, { id: TEST_COLLECTION_SIZE + 1, name: "bob" });
+      return realm.create(TestObject, { id: TEST_COLLECTION_SIZE + 1, name: "bob" });
     });
 
     forceSynchronousNotifications(realm);
@@ -124,7 +149,7 @@ describe("cachedCollection", () => {
 
   it("removes items from the cache on deletion", async () => {
     const updateFunction = jest.fn();
-    const { collection, tearDown } = cachedCollection(realm.objects(Object), updateFunction, cacheMap);
+    const { collection, tearDown } = cachedCollection(getTestCollection(queryType), updateFunction, cacheMap);
 
     expect(cacheMap.size).toBe(0);
 
@@ -158,7 +183,7 @@ describe("cachedCollection", () => {
 
   it("modifications replace the cached object with a new reference", async () => {
     const updateFunction = jest.fn();
-    const { collection, tearDown } = cachedCollection(realm.objects(Object), updateFunction, cacheMap);
+    const { collection, tearDown } = cachedCollection(getTestCollection(queryType), updateFunction, cacheMap);
 
     expect(cacheMap.size).toBe(0);
 
@@ -184,7 +209,7 @@ describe("cachedCollection", () => {
 
   it("tearDown removes cache references", async () => {
     const updateFunction = jest.fn();
-    const { collection, tearDown } = cachedCollection(realm.objects(Object), updateFunction, cacheMap);
+    const { collection, tearDown } = cachedCollection(getTestCollection(queryType), updateFunction, cacheMap);
 
     expect(cacheMap.size).toBe(0);
 
