@@ -52,6 +52,13 @@ npx react-native init JsExample --template @realm/react-native-template-js
 * **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
 * **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
 
+## Known issues
+
+* Realm is not compatible with the Chrome Debugger.  The following debugging methods are supported.
+   * [Flipper](https://fbflipper.com/) has many similar features in relation to the Chrome Debugger. Please consider trying out our [Hermes release](https://github.com/realm/realm-js/issues/3940) to use the Hermes Debugger in Flipper and set breakpoints in your code.
+   * [Safari](https://reactnative.dev/docs/debugging#safari-developer-tools) also has a similar feature set, but requires [some setup](https://blog.nparashuram.com/2019/10/debugging-react-native-ios-apps-with.html) and only supports debugging in iOS.
+   * **NOTE:** For the above methods, it is not neccessary to enable `Debug with Chrome` in the Debug Menu.
+
 ## Building Realm JS
 
 For instructions on building Realm JS yourself from source, see the [building.md](contrib/building.md) file.
@@ -86,10 +93,6 @@ Currently the following information is reported:
  * The OS platform and version which is being used.
  * Node.js, v8, libuv, OpenSSL version numbers.
  * An anonymous machine identifier and hashed application path to aggregate the other information on.
-
-## Known issues
-
-* The Chrome Debugger does not support `Realm.Set`, `Realm.Dictionary`, `Realm.Mixed` and `Realm.UUID`. Please consider trying out our [Hermes releases](https://github.com/realm/realm-js/issues/3940) and using [Flipper](https://fbflipper.com/) as debugger.
 
 ## Code of Conduct
 
