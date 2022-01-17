@@ -67,6 +67,4 @@ Pod::Spec.new do |s|
   s.vendored_frameworks = 'react-native/ios/realm-js-ios.xcframework'
 
   s.dependency 'React'
-  # TODO: Ensure the same version of GCDWebServer is used for Android
-  # s.dependency 'GCDWebServer'
 end

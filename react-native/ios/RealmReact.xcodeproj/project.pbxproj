@@ -8,35 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		85B3572725FEB5B9003A02D4 /* realm-js-ios.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85B3572625FEB5B9003A02D4 /* realm-js-ios.xcframework */; };
-		85B358EA25FF80CF003A02D4 /* GCDWebServerResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358CE25FF80CF003A02D4 /* GCDWebServerResponse.m */; };
-		85B358EB25FF80CF003A02D4 /* GCDWebServerRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358D125FF80CF003A02D4 /* GCDWebServerRequest.m */; };
-		85B358EC25FF80CF003A02D4 /* GCDWebServerFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358D425FF80CF003A02D4 /* GCDWebServerFunctions.m */; };
-		85B358ED25FF80CF003A02D4 /* GCDWebServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358D525FF80CF003A02D4 /* GCDWebServer.m */; };
-		85B358EE25FF80CF003A02D4 /* GCDWebServerConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358D625FF80CF003A02D4 /* GCDWebServerConnection.m */; };
-		85B358EF25FF80CF003A02D4 /* GCDWebServerErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358DB25FF80CF003A02D4 /* GCDWebServerErrorResponse.m */; };
-		85B358F025FF80CF003A02D4 /* GCDWebServerFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358DD25FF80CF003A02D4 /* GCDWebServerFileResponse.m */; };
-		85B358F125FF80CF003A02D4 /* GCDWebServerDataResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358DE25FF80CF003A02D4 /* GCDWebServerDataResponse.m */; };
-		85B358F225FF80CF003A02D4 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358E025FF80CF003A02D4 /* GCDWebServerStreamedResponse.m */; };
-		85B358F325FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358E525FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.m */; };
-		85B358F425FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358E625FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.m */; };
-		85B358F525FF80CF003A02D4 /* GCDWebServerDataRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358E725FF80CF003A02D4 /* GCDWebServerDataRequest.m */; };
-		85B358F625FF80CF003A02D4 /* GCDWebServerFileRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 85B358E825FF80CF003A02D4 /* GCDWebServerFileRequest.m */; };
-		85B358F925FF80DB003A02D4 /* libGCDWebServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 85B358BB25FF8070003A02D4 /* libGCDWebServer.a */; };
 		F60690171CA2766F0003FB26 /* RealmReact.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = F60690161CA2766F0003FB26 /* RealmReact.h */; };
 		F60690191CA2766F0003FB26 /* RealmReact.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690181CA2766F0003FB26 /* RealmReact.mm */; };
 		F60690211CA277410003FB26 /* RealmAnalytics.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690201CA277410003FB26 /* RealmAnalytics.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		85B358B925FF8070003A02D4 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "include/$(PRODUCT_NAME)";
-			dstSubfolderSpec = 16;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		F60690111CA2766F0003FB26 /* Copy Headers */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -53,35 +30,6 @@
 /* Begin PBXFileReference section */
 		3F8D968A220CE21400327C8C /* RealmReact.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = RealmReact.xcconfig; sourceTree = "<group>"; };
 		85B3572625FEB5B9003A02D4 /* realm-js-ios.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = "realm-js-ios.xcframework"; sourceTree = "<group>"; };
-		85B358BB25FF8070003A02D4 /* libGCDWebServer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libGCDWebServer.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		85B358CC25FF80CF003A02D4 /* GCDWebServerFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerFunctions.h; sourceTree = "<group>"; };
-		85B358CD25FF80CF003A02D4 /* GCDWebServerPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerPrivate.h; sourceTree = "<group>"; };
-		85B358CE25FF80CF003A02D4 /* GCDWebServerResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerResponse.m; sourceTree = "<group>"; };
-		85B358CF25FF80CF003A02D4 /* GCDWebServerConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerConnection.h; sourceTree = "<group>"; };
-		85B358D025FF80CF003A02D4 /* GCDWebServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServer.h; sourceTree = "<group>"; };
-		85B358D125FF80CF003A02D4 /* GCDWebServerRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerRequest.m; sourceTree = "<group>"; };
-		85B358D225FF80CF003A02D4 /* GCDWebServerHTTPStatusCodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerHTTPStatusCodes.h; sourceTree = "<group>"; };
-		85B358D325FF80CF003A02D4 /* GCDWebServerResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerResponse.h; sourceTree = "<group>"; };
-		85B358D425FF80CF003A02D4 /* GCDWebServerFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerFunctions.m; sourceTree = "<group>"; };
-		85B358D525FF80CF003A02D4 /* GCDWebServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServer.m; sourceTree = "<group>"; };
-		85B358D625FF80CF003A02D4 /* GCDWebServerConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerConnection.m; sourceTree = "<group>"; };
-		85B358D725FF80CF003A02D4 /* GCDWebServerRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerRequest.h; sourceTree = "<group>"; };
-		85B358D925FF80CF003A02D4 /* GCDWebServerFileResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerFileResponse.h; sourceTree = "<group>"; };
-		85B358DA25FF80CF003A02D4 /* GCDWebServerStreamedResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerStreamedResponse.h; sourceTree = "<group>"; };
-		85B358DB25FF80CF003A02D4 /* GCDWebServerErrorResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerErrorResponse.m; sourceTree = "<group>"; };
-		85B358DC25FF80CF003A02D4 /* GCDWebServerDataResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerDataResponse.h; sourceTree = "<group>"; };
-		85B358DD25FF80CF003A02D4 /* GCDWebServerFileResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerFileResponse.m; sourceTree = "<group>"; };
-		85B358DE25FF80CF003A02D4 /* GCDWebServerDataResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerDataResponse.m; sourceTree = "<group>"; };
-		85B358DF25FF80CF003A02D4 /* GCDWebServerErrorResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerErrorResponse.h; sourceTree = "<group>"; };
-		85B358E025FF80CF003A02D4 /* GCDWebServerStreamedResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerStreamedResponse.m; sourceTree = "<group>"; };
-		85B358E225FF80CF003A02D4 /* GCDWebServerDataRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerDataRequest.h; sourceTree = "<group>"; };
-		85B358E325FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerMultiPartFormRequest.h; sourceTree = "<group>"; };
-		85B358E425FF80CF003A02D4 /* GCDWebServerFileRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerFileRequest.h; sourceTree = "<group>"; };
-		85B358E525FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerURLEncodedFormRequest.m; sourceTree = "<group>"; };
-		85B358E625FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerMultiPartFormRequest.m; sourceTree = "<group>"; };
-		85B358E725FF80CF003A02D4 /* GCDWebServerDataRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerDataRequest.m; sourceTree = "<group>"; };
-		85B358E825FF80CF003A02D4 /* GCDWebServerFileRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDWebServerFileRequest.m; sourceTree = "<group>"; };
-		85B358E925FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerURLEncodedFormRequest.h; sourceTree = "<group>"; };
 		F60690131CA2766F0003FB26 /* libRealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60690161CA2766F0003FB26 /* RealmReact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RealmReact.h; sourceTree = "<group>"; };
 		F60690181CA2766F0003FB26 /* RealmReact.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmReact.mm; sourceTree = "<group>"; };
@@ -90,18 +38,10 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		85B358B825FF8070003A02D4 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		85CA5FE41F1536660038172D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				85B358F925FF80DB003A02D4 /* libGCDWebServer.a in Frameworks */,
 				85B3572725FEB5B9003A02D4 /* realm-js-ios.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -115,68 +55,6 @@
 				85B3572625FEB5B9003A02D4 /* realm-js-ios.xcframework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		85B358BC25FF8070003A02D4 /* GCDWebServer */ = {
-			isa = PBXGroup;
-			children = (
-				85B358CB25FF80CF003A02D4 /* Core */,
-				85B358E125FF80CF003A02D4 /* Requests */,
-				85B358D825FF80CF003A02D4 /* Responses */,
-			);
-			path = GCDWebServer;
-			sourceTree = "<group>";
-		};
-		85B358CB25FF80CF003A02D4 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				85B358CC25FF80CF003A02D4 /* GCDWebServerFunctions.h */,
-				85B358CD25FF80CF003A02D4 /* GCDWebServerPrivate.h */,
-				85B358CE25FF80CF003A02D4 /* GCDWebServerResponse.m */,
-				85B358CF25FF80CF003A02D4 /* GCDWebServerConnection.h */,
-				85B358D025FF80CF003A02D4 /* GCDWebServer.h */,
-				85B358D125FF80CF003A02D4 /* GCDWebServerRequest.m */,
-				85B358D225FF80CF003A02D4 /* GCDWebServerHTTPStatusCodes.h */,
-				85B358D325FF80CF003A02D4 /* GCDWebServerResponse.h */,
-				85B358D425FF80CF003A02D4 /* GCDWebServerFunctions.m */,
-				85B358D525FF80CF003A02D4 /* GCDWebServer.m */,
-				85B358D625FF80CF003A02D4 /* GCDWebServerConnection.m */,
-				85B358D725FF80CF003A02D4 /* GCDWebServerRequest.h */,
-			);
-			name = Core;
-			path = ../../../vendor/GCDWebServer/GCDWebServer/Core;
-			sourceTree = "<group>";
-		};
-		85B358D825FF80CF003A02D4 /* Responses */ = {
-			isa = PBXGroup;
-			children = (
-				85B358D925FF80CF003A02D4 /* GCDWebServerFileResponse.h */,
-				85B358DA25FF80CF003A02D4 /* GCDWebServerStreamedResponse.h */,
-				85B358DB25FF80CF003A02D4 /* GCDWebServerErrorResponse.m */,
-				85B358DC25FF80CF003A02D4 /* GCDWebServerDataResponse.h */,
-				85B358DD25FF80CF003A02D4 /* GCDWebServerFileResponse.m */,
-				85B358DE25FF80CF003A02D4 /* GCDWebServerDataResponse.m */,
-				85B358DF25FF80CF003A02D4 /* GCDWebServerErrorResponse.h */,
-				85B358E025FF80CF003A02D4 /* GCDWebServerStreamedResponse.m */,
-			);
-			name = Responses;
-			path = ../../../vendor/GCDWebServer/GCDWebServer/Responses;
-			sourceTree = "<group>";
-		};
-		85B358E125FF80CF003A02D4 /* Requests */ = {
-			isa = PBXGroup;
-			children = (
-				85B358E225FF80CF003A02D4 /* GCDWebServerDataRequest.h */,
-				85B358E325FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.h */,
-				85B358E425FF80CF003A02D4 /* GCDWebServerFileRequest.h */,
-				85B358E525FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.m */,
-				85B358E625FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.m */,
-				85B358E725FF80CF003A02D4 /* GCDWebServerDataRequest.m */,
-				85B358E825FF80CF003A02D4 /* GCDWebServerFileRequest.m */,
-				85B358E925FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.h */,
-			);
-			name = Requests;
-			path = ../../../vendor/GCDWebServer/GCDWebServer/Requests;
 			sourceTree = "<group>";
 		};
 		F606900A1CA2766F0003FB26 = {
@@ -193,7 +71,6 @@
 			isa = PBXGroup;
 			children = (
 				F60690131CA2766F0003FB26 /* libRealmReact.a */,
-				85B358BB25FF8070003A02D4 /* libGCDWebServer.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -213,7 +90,6 @@
 		F60690221CA277BE0003FB26 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				85B358BC25FF8070003A02D4 /* GCDWebServer */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -221,23 +97,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		85B358BA25FF8070003A02D4 /* GCDWebServer */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 85B358C125FF8070003A02D4 /* Build configuration list for PBXNativeTarget "GCDWebServer" */;
-			buildPhases = (
-				85B358B725FF8070003A02D4 /* Sources */,
-				85B358B825FF8070003A02D4 /* Frameworks */,
-				85B358B925FF8070003A02D4 /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = GCDWebServer;
-			productName = GCDWebServer;
-			productReference = 85B358BB25FF8070003A02D4 /* libGCDWebServer.a */;
-			productType = "com.apple.product-type.library.static";
-		};
 		F60690121CA2766F0003FB26 /* RealmReact */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F606901C1CA2766F0003FB26 /* Build configuration list for PBXNativeTarget "RealmReact" */;
@@ -264,9 +123,6 @@
 				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = Realm;
 				TargetAttributes = {
-					85B358BA25FF8070003A02D4 = {
-						CreatedOnToolsVersion = 12.4;
-					};
 					F60690121CA2766F0003FB26 = {
 						CreatedOnToolsVersion = 7.3;
 					};
@@ -286,32 +142,11 @@
 			projectRoot = "";
 			targets = (
 				F60690121CA2766F0003FB26 /* RealmReact */,
-				85B358BA25FF8070003A02D4 /* GCDWebServer */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		85B358B725FF8070003A02D4 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				85B358F425FF80CF003A02D4 /* GCDWebServerMultiPartFormRequest.m in Sources */,
-				85B358EF25FF80CF003A02D4 /* GCDWebServerErrorResponse.m in Sources */,
-				85B358F525FF80CF003A02D4 /* GCDWebServerDataRequest.m in Sources */,
-				85B358F125FF80CF003A02D4 /* GCDWebServerDataResponse.m in Sources */,
-				85B358ED25FF80CF003A02D4 /* GCDWebServer.m in Sources */,
-				85B358EB25FF80CF003A02D4 /* GCDWebServerRequest.m in Sources */,
-				85B358F025FF80CF003A02D4 /* GCDWebServerFileResponse.m in Sources */,
-				85B358EE25FF80CF003A02D4 /* GCDWebServerConnection.m in Sources */,
-				85B358F225FF80CF003A02D4 /* GCDWebServerStreamedResponse.m in Sources */,
-				85B358F325FF80CF003A02D4 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
-				85B358EA25FF80CF003A02D4 /* GCDWebServerResponse.m in Sources */,
-				85B358EC25FF80CF003A02D4 /* GCDWebServerFunctions.m in Sources */,
-				85B358F625FF80CF003A02D4 /* GCDWebServerFileRequest.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		F606900F1CA2766F0003FB26 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -324,45 +159,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		85B358C225FF8070003A02D4 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_STYLE = Automatic;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_DYNAMIC_NO_PIC = NO;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Debug;
-		};
-		85B358C325FF8070003A02D4 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_STYLE = Automatic;
-				ENABLE_NS_ASSERTIONS = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				MTL_FAST_MATH = YES;
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Release;
-		};
 		F606901A1CA2766F0003FB26 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3F8D968A220CE21400327C8C /* RealmReact.xcconfig */;
@@ -526,15 +322,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		85B358C125FF8070003A02D4 /* Build configuration list for PBXNativeTarget "GCDWebServer" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				85B358C225FF8070003A02D4 /* Debug */,
-				85B358C325FF8070003A02D4 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		F606900E1CA2766F0003FB26 /* Build configuration list for PBXProject "RealmReact" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
