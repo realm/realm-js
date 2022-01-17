@@ -25,7 +25,7 @@
 #endif
 
 #include "js_realm.hpp"
-#include "js_realm_object.hpp"
+#include "js_notifications.hpp"
 
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/sync/app.hpp>
@@ -48,7 +48,7 @@ extern "C" void realm_jsi_invalidate_caches()
     // Clear the Object Store App cache, to prevent instances from using a context that was released
     realm::app::App::clear_cached_apps();
     // Clear Realm Object notifications
-    NotificationBucket<realm::js::realmjsi::Types>::clear();
+    notifications::NotificationBucket<realm::js::realmjsi::Types>::clear();
     // Ensure all registered invalidators get notified that the runtime is going away.
     realm::js::Context<realm::js::realmjsi::Types>::invalidate();
 }
