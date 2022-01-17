@@ -28,7 +28,9 @@ The procedure is:
 - Build Android binaries: `node ./scripts/build-android.js`
 - Build iOS binaries: `./scripts/build-ios.sh`
 - Publish the package: `npm publish`
-    - If you are publishing a tagged release from a branch, use `npm publish --tag <tag_name>`, e.g. `npm publish --tag beta`
+    - If you are publishing a tagged release from a branch, use `npm publish --tag <tag_name>`, e.g. `npm publish --tag beta`.
+    - Note that currently, anything in your `vendor` directory will be added to the package – so if you have added any temporary files in there, you should remove them before packaging.
+    - If you would like to do a "dry run", you can first run `npm pack`, which will create a `realm-X.Y.Z.tgz` file in your `realm-js` directory. You can then test this in a project with `npm i <REALM_JS_PATH>/realm-X.Y.Z.tgz`.
 - Manually create a new release on Github
     - Find the tag pushed in the previous step.  Click the `...` and select `Create release`
     - Copy text from changelog
