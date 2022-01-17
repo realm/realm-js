@@ -1,6 +1,7 @@
-
-x.x.x Release notes (yyyy-MM-dd)
+10.20.0-beta.1 Release notes (2022-1-27)
 =============================================================
+### Breaking change
+* Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
 
 ### Enhancements
 * `Realm.writeCopyTo()` now supports creating snapshots of synced Realms, thus allowing apps to be shipped with partially-populated synced databases. ([#3782](https://github.com/realm/realm-js/issues/3782)
@@ -8,8 +9,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Adding support for passing the `arrayFilters` parameter when updating documents using the remote MongoDB client. ([#4248](https://github.com/realm/realm-js/pull/4248))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed "JSCRuntime destroyed with a dangling API object" assertion when reloading an app in debug mode while running with Hermes engine disabled. ([#4115](https://github.com/realm/realm-js/issues/4115), since 10.20.0-alpha.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -18,7 +18,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* None.
+* Remove the previous implementation to the JavaScriptCore engine (in `src/jsc`).
+* <Either mention core version or upgrade>
+* <Using Realm Core vX.Y.Z>
+* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 
 10.20.0-beta.0 Release notes (2021-12-21)
 =============================================================
