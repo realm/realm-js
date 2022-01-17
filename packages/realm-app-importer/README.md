@@ -87,10 +87,6 @@ Many of the runtime option's default values are configurable using environment v
 
 ## Exporting an app
 
-Ensure you have the official Stitch CLI installed in your project as a dev-dependency,
-
-    npm install mongodb-realm-cli --save-dev
-
 Log into the official Stitch CLI:
 
     npx realm-cli login --api-key <your-api-key> --private-api-key <your-private-api-key>
