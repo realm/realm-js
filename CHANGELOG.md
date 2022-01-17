@@ -1,6 +1,7 @@
-
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Breaking change
+* Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
 
 ### Enhancements
 * `Realm.writeCopyTo()` now supports creating snapshots of synced Realms, thus allowing apps to be shipped with partially-populated synced databases. ([#3782](https://github.com/realm/realm-js/issues/3782)
@@ -18,7 +19,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* None.
+* Remove the previous implementation to the JavaScriptCore engine (in `src/jsc`).
+* <Either mention core version or upgrade>
+* <Using Realm Core vX.Y.Z>
+* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 
 10.20.0-beta.0 Release notes (2021-12-21)
 =============================================================

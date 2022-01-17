@@ -21,25 +21,6 @@ allprojects {
 
 apply plugin: 'com.android.library'
 
-tasks.register('forwardDebugPort', Exec) {
-    def adb = android.getAdbExe()?.toString() ?: 'false'
-    commandLine adb, 'forward', 'tcp:8083', 'tcp:8083'
-    ignoreExitValue true
-    doLast {
-        if (execResult.getExitValue() != 0) {
-            logger.error(
-                '===========================================================================\n' +
-                'WARNING: Failed to automatically forward port 8083.\n' +
-                'In order to use Realm in Chrome debugging mode, port 8083 must be forwarded\n' +
-                'from localhost to the device or emulator being used to run the application.\n' +
-                'You may need to add the appropriate flags to the command that failed:\n' +
-                '    adb forward tcp:8083 tcp:8083\n' +
-                '===========================================================================\n'
-            )
-        }
-    }
-}
-
 android {
     compileSdkVersion rootProject.hasProperty("compileSdkVersion") ? rootProject.compileSdkVersion : 28
     buildToolsVersion rootProject.hasProperty("buildToolsVersion") ? rootProject.buildToolsVersion : "28.0.3"
@@ -52,10 +33,6 @@ android {
         debug {
             jniDebuggable true
         }
-    }
-
-    tasks.withType(JavaCompile) {
-        compileTask -> compileTask.dependsOn forwardDebugPort
     }
 }
 
@@ -96,6 +73,5 @@ try {
 
 project.dependencies {
     add(dependencyType, fileTree(dir: 'libs', include: ['*.jar']))
-    add(dependencyType, 'org.nanohttpd:nanohttpd:2.2.0')
     add(dependencyType, 'com.facebook.react:react-native:+')
 }
