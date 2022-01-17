@@ -21,6 +21,7 @@
 #import <realm-js-ios/jsi_init.h>
 
 #import <React/RCTBridge+Private.h>
+#import <React/RCTInvalidating.h>
 #import <jsi/jsi.h>
 
 #import <objc/runtime.h>
@@ -34,7 +35,7 @@
 - (void *)runtime;
 @end
 
-@interface RealmReact () <RCTBridgeModule>
+@interface RealmReact () <RCTBridgeModule, RCTInvalidating>
 @end
 
 @implementation RealmReact {
@@ -101,12 +102,11 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
 
-    static __weak RealmReact *s_currentModule = nil;
-    [s_currentModule invalidate];
-    s_currentModule = self;
-
     if (objc_lookUpClass("RCTWebSocketExecutor") && [bridge executorClass] == objc_lookUpClass("RCTWebSocketExecutor")) {
-        @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported" userInfo:nil];
+        // Skip native initialization when in legacy Chrome debugging mode
+#if !DEBUG
+        @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported in Release builds" userInfo:nil];
+#endif
     } else if ([bridge isKindOfClass:objc_lookUpClass("RCTCxxBridge")] || [NSStringFromClass([bridge class]) isEqual: @"RCTCxxBridge"]) {
         __weak __typeof__(self) weakSelf = self;
         __weak __typeof__(bridge) weakBridge = bridge;

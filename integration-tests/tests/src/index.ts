@@ -35,6 +35,13 @@ import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
 global.describe.skipIf = suiteSkipIf;
 global.it.skipIf = testSkipIf;
 
+afterEach(() => {
+  // Trigger garbage collection after every test, if exposed by the environment.
+  if (typeof global.gc === "function") {
+    global.gc();
+  }
+});
+
 // Using `require` instead of `import` here to ensure the Mocha globals (including `skipIf`) are set
 
 describe("Test Harness", () => {

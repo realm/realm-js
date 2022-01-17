@@ -24,6 +24,7 @@
 #include "js_results.hpp"
 #include "js_types.hpp"
 #include "js_util.hpp"
+#include "js_notifications.hpp"
 
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/set.hpp>
@@ -118,7 +119,7 @@ public:
     }
     void derive_property_type(StringData const& object_name, Property& prop) const;
 
-    std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
+    notifications::NotificationHandle<T> m_notification_handle;
 };
 
 
@@ -139,6 +140,7 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+    using NotificationBucket = notifications::NotificationBucket<T>;
 
     static ObjectType create_instance(ContextType, realm::object_store::Set);
 
@@ -540,7 +542,7 @@ void SetClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, 
 {
     args.validate_maximum(0);
     auto set = get_internal<T, SetClass<T>>(ctx, this_object);
-    set->m_notification_tokens.clear();
+    NotificationBucket::erase(set->m_notification_handle);
 }
 
 } // namespace js
