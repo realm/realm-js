@@ -9,8 +9,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Adding support for passing the `arrayFilters` parameter when updating documents using the remote MongoDB client. ([#4248](https://github.com/realm/realm-js/pull/4248))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed "JSCRuntime destroyed with a dangling API object" assertion when reloading an app in debug mode while running with Hermes engine disabled. ([#4115](https://github.com/realm/realm-js/issues/4115), since 10.20.0-alpha.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.

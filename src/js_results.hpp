@@ -21,6 +21,7 @@
 #include "js_collection.hpp"
 #include "js_realm_object.hpp"
 #include "js_util.hpp"
+#include "js_notifications.hpp"
 
 #include <realm/object-store/keypath_helpers.hpp>
 #include <realm/object-store/list.hpp>
@@ -59,7 +60,7 @@ public:
 
     using realm::Results::Results;
 
-    std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
+    notifications::NotificationHandle<T> m_notification_handle;
 };
 
 template <typename T>
@@ -73,6 +74,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+    using NotificationBucket = notifications::NotificationBucket<T>;
 
     static ObjectType create_instance(ContextType, realm::Results);
     static ObjectType create_instance(ContextType, SharedRealm, const std::string& object_type);
@@ -382,7 +384,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
                                   CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)};
             Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
         });
-    collection.m_notification_tokens.emplace_back(protected_callback, std::move(token));
+    NotificationBucket::emplace(collection.m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
 template <typename T>
@@ -400,13 +402,8 @@ void ResultsClass<T>::remove_listener(ContextType ctx, U& collection, ObjectType
     args.validate_maximum(1);
 
     auto callback = Value::validated_to_function(ctx, args[0]);
-    auto protected_function = Protected<FunctionType>(ctx, callback);
-
-    auto& tokens = collection.m_notification_tokens;
-    auto compare = [&](auto&& token) {
-        return typename Protected<FunctionType>::Comparator()(token.first, protected_function);
-    };
-    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
+    auto protected_callback = Protected<FunctionType>(ctx, callback);
+    NotificationBucket::erase(collection.m_notification_handle, std::move(protected_callback));
 }
 
 template <typename T>
@@ -424,7 +421,7 @@ void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_obje
     args.validate_maximum(0);
 
     auto results = get_internal<T, ResultsClass<T>>(ctx, this_object);
-    results->m_notification_tokens.clear();
+    NotificationBucket::erase(results->m_notification_handle);
 }
 
 } // namespace js

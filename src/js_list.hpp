@@ -24,6 +24,7 @@
 #include "js_results.hpp"
 #include "js_types.hpp"
 #include "js_util.hpp"
+#include "js_notifications.hpp"
 
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/list.hpp>
@@ -42,7 +43,7 @@ public:
     {
     }
 
-    std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
+    notifications::NotificationHandle<T> m_notification_handle;
 };
 
 template <typename T>
@@ -56,6 +57,7 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+    using NotificationBucket = notifications::NotificationBucket<T>;
 
     static ObjectType create_instance(ContextType, realm::List);
 
@@ -329,7 +331,7 @@ void ListClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object,
 {
     args.validate_maximum(0);
     auto list = get_internal<T, ListClass<T>>(ctx, this_object);
-    list->m_notification_tokens.clear();
+    NotificationBucket::erase(list->m_notification_handle);
 }
 
 template <typename T>
