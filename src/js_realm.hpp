@@ -342,7 +342,6 @@ public:
     static void object_for_object_id(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update_schema(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void get_subscriptions(ContextType, ObjectType, Arguments&, ReturnValue&);
 
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -359,6 +358,7 @@ public:
     static void get_is_closed(ContextType, ObjectType, ReturnValue&);
 #if REALM_ENABLE_SYNC
     static void get_sync_session(ContextType, ObjectType, ReturnValue&);
+    static void get_subscriptions(ContextType, ObjectType, ReturnValue&);
 #endif
 
     // static methods
@@ -419,7 +419,6 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"_updateSchema", wrap<update_schema>},
         {"_schemaName", wrap<get_schema_name_from_object>},
-        {"getSubscriptions", wrap<get_subscriptions>},
     };
 
     PropertyMap<T> const properties = {
@@ -434,6 +433,9 @@ public:
 #if REALM_ENABLE_SYNC
         {"syncSession",
          { wrap<get_sync_session>,
+           nullptr }},
+        {"subscriptions",
+         { wrap<get_subscriptions>,
            nullptr }},
 #endif
     };
@@ -1463,19 +1465,18 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
  * @exception std::runtime_error if flexible sync is not enabled
  */
 template <typename T>
-void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, Arguments& args,
-                                      ReturnValue& return_value)
+void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     auto config = realm->config();
 
     if (!config.sync_config) {
-        throw std::runtime_error("getSubscriptions() can only be called if flexible sync is enabled, but sync is "
+        throw std::runtime_error("`subscriptions` can only be accessed if flexible sync is enabled, but sync is "
                                  "currently disabled for your app. Specify { flexible: true } in your sync config.");
     }
 
     if (!config.sync_config->flx_sync_requested) {
-        throw std::runtime_error("getSubscriptions() can only be called if flexible sync is enabled, but partition "
+        throw std::runtime_error("`subscriptions` can only be accessed if flexible sync is enabled, but partition "
                                  "based sync is currently enabled for your app. Specify { flexible: true } in your "
                                  "sync config and remove any `partitionValue`.");
     }
