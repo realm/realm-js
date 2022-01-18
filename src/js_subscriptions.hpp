@@ -216,13 +216,13 @@ public:
     };
 
     static void find_by_name(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void find(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void find_by_query(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void wait_for_synchronization(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
         {"findByName", wrap<find_by_name>},
-        {"find", wrap<find>},
+        {"findByQuery", wrap<find_by_query>},
         {"update", wrap<update>},
         {"_waitForSynchronization", wrap<wait_for_synchronization>},
     };
@@ -388,7 +388,8 @@ void SubscriptionsClass<T>::find_by_name(ContextType ctx, ObjectType this_object
  * @exception std::runtime_error if the argument is not a Results instance
  */
 template <typename T>
-void SubscriptionsClass<T>::find(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+void SubscriptionsClass<T>::find_by_query(ContextType ctx, ObjectType this_object, Arguments& args,
+                                          ReturnValue& return_value)
 {
     args.validate_count(1);
 
@@ -520,7 +521,7 @@ public:
 
     MethodMap<T> const methods = {
         {"findByName", wrap<SubscriptionsClass<T>::find_by_name>},
-        {"find", wrap<SubscriptionsClass<T>::find>},
+        {"findByQuery", wrap<SubscriptionsClass<T>::find_by_query>},
 
         // Mutable-only methods
         {"add", wrap<add>},

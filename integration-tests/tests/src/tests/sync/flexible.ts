@@ -336,40 +336,40 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       describe("#find", function () {
         it("returns null if the query is not subscribed to", function (this: RealmContext) {
-          expect(this.realm.getSubscriptions().find(this.realm.objects(PersonSchema.name))).to.be.null;
+          expect(this.realm.getSubscriptions().findByQuery(this.realm.objects(PersonSchema.name))).to.be.null;
         });
 
         it("returns a query's subscription by reference", function (this: RealmContext) {
           const { subs, sub, query } = addSubscriptionForPerson(this.realm);
 
-          expect(subs.find(query)).to.deep.equal(sub);
+          expect(subs.findByQuery(query)).to.deep.equal(sub);
         });
 
         it("returns a filtered query's subscription", function (this: RealmContext) {
           const query = this.realm.objects(PersonSchema.name).filtered("age > 10");
           const { subs, sub } = addSubscription(this.realm, query);
 
-          expect(subs.find(query)).to.deep.equal(sub);
+          expect(subs.findByQuery(query)).to.deep.equal(sub);
         });
 
         it("returns a sorted query's subscription", function (this: RealmContext) {
           const query = this.realm.objects(PersonSchema.name).sorted("age");
           const { subs, sub } = addSubscription(this.realm, query);
 
-          expect(subs.find(query)).to.deep.equal(sub);
+          expect(subs.findByQuery(query)).to.deep.equal(sub);
         });
 
         it("returns a filtered and sorted query's subscription", function (this: RealmContext) {
           const query = this.realm.objects(PersonSchema.name).sorted("age");
           const { subs, sub } = addSubscription(this.realm, query);
 
-          expect(subs.find(query)).to.deep.equal(sub);
+          expect(subs.findByQuery(query)).to.deep.equal(sub);
         });
 
         it("returns a query with equivalent RQL respresentation's subscription", function (this: RealmContext) {
           const { subs, sub } = addSubscriptionForPerson(this.realm);
 
-          expect(subs.find(this.realm.objects(PersonSchema.name))).to.deep.equal(sub);
+          expect(subs.findByQuery(this.realm.objects(PersonSchema.name))).to.deep.equal(sub);
         });
       });
 
@@ -799,12 +799,14 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           addSubscription(this.realm, this.realm.objects(PersonSchema.name));
           const { subs } = addSubscription(this.realm, this.realm.objects(PersonSchema.name).sorted("name"));
 
-          expect(subs).to.have.lengthOf(2);
+          expect(subs).to.have.lengthOf(1);
         });
 
         it("updates an existing subscription with the same name and different query", function (this: RealmContext) {
-          addSubscription(this.realm, this.realm.objects(PersonSchema.name));
-          const { subs } = addSubscription(this.realm, this.realm.objects(PersonSchema.name).filtered("age > 10"));
+          addSubscription(this.realm, this.realm.objects(PersonSchema.name), { name: "test" });
+          const { subs } = addSubscription(this.realm, this.realm.objects(PersonSchema.name).filtered("age > 10"), {
+            name: "test",
+          });
 
           expect(subs).to.have.lengthOf(1);
           expect(subs[0].queryString).to.equal("age > 10");
@@ -854,7 +856,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               "A subscription with the name 'test' already exists but has a different query. If you meant to update it, remove `throwOnUpdate: true` from the subscription options.",
             );
 
-            expect(subs.find(query)).to.be.null;
+            expect(subs.findByQuery(query)).to.be.null;
           });
 
           function testThrowOnUpdateFalse(realm: Realm, addOptions: Realm.App.Sync.SubscriptionOptions = {}) {
