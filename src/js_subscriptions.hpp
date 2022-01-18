@@ -206,27 +206,28 @@ public:
     static void get_state(ContextType, ObjectType, ReturnValue&);
     static void get_error(ContextType, ObjectType, ReturnValue&);
     static void get_version(ContextType, ObjectType, ReturnValue&);
+    static void get_index(ContextType, ObjectType, uint32_t, ReturnValue&);
+    static void get_length(ContextType, ObjectType, ReturnValue&);
 
     PropertyMap<T> const properties = {
-        {"empty", {wrap<get_empty>, nullptr}},
-        {"state", {wrap<get_state>, nullptr}},
-        {"error", {wrap<get_error>, nullptr}},
-        {"version", {wrap<get_version>, nullptr}},
+        {"empty", {wrap<get_empty>, nullptr}},   {"state", {wrap<get_state>, nullptr}},
+        {"error", {wrap<get_error>, nullptr}},   {"version", {wrap<get_version>, nullptr}},
+        {"length", {wrap<get_length>, nullptr}},
     };
 
-    static void snapshot(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void find_by_name(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void find(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void wait_for_synchronization(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
-        {"snapshot", wrap<snapshot>},
         {"findByName", wrap<find_by_name>},
         {"find", wrap<find>},
         {"update", wrap<update>},
         {"_waitForSynchronization", wrap<wait_for_synchronization>},
     };
+
+    IndexPropertyType<T> const index_accessor = {wrap<get_index>, nullptr};
 };
 
 template <typename T>
@@ -318,28 +319,35 @@ void SubscriptionsClass<T>::get_version(ContextType ctx, ObjectType this_object,
 }
 
 /**
- * @brief Get an array snapshot of the subscriptions in the subscription set
+ * @brief
  *
- * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
- * @param args \ref None
- * @param return_value \ref ReturnValue wrapping an array of Subscription instances
+ * @tparam T
+ * @param ctx
+ * @param this_object
+ * @param index
+ * @param return_value
  */
 template <typename T>
-void SubscriptionsClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments& args,
-                                     ReturnValue& return_value)
+void SubscriptionsClass<T>::get_index(ContextType ctx, ObjectType this_object, uint32_t index,
+                                      ReturnValue& return_value)
 {
-    args.validate_count(0);
-
     auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    return_value.set(SubscriptionClass<T>::create_instance(ctx, subs->at(index)));
+}
 
-    auto js_subs = std::vector<ValueType>();
-    for (auto& sub : *subs) {
-        js_subs.emplace_back(SubscriptionClass<T>::create_instance(ctx, sub));
-    }
-
-    auto subs_array = Object::create_array(ctx, js_subs);
-    return_value.set(subs_array);
+/**
+ * @brief
+ *
+ * @tparam T
+ * @param ctx
+ * @param object
+ * @param return_value
+ */
+template <typename T>
+void SubscriptionsClass<T>::get_length(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
+{
+    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    return_value.set((uint32_t)subs->size());
 }
 
 /**
@@ -500,6 +508,7 @@ public:
         {"state", {wrap<SubscriptionsClass<T>::get_state>, nullptr}},
         {"error", {wrap<SubscriptionsClass<T>::get_error>, nullptr}},
         {"version", {wrap<SubscriptionsClass<T>::get_version>, nullptr}},
+        {"length", {wrap<SubscriptionsClass<T>::get_length>, nullptr}},
     };
 
     static void add(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -521,6 +530,8 @@ public:
         {"removeAll", wrap<remove_all>},
         {"removeByObjectType", wrap<remove_by_object_type>},
     };
+
+    IndexPropertyType<T> const index_accessor = {wrap<SubscriptionsClass<T>::get_index>, nullptr};
 };
 
 template <typename T>
