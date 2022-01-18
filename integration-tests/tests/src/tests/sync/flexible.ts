@@ -94,13 +94,13 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       it("can be constructed asynchronously", async function () {
-        await expect(
-          (async () => {
-            Realm.open({
-              sync: { _sessionStopPolicy: "immediately" as SessionStopPolicy, flexible: true, user: this.user },
-            });
-          })(),
-        ).to.not.be.rejected;
+        const openRealm = async () => {
+          await Realm.open({
+            sync: { _sessionStopPolicy: "immediately" as SessionStopPolicy, flexible: true, user: this.user },
+          });
+        };
+
+        await expect(openRealm()).to.not.be.rejected;
       });
 
       it("does not accept { flexible: true } and a partition value", function () {
