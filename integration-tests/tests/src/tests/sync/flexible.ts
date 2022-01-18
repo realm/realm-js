@@ -820,6 +820,14 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.snapshot()[1].id).to.not.equal(sub.id);
         });
 
+        it("if a subscription with the same query is added, properties of both the old and new reference can be accessed", function (this: RealmContext) {
+          const { sub } = addSubscriptionForPerson(this.realm);
+          const { sub: newSub } = addSubscriptionForPerson(this.realm);
+
+          expect(sub.queryString).to.equal("TRUEPREDICATE");
+          expect(newSub.queryString).to.equal("TRUEPREDICATE");
+        });
+
         describe("#throwOnUpdate", function () {
           it("does not throw and does not add a new subscription if a subscription with the same name and same query is added, and throwOnUpdate is true", function (this: RealmContext) {
             const query = this.realm.objects(DogSchema.name);
@@ -976,6 +984,32 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           expect(subs.snapshot()).to.have.length(1);
           expect(subs.snapshot()[0].queryString).to.equal("age > 10");
+        });
+
+        it("if a subscription with the same query is added, the old reference can be removed", function (this: RealmContext) {
+          const { sub } = addSubscriptionForPerson(this.realm);
+          const { subs } = addSubscriptionForPerson(this.realm);
+
+          expect(subs.snapshot()).to.have.length(1);
+
+          subs.update((mutableSubs) => {
+            expect(mutableSubs.removeSubscription(sub)).to.be.true;
+          });
+
+          expect(subs.snapshot()).to.have.length(0);
+        });
+
+        it("if a subscription with the same query is added, the new reference can be removed", function (this: RealmContext) {
+          addSubscriptionForPerson(this.realm);
+          const { sub: newSub, subs } = addSubscriptionForPerson(this.realm);
+
+          expect(subs.snapshot()).to.have.length(1);
+
+          subs.update((mutableSubs) => {
+            expect(mutableSubs.removeSubscription(newSub)).to.be.true;
+          });
+
+          expect(subs.snapshot()).to.have.length(0);
         });
       });
 
