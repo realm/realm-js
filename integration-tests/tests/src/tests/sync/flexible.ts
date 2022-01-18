@@ -85,6 +85,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
   describe("API", function () {
     describe("flexible sync Realm config", function () {
+      // TODO check async constructor works
+
       it("accepts a { flexible: true } option", function () {
         expect(() => {
           new Realm({
@@ -209,14 +211,22 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         expect(sub.objectType).to.equal(PersonSchema.name);
       });
 
-      it("has a default query", function (this: RealmContext) {
+      it("has a default queryString", function (this: RealmContext) {
         const sub = addSubscriptionForPerson(this.realm).sub;
         expect(sub.queryString).to.equal("TRUEPREDICATE");
       });
 
-      it("has a specified query", function (this: RealmContext) {
+      it("has a specified queryString", function (this: RealmContext) {
         const subWithFilter = addSubscription(this.realm, this.realm.objects(PersonSchema.name).filtered("age > 10"))
           .sub;
+        expect(subWithFilter.queryString).to.equal("age > 10");
+      });
+
+      it("does not include sort in the query string", function (this: RealmContext) {
+        const subWithFilter = addSubscription(
+          this.realm,
+          this.realm.objects(PersonSchema.name).filtered("age > 10").sorted("name"),
+        ).sub;
         expect(subWithFilter.queryString).to.equal("age > 10");
       });
     });
@@ -777,11 +787,16 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.snapshot()).to.have.lengthOf(2);
         });
 
+        it("does not a second subscription with the same query and a different sort", function (this: RealmContext) {
+          addSubscription(this.realm, this.realm.objects(PersonSchema.name));
+          const { subs } = addSubscription(this.realm, this.realm.objects(PersonSchema.name).sorted("name"));
+
+          expect(subs.snapshot()).to.have.lengthOf(2);
+        });
+
         it("updates an existing subscription with the same name and different query", function (this: RealmContext) {
-          addSubscription(this.realm, this.realm.objects(PersonSchema.name), { name: "test" });
-          const { subs } = addSubscription(this.realm, this.realm.objects(PersonSchema.name).filtered("age > 10"), {
-            name: "test",
-          });
+          addSubscription(this.realm, this.realm.objects(PersonSchema.name));
+          const { subs } = addSubscription(this.realm, this.realm.objects(PersonSchema.name).filtered("age > 10"));
 
           expect(subs.snapshot()).to.have.lengthOf(1);
           expect(subs.snapshot()[0].queryString).to.equal("age > 10");
