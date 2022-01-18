@@ -30,6 +30,7 @@
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
 #include <realm/object-store/sync/app.hpp>
+#include "js_types.hpp"
 #include "platform.hpp"
 
 namespace realm {
@@ -185,6 +186,7 @@ public:
     MethodMap<T> const static_methods = {};
 
     static void logout(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void delete_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void session_for_on_disk_path(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void link_credentials(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void call_function(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -197,6 +199,7 @@ public:
 
     MethodMap<T> const methods = {
         {"_logOut", wrap<logout>},
+        {"_deleteUser", wrap<delete_user>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
         {"_linkCredentials", wrap<link_credentials>},
         {"_callFunction", wrap<call_function>},
@@ -385,6 +388,17 @@ void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arg
                                    return create_object<T, UserClass<T>>(
                                        ctx, new User<T>(std::move(shared_user), user->m_app));
                                }));
+}
+
+template <typename T>
+void UserClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue&)
+{
+    args.validate_count(1);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
+
+    user->m_app->delete_user(*user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template <typename T>

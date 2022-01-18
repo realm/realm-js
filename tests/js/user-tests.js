@@ -548,4 +548,18 @@ module.exports = {
     TestCase.assertFalse(user2.isLoggedIn);
     TestCase.assertArrayLength(Object.keys(all), 2, "still holds references to both users"); // FIXME: is this actually expected?
   },
+
+  async testDeleteUser() {
+    let app = new Realm.App(appConfig);
+    await logOutExistingUsers(app);
+    TestCase.assertNull(app.currentUser, "No users");
+
+    let user = await registerAndLogInEmailUser(app);
+    TestCase.assertArrayLength(Object.keys(app.allUsers), 1, "One user");
+
+    await user.delete();
+    TestCase.assertArrayLength(Object.keys(app.allUsers), 0, "Zero users");
+    TestCase.assertNull(app.currentUser, "No current user");
+    TestCase.assertFalse(user.isLoggedIn, "User has been logged out");
+  },
 };

@@ -449,6 +449,13 @@ declare namespace Realm {
     logOut(): Promise<void>;
 
     /**
+     * Delete the user permanently.
+     *
+     * @returns A promise that resolves once the user has been deleted.
+     */
+    delete(): Promise<void>;
+
+    /**
      * Link the user with an identity represented by another set of credentials.
      *
      * @param credentials The credentials to use when linking.

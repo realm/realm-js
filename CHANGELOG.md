@@ -1,8 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
-
+* Added `Realm.User.delete()` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))
 ### Fixed
 * Fixed a crash when using `Proxy` with a `Realm.Results` object ([#4257](https://github.com/realm/realm-js/pull/4257))
 * JWT metadata is now populating `Realm.User.profile`. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
@@ -46,8 +45,13 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 ### Fixed
 * Opening a Realm with a schema that has an orphaned embedded object type performed an extra empty write transaction. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115), since v10.5.0)
 * Schema validation was missing for embedded objects in sets, resulting in an unhelpful error being thrown if the user attempted to define one. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115))
+<<<<<<< HEAD
 * Fixed a crash when closing an Electron app with a custom sync error handler ([#4150](https://github.com/realm/realm-js/issues/4150)
 * Adding data from authentication providers, to be included in the `User#profile` object. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
+=======
+* Improved error messaging when opening a Realm with incompatible histories. ([realm/realm-core#5161](https://github.com/realm/realm-core/pull/5161), since v6.0.0)
+* UserIdentity metadata table grows indefinitely. ([realm/realm-core#5152](https://github.com/realm/realm-core/issues/5152), since v10.0.0)
+>>>>>>> dc91ffda (wip)
 
 ### Compatibility
 * Removed `deprecated-react-native-listview` from root package.json
@@ -57,7 +61,7 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.7.0 to v11.8.0. ([#4207](https://github.com/realm/realm-js/issues/4207))
+* Upgraded Realm Core from v11.7.0 to v11.9.0.
 * Removed `.dir-locals.el`. Please configure Emacs to use `clang-format` e.g. https://github.com/SavchenkoValeriy/emacs-clang-format-plus.
 * Enabled `strictNullChecks` for integration tests
 * Updated release instructions
