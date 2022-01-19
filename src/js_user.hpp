@@ -395,12 +395,12 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
     auto bson_args = String::to_bson(stringified_ejson_args);
 
     user->m_app->call_function(
-        *user, name, bson_args.operator const bson::BsonArray&(), service,
-        Function::wrap_callback_error_first(ctx, this_object, callback,
-                                            [](ContextType ctx, const util::Optional<bson::Bson>& result) {
-                                                REALM_ASSERT_RELEASE(result);
-                                                return Value::from_string(ctx, String::from_bson(*result));
-                                            }));
+        *user, name, static_cast<const bson::BsonArray&>(bson_args), service,
+        Function::wrap_callback_result_first(ctx, this_object, callback,
+                                             [](ContextType ctx, const util::Optional<bson::Bson>& result) {
+                                                 REALM_ASSERT_RELEASE(result);
+                                                 return Value::from_string(ctx, String::from_bson(*result));
+                                             }));
 }
 
 template <typename T>
