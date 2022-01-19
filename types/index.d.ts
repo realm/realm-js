@@ -716,8 +716,15 @@ declare namespace Realm {
          * Class representing the common functionality for the {@link Subscriptions} and
          * {@link MutableSubscriptions} classes
          */
-        abstract class BaseSubscriptions {
+        interface BaseSubscriptions extends ReadonlyArray<Subscription> {
             new(): never; // This type isn't supposed to be constructed manually by end users.
+
+            // /**
+            //  * @returns A readonly array snapshot of all the subscriptions in the set.
+            //  * Any changes to the set of subscriptions must be performed in an {@link update}
+            //  * callback.
+            //  */
+            // [key:number]: Subscription;
 
             /**
              * @returns `true` if there are no subscriptions in the set, `false` otherwise.
@@ -729,13 +736,6 @@ declare namespace Realm {
              * {@link update} is applied.
              */
             readonly version: number;
-
-            /**
-             * @returns A readonly array snapshot of all the subscriptions in the set.
-             * Any changes to the set of subscriptions must be performed in an {@link update}
-             * callback.
-             */
-            snapshot(): ReadonlyArray<Subscription>;
 
             /**
              * Find a subscription by name.
@@ -752,7 +752,7 @@ declare namespace Realm {
              * e.g. `Realm.objects("Cat").filtered("age > 10")`.
              * @returns The subscription with the specified query, or null if the subscription is not found.
              */
-            find<T>(query: Realm.Results<T & Realm.Object>): Subscription | null;
+            findByQuery<T>(query: Realm.Results<T & Realm.Object>): Subscription | null;
 
             /**
              * @returns The state of the subscription set.
@@ -776,7 +776,7 @@ declare namespace Realm {
          * The set of subscriptions can only be updated inside a {@link Subscriptions.update} callback,
          * by calling methods on the corresponding {@link MutableSubscriptions} instance.
          */
-        class Subscriptions extends BaseSubscriptions {
+        interface Subscriptions extends BaseSubscriptions {
             /**
              * Wait for the server to acknowledge this set of subscriptions and return the
              * matching objects.
@@ -819,6 +819,11 @@ declare namespace Realm {
              */
             update: (callback: (mutableSubs: MutableSubscriptions) => void) => void;
         }
+
+        const Subscriptions: {
+            new(): never; // This type isn't supposed to be constructed manually by end users.
+            readonly prototype: Subscriptions;
+        };
 
         /**
          * The mutable version of a given subscription set. The mutable methods of a given
@@ -881,6 +886,11 @@ declare namespace Realm {
              */
             removeAll: () => number;
         }
+
+        const MutableSubscriptions: {
+            new(): never; // This type isn't supposed to be constructed manually by end users.
+            readonly prototype: Subscriptions;
+        };
     }
 
     namespace BSON {
@@ -948,6 +958,12 @@ declare class Realm {
     readonly isClosed: boolean;
 
     readonly syncSession: Realm.App.Sync.Session | null;
+
+    /**
+     * Get the latest set of flexible sync subscriptions.
+     * @throws if flexible sync is not enabled for this app
+     */
+    readonly subscriptions: Realm.App.Sync.Subscriptions
 
     /**
      * Get the current schema version of the Realm at the given path.
@@ -1127,8 +1143,6 @@ declare class Realm {
      * @returns void
      */
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
-
-    getSubscriptions: () => Realm.App.Sync.Subscriptions;
 
     /**
      * Update the schema of the Realm.
