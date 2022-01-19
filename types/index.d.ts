@@ -615,9 +615,9 @@ declare namespace Realm {
 
         /**
          * Class representing a single query subscription in a set of flexible sync
-         * {@link Subscriptions}. This class contains readonly information about the
+         * {@link SubscriptionSet}. This class contains readonly information about the
          * subscription – any changes to the set of subscriptions must be carried out
-         * in a {@link Subscriptions.update} callback.
+         * in a {@link SubscriptionSet.update} callback.
          */
         class Subscription {
             new(): never; // This type isn't supposed to be constructed manually by end users.
@@ -656,7 +656,7 @@ declare namespace Realm {
         }
 
         /**
-         * Enum representing the state of a {@link Subscriptions} set.
+         * Enum representing the state of a {@link SubscriptionSet} set.
          */
         enum SubscriptionsState {
             /**
@@ -667,7 +667,7 @@ declare namespace Realm {
 
             /**
              * The server has acknowledged the subscription and sent all the data that
-             * matched the subscription queries at the time the subscription set was
+             * matched the subscription queries at the time the SubscriptionSet was
              * updated. The server is now in steady-state synchronization mode where it
              * will stream updates as they come.
              */
@@ -677,28 +677,28 @@ declare namespace Realm {
              * The server has returned an error and synchronization is paused for this
              * Realm. To view the actual error, use `Subscriptions.error`.
              *
-             * You can still use {@link Subscriptions.update} to update the subscriptions,
+             * You can still use {@link SubscriptionSet.update} to update the subscriptions,
              * and if the new update doesn't trigger an error, synchronization
              * will be restarted.
              */
             Error = "error",
 
             /**
-             * The subscription set has been superceded by an updated one. This typically means
-             * that someone has called {@link Subscriptions.update} on a different instance
-             * of the `Subscriptions`. You should not use a superseded subscription set,
-             * and instead obtain a new instance by calling {@link Subscriptions.getSubscriptions}.
+             * The SubscriptionSet has been superceded by an updated one. This typically means
+             * that someone has called {@link SubscriptionSet.update} on a different instance
+             * of the `Subscriptions`. You should not use a superseded SubscriptionSet,
+             * and instead obtain a new instance by calling {@link SubscriptionSet.getSubscriptions}.
              */
             Superceded = "superceded",
         }
 
         /**
-         * Options for {@link Subscriptions.add}.
+         * Options for {@link SubscriptionSet.add}.
          */
         interface SubscriptionOptions {
             /**
              * Sets the name of the subscription being added. This allows you to later refer
-             * to the subscription by name, e.g. when calling {@link MutableSubscriptions.removeByName}.
+             * to the subscription by name, e.g. when calling {@link MutableSubscriptionSet.removeByName}.
              */
             name?: string;
 
@@ -713,10 +713,10 @@ declare namespace Realm {
         }
 
         /**
-         * Class representing the common functionality for the {@link Subscriptions} and
-         * {@link MutableSubscriptions} classes
+         * Class representing the common functionality for the {@link SubscriptionSet} and
+         * {@link MutableSubscriptionSet} classes
          */
-        interface BaseSubscriptions extends ReadonlyArray<Subscription> {
+        interface BaseSubscriptionSet extends ReadonlyArray<Subscription> {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
             // /**
@@ -732,7 +732,7 @@ declare namespace Realm {
             readonly empty: boolean;
 
             /**
-             * @returns The version of the subscription set. This is incremented every time an
+             * @returns The version of the SubscriptionSet. This is incremented every time an
              * {@link update} is applied.
              */
             readonly version: number;
@@ -755,13 +755,13 @@ declare namespace Realm {
             findByQuery<T>(query: Realm.Results<T & Realm.Object>): Subscription | null;
 
             /**
-             * @returns The state of the subscription set.
+             * @returns The state of the SubscriptionSet.
              */
             readonly state: SubscriptionsState;
 
             /**
              * @returns If `state` is {@link SubscriptionsState.Error}, this is a `string`
-             * representing why the subscription set is in an error state. `null` if there is no error.
+             * representing why the SubscriptionSet is in an error state. `null` if there is no error.
              */
             readonly error: string | null;
         }
@@ -773,10 +773,10 @@ declare namespace Realm {
          * The server will continuously evaluate the queries that the instance is subscribed to
          * and will send data that matches them, as well as remove data that no longer does.
          *
-         * The set of subscriptions can only be updated inside a {@link Subscriptions.update} callback,
-         * by calling methods on the corresponding {@link MutableSubscriptions} instance.
+         * The set of subscriptions can only be updated inside a {@link SubscriptionSet.update} callback,
+         * by calling methods on the corresponding {@link MutableSubscriptionSet} instance.
          */
-        interface Subscriptions extends BaseSubscriptions {
+        interface SubscriptionSet extends BaseSubscriptionSet {
             /**
              * Wait for the server to acknowledge this set of subscriptions and return the
              * matching objects.
@@ -791,11 +791,11 @@ declare namespace Realm {
             waitForSynchronization: () => Promise<void>;
 
             /**
-             * Update the subscription set and change this instance to point to the updated subscription set.
+             * Update the SubscriptionSet and change this instance to point to the updated SubscriptionSet.
              *
              * Adding or removing subscriptions from the set set must be performed inside
              * the callback argument of this method, and the mutating methods must be called on
-             * the `mutableSubs` argument rather than the original {@link Subscriptions} instance.
+             * the `mutableSubs` argument rather than the original {@link SubscriptionSet} instance.
              *
              * Any changes to the subscriptions after the callback has executed will be batched and sent
              * to the server, at which point you can call {@link waitForSynchronization} to wait for
@@ -813,24 +813,24 @@ declare namespace Realm {
              * // `realm` will now return the expected results based on the updated subscriptions
              * ```
              *
-             * @param callback A callback function which receives a {@link MutableSubscriptions}
+             * @param callback A callback function which receives a {@link MutableSubscriptionSet}
              * instance as its only argument, which can be used to add or remove subscriptions from
              * the set.
              */
-            update: (callback: (mutableSubs: MutableSubscriptions) => void) => void;
+            update: (callback: (mutableSubs: MutableSubscriptionSet) => void) => void;
         }
 
         const Subscriptions: {
             new(): never; // This type isn't supposed to be constructed manually by end users.
-            readonly prototype: Subscriptions;
+            readonly prototype: SubscriptionSet;
         };
 
         /**
-         * The mutable version of a given subscription set. The mutable methods of a given
-         * {@link Subscriptions} instance can only be accessed from inside the {@link Subscriptions.update}
+         * The mutable version of a given SubscriptionSet. The mutable methods of a given
+         * {@link SubscriptionSet} instance can only be accessed from inside the {@link SubscriptionSet.update}
          * callback.
          */
-        interface MutableSubscriptions extends BaseSubscriptions {
+        interface MutableSubscriptionSet extends BaseSubscriptionSet {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
             /**
@@ -848,7 +848,7 @@ declare namespace Realm {
             add: <T>(query: Realm.Results<T & Realm.Object>, options?: SubscriptionOptions) => Subscription;
 
             /**
-             * Removes a subscription with the given query from the subscription set.
+             * Removes a subscription with the given query from the SubscriptionSet.
              *
              * @param query A {@link Realm.Results} instance representing the query to remove a subscription to.
              * @returns `true` if the subscription was removed, `false` if it was not found.
@@ -856,7 +856,7 @@ declare namespace Realm {
             remove: <T>(query: Realm.Results<T & Realm.Object>) => boolean;
 
             /**
-             * Removes a subscription with the given name from the subscription set.
+             * Removes a subscription with the given name from the SubscriptionSet.
              *
              * @param name The name of the subscription to remove.
              * @returns `true` if the subscription was removed, `false` if it was not found.
@@ -864,7 +864,7 @@ declare namespace Realm {
             removeByName: (name: string) => boolean;
 
             /**
-             * Removes the specified subscription from the subscription set.
+             * Removes the specified subscription from the SubscriptionSet.
              *
              * @param subscription The {@link Subscription} instance to remove.
              * @returns `true` if the subscription was removed, `false` if it was not found.
@@ -872,7 +872,7 @@ declare namespace Realm {
             removeSubscription: (subscription: Subscription) => boolean;
 
             /**
-             * Removes all subscriptions for the specified object type from the subscription set.
+             * Removes all subscriptions for the specified object type from the SubscriptionSet.
              *
              * @param objectType The string name of the object type to remove all subscriptions for.
              * @returns The number of subscriptions removed.
@@ -880,7 +880,7 @@ declare namespace Realm {
             removeByObjectType: (objectType: string) => number;
 
             /**
-             * Removes all subscriptions from the subscription set.
+             * Removes all subscriptions from the SubscriptionSet.
              *
              * @returns The number of subscriptions removed.
              */
@@ -889,7 +889,7 @@ declare namespace Realm {
 
         const MutableSubscriptions: {
             new(): never; // This type isn't supposed to be constructed manually by end users.
-            readonly prototype: Subscriptions;
+            readonly prototype: SubscriptionSet;
         };
     }
 
@@ -963,7 +963,7 @@ declare class Realm {
      * Get the latest set of flexible sync subscriptions.
      * @throws if flexible sync is not enabled for this app
      */
-    readonly subscriptions: Realm.App.Sync.Subscriptions
+    readonly subscriptions: Realm.App.Sync.SubscriptionSet
 
     /**
      * Get the current schema version of the Realm at the given path.

@@ -37,7 +37,7 @@ const realmConfig: SyncedConfiguration = {
 
 describe.skipIf(environment.missingServer, "Flexible sync", function () {
   type AddSubscriptionResult<T> = {
-    subs: Realm.App.Sync.Subscriptions;
+    subs: Realm.App.Sync.SubscriptionSet;
     sub: Realm.App.Sync.Subscription;
     query: Realm.Results<T & Realm.Object>;
   };
@@ -169,7 +169,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     });
 
     describe("Realm.subscriptions", function () {
-      it("returns a Subscriptions instance", function (this: RealmContext) {
+      it("returns a SubscriptionSet instance", function (this: RealmContext) {
         expect(this.realm.subscriptions).to.be.instanceOf(Realm.App.Sync.Subscriptions);
       });
 
@@ -247,7 +247,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
     });
 
-    describe("Subscriptions class", function () {
+    describe("SubscriptionSet class", function () {
       describe("#version", function () {
         it("starts at 0", function () {
           expect(this.realm.subscriptions.version).to.equal(0);
@@ -259,7 +259,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.version).to.equal(1);
         });
 
-        it("is not incremented when a different Subscriptions instance is updated", function (this: RealmContext) {
+        it("is not incremented when a different SubscriptionSet instance is updated", function (this: RealmContext) {
           const originalSubs = this.realm.subscriptions;
           expect(originalSubs.version).to.equal(0);
 
@@ -563,13 +563,13 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
         });
 
-        it("cannot be called on a MutableSubscriptions instance", async function (this: RealmContext) {
+        it("cannot be called on a MutableSubscriptionSet instance", async function (this: RealmContext) {
           const subs = this.realm.subscriptions;
 
           subs.update((mutableSubs) => {
-            expect(() => ((mutableSubs as unknown) as Realm.App.Sync.Subscriptions).waitForSynchronization()).to.throw(
-              "mutableSubs.waitForSynchronization is not a function",
-            );
+            expect(() =>
+              ((mutableSubs as unknown) as Realm.App.Sync.SubscriptionSet).waitForSynchronization(),
+            ).to.throw("mutableSubs.waitForSynchronization is not a function");
           });
         });
       });
@@ -578,58 +578,58 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         // These tests originated when SubscriptionSet and MutableSubscriptionSet were the same
         // class in core, so we had to keep track of mutability, but perhaps still have value
         describe("calling mutating methods outside an update callback", function () {
-          it("Subscriptions.add does not exist on non-mutable Subscriptions instances", function (this: RealmContext) {
+          it("SubscriptionSet.add does not exist on non-mutable SubscriptionSet instances", function (this: RealmContext) {
             const subs = this.realm.subscriptions;
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).add(this.realm.objects(PersonSchema.name));
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptionSet).add(this.realm.objects(PersonSchema.name));
             }).throws("subs.add is not a function");
           });
 
-          it("Subscriptions.remove does not exist on non-mutable Subscriptions instances", function (this: RealmContext) {
+          it("SubscriptionSet.remove does not exist on non-mutable SubscriptionSet instances", function (this: RealmContext) {
             const { subs, query } = addSubscriptionForPerson(this.realm);
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).remove(query);
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptionSet).remove(query);
             }).throws("subs.remove is not a function");
           });
 
-          it("Subscriptions.removeByName does not exist on non-mutable Subscriptions instances", function (this: RealmContext) {
+          it("SubscriptionSet.removeByName does not exist on non-mutable SubscriptionSet instances", function (this: RealmContext) {
             const { subs } = addSubscriptionForPerson(this.realm);
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeByName("test");
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptionSet).removeByName("test");
             }).throws("subs.removeByName is not a function");
           });
 
-          it("Subscriptions.removeSubscription does not exist on non-mutable Subscriptions instances", function (this: RealmContext) {
+          it("SubscriptionSet.removeSubscription does not exist on non-mutable SubscriptionSet instances", function (this: RealmContext) {
             const { subs, sub } = addSubscriptionForPerson(this.realm);
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeSubscription(sub);
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptionSet).removeSubscription(sub);
             }).throws("subs.removeSubscription is not a function");
           });
 
-          it("Subscriptions.removeAll does not exist on non-mutable Subscriptions instances", function (this: RealmContext) {
+          it("SubscriptionSet.removeAll does not exist on non-mutable SubscriptionSet instances", function (this: RealmContext) {
             const { subs } = addSubscriptionForPerson(this.realm);
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeAll();
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptionSet).removeAll();
             }).throws("subs.removeAll is not a function");
           });
 
-          it("Subscriptions.removeByObjectType does not exist on non-mutable Subscriptions instances", function (this: RealmContext) {
+          it("SubscriptionSet.removeByObjectType does not exist on non-mutable SubscriptionSet instances", function (this: RealmContext) {
             const { subs } = addSubscriptionForPerson(this.realm);
 
             expect(() => {
-              ((subs as unknown) as Realm.App.Sync.MutableSubscriptions).removeByObjectType("test");
+              ((subs as unknown) as Realm.App.Sync.MutableSubscriptionSet).removeByObjectType("test");
             }).throws("subs.removeByObjectType is not a function");
           });
 
           it("throws an error if a mutating method is called outside of an update() callback by holding a reference to the MutableSubscriptions", function (this: RealmContext) {
             // https://github.com/realm/realm-core/pull/5162
             const subs = this.realm.subscriptions;
-            let mutableSubs: Realm.App.Sync.MutableSubscriptions;
+            let mutableSubs: Realm.App.Sync.MutableSubscriptionSet;
 
             subs.update((m) => {
               mutableSubs = m;
@@ -640,12 +640,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             }).throws(/Wrong transactional state.*/);
           });
 
-          it("throws if called on a MutableSubscriptions instance", function (this: RealmContext) {
+          it("throws if called on a MutableSubscriptionSet instance", function (this: RealmContext) {
             const subs = this.realm.subscriptions;
 
             expect(() => {
               subs.update((mutableSubs) => {
-                ((mutableSubs as unknown) as Realm.App.Sync.Subscriptions).update(() => {
+                ((mutableSubs as unknown) as Realm.App.Sync.SubscriptionSet).update(() => {
                   // This should throw
                 });
               });
@@ -663,7 +663,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           }).to.not.throw();
         });
 
-        it("mutates the Subscriptions instance", function (this: RealmContext) {
+        it("mutates the SubscriptionSet instance", function (this: RealmContext) {
           const subs = this.realm.subscriptions;
           subs.update((mutableSubs) => {
             mutableSubs.add(this.realm.objects(PersonSchema.name));
@@ -672,7 +672,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs).to.have.length(1);
         });
 
-        it("does not mutate another Subscriptions instance", function (this: RealmContext) {
+        it("does not mutate another SubscriptionSet instance", function (this: RealmContext) {
           const subs = this.realm.subscriptions;
           const subs2 = this.realm.subscriptions;
           subs.update((mutableSubs) => {
@@ -1131,7 +1131,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
      *
      * @param realm Realm instance
      * @param config Realm configuration
-     * @param subsUpdateFn Callback to add subscriptions. Receives a MutableSubscriptions instance
+     * @param subsUpdateFn Callback to add subscriptions. Receives a MutableSubscriptionSet instance
      * and the currenly open realm. This is called both at the start of the function, and after
      * the Realm has been re-opened.
      * @returns Promise, resolving to an object containing the inserted object's ID (so we
@@ -1140,7 +1140,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     async function addPersonAndResyncWithSubscription(
       realm: Realm,
       config: Realm.Configuration,
-      subsUpdateFn: (mutableSubs: Realm.App.Sync.MutableSubscriptions, realm: Realm) => void,
+      subsUpdateFn: (mutableSubs: Realm.App.Sync.MutableSubscriptionSet, realm: Realm) => void,
     ): Promise<{ id: BSON.ObjectId; newRealm: Realm }> {
       realm.subscriptions.update((mutableSubs) => subsUpdateFn(mutableSubs, realm));
       await realm.subscriptions.waitForSynchronization();
