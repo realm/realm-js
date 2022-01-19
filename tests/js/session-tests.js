@@ -1208,7 +1208,7 @@ module.exports = {
     user1 = await app.logIn(credentials1);
     await realm1.syncSession.uploadAllLocalChanges();
 
-    // creatde copy no. 2 of the realm
+    // create copy no. 2 of the realm
     const realm2Path = realm1Path + "copy2.realm";
     realm1.writeCopyTo(realm2Path);
 
