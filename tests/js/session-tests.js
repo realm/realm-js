@@ -1365,7 +1365,7 @@ module.exports = {
     encryptedRealmCopy.close();
 
     /*
-      Test2:  check that we cannot open an encrypted realm copy with an
+      Test 2:  check that we cannot open an encrypted realm copy with an
         invalid encryption key
     */
     encryptionKey[0] = 0;
@@ -1380,11 +1380,32 @@ module.exports = {
       schema: [schemas.PersonForSync, schemas.DogForSync],
     };
 
+    encryptedRealmCopy = undefined;
     TestCase.assertThrows(() => {
       encryptedRealmCopy = new Realm(encryptedCopyConfig);
     }, "Opening realm with wrong encryption key should fail");
+    TestCase.assertUndefined(encryptedRealmCopy);
 
-    encryptedRealmCopy.close();
+    /*
+      Test 3:  check that we cannot open an encrypted realm copy without
+        using an encryption key
+    */
+    encryptedCopyConfig = {
+      sync: {
+        user: user2,
+        partitionValue: partition,
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+      },
+      path: encryptedCopyName,
+      schema: [schemas.PersonForSync, schemas.DogForSync],
+    };
+
+    encryptedRealmCopy = undefined;
+    TestCase.assertThrows(() => {
+      encryptedRealmCopy = new Realm(encryptedCopyConfig);
+    }, "Opening realm without encryption key should fail");
+    TestCase.assertUndefined(encryptedRealmCopy);
+
     realm1.close();
   },
 };
