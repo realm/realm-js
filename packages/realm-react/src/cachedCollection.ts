@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm from "realm";
+import Realm, { Collection } from "realm";
 
 const numericRegEx = /^-?\d+$/;
 
@@ -35,6 +35,14 @@ export function cachedCollection<T>(
       // Pass functions through
       const value = Reflect.get(target, key);
       if (typeof value === "function") {
+        if (key === "sorted" || key === "filtered") {
+          return (...args: unknown[]) => {
+            const col: Realm.Results<T & Realm.Object> = Reflect.apply(value, target, args);
+            collectionCache.clear();
+            indexToObjectId = [];
+            return new Proxy(col, cachedCollectionHandler);
+          };
+        }
         return value.bind(target);
       }
 
@@ -49,15 +57,15 @@ export function cachedCollection<T>(
       const objectId = object._objectId();
       const cacheKey = getCacheKey(objectId);
 
+      // track the objectId by index
+      indexToObjectId[index] = objectId;
+
       // If we do, return it...
       if (collectionCache.get(cacheKey)) {
         const collection = collectionCache.get(cacheKey);
         // if the colleciton was garbage collected, skip return and store the updated reference
         if (collection) return collection;
       }
-
-      // track the objectId by index
-      indexToObjectId[index] = objectId;
 
       // If not then this index has either not been accessed before, or has been invalidated due
       // to a modification. Fetch it from the collection and store it in the cache
@@ -67,7 +75,7 @@ export function cachedCollection<T>(
     },
   };
 
-  const cachedCollection = new Proxy(collection, cachedCollectionHandler);
+  const cachedCollectionResult = new Proxy(collection, cachedCollectionHandler);
 
   const listenerCallback: Realm.CollectionChangeCallback<T & Realm.Object> = (_, changes) => {
     if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
@@ -77,7 +85,9 @@ export function cachedCollection<T>(
         const [objectId] = indexToObjectId.splice(index, 1);
         if (objectId) {
           const cacheKey = getCacheKey(objectId);
-          collectionCache.delete(cacheKey);
+          if (collectionCache.has(cacheKey)) {
+            collectionCache.delete(cacheKey);
+          }
         }
       });
 
@@ -86,7 +96,9 @@ export function cachedCollection<T>(
         const [objectId] = indexToObjectId.splice(index, 1);
         if (objectId) {
           const cacheKey = getCacheKey(objectId);
-          collectionCache.delete(cacheKey);
+          if (collectionCache.has(cacheKey)) {
+            collectionCache.delete(cacheKey);
+          }
         }
       });
 
@@ -94,12 +106,13 @@ export function cachedCollection<T>(
     }
   };
 
-  cachedCollection.addListener(listenerCallback);
+  cachedCollectionResult.addListener(listenerCallback);
+
   const tearDown = () => {
     collection.removeListener(listenerCallback);
     collectionCache.clear();
     indexToObjectId = [];
   };
 
-  return { collection: cachedCollection, tearDown };
+  return { collection: cachedCollectionResult, tearDown };
 }

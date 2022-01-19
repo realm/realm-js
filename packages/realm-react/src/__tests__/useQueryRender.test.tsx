@@ -164,11 +164,11 @@ function getTestCollection(queryType: QueryType) {
       return testRealm.objects(TestObject);
   }
 }
+//${"filtered"} | ${QueryType.filtered}
+//${"normal"}   | ${QueryType.normal}
 describe.each`
   queryTypeName | queryType
-  ${"normal"}   | ${QueryType.normal}
   ${"sorted"}   | ${QueryType.sorted}
-  ${"filtered"} | ${QueryType.filtered}
 `("useQueryRender: $queryTypeName", ({ queryType }) => {
   afterEach(() => {
     renderCounter.mockClear();
@@ -182,13 +182,17 @@ describe.each`
 
     expect(renderCounter).toHaveBeenCalledTimes(10);
   });
-  it("change to data will rerender", async () => {
-    const { getByTestId, getByText } = render(<App />);
+  it.only("change to data will rerender", async () => {
+    const { getByTestId, getByText } = render(<App queryType={queryType} />);
 
-    const nameElement = getByTestId("name1");
-    const input = getByTestId("input1");
+    const collection = getTestCollection(queryType);
+    const firstItem = collection[0];
+    const id = firstItem.id;
 
-    expect(nameElement).toHaveTextContent("1");
+    const nameElement = getByTestId(`name${id}`);
+    const input = getByTestId(`input${id}`);
+
+    expect(nameElement).toHaveTextContent(`${id}`);
     expect(renderCounter).toHaveBeenCalledTimes(10);
 
     fireEvent.changeText(input as ReactTestInstance, "apple");
@@ -200,22 +204,28 @@ describe.each`
   });
 
   it("handles deletions", async () => {
-    const { getByTestId } = render(<App />);
+    const { getByTestId } = render(<App queryType={queryType} />);
 
-    const deleteButton = getByTestId("deleteButton1");
-    const nameElement = getByTestId("name1");
+    const collection = getTestCollection(queryType);
+    const firstItem = collection[0];
+    const id = firstItem.id;
 
-    expect(nameElement).toHaveTextContent("1");
+    const nextVisible = collection[10];
+
+    const deleteButton = getByTestId(`deleteButton${id}`);
+    const nameElement = getByTestId(`name${id}`);
+
+    expect(nameElement).toHaveTextContent(`${id}`);
     expect(renderCounter).toHaveBeenCalledTimes(10);
 
     fireEvent.press(deleteButton as ReactTestInstance);
 
-    await waitFor(() => getByTestId("result10"));
+    await waitFor(() => getByTestId(`result${nextVisible.id}`));
 
     expect(renderCounter).toHaveBeenCalledTimes(11);
   });
   it("an implicit update to an item in the FlatList view area causes a rerender", async () => {
-    const { getByTestId } = render(<App />);
+    const { getByTestId } = render(<App queryType={queryType} />);
 
     await waitFor(() => getByTestId("testContainer"));
 
@@ -237,7 +247,7 @@ describe.each`
   });
 
   it("does not rerender if the update is out of the FlatList view area", async () => {
-    const { getByTestId } = render(<App />);
+    const { getByTestId } = render(<App queryType={queryType} />);
 
     await waitFor(() => getByTestId("testContainer"));
 
