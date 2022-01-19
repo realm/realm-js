@@ -301,10 +301,12 @@ class Realm {
    * Writes a compacted copy of the Realm to the given path.
    *
    * The destination file cannot already exist.
+   * When invoked on a synced realm, a copy of the realm is created that any user can open and
+   * resume synchronization with the server.
    *
    * Note that if this method is called from within a write transaction, the current data is written,
    * not the data from the point when the previous write transaction was committed.
-   * @param {string} path path to save the Realm to
+   * @param {string} path path to save the Realm to.
    * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Optional 64-byte encryption key to encrypt the new file with.
    */
   writeCopyTo(path, encryptionKey) {}
