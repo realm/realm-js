@@ -22,6 +22,7 @@
 #include "realm/sync/subscriptions.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <stdexcept>
 
 namespace realm {
@@ -83,7 +84,7 @@ typename T::Object SubscriptionClass<T>::create_instance(ContextType ctx, realm:
  * @brief Get the ID of the subscription
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the Subscription
+ * @param this_object \ref ObjectType wrapping the Subscription
  * @param return_value \ref ReturnValue wrapping a ObjectId containing the ID
  */
 template <typename T>
@@ -97,7 +98,7 @@ void SubscriptionClass<T>::get_id(ContextType ctx, ObjectType this_object, Retur
  * @brief Get the created date of the subscription
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the Subscription
+ * @param this_object \ref ObjectType wrapping the Subscription
  * @param return_value \ref ReturnValue wrapping a Date containing the created date
  */
 template <typename T>
@@ -111,7 +112,7 @@ void SubscriptionClass<T>::get_created_at(ContextType ctx, ObjectType this_objec
  * @brief Get the updated date of the subscription
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the Subscription
+ * @param this_object \ref ObjectType wrapping the Subscription
  * @param return_value \ref ReturnValue wrapping a Date containing the updated date
  */
 template <typename T>
@@ -125,7 +126,7 @@ void SubscriptionClass<T>::get_updated_at(ContextType ctx, ObjectType this_objec
  * @brief Get the name of the subscription
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the Subscription
+ * @param this_object \ref ObjectType wrapping the Subscription
  * @param return_value \ref ReturnValue wrapping a string containing the name, or null if the name is not set
  */
 template <typename T>
@@ -146,7 +147,7 @@ void SubscriptionClass<T>::get_name(ContextType ctx, ObjectType this_object, Ret
  * @brief Get the object type of the subscription
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the Subscription
+ * @param this_object \ref ObjectType wrapping the Subscription
  * @param return_value \ref ReturnValue wrapping a string containing the object type
  */
 template <typename T>
@@ -160,7 +161,7 @@ void SubscriptionClass<T>::get_object_type(ContextType ctx, ObjectType this_obje
  * @brief Get the query string of the subscription
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the Subscription
+ * @param this_object \ref ObjectType wrapping the Subscription
  * @param return_value \ref ReturnValue wrapping a string containing the query string
  */
 template <typename T>
@@ -176,10 +177,15 @@ void SubscriptionClass<T>::get_query_string(ContextType ctx, ObjectType this_obj
 template <typename T>
 class SubscriptionSet : public realm::sync::SubscriptionSet {
 public:
-    SubscriptionSet(const realm::sync::SubscriptionSet& s)
+    SubscriptionSet(const realm::sync::SubscriptionSet& s, const std::shared_ptr<Realm> r)
         : realm::sync::SubscriptionSet(s)
+        , realm(r)
     {
     }
+
+    // Hold a shared_ptr to the Realm so we can check if it still exists
+    // in the wait_for_synchronization callback
+    std::shared_ptr<Realm> realm;
 };
 
 /**
@@ -200,7 +206,7 @@ public:
     const std::string name = "Subscriptions";
     using StateChangeHandler = void(StatusWith<realm::sync::SubscriptionSet::State> state);
 
-    static ObjectType create_instance(ContextType, realm::sync::SubscriptionSet);
+    static ObjectType create_instance(ContextType, realm::sync::SubscriptionSet, std::shared_ptr<Realm>);
 
     static void get_empty(ContextType, ObjectType, ReturnValue&);
     static void get_state(ContextType, ObjectType, ReturnValue&);
@@ -223,25 +229,29 @@ public:
     MethodMap<T> const methods = {
         {"findByName", wrap<find_by_name>},
         {"findByQuery", wrap<find_by_query>},
-        {"update", wrap<update>},
+        {"_update", wrap<update>},
         {"_waitForSynchronization", wrap<wait_for_synchronization>},
     };
 
     IndexPropertyType<T> const index_accessor = {wrap<get_index>, nullptr};
+
+private:
+    static void wait_for_synchronization_impl(Protected<ContextType>, Protected<ObjectType>, Protected<FunctionType>);
 };
 
 template <typename T>
 typename T::Object SubscriptionSetClass<T>::create_instance(ContextType ctx,
-                                                            realm::sync::SubscriptionSet subscriptionSet)
+                                                            realm::sync::SubscriptionSet subscriptionSet,
+                                                            std::shared_ptr<Realm> realm)
 {
-    return create_object<T, SubscriptionSetClass<T>>(ctx, new SubscriptionSet<T>(std::move(subscriptionSet)));
+    return create_object<T, SubscriptionSetClass<T>>(ctx, new SubscriptionSet<T>(std::move(subscriptionSet), realm));
 }
 
 /**
  * @brief Get whether the SubscriptionSet is empty or not
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param this_object \ref ObjectType wrapping the SubscriptionSet
  * @param return_value \ref ReturnValue wrapping a boolean containing the empty state
  */
 template <typename T>
@@ -255,7 +265,7 @@ void SubscriptionSetClass<T>::get_empty(ContextType ctx, ObjectType this_object,
  * @brief Get the error string for the SubscriptionSet, if any
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param this_object \ref ObjectType wrapping the SubscriptionSet
  * @param return_value \ref ReturnValue wrapping the error string if any, or null if not
  */
 template <typename T>
@@ -276,7 +286,7 @@ void SubscriptionSetClass<T>::get_error(ContextType ctx, ObjectType this_object,
  * @brief Get the current state of the SubscriptionSet
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param this_object \ref ObjectType wrapping the SubscriptionSet
  * @param return_value \ref ReturnValue wrapping a string representing the current state
  * @exception abnormal program termination (std::abort) if an unknown state is encountered
  */
@@ -308,7 +318,7 @@ void SubscriptionSetClass<T>::get_state(ContextType ctx, ObjectType this_object,
  * @brief Get the version of the SubscriptionSet
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param this_object \ref ObjectType wrapping the SubscriptionSet
  * @param return_value \ref ReturnValue wrapping a number representing the version
  */
 template <typename T>
@@ -340,7 +350,7 @@ void SubscriptionSetClass<T>::get_index(ContextType ctx, ObjectType this_object,
  *
  * @tparam T
  * @param ctx
- * @param object
+ * @param this_object
  * @param return_value
  */
 template <typename T>
@@ -354,7 +364,7 @@ void SubscriptionSetClass<T>::get_length(ContextType ctx, ObjectType this_object
  * @brief Find a subscription by name
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param this_object \ref ObjectType wrapping the SubscriptionSet
  * @param args \ref A single argument containing the subscription name to find
  * @param return_value \ref ReturnValue wrapping a Subscription if found, null if not
  */
@@ -382,7 +392,7 @@ void SubscriptionSetClass<T>::find_by_name(ContextType ctx, ObjectType this_obje
  * @brief Find a subscription by query
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param this_object \ref ObjectType wrapping the SubscriptionSet
  * @param args \ref A single argument containing the query to find, represented as a Results instance
  * @param return_value \ref ReturnValue wrapping a Subscription if found, null if not
  * @exception std::runtime_error if the argument is not a Results instance
@@ -414,13 +424,11 @@ void SubscriptionSetClass<T>::find_by_query(ContextType ctx, ObjectType this_obj
 }
 
 /**
- * @brief Invoke a callback when the SubscriptionSet's state becomes "Complete". Will invoke it
- * immediately if the state is already "Complete". Will return an error to the callback if the
- * state is or becomes "Error", or if it is called on before creatting any subscriptions.
+ * @brief See `wait_for_synchronization_impl`
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
- * @param args \ref A single argument containing a callback to be called when the state is "Complete"
+ * @param this_object \ref ObjectType wrapping the SubscriptionSet
+ * @param args \ref A single argument containing a callback to be called when the state is "Complete" or "Error"
  * @param return_value \ref None
  */
 template <typename T>
@@ -428,14 +436,36 @@ void SubscriptionSetClass<T>::wait_for_synchronization(ContextType ctx, ObjectTy
                                                        ReturnValue& return_value)
 {
     args.validate_count(1);
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
 
-    auto callback_function = Value::validated_to_function(ctx, args[0], "callback");
-
-    Protected<FunctionType> protected_callback(ctx, callback_function);
+    Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
+    SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this, protected_callback);
+}
+
+/**
+ * @brief Invoke a callback when the SubscriptionSet's state becomes "Complete" or "Error".
+ * Will invoke it immediately if the state is already "Complete". Will return an error to
+ * the callback if the state is or becomes "Error", or if it is called on before creating
+ * any subscriptions.
+ *
+ * @param ctx JS context
+ * @param this_object \ref ObjectType wrapping the SubscriptionSet
+ * @param callback \ref Callback function to be invoked when the state is "Complete" or "Error"
+ */
+template <typename T>
+void SubscriptionSetClass<T>::wait_for_synchronization_impl(Protected<ContextType> protected_ctx,
+                                                            Protected<ObjectType> protected_this,
+                                                            Protected<FunctionType> protected_callback)
+{
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
+
+    // Hold a weak_ptr to the Realm, so we can check if the Realm still exists and is not closed
+    // when our callback fires – if the Realm has gone out of scope and been garbage collected
+    // by the time the callback fires (which happens in tests), we get a crash otherwise
+    std::weak_ptr<Realm> weak_realm = subs->realm;
 
     std::function<StateChangeHandler> state_change_func;
 
@@ -443,12 +473,17 @@ void SubscriptionSetClass<T>::wait_for_synchronization(ContextType ctx, ObjectTy
         [=](StatusWith<realm::sync::SubscriptionSet::State> state) {
             HANDLESCOPE(protected_ctx)
 
-            subs->refresh();
+            if (!weak_realm.lock() || weak_realm.lock()->is_closed())
+                return;
 
-            auto result =
-                state.is_ok()
-                    ? Value::from_undefined(protected_ctx)
-                    : Object::create_obj(ctx, {{"message", Value::from_string(ctx, state.get_status().reason())}});
+            auto current_subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
+            current_subs->refresh();
+
+            auto result = state.is_ok()
+                              ? Value::from_undefined(protected_ctx)
+                              : Object::create_obj(
+                                    protected_ctx,
+                                    {{"message", Value::from_string(protected_ctx, state.get_status().reason())}});
 
             Function<T>::callback(protected_ctx, protected_callback, protected_this, {result});
         });
@@ -462,8 +497,10 @@ void SubscriptionSetClass<T>::wait_for_synchronization(ContextType ctx, ObjectTy
     catch (KeyNotFound const& ex) {
         // TODO Waiting on https://github.com/realm/realm-core/issues/5165 to remove this
         auto error = Object::create_obj(
-            ctx, {{"message", Value::from_string(ctx, "`waitForSynchronisation` cannot be called before creating "
-                                                      "a SubscriptionSet using `update`")}});
+            protected_ctx,
+            {{"message",
+              Value::from_string(protected_ctx, "`waitForSynchronisation` cannot be called before creating "
+                                                "a SubscriptionSet using `update`")}});
 
         Function<T>::callback(protected_ctx, protected_callback, protected_this, {error});
     }
@@ -548,19 +585,26 @@ MutableSubscriptionSetClass<T>::create_instance(ContextType ctx, realm::sync::Mu
  * to point to the updated SubscriptionSet.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
- * @param args \ref A single argument containing a callback which receives a mutable version of
- * the SubscriptionSet as its argument, and which updates the SubscriptionSet as required
+ * @param this_object \ref ObjectType wrapping the SubscriptionSet
+ * @param args \ref Arguments structure:
+ *   Argument 1: A callback which receives a mutable version of the SubscriptionSet as its
+ *     argument, and which updates the SubscriptionSet as required
+ *   Argument 2: A callback to be called when the state of the SubscriptionSet is "Complete"
+ *      or "Error" after the update has been applied (see `wait_for_synchronization_impl`).
  * @param return_value \ref Returns the return value of the update callback
  */
 template <typename T>
 void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Arguments& args,
                                      ReturnValue& return_value)
 {
-    args.validate_count(1);
+    args.validate_count(2);
 
-    FunctionType callback = Value::validated_to_function(ctx, args[0], "callback");
-    Protected<FunctionType> protected_callback(ctx, callback);
+    FunctionType update_callback = Value::validated_to_function(ctx, args[0], "update callback");
+    FunctionType completion_callback = Value::validated_to_function(ctx, args[1], "completion callback");
+
+    Protected<FunctionType> protected_update_callback(ctx, update_callback);
+    Protected<FunctionType> protected_completion_callback(ctx, completion_callback);
+
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(js::Context<T>::get_global_context(ctx));
 
@@ -579,7 +623,7 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
         // and return its return value
         ValueType arguments[]{mutable_subs_js};
         auto const& callback_return =
-            Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, arguments);
+            Function<T>::callback(protected_ctx, protected_update_callback, protected_this, 1, arguments);
         return_value.set(callback_return);
 
         // Commit the mutation, which downgrades its internal transaction to a read transaction
@@ -587,8 +631,13 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
         // with the changes we made
         auto new_sub_set = std::move(*mutable_subs).commit();
 
+        // Asynchronously wait for the SubscriptionSet to be synchronised
+        SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
+                                                               protected_completion_callback);
+
         // Update this SubscriptionSetClass instance to point to the updated version
-        set_internal<T, SubscriptionSetClass<T>>(ctx, this_object, new SubscriptionSet<T>(std::move(new_sub_set)));
+        set_internal<T, SubscriptionSetClass<T>>(ctx, this_object,
+                                                 new SubscriptionSet<T>(std::move(new_sub_set), subs->realm));
     }
     catch (...) {
         throw;
@@ -600,7 +649,7 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the MutableSubscriptionSet
+ * @param this_object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref Arguments structure:
  *   Argument 1: The query to subscribe to, represented as a Results instance
  *   Argument 2: Optional object of options:
@@ -667,7 +716,7 @@ void MutableSubscriptionSetClass<T>::add(ContextType ctx, ObjectType this_object
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the MutableSubscriptionSet
+ * @param this_object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref A single argument containing the name of the subscription to be removed
  * @param return_value \ref ReturnValue wrapping a boolean, true if the subscription was found
  * and removed, false otherwise
@@ -697,7 +746,7 @@ void MutableSubscriptionSetClass<T>::remove_by_name(ContextType ctx, ObjectType 
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the MutableSubscriptionSet
+ * @param this_object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref A single argument containing the query of the subscription to be removed, represented
  * as a Results instance
  * @param return_value \ref ReturnValue wrapping a boolean, true if the subscription was found
@@ -735,7 +784,7 @@ void MutableSubscriptionSetClass<T>::remove(ContextType ctx, ObjectType this_obj
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the MutableSubscriptionSet
+ * @param this_object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref A single argument containing the Subscription instance to be removed
  * @param return_value \ref ReturnValue wrapping a boolean, true if the subscription was found
  * and removed, false otherwise
@@ -774,7 +823,7 @@ void MutableSubscriptionSetClass<T>::remove_subscription(ContextType ctx, Object
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the MutableSubscriptionSet
+ * @param this_object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref None
  * @param return_value \ref ReturnValue wrapping the number of subscriptions removed.
  */
@@ -796,7 +845,7 @@ void MutableSubscriptionSetClass<T>::remove_all(ContextType ctx, ObjectType this
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the MutableSubscriptionSet
+ * @param this_object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref A single argument containing the string object type to be removed
  * @param return_value \ref ReturnValue wrapping the number of subscriptions removed.
  */

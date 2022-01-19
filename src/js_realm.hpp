@@ -1484,7 +1484,7 @@ void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, R
             "and enable flexible sync, for example: { sync: { user, flexible: true } }");
     }
 
-    return_value.set(SubscriptionSetClass<T>::create_instance(ctx, realm->get_latest_subscription_set()));
+    return_value.set(SubscriptionSetClass<T>::create_instance(ctx, realm->get_latest_subscription_set(), realm));
 }
 #endif
 
