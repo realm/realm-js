@@ -347,6 +347,14 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
     STRING_TO_PROP(max_age)
 #undef STRING_TO_PROP
 
+    // copy over metadata
+    auto metadata = Value::from_bson(ctx, user_profile.data());
+    auto metadata_object = Value::to_object(ctx, metadata);
+    auto metadata_keys = Object::get_property_names(ctx, metadata_object);
+    for (auto& metadata_key : metadata_keys) {
+        ValueType metadata_value = Object::get_property(ctx, metadata_object, metadata_key);
+        Object::set_property(ctx, profile_object, metadata_key, metadata_value);
+    }
     return_value.set(profile_object);
 }
 
