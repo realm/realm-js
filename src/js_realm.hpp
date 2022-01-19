@@ -1461,7 +1461,7 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
 
 #if REALM_ENABLE_SYNC
 /**
- * @brief Get the latest set of flexible sync subscriptions.
+ * @brief Get the latest flexible sync SubscriptionSet.
  *
  * @exception std::runtime_error if flexible sync is not enabled
  */
@@ -1484,7 +1484,7 @@ void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, R
             "and enable flexible sync, for example: { sync: { user, flexible: true } }");
     }
 
-    return_value.set(SubscriptionsClass<T>::create_instance(ctx, realm->get_latest_subscription_set()));
+    return_value.set(SubscriptionSetClass<T>::create_instance(ctx, realm->get_latest_subscription_set()));
 }
 #endif
 

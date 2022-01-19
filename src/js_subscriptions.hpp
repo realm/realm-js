@@ -171,22 +171,22 @@ void SubscriptionClass<T>::get_query_string(ContextType ctx, ObjectType this_obj
 }
 
 /**
- * @brief Wrapper class for a flexible sync subscription set
+ * @brief Wrapper class for a flexible sync SubscriptionSet
  */
 template <typename T>
-class Subscriptions : public realm::sync::SubscriptionSet {
+class SubscriptionSet : public realm::sync::SubscriptionSet {
 public:
-    Subscriptions(const realm::sync::SubscriptionSet& s)
+    SubscriptionSet(const realm::sync::SubscriptionSet& s)
         : realm::sync::SubscriptionSet(s)
     {
     }
 };
 
 /**
- * @brief Class representing a set of flexible sync subcriptions
+ * @brief Class representing a flexible sync SubcriptionSet
  */
 template <typename T>
-class SubscriptionsClass : public ClassDefinition<T, Subscriptions<T>> {
+class SubscriptionSetClass : public ClassDefinition<T, SubscriptionSet<T>> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -231,37 +231,37 @@ public:
 };
 
 template <typename T>
-typename T::Object SubscriptionsClass<T>::create_instance(ContextType ctx,
-                                                          realm::sync::SubscriptionSet subscriptionSet)
+typename T::Object SubscriptionSetClass<T>::create_instance(ContextType ctx,
+                                                            realm::sync::SubscriptionSet subscriptionSet)
 {
-    return create_object<T, SubscriptionsClass<T>>(ctx, new Subscriptions<T>(std::move(subscriptionSet)));
+    return create_object<T, SubscriptionSetClass<T>>(ctx, new SubscriptionSet<T>(std::move(subscriptionSet)));
 }
 
 /**
- * @brief Get whether the subscriptions collection is empty or not
+ * @brief Get whether the SubscriptionSet is empty or not
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
  * @param return_value \ref ReturnValue wrapping a boolean containing the empty state
  */
 template <typename T>
-void SubscriptionsClass<T>::get_empty(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
+void SubscriptionSetClass<T>::get_empty(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
     return_value.set(subs->size() == 0);
 }
 
 /**
- * @brief Get the error string for the subscription set, if any
+ * @brief Get the error string for the SubscriptionSet, if any
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
  * @param return_value \ref ReturnValue wrapping the error string if any, or null if not
  */
 template <typename T>
-void SubscriptionsClass<T>::get_error(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
+void SubscriptionSetClass<T>::get_error(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
     std::string error = subs->error_str();
 
     if (error == "") {
@@ -273,7 +273,7 @@ void SubscriptionsClass<T>::get_error(ContextType ctx, ObjectType this_object, R
 }
 
 /**
- * @brief Get the current state of the subscription set
+ * @brief Get the current state of the SubscriptionSet
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
@@ -281,9 +281,9 @@ void SubscriptionsClass<T>::get_error(ContextType ctx, ObjectType this_object, R
  * @exception abnormal program termination (std::abort) if an unknown state is encountered
  */
 template <typename T>
-void SubscriptionsClass<T>::get_state(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
+void SubscriptionSetClass<T>::get_state(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
     switch (subs->state()) {
         case sync::SubscriptionSet::State::Uncommitted:
         case sync::SubscriptionSet::State::Pending:
@@ -305,16 +305,16 @@ void SubscriptionsClass<T>::get_state(ContextType ctx, ObjectType this_object, R
 }
 
 /**
- * @brief Get the version of the subscription set
+ * @brief Get the version of the SubscriptionSet
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
  * @param return_value \ref ReturnValue wrapping a number representing the version
  */
 template <typename T>
-void SubscriptionsClass<T>::get_version(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
+void SubscriptionSetClass<T>::get_version(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
     return_value.set((uint32_t)subs->version());
 }
 
@@ -328,10 +328,10 @@ void SubscriptionsClass<T>::get_version(ContextType ctx, ObjectType this_object,
  * @param return_value
  */
 template <typename T>
-void SubscriptionsClass<T>::get_index(ContextType ctx, ObjectType this_object, uint32_t index,
-                                      ReturnValue& return_value)
+void SubscriptionSetClass<T>::get_index(ContextType ctx, ObjectType this_object, uint32_t index,
+                                        ReturnValue& return_value)
 {
-    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
     return_value.set(SubscriptionClass<T>::create_instance(ctx, subs->at(index)));
 }
 
@@ -344,9 +344,9 @@ void SubscriptionsClass<T>::get_index(ContextType ctx, ObjectType this_object, u
  * @param return_value
  */
 template <typename T>
-void SubscriptionsClass<T>::get_length(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
+void SubscriptionSetClass<T>::get_length(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
     return_value.set((uint32_t)subs->size());
 }
 
@@ -359,13 +359,13 @@ void SubscriptionsClass<T>::get_length(ContextType ctx, ObjectType this_object, 
  * @param return_value \ref ReturnValue wrapping a Subscription if found, null if not
  */
 template <typename T>
-void SubscriptionsClass<T>::find_by_name(ContextType ctx, ObjectType this_object, Arguments& args,
-                                         ReturnValue& return_value)
+void SubscriptionSetClass<T>::find_by_name(ContextType ctx, ObjectType this_object, Arguments& args,
+                                           ReturnValue& return_value)
 {
     args.validate_count(1);
 
     std::string name = Value::validated_to_string(ctx, args[0], "name");
-    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
 
     auto it = subs->find(name);
 
@@ -388,8 +388,8 @@ void SubscriptionsClass<T>::find_by_name(ContextType ctx, ObjectType this_object
  * @exception std::runtime_error if the argument is not a Results instance
  */
 template <typename T>
-void SubscriptionsClass<T>::find_by_query(ContextType ctx, ObjectType this_object, Arguments& args,
-                                          ReturnValue& return_value)
+void SubscriptionSetClass<T>::find_by_query(ContextType ctx, ObjectType this_object, Arguments& args,
+                                            ReturnValue& return_value)
 {
     args.validate_count(1);
 
@@ -398,7 +398,7 @@ void SubscriptionsClass<T>::find_by_query(ContextType ctx, ObjectType this_objec
         throw std::runtime_error("Argument to 'findByName' must be a collection of Realm objects.");
     }
 
-    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
     auto results = get_internal<T, ResultsClass<T>>(ctx, results_arg);
     auto query = results->get_query();
 
@@ -414,7 +414,7 @@ void SubscriptionsClass<T>::find_by_query(ContextType ctx, ObjectType this_objec
 }
 
 /**
- * @brief Invoke a callback when the subscription set's state becomes "Complete". Will invoke it
+ * @brief Invoke a callback when the SubscriptionSet's state becomes "Complete". Will invoke it
  * immediately if the state is already "Complete". Will return an error to the callback if the
  * state is or becomes "Error", or if it is called on before creatting any subscriptions.
  *
@@ -424,8 +424,8 @@ void SubscriptionsClass<T>::find_by_query(ContextType ctx, ObjectType this_objec
  * @param return_value \ref None
  */
 template <typename T>
-void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType this_object, Arguments& args,
-                                                     ReturnValue& return_value)
+void SubscriptionSetClass<T>::wait_for_synchronization(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                       ReturnValue& return_value)
 {
     args.validate_count(1);
 
@@ -435,7 +435,7 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
 
     std::function<StateChangeHandler> state_change_func;
 
@@ -463,33 +463,33 @@ void SubscriptionsClass<T>::wait_for_synchronization(ContextType ctx, ObjectType
         // TODO Waiting on https://github.com/realm/realm-core/issues/5165 to remove this
         auto error = Object::create_obj(
             ctx, {{"message", Value::from_string(ctx, "`waitForSynchronisation` cannot be called before creating "
-                                                      "a subscription set using `update`")}});
+                                                      "a SubscriptionSet using `update`")}});
 
         Function<T>::callback(protected_ctx, protected_callback, protected_this, {error});
     }
 }
 
 /**
- * @brief Class wrapping a mutable subscription set.
+ * @brief Class wrapping a MutableSubscriptionSet.
  */
 template <typename T>
-class MutableSubscriptions : public realm::sync::MutableSubscriptionSet {
+class MutableSubscriptionSet : public realm::sync::MutableSubscriptionSet {
 public:
-    MutableSubscriptions(const realm::sync::MutableSubscriptionSet s)
+    MutableSubscriptionSet(const realm::sync::MutableSubscriptionSet s)
         : realm::sync::MutableSubscriptionSet(s)
     {
     }
 };
 
 /**
- * @brief Class representing mutable version of a given subscription set.
+ * @brief Class representing mutable version of a given SubscriptionSet.
  *
  * @note This is not modelled as an inheritance relationship in JS (using the third
  * ClassDefinition template arg to set the parent), because we are not exposing all
  * the methods of Subscriptions, so it is not stricly inheritance.
  */
 template <typename T>
-class MutableSubscriptionsClass : public ClassDefinition<T, MutableSubscriptions<T>> {
+class MutableSubscriptionSetClass : public ClassDefinition<T, MutableSubscriptionSet<T>> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -505,11 +505,11 @@ public:
     static ObjectType create_instance(ContextType, realm::sync::MutableSubscriptionSet);
 
     PropertyMap<T> const properties = {
-        {"empty", {wrap<SubscriptionsClass<T>::get_empty>, nullptr}},
-        {"state", {wrap<SubscriptionsClass<T>::get_state>, nullptr}},
-        {"error", {wrap<SubscriptionsClass<T>::get_error>, nullptr}},
-        {"version", {wrap<SubscriptionsClass<T>::get_version>, nullptr}},
-        {"length", {wrap<SubscriptionsClass<T>::get_length>, nullptr}},
+        {"empty", {wrap<SubscriptionSetClass<T>::get_empty>, nullptr}},
+        {"state", {wrap<SubscriptionSetClass<T>::get_state>, nullptr}},
+        {"error", {wrap<SubscriptionSetClass<T>::get_error>, nullptr}},
+        {"version", {wrap<SubscriptionSetClass<T>::get_version>, nullptr}},
+        {"length", {wrap<SubscriptionSetClass<T>::get_length>, nullptr}},
     };
 
     static void add(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -520,8 +520,8 @@ public:
     static void remove_by_object_type(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
-        {"findByName", wrap<SubscriptionsClass<T>::find_by_name>},
-        {"findByQuery", wrap<SubscriptionsClass<T>::find_by_query>},
+        {"findByName", wrap<SubscriptionSetClass<T>::find_by_name>},
+        {"findByQuery", wrap<SubscriptionSetClass<T>::find_by_query>},
 
         // Mutable-only methods
         {"add", wrap<add>},
@@ -532,30 +532,30 @@ public:
         {"removeByObjectType", wrap<remove_by_object_type>},
     };
 
-    IndexPropertyType<T> const index_accessor = {wrap<SubscriptionsClass<T>::get_index>, nullptr};
+    IndexPropertyType<T> const index_accessor = {wrap<SubscriptionSetClass<T>::get_index>, nullptr};
 };
 
 template <typename T>
-typename T::Object MutableSubscriptionsClass<T>::create_instance(ContextType ctx,
-                                                                 realm::sync::MutableSubscriptionSet subscriptionSet)
+typename T::Object
+MutableSubscriptionSetClass<T>::create_instance(ContextType ctx, realm::sync::MutableSubscriptionSet subscriptionSet)
 {
-    return create_object<T, MutableSubscriptionsClass<T>>(ctx,
-                                                          new MutableSubscriptions<T>(std::move(subscriptionSet)));
+    return create_object<T, MutableSubscriptionSetClass<T>>(
+        ctx, new MutableSubscriptionSet<T>(std::move(subscriptionSet)));
 }
 
 /**
- * @brief Perform updates to the subscription set in a callback, then update this instance
- * to point to the updated subscription set.
+ * @brief Perform updates to the SubscriptionSet in a callback, then update this instance
+ * to point to the updated SubscriptionSet.
  *
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
  * @param args \ref A single argument containing a callback which receives a mutable version of
- * the subscription set as its argument, and which updates the subscription set as required
+ * the SubscriptionSet as its argument, and which updates the SubscriptionSet as required
  * @param return_value \ref None
  */
 template <typename T>
-void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Arguments& args,
-                                   ReturnValue& return_value)
+void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Arguments& args,
+                                     ReturnValue& return_value)
 {
     args.validate_count(1);
 
@@ -564,7 +564,7 @@ void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Argu
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(js::Context<T>::get_global_context(ctx));
 
-    auto subs = get_internal<T, SubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
 
     try {
         HANDLESCOPE(protected_ctx);
@@ -572,8 +572,8 @@ void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Argu
         // Create a mutable copy of this instance (which copies the original and upgrades
         // its internal transaction to a write transaction, so we can make updates to it -
         // SubscriptionSets are otherwise immutable)
-        auto mutable_subs_js = MutableSubscriptionsClass<T>::create_instance(ctx, subs->make_mutable_copy());
-        auto mutable_subs = get_internal<T, MutableSubscriptionsClass<T>>(ctx, mutable_subs_js);
+        auto mutable_subs_js = MutableSubscriptionSetClass<T>::create_instance(ctx, subs->make_mutable_copy());
+        auto mutable_subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, mutable_subs_js);
 
         // Call the provided callback, passing in the mutable copy as an argument
         ValueType arguments[]{mutable_subs_js};
@@ -585,8 +585,8 @@ void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Argu
         // with the changes we made
         auto new_sub_set = std::move(*mutable_subs).commit();
 
-        // Update this SubscriptionsClass instance to point to the updated version
-        set_internal<T, SubscriptionsClass<T>>(ctx, this_object, new Subscriptions<T>(std::move(new_sub_set)));
+        // Update this SubscriptionSetClass instance to point to the updated version
+        set_internal<T, SubscriptionSetClass<T>>(ctx, this_object, new SubscriptionSet<T>(std::move(new_sub_set)));
     }
     catch (...) {
         throw;
@@ -594,11 +594,11 @@ void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Argu
 }
 
 /**
- * @brief Add a new subscription for a specified query to the subscription set.
+ * @brief Add a new subscription for a specified query to the MutableSubscriptionSet.
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref Arguments structure:
  *   Argument 1: The query to subscribe to, represented as a Results instance
  *   Argument 2: Optional object of options:
@@ -609,8 +609,8 @@ void SubscriptionsClass<T>::update(ContextType ctx, ObjectType this_object, Argu
  * @exception std::runtime_error Thrown if the first argument is not a valid Results instance
  */
 template <typename T>
-void MutableSubscriptionsClass<T>::add(ContextType ctx, ObjectType this_object, Arguments& args,
-                                       ReturnValue& return_value)
+void MutableSubscriptionSetClass<T>::add(ContextType ctx, ObjectType this_object, Arguments& args,
+                                         ReturnValue& return_value)
 {
     auto name_specified = false;
     std::string name;
@@ -639,13 +639,13 @@ void MutableSubscriptionsClass<T>::add(ContextType ctx, ObjectType this_object, 
         }
     }
 
-    auto subs = get_internal<T, MutableSubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, this_object);
 
     auto results = get_internal<T, ResultsClass<T>>(ctx, results_arg);
     auto query = results->get_query();
 
     if (throw_on_update && name_specified) {
-        auto subs = get_internal<T, MutableSubscriptionsClass<T>>(ctx, this_object);
+        auto subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, this_object);
         auto existing_sub_it = subs->find(name);
         if (existing_sub_it != subs->end() && !(existing_sub_it->query_string() == query.get_description() &&
                                                 existing_sub_it->object_class_name() == results->get_object_type())) {
@@ -661,22 +661,22 @@ void MutableSubscriptionsClass<T>::add(ContextType ctx, ObjectType this_object, 
 }
 
 /**
- * @brief Remove the subscription with the specified name from the subscription set.
+ * @brief Remove the subscription with the specified name from the MutableSubscriptionSet.
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref A single argument containing the name of the subscription to be removed
  * @param return_value \ref ReturnValue wrapping a boolean, true if the subscription was found
  * and removed, false otherwise
  */
 template <typename T>
-void MutableSubscriptionsClass<T>::remove_by_name(ContextType ctx, ObjectType this_object, Arguments& args,
-                                                  ReturnValue& return_value)
+void MutableSubscriptionSetClass<T>::remove_by_name(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                    ReturnValue& return_value)
 {
     args.validate_count(1);
 
-    auto subs = get_internal<T, MutableSubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, this_object);
 
     args.validate_count(1);
     std::string name = Value::validated_to_string(ctx, args[0], "name");
@@ -691,11 +691,11 @@ void MutableSubscriptionsClass<T>::remove_by_name(ContextType ctx, ObjectType th
 }
 
 /**
- * @brief Remove the subscription with the specified query from the subscription set.
+ * @brief Remove the subscription with the specified query from the MutableSubscriptionSet.
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref A single argument containing the query of the subscription to be removed, represented
  * as a Results instance
  * @param return_value \ref ReturnValue wrapping a boolean, true if the subscription was found
@@ -703,8 +703,8 @@ void MutableSubscriptionsClass<T>::remove_by_name(ContextType ctx, ObjectType th
  * @exception std::runtime_error Thrown if the argument is not a valid Results instance
  */
 template <typename T>
-void MutableSubscriptionsClass<T>::remove(ContextType ctx, ObjectType this_object, Arguments& args,
-                                          ReturnValue& return_value)
+void MutableSubscriptionSetClass<T>::remove(ContextType ctx, ObjectType this_object, Arguments& args,
+                                            ReturnValue& return_value)
 {
     args.validate_count(1);
 
@@ -713,7 +713,7 @@ void MutableSubscriptionsClass<T>::remove(ContextType ctx, ObjectType this_objec
         throw std::runtime_error("Argument to 'remove' must be a collection of Realm objects.");
     }
 
-    auto subs = get_internal<T, MutableSubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, this_object);
 
     auto results = get_internal<T, ResultsClass<T>>(ctx, results_arg);
     auto query = results->get_query();
@@ -729,19 +729,19 @@ void MutableSubscriptionsClass<T>::remove(ContextType ctx, ObjectType this_objec
 }
 
 /**
- * @brief Remove the specified subscription from the subscription set.
+ * @brief Remove the specified subscription from the MutableSubscriptionSet.
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref A single argument containing the Subscription instance to be removed
  * @param return_value \ref ReturnValue wrapping a boolean, true if the subscription was found
  * and removed, false otherwise
  * @exception std::runtime_error Thrown if the argument is not a valid Subscription instance
  */
 template <typename T>
-void MutableSubscriptionsClass<T>::remove_subscription(ContextType ctx, ObjectType this_object, Arguments& args,
-                                                       ReturnValue& return_value)
+void MutableSubscriptionSetClass<T>::remove_subscription(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                         ReturnValue& return_value)
 {
     args.validate_count(1);
 
@@ -750,7 +750,7 @@ void MutableSubscriptionsClass<T>::remove_subscription(ContextType ctx, ObjectTy
         throw std::runtime_error("Argument to 'removeSubscription' must be a subscription.");
     }
 
-    auto subs = get_internal<T, MutableSubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, this_object);
 
     auto sub_to_remove = get_internal<T, SubscriptionClass<T>>(ctx, sub_arg);
 
@@ -768,21 +768,21 @@ void MutableSubscriptionsClass<T>::remove_subscription(ContextType ctx, ObjectTy
 }
 
 /**
- * @brief Remove all subscriptions from the subscription set.
+ * @brief Remove all subscriptions from the MutableSubscriptionSet.
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref None
  * @param return_value \ref ReturnValue wrapping the number of subscriptions removed.
  */
 template <typename T>
-void MutableSubscriptionsClass<T>::remove_all(ContextType ctx, ObjectType this_object, Arguments& args,
-                                              ReturnValue& return_value)
+void MutableSubscriptionSetClass<T>::remove_all(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                ReturnValue& return_value)
 {
     args.validate_count(0);
 
-    auto subs = get_internal<T, MutableSubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, this_object);
 
     auto size = subs->size();
     subs->clear();
@@ -790,22 +790,22 @@ void MutableSubscriptionsClass<T>::remove_all(ContextType ctx, ObjectType this_o
 }
 
 /**
- * @brief Remove all subscriptions with the specified object type from the subscription set.
+ * @brief Remove all subscriptions with the specified object type from the MutableSubscriptionSet.
  * Can only be called inside an `update` callback.
  *
  * @param ctx JS context
- * @param object \ref ObjectType wrapping the SubscriptionSet
+ * @param object \ref ObjectType wrapping the MutableSubscriptionSet
  * @param args \ref A single argument containing the string object type to be removed
  * @param return_value \ref ReturnValue wrapping the number of subscriptions removed.
  */
 template <typename T>
-void MutableSubscriptionsClass<T>::remove_by_object_type(ContextType ctx, ObjectType this_object, Arguments& args,
-                                                         ReturnValue& return_value)
+void MutableSubscriptionSetClass<T>::remove_by_object_type(ContextType ctx, ObjectType this_object, Arguments& args,
+                                                           ReturnValue& return_value)
 {
     args.validate_count(1);
 
     std::string object_type = Value::validated_to_string(ctx, args[0], "objectType");
-    auto subs = get_internal<T, MutableSubscriptionsClass<T>>(ctx, this_object);
+    auto subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, this_object);
 
     size_t removed = 0;
 
