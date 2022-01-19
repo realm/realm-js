@@ -93,7 +93,7 @@ var SubscriptionsState = {
 
   /**
    * The server has acknowledged the subscription and sent all the data that
-   * matched the subscription queries at the time the subscription set was
+   * matched the subscription queries at the time the SubscriptionSet was
    * updated. The server is now in steady-state synchronization mode where it
    * will stream updates as they come.
    */
@@ -110,9 +110,9 @@ var SubscriptionsState = {
   Error: "error",
 
   /**
-   * The subscription set has been superceded by an updated one. This typically means
+   * The SubscriptionSet has been superceded by an updated one. This typically means
    * that someone has called {@link Realm.App.Sync.SubscriptionSet#update} on a different instance
-   * of the `Subscriptions`. You should not use a superseded subscription set,
+   * of the `Subscriptions`. You should not use a superseded SubscriptionSet,
    * and instead obtain a new instance by calling {@link Realm.App.Sync.SubscriptionSet.getSubscriptions()}.
    */
   Superceded: "superceded",
@@ -148,23 +148,13 @@ class BaseSubscriptionSet {
   get empty() {}
 
   /**
-   * The version of the subscription set. This is incremented every time a
+   * The version of the SubscriptionSet. This is incremented every time a
    * {@link Realm.App.Sync.SubscriptionSet#update} is applied.
    *
    * @type {number}
    * @readonly
    */
   get version() {}
-
-  /**
-   * Returns a readonly array snapshot of all the subscriptions in the set.
-   * Any changes to the set of subscriptions must be performed in a
-   * {@link Realm.App.Sync.SubscriptionSet#update} callback.
-   *
-   * @returns {Array<Realm.App.Sync.SubscriptionSet>} an array of subscriptions.
-   * @readonly
-   */
-  snapshot() {}
 
   /**
    * Find a subscription by name.
@@ -183,10 +173,10 @@ class BaseSubscriptionSet {
    * @returns {Realm.App.Sync.Subscription|null} The subscription with the specified query,
    * or `null` if the subscription is not found.
    */
-  find(query) {}
+  findByQuery(query) {}
 
   /**
-   * The state of the subscription set.
+   * The state of the SubscriptionSet.
    *
    * @type {Realm.App.Sync.SubscriptionSetState}
    * @readonly
@@ -195,12 +185,110 @@ class BaseSubscriptionSet {
 
   /**
    * If `state` is {@link Realm.App.Sync.SubscriptionSetState.Error}, this is a `string`
-   * representing why the subscription set is in an error state. `null` if there is no error.
+   * representing why the SubscriptionSet is in an error state. `null` if there is no error.
    *
    * @type {string|null}
    * @readonly
    */
   get error() {}
+
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach Array.prototype.forEach}
+   * @param {function} callback - Function to execute on each object in the SubscriptionSet.
+   *   This function takes three arguments:
+   *   - `object` – The current object being processed in the SubscriptionSet.
+   *   - `index` – The index of the object being processed in the SubscriptionSet.
+   *   - `subscriptionSet` – The SubscriptionSet itself.
+   * @param {object} [thisArg] - The value of `this` when `callback` is called.
+   * @since 0.11.0
+   */
+  forEach(callback, thisArg) {}
+
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every Array.prototype.every}
+   * @param {function} callback - Function to execute on each object in the SubscriptionSet.
+   *   If this function returns `true` for every object, then this method will return `true`.
+   *   This function takes three arguments:
+   *   - `object` – The current object being processed in the SubscriptionSet.
+   *   - `index` – The index of the object being processed in the SubscriptionSet.
+   *   - `subscriptionSet` – The SubscriptionSet itself.
+   * @param {object} [thisArg] - The value of `this` when `callback` is called.
+   * @returns {boolean} representing if `callback` returned `true` for every object in the
+   *   SubscriptionSet.
+   * @since 0.11.0
+   */
+  every(callback, thisArg) {}
+
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some Array.prototype.some}
+   * @param {function} callback - Function to execute on each object in the SubscriptionSet.
+   *   If this function ever returns `true`, then this method will return `true`.
+   *   This function takes three arguments:
+   *   - `object` – The current object being processed in the SubscriptionSet.
+   *   - `index` – The index of the object being processed in the SubscriptionSet.
+   *   - `subscriptionSet` – The SubscriptionSet itself.
+   * @param {object} [thisArg] - The value of `this` when `callback` is called.
+   * @returns {boolean} – `true` when `callback` returns `true` for an object in the SubscriptionSet,
+   *   otherwise `false`.
+   * @since 0.11.0
+   */
+  some(callback, thisArg) {}
+
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map Array.prototype.map}
+   * @param {function} callback - Function to execute on each object in the SubscriptionSet.
+   *   This function takes three arguments:
+   *   - `object` – The current object being processed in the SubscriptionSet.
+   *   - `index` – The index of the object being processed in the SubscriptionSet.
+   *   - `subscriptionSet` – The SubscriptionSet itself.
+   * @param {object} [thisArg] - The value of `this` when `callback` is called.
+   * @returns {any[]} – the return values of `callback` after being called on every object
+   *   in the SubscriptionSet.
+   * @since 0.11.0
+   */
+  map(callback, thisArg) {}
+
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce Array.prototype.reduce}
+   * @param {function} callback - Function to execute on each object in the SubscriptionSet.
+   *   This function takes four arguments:
+   *   - `previousValue` – The value previously returned in the last invocation of the callback,
+   *     or `initialValue`, if supplied.
+   *   - `object` – The current object being processed in the SubscriptionSet.
+   *   - `index` – The index of the object being processed in the SubscriptionSet.
+   *   - `subscriptionSet` – The SubscriptionSet itself.
+   * @param {object} [initialValue] - The value to use as the first argument to the first call
+   *   of the `callback`.
+   * @throws {TypeError} If the SubscriptionSet is empty and no `initialValue` was supplied.
+   * @returns {any} – the value returned by the final invocation of `callback`, _except_ for
+   *   the following special cases:
+   *   - If SubscriptionSet consists of a single object, and no `initalValue` was supplied, then
+   *     that object will be returned.
+   *   - If the SubscriptionSet is empty, then `initialValue` _must_ be supplied and will be returned.
+   * @since 0.11.0
+   */
+  reduce(callback, initialValue) {}
+
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight Array.prototype.reduceRight}
+   * @param {function} callback - Function to execute on each object, from **right to left**,
+   *   in the SubscriptionSet. This function takes four arguments:
+   *   - `previousValue` – The value previously returned in the last invocation of the callback,
+   *     or `initialValue`, if supplied.
+   *   - `object` – The current object being processed in the SubscriptionSet.
+   *   - `index` – The index of the object being processed in the SubscriptionSet.
+   *   - `subscriptionSet` – The SubscriptionSet itself.
+   * @param {object} [initialValue] - The value to use as the first argument to the first call
+   *   of the `callback`.
+   * @throws {TypeError} If the SubscriptionSet is empty and no `initialValue` was supplied.
+   * @returns {any} – the value returned by the final invocation of `callback`, _except_ for
+   *   the following special cases:
+   *   - If SubscriptionSet consists of a single object, and no `initalValue` was supplied, then
+   *     that object will be returned.
+   *   - If the SubscriptionSet is empty, then `initialValue` _must_ be supplied and will be returned.
+   * @since 0.11.0
+   */
+  reduceRight(callback, initialValue) {}
 }
 
 /**
@@ -233,7 +321,7 @@ class SubscriptionSet {
   waitForSynchronization() {}
 
   /**
-   * Update the subscription set and change this instance to point to the updated subscription set.
+   * Update the SubscriptionSet and change this instance to point to the updated SubscriptionSet.
    *
    * Adding or removing subscriptions from the set set must be performed inside
    * the callback argument of this method, and the mutating methods must be called on
@@ -263,7 +351,7 @@ class SubscriptionSet {
 }
 
 /**
- * The mutable version of a given subscription set. The mutable methods of a given
+ * The mutable version of a given SubscriptionSet. The mutable methods of a given
  * {@link Realm.App.Sync.SubscriptionSet} instance can only be accessed from inside the
  * {@link Realm.App.Sync.SubscriptionSet#update} callback.
  *
@@ -285,7 +373,7 @@ class MutableSubscriptionSet {
   add(query, options) {}
 
   /**
-   * Removes a subscription with the given query from the subscription set.
+   * Removes a subscription with the given query from the SubscriptionSet.
    *
    * @param {Realm.Results} query A {@link Realm.Results} instance representing the query to remove a subscription to.
    * @returns {boolean} `true` if the subscription was removed, `false` if it was not found.
@@ -293,7 +381,7 @@ class MutableSubscriptionSet {
   remove(query) {}
 
   /**
-   * Removes a subscription with the given name from the subscription set.
+   * Removes a subscription with the given name from the SubscriptionSet.
    *
    * @param {string} name The name of the subscription to remove.
    * @returns {boolean} `true` if the subscription was removed, `false` if it was not found.
@@ -301,7 +389,7 @@ class MutableSubscriptionSet {
   removeByName(name) {}
 
   /**
-   * Removes the specified subscription from the subscription set.
+   * Removes the specified subscription from the SubscriptionSet.
    *
    * @param {Realm.App.Sync.Subscription} subscription The {@link Realm.App.Sync.Subscription} instance to remove.
    * @returns {boolean} `true` if the subscription was removed, `false` if it was not found.
@@ -309,7 +397,7 @@ class MutableSubscriptionSet {
   removeSubscription(subscription) {}
 
   /**
-   * Removes all subscriptions for the specified object type from the subscription set.
+   * Removes all subscriptions for the specified object type from the SubscriptionSet.
    *
    * @param {string} objectType The string name of the object type to remove all subscriptions for.
    * @returns {number} The number of subscriptions removed.
@@ -317,7 +405,7 @@ class MutableSubscriptionSet {
   removeByObjectType(objectType) {}
 
   /**
-   * Removes all subscriptions from the subscription set.
+   * Removes all subscriptions from the SubscriptionSet.
    *
    * @returns {number} The number of subscriptions removed.
    */
