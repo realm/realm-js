@@ -176,14 +176,14 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       it("throws an error if the Realm does not have a sync config", function (this: RealmContext) {
         const realm = new Realm({ schema: [PersonSchema] });
         expect(() => realm.subscriptions).to.throw(
-          "`subscriptions` can only be accessed if flexible sync is enabled, but sync is currently disabled for your app. Specify { flexible: true } in your sync config.",
+          "`subscriptions` can only be accessed if flexible sync is enabled, but sync is currently disabled for your app. Add a flexible sync config when opening the Realm, for example: { sync: { user, flexible: true } }",
         );
       });
 
       it("throws an error if the Realm has a partition based sync config", function (this: RealmContext) {
         const realm = new Realm({ schema: [PersonSchema], sync: { user: this.user, partitionValue: "test" } });
         expect(() => realm.subscriptions).to.throw(
-          "`subscriptions` can only be accessed if flexible sync is enabled, but partition based sync is currently enabled for your app. Specify { flexible: true } in your sync config and remove any `partitionValue`.",
+          "`subscriptions` can only be accessed if flexible sync is enabled, but partition based sync is currently enabled for your Realm. Modify your sync config to remove any `partitionValue` and enable flexible sync, for example: { sync: { user, flexible: true } }",
         );
       });
     });

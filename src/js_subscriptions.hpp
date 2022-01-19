@@ -278,7 +278,7 @@ void SubscriptionsClass<T>::get_error(ContextType ctx, ObjectType this_object, R
  * @param ctx JS context
  * @param object \ref ObjectType wrapping the SubscriptionSet
  * @param return_value \ref ReturnValue wrapping a string representing the current state
- * @exception std::runtime_error if an unknown state is encountered
+ * @exception abnormal program termination (std::abort) if an unknown state is encountered
  */
 template <typename T>
 void SubscriptionsClass<T>::get_state(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
@@ -300,7 +300,7 @@ void SubscriptionsClass<T>::get_state(ContextType ctx, ObjectType this_object, R
             return_value.set("superceded");
             break;
         default:
-            throw std::runtime_error("Unknown state in get_state()");
+            REALM_UNREACHABLE();
     }
 }
 

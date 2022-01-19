@@ -28,7 +28,6 @@
 #include "js_results.hpp"
 #include "js_schema.hpp"
 #include "js_observable.hpp"
-#include "js_subscriptions.hpp"
 #include "platform.hpp"
 
 #if REALM_ENABLE_SYNC
@@ -38,6 +37,7 @@
 #include "js_app_credentials.hpp"
 #include "js_email_password_auth.hpp"
 #include "js_api_key_auth.hpp"
+#include "js_subscriptions.hpp"
 #include <realm/sync/config.hpp>
 #include <realm/object-store/sync/async_open_task.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
@@ -1459,6 +1459,7 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
     realm->update_schema(parsed_schema, realm->schema_version() + 1, nullptr, nullptr, true);
 }
 
+#if REALM_ENABLE_SYNC
 /**
  * @brief Get the latest set of flexible sync subscriptions.
  *
@@ -1472,17 +1473,20 @@ void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, R
 
     if (!config.sync_config) {
         throw std::runtime_error("`subscriptions` can only be accessed if flexible sync is enabled, but sync is "
-                                 "currently disabled for your app. Specify { flexible: true } in your sync config.");
+                                 "currently disabled for your app. Add a flexible sync config when opening the "
+                                 "Realm, for example: { sync: { user, flexible: true } }.");
     }
 
     if (!config.sync_config->flx_sync_requested) {
-        throw std::runtime_error("`subscriptions` can only be accessed if flexible sync is enabled, but partition "
-                                 "based sync is currently enabled for your app. Specify { flexible: true } in your "
-                                 "sync config and remove any `partitionValue`.");
+        throw std::runtime_error(
+            "`subscriptions` can only be accessed if flexible sync is enabled, but partition "
+            "based sync is currently enabled for your Realm. Modify your sync config to remove any `partitionValue` "
+            "and enable flexible sync, for example: { sync: { user, flexible: true } }");
     }
 
     return_value.set(SubscriptionsClass<T>::create_instance(ctx, realm->get_latest_subscription_set()));
 }
+#endif
 
 template <typename T>
 void RealmClass<T>::bson_parse_json(ContextType ctx, ObjectType, Arguments& args, ReturnValue& return_value)
