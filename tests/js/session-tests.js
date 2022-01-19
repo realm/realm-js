@@ -31,7 +31,6 @@ const Utils = require("./test-utils");
 let schemas = require("./schemas");
 const AppConfig = require("./support/testConfig");
 const { resolve } = require("path");
-const { removeAllListeners } = require("process");
 
 const REALM_MODULE_PATH = require.resolve("realm");
 
