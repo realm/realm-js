@@ -19,10 +19,10 @@
 /* eslint getter-return: "off" */
 
 /**
- * Class representing a single query subscription in a set of flexible sync
- * {@link Realm.App.Sync.Subscriptions}. This class contains readonly information about the
- * subscription – any changes to the set of subscriptions must be carried out
- * in a {@link Realm.App.Sync.Subscriptions#update} callback.
+ * Class representing a single query subscription in a flexible sync
+ * {@link Realm.App.Sync.SubscriptionSet}. This class contains readonly information
+ * about the subscription – any changes to the set of subscriptions must be carried out
+ * in a {@link Realm.App.Sync.SubscriptionSet#update} callback.
  *
  * @memberof Realm.App.Sync
  */
@@ -78,7 +78,7 @@ class Subscription {
 }
 
 /**
- * Enum representing the state of a {@link Realm.App.Sync.Subscriptions} set.
+ * Enum representing the state of a {@link Realm.App.Sync.SubscriptionSet} set.
  *
  * @readonly
  * @enum {("pending"|"complete"|"error"|"superceded")}
@@ -103,7 +103,7 @@ var SubscriptionsState = {
    * The server has returned an error and synchronization is paused for this
    * Realm. To view the actual error, use `Subscriptions.error`.
    *
-   * You can still use {@link Realm.App.Sync.Subscriptions#update} to update the subscriptions,
+   * You can still use {@link Realm.App.Sync.SubscriptionSet#update} to update the subscriptions,
    * and if the new update doesn't trigger an error, synchronization
    * will be restarted.
    */
@@ -111,20 +111,20 @@ var SubscriptionsState = {
 
   /**
    * The subscription set has been superceded by an updated one. This typically means
-   * that someone has called {@link Realm.App.Sync.Subscriptions#update} on a different instance
+   * that someone has called {@link Realm.App.Sync.SubscriptionSet#update} on a different instance
    * of the `Subscriptions`. You should not use a superseded subscription set,
-   * and instead obtain a new instance by calling {@link Realm.App.Sync.Subscriptions.getSubscriptions()}.
+   * and instead obtain a new instance by calling {@link Realm.App.Sync.SubscriptionSet.getSubscriptions()}.
    */
   Superceded: "superceded",
 };
 
 /**
- * Options for {@link Realm.App.Sync.Subscriptions.add}
+ * Options for {@link Realm.App.Sync.SubscriptionSet.add}
  *
  * @typedef {Object} Realm.App.Sync.SubscriptionOptions
  * @property {string|undefined} name Sets the name of the subscription being added.
- * This allows you to  later refer to the subscription by name, e.g. when calling
- * {@link Realm.App.Sync.MutableSubscriptions#removeByName}.
+ * This allows you to later refer to the subscription by name, e.g. when calling
+ * {@link Realm.App.Sync.MutableSubscriptionSet#removeByName}.
  * @property {boolean|undefined} throwOnUpdate  By default, adding a subscription
  * with the same name as an existing one but a different query will update the existing
  * subscription with the new query. If `throwOnUpdate` is set to true, adding a subscription
@@ -133,12 +133,12 @@ var SubscriptionsState = {
  */
 
 /**
- * Class representing the common functionality for the {@link Realm.App.Sync.Subscriptions} and
- * {@link Realm.App.Sync.Subscriptions} classes
+ * Class representing the common functionality for the {@link Realm.App.Sync.SubscriptionSet} and
+ * {@link Realm.App.Sync.SubscriptionSet} classes
  *
  * @memberof Realm.App.Sync
  */
-class BaseSubscriptions {
+class BaseSubscriptionSet {
   /**
    * Returns `true` if there are no subscriptions in the set, `false` otherwise.
    *
@@ -149,7 +149,7 @@ class BaseSubscriptions {
 
   /**
    * The version of the subscription set. This is incremented every time a
-   * {@link Realm.App.Sync.Subscriptions#update} is applied.
+   * {@link Realm.App.Sync.SubscriptionSet#update} is applied.
    *
    * @type {number}
    * @readonly
@@ -159,9 +159,9 @@ class BaseSubscriptions {
   /**
    * Returns a readonly array snapshot of all the subscriptions in the set.
    * Any changes to the set of subscriptions must be performed in a
-   * {@link Realm.App.Sync.Subscriptions#update} callback.
+   * {@link Realm.App.Sync.SubscriptionSet#update} callback.
    *
-   * @returns {Array<Realm.App.Sync.Subscriptions>} an array of subscriptions.
+   * @returns {Array<Realm.App.Sync.SubscriptionSet>} an array of subscriptions.
    * @readonly
    */
   snapshot() {}
@@ -188,13 +188,13 @@ class BaseSubscriptions {
   /**
    * The state of the subscription set.
    *
-   * @type {Realm.App.Sync.SubscriptionsState}
+   * @type {Realm.App.Sync.SubscriptionSetState}
    * @readonly
    */
   get state() {}
 
   /**
-   * If `state` is {@link Realm.App.Sync.SubscriptionsState.Error}, this is a `string`
+   * If `state` is {@link Realm.App.Sync.SubscriptionSetState.Error}, this is a `string`
    * representing why the subscription set is in an error state. `null` if there is no error.
    *
    * @type {string|null}
@@ -210,21 +210,21 @@ class BaseSubscriptions {
  * The server will continuously evaluate the queries that the instance is subscribed to
  * and will send data that matches them, as well as remove data that no longer does.
  *
- * The set of subscriptions can only be updated inside a {@link Realm.App.Sync.Subscriptions#update}
- * callback, by calling methods on the corresponding {@link Realm.App.Sync.MutableSubscriptions} instance.
+ * The set of subscriptions can only be updated inside a {@link Realm.App.Sync.SubscriptionSet#update}
+ * callback, by calling methods on the corresponding {@link Realm.App.Sync.MutableSubscriptionSet} instance.
  *
- * @extends Realm.App.Sync.BaseSubscriptions
+ * @extends Realm.App.Sync.BaseSubscriptionSet
  * @memberof Realm.App.Sync
  */
-class Subscriptions {
+class SubscriptionSet {
   /**
    * Wait for the server to acknowledge this set of subscriptions and return the
    * matching objects.
    *
-   * If `state` is {@link Realm.App.Sync.SubscriptionsState.Complete}, the promise will be
+   * If `state` is {@link Realm.App.Sync.SubscriptionSetState.Complete}, the promise will be
    * resolved immediately.
    *
-   * If `state` is {@link Realm.App.Sync.SubscriptionsState.Error}, the promise will be
+   * If `state` is {@link Realm.App.Sync.SubscriptionSetState.Error}, the promise will be
    * rejected immediately.
    *
    * @returns {Promise<void>} A promise which is resolved when synchronization is complete, or is
@@ -237,10 +237,10 @@ class Subscriptions {
    *
    * Adding or removing subscriptions from the set set must be performed inside
    * the callback argument of this method, and the mutating methods must be called on
-   * the `mutableSubs` argument rather than the original {@link Realm.App.Sync.Subscriptions} instance.
+   * the `mutableSubs` argument rather than the original {@link Realm.App.Sync.SubscriptionSet} instance.
    *
    * Any changes to the subscriptions after the callback has executed will be batched and sent
-   * to the server, at which point you can call {@link Realm.App.Sync.Subscriptions#waitForSynchronization}
+   * to the server, at which point you can call {@link Realm.App.Sync.SubscriptionSet#waitForSynchronization}
    * to wait for the new data to be available.
    *
    * Example:
@@ -255,7 +255,7 @@ class Subscriptions {
    * // `realm` will now return the expected results based on the updated subscriptions
    * ```
    *
-   * @param {function} callback A callback function which receives a {@link Realm.App.Sync.MutableSubscriptions}
+   * @param {function} callback A callback function which receives a {@link Realm.App.Sync.MutableSubscriptionSet}
    * instance as its only argument, which can be used to add or remove subscriptions from
    * the set.
    */
@@ -264,13 +264,12 @@ class Subscriptions {
 
 /**
  * The mutable version of a given subscription set. The mutable methods of a given
- * {@link Realm.App.Sync.Subscriptions} instance can only be accessed from inside the
- * {@link Realm.App.Sync.Subscriptions#update} callback.
+ * {@link Realm.App.Sync.SubscriptionSet} instance can only be accessed from inside the
+ * {@link Realm.App.Sync.SubscriptionSet#update} callback.
  *
- * @extends Realm.App.Sync.BaseSubscriptions
- * @memberof Realm.App.Sync
+ * @extends Realm.App.Sync.BaseSubscriptionSet  * @memberof Realm.App.Sync
  */
-class MutableSubscriptions {
+class MutableSubscriptionSet {
   /**
    * Adds a query to the set of active subscriptions. The query will be joined via
    * an `OR` operator with any existing queries for the same type.
