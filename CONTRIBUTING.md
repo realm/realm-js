@@ -203,4 +203,4 @@ docker login ghcr.io
 
 It can be useful to run the BaaS server directly, rather than in the docker container, for example to use the latest version from a branch or for debugging.
 
-You can do this by running: `AWS_ACCESS_KEY_ID="???" AWS_SECRET_ACCESS_KEY="???" ./evergreen/install_baas.sh -w ../../../baas-work-dir -b master` from the `vendor/realm_core` directory. Logs can be accessed in `../../../baas-work-dir/baas_server.log`.
+You can do this by running: `AWS_ACCESS_KEY_ID="???" AWS_SECRET_ACCESS_KEY="???" ./vendor/realm-core/evergreen/install_baas.sh -w ../baas-work-dir -b master` from the `realm-js` root directory. Logs can be accessed in `../baas-work-dir/baas_server.log` (the `baas-work-dir` is kept one level up from the `realm-js` repo).
