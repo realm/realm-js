@@ -19,6 +19,7 @@
 #pragma once
 
 #include "js_class.hpp"
+#include "realm/object-store/sync/sync_session.hpp"
 #include "realm/sync/subscriptions.hpp"
 
 #include <algorithm>
@@ -177,15 +178,15 @@ void SubscriptionClass<T>::get_query_string(ContextType ctx, ObjectType this_obj
 template <typename T>
 class SubscriptionSet : public realm::sync::SubscriptionSet {
 public:
-    SubscriptionSet(const realm::sync::SubscriptionSet& s, const std::shared_ptr<Realm> r)
+    SubscriptionSet(const realm::sync::SubscriptionSet& s, const std::shared_ptr<SyncSession> ss)
         : realm::sync::SubscriptionSet(s)
-        , realm(r)
+        , sync_session(ss)
     {
     }
 
-    // Hold a shared_ptr to the Realm so we can check if it still exists
+    // Hold a shared_ptr to the sync sessoin so we can check if it still exists
     // in the wait_for_synchronization callback
-    std::shared_ptr<Realm> realm;
+    std::shared_ptr<SyncSession> sync_session;
 };
 
 /**
@@ -206,7 +207,7 @@ public:
     const std::string name = "Subscriptions";
     using StateChangeHandler = void(StatusWith<realm::sync::SubscriptionSet::State> state);
 
-    static ObjectType create_instance(ContextType, realm::sync::SubscriptionSet, std::shared_ptr<Realm>);
+    static ObjectType create_instance(ContextType, realm::sync::SubscriptionSet, std::shared_ptr<SyncSession>);
 
     static void get_empty(ContextType, ObjectType, ReturnValue&);
     static void get_state(ContextType, ObjectType, ReturnValue&);
@@ -241,10 +242,11 @@ private:
 
 template <typename T>
 typename T::Object SubscriptionSetClass<T>::create_instance(ContextType ctx,
-                                                            realm::sync::SubscriptionSet subscriptionSet,
-                                                            std::shared_ptr<Realm> realm)
+                                                            realm::sync::SubscriptionSet subscription_set,
+                                                            std::shared_ptr<SyncSession> sync_session)
 {
-    return create_object<T, SubscriptionSetClass<T>>(ctx, new SubscriptionSet<T>(std::move(subscriptionSet), realm));
+    return create_object<T, SubscriptionSetClass<T>>(
+        ctx, new SubscriptionSet<T>(std::move(subscription_set), sync_session));
 }
 
 /**
@@ -462,12 +464,10 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(Protected<ContextTyp
 {
     auto subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
 
-    // Hold a weak_ptr to the Realm, so we can check if the Realm still exists and is not closed
-    // when our callback fires – if the Realm has gone out of scope and been garbage collected
-    // by the time the callback fires (which happens in tests), we get a crash otherwise
-
-    // TODO replace this with a pointer to the sync_session once issues with failing tests are fixed
-    std::weak_ptr<Realm> weak_realm = subs->realm;
+    // Hold a weak_ptr to the SyncSession, so we can check if it still exists when our callback fires
+    // – if the Realm has gone out of scope and been garbage collected by the time the callback fires
+    // (which happens in tests), we get a crash otherwise
+    std::weak_ptr<SyncSession> sync_session = subs->sync_session;
 
     std::function<StateChangeHandler> state_change_func;
 
@@ -475,7 +475,8 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(Protected<ContextTyp
         [=](StatusWith<realm::sync::SubscriptionSet::State> state) {
             HANDLESCOPE(protected_ctx)
 
-            if (weak_realm.lock() && !weak_realm.lock()->is_closed()) {
+            // If the SyncSession has already closed, don't try to interact with the Realm as it'll crash
+            if (sync_session.lock()) {
                 auto current_subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
                 current_subs->refresh();
             }
@@ -633,7 +634,7 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
 
         // Update this SubscriptionSetClass instance to point to the updated version
         set_internal<T, SubscriptionSetClass<T>>(ctx, this_object,
-                                                 new SubscriptionSet<T>(std::move(new_sub_set), subs->realm));
+                                                 new SubscriptionSet<T>(std::move(new_sub_set), subs->sync_session));
 
         // Asynchronously wait for the SubscriptionSet to be synchronised
         SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
