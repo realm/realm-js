@@ -111,9 +111,10 @@
                 "src/node/inject-globals.ts",
                 "src/index.ts",
                 "--timeout",
-                "100000",
+                "10000",
                 "--grep",
-                "Flexible"
+                "is Complete once synchronisation is complete"
+                // "Flexible"
                 // "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",
