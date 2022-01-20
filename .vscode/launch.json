@@ -113,9 +113,7 @@
                 "--timeout",
                 "10000",
                 "--grep",
-                "is Complete once synchronisation is complete"
-                // "Flexible"
-                // "${input:integrationTestFilter}"
+                "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",
             "preLaunchTask": "Build Node Tests"

@@ -816,8 +816,10 @@ declare namespace Realm {
              * @param callback A callback function which receives a {@link MutableSubscriptionSet}
              * instance as its only argument, which can be used to add or remove subscriptions from
              * the set.
+             *
+             * @returns The return value from the callback
              */
-            update: (callback: (mutableSubs: MutableSubscriptionSet) => void) => void;
+            update<ReturnValueType> (callback: (mutableSubs: MutableSubscriptionSet) => ReturnValueType): ReturnValueType;
         }
 
         const Subscriptions: {

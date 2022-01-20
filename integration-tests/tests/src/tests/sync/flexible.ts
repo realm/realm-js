@@ -62,10 +62,8 @@ function addSubscription<T>(
   options: Realm.App.Sync.SubscriptionOptions | undefined = undefined,
 ): AddSubscriptionResult<T> {
   const subs = realm.subscriptions;
-  let sub!: Realm.App.Sync.Subscription;
-
-  subs.update((mutableSubs) => {
-    sub = mutableSubs.add(query, options);
+  const sub = subs.update((mutableSubs) => {
+    return mutableSubs.add(query, options);
   });
 
   return { subs, sub, query };
@@ -282,12 +280,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         it("returns true if a subscription is added then removed", function (this: RealmContext) {
           const subs = this.realm.subscriptions;
-          let sub: Realm.App.Sync.Subscription;
-
           expect(subs.empty).to.be.true;
 
-          subs.update((mutableSubs) => {
-            sub = mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+          const sub = subs.update((mutableSubs) => {
+            return mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
           });
 
           expect(subs.empty).to.be.false;
@@ -301,11 +297,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       describe("array-like access", function () {
-        // it("returns an array", function (this: RealmContext) {
-        //   const subs = this.realm.subscriptions;
-        //   expect(subs).to.be.instanceOf(Array);
-        // });
-
         it("returns an empty array if there are no subscriptions", function (this: RealmContext) {
           const subs = this.realm.subscriptions;
           expect(subs).to.have.length(0);
@@ -623,16 +614,16 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               });
             }).to.throw("mutableSubs.update is not a function");
           });
-        });
 
-        it("does not throw an error if a mutating method is called inside a update() callback", function (this: RealmContext) {
-          const subs = this.realm.subscriptions;
+          it("does not throw an error if a mutating method is called inside a update() callback", function (this: RealmContext) {
+            const subs = this.realm.subscriptions;
 
-          expect(() => {
-            subs.update((mutableSubs) => {
-              mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
-            });
-          }).to.not.throw();
+            expect(() => {
+              subs.update((mutableSubs) => {
+                mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+              });
+            }).to.not.throw();
+          });
         });
 
         it("mutates the SubscriptionSet instance", function (this: RealmContext) {
@@ -736,6 +727,17 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           subs.update(() => {});
 
           expect(subs).to.have.length(1);
+        });
+
+        it("returns the return value of the update callback", function () {
+          const { subs } = addSubscriptionForPerson(this.realm);
+
+          const result = subs.update((mutableSubs) => {
+            return mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10"));
+          });
+
+          expect(result).to.be.an.instanceOf(Realm.App.Sync.Subscription);
+          expect(result.queryString).to.equal("age < 10");
         });
       });
 

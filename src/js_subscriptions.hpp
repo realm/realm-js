@@ -369,12 +369,12 @@ void SubscriptionSetClass<T>::find_by_name(ContextType ctx, ObjectType this_obje
 
     auto it = subs->find(name);
 
-    if (it != subs->end()) {
-        auto sub = SubscriptionClass<T>::create_instance(ctx, *it);
-        return_value.set(sub);
+    if (it == subs->end()) {
+        return_value.set_null();
     }
     else {
-        return_value.set_null();
+        auto sub = SubscriptionClass<T>::create_instance(ctx, *it);
+        return_value.set(sub);
     }
 }
 
@@ -404,12 +404,12 @@ void SubscriptionSetClass<T>::find_by_query(ContextType ctx, ObjectType this_obj
 
     auto it = subs->find(query);
 
-    if (it != subs->end()) {
-        auto sub = SubscriptionClass<T>::create_instance(ctx, *it);
-        return_value.set(sub);
+    if (it == subs->end()) {
+        return_value.set_null();
     }
     else {
-        return_value.set_null();
+        auto sub = SubscriptionClass<T>::create_instance(ctx, *it);
+        return_value.set(sub);
     }
 }
 
@@ -551,7 +551,7 @@ MutableSubscriptionSetClass<T>::create_instance(ContextType ctx, realm::sync::Mu
  * @param object \ref ObjectType wrapping the SubscriptionSet
  * @param args \ref A single argument containing a callback which receives a mutable version of
  * the SubscriptionSet as its argument, and which updates the SubscriptionSet as required
- * @param return_value \ref None
+ * @param return_value \ref Returns the return value of the update callback
  */
 template <typename T>
 void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Arguments& args,
@@ -575,10 +575,12 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
         auto mutable_subs_js = MutableSubscriptionSetClass<T>::create_instance(ctx, subs->make_mutable_copy());
         auto mutable_subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, mutable_subs_js);
 
-        // Call the provided callback, passing in the mutable copy as an argument
+        // Call the provided callback, passing in the mutable copy as an argument,
+        // and return its return value
         ValueType arguments[]{mutable_subs_js};
         auto const& callback_return =
             Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, arguments);
+        return_value.set(callback_return);
 
         // Commit the mutation, which downgrades its internal transaction to a read transaction
         // so no more changes can be made to it, and returns a new (immutable) SubscriptionSet
@@ -719,12 +721,12 @@ void MutableSubscriptionSetClass<T>::remove(ContextType ctx, ObjectType this_obj
     auto query = results->get_query();
 
     auto it = subs->find(query);
-    if (it != subs->end()) {
-        subs->erase(it);
-        return_value.set(true);
+    if (it == subs->end()) {
+        return_value.set(false);
     }
     else {
-        return_value.set(false);
+        subs->erase(it);
+        return_value.set(true);
     }
 }
 
@@ -758,12 +760,12 @@ void MutableSubscriptionSetClass<T>::remove_subscription(ContextType ctx, Object
         return sub.id() == sub_to_remove->id();
     });
 
-    if (it != subs->end()) {
-        subs->erase(it);
-        return_value.set(true);
+    if (it == subs->end()) {
+        return_value.set(false);
     }
     else {
-        return_value.set(false);
+        subs->erase(it);
+        return_value.set(true);
     }
 }
 
