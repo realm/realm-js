@@ -410,7 +410,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
         });
 
-        it("is Superceded if another update is synchronised after this one", async function (this: RealmContext) {
+        it("is Superseded if another update is synchronised after this one", async function (this: RealmContext) {
           const { subs } = addSubscriptionForPerson(this.realm);
           await subs.waitForSynchronization();
 
@@ -418,11 +418,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           await newSubs.waitForSynchronization();
           await subs.waitForSynchronization();
 
-          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Superceded);
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Superseded);
         });
 
         // TODO verify correct behaviour - right now this doesn't work
-        xit("throws if you call update on a Superceded subscription set", async function (this: RealmContext) {
+        xit("throws if you call update on a Superseded subscription set", async function (this: RealmContext) {
           const { subs } = addSubscriptionForPerson(this.realm);
           await subs.waitForSynchronization();
           const { subs: newSubs } = addSubscriptionForPerson(this.realm);
@@ -434,7 +434,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         // TODO verify correct behaviour - right now this doesn't work
-        xit("throws if you call waitForSynchronisation on a Superceded subscription set", async function (this: RealmContext) {
+        xit("throws if you call waitForSynchronisation on a Superseded subscription set", async function (this: RealmContext) {
           const { subs } = addSubscriptionForPerson(this.realm);
           await subs.waitForSynchronization();
           const { subs: newSubs } = addSubscriptionForPerson(this.realm);

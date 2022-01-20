@@ -297,7 +297,7 @@ void SubscriptionSetClass<T>::get_state(ContextType ctx, ObjectType this_object,
             return_value.set("error");
             break;
         case sync::SubscriptionSet::State::Superceded:
-            return_value.set("superceded");
+            return_value.set("superseded");
             break;
         default:
             REALM_UNREACHABLE();

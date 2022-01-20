@@ -684,12 +684,12 @@ declare namespace Realm {
             Error = "error",
 
             /**
-             * The SubscriptionSet has been superceded by an updated one. This typically means
+             * The SubscriptionSet has been superseded by an updated one. This typically means
              * that someone has called {@link SubscriptionSet.update} on a different instance
              * of the `Subscriptions`. You should not use a superseded SubscriptionSet,
              * and instead obtain a new instance by calling {@link SubscriptionSet.getSubscriptions}.
              */
-            Superceded = "superceded",
+            Superseded = "Superseded",
         }
 
         /**

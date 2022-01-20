@@ -81,7 +81,7 @@ class Subscription {
  * Enum representing the state of a {@link Realm.App.Sync.SubscriptionSet} set.
  *
  * @readonly
- * @enum {("pending"|"complete"|"error"|"superceded")}
+ * @enum {("pending"|"complete"|"error"|"superseded")}
  * @memberof Realm.App.Sync
  */
 var SubscriptionsState = {
@@ -110,12 +110,12 @@ var SubscriptionsState = {
   Error: "error",
 
   /**
-   * The SubscriptionSet has been superceded by an updated one. This typically means
+   * The SubscriptionSet has been superseded by an updated one. This typically means
    * that someone has called {@link Realm.App.Sync.SubscriptionSet#update} on a different instance
    * of the `Subscriptions`. You should not use a superseded SubscriptionSet,
    * and instead obtain a new instance by calling {@link Realm.App.Sync.SubscriptionSet.getSubscriptions()}.
    */
-  Superceded: "superceded",
+  Superseded: "superseded",
 };
 
 /**
