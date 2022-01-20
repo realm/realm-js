@@ -284,19 +284,23 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const subs = this.realm.subscriptions;
           let sub: Realm.App.Sync.Subscription;
 
+          console.log(1);
           expect(subs.empty).to.be.true;
 
           subs.update((mutableSubs) => {
             sub = mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
           });
+          console.log(2);
 
           expect(subs.empty).to.be.false;
 
           subs.update((mutableSubs) => {
             mutableSubs.removeSubscription(sub);
           });
+          console.log(3);
 
           expect(subs.empty).to.be.true;
+          console.log(4);
         });
       });
 

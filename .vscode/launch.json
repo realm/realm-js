@@ -113,8 +113,7 @@
                 "--timeout",
                 "10000",
                 "--grep",
-                "is Complete once synchronisation is complete"
-                // "Flexible"
+                "returns true if a subscription is added then removed"
                 // "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",

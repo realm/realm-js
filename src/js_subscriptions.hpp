@@ -461,7 +461,8 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(Protected<ContextTyp
         [=](StatusWith<realm::sync::SubscriptionSet::State> state) {
             HANDLESCOPE(protected_ctx)
 
-            subs->refresh();
+            auto current_subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
+            current_subs->refresh();
 
             auto result = state.is_ok()
                               ? Value::from_undefined(protected_ctx)
@@ -581,7 +582,7 @@ template <typename T>
 void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Arguments& args,
                                      ReturnValue& return_value)
 {
-    args.validate_count(1);
+    args.validate_count(2);
 
     FunctionType update_callback = Value::validated_to_function(ctx, args[0], "update callback");
     FunctionType completion_callback = Value::validated_to_function(ctx, args[1], "completion callback");
