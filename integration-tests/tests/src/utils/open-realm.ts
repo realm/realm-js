@@ -57,7 +57,9 @@ export async function openRealm(
     } as Realm.Configuration;
     const realm = new Realm(config);
 
-    // Upload the schema, ensuring a valid connection
+    // Upload the schema, ensuring a valid connection. uploadAllLocalChanges
+    // will not resolve with flexible sync enabled until we have created an
+    // initial subscription set, so skip it if we have a flexible config.
     if (!config.sync?.flexible) {
       if (!realm.syncSession) {
         throw new Error("No syncSession found on realm");
