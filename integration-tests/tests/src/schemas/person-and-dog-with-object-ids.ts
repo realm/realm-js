@@ -35,7 +35,6 @@ export const PersonSchema: Realm.ObjectSchema = {
     _id: "objectId",
     age: "int",
     name: "string",
-    nonQueryable: "string?",
     friends: "Person[]",
   },
 };

@@ -16,6 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import chaiAsPromised from "chai-as-promised";
+import chai from "chai";
+
+chai.use(chaiAsPromised);
+
 import "./realm-constructor";
 import "./serialization";
 import "./objects";
