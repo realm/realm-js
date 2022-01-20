@@ -7,6 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Opening a Realm with a schema that has an orphaned embedded object type performed an extra empty write transaction. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115), since v10.5.0)
 * Schema validation was missing for embedded objects in sets, resulting in an unhelpful error being thrown if the user attempted to define one. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115))
+* Fixed a crash when closing an Electron app with a custom sync error handler ([#4150](https://github.com/realm/realm-js/issues/4150)
 
 ### Compatibility
 * Removed `deprecated-react-native-listview` from root package.json
