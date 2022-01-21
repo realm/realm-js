@@ -624,20 +624,20 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
         ValueType arguments[]{mutable_subs_js};
         auto const& callback_return =
             Function<T>::callback(protected_ctx, protected_update_callback, protected_this, 1, arguments);
-        return_value.set(callback_return);
 
         // Commit the mutation, which downgrades its internal transaction to a read transaction
         // so no more changes can be made to it, and returns a new (immutable) SubscriptionSet
         // with the changes we made
         auto new_sub_set = std::move(*mutable_subs).commit();
-
-        // Asynchronously wait for the SubscriptionSet to be synchronised
-        SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
-                                                               protected_completion_callback);
+        return_value.set(callback_return);
 
         // Update this SubscriptionSetClass instance to point to the updated version
         set_internal<T, SubscriptionSetClass<T>>(ctx, this_object,
                                                  new SubscriptionSet<T>(std::move(new_sub_set), subs->realm));
+
+        // Asynchronously wait for the SubscriptionSet to be synchronised
+        SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
+                                                               protected_completion_callback);
     }
     catch (...) {
         throw;

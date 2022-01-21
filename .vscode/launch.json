@@ -113,7 +113,8 @@
                 "--timeout",
                 "10000",
                 "--grep",
-                "${input:integrationTestFilter}"
+                "returns the return value of the update callback when the promise resolves"
+                // "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",
             "preLaunchTask": "Build Node Tests"

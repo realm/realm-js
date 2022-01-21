@@ -62,8 +62,9 @@ function addSubscription<T>(
   options: Realm.App.Sync.SubscriptionOptions | undefined = undefined,
 ): AddSubscriptionResult<T> {
   const subs = realm.subscriptions;
-  const sub = subs.update((mutableSubs) => {
-    return mutableSubs.add(query, options);
+  let sub!: Realm.App.Sync.Subscription;
+  subs.update((mutableSubs) => {
+    sub = mutableSubs.add(query, options);
   });
 
   return { subs, sub, query };
@@ -280,10 +281,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         it("returns true if a subscription is added then removed", function (this: RealmContext) {
           const subs = this.realm.subscriptions;
+          let sub!: Realm.App.Sync.Subscription;
+
           expect(subs.empty).to.be.true;
 
-          const sub = subs.update((mutableSubs) => {
-            return mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+          subs.update((mutableSubs) => {
+            sub = mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
           });
 
           expect(subs.empty).to.be.false;
@@ -585,7 +588,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             ];
 
             calls.forEach((call) => {
-              expect(() => call()).throws(/.* is not a function/);
+              expect(() => call()).throws(/.* is not a function/, `${call.toString()} did not throw`);
             });
           });
 
@@ -729,16 +732,18 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs).to.have.length(1);
         });
 
-        it("returns the return value of the update callback", function () {
+        it("returns the return value of the update callback when the promise resolves", async function () {
           const { subs } = addSubscriptionForPerson(this.realm);
 
-          const result = subs.update((mutableSubs) => {
+          const result = await subs.update((mutableSubs) => {
             return mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10"));
           });
 
           expect(result).to.be.an.instanceOf(Realm.App.Sync.Subscription);
           expect(result.queryString).to.equal("age < 10");
         });
+
+        // TODO it returns a promise tests
       });
 
       describe("#add", function () {
