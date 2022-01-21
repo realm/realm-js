@@ -237,7 +237,7 @@ public:
     IndexPropertyType<T> const index_accessor = {wrap<get_index>, nullptr};
 
 private:
-    static void wait_for_synchronization_impl(Protected<ContextType>, Protected<ObjectType>, Protected<FunctionType>);
+    static void wait_for_synchronization_impl(ContextType, ObjectType, FunctionType);
 };
 
 template <typename T>
@@ -458,10 +458,13 @@ void SubscriptionSetClass<T>::wait_for_synchronization(ContextType ctx, ObjectTy
  * @param callback \ref Callback function to be invoked when the state is "Complete" or "Error"
  */
 template <typename T>
-void SubscriptionSetClass<T>::wait_for_synchronization_impl(Protected<ContextType> protected_ctx,
-                                                            Protected<ObjectType> protected_this,
-                                                            Protected<FunctionType> protected_callback)
+void SubscriptionSetClass<T>::wait_for_synchronization_impl(ContextType ctx, ObjectType this_object,
+                                                            FunctionType callback)
 {
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(js::Context<T>::get_global_context(ctx));
+
     auto subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
 
     // Hold a weak_ptr to the SyncSession, so we can check if it still exists when our callback fires
@@ -475,19 +478,20 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(Protected<ContextTyp
         [=](StatusWith<realm::sync::SubscriptionSet::State> state) {
             HANDLESCOPE(protected_ctx)
 
-            // If the SyncSession has already closed, don't try to interact with the Realm as it'll crash
+            // If the SyncSession has already closed, don't do anything as we will crash
             if (sync_session.lock()) {
                 auto current_subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
                 current_subs->refresh();
+
+                auto result =
+                    state.is_ok()
+                        ? Value::from_undefined(protected_ctx)
+                        : Object::create_obj(
+                              protected_ctx,
+                              {{"message", Value::from_string(protected_ctx, state.get_status().reason())}});
+
+                Function<T>::callback(protected_ctx, protected_callback, protected_this, {result});
             }
-
-            auto result = state.is_ok()
-                              ? Value::from_undefined(protected_ctx)
-                              : Object::create_obj(
-                                    protected_ctx,
-                                    {{"message", Value::from_string(protected_ctx, state.get_status().reason())}});
-
-            Function<T>::callback(protected_ctx, protected_callback, protected_this, {result});
         });
 
     state_change_func = std::move(state_change_handler);
