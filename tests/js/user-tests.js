@@ -30,11 +30,9 @@ function node_require(module) {
 }
 let appConfig = AppConfig.integrationAppConfig;
 
-let fs, jwt, rosDataDir;
+let fs;
 if (isNodeProcess) {
   fs = node_require("fs");
-  jwt = node_require("jsonwebtoken");
-  rosDataDir = process.env.ROS_DATA_DIR || "../realm-object-server-data";
 }
 
 function assertIsUser(user) {
@@ -69,13 +67,6 @@ function assertIsAuthError(error, code, title) {
   if (title) {
     TestCase.assertEqual(error.title, title);
   }
-}
-
-function signToken(userId) {
-  return jwt.sign({ userId }, fs.readFileSync(`${rosDataDir}/keys/jwt.pem`), {
-    expiresIn: "1d",
-    algorithm: "RS256",
-  });
 }
 
 function randomVerifiableEmail() {
@@ -157,6 +148,48 @@ module.exports = {
     const customData = user.customData;
     // TODO: Enable custom user data in the app to test this e2e
     TestCase.assertType(customData, "object");
+  },
+
+  async testUserProfile() {
+    let app = new Realm.App(appConfig);
+    await logOutExistingUsers(app);
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+    const profile = user.profile;
+    TestCase.assertType(profile, "object");
+  },
+
+  async testJWTUserProfile() {
+    if (!isNodeProcess) {
+      return;
+    }
+
+    let nJwt = require("njwt");
+    const signingKey = "My_very_confidential_secretttttt";
+    const claims = {
+      name: "John Doe",
+      iss: "http://myapp.com/",
+      sub: "users/user1234",
+      scope: "self, admins",
+      aud: "my-audience",
+
+      // metadata
+      id: "one",
+      license: "one-two-three",
+    };
+
+    const jwt = nJwt.create(claims, signingKey, "HS256").compact();
+
+    let app = new Realm.App(appConfig);
+    await logOutExistingUsers(app);
+    let credentials = Realm.Credentials.jwt(jwt);
+    let user = await app.logIn(credentials);
+    await user.refreshCustomData();
+    const profile = user.profile;
+
+    TestCase.assertType(profile, "object");
+    TestCase.assertEqual(profile.id, claims.id);
+    TestCase.assertEqual(profile.license, claims.license);
   },
 
   async testEmailPasswordAuth() {
