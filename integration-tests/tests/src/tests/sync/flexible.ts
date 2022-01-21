@@ -643,19 +643,19 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
 
           // TODO waiting on https://github.com/realm/realm-core/pull/5162
-          xit("throws an error a mutating method is called outside of an update() callback by using an async update function", function (this: RealmContext) {
+          xit("throws an error if a mutating method is called outside of an update() callback by using an async update function", function (this: RealmContext) {
             const subs = this.realm.subscriptions;
             let mutableSubs: Realm.App.Sync.MutableSubscriptionSet;
 
             expect(
-              subs.update(async (m) => {
+              subs.update(async () => {
                 mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
               }),
             ).to.be.rejectedWith(/Wrong transactional state.*/);
           });
 
           // TODO waiting on https://github.com/realm/realm-core/pull/5162
-          xit("throws an error a mutating method is called outside of an update() callback by holding a reference to the MutableSubscriptions", function (this: RealmContext) {
+          xit("throws an error if a mutating method is called outside of an update() callback by holding a reference to the MutableSubscriptions", function (this: RealmContext) {
             const subs = this.realm.subscriptions;
             let mutableSubs: Realm.App.Sync.MutableSubscriptionSet;
 
@@ -1410,10 +1410,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         const realm = this.realm;
 
         const action = async () => {
-          const { subs } = await addSubscriptionAndSync(
-            realm,
-            realm.objects(FlexiblePersonSchema.name).filtered("age < 40"),
-          );
+          await addSubscriptionAndSync(realm, realm.objects(FlexiblePersonSchema.name).filtered("age < 40"));
 
           const person = realm.write(() => {
             return realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
