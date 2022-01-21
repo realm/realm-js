@@ -840,14 +840,14 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         // TODO This feature is not implemented yet
         xit("returns the return value of the update callback when the promise resolves", async function () {
-          const { subs } = addSubscriptionForPerson(this.realm);
+          /*const { subs } = addSubscriptionForPerson(this.realm);
 
           const result = await subs.update((mutableSubs) => {
             return mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10"));
           });
 
           expect(result).to.be.an.instanceOf(Realm.App.Sync.Subscription);
-          expect(result.queryString).to.equal("age < 10");
+          expect(result.queryString).to.equal("age < 10");*/
         });
       });
 

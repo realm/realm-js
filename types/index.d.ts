@@ -714,7 +714,11 @@ declare namespace Realm {
 
         /**
          * Class representing the common functionality for the {@link SubscriptionSet} and
-         * {@link MutableSubscriptionSet} classes
+         * {@link MutableSubscriptionSet} classes.
+         *
+         * The {@link Subscription}s in a SubscriptionSet can be accessed as an array, e.g.
+         * `realm.subscriptions[0]`. This array is readonly – SubscriptionSets can only be
+         * modified inside a {@link SubscriptionSet.update} callback.
          */
         interface BaseSubscriptionSet extends ReadonlyArray<Subscription> {
             new(): never; // This type isn't supposed to be constructed manually by end users.

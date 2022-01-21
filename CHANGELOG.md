@@ -9,6 +9,7 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 * `SubscriptionSet.snaphot()` has been removed, in favour of allowing a `SubscriptionSet` to be accessed as an array
 * `SubscriptionSet.find()` has been renamed to `SubscriptionSet.findByQuery()` to avoid a naming confict with the `Array.find` method
 * The result of `Realm.subscriptions.update` can be `await`ed to avoid a separate call to `waitForSynchronization`
+* The spelling of `SubscriptionState.Superceded` was corrected to `SubscriptionState.Superseded`
 
 ### Enhancements
 * Support arithmetic operations (+, -, *, /) in queries. Operands can be properties and/or constants of numeric types (`int`, `float`, `double` or `Decimal128`). You can now say something like `(age + 5) * 2 > child.age`.

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -135,6 +135,10 @@ var SubscriptionsState = {
 /**
  * Class representing the common functionality for the {@link Realm.App.Sync.SubscriptionSet} and
  * {@link Realm.App.Sync.SubscriptionSet} classes
+ *
+ * The {@link Realm.App.Sync.Subscription}s in a SubscriptionSet can be accessed as an array, e.g.
+ * `realm.subscriptions[0]`. This array is readonly – SubscriptionSets can only be
+ * modified inside a {@link Realm.App.Sync.SubscriptionSet.update} callback.
  *
  * @memberof Realm.App.Sync
  */
@@ -357,7 +361,8 @@ class SubscriptionSet {
  * {@link Realm.App.Sync.SubscriptionSet} instance can only be accessed from inside the
  * {@link Realm.App.Sync.SubscriptionSet#update} callback.
  *
- * @extends Realm.App.Sync.BaseSubscriptionSet  * @memberof Realm.App.Sync
+ * @extends Realm.App.Sync.BaseSubscriptionSet
+ * @memberof Realm.App.Sync
  */
 class MutableSubscriptionSet {
   /**
