@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const commandLineArgs = require("command-line-args");
-const utils = require("../lib/utils");
 const fs = require("fs");
 
 let doLog; // placeholder for logger function
@@ -156,12 +155,12 @@ async function dispatchAnalytics(payload) {
 }
 
 async function submitAnalytics(dryRun) {
-  const context = require("../../../package.json");
   if (isAnalyticsDisabled()) {
     doLog("Analytics is disabled");
     return;
   }
 
+  const context = require("../../../package.json");
   const payload = await fetchPlatformData(context);
   doLog(`payload: ${JSON.stringify(payload)}`);
 
@@ -178,7 +177,8 @@ async function submitAnalytics(dryRun) {
 
 const optionDefinitions = [
   { name: "dryRun", type: Boolean, multiple: false, description: "If true, don't submit analytics" },
-  { name: "log", type: Boolean, multiple: false, description: "If true, print log messages" }];
+  { name: "log", type: Boolean, multiple: false, description: "If true, print log messages" },
+];
 
 const options = commandLineArgs(optionDefinitions, { camelCase: true });
 
