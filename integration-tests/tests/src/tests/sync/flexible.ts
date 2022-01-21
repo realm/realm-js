@@ -887,7 +887,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(this.realm.subscriptions).to.have.lengthOf(2);
         });
 
-        it("does not a second subscription with the same query and a different sort", function (this: RealmContext) {
+        it("does not add a second subscription with the same query and a different sort", function (this: RealmContext) {
           addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name));
           const { subs } = addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).sorted("name"));
 
