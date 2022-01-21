@@ -92,7 +92,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "LLDB Node",
+            "name": "LLDB Node REPL",
             "program": "node",
             "args": ["--expose_gc"],
             "preLaunchTask": "Build Node Tests"
