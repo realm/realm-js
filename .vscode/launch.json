@@ -113,7 +113,7 @@
                 "--timeout",
                 "10000",
                 "--grep",
-                "is Error if there are two errors in a row"
+                "Flexible"
                 // "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",

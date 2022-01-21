@@ -178,15 +178,15 @@ void SubscriptionClass<T>::get_query_string(ContextType ctx, ObjectType this_obj
 template <typename T>
 class SubscriptionSet : public realm::sync::SubscriptionSet {
 public:
-    SubscriptionSet(const realm::sync::SubscriptionSet& s, const std::shared_ptr<SyncSession> ss)
+    SubscriptionSet(const realm::sync::SubscriptionSet& s, const std::weak_ptr<SyncSession> ss)
         : realm::sync::SubscriptionSet(s)
         , sync_session(ss)
     {
     }
 
-    // Hold a shared_ptr to the sync sessoin so we can check if it still exists
+    // Hold a weak_ptr to the sync sessoin so we can check if it still exists
     // in the wait_for_synchronization callback
-    std::shared_ptr<SyncSession> sync_session;
+    std::weak_ptr<SyncSession> sync_session;
 };
 
 /**

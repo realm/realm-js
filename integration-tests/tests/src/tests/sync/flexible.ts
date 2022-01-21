@@ -1056,6 +1056,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             this.realm,
             this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
           );
+
           await subs.waitForSynchronization();
 
           subs.update((mutableSubs) => {
