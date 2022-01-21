@@ -31,7 +31,7 @@ namespace js {
 
 
 /**
- * @brief Wrapper class for a single flexible sync subscrpition
+ * @brief Wrapper class for a single flexible sync subscription
  */
 template <typename T>
 class Subscription : public realm::sync::Subscription {
@@ -43,7 +43,7 @@ public:
 };
 
 /**
- * @brief Class representing a single flexible sync subscrpition
+ * @brief Class representing a single flexible sync subscription
  */
 template <typename T>
 class SubscriptionClass : public ClassDefinition<T, Subscription<T>> {
@@ -268,7 +268,7 @@ void SubscriptionSetClass<T>::get_empty(ContextType ctx, ObjectType this_object,
  *
  * @param ctx JS context
  * @param this_object \ref ObjectType wrapping the SubscriptionSet
- * @param return_value \ref ReturnValue wrapping the error string if any, or null if not
+ * @param return_value \ref ReturnValue wrapping the error string if it exists, or null if not
  */
 template <typename T>
 void SubscriptionSetClass<T>::get_error(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
@@ -529,7 +529,7 @@ public:
  *
  * @note This is not modelled as an inheritance relationship in JS (using the third
  * ClassDefinition template arg to set the parent), because we are not exposing all
- * the methods of Subscriptions, so it is not stricly inheritance.
+ * the methods of Subscriptions, so it is not strictly inheritance.
  */
 template <typename T>
 class MutableSubscriptionSetClass : public ClassDefinition<T, MutableSubscriptionSet<T>> {

@@ -861,7 +861,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it("adds a second subscription with the same object type and a different filter", function (this: RealmContext) {
           addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name));
           addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
-          
+
           expect(this.realm.subscriptions).to.have.lengthOf(2);
         });
 

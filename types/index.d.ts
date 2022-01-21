@@ -764,8 +764,8 @@ declare namespace Realm {
             readonly state: SubscriptionsState;
 
             /**
-             * @returns If `state` is {@link SubscriptionsState.Error}, this is a `string`
-             * representing why the SubscriptionSet is in an error state. `null` if there is no error.
+             * @returns If `state` is {@link Realm.App.Sync.SubscriptionsState.Error}, this will return a `string`
+             * representing why the SubscriptionSet is in an error state. `null` is returned if there is no error.
              */
             readonly error: string | null;
         }
@@ -797,7 +797,7 @@ declare namespace Realm {
             /**
              * Update the SubscriptionSet and change this instance to point to the updated SubscriptionSet.
              *
-             * Adding or removing subscriptions from the set set must be performed inside
+             * Adding or removing subscriptions from the set must be performed inside
              * the callback argument of this method, and the mutating methods must be called on
              * the `mutableSubs` argument rather than the original {@link SubscriptionSet} instance.
              *

@@ -44,7 +44,7 @@ class Subscription {
   get createdAt() {}
 
   /**
-   * The date when this subscription was last update.
+   * The date when this subscription was last updated.
    *
    * @type {Date}
    * @readonly
@@ -188,8 +188,8 @@ class BaseSubscriptionSet {
   get state() {}
 
   /**
-   * If `state` is {@link Realm.App.Sync.SubscriptionSetState.Error}, this is a `string`
-   * representing why the SubscriptionSet is in an error state. `null` if there is no error.
+   * If `state` is {@link Realm.App.Sync.SubscriptionsState.Error}, this will return a `string`
+   * representing why the SubscriptionSet is in an error state. `null` is returned if there is no error.
    *
    * @type {string|null}
    * @readonly
@@ -327,7 +327,7 @@ class SubscriptionSet {
   /**
    * Update the SubscriptionSet and change this instance to point to the updated SubscriptionSet.
    *
-   * Adding or removing subscriptions from the set set must be performed inside
+   * Adding or removing subscriptions from the set must be performed inside
    * the callback argument of this method, and the mutating methods must be called on
    * the `mutableSubs` argument rather than the original {@link Realm.App.Sync.SubscriptionSet} instance.
    *
@@ -369,7 +369,7 @@ class MutableSubscriptionSet {
    * Adds a query to the set of active subscriptions. The query will be joined via
    * an `OR` operator with any existing queries for the same type.
    *
-   * A query is represented  by a {@link Realm.Results} instance returned from {@link Realm#objects},
+   * A query is represented by a {@link Realm.Results} instance returned from {@link Realm#objects},
    * for example: `mutableSubs.add(realm.objects("Cat").filtered("age > 10"));`.
    *
    * @param {Realm.Results} query A {@link Realm.Results} instance representing the query to subscribe to.
