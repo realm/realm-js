@@ -184,8 +184,8 @@ public:
     {
     }
 
-    // Hold a weak_ptr to the sync sessoin so we can check if it still exists
-    // in the wait_for_synchronization callback
+    // Hold a weak_ptr to the SyncSession so we can check if it still exists in the
+    // wait_for_synchronization callback
     std::weak_ptr<SyncSession> sync_session;
 };
 

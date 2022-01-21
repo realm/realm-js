@@ -525,7 +525,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           const promise = subs.waitForSynchronization();
           expect(promise).to.be.instanceOf(Promise);
-          return promise;
         });
 
         it("throws an error if no subscriptions have been created", async function (this: RealmContext) {
@@ -551,7 +550,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
         });
 
-        it("throws if there is an error synchronising subscriptions", async function (this: RealmContext) {
+        it("is rejected if there is an error synchronising subscriptions", async function (this: RealmContext) {
           const { subs } = addSubscription(
             this.realm,
             this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
@@ -565,7 +564,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
         });
 
-        it("throws if subscriptions are already in an error state", async function (this: RealmContext) {
+        it("is rejected if subscriptions are already in an error state", async function (this: RealmContext) {
           const { subs } = addSubscription(
             this.realm,
             this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
@@ -672,6 +671,42 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs2).to.have.length(0);
         });
 
+        describe("returned waitForSynchronization promise", function () {
+          // See also #waitForSynchronization tests, which cover the same functionality
+
+          it("returns a promise", function (this: RealmContext) {
+            const subs = this.realm.subscriptions;
+            const result = subs.update((mutableSubs) => {
+              mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+            });
+
+            expect(result).to.be.an.instanceOf(Promise);
+          });
+
+          it("returns a promise which resolves when the subscriptions are synchronised", async function (this: RealmContext) {
+            const subs = this.realm.subscriptions;
+            await subs.update((mutableSubs) => {
+              mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+            });
+
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+          });
+
+          it("returns a promise which is rejected if there is an error synchronising", async function (this: RealmContext) {
+            const subs = this.realm.subscriptions;
+
+            await expect(
+              subs.update((mutableSubs) => {
+                mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"));
+              }),
+            ).to.be.rejectedWith(
+              'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+            );
+
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+          });
+        });
+
         it("does not wait for subscriptions to be in a Complete state", function (this: RealmContext) {
           const subs = this.realm.subscriptions;
           subs.update((mutableSubs) => {
@@ -767,8 +802,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(result).to.be.an.instanceOf(Realm.App.Sync.Subscription);
           expect(result.queryString).to.equal("age < 10");
         });
-
-        // TODO it returns a promise tests
       });
 
       describe("#add", function () {
@@ -1103,7 +1136,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(newRealm.subscriptions).to.have.length(1);
 
           await newRealm.subscriptions.waitForSynchronization();
-          expect(newRealm.subscriptions.state).to.equal("complete");
+          expect(newRealm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
         });
       });
     });

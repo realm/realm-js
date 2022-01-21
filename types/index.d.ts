@@ -687,7 +687,7 @@ declare namespace Realm {
              * The SubscriptionSet has been superseded by an updated one. This typically means
              * that someone has called {@link SubscriptionSet.update} on a different instance
              * of the `Subscriptions`. You should not use a superseded SubscriptionSet,
-             * and instead obtain a new instance by calling {@link SubscriptionSet.getSubscriptions}.
+             * and instead obtain a new instance from {@link Realm.subscriptions}.
              */
             Superseded = "Superseded",
         }
@@ -798,18 +798,16 @@ declare namespace Realm {
              * the `mutableSubs` argument rather than the original {@link SubscriptionSet} instance.
              *
              * Any changes to the subscriptions after the callback has executed will be batched and sent
-             * to the server, at which point you can call {@link waitForSynchronization} to wait for
-             * the new data to be available.
+             * to the server. You can either `await` the call to `update`, or call {@link waitForSynchronization}
+             * to wait for the new data to be available.
              *
              * Example:
              * ```
-             * const subs = realm.getSubscriptions();
-             * subs.update(mutableSubs => {
+             * await realm.subscriptions.update(mutableSubs => {
              *   mutableSubs.add(realm.objects("Cat").filtered("age > 10"));
              *   mutableSubs.add(realm.objects("Dog").filtered("age > 20"));
              *   mutableSubs.removeByName("personSubs");
              * });
-             * await subs.waitForSynchronization();
              * // `realm` will now return the expected results based on the updated subscriptions
              * ```
              *
@@ -817,9 +815,10 @@ declare namespace Realm {
              * instance as its only argument, which can be used to add or remove subscriptions from
              * the set.
              *
-             * @returns The return value from the callback
+             * @returns A promise which resolves when the SubscriptionSet is synchronized, or is rejected
+             * if there was an error during synchronization (see {@link waitForSynchronisation})
              */
-            update<ReturnValueType> (callback: (mutableSubs: MutableSubscriptionSet) => ReturnValueType): ReturnValueType;
+            update: (callback: (mutableSubs: MutableSubscriptionSet) => void) => Promise<void>;
         }
 
         const Subscriptions: {
