@@ -465,6 +465,7 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(Protected<ContextTyp
     // Hold a weak_ptr to the Realm, so we can check if the Realm still exists and is not closed
     // when our callback fires – if the Realm has gone out of scope and been garbage collected
     // by the time the callback fires (which happens in tests), we get a crash otherwise
+
     // TODO replace this with a pointer to the sync_session once issues with failing tests are fixed
     std::weak_ptr<Realm> weak_realm = subs->realm;
 
@@ -629,7 +630,6 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
         // so no more changes can be made to it, and returns a new (immutable) SubscriptionSet
         // with the changes we made
         auto new_sub_set = std::move(*mutable_subs).commit();
-        return_value.set(callback_return);
 
         // Update this SubscriptionSetClass instance to point to the updated version
         set_internal<T, SubscriptionSetClass<T>>(ctx, this_object,

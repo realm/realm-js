@@ -593,7 +593,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
 
           // TODO waiting on https://github.com/realm/realm-core/pull/5162
-          xit("throws an error if a mutating method is called outside of an update() callback by holding a reference to the MutableSubscriptions", function (this: RealmContext) {
+          xit("throws an error a mutating method is called outside of an update() callback by holding a reference to the MutableSubscriptions", function (this: RealmContext) {
             const subs = this.realm.subscriptions;
             let mutableSubs: Realm.App.Sync.MutableSubscriptionSet;
 
@@ -606,16 +606,16 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             }).throws(/Wrong transactional state.*/);
           });
 
-          it("throws if called on a MutableSubscriptionSet instance", function (this: RealmContext) {
+          it("is rejected if called on a MutableSubscriptionSet instance", async function (this: RealmContext) {
             const subs = this.realm.subscriptions;
 
-            expect(() => {
+            await expect(
               subs.update((mutableSubs) => {
                 ((mutableSubs as unknown) as Realm.App.Sync.SubscriptionSet).update(() => {
                   // This should throw
                 });
-              });
-            }).to.throw("mutableSubs.update is not a function");
+              }),
+            ).to.be.rejectedWith("mutableSubs.update is not a function");
           });
 
           it("does not throw an error if a mutating method is called inside a update() callback", function (this: RealmContext) {
@@ -732,7 +732,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs).to.have.length(1);
         });
 
-        it("returns the return value of the update callback when the promise resolves", async function () {
+        // TODO This feature is not implemented yet
+        xit("returns the return value of the update callback when the promise resolves", async function () {
           const { subs } = addSubscriptionForPerson(this.realm);
 
           const result = await subs.update((mutableSubs) => {
@@ -845,15 +846,15 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(this.realm.subscriptions).to.have.lengthOf(1);
           });
 
-          it("throws and does not add the subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", function (this: RealmContext) {
+          it("is rejected and does not add the subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", async function (this: RealmContext) {
             const { subs } = addSubscriptionForPerson(this.realm, { name: "test" });
             const query = this.realm.objects(DogSchema.name);
 
-            expect(() => {
+            await expect(
               subs.update((mutableSubs) => {
                 mutableSubs.add(query, { name: "test", throwOnUpdate: true });
-              });
-            }).to.throw(
+              }),
+            ).to.be.rejectedWith(
               "A subscription with the name 'test' already exists but has a different query. If you meant to update it, remove `throwOnUpdate: true` from the subscription options.",
             );
 

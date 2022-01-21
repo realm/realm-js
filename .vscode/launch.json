@@ -113,7 +113,7 @@
                 "--timeout",
                 "10000",
                 "--grep",
-                "returns the return value of the update callback when the promise resolves"
+                "Flexible"
                 // "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",
