@@ -113,8 +113,7 @@
                 "--timeout",
                 "10000",
                 "--grep",
-                "Flexible"
-                // "${input:integrationTestFilter}"
+                "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",
             "preLaunchTask": "Build Node Tests"
