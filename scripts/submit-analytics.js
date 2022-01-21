@@ -124,14 +124,6 @@ function isAnalyticsDisabled() {
     isDisabled |= process.env["NODE_ENV"] === "production" || process.env["NODE_ENV"] === "test";
   }
 
-  // Electron apps are assumed to be in production if packaged
-  try {
-    const { app } = require("electron");
-    isDisabled |= !app.isPackaged;
-  } catch (err) {
-    doLog(`Ignoring: Failed to require("electron"): ${JSON.stringify(err)}`);
-  }
-
   // If the user has specifically opted-out or if we're running in a CI environment
   isDisabled |= "REALM_DISABLE_ANALYTICS" in process.env || "CI" in process.env;
 

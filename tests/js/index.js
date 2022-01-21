@@ -66,7 +66,6 @@ if (global.enableSyncTests) {
     TESTS.SetSyncTests = node_require("./set-sync-tests");
     TESTS.DictionarySyncTests = node_require("./dictionary-sync-tests");
     TESTS.MixedSyncTests = node_require("./mixed-sync-tests");
-    TESTS.AnalyticsTests = require("./analytics-tests");
   }
 }
 
