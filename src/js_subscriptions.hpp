@@ -217,7 +217,7 @@ public:
     static void get_length(ContextType, ObjectType, ReturnValue&);
 
     PropertyMap<T> const properties = {
-        {"empty", {wrap<get_empty>, nullptr}},   {"state", {wrap<get_state>, nullptr}},
+        {"isEmpty", {wrap<get_empty>, nullptr}}, {"state", {wrap<get_state>, nullptr}},
         {"error", {wrap<get_error>, nullptr}},   {"version", {wrap<get_version>, nullptr}},
         {"length", {wrap<get_length>, nullptr}},
     };

@@ -149,7 +149,7 @@ class BaseSubscriptionSet {
    * @type boolean
    * @readonly
    */
-  get empty() {}
+  get isEmpty() {}
 
   /**
    * The version of the SubscriptionSet. This is incremented every time a

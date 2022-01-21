@@ -733,7 +733,7 @@ declare namespace Realm {
             /**
              * @returns `true` if there are no subscriptions in the set, `false` otherwise.
              */
-            readonly empty: boolean;
+            readonly isEmpty: boolean;
 
             /**
              * @returns The version of the SubscriptionSet. This is incremented every time an

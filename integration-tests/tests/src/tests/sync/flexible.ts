@@ -118,7 +118,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     },
   });
 
-  describe("API", function () {
+  describe("Configuration", function () {
     describe("flexible sync Realm config", function () {
       it("accepts a { flexible: true } option", function () {
         expect(() => {
@@ -187,14 +187,18 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               flexible: true,
               user: this.user,
               clientReset: {
-                mode: "discardLocal" as ClientResetMode,
+                mode: ClientResetMode.DiscardLocal,
               },
             },
           });
         }).to.throw("Only manual client resets are supported with flexible sync");
       });
     });
+  });
 
+  describe("API", function () {
+    // We use SessionStopPolicy.Immediately to prevent there being two Realms left open
+    // when we get to the `getAllSyncSessions` test which running the suite
     describe("getAllSyncSessions", function () {
       it("getAllSyncSessions returns a valid sync session for flexible sync", function (this: RealmContext) {
         const sessions = Realm.App.Sync.getAllSyncSessions(this.user);
@@ -203,7 +207,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
     });
 
-    describe("Realm.subscriptions", function () {
+    describe("Realm#subscriptions", function () {
       it("returns a SubscriptionSet instance", function (this: RealmContext) {
         expect(this.realm.subscriptions).to.be.instanceOf(Realm.App.Sync.Subscriptions);
       });
@@ -225,66 +229,136 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
     describe("Subscription class", function () {
       it("has an id", function (this: RealmContext) {
-        const sub = addSubscriptionForPerson(this.realm).sub;
+        const { sub } = addSubscriptionForPerson(this.realm);
         expect(sub.id).to.be.instanceOf(BSON.ObjectId);
       });
 
       it("has a createdAt date", function (this: RealmContext) {
-        const sub = addSubscriptionForPerson(this.realm).sub;
+        const { sub } = addSubscriptionForPerson(this.realm);
         expect(sub.createdAt).to.be.instanceOf(Date);
       });
 
       it("has an updatedAt date", function (this: RealmContext) {
-        const sub = addSubscriptionForPerson(this.realm).sub;
+        const { sub } = addSubscriptionForPerson(this.realm);
         expect(sub.updatedAt).to.be.instanceOf(Date);
       });
 
       it("has a default name", function (this: RealmContext) {
-        const sub = addSubscriptionForPerson(this.realm).sub;
+        const { sub } = addSubscriptionForPerson(this.realm);
         expect(sub.name).to.equal(null);
       });
 
       it("has a specified name", function (this: RealmContext) {
-        const subWithName = addSubscriptionForPerson(this.realm, { name: "test" }).sub;
-        expect(subWithName.name).to.equal("test");
+        const { sub } = addSubscriptionForPerson(this.realm, { name: "test" });
+        expect(sub.name).to.equal("test");
       });
 
       it("has an objectType", function (this: RealmContext) {
-        const sub = addSubscriptionForPerson(this.realm).sub;
+        const { sub } = addSubscriptionForPerson(this.realm);
         expect(sub.objectType).to.equal(FlexiblePersonSchema.name);
       });
 
       it("has a default queryString", function (this: RealmContext) {
-        const sub = addSubscriptionForPerson(this.realm).sub;
+        const { sub } = addSubscriptionForPerson(this.realm);
         expect(sub.queryString).to.equal("TRUEPREDICATE");
       });
 
       it("has a specified queryString", function (this: RealmContext) {
-        const subWithFilter = addSubscription(
-          this.realm,
-          this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
-        ).sub;
-        expect(subWithFilter.queryString).to.equal("age > 10");
+        const { sub } = addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+        expect(sub.queryString).to.equal("age > 10");
       });
 
       it("contains interpolated arguments in the queryString", function (this: RealmContext) {
-        const subWithFilter = addSubscription(
+        const { sub } = addSubscription(
           this.realm,
           this.realm.objects(FlexiblePersonSchema.name).filtered("age > $0", 10),
-        ).sub;
-        expect(subWithFilter.queryString).to.equal("age > 10");
+        );
+        expect(sub.queryString).to.equal("age > 10");
       });
 
       it("does not include sort in the query string", function (this: RealmContext) {
-        const subWithFilter = addSubscription(
+        const { sub } = addSubscription(
           this.realm,
           this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10").sorted("name"),
-        ).sub;
-        expect(subWithFilter.queryString).to.equal("age > 10");
+        );
+        expect(sub.queryString).to.equal("age > 10");
       });
     });
 
     describe("SubscriptionSet class", function () {
+      describe("#waitForSynchronization", async function () {
+        it("returns a promise", function (this: RealmContext) {
+          const { subs } = addSubscriptionForPerson(this.realm);
+
+          const promise = subs.waitForSynchronization();
+          expect(promise).to.be.instanceOf(Promise);
+        });
+
+        it("throws an error if no subscriptions have been created", async function (this: RealmContext) {
+          expect(this.realm.subscriptions.waitForSynchronization()).to.be.rejectedWith(
+            "`waitForSynchronisation` cannot be called before creating a subscription set using `update`",
+          );
+        });
+
+        it("waits for subscriptions to be in a complete state", async function (this: RealmContext) {
+          const { subs } = addSubscriptionForPerson(this.realm);
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
+
+          await subs.waitForSynchronization();
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+        });
+
+        it("resolves if subscriptions are already in a complete state", async function (this: RealmContext) {
+          const { subs } = addSubscriptionForPerson(this.realm);
+          await subs.waitForSynchronization();
+          await subs.waitForSynchronization();
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+        });
+
+        it("is rejected if there is an error synchronising subscriptions", async function (this: RealmContext) {
+          const { subs } = addSubscription(
+            this.realm,
+            this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
+          );
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
+
+          await expect(subs.waitForSynchronization()).to.be.rejectedWith(
+            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+          );
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+        });
+
+        it("is rejected if subscriptions are already in an error state", async function (this: RealmContext) {
+          const { subs } = addSubscription(
+            this.realm,
+            this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
+          );
+
+          await expect(subs.waitForSynchronization()).to.be.rejectedWith(
+            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+          );
+
+          await expect(subs.waitForSynchronization()).to.be.rejectedWith(
+            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+          );
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+        });
+
+        it("cannot be called on a MutableSubscriptionSet instance", async function (this: RealmContext) {
+          const subs = this.realm.subscriptions;
+
+          subs.update((mutableSubs) => {
+            expect(() =>
+              ((mutableSubs as unknown) as Realm.App.Sync.SubscriptionSet).waitForSynchronization(),
+            ).to.throw("mutableSubs.waitForSynchronization is not a function");
+          });
+        });
+      });
+
       describe("#version", function () {
         it("starts at 0", function () {
           expect(this.realm.subscriptions.version).to.equal(0);
@@ -306,34 +380,34 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
       });
 
-      describe("#empty", function () {
+      describe("#isEmpty", function () {
         it("returns true if no subscriptions exist", function (this: RealmContext) {
-          expect(this.realm.subscriptions.empty).to.be.true;
+          expect(this.realm.subscriptions.isEmpty).to.be.true;
         });
 
         it("returns false if subscriptions exist", function (this: RealmContext) {
           const { subs } = addSubscriptionForPerson(this.realm);
 
-          expect(subs.empty).to.be.false;
+          expect(subs.isEmpty).to.be.false;
         });
 
         it("returns true if a subscription is added then removed", function (this: RealmContext) {
           const subs = this.realm.subscriptions;
           let sub!: Realm.App.Sync.Subscription;
 
-          expect(subs.empty).to.be.true;
+          expect(subs.isEmpty).to.be.true;
 
           subs.update((mutableSubs) => {
             sub = mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
           });
 
-          expect(subs.empty).to.be.false;
+          expect(subs.isEmpty).to.be.false;
 
           subs.update((mutableSubs) => {
             mutableSubs.removeSubscription(sub);
           });
 
-          expect(subs.empty).to.be.true;
+          expect(subs.isEmpty).to.be.true;
         });
       });
 
@@ -354,7 +428,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.every((s) => s instanceof Realm.App.Sync.Subscription)).to.be.true;
         });
 
-        it("is an immutable snapshot of the subscriptions when snapshot was called", function (this: RealmContext) {
+        it("is an immutable snapshot of the subscriptions from when it was called", function (this: RealmContext) {
           const { subs } = addSubscriptionForPerson(this.realm);
           const snapshot = subs;
           expect(snapshot).to.have.length(1);
@@ -403,13 +477,13 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("returns a filtered and sorted query's subscription", function (this: RealmContext) {
-          const query = this.realm.objects(FlexiblePersonSchema.name).sorted("age");
+          const query = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10").sorted("age");
           const { subs, sub } = addSubscription(this.realm, query);
 
           expect(subs.findByQuery(query)).to.deep.equal(sub);
         });
 
-        it("returns a query with equivalent RQL respresentation's subscription", function (this: RealmContext) {
+        it("returns the subscription for a query which has an identical RQL representation (it does not need to be the same exact object)", function (this: RealmContext) {
           const { subs, sub } = addSubscriptionForPerson(this.realm);
 
           expect(subs.findByQuery(this.realm.objects(FlexiblePersonSchema.name))).to.deep.equal(sub);
@@ -486,17 +560,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           expect(() => subs.update(() => {})).to.throw("???");
         });
-
-        // TODO verify correct behaviour - right now this doesn't work
-        xit("throws if you call waitForSynchronisation on a Superseded subscription set", async function (this: RealmContext) {
-          const { subs } = addSubscriptionForPerson(this.realm);
-          await subs.waitForSynchronization();
-          const { subs: newSubs } = addSubscriptionForPerson(this.realm);
-          await newSubs.waitForSynchronization();
-          await subs.waitForSynchronization();
-
-          await expect(subs.waitForSynchronization()).to.be.rejectedWith("???");
-        });
       });
 
       describe("#error", function () {
@@ -558,81 +621,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
       });
 
-      describe("#waitForSynchronization", async function () {
-        it("returns a promise", function (this: RealmContext) {
-          const { subs } = addSubscriptionForPerson(this.realm);
-
-          const promise = subs.waitForSynchronization();
-          expect(promise).to.be.instanceOf(Promise);
-        });
-
-        it("throws an error if no subscriptions have been created", async function (this: RealmContext) {
-          expect(this.realm.subscriptions.waitForSynchronization()).to.be.rejectedWith(
-            "`waitForSynchronisation` cannot be called before creating a subscription set using `update`",
-          );
-        });
-
-        it("waits for subscriptions to be in a complete state", async function (this: RealmContext) {
-          const { subs } = addSubscriptionForPerson(this.realm);
-          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
-
-          await subs.waitForSynchronization();
-
-          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
-        });
-
-        it("resolves if subscriptions are already in a complete state", async function (this: RealmContext) {
-          const { subs } = addSubscriptionForPerson(this.realm);
-          await subs.waitForSynchronization();
-          await subs.waitForSynchronization();
-
-          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
-        });
-
-        it("is rejected if there is an error synchronising subscriptions", async function (this: RealmContext) {
-          const { subs } = addSubscription(
-            this.realm,
-            this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
-          );
-          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
-
-          await expect(subs.waitForSynchronization()).to.be.rejectedWith(
-            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
-          );
-
-          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
-        });
-
-        it("is rejected if subscriptions are already in an error state", async function (this: RealmContext) {
-          const { subs } = addSubscription(
-            this.realm,
-            this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
-          );
-
-          try {
-            await subs.waitForSynchronization();
-          } catch (e) {
-            // Do nothing
-          }
-
-          await expect(subs.waitForSynchronization()).to.be.rejectedWith(
-            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
-          );
-
-          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
-        });
-
-        it("cannot be called on a MutableSubscriptionSet instance", async function (this: RealmContext) {
-          const subs = this.realm.subscriptions;
-
-          subs.update((mutableSubs) => {
-            expect(() =>
-              ((mutableSubs as unknown) as Realm.App.Sync.SubscriptionSet).waitForSynchronization(),
-            ).to.throw("mutableSubs.waitForSynchronization is not a function");
-          });
-        });
-      });
-
       describe("#update", function () {
         describe("calling mutating methods outside an update callback", function () {
           it("mutating methods do not exist on non-mutable SubscriptionSet instances", function (this: RealmContext) {
@@ -650,7 +638,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             ];
 
             calls.forEach((call) => {
-              expect(() => call()).throws(/.* is not a function/, `${call.toString()} did not throw`);
+              expect(call).throws(/.* is not a function/, `${call.toString()} did not throw`);
             });
           });
 
@@ -690,16 +678,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
                 });
               }),
             ).to.be.rejectedWith("mutableSubs.update is not a function");
-          });
-
-          it("does not throw an error if a mutating method is called inside a update() callback", function (this: RealmContext) {
-            const subs = this.realm.subscriptions;
-
-            expect(() => {
-              subs.update((mutableSubs) => {
-                mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
-              });
-            }).to.not.throw();
           });
         });
 
@@ -991,7 +969,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(mutableSubs.removeByName("test")).to.be.false;
           });
 
-          expect(subs.empty).to.be.false;
+          expect(subs.isEmpty).to.be.false;
         });
 
         it("returns true and removes the subscription if the subscription is found", function (this: RealmContext) {
@@ -1020,7 +998,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(mutableSubs.remove(query2)).to.be.false;
           });
 
-          expect(subs.empty).to.be.false;
+          expect(subs.isEmpty).to.be.false;
         });
 
         it("returns true and removes the subscription for the query if it is found", function (this: RealmContext) {
@@ -1074,7 +1052,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(mutableSubs.removeSubscription(sub)).to.be.false;
           });
 
-          expect(subs.empty).to.be.false;
+          expect(subs.isEmpty).to.be.false;
         });
 
         it("returns true and removes the subscription if the subscription is found", function (this: RealmContext) {
@@ -1135,7 +1113,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(mutableSubs.removeAll()).to.equal(2);
           });
 
-          expect(this.realm.subscriptions.empty).to.be.true;
+          expect(this.realm.subscriptions.isEmpty).to.be.true;
         });
       });
 
@@ -1147,7 +1125,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(mutableSubs.removeByObjectType(DogSchema.name)).to.equal(0);
           });
 
-          expect(subs.empty).to.be.false;
+          expect(subs.isEmpty).to.be.false;
         });
 
         it("removes all subscriptions for the object type and returns the number of subscriptions removed", function (this: RealmContext) {

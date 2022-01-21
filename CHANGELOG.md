@@ -8,6 +8,7 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 * `Subscriptions` has been renamed to `SubscriptionSet`, and `MutableSubscriptions` to `MutableSubscriptionSet`
 * `SubscriptionSet.snaphot()` has been removed, in favour of allowing a `SubscriptionSet` to be accessed as an array
 * `SubscriptionSet.find()` has been renamed to `SubscriptionSet.findByQuery()` to avoid a naming confict with the `Array.find` method
+* `SubscriptionSet.empty` has been renamed to `SubscriptionSet.isEmpty`
 * The result of `Realm.subscriptions.update` can be `await`ed to avoid a separate call to `waitForSynchronization`
 * The spelling of `SubscriptionState.Superceded` was corrected to `SubscriptionState.Superseded`
 
