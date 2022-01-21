@@ -655,6 +655,18 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
 
           // TODO waiting on https://github.com/realm/realm-core/pull/5162
+          xit("throws an error a mutating method is called outside of an update() callback by using an async update function", function (this: RealmContext) {
+            const subs = this.realm.subscriptions;
+            let mutableSubs: Realm.App.Sync.MutableSubscriptionSet;
+
+            expect(
+              subs.update(async (m) => {
+                mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+              }),
+            ).to.be.rejectedWith(/Wrong transactional state.*/);
+          });
+
+          // TODO waiting on https://github.com/realm/realm-core/pull/5162
           xit("throws an error a mutating method is called outside of an update() callback by holding a reference to the MutableSubscriptions", function (this: RealmContext) {
             const subs = this.realm.subscriptions;
             let mutableSubs: Realm.App.Sync.MutableSubscriptionSet;

@@ -594,6 +594,8 @@ MutableSubscriptionSetClass<T>::create_instance(ContextType ctx, realm::sync::Mu
  *   Argument 2: A callback to be called when the state of the SubscriptionSet is "Complete"
  *      or "Error" after the update has been applied (see `wait_for_synchronization_impl`).
  * @param return_value \ref Returns the return value of the update callback
+ *
+ * TODO handle async callbacks
  */
 template <typename T>
 void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Arguments& args,

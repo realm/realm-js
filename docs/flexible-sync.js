@@ -344,6 +344,7 @@ class SubscriptionSet {
    * @param {function} callback A callback function which receives a {@link Realm.App.Sync.MutableSubscriptionSet}
    * instance as its only argument, which can be used to add or remove subscriptions from
    * the set.
+   * Note: this callback should not be asynchronous.
    *
    * @returns {Promise<void>} A promise which resolves when the SubscriptionSet is synchronized, or is rejected
    * if there was an error during synchronization (see {@link waitForSynchronisation})
