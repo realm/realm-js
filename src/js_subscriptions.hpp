@@ -465,6 +465,7 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(Protected<ContextTyp
     // Hold a weak_ptr to the Realm, so we can check if the Realm still exists and is not closed
     // when our callback fires – if the Realm has gone out of scope and been garbage collected
     // by the time the callback fires (which happens in tests), we get a crash otherwise
+    // TODO replace this with a pointer to the sync_session once issues with failing tests are fixed
     std::weak_ptr<Realm> weak_realm = subs->realm;
 
     std::function<StateChangeHandler> state_change_func;
@@ -473,11 +474,10 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(Protected<ContextTyp
         [=](StatusWith<realm::sync::SubscriptionSet::State> state) {
             HANDLESCOPE(protected_ctx)
 
-            if (!weak_realm.lock() || weak_realm.lock()->is_closed())
-                return;
-
-            auto current_subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
-            current_subs->refresh();
+            if (weak_realm.lock() && !weak_realm.lock()->is_closed()) {
+                auto current_subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
+                current_subs->refresh();
+            }
 
             auto result = state.is_ok()
                               ? Value::from_undefined(protected_ctx)
