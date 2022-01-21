@@ -164,7 +164,7 @@ module.exports = {
       return;
     }
 
-    let nJwt = require("njwt");
+    let nJwt = node_require("njwt");
     const signingKey = "My_very_confidential_secretttttt";
     const claims = {
       name: "John Doe",
