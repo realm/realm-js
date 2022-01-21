@@ -404,6 +404,30 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
         });
 
+        it("is Error if there are two errors in a row", async function (this: RealmContext) {
+          const { subs } = addSubscription(
+            this.realm,
+            this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
+          );
+
+          await expect(subs.waitForSynchronization()).to.be.rejectedWith(
+            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+          );
+
+          expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+
+          const { subs: subs2 } = addSubscription(
+            this.realm,
+            this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
+          );
+
+          await expect(subs2.waitForSynchronization()).to.be.rejectedWith(
+            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+          );
+
+          expect(subs2.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+        });
+
         it("is Superseded if another update is synchronised after this one", async function (this: RealmContext) {
           const { subs } = addSubscriptionForPerson(this.realm);
           await subs.waitForSynchronization();
