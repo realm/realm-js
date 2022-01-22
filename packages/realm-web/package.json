@@ -52,7 +52,7 @@
   },
   "optionalDependencies": {
     "abort-controller": "^3.0.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^3.1.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^13.0.1",
@@ -68,7 +68,7 @@
     "chai": "^4.2.0",
     "fs-extra": "^10.0.0",
     "mocha": "^5.2.0",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^3.1.1",
     "realm-network-transport": "^0.7.1",
     "rollup": "^2.6.1",
     "rollup-plugin-dts": "^1.4.0",
