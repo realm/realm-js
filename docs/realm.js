@@ -87,8 +87,17 @@ class Realm {
   /**
    * Gets the sync session if this is a synced Realm
    * @type {Session}
+   * @readonly
    */
   get syncSession() {}
+
+  /**
+   * Get the latest set of flexible sync subscriptions.
+   * @type {Realm.App.Sybc.Subscriptions}
+   * @throws if flexible sync is not enabled for this app
+   * @readonly
+   */
+  get subscriptions() {}
 
   /**
    * Create a new `Realm` instance using the provided `config`. If a Realm does not yet exist

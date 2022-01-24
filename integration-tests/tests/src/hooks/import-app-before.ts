@@ -20,7 +20,7 @@ import { importApp, TemplateReplacements } from "../utils/import-app";
 export function importAppBefore(
   name: string,
   replacements: TemplateReplacements = {},
-  logLevel: Realm.App.Sync.LogLevel = "warn",
+  logLevel: Realm.App.Sync.LogLevel = (environment.syncLogLevel as Realm.App.Sync.LogLevel) || "warn",
 ): void {
   before(async function (this: Partial<AppContext> & Mocha.Context) {
     this.timeout(10000);
