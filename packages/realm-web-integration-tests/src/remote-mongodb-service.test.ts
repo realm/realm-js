@@ -297,14 +297,27 @@ describe("Remote MongoDB", () => {
     const collection = getCollection<TestDocument>();
     // Insert a document with an embedded array
     const insertResult = await collection.insertOne([
-      { runId, name: "arrayFilter", values: [ {condition: 1, status: false}, {condition: 2, status: false} ] },
+      {
+        runId,
+        name: "arrayFilter",
+        values: [
+          {
+            condition: 1,
+            status: false,
+          },
+          {
+            condition: 2,
+            status: false,
+          },
+        ],
+      },
     ]);
     expect(insertResult.insertedIds.length).equals(1);
 
     // Update the array element with condition == 1 to have status == true
-    let filter = { runId, name: "arrayFilter" };
-    let update = {"$set": {"values.$[element].status": true}};
-    let arrayFilters = [{"element.condition": 1 }];
+    const filter = { runId, name: "arrayFilter" };
+    const update = { $set: { "values.$[element].status": true } };
+    const arrayFilters = [{ "element.condition": 1 }];
     const result = await collection.updateOne(filter, update, { arrayFilters });
     // Check the result
     expect(typeof result).equals("object");
@@ -316,8 +329,8 @@ describe("Remote MongoDB", () => {
     if (doc === null) {
       throw new Error("Expected a result");
     } else {
-      expect(doc.values.find(e => e.condition === 1).status).equals(true);
-      expect(doc.values.find(e => e.condition === 2).status).equals(false);
+      expect(doc.values[0].status).equals(true);
+      expect(doc.values[1].status).equals(false);
     }
   });
 

@@ -112,7 +112,7 @@
     "@react-native-community/eslint-config": "^3.0.0",
     "@types/node": "^4.9.1",
     "@typescript-eslint/eslint-plugin": "^4.28.3",
-    "@typescript-eslint/parser": "^4.28.3",
+    "@typescript-eslint/parser": "^5",
     "babel-eslint": "^8.2.6",
     "cmake-js": "^6.1.0",
     "compare-versions": "^3.6.0",

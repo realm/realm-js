@@ -125,7 +125,7 @@ declare namespace Realm {
         /**
          * Array Filters
          */
-        readonly arrayFilters?: Filter[]
+        readonly arrayFilters?: Filter[];
       }
 
       /**
