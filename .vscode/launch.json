@@ -8,7 +8,9 @@
             "name": "Build Realm Android",
             "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/scripts/build-android.js",
-            "args": ["--arch=x86"],
+            "args": [
+                "--arch=x86"
+            ],
             "request": "launch",
             "type": "node"
         },
@@ -43,7 +45,9 @@
             "preLaunchTask": "rebuild-node-tests",
             "cwd": "${workspaceRoot}/tests",
             "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
-            "runtimeArgs": ["--expose_gc"],
+            "runtimeArgs": [
+                "--expose_gc"
+            ],
             "args": [
                 "spec/unit_tests.js",
                 "--filter=."
@@ -55,7 +59,9 @@
             "name": "Debug Node Unit Tests",
             "cwd": "${workspaceRoot}/tests",
             "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
-            "runtimeArgs": ["--expose_gc"],
+            "runtimeArgs": [
+                "--expose_gc"
+            ],
             "args": [
                 "spec/unit_tests.js",
                 "--filter=."
@@ -94,7 +100,9 @@
             "request": "launch",
             "name": "LLDB Node REPL",
             "program": "node",
-            "args": ["--expose_gc"],
+            "args": [
+                "--expose_gc"
+            ],
             "preLaunchTask": "Build Node Tests"
         },
         {
@@ -117,7 +125,40 @@
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",
             "preLaunchTask": "Build Node Tests"
-        }
+        },
+        {
+            "type": "node",
+            "name": "vscode-jest-tests",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "disableOptimisticBPs": true,
+            "cwd": "${workspaceFolder}/packages/realm-react",
+            "runtimeExecutable": "npm",
+            "args": [
+                "run",
+                "test",
+                "--",
+                "--runInBand",
+                "--watchAll=false",
+                "--testNamePattern=${input:testNamePattern}"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Current JS file",
+            "program": "${relativeFile}",
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB Debug JS file",
+            "program": "node",
+            "args": [
+                "${relativeFile}"
+            ],
+        },
     ],
     "compounds": [
         {
