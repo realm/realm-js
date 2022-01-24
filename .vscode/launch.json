@@ -143,7 +143,22 @@
                 "--watchAll=false",
                 "--testNamePattern=${input:testNamePattern}"
             ]
-        }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Current JS file",
+            "program": "${relativeFile}",
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB Debug JS file",
+            "program": "node",
+            "args": [
+                "${relativeFile}"
+            ],
+        },
     ],
     "compounds": [
         {
