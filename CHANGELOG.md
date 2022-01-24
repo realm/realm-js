@@ -21,7 +21,7 @@ x.x.x Release notes (yyyy-MM-dd)
 10.12.0 Release notes (2022-1-24)
 =============================================================
 ### Notes
-This release adds beta support for flexible sync. See the [backend](https://docs.mongodb.com/realm/sync/data-access-patterns/flexible-sync/) and [SDK](https://docs.mongodb.com/realm/sdk/node/fundamentals/realms/realm-sync/#flexible-sync) documentation for more information. Please report any issues with the beta through Github.
+This release adds beta support for flexible sync. See the [backend](https://docs.mongodb.com/realm/sync/data-access-patterns/flexible-sync/) and [SDK](https://docs.mongodb.com/realm/sdk/node/fundamentals/realm-sync/#flexible-sync) documentation for more information. Please report any issues with the beta through Github.
 
 Please note the following API changes from the `10.12.0-beta.1` release of Flexible Sync:
 * `Realm.getSubscriptions()` is now `Realm.subscriptions`
