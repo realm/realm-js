@@ -157,6 +157,8 @@ module.exports = {
     let user = await app.logIn(credentials);
     const profile = user.profile;
     TestCase.assertType(profile, "object");
+
+    await user.logOut();
   },
 
   async testJWTUserProfile() {
@@ -190,6 +192,8 @@ module.exports = {
     TestCase.assertType(profile, "object");
     TestCase.assertEqual(profile.id, claims.id);
     TestCase.assertEqual(profile.license, claims.license);
+
+    await user.logOut();
   },
 
   async testEmailPasswordAuth() {
