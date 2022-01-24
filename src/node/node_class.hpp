@@ -934,8 +934,8 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_own_property_descriptor_
     Napi::EscapableHandleScope scope(env);
 
     // Napi::Object target = info[0].As<Napi::Object>();
-    Napi::String key = info[1].As<Napi::String>();
-    std::string text = key;
+    // Napi::String key = info[1].As<Napi::String>();
+    // std::string text = key;
 
     Napi::Object descriptor = Napi::Object::New(env);
     descriptor.Set("enumerable", Napi::Boolean::New(env, true));
