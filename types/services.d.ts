@@ -122,6 +122,10 @@ declare namespace Realm {
          * When true, creates a new document if no document matches the query.
          */
         readonly upsert?: boolean;
+        /**
+         * Array Filters
+         */
+        readonly arrayFilters?: Filter[]
       }
 
       /**
