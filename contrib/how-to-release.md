@@ -22,11 +22,12 @@ The procedure is:
 - Tag the commit: `git tag vX.Y.Z`
 - Push the changes: `git push origin --tag master`
     - If you are releasing from another branch, then use that instead of `master`, e.g. `git push origin --tag new_feature`
-- Our CI system will build and push binaries for node.js. You can follow the progress at https://ci.realm.io. Once the "Publish" stage is completed, the binaries are uploaded.
+- Our CI system will build and push binaries for node.js. You can follow the progress at https://ci.realm.io. Once the "Publish" stage is completed, the binaries are uploaded, but it is sensible to wait until the tests are finished.
     - If you are releasing from a branch, there will need to be an open pull request (draft is fine) for the branch to trigger CI.
-- **IMPORTANT**: you must wait for for this CI build to be complete before publishing, or the release will be broken.
-- Build Android binaries: `node ./scripts/build-android.js`
-- Build iOS binaries: `./scripts/build-ios.sh`
+- In parallel with the CI build, locally build the Android and iOS binaries:
+    - Build Android binaries: `node ./scripts/build-android.js`
+    - Build iOS binaries: `./scripts/build-ios.sh`
+- **IMPORTANT**: at this point, you must wait for for the CI build to be complete before publishing, or the release will be broken.
 - Publish the package: `npm publish`
     - If you are publishing a tagged release from a branch, use `npm publish --tag <tag_name>`, e.g. `npm publish --tag beta`.
     - Note that currently, anything in your `vendor` directory will be added to the package – so if you have added any temporary files in there, you should remove them before packaging.
