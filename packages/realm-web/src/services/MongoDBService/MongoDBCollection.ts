@@ -215,6 +215,7 @@ export class MongoDBCollection<T extends Document> implements Realm.Services.Mon
       query: filter,
       update,
       upsert: options.upsert,
+      arrayFilters: options.arrayFilters,
     });
   }
 
@@ -230,6 +231,7 @@ export class MongoDBCollection<T extends Document> implements Realm.Services.Mon
       query: filter,
       update,
       upsert: options.upsert,
+      arrayFilters: options.arrayFilters,
     });
   }
 

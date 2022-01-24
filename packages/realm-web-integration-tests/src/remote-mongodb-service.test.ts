@@ -293,6 +293,34 @@ describe("Remote MongoDB", () => {
     expect(result.modifiedCount).equals(3);
   });
 
+  it("can update documents using array filters", async () => {
+    const collection = getCollection<TestDocument>();
+    // Insert a document with an embedded array
+    const insertResult = await collection.insertOne([
+      { runId, name: "arrayFilter", values: [ {condition: 1, status: false}, {condition: 2, status: false} ] },
+    ]);
+    expect(insertResult.insertedIds.length).equals(1);
+
+    // Update the array element with condition == 1 to have status == true
+    let filter = { runId, name: "arrayFilter" };
+    let update = {"$set": {"values.$[element].status": true}};
+    let arrayFilters = [{"element.condition": 1 }];
+    const result = await collection.updateOne(filter, update, { arrayFilters });
+    // Check the result
+    expect(typeof result).equals("object");
+    expect(result.matchedCount).equals(1);
+    expect(result.modifiedCount).equals(1);
+
+    // Fetch the document to ensure that only the filtered elements of the array were updated
+    const doc = await collection.findOne({ runId, name: "arrayFilter" });
+    if (doc === null) {
+      throw new Error("Expected a result");
+    } else {
+      expect(doc.values.find(e => e.condition === 1).status).equals(true);
+      expect(doc.values.find(e => e.condition === 2).status).equals(false);
+    }
+  });
+
   it("upserts when updating many non-existing documents", async () => {
     const collection = getCollection<TestDocument>();
     // Delete the document with the last name (Charlie)
