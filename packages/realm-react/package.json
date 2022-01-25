@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "lodash": "^4.17.21",
-    "realm": "*"
+    "realm": ">=10"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
