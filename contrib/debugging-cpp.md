@@ -1,9 +1,9 @@
-# VSCode Debugging
+# Debugging C++
 
-<!-- TOC generated with https://github.com/ekalinin/github-markdown-toc : gh-md-toc --insert --no-backup --hide-footer contrib/vscode-debugging.md -->
+<!-- TOC generated with https://github.com/ekalinin/github-markdown-toc : gh-md-toc --insert --no-backup --hide-footer contrib/debugging-cpp.md -->
 
 <!--ts-->
-* [VSCode Debugging](#vscode-debugging)
+* [Debugging C++](#debugging-c)
 * [Quick start](#quick-start)
    * [Setup](#setup)
    * [Debugging Realm Unit Tests through Example](#debugging-realm-unit-tests-through-example)

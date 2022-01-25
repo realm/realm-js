@@ -328,7 +328,7 @@ There are a couple of suggested workflows for testing your changes to Realm JS a
 
 ## Debugging
 
-See [VSCode Debugging](vscode-debugging.md) and [React Native Debugging](react-native-debugging.md).
+See [Debugging C++](debugging-cpp.md) and [Debugging React Native](debugging-react-native.md).
 
 ### Debugging failing Github Actions CI tests
 
