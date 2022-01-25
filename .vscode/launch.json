@@ -78,8 +78,14 @@
         },
         {
             "type": "lldb",
+            "request": "attach",
+            "name": "LLDB Attach to Process",
+            "pid": "${command:pickProcess}"
+        },
+        {
+            "type": "lldb",
             "request": "launch",
-            "name": "LLDB Launch Unit Tests",
+            "name": "LLDB Debug Unit Tests",
             "program": "node",
             "args": [
                 "--expose_gc",
@@ -87,7 +93,8 @@
                 "spec/unit_tests.js",
                 "--filter=${input:testFilter}"
             ],
-            "cwd": "${workspaceFolder}/tests"
+            "cwd": "${workspaceFolder}/tests",
+            "preLaunchTask": "Build Node Tests"
         },
         {
             "type": "lldb",

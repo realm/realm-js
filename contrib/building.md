@@ -1,6 +1,6 @@
 # Building Realm JS
 
-<!-- TOC generated with https://github.com/ekalinin/github-markdown-toc: gh-md-toc --insert --no-backup --hide-footer contrib/building.md -->
+<!-- TOC generated with https://github.com/ekalinin/github-markdown-toc : gh-md-toc --insert --no-backup --hide-footer contrib/building.md -->
 
 <!--ts-->
 * [Building Realm JS](#building-realm-js)
@@ -31,11 +31,9 @@
          * [C++](#c-1)
          * [Testing on Windows](#testing-on-windows)
          * [Node version setup](#node-version-setup)
-   * [Debugging the tests](#debugging-the-tests)
-      * [Debugging React Native tests](#debugging-react-native-tests)
-      * [Debugging Node.js tests using Visual Studio Code](#debugging-nodejs-tests-using-visual-studio-code)
-      * [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
    * [Testing against real apps](#testing-against-real-apps)
+   * [Debugging](#debugging)
+      * [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
 <!--te-->
 
 ## Pre-Requisites
@@ -321,35 +319,16 @@ export NVM_DIR="$HOME/.nvm"
 . "$(brew --prefix nvm)/nvm.sh"
 ```
 
-## Debugging the tests
+## Testing against real apps
 
-### Debugging React Native tests
+There are a couple of suggested workflows for testing your changes to Realm JS against real apps:
 
-You can attach a debugger to the React Native tests by passing "Debug" to the `test.sh` script. A Chrome browser will open and connect to the react native application. Use the built-in Chrome Debugger to debug the code.
+- [Guide: Setting up watchman to copy changes from this package to an app](guide-watchman.md)
+- [Guide: Testing your changes against sample apps using a script](guide-testing-with-sample-apps.md)
 
-```sh
-./scripts/tests.sh react-tests Debug
-```
+## Debugging
 
-### Debugging Node.js tests using Visual Studio Code
-
-You can use [Visual Studio Code](https://code.visualstudio.com/) to develop and debug for Node.js. In the `.vscode` folder, configuration for building and debugging has been added for your convience.
-
-VSCode has good support for debugging JavaScript, but to work with C++ code, you are required to install two additional VSCode extensions:
-
-- Microsoft C/C++
-- CodeLLDB
-
-To begin, you will need to build the Node addon and prepare the test environment:
-
-```sh
-npm install --build-from-source --debug
-(cd tests && npm install)
-```
-
-Prior to begin debugging, you must start Realm Object Server. In VSCode, under menu _Tasks_/_Run Task_, find _Download and Start Server_.
-
-In the debugging pane, you can find `Debug LLDB + Node.js` in the dropdown. First select _Start Debugging_ in the _Debug_ menu.
+See [VSCode Debugging](vscode-debugging.md) and [React Native Debugging](react-native-debugging.md).
 
 ### Debugging failing Github Actions CI tests
 
@@ -365,9 +344,3 @@ The relevant snippet is:
   timeout-minutes: 30
 ```
 
-## Testing against real apps
-
-There are a couple of suggested workflows for testing your changes to Realm JS against real apps:
-
-- [Guide: Setting up watchman to copy changes from this package to an app](guide-watchman.md)
-- [Guide: Testing your changes against sample apps using a script](guide-testing-with-sample-apps.md)
