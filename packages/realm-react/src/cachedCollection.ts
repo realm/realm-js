@@ -27,14 +27,20 @@ export function cachedCollection<T>(
   collection: Realm.Results<T & Realm.Object>,
   updateCallback: () => void,
   collectionCache = new Map(),
+  isFirst = true,
 ): { collection: Realm.Results<T & Realm.Object>; tearDown: () => void } {
-  let indexToObjectId: string[] = [];
-
   const cachedCollectionHandler: ProxyHandler<Realm.Results<T & Realm.Object>> = {
     get: function (target, key) {
       // Pass functions through
       const value = Reflect.get(target, key);
       if (typeof value === "function") {
+        if (key === "sorted" || key === "filtered") {
+          return (...args: unknown[]) => {
+            const col: Realm.Results<T & Realm.Object> = Reflect.apply(value, target, args);
+            const { collection: newCol } = cachedCollection(col, updateCallback, collectionCache, false);
+            return newCol;
+          };
+        }
         return value.bind(target);
       }
 
@@ -56,9 +62,6 @@ export function cachedCollection<T>(
         if (collection) return collection;
       }
 
-      // track the objectId by index
-      indexToObjectId[index] = objectId;
-
       // If not then this index has either not been accessed before, or has been invalidated due
       // to a modification. Fetch it from the collection and store it in the cache
       collectionCache.set(cacheKey, object);
@@ -67,26 +70,30 @@ export function cachedCollection<T>(
     },
   };
 
-  const cachedCollection = new Proxy(collection, cachedCollectionHandler);
+  const cachedCollectionResult = new Proxy(collection, cachedCollectionHandler);
 
-  const listenerCallback: Realm.CollectionChangeCallback<T & Realm.Object> = (_, changes) => {
+  const listenerCallback: Realm.CollectionChangeCallback<T & Realm.Object> = (listenerCollection, changes) => {
     if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
-      // Item(s) were deleted, remove their reference from the indexToIdMap and clear them from the cache
-      // read the indexes from the largest first, to avoid making them invalid while removing them from the array
-      changes.deletions.reverse().forEach((index) => {
-        const [objectId] = indexToObjectId.splice(index, 1);
-        if (objectId) {
-          const cacheKey = getCacheKey(objectId);
-          collectionCache.delete(cacheKey);
-        }
-      });
+      // TODO: There is currently no way to rebuild the cache key from the changes array for deleted object.
+      // Until it is possible, we clear the cache on deletions.
+
+      // Possible solutions:
+      // a. the listenerCollection is a frozen snapshot of the collection before the deletion,
+      // allowing accessing the _objectId() using listenerCollection[index]._objectId()
+      // b. the callback provides an array of changed objectIds
+
+      if (changes.deletions.length > 0) {
+        collectionCache.clear();
+      }
 
       // Item(s) were modified, just clear them from the cache so that we return new instances for them
       changes.newModifications.reverse().forEach((index) => {
-        const [objectId] = indexToObjectId.splice(index, 1);
+        const objectId = listenerCollection[index]._objectId();
         if (objectId) {
           const cacheKey = getCacheKey(objectId);
-          collectionCache.delete(cacheKey);
+          if (collectionCache.has(cacheKey)) {
+            collectionCache.delete(cacheKey);
+          }
         }
       });
 
@@ -94,12 +101,16 @@ export function cachedCollection<T>(
     }
   };
 
-  cachedCollection.addListener(listenerCallback);
+  if (isFirst) {
+    cachedCollectionResult.addListener(listenerCallback);
+  }
+
   const tearDown = () => {
-    collection.removeListener(listenerCallback);
-    collectionCache.clear();
-    indexToObjectId = [];
+    if (isFirst) {
+      collection.removeListener(listenerCallback);
+      collectionCache.clear();
+    }
   };
 
-  return { collection: cachedCollection, tearDown };
+  return { collection: cachedCollectionResult, tearDown };
 }
