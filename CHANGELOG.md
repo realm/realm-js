@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed a crash when using `Proxy` with a `Realm.Results` object ([#4257]https://github.com/realm/realm-js/pull/4257)
 
 ### Compatibility
 * MongoDB Realm Cloud.
