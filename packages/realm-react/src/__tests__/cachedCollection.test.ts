@@ -21,6 +21,7 @@ import { cachedCollection } from "../cachedCollection";
 class TestObject extends Realm.Object {
   id!: number;
   name!: string;
+  children!: Realm.List<TestObjectChild>;
 
   static schema = {
     name: "TestObject",
@@ -28,12 +29,29 @@ class TestObject extends Realm.Object {
     properties: {
       id: "int",
       name: "string",
+      children: "TestObjectChild[]",
+    },
+  };
+}
+
+class TestObjectChild extends Realm.Object {
+  id!: number;
+  name!: string;
+  parents!: Realm.List<TestObject>;
+
+  static schema = {
+    name: "TestObjectChild",
+    primaryKey: "id",
+    properties: {
+      id: "int",
+      name: "string",
+      parents: { type: "linkingObjects", objectType: "TestObject", property: "children" },
     },
   };
 }
 
 const realmConfig: Realm.Configuration = {
-  schema: [TestObject],
+  schema: [TestObject, TestObjectChild],
   path: "testArtifacts/cachedCollection",
   deleteRealmIfMigrationNeeded: true,
 };
@@ -66,7 +84,7 @@ describe.each`
   ${"normal"}   | ${QueryType.normal}
   ${"sorted"}   | ${QueryType.sorted}
   ${"filtered"} | ${QueryType.filtered}
-`("cachedCollection: $queryTypeName", ({ queryType }) => {
+`("cachedCollection: $queryTypeName", ({ queryType, queryTypeName }) => {
   const cacheMap = new Map();
   let realm = new Realm(realmConfig);
 
@@ -81,8 +99,19 @@ describe.each`
     }
   }
 
+  function getTestCollection(queryType: QueryType) {
+    switch (queryType) {
+      case QueryType.filtered:
+        return realm.objects(TestObject).filtered(...FILTER_ARGS);
+      case QueryType.sorted:
+        return realm.objects(TestObject).sorted(...SORTED_ARGS);
+      case QueryType.normal:
+        return realm.objects(TestObject);
+    }
+  }
+
   beforeEach(() => {
-    realm = new Realm(realmConfig);
+    realm = new Realm({ ...realmConfig, path: `${realmConfig.path}_${queryTypeName}` });
     realm.write(() => {
       realm.deleteAll();
       testCollection.forEach((object) => realm.create(TestObject, object));
@@ -247,5 +276,123 @@ describe.each`
     tearDown();
 
     expect(cacheMap.size).toBe(0);
+  });
+  it("responds to changes to linked objects", async () => {
+    // Initialize some children on an object
+    let testCollection = getTestCollection(queryType);
+    realm.write(() => {
+      testCollection[0].children.push(realm.create(TestObjectChild, { id: 1, name: "phil" }));
+      testCollection[0].children.push(realm.create(TestObjectChild, { id: 2, name: "paul" }));
+    });
+
+    const updateFunction = jest.fn();
+    const { collection, tearDown } = cachedCollection(realm.objects(TestObject), updateFunction, cacheMap);
+
+    testCollection = applyQueryTypeToCollection(queryType, collection);
+
+    expect(cacheMap.size).toBe(0);
+
+    let item = testCollection[0];
+    for (let i = 0; i < testCollection.length; i++) {
+      item = testCollection[i];
+    }
+
+    expect(item).toBe(testCollection[testCollection.length - 1]);
+    expect(cacheMap.size).toBe(testCollection.length);
+
+    // store the item we want to monitor and change
+    item = testCollection[0];
+
+    // Change a childs name
+    realm.write(() => {
+      testCollection[0].children[0].name = "bill";
+    });
+
+    forceSynchronousNotifications(realm);
+
+    expect(updateFunction).toBeCalledTimes(1);
+
+    // Should change reference, but not change the cache size
+    expect(item).toEqual(testCollection[0]);
+    expect(item).not.toBe(testCollection[0]);
+    expect(cacheMap.size).toBe(testCollection.length);
+
+    // store the item we want to monitor and change
+    item = testCollection[0];
+
+    // Insert a child
+    realm.write(() => {
+      testCollection[0].children.push(realm.create(TestObjectChild, { id: 3, name: "doug" }));
+    });
+
+    forceSynchronousNotifications(realm);
+
+    expect(updateFunction).toBeCalledTimes(2);
+
+    // Should change reference, but not change the cache size
+    expect(item).toEqual(testCollection[0]);
+    expect(item).not.toBe(testCollection[0]);
+    expect(cacheMap.size).toBe(testCollection.length);
+
+    // store the item we want to monitor and change
+    item = testCollection[0];
+
+    // Remove a child
+    realm.write(() => {
+      realm.delete(testCollection[0].children[0]);
+    });
+
+    forceSynchronousNotifications(realm);
+
+    expect(updateFunction).toBeCalledTimes(3);
+
+    // Should change reference, but not change the cache size
+    expect(item).toEqual(testCollection[0]);
+    expect(item).not.toBe(testCollection[0]);
+    expect(cacheMap.size).toBe(testCollection.length);
+
+    // Now we will try implicit updates
+
+    // store the item we want to monitor and change
+    item = testCollection[0];
+
+    // Change a child
+    let child = realm.objectForPrimaryKey(TestObjectChild, 3);
+
+    realm.write(() => {
+      if (child !== undefined) {
+        child.name = "lilly";
+      }
+    });
+
+    forceSynchronousNotifications(realm);
+
+    expect(updateFunction).toBeCalledTimes(4);
+
+    // Should change reference, but not change the cache size
+    expect(item).toEqual(testCollection[0]);
+    expect(item).not.toBe(testCollection[0]);
+    expect(cacheMap.size).toBe(testCollection.length);
+
+    // store the item we want to monitor and change
+    item = testCollection[0];
+
+    // delete a child
+    child = realm.objectForPrimaryKey(TestObjectChild, 3);
+
+    realm.write(() => {
+      realm.delete(child);
+    });
+
+    forceSynchronousNotifications(realm);
+
+    expect(updateFunction).toBeCalledTimes(5);
+
+    // Should change reference, but not change the cache size
+    expect(item).toEqual(testCollection[0]);
+    expect(item).not.toBe(testCollection[0]);
+    expect(cacheMap.size).toBe(testCollection.length);
+
+    tearDown();
   });
 });
