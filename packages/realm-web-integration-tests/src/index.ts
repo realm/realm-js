@@ -32,7 +32,6 @@ if (location.pathname.endsWith("-callback")) {
         this.slow(1000);
         this.timeout(10000);
       });
-
       require("./environment.test");
       require("./app.test");
       require("./credentials.test");
