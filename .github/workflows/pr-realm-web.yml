@@ -50,4 +50,6 @@ jobs:
         run: npm run test:github
         working-directory: packages/realm-web-integration-tests
         env:
-          MONGODB_REALM_TEST_SERVER: "2020-11-04" # TODO: Try using 'latest' once it's fixed
+          AWS_ACCESS_KEY_ID: ${{ secrets.BAAS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BAAS_AWS_SECRET_ACCESS_KEY }}
+          MONGODB_REALM_TEST_SERVER: "latest"

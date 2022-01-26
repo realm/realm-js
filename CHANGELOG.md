@@ -1,14 +1,47 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+* None.
+
+### Fixed
+* Fixed a crash when using `Proxy` with a `Realm.Results` object ([#4257]https://github.com/realm/realm-js/pull/4257)
+* JWT metadata is now populating `Realm.User.profile`. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* <Either mention core version or upgrade>
+* <Using Realm Core vX.Y.Z>
+* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+
+10.12.0 Release notes (2022-1-24)
+=============================================================
+### Notes
+This release adds beta support for flexible sync. See the [backend](https://docs.mongodb.com/realm/sync/data-access-patterns/flexible-sync/) and [SDK](https://docs.mongodb.com/realm/sdk/node/fundamentals/realm-sync/#flexible-sync) documentation for more information. Please report any issues with the beta through Github.
+
+Please note the following API changes from the `10.12.0-beta.1` release of Flexible Sync:
+* `Realm.getSubscriptions()` is now `Realm.subscriptions`
+* `Subscriptions` has been renamed to `SubscriptionSet`, and `MutableSubscriptions` to `MutableSubscriptionSet`
+* `SubscriptionSet.snaphot()` has been removed, in favour of allowing a `SubscriptionSet` to be accessed as an array
+* `SubscriptionSet.find()` has been renamed to `SubscriptionSet.findByQuery()` to avoid a naming confict with the `Array.find` method
+* `SubscriptionSet.empty` has been renamed to `SubscriptionSet.isEmpty`
+* The result of `Realm.subscriptions.update` can be `await`ed to avoid a separate call to `waitForSynchronization`
+* The spelling of `SubscriptionState.Superceded` was corrected to `SubscriptionState.Superseded`
+
+### Enhancements
 * Support arithmetic operations (+, -, *, /) in queries. Operands can be properties and/or constants of numeric types (`int`, `float`, `double` or `Decimal128`). You can now say something like `(age + 5) * 2 > child.age`.
 * `Realm.writeCopyTo()` now supports creating snapshots of synced Realms, thus allowing apps to be shipped with partially-populated synced databases. ([#3782](https://github.com/realm/realm-js/issues/3782)
+* Added beta support for flexible sync ([#4220](https://github.com/realm/realm-js/pull/4220)).
 * Adding support for passing the `arrayFilters` parameter when updating documents using the remote MongoDB client. ([#4248](https://github.com/realm/realm-js/pull/4248))
 
 ### Fixed
 * Opening a Realm with a schema that has an orphaned embedded object type performed an extra empty write transaction. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115), since v10.5.0)
 * Schema validation was missing for embedded objects in sets, resulting in an unhelpful error being thrown if the user attempted to define one. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115))
 * Fixed a crash when closing an Electron app with a custom sync error handler ([#4150](https://github.com/realm/realm-js/issues/4150)
+* Adding data from authentication providers, to be included in the `User#profile` object. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
 
 ### Compatibility
 * Removed `deprecated-react-native-listview` from root package.json

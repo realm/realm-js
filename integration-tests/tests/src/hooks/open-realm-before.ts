@@ -15,69 +15,37 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm from "realm";
 
-// Either the sync property is left out (local Realm)
-type LocalConfiguration = Omit<Realm.Configuration, "sync"> & { sync?: never };
-// Or the sync parameter is present
-type SyncedConfiguration = Omit<Realm.Configuration, "sync"> & {
-  sync?: Partial<Realm.SyncConfiguration>;
-};
+import { closeThisRealm } from "../utils/close-realm";
+import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
 
-export function openRealmHook(config: LocalConfiguration | SyncedConfiguration = {}) {
-  return async function openRealm(this: Partial<RealmContext> & Mocha.Context): Promise<void> {
-    const nonce = new Realm.BSON.ObjectID().toHexString();
-    const path = `temp-${nonce}.realm`;
+/**
+ * Hook for use in before/beforeEach which opens a Realm with the specified config
+ * and stores the Realm instance and the final config used to open it on the `this`
+ * context.
+ *
+ * @param config Realm config
+ * @returns Promise which resolves when complete
+ */
+export function openRealmHook(config: OpenRealmConfiguration = {}) {
+  return async function openRealmHandler(this: Partial<RealmContext> & Mocha.Context): Promise<void> {
     if (this.realm) {
       throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
-    } else if (!config.sync) {
-      this.config = { ...config, path } as LocalConfiguration;
-      this.realm = new Realm(this.config);
     } else {
-      this.config = {
-        ...config,
-        path,
-        sync: {
-          user: this.user,
-          partitionValue: nonce,
-          _sessionStopPolicy: "immediately",
-          ...config.sync,
-        },
-      } as Realm.Configuration;
-      this.realm = new Realm(this.config);
-      // Upload the schema, ensuring a valid connection
-      if (!this.realm.syncSession) {
-        throw new Error("No syncSession found on realm");
-      }
-      await this.realm.syncSession.uploadAllLocalChanges();
+      const result = await openRealm(config, this.user);
+
+      this.realm = result.realm;
+      this.config = result.config;
     }
   };
 }
 
-export function closeRealm(this: Partial<RealmContext> & Mocha.Context): void {
-  if (this.realm) {
-    this.realm.close();
-    delete this.realm;
-  } else {
-    throw new Error("Expected a 'realm' in the context");
-  }
-
-  if (this.config) {
-    Realm.deleteFile(this.config);
-    delete this.config;
-  } else {
-    throw new Error("Expected a 'config' in the context");
-  }
-  // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
-  Realm.clearTestState();
-}
-
-export function openRealmBeforeEach(config: LocalConfiguration | SyncedConfiguration = {}): void {
+export function openRealmBeforeEach(config: OpenRealmConfiguration = {}): void {
   beforeEach(openRealmHook(config));
-  afterEach(closeRealm);
+  afterEach(closeThisRealm);
 }
 
-export function openRealmBefore(config: LocalConfiguration | SyncedConfiguration = {}): void {
+export function openRealmBefore(config: OpenRealmConfiguration = {}): void {
   before(openRealmHook(config));
-  after(closeRealm);
+  after(closeThisRealm);
 }

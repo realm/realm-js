@@ -253,8 +253,8 @@ class Sync {
    *
    * This method can only be called up to the point where the first Realm is opened. After that, the User-Agent
    * can no longer be changed.
-   * @param {Realm.App} the Realm app
-   * @param {string} the user agent description
+   * @param {Realm.App} app the Realm app
+   * @param {string} userAgent the user agent description
    */
   static setUserAgent(app, userAgent) {}
 
