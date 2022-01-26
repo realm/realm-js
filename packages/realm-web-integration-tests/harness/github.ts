@@ -20,6 +20,12 @@ import cp from "child_process";
 import { run } from "./index";
 
 const IMAGE_TAG = process.env.MONGODB_REALM_TEST_SERVER || "latest";
+const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
+
+if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
+  console.error("Missing either AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY");
+  process.exit(1);
+}
 
 async function startServer() {
   console.log("Starting MongoDB Realm server");
@@ -30,7 +36,12 @@ async function startServer() {
       "--rm",
       "--name",
       "mongodb-realm-test-server",
-      "--publish=9090:9090",
+      "--publish",
+      "9090:9090",
+      "--env",
+      `AWS_ACCESS_KEY_ID`,
+      "--env",
+      `AWS_SECRET_ACCESS_KEY`,
       `ghcr.io/realm/ci/mongodb-realm-test-server:${IMAGE_TAG}`,
     ],
     { stdio: ["ignore", "pipe", "inherit"] },
