@@ -54,8 +54,6 @@ android {
     }
 }
 
-import groovy.json.JsonSlurper
-
 dependencyType = 'implementation'
 try {
     project.getConfigurations().getByName('implementation')

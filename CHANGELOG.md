@@ -20,6 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed documentation publishing ([#4276](https://github.com/realm/realm-js/pull/4276))
 * Enabled mixed tests for flexible sync ([#4279](https://github.com/realm/realm-js/pull/4279))
 * Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet` ([#4298](https://github.com/realm/realm-js/pull/4298))
+* Submitting [analytics](https://github.com/realm/realm-js/blob/master/README.md#analytics) as a postinstall script.
 
 10.12.0 Release notes (2022-1-24)
 =============================================================
@@ -59,7 +60,6 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 * Removed `.dir-locals.el`. Please configure Emacs to use `clang-format` e.g. https://github.com/SavchenkoValeriy/emacs-clang-format-plus.
 * Enabled `strictNullChecks` for integration tests
 * Updated release instructions
-* Submitting [analytics](https://github.com/realm/realm-js/blob/master/README.md#analytics) as postinstall script.
 
 10.11.0 Release notes (2021-12-21)
 =============================================================

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,25 +21,20 @@ const fs = require("fs");
 
 let doLog; // placeholder for logger function
 
-class Webhook {
-  /**
-   * Path and credentials required to submit analytics through the webhook (production mode).
-   */
-  constructor() {
-    this.urlPrefix =
-      "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric?ip=1&data=";
-  }
+/**
+ * Path and credentials required to submit analytics through the webhook.
+ */
 
-  /**
-   * Constructs the full URL that will submit analytics to the webhook.
-   * @param  {Object} payload Information that will be submitted through the webhook.
-   * @returns {string} Complete analytics submission URL
-   */
-  buildRequest(payload) {
-    const request = this.urlPrefix + Buffer.from(JSON.stringify(payload.webHook), "utf8").toString("base64");
-    return request;
-  }
-}
+const ANALYTICS_BASE_URL =
+  "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric";
+
+/**
+ * Constructs the full URL that will submit analytics to the webhook.
+ * @param  {Object} payload Information that will be submitted through the webhook.
+ * @returns {string} Complete analytics submission URL
+ */
+const getAnalyticsRequestUrl = (payload) =>
+  ANALYTICS_BASE_URL + Buffer.from(JSON.stringify(payload.webHook), "utf8").toString("base64");
 
 /**
  * Generate a hash value of data
@@ -61,6 +56,7 @@ async function fetchPlatformData(context) {
   const os = require("os");
   const { machineId } = require("node-machine-id");
 
+  // node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send "unknown" hashed instead
   let identifier = await machineId();
   if (!identifier) {
     identifier = sha256("unknown");
@@ -75,7 +71,7 @@ async function fetchPlatformData(context) {
     frameworkVersion = context.dependencies["react-native"];
     try {
       const podfile = fs.readFileSync("../../ios/Podfile", "utf8");
-      if (podfile.includes("hermes_enabled => true")) {
+      if (/hermes_enabled.*true/.test(podfile)) {
         jsEngine = "hermes";
       } else {
         jsEngine = "jsc";
@@ -90,7 +86,7 @@ async function fetchPlatformData(context) {
     frameworkVersion = context.dependencies["electron"];
   }
 
-  const payloads = {
+  const payload = {
     webHook: {
       event: "install",
       properties: {
@@ -112,7 +108,7 @@ async function fetchPlatformData(context) {
     },
   };
 
-  return payloads;
+  return payload;
 }
 
 function isAnalyticsDisabled() {
@@ -137,10 +133,10 @@ async function dispatchAnalytics(payload) {
   const https = require("https");
 
   return new Promise((resolve, reject) => {
-    const webhookRequest = new Webhook().buildRequest(payload);
+    const requestUrl = getAnalyticsRequestUrl(payload);
 
     https
-      .get(webhookRequest, (res) => {
+      .get(requestUrl, (res) => {
         resolve({
           statusCode: res.statusCode,
           statusMessage: res.statusMessage,
@@ -160,7 +156,10 @@ async function submitAnalytics(dryRun) {
     return;
   }
 
-  const context = require("../../../package.json");
+  const wd = process.cwd();
+  const index = wd.indexOf("node_modules");
+  const packageJson = wd.slice(0, index) + "package.json";
+  const context = require(packageJson);
   const payload = await fetchPlatformData(context);
   doLog(`payload: ${JSON.stringify(payload)}`);
 
@@ -169,10 +168,7 @@ async function submitAnalytics(dryRun) {
     return;
   }
 
-  await Promise.all([
-    // send in analytics in the newer S3 format
-    dispatchAnalytics(payload),
-  ]);
+  await Promise.all([dispatchAnalytics(payload)]);
 }
 
 const optionDefinitions = [
@@ -191,7 +187,7 @@ if (options.log) {
   doLog = (msg) => console.log(msg);
 } else {
   // eslint-disable-next-line no-unused-vars
-  doLog = (_) => {
+  doLog = () => {
     /* don't log */
   };
 }
