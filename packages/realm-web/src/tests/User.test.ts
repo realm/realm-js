@@ -67,6 +67,50 @@ describe("User", () => {
     }
   });
 
+  it("has context property", () => {
+    const app = new MockApp("my-mocked-app");
+    const user = new User({
+      app,
+      id: "some-user-id",
+      accessToken: "deadbeef.eyJleHAiOjAsImlhdCI6MH0=.e30=",
+      refreshToken: "very-refreshing",
+      providerType: "anon-user",
+    });
+    {
+      const output = user.context;
+      expect(typeof output).equals("object");
+      expect(Object.keys(output).length).equals(0);
+    }
+    user.setContext("X-Custom-Header", "user-header-value");
+    {
+      const output = user.context;
+      expect(Object.keys(output).length).equals(1);
+      expect(output).has.property("X-Custom-Header");
+      expect(output["X-Custom-Header"]).equals("user-header-value");
+    }
+    user.removeContext("X-Custom-Header");
+    {
+      expect(user.context).not.has.property("X-Custom-Header");
+      expect(user).not.has.own.property("_context");
+    }
+  });
+
+  it("has dynamic context property", () => {
+    const app = new MockApp("my-mocked-app");
+    const user = new User({
+      app,
+      id: "some-user-id",
+      accessToken: "deadbeef.eyJleHAiOjAsImlhdCI6MH0=.e30=",
+      refreshToken: "very-refreshing",
+      providerType: "anon-user",
+    });
+    let ctxValue = 42;
+    user.setContext("X-Custom-Header", () => String(ctxValue));
+    expect(user.context["X-Custom-Header"]).equals("42");
+    ctxValue *= 2;
+    expect(user.context["X-Custom-Header"]).equals("84");
+  });
+
   it("deletes session when logging out", async () => {
     const app = new MockApp("my-mocked-app", [LOCATION_RESPONSE, {}]);
     const user = new User({
