@@ -22,12 +22,11 @@ import { Credentials } from "realm-web";
 
 import { createApp } from "./utils";
 
-interface TestDocument extends Realm.Services.MongoDB.Document {
+type TestDocument = {
   name: string;
   runId: number;
   hiddenField?: string;
-  values?: Record<string, unknown>[];
-}
+} & Realm.Services.MongoDB.Document;
 
 describe("Remote MongoDB", () => {
   let app: Realm.App;
@@ -295,9 +294,10 @@ describe("Remote MongoDB", () => {
   });
 
   it("can update documents using array filters", async () => {
-    const collection = getCollection<TestDocument>();
+    type ArrayFilterableTestDocument = { values: { status: boolean; condition: number }[] } & TestDocument;
+    const collection = getCollection<ArrayFilterableTestDocument>();
     // Insert a document with an embedded array
-    const insertResult = await collection.insertOne({
+    await collection.insertOne({
       runId,
       name: "arrayFilter",
       values: [
@@ -311,7 +311,6 @@ describe("Remote MongoDB", () => {
         },
       ],
     });
-    expect(insertResult.insertedId.length).equals(1);
 
     // Update the array element with condition == 1 to have status == true
     const filter = { runId, name: "arrayFilter" };
