@@ -296,22 +296,20 @@ describe("Remote MongoDB", () => {
   it("can update documents using array filters", async () => {
     const collection = getCollection<TestDocument>();
     // Insert a document with an embedded array
-    const insertResult = await collection.insertOne([
-      {
-        runId,
-        name: "arrayFilter",
-        values: [
-          {
-            condition: 1,
-            status: false,
-          },
-          {
-            condition: 2,
-            status: false,
-          },
-        ],
-      },
-    ]);
+    const insertResult = await collection.insertOne({
+      runId,
+      name: "arrayFilter",
+      values: [
+        {
+          condition: 1,
+          status: false,
+        },
+        {
+          condition: 2,
+          status: false,
+        },
+      ],
+    });
     expect(insertResult.insertedIds.length).equals(1);
 
     // Update the array element with condition == 1 to have status == true
