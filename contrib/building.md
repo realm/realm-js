@@ -3,37 +3,37 @@
 <!-- TOC generated with https://github.com/ekalinin/github-markdown-toc : gh-md-toc --insert --no-backup --hide-footer contrib/building.md -->
 
 <!--ts-->
-* [Building Realm JS](#building-realm-js)
-   * [Pre-Requisites](#pre-requisites)
-      * [Setup instructions for MacOS](#setup-instructions-for-macos)
-         * [All platforms](#all-platforms)
-         * [iOS](#ios)
-         * [Android](#android)
-         * [Optional extras](#optional-extras)
-            * [ccache](#ccache)
-   * [Cloning the repository](#cloning-the-repository)
-      * [Cloning the repository on Windows](#cloning-the-repository-on-windows)
-      * [Visual Studio Code setup](#visual-studio-code-setup)
-         * [TypeScript](#typescript)
-         * [C++](#c)
-   * [Building Realm JS](#building-realm-js-1)
-      * [Building for iOS](#building-for-ios)
-      * [Building for Android](#building-for-android)
-      * [Building for Node.js](#building-for-nodejs)
-         * [Additional steps for Windows](#additional-steps-for-windows)
-      * [Building the documentation](#building-the-documentation)
-   * [Installing the project's sub-packages](#installing-the-projects-sub-packages)
-   * [Running the tests](#running-the-tests)
-      * [Modern tests](#modern-tests)
-      * [Legacy tests](#legacy-tests)
-      * [Linting the source code](#linting-the-source-code)
-         * [JS](#js)
-         * [C++](#c-1)
-         * [Testing on Windows](#testing-on-windows)
-         * [Node version setup](#node-version-setup)
-   * [Testing against real apps](#testing-against-real-apps)
-   * [Debugging](#debugging)
-      * [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
+- [Building Realm JS](#building-realm-js)
+  - [Pre-Requisites](#pre-requisites)
+    - [Setup instructions for MacOS](#setup-instructions-for-macos)
+      - [All platforms](#all-platforms)
+      - [iOS](#ios)
+      - [Android](#android)
+      - [Optional extras](#optional-extras)
+        - [ccache](#ccache)
+  - [Cloning the repository](#cloning-the-repository)
+    - [Cloning the repository on Windows](#cloning-the-repository-on-windows)
+    - [Visual Studio Code setup](#visual-studio-code-setup)
+      - [TypeScript](#typescript)
+      - [C++](#c)
+  - [Building Realm JS](#building-realm-js-1)
+    - [Building for iOS](#building-for-ios)
+    - [Building for Android](#building-for-android)
+    - [Building for Node.js](#building-for-nodejs)
+      - [Additional steps for Windows](#additional-steps-for-windows)
+    - [Building the documentation](#building-the-documentation)
+  - [Installing the project's sub-packages](#installing-the-projects-sub-packages)
+  - [Running the tests](#running-the-tests)
+    - [Modern tests](#modern-tests)
+    - [Legacy tests](#legacy-tests)
+    - [Linting the source code](#linting-the-source-code)
+      - [JS](#js)
+      - [C++](#c-1)
+      - [Testing on Windows](#testing-on-windows)
+      - [Node version setup](#node-version-setup)
+  - [Testing against real apps](#testing-against-real-apps)
+  - [Debugging](#debugging)
+    - [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
 <!--te-->
 
 ## Pre-Requisites
@@ -195,12 +195,20 @@ Other editors should also be able to be configured to use the `compile_commands.
 
 ### Building for iOS
 
-- Run `./scripts/build-ios.sh` from the `realm-js` root directory
+- From the `realm-js` root directory, run
+  ```sh
+  ./scripts/build-ios.sh
+  ``` 
 
 ### Building for Android
 
-- Run `node scripts/build-android.js` from the `realm-js` root directory
-  - The compiled version of the Android module is output to `<project-root>/android`
+- From the `realm-js` root directory, run
+  ```sh
+  # build-android.js build type defaults to Release
+  node scripts/build-android.js [--build-type=<Debug|Release>]
+  ```
+  
+- The compiled version of the Android module is output to `<project-root>/android`
 
 ### Building for Node.js
 
@@ -251,7 +259,9 @@ copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg
 
 API documentation is written using [JSDoc](http://usejsdoc.org/). To generate the documentation, run:
 
-`npm run jsdoc`
+```sh
+npm run jsdoc
+```
 
 The generated docs can be found in `docs/output/realm/<version>/index.html`.
 
@@ -294,11 +304,19 @@ scripts/test.sh node
 
 #### JS
 
-Run `npm run lint` to lint the JS source code using `eslint`.
+Run 
+```sh
+npm run lint
+```
+to lint the JS source code using `eslint`.
 
 #### C++
 
-Run `npm run lint:cpp` to lint the C++ source code using `clang-format`. We use a `.clang-format` based on the one from `realm-core`, but should feel free to modify if required.
+Run
+```sh
+npm run lint:cpp
+```
+to lint the C++ source code using `clang-format`. We use a `.clang-format` based on the one from `realm-core`, but should feel free to modify if required.
 
 #### Testing on Windows
 

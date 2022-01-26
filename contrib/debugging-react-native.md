@@ -11,7 +11,7 @@ It is assumed the developer has their machine prepared to build realm and react-
 The instructions below also assume that the developer is working on a MacOS system and have Xcode installed.
 
 In your realm-js project, run the following commands to prepare for debug mode:
-```
+```sh
 # install js dependencies, but skip building the node binaries
 $ npm install --ignore-scripts
 
@@ -25,7 +25,7 @@ You are now prepared to either use the [ReactTestApp](#setup-reacttestapp) or [p
 
 There is a test application in `tests/ReactTestApp` which will run all the unit tests living in `tests/js`.  This is a good place to start.  It is already setup to debug the JS code and the C++ source is included by reference in the Xcode project.  However this will require some steps before it is ready to run.
 
-```
+```sh
 # install the js test dependencies
 $ cd tests
 $ npm install
@@ -76,7 +76,7 @@ The project is now prepared to [debug C++](#dubugging-c++).
 ### Reference realm-js Project
 
 The easiest way to get the checked out realm-js project into the React Native project is to invoke:
-```
+```sh
 $ node ./scripts/watch-from-dependency.js -p <Path To ReactNative App>
 ```
 
