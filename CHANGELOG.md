@@ -3,6 +3,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Enhancements
 * Support arithmetic operations (+, -, *, /) in queries. Operands can be properties and/or constants of numeric types (`int`, `float`, `double` or `Decimal128`). You can now say something like `(age + 5) * 2 > child.age`.
 * `Realm.writeCopyTo()` now supports creating snapshots of synced Realms, thus allowing apps to be shipped with partially-populated synced databases. ([#3782](https://github.com/realm/realm-js/issues/3782)
+* Adding support for passing the `arrayFilters` parameter when updating documents using the remote MongoDB client. ([#4248](https://github.com/realm/realm-js/pull/4248))
 
 ### Fixed
 * Opening a Realm with a schema that has an orphaned embedded object type performed an extra empty write transaction. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115), since v10.5.0)
