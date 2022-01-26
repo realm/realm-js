@@ -26,6 +26,7 @@ interface TestDocument extends Realm.Services.MongoDB.Document {
   name: string;
   runId: number;
   hiddenField?: string;
+  values?: Record<string, unknown>[];
 }
 
 describe("Remote MongoDB", () => {
@@ -310,7 +311,7 @@ describe("Remote MongoDB", () => {
         },
       ],
     });
-    expect(insertResult.insertedIds.length).equals(1);
+    expect(insertResult.insertedId.length).equals(1);
 
     // Update the array element with condition == 1 to have status == true
     const filter = { runId, name: "arrayFilter" };
