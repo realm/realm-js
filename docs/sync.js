@@ -1279,6 +1279,7 @@ class MongoDBCollection {
    * @param {object} [options] Additional options to apply.
    * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
    * query filter when the query does not match any existing documents in the collection.
+   * @param {object[]} [options.arrayFilters=false] if provided, indicates the arrayFilters to use to update an embedded array.
    * @returns {Promise<Realm.MongoDBCollection~UpdateResult>}
    */
   updateOne(filter, update, options) {}
@@ -1291,6 +1292,7 @@ class MongoDBCollection {
    * @param {object} [options] Additional options to apply.
    * @param {boolean} [options.upsert=false] if true, indicates that MongoDB should insert a new document that matches the
    * query filter when the query does not match any existing documents in the collection.
+   * @param {object[]} [options.arrayFilters=false] if provided, indicates the arrayFilters to use to update an embedded array.
    * @returns {Promise<Realm.MongoDBCollection~UpdateResult>}
    */
   updateMany(filter, update, options) {}

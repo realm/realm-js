@@ -5,7 +5,7 @@
 * None
 
 ### Enhancements
-* None
+* Adding support for passing the `arrayFilters` parameter when updating documents using the remote MongoDB client. ([#4248](https://github.com/realm/realm-js/pull/4248))
 
 ### Fixed
 * None

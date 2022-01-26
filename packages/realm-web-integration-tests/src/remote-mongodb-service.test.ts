@@ -22,11 +22,11 @@ import { Credentials } from "realm-web";
 
 import { createApp } from "./utils";
 
-interface TestDocument extends Realm.Services.MongoDB.Document {
+type TestDocument = {
   name: string;
   runId: number;
   hiddenField?: string;
-}
+} & Realm.Services.MongoDB.Document;
 
 describe("Remote MongoDB", () => {
   let app: Realm.App;
@@ -291,6 +291,45 @@ describe("Remote MongoDB", () => {
     expect(typeof result).equals("object");
     expect(result.matchedCount).equals(3);
     expect(result.modifiedCount).equals(3);
+  });
+
+  it("can update documents using array filters", async () => {
+    type ArrayFilterableTestDocument = { values: { status: boolean; condition: number }[] } & TestDocument;
+    const collection = getCollection<ArrayFilterableTestDocument>();
+    // Insert a document with an embedded array
+    await collection.insertOne({
+      runId,
+      name: "arrayFilter",
+      values: [
+        {
+          condition: 1,
+          status: false,
+        },
+        {
+          condition: 2,
+          status: false,
+        },
+      ],
+    });
+
+    // Update the array element with condition == 1 to have status == true
+    const filter = { runId, name: "arrayFilter" };
+    const update = { $set: { "values.$[element].status": true } };
+    const arrayFilters = [{ "element.condition": 1 }];
+    const result = await collection.updateOne(filter, update, { arrayFilters });
+    // Check the result
+    expect(typeof result).equals("object");
+    expect(result.matchedCount).equals(1);
+    expect(result.modifiedCount).equals(1);
+
+    // Fetch the document to ensure that only the filtered elements of the array were updated
+    const doc = await collection.findOne({ runId, name: "arrayFilter" });
+    if (doc === null) {
+      throw new Error("Expected a result");
+    } else {
+      expect(doc.values[0].status).equals(true);
+      expect(doc.values[1].status).equals(false);
+    }
   });
 
   it("upserts when updating many non-existing documents", async () => {
