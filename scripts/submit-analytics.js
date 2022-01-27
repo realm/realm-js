@@ -158,7 +158,7 @@ async function submitAnalytics(dryRun) {
 
   const wd = process.cwd();
   const index = wd.indexOf("node_modules");
-  const packageJson = wd.slice(0, index) + "package.json";
+  const packageJson = wd.slice(0, index) + "/package.json";
   const context = require(packageJson);
   const payload = await fetchPlatformData(context);
   doLog(`payload: ${JSON.stringify(payload)}`);
