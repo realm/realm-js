@@ -70,6 +70,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed React Native Android integration test harness to read only one pid when starting logcat.
 * Added a script to generate JS template apps from TS, and updated JS templates. ([4374](https://github.com/realm/realm-js/pull/4374))
 
+10.20.0-beta.2 Release notes (2022-2-14)
+=============================================================
+### Notes
+Based on Realm JS v10.13.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.12.0).
+
 10.13.0 Release notes (2022-2-11)
 =============================================================
 ### Enhancements
