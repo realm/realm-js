@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.20.0-beta.1 Release notes (2022-1-27)
 =============================================================
 ### Breaking change
 * Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
