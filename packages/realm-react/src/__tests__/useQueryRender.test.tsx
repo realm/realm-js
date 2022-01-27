@@ -183,7 +183,7 @@ describe.each`
 
     expect(renderCounter).toHaveBeenCalledTimes(10);
   });
-  it("change to data will rerender", async () => {
+  it.only("change to data will rerender", async () => {
     const { getByTestId, getByText } = render(<App queryType={queryType} />);
 
     const collection = getTestCollection(queryType);

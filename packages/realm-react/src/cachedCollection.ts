@@ -80,7 +80,10 @@ export function cachedCollection<T extends Realm.Object>({
 
   const cachedCollectionResult = new Proxy(collection, cachedCollectionHandler);
 
-  const listenerCallback: Realm.CollectionChangeCallback<T> = (listenerCollection, changes) => {
+  const listenerCallback: Realm.CollectionChangeCallback<(T & Realm.Object) | (unknown & Realm.Object)> = (
+    listenerCollection,
+    changes,
+  ) => {
     if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
       // TODO: There is currently no way to rebuild the cache key from the changes array for deleted object.
       // Until it is possible, we clear the cache on deletions.
