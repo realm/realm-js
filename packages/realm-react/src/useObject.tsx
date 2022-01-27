@@ -16,18 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
-import { useState, useEffect } from "react";
+import { useEffect, useReducer, useMemo } from "react";
+import { cachedObject } from "./cachedObject";
 
+// In order to make @realm/react work with older version of realms
+// This pulls the type for PrimaryKey out of the call signature of `objectForPrimaryKey`
+// TODO: If we depend on a new version of Realm for @realm/react, we can just use Realm.PrimaryKey
 type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
 export function createUseObject(useRealm: () => Realm) {
   return function useObject<T>(type: string | { new (): T }, primaryKey: PrimaryKey): (T & Realm.Object) | null {
     const realm = useRealm();
-    const [object, setObject] = useState<(T & Realm.Object) | null>(
-      () => realm.objectForPrimaryKey(type, primaryKey) ?? null,
+
+    // Create a forceRerender method so that the cachedObject can determine a relevant change has occured
+    const [, forceRerender] = useReducer((x) => x + 1, 0);
+
+    // Wrap this in useMemo to update if the primaryKey or type is somehow dynamic
+    const { object, tearDown } = useMemo(
+      // TODO: There will be an upcoming breaking change that makes objectForPrimaryKey return null
+      // When this is implemented, remove `?? null`
+      () => cachedObject(realm.objectForPrimaryKey(type, primaryKey) ?? null, forceRerender),
+      [type, realm, primaryKey],
     );
 
+    // Invoke the tearDown of the cachedObject when useObject is unmounted
     useEffect(() => {
+<<<<<<< HEAD
       const listenerCallback: Realm.ObjectChangeCallback<T & Realm.Object> = (_, changes) => {
         if (changes.changedProperties.length > 0) {
           setObject(() => realm.objectForPrimaryKey(type, primaryKey) ?? null);
@@ -44,7 +58,17 @@ export function createUseObject(useRealm: () => Realm) {
         }
       };
     }, [realm, object, type, primaryKey]);
+=======
+      return () => tearDown();
+    }, [tearDown]);
 
-    return object;
+    // If the object has been deleted or doesn't exist for the given primary key, just return null
+    if (object === null || object?.isValid() === false) {
+      return null;
+    }
+>>>>>>> 987ede56 (Phase 2: Add cache support for Realm.List in Realm.Object)
+
+    // Wrap object in a proxy to update the reference on rerender ( should only rerender when something has changed )
+    return new Proxy(object, {});
   };
 }

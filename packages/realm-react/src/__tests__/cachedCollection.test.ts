@@ -88,7 +88,7 @@ describe.each`
   const cacheMap = new Map();
   let realm = new Realm(realmConfig);
 
-  function applyQueryTypeToCollection<T>(queryType: QueryType, collection: Realm.Results<T>) {
+  function applyQueryTypeToCollection<T>(queryType: QueryType, collection: Realm.Collection<T>) {
     switch (queryType) {
       case QueryType.filtered:
         return collection.filtered(...FILTER_ARGS);
@@ -151,11 +151,9 @@ describe.each`
 
   it("updates on all changes", async () => {
     const updateFunction = jest.fn();
-    const { collection, tearDown } = cachedCollection(realm.objects(TestObject), updateFunction, cacheMap);
+    const { tearDown } = cachedCollection(realm.objects(TestObject), updateFunction, cacheMap);
 
     expect(cacheMap.size).toBe(0);
-
-    const testCollection = applyQueryTypeToCollection(queryType, collection);
 
     expect(updateFunction).toBeCalledTimes(0);
 
@@ -279,16 +277,16 @@ describe.each`
   });
   it("responds to changes to linked objects", async () => {
     // Initialize some children on an object
-    let testCollection = getTestCollection(queryType);
+    const preCachedCollection = getTestCollection(queryType);
     realm.write(() => {
-      testCollection[0].children.push(realm.create(TestObjectChild, { id: 1, name: "phil" }));
-      testCollection[0].children.push(realm.create(TestObjectChild, { id: 2, name: "paul" }));
+      preCachedCollection[0].children.push(realm.create(TestObjectChild, { id: 1, name: "phil" }));
+      preCachedCollection[0].children.push(realm.create(TestObjectChild, { id: 2, name: "paul" }));
     });
 
     const updateFunction = jest.fn();
     const { collection, tearDown } = cachedCollection(realm.objects(TestObject), updateFunction, cacheMap);
 
-    testCollection = applyQueryTypeToCollection(queryType, collection);
+    const testCollection = applyQueryTypeToCollection(queryType, collection);
 
     expect(cacheMap.size).toBe(0);
 

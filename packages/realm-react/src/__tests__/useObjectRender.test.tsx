@@ -113,7 +113,7 @@ const TestComponent = () => {
   );
 };
 
-describe("useObject", () => {
+describe("useObjectRender", () => {
   afterEach(() => {
     renderCounter.mockClear();
     Realm.clearTestState();

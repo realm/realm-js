@@ -24,12 +24,12 @@ function getCacheKey(id: string) {
 }
 
 export function cachedCollection<T>(
-  collection: Realm.Results<T & Realm.Object>,
+  collection: Realm.Collection<T & Realm.Object>,
   updateCallback: () => void,
   collectionCache = new Map(),
   isFirst = true,
-): { collection: Realm.Results<T & Realm.Object>; tearDown: () => void } {
-  const cachedCollectionHandler: ProxyHandler<Realm.Results<T & Realm.Object>> = {
+): { collection: Realm.Collection<T & Realm.Object>; tearDown: () => void } {
+  const cachedCollectionHandler: ProxyHandler<Realm.Collection<T & Realm.Object>> = {
     get: function (target, key) {
       // Pass functions through
       const value = Reflect.get(target, key);
@@ -57,9 +57,7 @@ export function cachedCollection<T>(
 
       // If we do, return it...
       if (collectionCache.get(cacheKey)) {
-        const collection = collectionCache.get(cacheKey);
-        // if the colleciton was garbage collected, skip return and store the updated reference
-        if (collection) return collection;
+        return collectionCache.get(cacheKey);
       }
 
       // If not then this index has either not been accessed before, or has been invalidated due
@@ -72,7 +70,10 @@ export function cachedCollection<T>(
 
   const cachedCollectionResult = new Proxy(collection, cachedCollectionHandler);
 
-  const listenerCallback: Realm.CollectionChangeCallback<T & Realm.Object> = (listenerCollection, changes) => {
+  const listenerCallback: Realm.CollectionChangeCallback<(T & Realm.Object) | (unknown & Realm.Object)> = (
+    listenerCollection,
+    changes,
+  ) => {
     if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
       // TODO: There is currently no way to rebuild the cache key from the changes array for deleted object.
       // Until it is possible, we clear the cache on deletions.

@@ -1,4 +1,7 @@
 {
+    "plugins": [
+        "eslint-plugin-tsdoc"
+    ],
     "parser": "@typescript-eslint/parser",
     "extends": [
         "plugin:@typescript-eslint/recommended",
@@ -7,6 +10,7 @@
     "rules": {
         "@typescript-eslint/explicit-function-return-type": "off",
         "react-hooks/rules-of-hooks": "error",
-        "react-hooks/exhaustive-deps": "warn"
+        "react-hooks/exhaustive-deps": "warn",
+        "tsdoc/syntax": "warn"
     }
 }

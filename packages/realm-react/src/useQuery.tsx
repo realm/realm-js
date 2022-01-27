@@ -33,6 +33,7 @@ export function createUseQuery(useRealm: () => Realm) {
     }, [tearDown]);
 
     // This makes sure the collection has a different reference on a rerender
-    return new Proxy(collection, {});
+    // Also we are ensuring the type returned is Realm.Results, as this is known in this context
+    return new Proxy(collection as Realm.Results<T & Realm.Object>, {});
   };
 }

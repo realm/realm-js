@@ -226,8 +226,8 @@ describe("areConfigurationsIdentical", () => {
 
     expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
 
-    configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration: () => console.log("migration") };
-    configB = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration: () => console.log("migration") };
+    configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration: () => undefined };
+    configB = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration: () => undefined };
 
     expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
 
@@ -243,7 +243,7 @@ describe("areConfigurationsIdentical", () => {
 
     expect(areConfigurationsIdentical(configA, configB)).toBeTruthy();
 
-    const migration = () => console.log(migration);
+    const migration = () => undefined;
 
     configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration };
     configB = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration };
