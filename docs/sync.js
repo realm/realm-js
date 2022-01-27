@@ -899,9 +899,9 @@ class Session {
   /**
    * Gets the current state of the session.
    * Can be either:
-   *  - "active": The session is connected to the Realm Object Server and is actively transferring data.
-   *  - "inactive": The session is not currently communicating with the Realm Object Server.
-   *  - "invalid": A non-recoverable error has occurred, and this session is semantically invalid. A new session should be created.
+   *  - "active": The sync session is actively communicating or attempting to communicate with MongoDB Realm. A session may be considered active even if it is not currently connected. To find out if a session is online, check its connection state.
+   *  - "inactive": The sync session is not attempting to communicate with MongoDB Realm due to the user logging out or synchronization being paused.
+   *  - "invalid": The sync session encountered a non-recoverable error and is permanently invalid. Create a new Session to continue syncing.
    * @type {string}
    */
   get state() {}
