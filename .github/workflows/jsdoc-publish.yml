@@ -1,0 +1,48 @@
+# This workflow builds the JSDocs and publishes them to https://docs.mongodb.com/realm-sdks/js/latest/.
+# It also uploads them to a versioned directory for archival purposes.
+#
+# We only run this workflow for "vX.Y.Z" tags, not "vX.Y.Z-beta", as the docs are pushed to the
+# site as "latest" as part of the build and we don't want to publish beta docs to live
+
+name: JSDoc Publish
+on:
+  push:
+    tags:
+      - v[0-9]+\.[0-9]+\[0-9]+
+
+env:
+  REALM_DISABLE_ANALYTICS: 1
+jobs:
+  jsdoc:
+    name: JSDoc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      - name: Install npm v7
+        run: npm install -g npm@7
+      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
+      - name: Install root package dependencies
+        run: npm ci --ignore-scripts
+      - name: Run JSDoc documentation build
+        run: npm run jsdoc
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.DOCS_S3_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.DOCS_S3_SECRET_KEY }}
+          aws-region: us-west-1
+      # Get the version number so we can specify the correct input path for uploading the docs -
+      # JSDoc outputs to docs/output/realm/<package.json version number>
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
+      - name: Upload versioned docs (for archival)
+        run: aws s3 put --acl public-read docs/output/realm/${{ steps.package-version.outputs.current-version}} s3://${{ secrets.DOCS_S3_BUCKET_NAME }}}/realm-sdks/js/${{ steps.package-version.outputs.current-version}}
+      - name: Upload latest docs (to live site)
+        run: aws s3 put --acl public-read docs/output/realm/${{ steps.package-version.outputs.current-version}} s3://${{ secrets.DOCS_S3_BUCKET_NAME }}}/realm-sdks/js/latest
