@@ -158,7 +158,7 @@ async function submitAnalytics(dryRun) {
 
   const wd = process.cwd();
   const index = wd.indexOf("node_modules");
-  const packageJson = wd.slice(0, index) + "/package.json";
+  const packageJson = (index === -1 ? wd : wd.slice(0, index)) + "/package.json";
   const context = require(packageJson);
   const payload = await fetchPlatformData(context);
   doLog(`payload: ${JSON.stringify(payload)}`);
@@ -174,6 +174,7 @@ async function submitAnalytics(dryRun) {
 const optionDefinitions = [
   { name: "dryRun", type: Boolean, multiple: false, description: "If true, don't submit analytics" },
   { name: "log", type: Boolean, multiple: false, description: "If true, print log messages" },
+  { name: "test", type: Boolean, multiple: false, description: "If true, run as --dryRun --log" },
 ];
 
 const options = commandLineArgs(optionDefinitions, { camelCase: true });
@@ -183,7 +184,17 @@ if (options.dryRun) {
   dryRun = true;
 }
 
+let log = false;
 if (options.log) {
+  log = true;
+}
+
+if (options.test) {
+  dryRun = true;
+  log = true;
+}
+
+if (log) {
   doLog = (msg) => console.log(msg);
 } else {
   // eslint-disable-next-line no-unused-vars
