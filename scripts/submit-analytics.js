@@ -151,11 +151,6 @@ async function dispatchAnalytics(payload) {
 }
 
 async function submitAnalytics(dryRun) {
-  if (isAnalyticsDisabled()) {
-    doLog("Analytics is disabled");
-    return;
-  }
-
   const wd = process.cwd();
   const index = wd.indexOf("node_modules");
   const packageJson = (index === -1 ? wd : wd.slice(0, index)) + "/package.json";
@@ -165,6 +160,11 @@ async function submitAnalytics(dryRun) {
 
   if (dryRun) {
     doLog("Dry run; will not submit analytics");
+    return;
+  }
+
+  if (isAnalyticsDisabled()) {
+    doLog("Analytics is disabled");
     return;
   }
 
