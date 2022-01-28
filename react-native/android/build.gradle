@@ -54,7 +54,7 @@ android {
     }
 }
 
-dependencyType = 'implementation'
+def dependencyType = 'implementation'
 try {
     project.getConfigurations().getByName('implementation')
 } catch (UnknownConfigurationException e) {

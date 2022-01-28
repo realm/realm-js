@@ -3,8 +3,8 @@ on: pull_request
 env:
   REALM_DISABLE_ANALYTICS: 1
 jobs:
-  lint:
-    name: Lint
+  analytics:
+    name: Analytics
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -22,4 +22,6 @@ jobs:
       - name: Install subpackages dependencies
         run: npm run lerna:bootstrap
       - name: Run postinstall script
-        run: npx lerna run test:analytics
+        run: |
+          cd integration-tests/tests
+          node ../../scripts/submit-analytics.js --test | grep ^payload | cut -f2- -d' ' | jq '.webHook.properties' | jq 'keys' | jq 'join(",")' | grep -c 'Anonymized Application ID,Anonymized Machine Identifier,Binding,Framework,Framework Version,Host OS Type,Host OS Version,JS Analytics Version,JavaScript Engine,Language,Node.js version,Version,distinct_id,token'
