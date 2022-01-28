@@ -24,11 +24,18 @@ export type ErrorResponse = { message: string; appId: never };
 export type ImportResponse = { appId: string; message: never };
 export type Response = ImportResponse | ErrorResponse;
 
-export async function importApp(name: string, replacements: TemplateReplacements = {}): Promise<App> {
+const getUrls = (): { appImporterUrl: string; mongodbRealmBaseUrl: string } => {
   // Try reading the app importer URL out of the environment, it might not be accessiable via localhost
   const { appImporterUrl, mongodbRealmBaseUrl } = environment;
   const url = typeof appImporterUrl === "string" ? appImporterUrl : "http://localhost:8091";
-  const response = await fetch(url, {
+
+  return { appImporterUrl: url, mongodbRealmBaseUrl: mongodbRealmBaseUrl as string };
+};
+
+export async function importApp(name: string, replacements: TemplateReplacements = {}): Promise<App> {
+  const { appImporterUrl, mongodbRealmBaseUrl } = getUrls();
+
+  const response = await fetch(appImporterUrl, {
     method: "POST",
     body: JSON.stringify({ name, replacements }),
   });
@@ -40,5 +47,17 @@ export async function importApp(name: string, replacements: TemplateReplacements
     throw new Error(`Failed to import: ${json.message}`);
   } else {
     throw new Error("Failed to import app");
+  }
+}
+
+export async function deleteApp(clientAppId: string): Promise<void> {
+  const { appImporterUrl } = getUrls();
+
+  const response = await fetch(`${appImporterUrl}/app/${clientAppId}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete app with client ID '${clientAppId}'`);
   }
 }

@@ -108,7 +108,9 @@ export class AppImportServer {
   };
 
   private async handleRequest(req: IncomingMessage, res: ServerResponse) {
-    if (req.url !== "/") {
+    if (req.method === "DELETE") {
+      return this.handleDeleteApp(req, res);
+    } else if (req.url !== "/") {
       res.statusCode = 400;
       throw new Error(`Unexpected path ${req.url}`);
     } else if (req.method === "GET") {
@@ -141,5 +143,21 @@ export class AppImportServer {
     } else {
       throw new Error("Expected a body object");
     }
+  }
+
+  private async handleDeleteApp(req: IncomingMessage, res: ServerResponse) {
+    // Not sure this could happen but to appease Typescript...
+    if (!req.url) {
+      throw new Error("No URL in request");
+    }
+
+    // Match a URL like /app/my-app-client-app-id
+    const appIdMatches = req.url.match(/^\/app\/([0-9a-z-]+)$/);
+    if (!appIdMatches || !appIdMatches[1]) {
+      res.statusCode = 400;
+      throw new Error("Expected a URL in the format: /app/my-app-client-app-id");
+    }
+
+    return this.importer.deleteApp(appIdMatches[1]);
   }
 }
