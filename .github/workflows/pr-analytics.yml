@@ -24,4 +24,7 @@ jobs:
       - name: Run postinstall script
         run: |
           cd integration-tests/tests
-          node ../../scripts/submit-analytics.js --test | grep ^payload | cut -f2- -d' ' | jq '.webHook.properties' | jq 'keys' | jq 'join(",")' | grep -c 'Anonymized Application ID,Anonymized Machine Identifier,Binding,Framework,Framework Version,Host OS Type,Host OS Version,JS Analytics Version,JavaScript Engine,Language,Node.js version,Version,distinct_id,token'
+          tmpfile=$(mktemp)
+          node ../../scripts/submit-analytics.js --test > $tmpfile
+          cat $tmpfile
+          cat $tmpfile | grep ^payload | cut -f2- -d' ' | jq '.webHook.properties' | jq 'keys' | jq 'join(",")' | grep -c 'Anonymized Application ID,Anonymized Machine Identifier,Binding,Framework,Framework Version,Host OS Type,Host OS Version,JS Analytics Version,JavaScript Engine,Language,Node.js version,Version,distinct_id,token'
