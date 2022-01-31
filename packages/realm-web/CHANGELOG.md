@@ -11,7 +11,7 @@
 * None
 
 ### Internal
-* None
+* Updated base URL to https://realm.mongodb.com. ([#4283](https://github.com/realm/realm-js/pull/4283))
 
 1.6.0 Release notes (2022-01-26)
 =============================================================
