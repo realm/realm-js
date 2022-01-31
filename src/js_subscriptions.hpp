@@ -492,6 +492,16 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(ContextType ctx, Obj
 
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, {result});
             }
+            else {
+                auto error = Object::create_obj(
+                    protected_ctx,
+                    {{"message",
+                      Value::from_string(
+                          protected_ctx,
+                          "`waitForSynchronisation` resolved after the `subscriptions` went out of scope")}});
+
+                Function<T>::callback(protected_ctx, protected_callback, protected_this, {error});
+            }
         });
 
     state_change_func = std::move(state_change_handler);
