@@ -89,7 +89,7 @@
     "node-addon-api": "4.2.0",
     "node-fetch": "^2.6.1",
     "node-machine-id": "^1.1.10",
-    "prebuild-install": "^6.1.1",
+    "prebuild-install": "^7.0.1",
     "progress": "^2.0.3",
     "prop-types": "^15.6.2",
     "realm-network-transport": "^0.7.1",
