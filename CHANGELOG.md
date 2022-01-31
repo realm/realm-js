@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Fixed a crash when using `Proxy` with a `Realm.Results` object ([#4257]https://github.com/realm/realm-js/pull/4257)
 * JWT metadata is now populating `Realm.User.profile`. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
+* Security upgrade of `prebuild-install`. ([#4281](https://github.com/realm/realm-js/issues/4281))
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
