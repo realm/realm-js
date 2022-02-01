@@ -628,37 +628,30 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
 
     auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
 
-    try {
-        HANDLESCOPE(protected_ctx);
+    // Create a mutable copy of this instance (which copies the original and upgrades
+    // its internal transaction to a write transaction, so we can make updates to it -
+    // SubscriptionSets are otherwise immutable)
+    auto mutable_subs_js = MutableSubscriptionSetClass<T>::create_instance(ctx, subs->make_mutable_copy());
+    auto mutable_subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, mutable_subs_js);
 
-        // Create a mutable copy of this instance (which copies the original and upgrades
-        // its internal transaction to a write transaction, so we can make updates to it -
-        // SubscriptionSets are otherwise immutable)
-        auto mutable_subs_js = MutableSubscriptionSetClass<T>::create_instance(ctx, subs->make_mutable_copy());
-        auto mutable_subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, mutable_subs_js);
+    // Call the provided callback, passing in the mutable copy as an argument,
+    // and return its return value
+    ValueType arguments[]{mutable_subs_js};
+    auto const& callback_return =
+        Function<T>::callback(protected_ctx, protected_update_callback, protected_this, 1, arguments);
 
-        // Call the provided callback, passing in the mutable copy as an argument,
-        // and return its return value
-        ValueType arguments[]{mutable_subs_js};
-        auto const& callback_return =
-            Function<T>::callback(protected_ctx, protected_update_callback, protected_this, 1, arguments);
+    // Commit the mutation, which downgrades its internal transaction to a read transaction
+    // so no more changes can be made to it, and returns a new (immutable) SubscriptionSet
+    // with the changes we made
+    auto new_sub_set = std::move(*mutable_subs).commit();
 
-        // Commit the mutation, which downgrades its internal transaction to a read transaction
-        // so no more changes can be made to it, and returns a new (immutable) SubscriptionSet
-        // with the changes we made
-        auto new_sub_set = std::move(*mutable_subs).commit();
+    // Update this SubscriptionSetClass instance to point to the updated version
+    set_internal<T, SubscriptionSetClass<T>>(ctx, this_object,
+                                             new SubscriptionSet<T>(std::move(new_sub_set), subs->sync_session));
 
-        // Update this SubscriptionSetClass instance to point to the updated version
-        set_internal<T, SubscriptionSetClass<T>>(ctx, this_object,
-                                                 new SubscriptionSet<T>(std::move(new_sub_set), subs->sync_session));
-
-        // Asynchronously wait for the SubscriptionSet to be synchronised
-        SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
-                                                               protected_completion_callback);
-    }
-    catch (...) {
-        throw;
-    }
+    // Asynchronously wait for the SubscriptionSet to be synchronised
+    SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
+                                                           protected_completion_callback);
 }
 
 /**
