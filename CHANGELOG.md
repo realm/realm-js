@@ -16,7 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.8.0 to v11.9.0
 * Fixed documentation publishing ([#4276](https://github.com/realm/realm-js/pull/4276))
 
 10.12.0 Release notes (2022-1-24)
