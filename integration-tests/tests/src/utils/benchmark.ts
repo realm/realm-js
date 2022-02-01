@@ -20,10 +20,6 @@ import { benchmark, BenchmarkOpts } from "../bench";
 
 import { openRealmBefore } from "../hooks";
 
-// Increase the following `performanceMaxTime` value to increase confidence
-const { performanceMaxTime } = environment;
-const maxTimeMs = parseInt(typeof performanceMaxTime === "string" ? performanceMaxTime : "1000", 10);
-
 const DEFAULT_OPTIONS: Partial<BenchmarkOpts> = { output: false, iter: 1000, size: 1000 };
 
 export function itPerforms(title: string, fn: () => void, options?: Partial<BenchmarkOpts>): void {
@@ -44,7 +40,7 @@ export function itPerforms(title: string, fn: () => void, options?: Partial<Benc
 type PerformanceTestParameters = {
   benchmarkTitle: string;
   // Schema to use when opening the Realm
-  schema: Realm.ObjectSchema[];
+  schema: (Realm.ObjectSchema | Realm.ObjectClass)[];
   // Prepare the realm to be tested (creating any objects that shouldn't be a part of the operation)
   before(this: RealmContext): void;
   // Perform the actual test

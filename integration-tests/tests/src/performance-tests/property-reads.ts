@@ -59,9 +59,9 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
     },
   };
 
-  describePerformance(`reading property of type '${typeName}'`, {
+  describePerformance(`of type '${typeName}'`, {
     schema: [defaultSchema, ...schema],
-    benchmarkTitle: `reads ${type}`,
+    benchmarkTitle: "reads",
     before(this: Partial<RealmObjectContext> & RealmContext & Mocha.Context) {
       this.realm.write(() => {
         this.object = this.realm.create(objectSchemaName, {
@@ -107,11 +107,13 @@ const cases: Array<TestParameters | [Realm.PropertyType | Realm.ObjectSchemaProp
   ["bool{}", {}],
 ];
 
-for (const c of cases) {
-  if (Array.isArray(c)) {
-    const [type, value] = c;
-    describeTypeRead({ type, value });
-  } else {
-    describeTypeRead(c);
+describe("property reads", () => {
+  for (const c of cases) {
+    if (Array.isArray(c)) {
+      const [type, value] = c;
+      describeTypeRead({ type, value });
+    } else {
+      describeTypeRead(c);
+    }
   }
-}
+});
