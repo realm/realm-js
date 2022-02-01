@@ -151,6 +151,16 @@ class App {
   removeUser(user) {}
 
   /**
+   * Deletes the user.
+   * NOTE: This irrecoverably deletes the user from device as well as the server!
+   *
+   * @param {Realm.User} user - The user to delete.
+   * @returns {Promise<void>}
+   */
+  deleteUser(user) {}
+
+
+  /**
    * Client for the email/password authentication provider.
    *
    * @example
@@ -653,14 +663,6 @@ class ApiKeyAuth {
    * @returns {Promise<Array>}
    */
   fetchAll() {}
-
-  /**
-   * Deletes a user API key associated with the current user.
-   *
-   * @param {string} id - The id of the API key to delete.
-   * @returns {Promise<void>}
-   */
-  delete(id) {}
 
   /**
    * Enables a user API key associated with the current user.

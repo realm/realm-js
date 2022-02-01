@@ -93,6 +93,7 @@ public:
     static void log_in(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void switch_user(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_user(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void delete_user(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     // static methods
     static void clear_app_cache(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -103,6 +104,7 @@ public:
         {"_logIn", wrap<log_in>},
         {"switchUser", wrap<switch_user>},
         {"_removeUser", wrap<remove_user>},
+        {"_deleteUser", wrap<delete_user>},
     };
 
     MethodMap<T> const static_methods = {
@@ -290,6 +292,19 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
 
     app->remove_user(*user, Function::wrap_void_callback(ctx, this_object, callback));
 }
+
+template <typename T>
+void AppClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue&)
+{
+    args.validate_count(2);
+
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
+    auto callback = Value::validated_to_function(ctx, args[1], "callback");
+
+    app->delete_user(*user, Function::wrap_void_callback(ctx, this_object, callback));
+}
+
 
 template <typename T>
 void AppClass<T>::get_email_password_auth(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
