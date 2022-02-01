@@ -75,6 +75,7 @@ Examples of context variables used:
 - `missingServer`: Skip tests that require a running BaaS server.
 - `performance`: Disabled skipping of the "Performance tests" suite.
 - `integration=false`: Skip the integration test (which performance tests are not considered a part of).
+- `preserveAppAfterRun`: Skip deleting the Realm app after the test run
 - The "react-native" environment looks for additional context variables (use the `./environment/react-native` NPM scripts to control this):
   - `mode=native`: Run the tests natively (default)
   - `mode=chrome-debugging`: Run tests using the legacy chrome-debugger.

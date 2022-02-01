@@ -51,6 +51,20 @@ export interface AppImporterOptions {
   cleanUp?: boolean;
 }
 
+type App = {
+  _id: string;
+  client_app_id: string;
+  name: string;
+  location: string;
+  deployment_model: string;
+  domain_id: string;
+  group_id: string;
+  last_used: number;
+  last_modified: number;
+  product: string;
+  environment: string;
+};
+
 export class AppImporter {
   private readonly baseUrl: string;
   private readonly credentials: Credentials;
@@ -134,6 +148,25 @@ export class AppImporter {
 
     // Return the app id of the newly created app
     return { appId };
+  }
+
+  public async deleteApp(clientAppId: string): Promise<void> {
+    await this.logIn();
+    const groupId = await this.getGroupId();
+
+    const app = await this.getAppByClientAppId(groupId, clientAppId);
+    const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps/${app._id}`;
+
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to delete app with client app ID '${clientAppId}' in group '${groupId}'`);
+    }
   }
 
   private get apiUrl() {
@@ -269,6 +302,31 @@ export class AppImporter {
       return uniqueGroupIds[0];
     } else {
       throw new Error("Expected user to have a role in a single group");
+    }
+  }
+
+  private async getAppByClientAppId(groupId: string, clientAppId: string): Promise<App> {
+    if (!this.accessToken) {
+      throw new Error("Login before calling this method");
+    }
+    const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+    });
+    if (response.ok) {
+      const apps: App[] = await response.json();
+      const app = apps.find((app) => app.client_app_id === clientAppId);
+      if (!app) {
+        throw new Error(`App with client app ID '${clientAppId}' in group '${groupId}' not found`);
+      }
+
+      return app;
+    } else {
+      throw new Error(`Failed to find app with client app ID '${clientAppId}' in group '${groupId}'`);
     }
   }
 

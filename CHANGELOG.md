@@ -18,6 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Fixed documentation publishing ([#4276](https://github.com/realm/realm-js/pull/4276))
+* Enabled mixed tests for flexible sync ([#4279](https://github.com/realm/realm-js/pull/4279))
 
 10.12.0 Release notes (2022-1-24)
 =============================================================

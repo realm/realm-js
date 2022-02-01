@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { importApp, TemplateReplacements } from "../utils/import-app";
+import { deleteApp, importApp, TemplateReplacements } from "../utils/import-app";
 
 export function importAppBefore(
   name: string,
@@ -30,5 +30,17 @@ export function importAppBefore(
       this.app = await importApp(name, replacements);
       Realm.App.Sync.setLogLevel(this.app, logLevel);
     }
+  });
+
+  // Delete our app after we have finished, otherwise the server can slow down
+  // (in the case of flexible sync, with lots of apps with subscriptions created)
+  after(async function (this: Partial<AppContext> & Mocha.Context) {
+    if (environment.preserveAppAfterRun) return;
+
+    if (!this.app) {
+      throw new Error("No app on context when trying to delete app");
+    }
+
+    await deleteApp(this.app.id);
   });
 }
