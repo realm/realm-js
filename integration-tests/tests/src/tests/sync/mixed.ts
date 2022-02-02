@@ -211,13 +211,29 @@ function performTests(flexibleSync: boolean) {
 }
 
 describe.skipIf(environment.missingServer, "mixed", () => {
+  // When running on CI we connect through mongodb-atlas instead of local-mongodb
+  const { mongodbClusterName } = environment;
+  const clusterReplacement =
+    typeof mongodbClusterName === "string"
+      ? {
+          "services/mongodb/config.json": {
+            type: "mongodb-atlas",
+            config: {
+              clusterName: mongodbClusterName,
+              readPreference: "primary",
+              wireProtocolEnabled: false,
+            },
+          },
+        }
+      : undefined;
+
   describe("parition-based sync", function () {
-    importAppBefore("with-db");
+    importAppBefore("with-db", clusterReplacement);
     performTests(false);
   });
 
   describe("flexible sync", function () {
-    importAppBefore("with-db-flx");
+    importAppBefore("with-db-flx", clusterReplacement);
     performTests(true);
   });
 });

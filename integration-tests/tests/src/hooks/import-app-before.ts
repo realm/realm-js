@@ -23,7 +23,7 @@ export function importAppBefore(
   logLevel: Realm.App.Sync.LogLevel = (environment.syncLogLevel as Realm.App.Sync.LogLevel) || "warn",
 ): void {
   before(async function (this: Partial<AppContext> & Mocha.Context) {
-    this.timeout(10000);
+    this.timeout(120000); // Let's give it 2 minutes
     if (this.app) {
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
