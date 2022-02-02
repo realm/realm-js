@@ -29,6 +29,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Added `Realm.App#deleteUser(user)` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))
+* Extended `Realm.writeCopyTo()` functionality to allow conversion of non-synced Realms to synced Realms. ([#4136](https://github.com/realm/realm-js/issues/4136))
 
 ### Fixed
 * Fixed a crash when using `Proxy` with a `Realm.Results` object. ([#4257](https://github.com/realm/realm-js/pull/4257))
