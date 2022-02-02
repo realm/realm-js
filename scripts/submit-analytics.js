@@ -18,6 +18,7 @@
 
 const commandLineArgs = require("command-line-args");
 const fs = require("fs");
+const path = require("path");
 
 let doLog; // placeholder for logger function
 
@@ -151,9 +152,13 @@ async function dispatchAnalytics(payload) {
 }
 
 async function submitAnalytics(dryRun) {
-  const wd = process.cwd();
-  const index = wd.indexOf("node_modules");
-  const packageJson = (index === -1 ? wd : wd.slice(0, index)) + "/package.json";
+  let wd = process.env.npm_config_local_prefix;
+  if (!wd) {
+    wd = process.cwd();
+    const index = wd.indexOf("node_modules");
+    wd = index === -1 ? wd : wd.slice(0, index);
+  }
+  const packageJson = wd + path.sep + "package.json";
   const context = require(packageJson);
   const payload = await fetchPlatformData(context);
   doLog(`payload: ${JSON.stringify(payload)}`);
@@ -172,22 +177,21 @@ async function submitAnalytics(dryRun) {
 }
 
 const optionDefinitions = [
-  { name: "dryRun", type: Boolean, multiple: false, description: "If true, don't submit analytics" },
-  { name: "log", type: Boolean, multiple: false, description: "If true, print log messages" },
-  { name: "test", type: Boolean, multiple: false, description: "If true, run as --dryRun --log" },
+  {
+    name: "dryRun",
+    type: Boolean,
+    multiple: false,
+    defaultOption: false,
+    description: "If true, don't submit analytics",
+  },
+  { name: "log", type: Boolean, multiple: false, defaultOption: false, description: "If true, print log messages" },
+  { name: "test", type: Boolean, multiple: false, defaultOption: false, description: "If true, run as --dryRun --log" },
 ];
 
 const options = commandLineArgs(optionDefinitions, { camelCase: true });
 
-let dryRun = false;
-if (options.dryRun) {
-  dryRun = true;
-}
-
-let log = false;
-if (options.log) {
-  log = true;
-}
+let dryRun = options.dryRun;
+let log = options.log;
 
 if (options.test) {
   dryRun = true;
@@ -203,6 +207,4 @@ if (log) {
   };
 }
 
-(async function () {
-  await submitAnalytics(dryRun);
-})();
+submitAnalytics(dryRun).catch(console.error);
