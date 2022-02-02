@@ -895,7 +895,7 @@ declare namespace Realm {
 
         const MutableSubscriptionSet: {
             new(): never; // This type isn't supposed to be constructed manually by end users.
-            readonly prototype: SubscriptionSet;
+            readonly prototype: MutableSubscriptionSet;
         };
     }
 
