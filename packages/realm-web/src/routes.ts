@@ -115,6 +115,9 @@ function api() {
         session() {
           return { path: this.path + "/session" };
         },
+        delete() {
+          return { path: this.path + "/delete" };
+        },
       };
     },
   };

@@ -175,7 +175,7 @@ export class App<
       this.storage.clear();
       // A failed hydration shouldn't throw and break the app experience
       // Since this is "just" persisted state that unfortunately got corrupted or partially lost
-      console.warn("Realm app hydration failed:", err.message);
+      console.warn("Realm app hydration failed:", (err as Error).message);
     }
   }
 
@@ -210,7 +210,7 @@ export class App<
     const user = this.createOrUpdateUser(response, credentials.providerType);
     // Let's ensure this will be the current user, in case the user object was reused.
     this.switchUser(user);
-    // If neeeded, fetch and set the profile on the user
+    // If needed, fetch and set the profile on the user
     if (fetchProfile) {
       await user.refreshProfile();
     }
@@ -248,6 +248,24 @@ export class App<
   }
 
   /**
+   * @inheritdoc
+   */
+  public async deleteUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void> {
+    this.fetcher
+      .fetchJSON({
+        method: "DELETE",
+        path: routes.api().auth().delete().path,
+        tokenType: "none",
+      })
+      .then(() => {
+        return this.removeUser(user);
+      })
+      .catch((err) => {
+        throw err;
+      });
+  }
+
+  /**
    * The currently active user (or null if no active users exists).
    *
    * @returns the currently active user or null.
@@ -267,7 +285,7 @@ export class App<
    *  - First in the list are active users (ordered by most recent call to switchUser or login)
    *  - Followed by logged out users (also ordered by most recent call to switchUser or login).
    *
-   * @returns An array of users active or loggedout users (current user being the first).
+   * @returns An array of users active or logged out users (current user being the first).
    */
   public get allUsers(): Readonly<Record<string, User<FunctionsFactoryType, CustomDataType>>> {
     // Returning a freezed copy of the list of users to prevent outside changes

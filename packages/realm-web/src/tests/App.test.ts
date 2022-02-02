@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { fail } from "assert";
 import { expect } from "chai";
 
 import { App, User, UserState, Credentials, MongoDBRealmError } from "..";
@@ -355,6 +356,63 @@ describe("App", () => {
     ]);
   });
 
+  it.only("can delete a user", async () => {
+    const storage = new MemoryStorage();
+    const transport = new MockNetworkTransport([
+      { hostname: "http://localhost:1337" },
+      {
+        user_id: "totally-valid-user-id",
+        access_token: "deadbeef",
+        refresh_token: "very-refreshing",
+        device_id: "000000000000000000000000",
+      },
+      {
+        data: {
+          first_name: "John",
+          last_name: "Doe",
+        },
+        domain_id: "5ed10debc085000e2c0097ac",
+        identities: [
+          {
+            id: "5ed10e0dc085000e2c0099f2-fufttusvpmojykvacvhijoaq",
+            provider_id: "5ed10dedc085000e2c0097c5",
+            provider_type: "anon-user",
+          },
+        ],
+        type: "normal",
+        user_id: "5ed10e0dc085000e2c0099f3",
+      },
+    ]);
+    const app = new App({
+      id: "my-mocked-app",
+      storage,
+      transport,
+      baseUrl: "http://localhost:1234",
+    });
+    const credentials = Credentials.emailPassword("gilfoyle@testing.mongodb.com", "v3ry-s3cret");
+    const user = await app.logIn(credentials);
+
+    // Expect logging in returns a user
+    expect(user).is.instanceOf(User);
+    expect(user.isLoggedIn).equals(true);
+
+    // delete the user
+    await app.deleteUser(user);
+
+    // // the user is logged out
+    // expect(user.isLoggedIn).equals(false);
+
+    // // log in will fail
+    // let failed = false;
+    // try {
+    //   await app.logIn(credentials);
+    // } catch (err) {
+    //   failed = true;
+    // }
+
+    // expect(failed).equals(true);
+  });
+
   it("can remove an active user", async () => {
     const storage = new MemoryStorage();
     const transport = new MockNetworkTransport([
@@ -433,14 +491,14 @@ describe("App", () => {
       await app.switchUser(anotherUser);
       throw new Error("Expected an exception");
     } catch (err) {
-      expect(err.message).equals("The user was never logged into this app");
+      expect((err as Error).message).equals("The user was never logged into this app");
     }
     // Remove
     try {
       await app.removeUser(anotherUser);
       throw new Error("Expected an exception");
     } catch (err) {
-      expect(err.message).equals("The user was never logged into this app");
+      expect((err as Error).message).equals("The user was never logged into this app");
     }
     // Expect the first user to remain logged in and known to the app
     expect(app.currentUser).equals(user);
