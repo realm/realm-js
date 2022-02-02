@@ -829,9 +829,9 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx)
                          attributes);
     Object::set_property(ctx, sync_constructor, "Subscription",
                          ObjectWrap<T, SubscriptionClass<T>>::create_constructor(ctx), attributes);
-    Object::set_property(ctx, sync_constructor, "Subscriptions",
+    Object::set_property(ctx, sync_constructor, "SubscriptionSet",
                          ObjectWrap<T, SubscriptionSetClass<T>>::create_constructor(ctx), attributes);
-    Object::set_property(ctx, sync_constructor, "MutableSubscriptions",
+    Object::set_property(ctx, sync_constructor, "MutableSubscriptionSet",
                          ObjectWrap<T, MutableSubscriptionSetClass<T>>::create_constructor(ctx), attributes);
 
     return sync_constructor;

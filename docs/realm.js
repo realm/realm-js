@@ -93,7 +93,7 @@ class Realm {
 
   /**
    * Get the latest set of flexible sync subscriptions.
-   * @type {Realm.App.Sybc.Subscriptions}
+   * @type {Realm.App.Sybc.SubscriptionSet}
    * @throws if flexible sync is not enabled for this app
    * @readonly
    */

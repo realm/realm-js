@@ -204,7 +204,7 @@ class SubscriptionSetClass : public ClassDefinition<T, SubscriptionSet<T>> {
     using Arguments = js::Arguments<T>;
 
 public:
-    const std::string name = "Subscriptions";
+    const std::string name = "SubscriptionSet";
     using StateChangeHandler = void(StatusWith<realm::sync::SubscriptionSet::State> state);
 
     static ObjectType create_instance(ContextType, realm::sync::SubscriptionSet, std::shared_ptr<SyncSession>);
@@ -529,7 +529,7 @@ public:
  *
  * @note This is not modelled as an inheritance relationship in JS (using the third
  * ClassDefinition template arg to set the parent), because we are not exposing all
- * the methods of Subscriptions, so it is not strictly inheritance.
+ * the methods of SubscriptionSet, so it is not strictly inheritance.
  */
 template <typename T>
 class MutableSubscriptionSetClass : public ClassDefinition<T, MutableSubscriptionSet<T>> {
@@ -543,7 +543,7 @@ class MutableSubscriptionSetClass : public ClassDefinition<T, MutableSubscriptio
     using Arguments = js::Arguments<T>;
 
 public:
-    const std::string name = "MutableSubscriptions";
+    const std::string name = "MutableSubscriptionSet";
 
     static ObjectType create_instance(ContextType, realm::sync::MutableSubscriptionSet);
 

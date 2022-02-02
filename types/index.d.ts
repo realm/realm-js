@@ -826,7 +826,7 @@ declare namespace Realm {
             update: (callback: (mutableSubs: MutableSubscriptionSet) => void) => Promise<void>;
         }
 
-        const Subscriptions: {
+        const SubscriptionSet: {
             new(): never; // This type isn't supposed to be constructed manually by end users.
             readonly prototype: SubscriptionSet;
         };
@@ -893,7 +893,7 @@ declare namespace Realm {
             removeAll: () => number;
         }
 
-        const MutableSubscriptions: {
+        const MutableSubscriptionSet: {
             new(): never; // This type isn't supposed to be constructed manually by end users.
             readonly prototype: SubscriptionSet;
         };
