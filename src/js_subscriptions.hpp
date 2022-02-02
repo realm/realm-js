@@ -19,6 +19,7 @@
 #pragma once
 
 #include "js_class.hpp"
+#include "js_util.hpp"
 #include "realm/object-store/sync/sync_session.hpp"
 #include "realm/sync/subscriptions.hpp"
 
@@ -483,23 +484,14 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(ContextType ctx, Obj
                 auto current_subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
                 current_subs->refresh();
 
-                auto result =
-                    state.is_ok()
-                        ? Value::from_undefined(protected_ctx)
-                        : Object::create_obj(
-                              protected_ctx,
-                              {{"message", Value::from_string(protected_ctx, state.get_status().reason())}});
+                auto result = state.is_ok() ? Value::from_undefined(protected_ctx)
+                                            : make_js_error<T>(protected_ctx, state.get_status().reason());
 
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, {result});
             }
             else {
-                auto error = Object::create_obj(
-                    protected_ctx,
-                    {{"message",
-                      Value::from_string(
-                          protected_ctx,
-                          "`waitForSynchronisation` resolved after the `subscriptions` went out of scope")}});
-
+                auto error = make_js_error<T>(
+                    protected_ctx, "`waitForSynchronisation` resolved after the `subscriptions` went out of scope");
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, {error});
             }
         });
@@ -512,12 +504,8 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(ContextType ctx, Obj
     }
     catch (KeyNotFound const& ex) {
         // TODO Waiting on https://github.com/realm/realm-core/issues/5165 to remove this
-        auto error = Object::create_obj(
-            protected_ctx,
-            {{"message",
-              Value::from_string(protected_ctx, "`waitForSynchronisation` cannot be called before creating "
-                                                "a SubscriptionSet using `update`")}});
-
+        auto error = make_js_error<T>(
+            ctx, "`waitForSynchronisation` cannot be called before creating a SubscriptionSet using `update`");
         Function<T>::callback(protected_ctx, protected_callback, protected_this, {error});
     }
 }

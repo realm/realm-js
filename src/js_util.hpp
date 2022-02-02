@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "js_types.hpp"
+
 #include <limits>
 #include <sstream>
 #include <stdexcept>
@@ -135,6 +137,17 @@ void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::Ob
             return_value.set(list->average(column));
             break;
     }
+}
+
+template <typename T>
+typename T::Object make_js_error(typename T::Context ctx, std::string message)
+{
+    using FunctionType = typename T::Function;
+    using Value = js::Value<T>;
+    using Object = js::Object<T>;
+
+    auto error_ctor = Value::to_constructor(ctx, Object::get_global(ctx, "Error"));
+    return Function<T>::construct(ctx, error_ctor, {Value::from_string(ctx, message)});
 }
 
 } // namespace js
