@@ -19,6 +19,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Fixed documentation publishing ([#4276](https://github.com/realm/realm-js/pull/4276))
 * Enabled mixed tests for flexible sync ([#4279](https://github.com/realm/realm-js/pull/4279))
+* Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet` ([#4298](https://github.com/realm/realm-js/pull/4298))
 
 10.12.0 Release notes (2022-1-24)
 =============================================================

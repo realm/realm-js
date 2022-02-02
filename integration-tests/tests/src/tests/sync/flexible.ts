@@ -209,7 +209,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
     describe("Realm#subscriptions", function () {
       it("returns a SubscriptionSet instance", function (this: RealmContext) {
-        expect(this.realm.subscriptions).to.be.instanceOf(Realm.App.Sync.Subscriptions);
+        expect(this.realm.subscriptions).to.be.instanceOf(Realm.App.Sync.SubscriptionSet);
       });
 
       it("throws an error if the Realm does not have a sync config", function (this: RealmContext) {
@@ -655,7 +655,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
 
           // TODO waiting on https://github.com/realm/realm-core/pull/5162
-          xit("throws an error if a mutating method is called outside of an update() callback by holding a reference to the MutableSubscriptions", function (this: RealmContext) {
+          xit("throws an error if a mutating method is called outside of an update() callback by holding a reference to the MutableSubscriptionSet", function (this: RealmContext) {
             const subs = this.realm.subscriptions;
             let mutableSubs: Realm.App.Sync.MutableSubscriptionSet;
 
@@ -678,6 +678,13 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
                 });
               }),
             ).to.be.rejectedWith("mutableSubs.update is not a function");
+          });
+        });
+
+        it("passes a MutableSubscriptionSet instance as an argument", function (this: RealmContext) {
+          const subs = this.realm.subscriptions;
+          subs.update((mutableSubs) => {
+            expect(mutableSubs).to.be.instanceOf(Realm.App.Sync.MutableSubscriptionSet);
           });
         });
 
