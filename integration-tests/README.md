@@ -76,10 +76,12 @@ Examples of context variables used:
 - `performance`: Disabled skipping of the "Performance tests" suite.
 - `integration=false`: Skip the integration test (which performance tests are not considered a part of).
 - `preserveAppAfterRun`: Skip deleting the Realm app after the test run
+- `syncLogLevel=all`: Set the sync client log level to help debugging sync client issues.
+- `realmBaseUrl=https://localhost:9090`: Set the base URL used when connecting the the server.
+- `mongodbClusterName=Cluster0`: Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps.
 - The "react-native" environment looks for additional context variables (use the `./environment/react-native` NPM scripts to control this):
   - `mode=native`: Run the tests natively (default)
   - `mode=chrome-debugging`: Run tests using the legacy chrome-debugger.
-  - `syncLogLevel=all` to show all sync client debug output.
 
 As an example, to iterate on the performence tests, run the `./tests` (on Node.js) skipping tests that require a server as well as the integration tests and enable performance tests:
 
