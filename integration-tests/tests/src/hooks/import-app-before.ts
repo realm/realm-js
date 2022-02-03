@@ -36,11 +36,10 @@ export function importAppBefore(
   // (in the case of flexible sync, with lots of apps with subscriptions created)
   after(async function (this: Partial<AppContext> & Mocha.Context) {
     if (environment.preserveAppAfterRun) return;
-
-    if (!this.app) {
-      throw new Error("No app on context when trying to delete app");
+    if (this.app) {
+      await deleteApp(this.app.id);
+    } else {
+      console.warn("No app on context when trying to delete app");
     }
-
-    await deleteApp(this.app.id);
   });
 }
