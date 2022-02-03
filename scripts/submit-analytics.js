@@ -16,16 +16,40 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const commandLineArgs = require("command-line-args");
+// Submits install information to Realm.
+//
+// Why are we doing this? In short, because it helps us build a better product
+// for you. None of the data personally identifies you, your employer or your
+// app, but it *will* help us understand what language you use, what Node.js
+// versions you target, etc. Having this info will help prioritizing our time,
+// adding new features and deprecating old features. Collecting an anonymized
+// application path & anonymized machine identifier is the only way for us to
+// count actual usage of the other metrics accurately. If we don’t have a way to
+// deduplicate the info reported, it will be useless, as a single developer
+// `npm install`-ing the same app 10 times would report 10 times more than another
+// developer that only installs once, making the data all but useless.
+// No one likes sharing data unless it’s necessary, we get it, and we’ve
+// debated adding this for a long long time. If you truly, absolutely
+// feel compelled to not send this data back to Realm, then you can set an
+// environment variable named REALM_DISABLE_ANALYTICS.
+//
+// Currently the following information is reported:
+// - What version of Realm is being installed.
+// - The OS platform and version which is being used.
+// - Node.js version numbers.
+// - JavaScript framework (React Native and Electron) version numbers.
+// - An anonymous machine identifier and hashed application path to aggregate
+//   the other information on.
+
 const fs = require("fs");
 const path = require("path");
+const commandLineArgs = require("command-line-args");
 
 let doLog; // placeholder for logger function
 
 /**
  * Path and credentials required to submit analytics through the webhook.
  */
-
 const ANALYTICS_BASE_URL =
   "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric";
 
@@ -43,9 +67,53 @@ const getAnalyticsRequestUrl = (payload) =>
  * @returns SHA256 of data
  */
 function sha256(data) {
-  let hash = require("crypto").createHash("sha256");
+  let hash = node_require("crypto").createHash("sha256");
   hash.update(data);
   return hash.digest("hex");
+}
+
+/**
+ * Finds the root directory of the project.
+ *
+ * @returns the root of the project
+ */
+function getProjectRoot() {
+  let wd = process.env.npm_config_local_prefix;
+  if (!wd) {
+    wd = process.cwd();
+    const index = wd.indexOf("node_modules");
+    wd = index === -1 ? wd : wd.slice(0, index);
+  }
+  return wd;
+}
+
+/**
+ * Finds and read package.json
+ *
+ * @returns package.json as a JavaScript object
+ */
+function getPackageJson() {
+  const packageJson = getProjectRoot() + path.sep + "package.json";
+  return require(packageJson);
+}
+
+/**
+ * Heuristics to decide if analytics should be disabled.
+ *
+ * @returns true if analytics is disabled
+ */
+function isAnalyticsDisabled() {
+  let isDisabled = false;
+
+  // NODE_ENV is commonly used by JavaScript framework
+  if ("NODE_ENV" in process.env) {
+    isDisabled |= process.env["NODE_ENV"] === "production" || process.env["NODE_ENV"] === "test";
+  }
+
+  // If the user has specifically opted-out or if we're running in a CI environment
+  isDisabled |= "REALM_DISABLE_ANALYTICS" in process.env || "CI" in process.env;
+
+  return isDisabled;
 }
 
 /**
@@ -71,7 +139,7 @@ async function fetchPlatformData(context) {
     framework = "react-native";
     frameworkVersion = context.dependencies["react-native"];
     try {
-      const podfile = fs.readFileSync("../../ios/Podfile", "utf8");
+      const podfile = fs.readFileSync(getProjectRoot() + "/ios/Podfile", "utf8"); // no need to use path.sep as we are on MacOS
       if (/hermes_enabled.*true/.test(podfile)) {
         jsEngine = "hermes";
       } else {
@@ -112,19 +180,6 @@ async function fetchPlatformData(context) {
   return payload;
 }
 
-function isAnalyticsDisabled() {
-  let isDisabled = false;
-
-  // NODE_ENV is commonly used by JavaScript framework
-  if ("NODE_ENV" in process.env) {
-    isDisabled |= process.env["NODE_ENV"] === "production" || process.env["NODE_ENV"] === "test";
-  }
-
-  // If the user has specifically opted-out or if we're running in a CI environment
-  isDisabled |= "REALM_DISABLE_ANALYTICS" in process.env || "CI" in process.env;
-
-  return isDisabled;
-}
 
 /**
  * Send collected analytics data to Realm's servers over HTTPS
@@ -152,15 +207,8 @@ async function dispatchAnalytics(payload) {
 }
 
 async function submitAnalytics(dryRun) {
-  let wd = process.env.npm_config_local_prefix;
-  if (!wd) {
-    wd = process.cwd();
-    const index = wd.indexOf("node_modules");
-    wd = index === -1 ? wd : wd.slice(0, index);
-  }
-  const packageJson = wd + path.sep + "package.json";
-  const context = require(packageJson);
-  const payload = await fetchPlatformData(context);
+  const packageJson = getPackageJson();
+  const payload = await fetchPlatformData(packageJson);
   doLog(`payload: ${JSON.stringify(payload)}`);
 
   if (dryRun) {
@@ -181,11 +229,11 @@ const optionDefinitions = [
     name: "dryRun",
     type: Boolean,
     multiple: false,
-    defaultOption: false,
+    defaultValue: false,
     description: "If true, don't submit analytics",
   },
-  { name: "log", type: Boolean, multiple: false, defaultOption: false, description: "If true, print log messages" },
-  { name: "test", type: Boolean, multiple: false, defaultOption: false, description: "If true, run as --dryRun --log" },
+  { name: "log", type: Boolean, multiple: false, defaultValue: false, description: "If true, print log messages" },
+  { name: "test", type: Boolean, multiple: false, defaultValue: false, description: "If true, run as --dryRun --log" },
 ];
 
 const options = commandLineArgs(optionDefinitions, { camelCase: true });
