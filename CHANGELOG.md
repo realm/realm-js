@@ -4,9 +4,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed a crash when using `Proxy` with a `Realm.Results` object ([#4257]https://github.com/realm/realm-js/pull/4257)
+* Fixed a crash when using `Proxy` with a `Realm.Results` object ([#4257](https://github.com/realm/realm-js/pull/4257))
 * JWT metadata is now populating `Realm.User.profile`. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
 * Security upgrade of `prebuild-install`. ([#4281](https://github.com/realm/realm-js/issues/4281))
+* UserIdentity metadata table will no longer occationally grow indefinitely. ([realm/realm-core#5152](https://github.com/realm/realm-core/pull/5144), since v10.0.0)
+
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
@@ -16,7 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.8.0 to v11.9.0
 * Fixed documentation publishing ([#4276](https://github.com/realm/realm-js/pull/4276))
 * Enabled mixed tests for flexible sync ([#4279](https://github.com/realm/realm-js/pull/4279))
 * Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet` ([#4298](https://github.com/realm/realm-js/pull/4298))
