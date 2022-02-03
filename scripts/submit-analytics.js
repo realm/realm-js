@@ -67,7 +67,7 @@ const getAnalyticsRequestUrl = (payload) =>
  * @returns SHA256 of data
  */
 function sha256(data) {
-  let hash = node_require("crypto").createHash("sha256");
+  let hash = require("crypto").createHash("sha256");
   hash.update(data);
   return hash.digest("hex");
 }
