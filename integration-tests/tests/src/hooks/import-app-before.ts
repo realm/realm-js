@@ -23,7 +23,8 @@ export function importAppBefore(
   logLevel: Realm.App.Sync.LogLevel = (environment.syncLogLevel as Realm.App.Sync.LogLevel) || "warn",
 ): void {
   before(async function (this: Partial<AppContext> & Mocha.Context) {
-    this.timeout(120000); // Let's give it 2 minutes
+    // Importing an app might take up to 2 minutes when the app has a MongoDB Atlas service enabled.
+    this.timeout(2 * 60 * 1000);
     if (this.app) {
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
