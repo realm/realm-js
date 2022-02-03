@@ -8,6 +8,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * JWT metadata is now populating `Realm.User.profile`. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
 * Security upgrade of `prebuild-install`. ([#4281](https://github.com/realm/realm-js/issues/4281))
 * UserIdentity metadata table will no longer occationally grow indefinitely. ([realm/realm-core#5152](https://github.com/realm/realm-core/pull/5144), since v10.0.0)
+* Updated Realm.Object#toJSON and Realm.Collection#toJSON to more gracefully handle invalid state. It will now return empty object and array respectively. ([#4304](https://github.com/realm/realm-js/pull/4304))
 
 ### Compatibility
 * MongoDB Realm Cloud.
