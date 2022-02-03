@@ -109,7 +109,7 @@ async function addSubscriptionAndSync<T>(
 }
 
 describe.skipIf(environment.missingServer, "Flexible sync", function () {
-  importAppBefore("with-db-flx", {});
+  importAppBefore("with-db-flx");
   authenticateUserBefore();
   openRealmBeforeEach({
     schema: [FlexiblePersonSchema, DogSchema],

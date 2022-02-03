@@ -72,6 +72,7 @@ type BenchmarkContext = {
 interface Console {
   error(message?: unknown, ...optionalParams: unknown[]): void;
   log(message?: unknown, ...optionalParams: unknown[]): void;
+  warn(message?: unknown, ...optionalParams: unknown[]): void;
 }
 
 declare const console: Console;

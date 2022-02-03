@@ -24,24 +24,45 @@ export type ErrorResponse = { message: string; appId: never };
 export type ImportResponse = { appId: string; message: never };
 export type Response = ImportResponse | ErrorResponse;
 
-const getUrls = (): { appImporterUrl: string; mongodbRealmBaseUrl: string } => {
+function getUrls() {
   // Try reading the app importer URL out of the environment, it might not be accessiable via localhost
-  const { appImporterUrl, mongodbRealmBaseUrl } = environment;
-  const url = typeof appImporterUrl === "string" ? appImporterUrl : "http://localhost:8091";
+  const { appImporterUrl, realmBaseUrl } = environment;
+  return {
+    appImporterUrl: typeof appImporterUrl === "string" ? appImporterUrl : "http://localhost:8091",
+    baseUrl: typeof realmBaseUrl === "string" ? realmBaseUrl : "http://localhost:9090",
+  };
+}
 
-  return { appImporterUrl: url, mongodbRealmBaseUrl: mongodbRealmBaseUrl as string };
-};
+export function getDefaultReplacements(name: string): TemplateReplacements {
+  // When running on CI we connect through mongodb-atlas instead of local-mongodb
+  const { mongodbClusterName } = environment;
+  if ((name === "with-db" || name === "with-db-flx") && typeof mongodbClusterName === "string") {
+    return {
+      "services/mongodb/config.json": {
+        type: "mongodb-atlas",
+        config: {
+          clusterName: mongodbClusterName,
+          readPreference: "primary",
+          wireProtocolEnabled: false,
+        },
+      },
+    };
+  } else {
+    return {};
+  }
+}
 
-export async function importApp(name: string, replacements: TemplateReplacements = {}): Promise<App> {
-  const { appImporterUrl, mongodbRealmBaseUrl } = getUrls();
-
+export async function importApp(
+  name: string,
+  replacements: TemplateReplacements = getDefaultReplacements(name),
+): Promise<App> {
+  const { appImporterUrl, baseUrl } = getUrls();
   const response = await fetch(appImporterUrl, {
     method: "POST",
     body: JSON.stringify({ name, replacements }),
   });
   const json = await response.json<Response>();
   if (response.ok && typeof json.appId === "string") {
-    const baseUrl = typeof mongodbRealmBaseUrl === "string" ? mongodbRealmBaseUrl : "http://localhost:9090";
     return new App({ baseUrl, id: json.appId });
   } else if (typeof json.message === "string") {
     throw new Error(`Failed to import: ${json.message}`);

@@ -19,11 +19,12 @@ import { deleteApp, importApp, TemplateReplacements } from "../utils/import-app"
 
 export function importAppBefore(
   name: string,
-  replacements: TemplateReplacements = {},
+  replacements?: TemplateReplacements,
   logLevel: Realm.App.Sync.LogLevel = (environment.syncLogLevel as Realm.App.Sync.LogLevel) || "warn",
 ): void {
   before(async function (this: Partial<AppContext> & Mocha.Context) {
-    this.timeout(10000);
+    // Importing an app might take up to 2 minutes when the app has a MongoDB Atlas service enabled.
+    this.timeout(2 * 60 * 1000);
     if (this.app) {
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
@@ -36,11 +37,10 @@ export function importAppBefore(
   // (in the case of flexible sync, with lots of apps with subscriptions created)
   after(async function (this: Partial<AppContext> & Mocha.Context) {
     if (environment.preserveAppAfterRun) return;
-
-    if (!this.app) {
-      throw new Error("No app on context when trying to delete app");
+    if (this.app) {
+      await deleteApp(this.app.id);
+    } else {
+      console.warn("No app on context when trying to delete app");
     }
-
-    await deleteApp(this.app.id);
   });
 }

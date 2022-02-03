@@ -1,5 +1,5 @@
 {
-  "name": "local-mongodb",
+  "name": "mongodb",
   "type": "mongodb",
   "config": {
     "flexible_sync": {
@@ -12,12 +12,12 @@
       "permissions": {
         "rules": {},
         "defaultRoles": [
-            {
-                "name": "all",
-                "applyWhen": {},
-                "read": true,
-                "write": true
-            }
+          {
+            "name": "all",
+            "applyWhen": {},
+            "read": true,
+            "write": true
+          }
         ]
       }
     }

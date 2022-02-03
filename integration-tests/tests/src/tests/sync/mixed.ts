@@ -130,7 +130,7 @@ function describeRoundtrip({
   });
 }
 
-function performTests(flexibleSync: boolean) {
+function describeTypes(flexibleSync: boolean) {
   authenticateUserBefore();
 
   describeRoundtrip({ typeName: "null", value: null, flexibleSync });
@@ -213,11 +213,11 @@ function performTests(flexibleSync: boolean) {
 describe.skipIf(environment.missingServer, "mixed", () => {
   describe("parition-based sync", function () {
     importAppBefore("with-db");
-    performTests(false);
+    describeTypes(false);
   });
 
   describe("flexible sync", function () {
     importAppBefore("with-db-flx");
-    performTests(true);
+    describeTypes(true);
   });
 });

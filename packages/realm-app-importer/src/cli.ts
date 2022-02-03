@@ -123,6 +123,48 @@ function getCredentials({ username, password, publicKey, privateKey }: Credentia
 }
 
 yargs
+  .option("base-url", {
+    type: "string",
+    default: DEFAULTS.baseUrl,
+    description: "Base url of the MongoDB Realm server to import the app into",
+  })
+  .option("username", {
+    type: "string",
+    default: DEFAULTS.username,
+    description: "Username of an adminstrative user",
+  })
+  .option("password", {
+    type: "string",
+    default: DEFAULTS.password,
+    description: "Password of an adminstrative user",
+  })
+  .option("public-api-key", {
+    type: "string",
+    default: DEFAULTS.publicKey,
+    description: "Public part of API key with adminstrative privileges",
+  })
+  .option("private-api-key", {
+    type: "string",
+    default: DEFAULTS.privateKey,
+    description: "Private part of API key with adminstrative privileges",
+  })
+  .option("apps-directory-path", {
+    type: "string",
+    description: "Path to temporarily copy the app while importing it",
+    default: "imported-apps",
+    coerce: path.resolve,
+  })
+  .option("config", {
+    type: "string",
+    description: "Path for the realm-cli configuration to temporarily store credentials",
+    coerce: path.resolve,
+    default: "realm-config",
+  })
+  .option("clean-up", {
+    type: "boolean",
+    description: "Should the tool delete temporary files when exiting?",
+    default: true,
+  })
   .command(
     ["import <template-path>", "$0"],
     "Import a Realm App",
@@ -134,43 +176,6 @@ yargs
           coerce: path.resolve,
           description: "Path of the application directory to import",
         })
-        .option("base-url", {
-          type: "string",
-          default: DEFAULTS.baseUrl,
-          description: "Base url of the MongoDB Realm server to import the app into",
-        })
-        .option("username", {
-          type: "string",
-          default: DEFAULTS.username,
-          description: "Username of an adminstrative user",
-        })
-        .option("password", {
-          type: "string",
-          default: DEFAULTS.password,
-          description: "Password of an adminstrative user",
-        })
-        .option("public-api-key", {
-          type: "string",
-          default: DEFAULTS.publicKey,
-          description: "Public part of API key with adminstrative privileges",
-        })
-        .option("private-api-key", {
-          type: "string",
-          default: DEFAULTS.privateKey,
-          description: "Private part of API key with adminstrative privileges",
-        })
-        .option("config", {
-          type: "string",
-          description: "Path for the realm-cli configuration to temporarily store credentials",
-          coerce: path.resolve,
-          default: "realm-config",
-        })
-        .option("apps-directory-path", {
-          type: "string",
-          description: "Path to temporarily copy the app while importing it",
-          default: "imported-apps",
-          coerce: path.resolve,
-        })
         .option("app-id-path", {
           type: "string",
           coerce: path.resolve,
@@ -179,11 +184,6 @@ yargs
         .option("app-id-port", {
           type: "number",
           description: "Starts up an HTTP server and serves the app id",
-        })
-        .option("clean-up", {
-          type: "boolean",
-          description: "Should the tool delete temporary files when exiting?",
-          default: true,
         }),
     ({
       "template-path": templatePath,
@@ -199,6 +199,7 @@ yargs
       "clean-up": cleanUp,
     }) => {
       const credentials = getCredentials({ username, password, publicKey, privateKey });
+      console.log(`Importing into "${baseUrl}" (using ${credentials.kind} credentials)`);
       const importer = new AppImporter({
         baseUrl,
         credentials,
@@ -247,38 +248,6 @@ yargs
           type: "number",
           description: "Port used when listening for connections",
           default: 8091,
-        })
-        .option("base-url", {
-          type: "string",
-          default: "http://localhost:9090",
-          description: "Base url of the MongoDB Realm server to import the app into",
-        })
-        .option("username", {
-          type: "string",
-          default: "unique_user@domain.com",
-          description: "Username of an adminstrative user",
-        })
-        .option("password", {
-          type: "string",
-          default: "password",
-          description: "Password of an adminstrative user",
-        })
-        .option("config", {
-          type: "string",
-          description: "Path for the realm-cli configuration to temporarily store credentials",
-          coerce: path.resolve,
-          default: "realm-config",
-        })
-        .option("apps-directory-path", {
-          type: "string",
-          description: "Path to temporarily copy the app while importing it",
-          default: "imported-apps",
-          coerce: path.resolve,
-        })
-        .option("clean-up", {
-          type: "boolean",
-          description: "Should the tool delete temporary files when exiting?",
-          default: true,
         }),
     ({
       "template-path": templatePaths,
@@ -314,6 +283,7 @@ yargs
         const relativePath = path.relative(process.cwd(), templatePath);
         console.log("↳", name, chalk.dim(`(./${relativePath})`));
       }
+      console.log(`Importing into "${baseUrl}" (using ${credentials.kind} credentials)`);
       console.log();
 
       server.start().then(
