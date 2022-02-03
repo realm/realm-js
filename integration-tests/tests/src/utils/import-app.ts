@@ -26,14 +26,36 @@ export type Response = ImportResponse | ErrorResponse;
 
 function getUrls() {
   // Try reading the app importer URL out of the environment, it might not be accessiable via localhost
-  const { appImporterUrl, mongodbRealmBaseUrl } = environment;
+  const { appImporterUrl, realmBaseUrl } = environment;
   return {
     appImporterUrl: typeof appImporterUrl === "string" ? appImporterUrl : "http://localhost:8091",
-    baseUrl: typeof mongodbRealmBaseUrl === "string" ? mongodbRealmBaseUrl : "http://localhost:9090",
+    baseUrl: typeof realmBaseUrl === "string" ? realmBaseUrl : "http://localhost:9090",
   };
 }
 
-export async function importApp(name: string, replacements: TemplateReplacements = {}): Promise<App> {
+export function getDefaultReplacements(name: string): TemplateReplacements {
+  // When running on CI we connect through mongodb-atlas instead of local-mongodb
+  const { mongodbClusterName } = environment;
+  if ((name === "with-db" || name === "with-db-flx") && typeof mongodbClusterName === "string") {
+    return {
+      "services/mongodb/config.json": {
+        type: "mongodb-atlas",
+        config: {
+          clusterName: mongodbClusterName,
+          readPreference: "primary",
+          wireProtocolEnabled: false,
+        },
+      },
+    };
+  } else {
+    return {};
+  }
+}
+
+export async function importApp(
+  name: string,
+  replacements: TemplateReplacements = getDefaultReplacements(name),
+): Promise<App> {
   const { appImporterUrl, baseUrl } = getUrls();
   const response = await fetch(appImporterUrl, {
     method: "POST",
