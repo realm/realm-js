@@ -80,3 +80,7 @@ declare module "*.json" {
   const value: unknown;
   export = value;
 }
+
+declare module "realm/scripts/submit-analytics" {
+  export function collectPlatformData(packageJson: Record<string, unknown>): Promise<Record<string, unknown>>;
+}

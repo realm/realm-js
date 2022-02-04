@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,23 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const os = require("os");
-const { Client } = require("mocha-remote-client");
+import { expect } from "chai";
+import { collectPlatformData } from "realm/scripts/submit-analytics";
 
-global.client = new Client({
-  title: `Node.js v${process.versions.node} on ${os.platform()}`,
-  tests(context) {
-    // Exposing the Realm constructor as a global
-    global.fs = require("fs-extra");
-    global.path = require("path");
-    global.environment = { ...context, node: true };
-
-    // Add the integration test suite (in TypeScript)
-    require("ts-node/register/transpile-only");
-    require("@realm/integration-tests");
-    // Load the Node.js specific part of the integration tests
-    require("@realm/integration-tests/src/node");
-  },
+describe("Analytics", () => {
+  it("returns the expected version", async () => {
+    const data = await collectPlatformData({ version: "1.2.3" });
+    expect(data.Version).equals("1.2.3");
+  });
 });
-
-// TODO: Setup a watch to re-run when the tests change
