@@ -15,7 +15,7 @@
     "js-base64": "^3.4.5",
     "jwt-encode": "^1.0.1",
     "mocha": "^5",
-    "mocha-remote": "^1.4.3",
+    "mocha-remote": "^1.5.0",
     "puppeteer": "^2.1.1",
     "realm-app-importer": "^0.1.0",
     "realm-web": "*",
@@ -23,7 +23,7 @@
     "webpack-dev-server": "^3.10.3"
   },
   "peerDependencies": {
-    "mocha-remote-client": "*"
+    "mocha-remote-client": "^1.5.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.9",

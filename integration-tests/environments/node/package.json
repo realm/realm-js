@@ -18,8 +18,8 @@
     "mocha-cli": "^1.0.1",
     "mocha-github-actions-reporter": "^0.2.3",
     "mocha-junit-reporter": "^1.18.0",
-    "mocha-remote-cli": "^1.4.3",
-    "mocha-remote-client": "^1.4.3",
+    "mocha-remote-cli": "^1.5.0",
+    "mocha-remote-client": "^1.5.0",
     "node-fetch": "^2.6.1",
     "realm": "*"
   },
