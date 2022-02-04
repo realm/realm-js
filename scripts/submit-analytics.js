@@ -180,7 +180,6 @@ async function fetchPlatformData(context) {
   return payload;
 }
 
-
 /**
  * Send collected analytics data to Realm's servers over HTTPS
  * @param  {Object} payload analytics info
