@@ -35,8 +35,8 @@ jobs:
         os:
           - name: Linux
             runner: ubuntu-latest
-          - name: Window
-            runner: windows-latest
+          - name: Windows
+            runner: windows-2019
           - name: macOS
             runner: macos-latest
         node: [14, 16]
