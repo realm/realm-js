@@ -40,6 +40,9 @@ const EXPECTED_ISSUES = [
   /was set with `SameSite=None` but without `Secure`/,
   // User / "refresh invalid access tokens" is posting an invalid token
   "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+  // User / "can be deleted" is deleting an invalid token and attempting a failing login
+  "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+  "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
   // Closing the watch streams, might yield this error (we're doing that three times)
   "Failed to load resource: net::ERR_FAILED",
   "Failed to load resource: net::ERR_FAILED",
