@@ -37,6 +37,7 @@ import {
 } from "../schemas/playlist-with-songs-with-ids";
 import circularCollectionResult from "../structures/circular-collection-result.json";
 import circularCollectionResultWithIds from "../structures/circular-collection-result-with-primary-ids.json";
+import { openRealmBeforeEach } from "../hooks";
 
 describe("JSON serialization (exposed properties)", () => {
   it("JsonSerializationReplacer is exposed on the Realm constructor", () => {
@@ -47,10 +48,8 @@ describe("JSON serialization (exposed properties)", () => {
 
 type TestSetup = {
   name: string;
-  testData: () => {
-    realm: Realm;
-    predefinedStructure: unknown;
-  };
+  schema: (Realm.ObjectSchema | Realm.ObjectClass)[];
+  testData: (realm: Realm) => unknown;
 };
 
 interface ICacheIdTestSetup {
@@ -70,12 +69,8 @@ interface ICacheIdTestSetup {
 const testSetups: TestSetup[] = [
   {
     name: "Object literal (NO primaryKey)",
-    testData: () => {
-      const realm = new Realm({
-        inMemory: true,
-        schema: [PlaylistSchemaNoId, SongSchemaNoId],
-      });
-
+    schema: [PlaylistSchemaNoId, SongSchemaNoId],
+    testData(realm: Realm) {
       realm.write(() => {
         // Shared songs
         const s1 = realm.create<ISongNoId>(SongSchemaNoId.name, {
@@ -144,20 +139,13 @@ const testSetups: TestSetup[] = [
         p1.related.push(p1, p2, p3); // test self reference
       });
 
-      return {
-        realm,
-        predefinedStructure: circularCollectionResult,
-      };
+      return circularCollectionResult;
     },
   },
   {
     name: "Class models (NO primaryKey)",
-    testData: () => {
-      const realm = new Realm({
-        inMemory: true,
-        schema: [PlaylistNoId, SongNoId],
-      });
-
+    schema: [PlaylistNoId, SongNoId],
+    testData(realm: Realm) {
       realm.write(() => {
         // Shared songs
         const s1 = realm.create(SongNoId, {
@@ -208,20 +196,13 @@ const testSetups: TestSetup[] = [
         p1.related.push(p1, p2, p3); // test self reference
       });
 
-      return {
-        realm,
-        predefinedStructure: circularCollectionResult,
-      };
+      return circularCollectionResult;
     },
   },
   {
     name: "Object literal (Int primaryKey)",
-    testData: () => {
-      const realm = new Realm({
-        inMemory: true,
-        schema: [PlaylistSchemaWithId, SongSchemaWithId],
-      });
-
+    schema: [PlaylistSchemaWithId, SongSchemaWithId],
+    testData(realm: Realm) {
       realm.write(() => {
         // Shared songs
         const s1 = realm.create<ISongWithId>(SongSchemaWithId.name, {
@@ -302,20 +283,13 @@ const testSetups: TestSetup[] = [
         p1.related.push(p1, p2, p3); // test self reference
       });
 
-      return {
-        realm,
-        predefinedStructure: circularCollectionResultWithIds,
-      };
+      return circularCollectionResultWithIds;
     },
   },
   {
     name: "Class models (Int primaryKey)",
-    testData: () => {
-      const realm = new Realm({
-        inMemory: true,
-        schema: [PlaylistWithId, SongWithId],
-      });
-
+    schema: [PlaylistWithId, SongWithId],
+    testData(realm: Realm) {
       realm.write(() => {
         // Shared songs
         const s1 = realm.create(SongWithId, {
@@ -396,10 +370,7 @@ const testSetups: TestSetup[] = [
         p1.related.push(p1, p2, p3); // test self reference
       });
 
-      return {
-        realm,
-        predefinedStructure: circularCollectionResultWithIds,
-      };
+      return circularCollectionResultWithIds;
     },
   },
 ];
@@ -427,84 +398,66 @@ const cacheIdTestSetups: ICacheIdTestSetup[] = [
 ];
 
 describe("JSON serialization", () => {
-  beforeEach(() => {
-    Realm.clearTestState();
-  });
-
-  describe(`Internal cache id check for types: ${cacheIdTestSetups.map((t) => t.type).join(" / ")}`, () => {
-    for (const test of cacheIdTestSetups) {
-      const { type, schemaName, testId, expectedResult } = test;
-
-      it(`generates correct cache id for primaryKey type: ${type}`, () => {
-        const realm = new Realm({
-          inMemory: true,
-          schema: [
-            {
-              name: schemaName,
-              primaryKey: "_id",
-              properties: {
-                _id: type,
-                title: "string",
-              },
+  for (const { type, schemaName, testId, expectedResult } of cacheIdTestSetups) {
+    describe(`Internal cache id check for type ${type}`, () => {
+      openRealmBeforeEach({
+        inMemory: true,
+        schema: [
+          {
+            name: schemaName,
+            primaryKey: "_id",
+            properties: {
+              _id: type,
+              title: "string",
             },
-          ],
-        });
+          },
+        ],
+      });
 
-        realm.write(() => {
-          realm.create(schemaName, {
+      it(`generates correct cache id for primaryKey type: ${type}`, function (this: RealmContext) {
+        this.realm.write(() => {
+          this.realm.create(schemaName, {
             _id: testId,
             title: `Cache id should be: ${expectedResult}`,
           });
         });
 
-        const testSubject = realm.objectForPrimaryKey(schemaName, testId as string);
+        const testSubject = this.realm.objectForPrimaryKey(schemaName, testId as string);
         const json = JSON.stringify(testSubject, Realm.JsonSerializationReplacer);
         const parsed = JSON.parse(json);
 
         expect(parsed.$refId).equals(expectedResult);
-
-        realm.close();
       });
-    }
-  });
+    });
+  }
 
-  for (const ts of testSetups) {
-    const testSetup = ts;
+  type TestContext = { predefinedStructure: any; playlists: Realm.Results<Realm.Object> } & RealmContext;
 
-    describe(`Repeated test for "${testSetup.name}":`, () => {
-      let realm: Realm | null;
-      let predefinedStructure: any;
-      let playlists: Realm.Results<Realm.Object>;
-
-      beforeEach(() => {
-        ({ realm, predefinedStructure } = testSetup.testData());
-        playlists = realm.objects(PlaylistSchemaNoId.name).sorted("title");
+  for (const { name, schema, testData } of testSetups) {
+    describe(`Repeated test for "${name}":`, () => {
+      openRealmBeforeEach({
+        inMemory: true,
+        schema,
       });
 
-      afterEach(() => {
-        if (realm) {
-          realm.write(() => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            realm!.deleteAll();
-          });
-          realm.close();
-          realm = null;
-        }
+      beforeEach(function (this: RealmContext) {
+        this.predefinedStructure = testData(this.realm);
+        this.playlists = this.realm.objects(PlaylistSchemaNoId.name).sorted("title");
       });
 
       describe("Realm.Object", () => {
-        it("extends Realm.Object", () => {
+        it("extends Realm.Object", function (this: TestContext) {
           // Check that entries in the result set extends Realm.Object.
-          expect(playlists[0]).instanceOf(Realm.Object);
+          expect(this.playlists[0]).instanceOf(Realm.Object);
         });
 
-        it("implements toJSON", () => {
+        it("implements toJSON", function (this: TestContext) {
           // Check that fist Playlist has toJSON implemented.
-          expect(typeof playlists[0].toJSON).equals("function");
+          expect(typeof this.playlists[0].toJSON).equals("function");
         });
 
-        it("toJSON returns a circular structure", () => {
-          const serializable = playlists[0].toJSON();
+        it("toJSON returns a circular structure", function (this: TestContext) {
+          const serializable = this.playlists[0].toJSON();
 
           // Check that no props are functions on the serializable object.
           expect(Object.values(serializable).some((val) => typeof val === "function")).equals(false);
@@ -519,34 +472,34 @@ describe("JSON serialization", () => {
           expect(serializable).equals(serializable.related[0]);
         });
 
-        it("throws correct error on serialization", () => {
+        it("throws correct error on serialization", function (this: TestContext) {
           // Check that we get a circular structure error.
           // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
-          expect(() => JSON.stringify(playlists[0])).throws(TypeError, /circular|cyclic/i);
+          expect(() => JSON.stringify(this.playlists[0])).throws(TypeError, /circular|cyclic/i);
         });
 
-        it("serializes to expected output using Realm.JsonSerializationReplacer", () => {
-          const json = JSON.stringify(playlists[0], Realm.JsonSerializationReplacer);
+        it("serializes to expected output using Realm.JsonSerializationReplacer", function (this: TestContext) {
+          const json = JSON.stringify(this.playlists[0], Realm.JsonSerializationReplacer);
           const generated = JSON.parse(json);
 
           // Check that we get the expected structure.
           // (parsing back to an object & using deep equals, as we can't rely on property order)
-          expect(generated).deep.equals(predefinedStructure[0]);
+          expect(generated).deep.equals(this.predefinedStructure[0]);
         });
       });
 
       describe("Realm.Results", () => {
-        it("extends Realm.Collection", () => {
+        it("extends Realm.Collection", function (this: TestContext) {
           // Check that the result set extends Realm.Collection.
-          expect(playlists).instanceOf(Realm.Collection);
+          expect(this.playlists).instanceOf(Realm.Collection);
         });
 
-        it("implements toJSON", () => {
-          expect(typeof playlists.toJSON).equals("function");
+        it("implements toJSON", function (this: TestContext) {
+          expect(typeof this.playlists.toJSON).equals("function");
         });
 
-        it("toJSON returns a circular structure", () => {
-          const serializable = playlists.toJSON();
+        it("toJSON returns a circular structure", function (this: TestContext) {
+          const serializable = this.playlists.toJSON();
 
           // Check that the serializable object is not a Realm entity.
           expect(serializable).not.instanceOf(Realm.Collection);
@@ -568,19 +521,19 @@ describe("JSON serialization", () => {
           expect(serializable[0]).equals(serializable[0].related[0]);
         });
 
-        it("throws correct error on serialization", () => {
+        it("throws correct error on serialization", function (this: TestContext) {
           // Check that we get a circular structure error.
           // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
-          expect(() => JSON.stringify(playlists)).throws(TypeError, /circular|cyclic/i);
+          expect(() => JSON.stringify(this.playlists)).throws(TypeError, /circular|cyclic/i);
         });
 
-        it("serializes to expected output using Realm.JsonSerializationReplacer", () => {
-          const json = JSON.stringify(playlists, Realm.JsonSerializationReplacer);
+        it("serializes to expected output using Realm.JsonSerializationReplacer", function (this: TestContext) {
+          const json = JSON.stringify(this.playlists, Realm.JsonSerializationReplacer);
           const generated = JSON.parse(json);
 
           // Check that we get the expected structure.
           // (parsing back to an object & using deep equals, as we can't rely on property order)
-          expect(generated).deep.equals(predefinedStructure);
+          expect(generated).deep.equals(this.predefinedStructure);
         });
       });
     });
