@@ -118,10 +118,10 @@ function isAnalyticsDisabled() {
 
 /**
  * Collect analytics data from the runtime system
- * @param {Object} context The app's package.json parsed as an object
+ * @param {Object} packageJson The app's package.json parsed as an object
  * @returns {Object} Analytics payload
  */
-async function fetchPlatformData(context) {
+async function collectPlatformData(packageJson) {
   const os = require("os");
   const { machineId } = require("node-machine-id");
 
@@ -135,9 +135,9 @@ async function fetchPlatformData(context) {
   let frameworkVersion = process.version;
   let jsEngine = "v8";
 
-  if (context.dependencies && context.dependencies["react-native"]) {
+  if (packageJson.dependencies && packageJson.dependencies["react-native"]) {
     framework = "react-native";
-    frameworkVersion = context.dependencies["react-native"];
+    frameworkVersion = packageJson.dependencies["react-native"];
     try {
       const podfile = fs.readFileSync(getProjectRoot() + "/ios/Podfile", "utf8"); // no need to use path.sep as we are on MacOS
       if (/hermes_enabled.*true/.test(podfile)) {
@@ -150,34 +150,27 @@ async function fetchPlatformData(context) {
       jsEngine = "unknown";
     }
   }
-  if (context.dependencies && context.dependencies["electron"]) {
+  if (packageJson.dependencies && packageJson.dependencies["electron"]) {
     framework = "electron";
-    frameworkVersion = context.dependencies["electron"];
+    frameworkVersion = packageJson.dependencies["electron"];
   }
 
-  const payload = {
-    webHook: {
-      event: "install",
-      properties: {
-        token: "aab85907a13e1ff44a95be539d9942a9",
-        "JS Analytics Version": 2,
-        distinct_id: identifier,
-        "Anonymized Machine Identifier": identifier,
-        "Anonymized Application ID": sha256(__dirname),
-        Binding: "javascript",
-        Version: context.version,
-        Language: "javascript",
-        Framework: framework,
-        "Framework Version": frameworkVersion,
-        "JavaScript Engine": jsEngine,
-        "Host OS Type": os.platform(),
-        "Host OS Version": os.release(),
-        "Node.js version": process.version,
-      },
-    },
+  return {
+    token: "aab85907a13e1ff44a95be539d9942a9",
+    "JS Analytics Version": 2,
+    distinct_id: identifier,
+    "Anonymized Machine Identifier": identifier,
+    "Anonymized Application ID": sha256(__dirname),
+    Binding: "javascript",
+    Version: packageJson.version,
+    Language: "javascript",
+    Framework: framework,
+    "Framework Version": frameworkVersion,
+    "JavaScript Engine": jsEngine,
+    "Host OS Type": os.platform(),
+    "Host OS Version": os.release(),
+    "Node.js version": process.version,
   };
-
-  return payload;
 }
 
 /**
@@ -207,7 +200,13 @@ async function dispatchAnalytics(payload) {
 
 async function submitAnalytics(dryRun) {
   const packageJson = getPackageJson();
-  const payload = await fetchPlatformData(packageJson);
+  const data = await collectPlatformData(packageJson);
+  const payload = {
+    webHook: {
+      event: "install",
+      properties: data,
+    },
+  };
   doLog(`payload: ${JSON.stringify(payload)}`);
 
   if (dryRun) {
@@ -254,4 +253,8 @@ if (log) {
   };
 }
 
-submitAnalytics(dryRun).catch(console.error);
+if (require.main === module) {
+  submitAnalytics(dryRun).catch(console.error);
+} else {
+  module.exports = { collectPlatformData };
+}
