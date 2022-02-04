@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { fail } from "assert";
 import { expect } from "chai";
 
 import { App, User, UserState, Credentials, MongoDBRealmError } from "..";
@@ -356,7 +355,7 @@ describe("App", () => {
     ]);
   });
 
-  it.only("can delete a user", async () => {
+  it("can delete a user", async () => {
     const storage = new MemoryStorage();
     const transport = new MockNetworkTransport([
       { hostname: "http://localhost:1337" },
@@ -382,7 +381,10 @@ describe("App", () => {
         type: "normal",
         user_id: "5ed10e0dc085000e2c0099f3",
       },
+      {}, // Delete user
+      {}, // Delete session (while logging out)
     ]);
+    // Create an app and authenticate
     const app = new App({
       id: "my-mocked-app",
       storage,
@@ -395,22 +397,10 @@ describe("App", () => {
     // Expect logging in returns a user
     expect(user).is.instanceOf(User);
     expect(user.isLoggedIn).equals(true);
-
-    // delete the user
+    // Delete the user
     await app.deleteUser(user);
-
-    // // the user is logged out
-    // expect(user.isLoggedIn).equals(false);
-
-    // // log in will fail
-    // let failed = false;
-    // try {
-    //   await app.logIn(credentials);
-    // } catch (err) {
-    //   failed = true;
-    // }
-
-    // expect(failed).equals(true);
+    // The user is logged out
+    expect(user.isLoggedIn).equals(false);
   });
 
   it("can remove an active user", async () => {
@@ -491,14 +481,22 @@ describe("App", () => {
       await app.switchUser(anotherUser);
       throw new Error("Expected an exception");
     } catch (err) {
-      expect((err as Error).message).equals("The user was never logged into this app");
+      if (err instanceof Error) {
+        expect(err.message).equals("The user was never logged into this app");
+      } else {
+        throw err;
+      }
     }
     // Remove
     try {
       await app.removeUser(anotherUser);
       throw new Error("Expected an exception");
     } catch (err) {
-      expect((err as Error).message).equals("The user was never logged into this app");
+      if (err instanceof Error) {
+        expect(err.message).equals("The user was never logged into this app");
+      } else {
+        throw err;
+      }
     }
     // Expect the first user to remain logged in and known to the app
     expect(app.currentUser).equals(user);

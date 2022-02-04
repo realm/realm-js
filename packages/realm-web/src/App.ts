@@ -251,18 +251,11 @@ export class App<
    * @inheritdoc
    */
   public async deleteUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void> {
-    this.fetcher
-      .fetchJSON({
-        method: "DELETE",
-        path: routes.api().auth().delete().path,
-        tokenType: "none",
-      })
-      .then(() => {
-        return this.removeUser(user);
-      })
-      .catch((err) => {
-        throw err;
-      });
+    await this.fetcher.fetchJSON({
+      method: "DELETE",
+      path: routes.api().auth().delete().path,
+    });
+    await this.removeUser(user);
   }
 
   /**
