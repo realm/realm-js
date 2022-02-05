@@ -44,6 +44,7 @@
 const fs = require("fs");
 const path = require("path");
 const commandLineArgs = require("command-line-args");
+const { fieldSize } = require("tar");
 
 let doLog; // placeholder for logger function
 
@@ -116,6 +117,27 @@ function isAnalyticsDisabled() {
   return isDisabled;
 }
 
+function getRealmVersion(packageJson) {
+  let realmVersion = "unknown";
+  if (packageJson.dependencies && packageJson.dependencies["realm"]) {
+    realmVersion = packageJson.dependencies["realm"];
+  }
+  if (packageJson.devDependencies && packageJson.devDependencies["realm"]) {
+    realmVersion = packageJson.dependencies["realm"];
+  }
+  try {
+    const depPath = [getProjectRoot(), "node_modules", "realm", "dependencies.list"].join(path.sep);
+    const dependenciesList = fs.readFileSync(depPath, "utf-8");
+    realmVersion = dependenciesList
+      .split("\n")
+      .find((e) => e.startsWith("VERSION"))
+      .split("=")[1];
+  } catch (err) {
+    doLog(`Cannot read dependencies.list: ${err}`);
+  }
+  return realmVersion;
+}
+
 /**
  * Collect analytics data from the runtime system
  * @param {Object} packageJson The app's package.json parsed as an object
@@ -131,6 +153,8 @@ async function collectPlatformData(packageJson) {
     identifier = sha256("unknown");
   }
 
+  const realmVersion = getRealmVersion(packageJson);
+
   let framework = "node.js";
   let frameworkVersion = process.version;
   let jsEngine = "v8";
@@ -138,6 +162,13 @@ async function collectPlatformData(packageJson) {
   if (packageJson.dependencies && packageJson.dependencies["react-native"]) {
     framework = "react-native";
     frameworkVersion = packageJson.dependencies["react-native"];
+  }
+  if (packageJson.devDependencies && packageJson.devDependencies["react-native"]) {
+    framework = "react-native";
+    frameworkVersion = packageJson.devDependencies["react-native"];
+  }
+
+  if (framework === "react-native") {
     try {
       const podfile = fs.readFileSync(getProjectRoot() + "/ios/Podfile", "utf8"); // no need to use path.sep as we are on MacOS
       if (/hermes_enabled.*true/.test(podfile)) {
@@ -149,10 +180,32 @@ async function collectPlatformData(packageJson) {
       doLog(`Cannot read ios/Podfile: ${err}`);
       jsEngine = "unknown";
     }
+
+    try {
+      const rnPath = [getProjectRoot(), "node_modules", "react-native", "package.json"].join(path.sep);
+      const rnPackageJson = JSON.parse(fs.readFileSync(rnPath, "utf-8"));
+      frameworkVersion = rnPackageJson["version"];
+    } catch (err) {
+      doLog(`Cannot read react-native package.json: ${err}`);
+    }
   }
+
   if (packageJson.dependencies && packageJson.dependencies["electron"]) {
     framework = "electron";
     frameworkVersion = packageJson.dependencies["electron"];
+  }
+  if (packageJson.devDependencies && packageJson.devDependencies["electron"]) {
+    framework = "electron";
+    frameworkVersion = packageJson.devDependencies["electron"];
+  }
+  if (framework === "electron") {
+    try {
+      const electronPath = [getProjectRoot(), "node_modules", "electron", "package.json"].join(path.sep);
+      const electronPackageJson = JSON.parse(fs.readFileSync(electronPath, "utf-8"));
+      frameworkVersion = electronPackageJson["version"];
+    } catch (err) {
+      doLog(`Cannot read electron package.json: ${err}`);
+    }
   }
 
   return {
@@ -161,6 +214,7 @@ async function collectPlatformData(packageJson) {
     distinct_id: identifier,
     "Anonymized Machine Identifier": identifier,
     "Anonymized Application ID": sha256(__dirname),
+    "Realm Version": realmVersion,
     Binding: "javascript",
     Version: packageJson.version,
     Language: "javascript",
