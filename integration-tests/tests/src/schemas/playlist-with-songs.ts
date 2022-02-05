@@ -36,9 +36,9 @@ export const PlaylistSchema: Realm.ObjectSchema = {
 };
 
 export class Playlist extends Realm.Object implements IPlaylist {
-  title: string;
-  songs: Realm.List<Song>;
-  related: Realm.List<Playlist>;
+  title!: string;
+  songs!: Realm.List<Song>;
+  related!: Realm.List<Playlist>;
 
   static schema = PlaylistSchema;
 }
@@ -57,8 +57,8 @@ export const SongSchema: Realm.ObjectSchema = {
 };
 
 export class Song extends Realm.Object implements ISong {
-  artist: string;
-  title: string;
+  artist!: string;
+  title!: string;
 
   static schema = SongSchema;
 }
