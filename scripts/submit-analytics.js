@@ -44,7 +44,6 @@
 const fs = require("fs");
 const path = require("path");
 const commandLineArgs = require("command-line-args");
-const { fieldSize } = require("tar");
 
 let doLog; // placeholder for logger function
 

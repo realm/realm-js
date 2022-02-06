@@ -28,7 +28,7 @@ describe("Analytics", () => {
     const data = await collectPlatformData(packageJson);
 
     // common to all cases
-    expect(data["JS Analytics Version"]).equals("2");
+    expect(data["JS Analytics Version"]).equals(2);
     expect(data.Binding).equals("javascript");
     expect(data.Language).equals("javascript");
     expect(data["Host OS Type"]).equals(os.platform());
@@ -46,7 +46,7 @@ describe("Analytics", () => {
     const packageJson = require("./node-package.json");
 
     const data = await collectPlatformData(packageJson);
-    expect(data.version).equals("1.11.1");
+    expect(data.Version).equals("1.11.1");
     expect(data.Framework).equals("node.js");
     expect(data["Framework Version"]).equals(process.version);
     expect(data["JavaScript Engine"]).equals("v8");
@@ -58,7 +58,7 @@ describe("Analytics", () => {
     const packageJson = require("./electron-package.json");
 
     const data = await collectPlatformData(packageJson);
-    expect(data.version).equals("11.1.1");
+    expect(data.Version).equals("11.1.1");
     expect(data.Framework).equals("electron");
     expect(data["Framework Version"]).equals("^16.0.4");
     expect(data["JavaScript Engine"]).equals("v8");
@@ -70,7 +70,7 @@ describe("Analytics", () => {
     const packageJson = require("./rn-package.json");
 
     const data = await collectPlatformData(packageJson);
-    expect(data.version).equals("11.1.1");
+    expect(data.Version).equals("11.1.1");
     expect(data.Framework).equals("react-native");
     expect(data["Framework Version"]).equals("0.64.2");
     expect(data["JavaScript Engine"]).equals("unknown");
