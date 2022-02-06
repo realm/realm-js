@@ -15,12 +15,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* Upgraded Realm Core from v11.8.0 to v11.9.0
-* Fixed documentation publishing ([#4276](https://github.com/realm/realm-js/pull/4276))
-* Enabled mixed tests for flexible sync ([#4279](https://github.com/realm/realm-js/pull/4279))
-* Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet` ([#4298](https://github.com/realm/realm-js/pull/4298))
+* Upgraded Realm Core from v11.8.0 to v11.9.0.
+* Fixed documentation publishing. ([#4276](https://github.com/realm/realm-js/pull/4276))
+* Enabled mixed tests for flexible sync. ([#4279](https://github.com/realm/realm-js/pull/4279))
+* Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet`. ([#4298](https://github.com/realm/realm-js/pull/4298))
 
 10.12.0 Release notes (2022-1-24)
 =============================================================
@@ -45,13 +43,8 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 ### Fixed
 * Opening a Realm with a schema that has an orphaned embedded object type performed an extra empty write transaction. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115), since v10.5.0)
 * Schema validation was missing for embedded objects in sets, resulting in an unhelpful error being thrown if the user attempted to define one. ([realm/realm-core#5115](https://github.com/realm/realm-core/pull/5115))
-<<<<<<< HEAD
 * Fixed a crash when closing an Electron app with a custom sync error handler ([#4150](https://github.com/realm/realm-js/issues/4150)
 * Adding data from authentication providers, to be included in the `User#profile` object. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
-=======
-* Improved error messaging when opening a Realm with incompatible histories. ([realm/realm-core#5161](https://github.com/realm/realm-core/pull/5161), since v6.0.0)
-* UserIdentity metadata table grows indefinitely. ([realm/realm-core#5152](https://github.com/realm/realm-core/issues/5152), since v10.0.0)
->>>>>>> dc91ffda (wip)
 
 ### Compatibility
 * Removed `deprecated-react-native-listview` from root package.json

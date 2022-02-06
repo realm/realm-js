@@ -5,7 +5,7 @@
 * None
 
 ### Enhancements
-* Added `Realm.User.delete()` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))
+* Added `Realm.App#deleteUser()` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))
 
 ### Fixed
 * None

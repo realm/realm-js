@@ -159,7 +159,6 @@ class App {
    */
   deleteUser(user) {}
 
-
   /**
    * Client for the email/password authentication provider.
    *
@@ -679,6 +678,14 @@ class ApiKeyAuth {
    * @returns {Promise<void>}
    */
   disable(id) {}
+
+  /**
+   * Deletes a user API key associated with the current user.
+   *
+   * @param {string} id - The id of the API key to delete.
+   * @returns {Promise<void>}
+   */
+  delete(id) {}
 }
 
 /**
