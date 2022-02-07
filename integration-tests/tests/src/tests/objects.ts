@@ -18,12 +18,13 @@
 import { expect } from "chai";
 import Realm from "realm";
 
-import { IPerson, Person, PersonSchema } from "../schemas/person-and-dogs";
+import { IPerson, Person, PersonSchema, IDog, Dog } from "../schemas/person-and-dogs";
 import {
   IPerson as IPersonWithId,
   Person as PersonWithId,
   PersonSchema as PersonSchemaWithId,
 } from "../schemas/person-and-dog-with-object-ids";
+import { performActionWithListener } from "../utils/perform-action-with-listener";
 
 describe("Realm objects", () => {
   beforeEach(() => {
@@ -255,6 +256,37 @@ describe("Realm objects", () => {
       // Excpect only one instance of 'PersonWithId' in db after all updates
       const persons = realm.objects(PersonWithId);
       expect(persons.length).equals(1);
+    });
+  });
+  describe("listeners on linked objects", () => {
+    it("collection listener is called on changes to an objects linked object property", async () => {
+      const realm = new Realm({ schema: [Dog, Person] });
+
+      const person = realm.write(() => {
+        const tmpPerson = realm.create<IPerson>("Person", { name: "bob", age: 12 });
+        realm.create<IDog>("Dog", { age: 4, owner: tmpPerson, name: "rex" });
+        return tmpPerson;
+      });
+
+      const collection = realm.objects<IDog>("Dog");
+
+      await performActionWithListener(
+        () => {
+          realm.write(() => {
+            // Change the linked object in the collection
+            person.age = 13;
+          });
+        },
+        (resolve) => {
+          const listenerFn: Realm.CollectionChangeCallback<IDog> = (_, changes) => {
+            // Verify that the first item in the collection was modified
+            if (changes.newModifications.length > 0 && changes.newModifications.includes(0)) {
+              resolve();
+            }
+          };
+          collection.addListener(listenerFn);
+        },
+      );
     });
   });
 });
