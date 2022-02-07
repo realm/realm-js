@@ -118,7 +118,7 @@ function isAnalyticsDisabled() {
 }
 
 function getRealmVersion() {
-  const packageJson = fse.readJsonSync([getPackageJson(), "node_modules", "realm", "package.json"].join(path.sep));
+  const packageJson = fse.readJsonSync([getProjectRoot(), "node_modules", "realm", "package.json"].join(path.sep));
   return packageJson["version"];
 }
 
