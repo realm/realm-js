@@ -42,6 +42,7 @@
 //   the other information on.
 
 const fs = require("fs");
+const fse = require("fs-extra");
 const path = require("path");
 const commandLineArgs = require("command-line-args");
 
@@ -94,7 +95,7 @@ function getProjectRoot() {
  */
 function getPackageJson() {
   const packageJson = getProjectRoot() + path.sep + "package.json";
-  return require(packageJson);
+  return fse.readJsonSync(packageJson);
 }
 
 /**
@@ -116,25 +117,9 @@ function isAnalyticsDisabled() {
   return isDisabled;
 }
 
-function getRealmVersion(packageJson) {
-  let realmVersion = "unknown";
-  if (packageJson.dependencies && packageJson.dependencies["realm"]) {
-    realmVersion = packageJson.dependencies["realm"];
-  }
-  if (packageJson.devDependencies && packageJson.devDependencies["realm"]) {
-    realmVersion = packageJson.dependencies["realm"];
-  }
-  try {
-    const depPath = [getProjectRoot(), "node_modules", "realm", "dependencies.list"].join(path.sep);
-    const dependenciesList = fs.readFileSync(depPath, "utf-8");
-    realmVersion = dependenciesList
-      .split("\n")
-      .find((e) => e.startsWith("VERSION"))
-      .split("=")[1];
-  } catch (err) {
-    doLog(`Cannot read dependencies.list: ${err}`);
-  }
-  return realmVersion;
+function getRealmVersion() {
+  const packageJson = fse.readJsonSync(".." + path.sep + "package.json");
+  return packageJson["version"];
 }
 
 /**
@@ -152,7 +137,7 @@ async function collectPlatformData(packageJson) {
     identifier = sha256("unknown");
   }
 
-  const realmVersion = getRealmVersion(packageJson);
+  const realmVersion = getRealmVersion();
 
   let framework = "node.js";
   let frameworkVersion = process.version;
