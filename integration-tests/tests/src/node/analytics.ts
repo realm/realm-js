@@ -18,7 +18,6 @@
 
 import * as os from "os";
 import * as process from "process";
-import * as fs from "fs";
 import * as path from "path";
 import { expect } from "chai";
 import { collectPlatformData } from "realm/scripts/submit-analytics";
@@ -49,7 +48,7 @@ describe("Analytics", () => {
   });
 
   it("parses node.js package.json", async () => {
-    const packageJson = readJsonSync("node-package.json");
+    const packageJson = readJsonSync("./node-package.json");
 
     const data = await collectPlatformData(packageJson);
     expect(data.Version).equals("1.11.1");
@@ -60,7 +59,7 @@ describe("Analytics", () => {
   });
 
   it("parses electron package.json", async () => {
-    const packageJson = readJsonSync("electron-package.json");
+    const packageJson = readJsonSync("./electron-package.json");
 
     const data = await collectPlatformData(packageJson);
     expect(data.Version).equals("11.1.1");
@@ -71,7 +70,7 @@ describe("Analytics", () => {
   });
 
   it("parses rn package.json", async () => {
-    const packageJson = readJsonSync("rn-package.json");
+    const packageJson = readJsonSync("./rn-package.json");
 
     const data = await collectPlatformData(packageJson);
     expect(data.Version).equals("11.1.1");
