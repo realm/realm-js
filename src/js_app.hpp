@@ -293,6 +293,17 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
     app->remove_user(*user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
+/**
+ * @brief Delete permanently the user server-side. Moreover, the user will be logged out
+ *        locally, and the current user will be changed. The function is asynchronously
+ *        and the callback function will be called when the operation is completed (either successfully
+ *        or with an error).
+ *
+ * @tparam T - The JavaScript engine
+ * @param ctx - The JavaScript context/environment
+ * @param this_object - The `this` object in JavaScript
+ * @param args - An array of arguments: 1) user 2) callback function
+ */
 template <typename T>
 void AppClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue&)
 {
