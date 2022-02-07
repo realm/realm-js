@@ -289,4 +289,35 @@ describe("Realm objects", () => {
       );
     });
   });
+  it("collection listener is called on changes to a deeply nested linked object", async () => {
+    const realm = new Realm({ schema: [Dog, Person] });
+
+    const person = realm.write(() => {
+      const tmpPerson = realm.create<IPerson>("Person", { name: "bob", age: 12 });
+      const tmpPerson2 = realm.create<IPerson>("Person", { name: "joe", age: 14 });
+      realm.create<IDog>("Dog", { age: 4, owner: tmpPerson, name: "rex" });
+      tmpPerson.friends.push(tmpPerson2);
+      return tmpPerson;
+    });
+
+    const collection = realm.objects<IDog>("Dog");
+
+    await performActionWithListener(
+      () => {
+        realm.write(() => {
+          // Change the linked object in the collection
+          person.friends[0].age = 15;
+        });
+      },
+      (resolve) => {
+        const listenerFn: Realm.CollectionChangeCallback<IDog> = (_, changes) => {
+          // Verify that the first item in the collection was modified
+          if (changes.newModifications.length > 0 && changes.newModifications.includes(0)) {
+            resolve();
+          }
+        };
+        collection.addListener(listenerFn);
+      },
+    );
+  });
 });
