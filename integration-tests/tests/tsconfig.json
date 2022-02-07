@@ -3,6 +3,8 @@
 		"target": "es2018",
 		"module": "commonjs",
 		"moduleResolution": "node",
+		"strict": true,
+		"strictFunctionTypes": false,
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
 		"outDir": "dist",
@@ -17,8 +19,7 @@
 			"mocha",
 			"chai"
 		],
-		"noImplicitAny": true,
-		"strictNullChecks": true
+		"noImplicitAny": true
 	},
 	"include": [
 		"src/typings.d.ts",

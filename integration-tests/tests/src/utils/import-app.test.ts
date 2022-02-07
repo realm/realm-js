@@ -26,7 +26,7 @@ describe.skipIf(environment.missingServer, "importApp utility", function () {
   it("can import an app", async () => {
     const app = await importApp("simple");
     expect(app).instanceOf(App);
-    expect(app.id.startsWith("simple")).equals(true);
+    expect(app.id.startsWith("simple")).to.be.true;
   }).timeout(10000);
 
   it("throws on unexpected app names", async () => {
@@ -35,7 +35,9 @@ describe.skipIf(environment.missingServer, "importApp utility", function () {
       await importApp("unexpected-app-name");
     } catch (err) {
       threw = true;
-      expect(err.message.includes("Unexpected app name")).equals(true);
+      if (err instanceof Error) {
+        expect(err.message).contains("Unexpected app name");
+      }
     } finally {
       expect(threw).equals(true);
     }
