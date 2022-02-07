@@ -25,16 +25,6 @@ import { collectPlatformData } from "realm/scripts/submit-analytics";
 import { readJsonSync } from "fs-extra";
 
 describe("Analytics", () => {
-  function getProjectRoot() {
-    let wd = process.env.npm_config_local_prefix;
-    if (!wd) {
-      wd = process.cwd();
-      const index = wd.indexOf("node_modules");
-      wd = index === -1 ? wd : wd.slice(0, index);
-    }
-    return wd;
-  }
-
   function getRealmVersion() {
     const rootPath = ["..", "..", "..", "..", "package.json"].join(path.sep);
     const realmPackageJson = readJsonSync(rootPath);
@@ -59,8 +49,7 @@ describe("Analytics", () => {
   });
 
   it("parses node.js package.json", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const packageJson = readJsonSync("./node-package.json");
+    const packageJson = readJsonSync("node-package.json");
 
     const data = await collectPlatformData(packageJson);
     expect(data.Version).equals("1.11.1");
@@ -71,8 +60,7 @@ describe("Analytics", () => {
   });
 
   it("parses electron package.json", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const packageJson = readJsonSync("./electron-package.json");
+    const packageJson = readJsonSync("electron-package.json");
 
     const data = await collectPlatformData(packageJson);
     expect(data.Version).equals("11.1.1");
@@ -83,8 +71,7 @@ describe("Analytics", () => {
   });
 
   it("parses rn package.json", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const packageJson = readJsonSync("./rn-package.json");
+    const packageJson = readJsonSync("rn-package.json");
 
     const data = await collectPlatformData(packageJson);
     expect(data.Version).equals("11.1.1");
