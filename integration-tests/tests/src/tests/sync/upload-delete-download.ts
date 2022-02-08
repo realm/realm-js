@@ -30,12 +30,7 @@ export function itUploadsDeletesAndDownloads(): void {
       throw new Error("Expected a 'syncSession' on the realm");
     }
 
-    // Ensure everything has been uploaded
-    // We don't call this if we are using flexible sync, as it currently will
-    // not resolve until an initial subscription set has been created (REALMC-11490)
-    if (!this.config.sync?.flexible) {
-      await this.realm.syncSession.uploadAllLocalChanges();
-    }
+    await this.realm.syncSession.uploadAllLocalChanges();
 
     this.realm = closeAndReopenRealm(this.realm, this.config);
 
@@ -43,10 +38,6 @@ export function itUploadsDeletesAndDownloads(): void {
       throw new Error("Expected a 'syncSession' on the realm");
     }
 
-    // We don't call this if we are using flexible sync, as it currently will
-    // not resolve until an initial subscription set has been created (REALMC-11490)
-    if (!this.config.sync?.flexible) {
-      await this.realm.syncSession.downloadAllServerChanges();
-    }
+    await this.realm.syncSession.downloadAllServerChanges();
   });
 }
