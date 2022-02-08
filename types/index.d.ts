@@ -237,7 +237,7 @@ declare namespace Realm {
         objectSchema(): ObjectSchema;
 
         /**
-         * @returns Results<T>
+         * @returns Results`<T>`
          */
         linkingObjects<T>(objectType: string, property: string): Results<T & Realm.Object>;
 
@@ -439,7 +439,7 @@ declare namespace Realm {
         /**
          * Add a new value to the Set
          * @param  {T} object Value to add to the Set
-         * @returns The Realm.Set<T> itself, after adding the new value
+         * @returns The Realm.Set`<T>` itself, after adding the new value
          */
         add(object: T): Realm.Set<T>;
 
@@ -545,6 +545,9 @@ declare namespace Realm {
 
     type ConnectionNotificationCallback = (newState: ConnectionState, oldState: ConnectionState) => void;
 
+    /**
+     * Class for interacting with MongoDB Realm Cloud.
+     */
     namespace App.Sync {
         class Session {
             readonly config: SyncConfiguration;
@@ -908,6 +911,9 @@ declare namespace Realm {
     const BSON: typeof import("bson");
 }
 
+/**
+ * @ignore
+ */
 interface ProgressPromise extends Promise<Realm> {
     cancel(): void;
     progress(callback: Realm.ProgressNotificationCallback): Promise<Realm>;
@@ -915,26 +921,32 @@ interface ProgressPromise extends Promise<Realm> {
 
 /**
  * Extracts an intersection of keys from T, where the value extends the given PropType.
+ * @ignore
  */
 type ExtractPropertyNamesOfType<T, PropType> = {
     [K in keyof T]: T[K] extends PropType ? K : never
 }[keyof T];
 
 /**
- * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
+ * Exchanges properties defined as Realm.List`<Model>` with an optional Array`<Model | RealmInsertionModel<Model>>`.
+ * @ignore
  */
 type RealmListsRemappedModelPart<T> = {
     [K in ExtractPropertyNamesOfType<T, Realm.List<any>>]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
 }
 
 /**
-* Exchanges properties defined as Realm.Dicionary<Model> with an optional key to mixed value object.
+* Exchanges properties defined as Realm.Dicionary`<Model>` with an optional key to mixed value object.
+* @ignore
 */
 type RealmDictionaryRemappedModelPart<T> = {
     [K in ExtractPropertyNamesOfType<T, Realm.Dictionary>]?: T[K] extends Realm.Dictionary<infer ValueType> ? { [key: string]: ValueType } : never
 }
 
-/** Omits all properties of a model which are not defined by the schema */
+/**
+ * Omits all properties of a model which are not defined by the schema
+ * @ignore
+ */
 type OmittedRealmTypes<T> = Omit<T,
     keyof Realm.Object |
     ExtractPropertyNamesOfType<T, Function> |
@@ -942,7 +954,10 @@ type OmittedRealmTypes<T> = Omit<T,
     ExtractPropertyNamesOfType<T, Realm.Dictionary>
 >;
 
-/** Remaps realm types to "simpler" types (arrays and objects) */
+/**
+ * Remaps realm types to "simpler" types (arrays and objects)
+ * @ignore
+ */
 type RemappedRealmTypes<T> =
     RealmListsRemappedModelPart<T> &
     RealmDictionaryRemappedModelPart<T>;
@@ -950,11 +965,16 @@ type RemappedRealmTypes<T> =
 /**
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
  * with only the keys which value extends Realm.List, remapped as Arrays.
+ * @ignore
  */
 type RealmInsertionModel<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;
+
 declare class Realm {
     static defaultPath: string;
 
+    /**
+     * Indicates if this Realm contains any objects.
+     */
     readonly empty: boolean;
     readonly path: string;
     readonly readOnly: boolean;
@@ -1081,13 +1101,13 @@ declare class Realm {
 
     /**
      * @param  {string} type
-     * @returns Realm.Results<T & Realm.Object>
+     * @returns Realm.Results`<T & Realm.Object>`
      */
     objects<T>(type: string): Realm.Results<T & Realm.Object>;
 
     /**
      * @param  {Class} type
-     * @returns Realm.Results<T>
+     * @returns Realm.Results`<T>`
      */
     objects<T extends Realm.Object>(type: {new(...arg: any[]): T; }): Realm.Results<T>;
 
@@ -1162,6 +1182,9 @@ declare class Realm {
     _updateSchema(schema: Realm.ObjectSchema[]): void;
 }
 
+/**
+ * @ignore
+ */
 declare module 'realm' {
     export = Realm
 }

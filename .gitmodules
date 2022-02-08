@@ -2,7 +2,7 @@
 	path = vendor/GCDWebServer
 	url = https://github.com/swisspol/GCDWebServer.git
 [submodule "docs/jsdoc-template"]
-	path = docs/jsdoc-template
+	path = docs-legacy/jsdoc-template
 	url = https://github.com/realm/realm-jsdoc.git
 [submodule "vendor/realm-core"]
 	path = vendor/realm-core

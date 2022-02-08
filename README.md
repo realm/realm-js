@@ -1,5 +1,5 @@
-[![realm by MongoDB](./logo.svg#gh-light-mode-only)](https://realm.io#gh-light-mode-only)
-[![realm by MongoDB](./logo-dark.svg#gh-dark-mode-only)](https://realm.io#gh-dark-mode-only)
+[![realm by MongoDB](https://raw.githubusercontent.com/realm/realm-js/master/logo.svg#gh-light-mode-only)](https://realm.io#gh-light-mode-only)
+[![realm by MongoDB](https://raw.githubusercontent.com/realm/realm-js/master/logo-dark.svg#gh-dark-mode-only)](https://realm.io#gh-dark-mode-only)
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (both iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
@@ -117,4 +117,4 @@ not eligible to receive the product under U.S. law.**
 
 **_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
 
-<img style="width: 0px; height: 0px;" src="https://3eaz4mshcd.execute-api.us-east-1.amazonaws.com/prod?s=https://github.com/realm/realm-js/#README.md">
+<!-- <img style="width: 0px; height: 0px;" src="https://3eaz4mshcd.execute-api.us-east-1.amazonaws.com/prod?s=https://github.com/realm/realm-js/#README.md"> -->
