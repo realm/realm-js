@@ -8,9 +8,9 @@ custom_edit_url: null
 [App](../namespaces/Realm.App).[Sync](../namespaces/Realm.App.Sync).Subscription
 
 Class representing a single query subscription in a set of flexible sync
-[SubscriptionSet](../interfaces/Realm.App.Sync.SubscriptionSet). This class contains readonly information about the
+[SubscriptionSet](Realm.App.Sync.SubscriptionSet). This class contains readonly information about the
 subscription – any changes to the set of subscriptions must be carried out
-in a [SubscriptionSet.update](../interfaces/Realm.App.Sync.SubscriptionSet#update) callback.
+in a [SubscriptionSet.update](Realm.App.Sync.SubscriptionSet#update) callback.
 
 ## Constructors
 

@@ -74,7 +74,7 @@ ___
 
 ### subscriptions
 
-• `Readonly` **subscriptions**: [`SubscriptionSet`](../namespaces/Realm.App.Sync#subscriptionset)
+• `Readonly` **subscriptions**: [`SubscriptionSet`](Realm.App.Sync.SubscriptionSet)
 
 Get the latest set of flexible sync subscriptions.
 

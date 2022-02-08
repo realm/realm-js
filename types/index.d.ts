@@ -723,7 +723,7 @@ declare module Realm {
          * `realm.subscriptions[0]`. This array is readonly – SubscriptionSets can only be
          * modified inside a {@link SubscriptionSet.update} callback.
          */
-        interface BaseSubscriptionSet extends ReadonlyArray<Subscription> {
+        abstract class BaseSubscriptionSet extends Array implements ReadonlyArray<Subscription> {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
             // /**
@@ -783,7 +783,9 @@ declare module Realm {
          * The set of subscriptions can only be updated inside a {@link SubscriptionSet.update} callback,
          * by calling methods on the corresponding {@link MutableSubscriptionSet} instance.
          */
-        interface SubscriptionSet extends BaseSubscriptionSet {
+        class SubscriptionSet extends BaseSubscriptionSet {
+            new(): never; // This type isn't supposed to be constructed manually by end users.
+
             /**
              * Wait for the server to acknowledge this set of subscriptions and return the
              * matching objects.
@@ -795,7 +797,7 @@ declare module Realm {
              * @returns A promise which is resolved when synchronization is complete, or is
              * rejected if there is an error during synchronisation.
              */
-            waitForSynchronization: () => Promise<void>;
+            waitForSynchronization(): Promise<void>;
 
             /**
              * Update the SubscriptionSet and change this instance to point to the updated SubscriptionSet.
@@ -826,20 +828,15 @@ declare module Realm {
              * @returns A promise which resolves when the SubscriptionSet is synchronized, or is rejected
              * if there was an error during synchronization (see {@link waitForSynchronisation})
              */
-            update: (callback: (mutableSubs: MutableSubscriptionSet) => void) => Promise<void>;
+            update(callback: (mutableSubs: MutableSubscriptionSet) => void): Promise<void>;
         }
-
-        const SubscriptionSet: {
-            new(): never; // This type isn't supposed to be constructed manually by end users.
-            readonly prototype: SubscriptionSet;
-        };
 
         /**
          * The mutable version of a given SubscriptionSet. The mutable methods of a given
          * {@link SubscriptionSet} instance can only be accessed from inside the {@link SubscriptionSet.update}
          * callback.
          */
-        interface MutableSubscriptionSet extends BaseSubscriptionSet {
+        class MutableSubscriptionSet extends BaseSubscriptionSet {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
             /**
@@ -854,7 +851,7 @@ declare module Realm {
              * use when adding this subscription (e.g. to give the subscription a name).
              * @returns A `Subscription` instance for the new subscription.
              */
-            add: <T>(query: Realm.Results<T & Realm.Object>, options?: SubscriptionOptions) => Subscription;
+            add<T>(query: Realm.Results<T & Realm.Object>, options?: SubscriptionOptions): Subscription;
 
             /**
              * Removes a subscription with the given query from the SubscriptionSet.
@@ -862,7 +859,7 @@ declare module Realm {
              * @param query A {@link Realm.Results} instance representing the query to remove a subscription to.
              * @returns `true` if the subscription was removed, `false` if it was not found.
              */
-            remove: <T>(query: Realm.Results<T & Realm.Object>) => boolean;
+            remove<T>(query: Realm.Results<T & Realm.Object>): boolean;
 
             /**
              * Removes a subscription with the given name from the SubscriptionSet.
@@ -870,7 +867,7 @@ declare module Realm {
              * @param name The name of the subscription to remove.
              * @returns `true` if the subscription was removed, `false` if it was not found.
              */
-            removeByName: (name: string) => boolean;
+            removeByName(name: string): boolean;
 
             /**
              * Removes the specified subscription from the SubscriptionSet.
@@ -878,7 +875,7 @@ declare module Realm {
              * @param subscription The {@link Subscription} instance to remove.
              * @returns `true` if the subscription was removed, `false` if it was not found.
              */
-            removeSubscription: (subscription: Subscription) => boolean;
+            removeSubscription(subscription: Subscription): boolean;
 
             /**
              * Removes all subscriptions for the specified object type from the SubscriptionSet.
@@ -886,20 +883,15 @@ declare module Realm {
              * @param objectType The string name of the object type to remove all subscriptions for.
              * @returns The number of subscriptions removed.
              */
-            removeByObjectType: (objectType: string) => number;
+            removeByObjectType(objectType: string): number;
 
             /**
              * Removes all subscriptions from the SubscriptionSet.
              *
              * @returns The number of subscriptions removed.
              */
-            removeAll: () => number;
+            removeAll(): number;
         }
-
-        const MutableSubscriptionSet: {
-            new(): never; // This type isn't supposed to be constructed manually by end users.
-            readonly prototype: MutableSubscriptionSet;
-        };
     }
 
     namespace BSON {

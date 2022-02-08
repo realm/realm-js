@@ -17,15 +17,15 @@ Class for interacting with MongoDB Realm Cloud.
 ## Classes
 
 - [AuthError](../classes/Realm.App.Sync.AuthError)
+- [BaseSubscriptionSet](../classes/Realm.App.Sync.BaseSubscriptionSet)
+- [MutableSubscriptionSet](../classes/Realm.App.Sync.MutableSubscriptionSet)
 - [Session](../classes/Realm.App.Sync.Session)
 - [Subscription](../classes/Realm.App.Sync.Subscription)
+- [SubscriptionSet](../classes/Realm.App.Sync.SubscriptionSet)
 
 ## Interfaces
 
-- [BaseSubscriptionSet](../interfaces/Realm.App.Sync.BaseSubscriptionSet)
-- [MutableSubscriptionSet](../interfaces/Realm.App.Sync.MutableSubscriptionSet)
 - [SubscriptionOptions](../interfaces/Realm.App.Sync.SubscriptionOptions)
-- [SubscriptionSet](../interfaces/Realm.App.Sync.SubscriptionSet)
 
 ## Type aliases
 
@@ -40,30 +40,6 @@ ___
 Ƭ **PartitionValue**: `string` \| `number` \| [`ObjectId`](Realm.BSON#objectid) \| [`UUID`](Realm.BSON#uuid) \| ``null``
 
 ## Variables
-
-### MutableSubscriptionSet
-
-• **MutableSubscriptionSet**: `Object`
-
-#### Type declaration
-
-| Name | Type |
-| :------ | :------ |
-| `prototype` | [`MutableSubscriptionSet`](Realm.App.Sync#mutablesubscriptionset) |
-
-___
-
-### SubscriptionSet
-
-• **SubscriptionSet**: `Object`
-
-#### Type declaration
-
-| Name | Type |
-| :------ | :------ |
-| `prototype` | [`SubscriptionSet`](Realm.App.Sync#subscriptionset) |
-
-___
 
 ### downloadBeforeOpenBehavior
 

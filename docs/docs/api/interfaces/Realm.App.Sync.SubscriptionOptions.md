@@ -16,7 +16,7 @@ Options for {@link SubscriptionSet.add}.
 • `Optional` **name**: `string`
 
 Sets the name of the subscription being added. This allows you to later refer
-to the subscription by name, e.g. when calling [MutableSubscriptionSet.removeByName](Realm.App.Sync.MutableSubscriptionSet#removebyname).
+to the subscription by name, e.g. when calling [MutableSubscriptionSet.removeByName](../classes/Realm.App.Sync.MutableSubscriptionSet#removebyname).
 
 ___
 

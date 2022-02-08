@@ -7,7 +7,7 @@ custom_edit_url: null
 
 [App](../namespaces/Realm.App).[Sync](../namespaces/Realm.App.Sync).SubscriptionsState
 
-Enum representing the state of a [SubscriptionSet](../interfaces/Realm.App.Sync.SubscriptionSet) set.
+Enum representing the state of a [SubscriptionSet](../classes/Realm.App.Sync.SubscriptionSet) set.
 
 ## Enumeration members
 
@@ -29,7 +29,7 @@ ___
 The server has returned an error and synchronization is paused for this
 Realm. To view the actual error, use `Subscriptions.error`.
 
-You can still use [SubscriptionSet.update](../interfaces/Realm.App.Sync.SubscriptionSet#update) to update the subscriptions,
+You can still use [SubscriptionSet.update](../classes/Realm.App.Sync.SubscriptionSet#update) to update the subscriptions,
 and if the new update doesn't trigger an error, synchronization
 will be restarted.
 
@@ -49,6 +49,6 @@ ___
 • **Superseded** = `"Superseded"`
 
 The SubscriptionSet has been superseded by an updated one. This typically means
-that someone has called [SubscriptionSet.update](../interfaces/Realm.App.Sync.SubscriptionSet#update) on a different instance
+that someone has called [SubscriptionSet.update](../classes/Realm.App.Sync.SubscriptionSet#update) on a different instance
 of the `Subscriptions`. You should not use a superseded SubscriptionSet,
 and instead obtain a new instance from [Realm.subscriptions](../classes/Realm#subscriptions).
