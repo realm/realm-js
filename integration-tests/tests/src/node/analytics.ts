@@ -48,7 +48,7 @@ describe("Analytics", () => {
   });
 
   it("parses node.js package.json", async () => {
-    console.log(`FISK: ${process.cwd}`);
+    console.log(`FISK: ${process.cwd()}`);
     const packageJson = readJsonSync("./node-package.json");
 
     const data = await collectPlatformData(packageJson);
