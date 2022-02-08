@@ -70,8 +70,8 @@ function describeRoundtrip({
 
   async function setupTest(realm: Realm) {
     if (flexibleSync) {
-      realm.subscriptions.update(({ add }) => {
-        add(realm.objects("MixedClass"));
+      realm.subscriptions.update((mutableSubs) => {
+        mutableSubs.add(realm.objects("MixedClass"));
       });
       await realm.subscriptions.waitForSynchronization();
     }
