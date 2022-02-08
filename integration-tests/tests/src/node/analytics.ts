@@ -25,12 +25,13 @@ import { readJsonSync } from "fs-extra";
 
 describe("Analytics", () => {
   function resolvePath(fileName: string) {
+    // tests are executed in directory `environments/node`
     return ["..", "..", "tests", "src", "node", fileName].join(path.sep);
   }
 
   function getRealmVersion() {
     // tests are executed in directory `environments/node`
-    const rootPath = ["..", "..", "..", "..", "package.json"].join(path.sep);
+    const rootPath = ["..", "..", "..", "package.json"].join(path.sep);
     const realmPackageJson = readJsonSync(rootPath);
     return realmPackageJson["version"];
   }
