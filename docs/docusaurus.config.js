@@ -40,6 +40,7 @@ const config = {
         entryPoints: ["../types/index.d.ts"],
         tsconfig: "ts/tsconfig.json",
         watch: true,
+        out: ".",
         sidebar: {
           categoryLabel: "Realm JS API",
           position: 0,
