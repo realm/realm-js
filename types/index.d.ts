@@ -722,6 +722,14 @@ declare module Realm {
          * The {@link Subscription}s in a SubscriptionSet can be accessed as an array, e.g.
          * `realm.subscriptions[0]`. This array is readonly – SubscriptionSets can only be
          * modified inside a {@link SubscriptionSet.update} callback.
+         *
+         * This class supports all of the functionality of normal JavaScript `Array`s (other
+         * than modifying the array), but for clarity these methods and properties are not
+         * documented here.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
+         *
+         * @noInheritDoc
          */
         abstract class BaseSubscriptionSet extends Array implements ReadonlyArray<Subscription> {
             new(): never; // This type isn't supposed to be constructed manually by end users.
