@@ -79,7 +79,7 @@ describe("Analytics", () => {
     const packageJson = readJsonSync(resolvePath("rn-package.json"));
 
     const data = await collectPlatformData(packageJson);
-    expect(data.Version).equals("11.1.1");
+    expect(data.Version).equals("0.0.1");
     expect(data.Framework).equals("react-native");
     expect(data["Framework Version"]).equals("0.64.2");
     expect(data["JavaScript Engine"]).equals("unknown");
