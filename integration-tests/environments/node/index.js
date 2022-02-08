@@ -30,6 +30,8 @@ global.client = new Client({
     // Add the integration test suite (in TypeScript)
     require("ts-node/register/transpile-only");
     require("@realm/integration-tests");
+    // Load the Node.js specific part of the integration tests
+    require("@realm/integration-tests/src/node");
   },
 });
 

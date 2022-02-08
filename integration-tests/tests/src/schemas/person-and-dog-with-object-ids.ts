@@ -40,11 +40,11 @@ export const PersonSchema: Realm.ObjectSchema = {
 };
 
 export class Person extends Realm.Object implements IPerson {
-  _id: Realm.BSON.ObjectId;
-  name: string;
-  age: number;
-  friends: Realm.List<Person>;
-  dogs: Realm.Collection<Dog>;
+  _id!: Realm.BSON.ObjectId;
+  name!: string;
+  age!: number;
+  friends!: Realm.List<Person>;
+  dogs!: Realm.Collection<Dog>;
 
   static schema: Realm.ObjectSchema = PersonSchema;
 }
@@ -68,10 +68,10 @@ export const DogSchema: Realm.ObjectSchema = {
 };
 
 export class Dog extends Realm.Object implements IDog {
-  _id: Realm.BSON.ObjectId;
-  name: string;
-  age: number;
-  owner: Person;
+  _id!: Realm.BSON.ObjectId;
+  name!: string;
+  age!: number;
+  owner!: Person;
 
   static schema: Realm.ObjectSchema = DogSchema;
 }

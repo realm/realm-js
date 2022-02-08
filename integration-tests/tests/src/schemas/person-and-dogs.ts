@@ -40,8 +40,8 @@ export const PersonSchema: Realm.ObjectSchema = {
 export class Person extends Realm.Object {
   name: string;
   age: number;
-  friends: Realm.List<Person>;
-  dogs: Realm.Collection<Dog>;
+  friends!: Realm.List<Person>;
+  dogs!: Realm.Collection<Dog>;
 
   constructor(name: string, age: number) {
     super();

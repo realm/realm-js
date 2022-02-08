@@ -2,6 +2,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Added `Realm.App#deleteUser(user)` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))
+
 ### Fixed
 * Fixed a crash when using `Proxy` with a `Realm.Results` object ([#4257](https://github.com/realm/realm-js/pull/4257))
 * JWT metadata is now populating `Realm.User.profile`. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
@@ -19,6 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed documentation publishing. ([#4276](https://github.com/realm/realm-js/pull/4276))
 * Enabled mixed tests for flexible sync. ([#4279](https://github.com/realm/realm-js/pull/4279))
 * Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet`. ([#4298](https://github.com/realm/realm-js/pull/4298))
+* Submitting [analytics](https://github.com/realm/realm-js/blob/master/README.md#analytics) as a postinstall script.
 
 10.12.0 Release notes (2022-1-24)
 =============================================================
