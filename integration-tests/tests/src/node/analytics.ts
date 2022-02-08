@@ -24,7 +24,12 @@ import { collectPlatformData } from "realm/scripts/submit-analytics";
 import { readJsonSync } from "fs-extra";
 
 describe("Analytics", () => {
+  function resolvePath(fileName: string) {
+    return ["..", "..", "tests", "src", "node", fileName].join(path.sep);
+  }
+
   function getRealmVersion() {
+    // tests are executed in directory `environments/node`
     const rootPath = ["..", "..", "..", "..", "package.json"].join(path.sep);
     const realmPackageJson = readJsonSync(rootPath);
     return realmPackageJson["version"];
@@ -48,8 +53,7 @@ describe("Analytics", () => {
   });
 
   it("parses node.js package.json", async () => {
-    console.log(`FISK: ${process.cwd()}`);
-    const packageJson = readJsonSync("./node-package.json");
+    const packageJson = readJsonSync(resolvePath("node-package.json"));
 
     const data = await collectPlatformData(packageJson);
     expect(data.Version).equals("1.11.1");
@@ -60,7 +64,7 @@ describe("Analytics", () => {
   });
 
   it("parses electron package.json", async () => {
-    const packageJson = readJsonSync("./electron-package.json");
+    const packageJson = readJsonSync(resolvePath("electron-package.json"));
 
     const data = await collectPlatformData(packageJson);
     expect(data.Version).equals("11.1.1");
@@ -71,7 +75,7 @@ describe("Analytics", () => {
   });
 
   it("parses rn package.json", async () => {
-    const packageJson = readJsonSync("./rn-package.json");
+    const packageJson = readJsonSync(resolvePath("rn-package.json"));
 
     const data = await collectPlatformData(packageJson);
     expect(data.Version).equals("11.1.1");
