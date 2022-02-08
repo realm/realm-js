@@ -17,10 +17,10 @@ ___
 
 ### timeOutBehavior
 
-• `Optional` `Readonly` **timeOutBehavior**: `OpenRealmTimeOutBehavior`
+• `Optional` `Readonly` **timeOutBehavior**: [`OpenRealmTimeOutBehavior`](../enums/Realm.OpenRealmTimeOutBehavior)
 
 ___
 
 ### type
 
-• `Readonly` **type**: `OpenRealmBehaviorType`
+• `Readonly` **type**: [`OpenRealmBehaviorType`](../enums/Realm.OpenRealmBehaviorType)

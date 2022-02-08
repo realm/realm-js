@@ -11,7 +11,7 @@ custom_edit_url: null
 
 | Name | Type |
 | :------ | :------ |
-| `ValueType` | `Mixed` |
+| `ValueType` | [`Mixed`](../namespaces/Realm#mixed) |
 
 ## Methods
 
@@ -23,7 +23,7 @@ custom_edit_url: null
 
 | Name | Type |
 | :------ | :------ |
-| `callback` | `DictionaryChangeCallback` |
+| `callback` | [`DictionaryChangeCallback`](../namespaces/Realm#dictionarychangecallback) |
 
 #### Returns
 
@@ -35,7 +35,7 @@ ___
 
 ### remove
 
-▸ **remove**(`key`): `DictionaryBase`<`ValueType`\>
+▸ **remove**(`key`): [`DictionaryBase`](Realm.DictionaryBase)<`ValueType`\>
 
 Removes given element from the dictionary
 
@@ -47,7 +47,7 @@ Removes given element from the dictionary
 
 #### Returns
 
-`DictionaryBase`<`ValueType`\>
+[`DictionaryBase`](Realm.DictionaryBase)<`ValueType`\>
 
 The dictionary
 
@@ -71,7 +71,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `callback` | `DictionaryChangeCallback` |
+| `callback` | [`DictionaryChangeCallback`](../namespaces/Realm#dictionarychangecallback) |
 
 #### Returns
 
@@ -81,7 +81,7 @@ ___
 
 ### set
 
-▸ **set**(`element`): `DictionaryBase`<`ValueType`\>
+▸ **set**(`element`): [`DictionaryBase`](Realm.DictionaryBase)<`ValueType`\>
 
 Adds given element to the dictionary
 
@@ -93,6 +93,6 @@ Adds given element to the dictionary
 
 #### Returns
 
-`DictionaryBase`<`ValueType`\>
+[`DictionaryBase`](Realm.DictionaryBase)<`ValueType`\>
 
 The dictionary

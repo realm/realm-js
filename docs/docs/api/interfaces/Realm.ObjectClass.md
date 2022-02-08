@@ -15,4 +15,4 @@ ObjectClass
 
 ### schema
 
-• **schema**: `ObjectSchema`
+• **schema**: [`ObjectSchema`](Realm.ObjectSchema)

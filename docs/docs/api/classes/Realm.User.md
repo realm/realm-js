@@ -13,9 +13,9 @@ Representation of an authenticated user of an app.
 
 | Name | Type |
 | :------ | :------ |
-| `FunctionsFactoryType` | `DefaultFunctionsFactory` |
+| `FunctionsFactoryType` | [`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory) |
 | `CustomDataType` | `SimpleObject` |
-| `UserProfileDataType` | `DefaultUserProfileData` |
+| `UserProfileDataType` | [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata) |
 
 ## Constructors
 
@@ -27,9 +27,9 @@ Representation of an authenticated user of an app.
 
 | Name | Type |
 | :------ | :------ |
-| `FunctionsFactoryType` | `DefaultFunctionsFactory` |
+| `FunctionsFactoryType` | [`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory) |
 | `CustomDataType` | `SimpleObject` |
-| `UserProfileDataType` | `DefaultUserProfileData` |
+| `UserProfileDataType` | [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata) |
 
 ## Properties
 
@@ -43,7 +43,7 @@ ___
 
 ### apiKeys
 
-• `Readonly` **apiKeys**: `ApiKeyAuth`
+• `Readonly` **apiKeys**: [`ApiKeyAuth`](Realm.Auth.ApiKeyAuth)
 
 Perform operations related to the API-key auth provider.
 
@@ -70,7 +70,7 @@ ___
 
 ### functions
 
-• `Readonly` **functions**: `FunctionsFactoryType` & `BaseFunctionsFactory`
+• `Readonly` **functions**: `FunctionsFactoryType` & [`BaseFunctionsFactory`](../interfaces/Realm.BaseFunctionsFactory)
 
 Use this to call functions defined by the MongoDB Realm app, as this user.
 
@@ -86,7 +86,7 @@ ___
 
 ### identities
 
-• `Readonly` **identities**: `UserIdentity`[]
+• `Readonly` **identities**: [`UserIdentity`](../interfaces/Realm.UserIdentity)[]
 
 The identities of the user at any of the app's authentication providers.
 
@@ -110,7 +110,7 @@ ___
 
 ### providerType
 
-• `Readonly` **providerType**: `ProviderType`
+• `Readonly` **providerType**: [`ProviderType`](../namespaces/Realm#providertype)
 
 The provider type used when authenticating the user.
 
@@ -126,7 +126,7 @@ ___
 
 ### state
 
-• `Readonly` **state**: `UserState`
+• `Readonly` **state**: [`UserState`](../enums/Realm.UserState)
 
 The state of the user.
 
@@ -174,7 +174,7 @@ Link the user with an identity represented by another set of credentials.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `credentials` | `Credentials`<`SimpleObject`\> | The credentials to use when linking. |
+| `credentials` | [`Credentials`](Realm.Credentials-1)<`SimpleObject`\> | The credentials to use when linking. |
 
 #### Returns
 
@@ -198,7 +198,7 @@ ___
 
 ### mongoClient
 
-▸ **mongoClient**(`serviceName`): `MongoDB`
+▸ **mongoClient**(`serviceName`): [`MongoDB`](../interfaces/Realm.Services.MongoDB-1)
 
 Returns a connection to the MongoDB service.
 
@@ -216,13 +216,13 @@ let blueWidgets = user.mongoClient('myClusterName')
 
 #### Returns
 
-`MongoDB`
+[`MongoDB`](../interfaces/Realm.Services.MongoDB-1)
 
 ___
 
 ### push
 
-▸ **push**(`serviceName`): `Push`
+▸ **push**(`serviceName`): [`Push`](../interfaces/Realm.Services.Push)
 
 Use the Push service to enable sending push messages to this user via Firebase Cloud Messaging (FCM).
 
@@ -234,7 +234,7 @@ Use the Push service to enable sending push messages to this user via Firebase C
 
 #### Returns
 
-`Push`
+[`Push`](../interfaces/Realm.Services.Push)
 
 An service client with methods to register and deregister the device on the user.
 

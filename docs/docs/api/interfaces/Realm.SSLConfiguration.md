@@ -23,4 +23,4 @@ ___
 
 ### validateCallback
 
-• `Optional` **validateCallback**: `SSLVerifyCallback`
+• `Optional` **validateCallback**: [`SSLVerifyCallback`](../namespaces/Realm#sslverifycallback)

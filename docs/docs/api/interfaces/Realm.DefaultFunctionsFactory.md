@@ -11,13 +11,13 @@ A collection of functions as defined on the MongoDB Server.
 
 ## Hierarchy
 
-- `BaseFunctionsFactory`
+- [`BaseFunctionsFactory`](Realm.BaseFunctionsFactory)
 
   ↳ **`DefaultFunctionsFactory`**
 
 ## Indexable
 
-▪ [name: `string`]: `RealmFunction`<`any`, `any`[]\>
+▪ [name: `string`]: [`RealmFunction`](../namespaces/Realm#realmfunction)<`any`, `any`[]\>
 
 All the functions are accessable as members on this instance.
 
@@ -43,6 +43,8 @@ Consider using `functions[name]()` instead of calling this method.
 
 #### Inherited from
 
+[BaseFunctionsFactory](Realm.BaseFunctionsFactory).[callFunction](Realm.BaseFunctionsFactory#callfunction)
+
 ___
 
 ### callFunctionStreaming
@@ -64,3 +66,5 @@ Consider using `functions[name]()` instead of calling this method.
 `Promise`<`AsyncIterable`<`Uint8Array`\>\>
 
 #### Inherited from
+
+[BaseFunctionsFactory](Realm.BaseFunctionsFactory).[callFunctionStreaming](Realm.BaseFunctionsFactory#callfunctionstreaming)

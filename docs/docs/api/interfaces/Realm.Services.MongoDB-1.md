@@ -13,7 +13,7 @@ The MongoDB service can be used to get database and collection objects for inter
 
 ### db
 
-▸ **db**(`databaseName`): `MongoDBDatabase`
+▸ **db**(`databaseName`): [`MongoDBDatabase`](Realm.Services.MongoDBDatabase)
 
 Get the interface to a remote MongoDB database.
 
@@ -25,6 +25,6 @@ Get the interface to a remote MongoDB database.
 
 #### Returns
 
-`MongoDBDatabase`
+[`MongoDBDatabase`](Realm.Services.MongoDBDatabase)
 
 The remote MongoDB database.

@@ -16,7 +16,7 @@ custom_edit_url: null
 
 | Name | Type |
 | :------ | :------ |
-| `config?` | `Configuration` |
+| `config?` | [`Configuration`](../namespaces/Realm#configuration) |
 
 • **new Realm**(`path?`)
 
@@ -62,7 +62,7 @@ ___
 
 ### schema
 
-• `Readonly` **schema**: `ObjectSchema`[]
+• `Readonly` **schema**: [`ObjectSchema`](../interfaces/Realm.ObjectSchema)[]
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 ### subscriptions
 
-• `Readonly` **subscriptions**: `SubscriptionSet`
+• `Readonly` **subscriptions**: [`SubscriptionSet`](../namespaces/Realm.App.Sync#subscriptionset)
 
 Get the latest set of flexible sync subscriptions.
 
@@ -84,7 +84,7 @@ ___
 
 ### syncSession
 
-• `Readonly` **syncSession**: `Session`
+• `Readonly` **syncSession**: [`Session`](Realm.App.Sync.Session)
 
 ___
 
@@ -104,7 +104,7 @@ Update the schema of the Realm.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `schema` | `ObjectSchema`[] | The schema which the Realm should be updated to use. |
+| `schema` | [`ObjectSchema`](../interfaces/Realm.ObjectSchema)[] | The schema which the Realm should be updated to use. |
 
 #### Returns
 
@@ -136,7 +136,7 @@ void
 | Name | Type |
 | :------ | :------ |
 | `name` | `string` |
-| `callback` | (`sender`: [`Realm`](Realm), `event`: ``"schema"``, `schema`: `ObjectSchema`[]) => `void` |
+| `callback` | (`sender`: [`Realm`](Realm), `event`: ``"schema"``, `schema`: [`ObjectSchema`](../interfaces/Realm.ObjectSchema)[]) => `void` |
 
 #### Returns
 
@@ -206,7 +206,7 @@ ___
 
 ### create
 
-▸ **create**<`T`\>(`type`, `properties`, `mode?`): `T` & `Object`
+▸ **create**<`T`\>(`type`, `properties`, `mode?`): `T` & [`Object`](Realm.Object)
 
 #### Type parameters
 
@@ -220,15 +220,15 @@ ___
 | :------ | :------ |
 | `type` | `string` |
 | `properties` | `RealmInsertionModel`<`T`\> |
-| `mode?` | `Never` |
+| `mode?` | [`Never`](../enums/Realm.UpdateMode#never) |
 
 #### Returns
 
-`T` & `Object`
+`T` & [`Object`](Realm.Object)
 
 T & Realm.Object
 
-▸ **create**<`T`\>(`type`, `properties`, `mode`): `T` & `Object`
+▸ **create**<`T`\>(`type`, `properties`, `mode`): `T` & [`Object`](Realm.Object)
 
 #### Type parameters
 
@@ -242,11 +242,11 @@ T & Realm.Object
 | :------ | :------ |
 | `type` | `string` |
 | `properties` | `Partial`<`T`\> \| `Partial`<`RealmInsertionModel`<`T`\>\> |
-| `mode` | `Modified` \| `All` |
+| `mode` | [`Modified`](../enums/Realm.UpdateMode#modified) \| [`All`](../enums/Realm.UpdateMode#all) |
 
 #### Returns
 
-`T` & `Object`
+`T` & [`Object`](Realm.Object)
 
 ▸ **create**<`T`\>(`type`, `properties`, `mode?`): `T`
 
@@ -254,7 +254,7 @@ T & Realm.Object
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Object`<`T`\> |
+| `T` | extends [`Object`](Realm.Object)<`T`\> |
 
 #### Parameters
 
@@ -262,7 +262,7 @@ T & Realm.Object
 | :------ | :------ |
 | `type` | (...`arg`: `any`[]) => `T` |
 | `properties` | `RealmInsertionModel`<`T`\> |
-| `mode?` | `Never` |
+| `mode?` | [`Never`](../enums/Realm.UpdateMode#never) |
 
 #### Returns
 
@@ -276,7 +276,7 @@ T
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Object`<`T`\> |
+| `T` | extends [`Object`](Realm.Object)<`T`\> |
 
 #### Parameters
 
@@ -284,7 +284,7 @@ T
 | :------ | :------ |
 | `type` | (...`arg`: `any`[]) => `T` |
 | `properties` | `Partial`<`T`\> \| `Partial`<`RealmInsertionModel`<`T`\>\> |
-| `mode` | `Modified` \| `All` |
+| `mode` | [`Modified`](../enums/Realm.UpdateMode#modified) \| [`All`](../enums/Realm.UpdateMode#all) |
 
 #### Returns
 
@@ -342,7 +342,7 @@ ___
 
 ### objectForPrimaryKey
 
-▸ **objectForPrimaryKey**<`T`\>(`type`, `key`): `T` & `Object`
+▸ **objectForPrimaryKey**<`T`\>(`type`, `key`): `T` & [`Object`](Realm.Object)
 
 #### Type parameters
 
@@ -355,11 +355,11 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `type` | `string` |
-| `key` | `PrimaryKey` |
+| `key` | [`PrimaryKey`](../namespaces/Realm#primarykey) |
 
 #### Returns
 
-`T` & `Object`
+`T` & [`Object`](Realm.Object)
 
 ▸ **objectForPrimaryKey**<`T`\>(`type`, `key`): `T`
 
@@ -367,20 +367,20 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Object`<`T`\> |
+| `T` | extends [`Object`](Realm.Object)<`T`\> |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
 | `type` | (...`arg`: `any`[]) => `T` |
-| `key` | `PrimaryKey` |
+| `key` | [`PrimaryKey`](../namespaces/Realm#primarykey) |
 
 #### Returns
 
 `T`
 
-▸ **objectForPrimaryKey**<`T`\>(`type`, `key`): `T` & `Object`
+▸ **objectForPrimaryKey**<`T`\>(`type`, `key`): `T` & [`Object`](Realm.Object)
 
 #### Type parameters
 
@@ -393,17 +393,17 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `type` | `string` \| (...`arg`: `any`[]) => `T` |
-| `key` | `PrimaryKey` |
+| `key` | [`PrimaryKey`](../namespaces/Realm#primarykey) |
 
 #### Returns
 
-`T` & `Object`
+`T` & [`Object`](Realm.Object)
 
 ___
 
 ### objects
 
-▸ **objects**<`T`\>(`type`): `Results`<`T` & `Object`\>
+▸ **objects**<`T`\>(`type`): [`Results`](../namespaces/Realm#results)<`T` & [`Object`](Realm.Object)\>
 
 #### Type parameters
 
@@ -419,17 +419,17 @@ ___
 
 #### Returns
 
-`Results`<`T` & `Object`\>
+[`Results`](../namespaces/Realm#results)<`T` & [`Object`](Realm.Object)\>
 
 Realm.Results`<T & Realm.Object>`
 
-▸ **objects**<`T`\>(`type`): `Results`<`T`\>
+▸ **objects**<`T`\>(`type`): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Type parameters
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Object`<`T`\> |
+| `T` | extends [`Object`](Realm.Object)<`T`\> |
 
 #### Parameters
 
@@ -439,11 +439,11 @@ Realm.Results`<T & Realm.Object>`
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
 Realm.Results`<T>`
 
-▸ **objects**<`T`\>(`type`): `Results`<`T` & `Object`\>
+▸ **objects**<`T`\>(`type`): [`Results`](../namespaces/Realm#results)<`T` & [`Object`](Realm.Object)\>
 
 #### Type parameters
 
@@ -459,7 +459,7 @@ Realm.Results`<T>`
 
 #### Returns
 
-`Results`<`T` & `Object`\>
+[`Results`](../namespaces/Realm#results)<`T` & [`Object`](Realm.Object)\>
 
 ___
 
@@ -505,7 +505,7 @@ void
 | Name | Type |
 | :------ | :------ |
 | `name` | `string` |
-| `callback` | (`sender`: [`Realm`](Realm), `event`: ``"schema"``, `schema`: `ObjectSchema`[]) => `void` |
+| `callback` | (`sender`: [`Realm`](Realm), `event`: ``"schema"``, `schema`: [`ObjectSchema`](../interfaces/Realm.ObjectSchema)[]) => `void` |
 
 #### Returns
 
@@ -585,7 +585,7 @@ ___
 
 ### createTemplateObject
 
-▸ `Static` **createTemplateObject**<`T`\>(`objectSchema`): `T` & `Object`
+▸ `Static` **createTemplateObject**<`T`\>(`objectSchema`): `T` & [`Object`](Realm.Object)
 
 #### Type parameters
 
@@ -597,11 +597,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `objectSchema` | `ObjectSchema` |
+| `objectSchema` | [`ObjectSchema`](../interfaces/Realm.ObjectSchema) |
 
 #### Returns
 
-`T` & `Object`
+`T` & [`Object`](Realm.Object)
 
 ___
 
@@ -615,7 +615,7 @@ Delete the Realm file for the given configuration.
 
 | Name | Type |
 | :------ | :------ |
-| `config` | `Configuration` |
+| `config` | [`Configuration`](../namespaces/Realm#configuration) |
 
 #### Returns
 
@@ -633,7 +633,7 @@ Checks if the Realm already exists on disk.
 
 | Name | Type |
 | :------ | :------ |
-| `config` | `Configuration` |
+| `config` | [`Configuration`](../namespaces/Realm#configuration) |
 
 #### Returns
 
@@ -651,7 +651,7 @@ Open a realm asynchronously with a promise. If the realm is synced, it will be f
 
 | Name | Type |
 | :------ | :------ |
-| `config` | `Configuration` |
+| `config` | [`Configuration`](../namespaces/Realm#configuration) |
 
 #### Returns
 

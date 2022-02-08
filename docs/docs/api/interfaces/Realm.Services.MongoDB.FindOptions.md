@@ -11,7 +11,7 @@ Options passed when finding a multiple documents
 
 ## Hierarchy
 
-- `FindOneOptions`
+- [`FindOneOptions`](Realm.Services.MongoDB.FindOneOptions)
 
   ↳ **`FindOptions`**
 
@@ -34,6 +34,8 @@ See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/man
 
 #### Inherited from
 
+[FindOneOptions](Realm.Services.MongoDB.FindOneOptions).[projection](Realm.Services.MongoDB.FindOneOptions#projection)
+
 ___
 
 ### sort
@@ -43,3 +45,5 @@ ___
 The order in which to return matching documents.
 
 #### Inherited from
+
+[FindOneOptions](Realm.Services.MongoDB.FindOneOptions).[sort](Realm.Services.MongoDB.FindOneOptions#sort)

@@ -9,6 +9,14 @@ custom_edit_url: null
 
 Options passed when finding a signle document
 
+## Hierarchy
+
+- **`FindOneOptions`**
+
+  ↳ [`FindOptions`](Realm.Services.MongoDB.FindOptions)
+
+  ↳ [`FindOneAndModifyOptions`](Realm.Services.MongoDB.FindOneAndModifyOptions)
+
 ## Properties
 
 ### projection

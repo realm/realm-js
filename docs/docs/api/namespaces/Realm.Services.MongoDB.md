@@ -41,13 +41,13 @@ A base change event containing the properties which apply across operation types
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `OperationType` |
+| `T` | extends [`OperationType`](Realm.Services.MongoDB#operationtype) |
 
 #### Type declaration
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `_id` | `ChangeEventId` | The id of the change event. |
+| `_id` | [`ChangeEventId`](Realm.Services.MongoDB#changeeventid) | The id of the change event. |
 | `clusterTime` | `Timestamp` | The timestamp from the oplog entry associated with the event. |
 | `lsid?` | `Record`<`string`, `unknown`\> | The identifier for the session associated with the transaction. Only present if the operation is part of a multi-document transaction. |
 | `operationType` | `T` | The type of operation which was performed on the document. |
@@ -57,7 +57,7 @@ ___
 
 ### ChangeEvent
 
-Ƭ **ChangeEvent**<`T`\>: `InsertEvent`<`T`\> \| `UpdateEvent`<`T`\> \| `ReplaceEvent`<`T`\> \| `DeleteEvent`<`T`\> \| `DropEvent` \| `RenameEvent` \| `DropDatabaseEvent` \| `InvalidateEvent`
+Ƭ **ChangeEvent**<`T`\>: [`InsertEvent`](Realm.Services.MongoDB#insertevent)<`T`\> \| [`UpdateEvent`](Realm.Services.MongoDB#updateevent)<`T`\> \| [`ReplaceEvent`](Realm.Services.MongoDB#replaceevent)<`T`\> \| [`DeleteEvent`](Realm.Services.MongoDB#deleteevent)<`T`\> \| [`DropEvent`](Realm.Services.MongoDB#dropevent) \| [`RenameEvent`](Realm.Services.MongoDB#renameevent) \| [`DropDatabaseEvent`](Realm.Services.MongoDB#dropdatabaseevent) \| [`InvalidateEvent`](Realm.Services.MongoDB#invalidateevent)
 
 Represents a change event communicated via a MongoDB change stream.
 
@@ -67,7 +67,7 @@ Represents a change event communicated via a MongoDB change stream.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Document` |
+| `T` | extends [`Document`](../interfaces/Realm.Services.MongoDB.Document) |
 
 ___
 
@@ -81,7 +81,7 @@ ___
 
 ### DeleteEvent
 
-Ƭ **DeleteEvent**<`T`\>: { `documentKey`: `DocumentKey`<`T`[``"_id"``]\> ; `ns`: `DocumentNamespace`  } & `BaseChangeEvent`<``"delete"``\>
+Ƭ **DeleteEvent**<`T`\>: { `documentKey`: [`DocumentKey`](Realm.Services.MongoDB#documentkey)<`T`[``"_id"``]\> ; `ns`: [`DocumentNamespace`](Realm.Services.MongoDB#documentnamespace)  } & [`BaseChangeEvent`](Realm.Services.MongoDB#basechangeevent)<``"delete"``\>
 
 A document got deleted from the collection.
 
@@ -89,7 +89,7 @@ A document got deleted from the collection.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Document` |
+| `T` | extends [`Document`](../interfaces/Realm.Services.MongoDB.Document) |
 
 ___
 
@@ -124,7 +124,7 @@ ___
 
 ### DropDatabaseEvent
 
-Ƭ **DropDatabaseEvent**: { `ns`: `Omit`<`DocumentNamespace`, ``"coll"``\>  } & `BaseChangeEvent`<``"dropDatabase"``\>
+Ƭ **DropDatabaseEvent**: { `ns`: `Omit`<[`DocumentNamespace`](Realm.Services.MongoDB#documentnamespace), ``"coll"``\>  } & [`BaseChangeEvent`](Realm.Services.MongoDB#basechangeevent)<``"dropDatabase"``\>
 
 Occurs when a database is dropped.
 
@@ -132,7 +132,7 @@ ___
 
 ### DropEvent
 
-Ƭ **DropEvent**: { `ns`: `DocumentNamespace`  } & `BaseChangeEvent`<``"drop"``\>
+Ƭ **DropEvent**: { `ns`: [`DocumentNamespace`](Realm.Services.MongoDB#documentnamespace)  } & [`BaseChangeEvent`](Realm.Services.MongoDB#basechangeevent)<``"drop"``\>
 
 Occurs when a collection is dropped from a database.
 
@@ -148,7 +148,7 @@ ___
 
 ### InsertEvent
 
-Ƭ **InsertEvent**<`T`\>: { `documentKey`: `DocumentKey`<`T`[``"_id"``]\> ; `fullDocument`: `T` ; `ns`: `DocumentNamespace`  } & `BaseChangeEvent`<``"insert"``\>
+Ƭ **InsertEvent**<`T`\>: { `documentKey`: [`DocumentKey`](Realm.Services.MongoDB#documentkey)<`T`[``"_id"``]\> ; `fullDocument`: `T` ; `ns`: [`DocumentNamespace`](Realm.Services.MongoDB#documentnamespace)  } & [`BaseChangeEvent`](Realm.Services.MongoDB#basechangeevent)<``"insert"``\>
 
 A document got inserted into the collection.
 
@@ -156,13 +156,13 @@ A document got inserted into the collection.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Document` |
+| `T` | extends [`Document`](../interfaces/Realm.Services.MongoDB.Document) |
 
 ___
 
 ### InvalidateEvent
 
-Ƭ **InvalidateEvent**: `BaseChangeEvent`<``"invalidate"``\>
+Ƭ **InvalidateEvent**: [`BaseChangeEvent`](Realm.Services.MongoDB#basechangeevent)<``"invalidate"``\>
 
 Invalidate events close the change stream cursor.
 
@@ -178,7 +178,7 @@ A new document with an optional _id defined.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Document` |
+| `T` | extends [`Document`](../interfaces/Realm.Services.MongoDB.Document) |
 
 ___
 
@@ -192,7 +192,7 @@ ___
 
 ### RenameEvent
 
-Ƭ **RenameEvent**: { `ns`: `DocumentNamespace` ; `to`: `DocumentNamespace`  } & `BaseChangeEvent`<``"rename"``\>
+Ƭ **RenameEvent**: { `ns`: [`DocumentNamespace`](Realm.Services.MongoDB#documentnamespace) ; `to`: [`DocumentNamespace`](Realm.Services.MongoDB#documentnamespace)  } & [`BaseChangeEvent`](Realm.Services.MongoDB#basechangeevent)<``"rename"``\>
 
 Occurs when a collection is renamed.
 
@@ -200,7 +200,7 @@ ___
 
 ### ReplaceEvent
 
-Ƭ **ReplaceEvent**<`T`\>: { `documentKey`: `DocumentKey`<`T`[``"_id"``]\> ; `fullDocument`: `T` ; `ns`: `DocumentNamespace`  } & `BaseChangeEvent`<``"replace"``\>
+Ƭ **ReplaceEvent**<`T`\>: { `documentKey`: [`DocumentKey`](Realm.Services.MongoDB#documentkey)<`T`[``"_id"``]\> ; `fullDocument`: `T` ; `ns`: [`DocumentNamespace`](Realm.Services.MongoDB#documentnamespace)  } & [`BaseChangeEvent`](Realm.Services.MongoDB#basechangeevent)<``"replace"``\>
 
 A document got replaced in the collection.
 
@@ -208,7 +208,7 @@ A document got replaced in the collection.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Document` |
+| `T` | extends [`Document`](../interfaces/Realm.Services.MongoDB.Document) |
 
 ___
 
@@ -237,7 +237,7 @@ ___
 
 ### UpdateEvent
 
-Ƭ **UpdateEvent**<`T`\>: { `documentKey`: `DocumentKey`<`T`[``"_id"``]\> ; `fullDocument?`: `T` ; `ns`: `DocumentNamespace` ; `updateDescription`: `UpdateDescription`  } & `BaseChangeEvent`<``"update"``\>
+Ƭ **UpdateEvent**<`T`\>: { `documentKey`: [`DocumentKey`](Realm.Services.MongoDB#documentkey)<`T`[``"_id"``]\> ; `fullDocument?`: `T` ; `ns`: [`DocumentNamespace`](Realm.Services.MongoDB#documentnamespace) ; `updateDescription`: [`UpdateDescription`](Realm.Services.MongoDB#updatedescription)  } & [`BaseChangeEvent`](Realm.Services.MongoDB#basechangeevent)<``"update"``\>
 
 A document got updated in the collection.
 
@@ -245,4 +245,4 @@ A document got updated in the collection.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Document` |
+| `T` | extends [`Document`](../interfaces/Realm.Services.MongoDB.Document) |

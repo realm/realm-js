@@ -7,6 +7,14 @@ custom_edit_url: null
 
 [Realm](../namespaces/Realm).BaseConfiguration
 
+## Hierarchy
+
+- **`BaseConfiguration`**
+
+  ↳ [`ConfigurationWithSync`](Realm.ConfigurationWithSync)
+
+  ↳ [`ConfigurationWithoutSync`](Realm.ConfigurationWithoutSync)
+
 ## Properties
 
 ### encryptionKey
@@ -35,7 +43,7 @@ ___
 
 ### schema
 
-• `Optional` **schema**: (`ObjectSchema` \| `ObjectClass`)[]
+• `Optional` **schema**: ([`ObjectSchema`](Realm.ObjectSchema) \| [`ObjectClass`](Realm.ObjectClass))[]
 
 ___
 

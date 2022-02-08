@@ -9,7 +9,7 @@ custom_edit_url: null
 
 ## Hierarchy
 
-- `BaseSyncConfiguration`
+- [`BaseSyncConfiguration`](Realm.BaseSyncConfiguration)
 
   ↳ **`FlexibleSyncConfiguration`**
 
@@ -17,17 +17,17 @@ custom_edit_url: null
 
 ### \_sessionStopPolicy
 
-• `Optional` **\_sessionStopPolicy**: `SessionStopPolicy`
+• `Optional` **\_sessionStopPolicy**: [`SessionStopPolicy`](../enums/Realm.SessionStopPolicy)
 
 #### Inherited from
 
-BaseSyncConfiguration.\_sessionStopPolicy
+[BaseSyncConfiguration](Realm.BaseSyncConfiguration).[_sessionStopPolicy](Realm.BaseSyncConfiguration#_sessionstoppolicy)
 
 ___
 
 ### clientReset
 
-• `Optional` **clientReset**: `ClientResetConfiguration`<`Manual`\>
+• `Optional` **clientReset**: [`ClientResetConfiguration`](Realm.ClientResetConfiguration)<[`Manual`](../enums/Realm.ClientResetModeManualOnly#manual)\>
 
 ___
 
@@ -41,17 +41,17 @@ ___
 
 #### Inherited from
 
-BaseSyncConfiguration.customHttpHeaders
+[BaseSyncConfiguration](Realm.BaseSyncConfiguration).[customHttpHeaders](Realm.BaseSyncConfiguration#customhttpheaders)
 
 ___
 
 ### error
 
-• `Optional` **error**: `ErrorCallback`
+• `Optional` **error**: [`ErrorCallback`](../namespaces/Realm#errorcallback)
 
 #### Inherited from
 
-BaseSyncConfiguration.error
+[BaseSyncConfiguration](Realm.BaseSyncConfiguration).[error](Realm.BaseSyncConfiguration#error)
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 #### Overrides
 
-BaseSyncConfiguration.flexible
+[BaseSyncConfiguration](Realm.BaseSyncConfiguration).[flexible](Realm.BaseSyncConfiguration#flexible)
 
 ___
 
@@ -73,18 +73,18 @@ ___
 
 ### ssl
 
-• `Optional` **ssl**: `SSLConfiguration`
+• `Optional` **ssl**: [`SSLConfiguration`](Realm.SSLConfiguration)
 
 #### Inherited from
 
-BaseSyncConfiguration.ssl
+[BaseSyncConfiguration](Realm.BaseSyncConfiguration).[ssl](Realm.BaseSyncConfiguration#ssl)
 
 ___
 
 ### user
 
-• **user**: `User`<`DefaultFunctionsFactory`, `SimpleObject`, `DefaultUserProfileData`\>
+• **user**: [`User`](../classes/Realm.User)<[`DefaultFunctionsFactory`](Realm.DefaultFunctionsFactory), `SimpleObject`, [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata)\>
 
 #### Inherited from
 
-BaseSyncConfiguration.user
+[BaseSyncConfiguration](Realm.BaseSyncConfiguration).[user](Realm.BaseSyncConfiguration#user)

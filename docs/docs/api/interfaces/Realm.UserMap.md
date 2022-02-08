@@ -9,4 +9,4 @@ custom_edit_url: null
 
 ## Indexable
 
-▪ [identity: `string`]: `User`
+▪ [identity: `string`]: [`User`](../classes/Realm.User)

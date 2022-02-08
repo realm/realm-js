@@ -11,19 +11,19 @@ custom_edit_url: null
 
 | Name | Type |
 | :------ | :------ |
-| `ClientResetModeT` | `ClientResetMode` |
+| `ClientResetModeT` | [`ClientResetMode`](../enums/Realm.ClientResetMode) |
 
 ## Properties
 
 ### clientResetAfter
 
-• `Optional` **clientResetAfter**: `ClientResetAfterCallback`
+• `Optional` **clientResetAfter**: [`ClientResetAfterCallback`](../namespaces/Realm#clientresetaftercallback)
 
 ___
 
 ### clientResetBefore
 
-• `Optional` **clientResetBefore**: `ClientResetBeforeCallback`
+• `Optional` **clientResetBefore**: [`ClientResetBeforeCallback`](../namespaces/Realm#clientresetbeforecallback)
 
 ___
 

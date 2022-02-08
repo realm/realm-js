@@ -13,7 +13,7 @@ Options passed when updating documents
 
 ### arrayFilters
 
-• `Optional` `Readonly` **arrayFilters**: `Filter`[]
+• `Optional` `Readonly` **arrayFilters**: [`Filter`](../namespaces/Realm.Services.MongoDB#filter)[]
 
 Array Filters
 

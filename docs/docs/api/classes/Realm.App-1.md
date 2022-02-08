@@ -13,7 +13,7 @@ A MongoDB Realm App.
 
 | Name | Type |
 | :------ | :------ |
-| `FunctionsFactoryType` | `DefaultFunctionsFactory` |
+| `FunctionsFactoryType` | [`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory) |
 | `CustomDataType` | `SimpleObject` |
 
 ## Constructors
@@ -28,20 +28,20 @@ Construct a MongoDB Realm App.
 
 | Name | Type |
 | :------ | :------ |
-| `FunctionsFactoryType` | `DefaultFunctionsFactory` |
+| `FunctionsFactoryType` | [`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory) |
 | `CustomDataType` | `SimpleObject` |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `idOrConfiguration` | `string` \| `AppConfiguration` | The id string or configuration for the app. |
+| `idOrConfiguration` | `string` \| [`AppConfiguration`](../interfaces/Realm.AppConfiguration) | The id string or configuration for the app. |
 
 ## Properties
 
 ### allUsers
 
-• `Readonly` **allUsers**: `Readonly`<`Record`<`string`, `User`<`FunctionsFactoryType`, `CustomDataType`, `DefaultUserProfileData`\>\>\>
+• `Readonly` **allUsers**: `Readonly`<`Record`<`string`, [`User`](Realm.User)<`FunctionsFactoryType`, `CustomDataType`, [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata)\>\>\>
 
 All authenticated users.
 
@@ -49,7 +49,7 @@ ___
 
 ### currentUser
 
-• `Readonly` **currentUser**: `User`<`FunctionsFactoryType`, `CustomDataType`, `DefaultUserProfileData`\>
+• `Readonly` **currentUser**: [`User`](Realm.User)<`FunctionsFactoryType`, `CustomDataType`, [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata)\>
 
 The last user to log in or being switched to.
 
@@ -57,7 +57,7 @@ ___
 
 ### emailPasswordAuth
 
-• **emailPasswordAuth**: `EmailPasswordAuth`
+• **emailPasswordAuth**: [`EmailPasswordAuth`](Realm.Auth.EmailPasswordAuth)
 
 Perform operations related to the email/password auth provider.
 
@@ -73,7 +73,7 @@ ___
 
 ### Credentials
 
-▪ `Static` `Readonly` **Credentials**: typeof `Credentials`
+▪ `Static` `Readonly` **Credentials**: typeof [`Credentials`](Realm.Credentials-1)
 
 All credentials available for authentication.
 
@@ -81,7 +81,7 @@ All credentials available for authentication.
 
 ### logIn
 
-▸ **logIn**(`credentials`): `Promise`<`User`<`FunctionsFactoryType`, `CustomDataType`, `DefaultUserProfileData`\>\>
+▸ **logIn**(`credentials`): `Promise`<[`User`](Realm.User)<`FunctionsFactoryType`, `CustomDataType`, [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata)\>\>
 
 Log in a user using a specific credential
 
@@ -89,11 +89,11 @@ Log in a user using a specific credential
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `credentials` | `Credentials`<`SimpleObject`\> | the credentials to use when logging in |
+| `credentials` | [`Credentials`](Realm.Credentials-1)<`SimpleObject`\> | the credentials to use when logging in |
 
 #### Returns
 
-`Promise`<`User`<`FunctionsFactoryType`, `CustomDataType`, `DefaultUserProfileData`\>\>
+`Promise`<[`User`](Realm.User)<`FunctionsFactoryType`, `CustomDataType`, [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata)\>\>
 
 ___
 
@@ -107,7 +107,7 @@ Logs out and removes a user from the client.
 
 | Name | Type |
 | :------ | :------ |
-| `user` | `User`<`FunctionsFactoryType`, `CustomDataType`, `DefaultUserProfileData`\> |
+| `user` | [`User`](Realm.User)<`FunctionsFactoryType`, `CustomDataType`, [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata)\> |
 
 #### Returns
 
@@ -127,7 +127,7 @@ Switch current user, from an instance of `User` or the string id of the user.
 
 | Name | Type |
 | :------ | :------ |
-| `user` | `User`<`FunctionsFactoryType`, `CustomDataType`, `DefaultUserProfileData`\> |
+| `user` | [`User`](Realm.User)<`FunctionsFactoryType`, `CustomDataType`, [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata)\> |
 
 #### Returns
 
@@ -137,7 +137,7 @@ ___
 
 ### getApp
 
-▸ `Static` **getApp**(`appId`): `App`<`DefaultFunctionsFactory`, `SimpleObject`\>
+▸ `Static` **getApp**(`appId`): [`App`](Realm.App-1)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`\>
 
 Get or create a singleton Realm App from an id.
 Calling this function multiple times with the same id will return the same instance.
@@ -150,6 +150,6 @@ Calling this function multiple times with the same id will return the same insta
 
 #### Returns
 
-`App`<`DefaultFunctionsFactory`, `SimpleObject`\>
+[`App`](Realm.App-1)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`\>
 
 The Realm App instance.

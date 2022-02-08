@@ -9,7 +9,7 @@ custom_edit_url: null
 
 ## Hierarchy
 
-- `BaseConfiguration`
+- [`BaseConfiguration`](Realm.BaseConfiguration)
 
   ↳ **`ConfigurationWithSync`**
 
@@ -33,7 +33,7 @@ ___
 
 #### Inherited from
 
-BaseConfiguration.encryptionKey
+[BaseConfiguration](Realm.BaseConfiguration).[encryptionKey](Realm.BaseConfiguration#encryptionkey)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Inherited from
 
-BaseConfiguration.fifoFilesFallbackPath
+[BaseConfiguration](Realm.BaseConfiguration).[fifoFilesFallbackPath](Realm.BaseConfiguration#fifofilesfallbackpath)
 
 ___
 
@@ -65,7 +65,7 @@ ___
 
 #### Inherited from
 
-BaseConfiguration.path
+[BaseConfiguration](Realm.BaseConfiguration).[path](Realm.BaseConfiguration#path)
 
 ___
 
@@ -75,17 +75,17 @@ ___
 
 #### Inherited from
 
-BaseConfiguration.readOnly
+[BaseConfiguration](Realm.BaseConfiguration).[readOnly](Realm.BaseConfiguration#readonly)
 
 ___
 
 ### schema
 
-• `Optional` **schema**: (`ObjectSchema` \| `ObjectClass`)[]
+• `Optional` **schema**: ([`ObjectSchema`](Realm.ObjectSchema) \| [`ObjectClass`](Realm.ObjectClass))[]
 
 #### Inherited from
 
-BaseConfiguration.schema
+[BaseConfiguration](Realm.BaseConfiguration).[schema](Realm.BaseConfiguration#schema)
 
 ___
 
@@ -95,13 +95,13 @@ ___
 
 #### Inherited from
 
-BaseConfiguration.schemaVersion
+[BaseConfiguration](Realm.BaseConfiguration).[schemaVersion](Realm.BaseConfiguration#schemaversion)
 
 ___
 
 ### sync
 
-• **sync**: `SyncConfiguration`
+• **sync**: [`SyncConfiguration`](../namespaces/Realm#syncconfiguration)
 
 ## Methods
 
@@ -122,4 +122,4 @@ ___
 
 #### Inherited from
 
-BaseConfiguration.shouldCompactOnLaunch
+[BaseConfiguration](Realm.BaseConfiguration).[shouldCompactOnLaunch](Realm.BaseConfiguration#shouldcompactonlaunch)

@@ -22,7 +22,7 @@
 
 /// <reference path="./app.d.ts"/>
 
-declare namespace Realm {
+declare module Realm {
     interface CollectionChangeSet {
         insertions: number[];
         deletions: number[];
@@ -1182,9 +1182,4 @@ declare class Realm {
     _updateSchema(schema: Realm.ObjectSchema[]): void;
 }
 
-/**
- * @ignore
- */
-declare module 'realm' {
-    export = Realm
-}
+

@@ -13,7 +13,7 @@ The MongoDB service can be used to get database and collection objects for inter
 
 ### collection
 
-▸ **collection**<`T`\>(`name`): `MongoDBCollection`<`T`\>
+▸ **collection**<`T`\>(`name`): [`MongoDBCollection`](Realm.Services.MongoDB.MongoDBCollection)<`T`\>
 
 Get the interface to a remote MongoDB collection.
 
@@ -21,7 +21,7 @@ Get the interface to a remote MongoDB collection.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Document`<`any`, `T`\> = `any` |
+| `T` | extends [`Document`](Realm.Services.MongoDB.Document)<`any`, `T`\> = `any` |
 
 #### Parameters
 
@@ -31,6 +31,6 @@ Get the interface to a remote MongoDB collection.
 
 #### Returns
 
-`MongoDBCollection`<`T`\>
+[`MongoDBCollection`](Realm.Services.MongoDB.MongoDBCollection)<`T`\>
 
 The remote MongoDB collection.

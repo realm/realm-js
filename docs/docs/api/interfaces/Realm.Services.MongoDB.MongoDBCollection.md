@@ -13,7 +13,7 @@ A remote collection of documents in a MongoDB database.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Document` |
+| `T` | extends [`Document`](Realm.Services.MongoDB.Document) |
 
 ## Methods
 
@@ -27,7 +27,7 @@ Runs an aggregation framework pipeline against this collection.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `pipeline` | `AggregatePipelineStage`[] | An array of aggregation pipeline stages. |
+| `pipeline` | [`AggregatePipelineStage`](../namespaces/Realm.Services.MongoDB#aggregatepipelinestage)[] | An array of aggregation pipeline stages. |
 
 #### Returns
 
@@ -47,8 +47,8 @@ Counts the number of documents in this collection matching the provided filter.
 
 | Name | Type |
 | :------ | :------ |
-| `filter?` | `Filter` |
-| `options?` | `CountOptions` |
+| `filter?` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) |
+| `options?` | [`CountOptions`](Realm.Services.MongoDB.CountOptions) |
 
 #### Returns
 
@@ -58,7 +58,7 @@ ___
 
 ### deleteMany
 
-▸ **deleteMany**(`filter`): `Promise`<`DeleteResult`\>
+▸ **deleteMany**(`filter`): `Promise`<[`DeleteResult`](Realm.Services.MongoDB.DeleteResult)\>
 
 Deletes multiple documents.
 
@@ -66,11 +66,11 @@ Deletes multiple documents.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter` | `Filter` | A filter applied to narrow down the result. |
+| `filter` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) | A filter applied to narrow down the result. |
 
 #### Returns
 
-`Promise`<`DeleteResult`\>
+`Promise`<[`DeleteResult`](Realm.Services.MongoDB.DeleteResult)\>
 
 The result.
 
@@ -78,7 +78,7 @@ ___
 
 ### deleteOne
 
-▸ **deleteOne**(`filter`): `Promise`<`DeleteResult`\>
+▸ **deleteOne**(`filter`): `Promise`<[`DeleteResult`](Realm.Services.MongoDB.DeleteResult)\>
 
 Deletes a single matching document from the collection.
 
@@ -86,11 +86,11 @@ Deletes a single matching document from the collection.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter` | `Filter` | A filter applied to narrow down the result. |
+| `filter` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) | A filter applied to narrow down the result. |
 
 #### Returns
 
-`Promise`<`DeleteResult`\>
+`Promise`<[`DeleteResult`](Realm.Services.MongoDB.DeleteResult)\>
 
 The result.
 
@@ -106,8 +106,8 @@ Finds the documents which match the provided query.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter?` | `Filter` | An optional filter applied to narrow down the results. |
-| `options?` | `FindOptions` | Additional options to apply. |
+| `filter?` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) | An optional filter applied to narrow down the results. |
+| `options?` | [`FindOptions`](Realm.Services.MongoDB.FindOptions) | Additional options to apply. |
 
 #### Returns
 
@@ -127,8 +127,8 @@ Finds a document which matches the provided filter.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter?` | `Filter` | A filter applied to narrow down the result. |
-| `options?` | `FindOneOptions` | Additional options to apply. |
+| `filter?` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) | A filter applied to narrow down the result. |
+| `options?` | [`FindOneOptions`](Realm.Services.MongoDB.FindOneOptions) | Additional options to apply. |
 
 #### Returns
 
@@ -148,8 +148,8 @@ Finds a document which matches the provided filter and deletes it
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter` | `Filter` | A filter applied to narrow down the result. |
-| `options?` | `FindOneOptions` | Additional options to apply. |
+| `filter` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) | A filter applied to narrow down the result. |
+| `options?` | [`FindOneOptions`](Realm.Services.MongoDB.FindOneOptions) | Additional options to apply. |
 
 #### Returns
 
@@ -169,9 +169,9 @@ Finds a document which matches the provided filter and replaces it with a new do
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter` | `Filter` | A filter applied to narrow down the result. |
-| `replacement` | `NewDocument`<`T`\> | The new replacing document. |
-| `options?` | `FindOneAndModifyOptions` | Additional options to apply. |
+| `filter` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) | A filter applied to narrow down the result. |
+| `replacement` | [`NewDocument`](../namespaces/Realm.Services.MongoDB#newdocument)<`T`\> | The new replacing document. |
+| `options?` | [`FindOneAndModifyOptions`](Realm.Services.MongoDB.FindOneAndModifyOptions) | Additional options to apply. |
 
 #### Returns
 
@@ -191,9 +191,9 @@ Finds a document which matches the provided query and performs the desired updat
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter` | `Filter` | A filter applied to narrow down the result. |
-| `update` | `Update` | The new values for the document. |
-| `options?` | `FindOneAndModifyOptions` | Additional options to apply. |
+| `filter` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) | A filter applied to narrow down the result. |
+| `update` | [`Update`](../namespaces/Realm.Services.MongoDB#update) | The new values for the document. |
+| `options?` | [`FindOneAndModifyOptions`](Realm.Services.MongoDB.FindOneAndModifyOptions) | Additional options to apply. |
 
 #### Returns
 
@@ -205,7 +205,7 @@ ___
 
 ### insertMany
 
-▸ **insertMany**(`documents`): `Promise`<`InsertManyResult`<`T`[``"_id"``]\>\>
+▸ **insertMany**(`documents`): `Promise`<[`InsertManyResult`](Realm.Services.MongoDB.InsertManyResult)<`T`[``"_id"``]\>\>
 
 Inserts an array of documents into the collection.
 If any values are missing identifiers, they will be generated by the server.
@@ -214,11 +214,11 @@ If any values are missing identifiers, they will be generated by the server.
 
 | Name | Type |
 | :------ | :------ |
-| `documents` | `NewDocument`<`T`\>[] |
+| `documents` | [`NewDocument`](../namespaces/Realm.Services.MongoDB#newdocument)<`T`\>[] |
 
 #### Returns
 
-`Promise`<`InsertManyResult`<`T`[``"_id"``]\>\>
+`Promise`<[`InsertManyResult`](Realm.Services.MongoDB.InsertManyResult)<`T`[``"_id"``]\>\>
 
 The result.
 
@@ -226,7 +226,7 @@ ___
 
 ### insertOne
 
-▸ **insertOne**(`document`): `Promise`<`InsertOneResult`<`T`[``"_id"``]\>\>
+▸ **insertOne**(`document`): `Promise`<[`InsertOneResult`](Realm.Services.MongoDB.InsertOneResult)<`T`[``"_id"``]\>\>
 
 Inserts a single document into the collection.
 Note: If the document is missing an _id, one will be generated for it by the server.
@@ -235,11 +235,11 @@ Note: If the document is missing an _id, one will be generated for it by the ser
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `document` | `NewDocument`<`T`\> | The document. |
+| `document` | [`NewDocument`](../namespaces/Realm.Services.MongoDB#newdocument)<`T`\> | The document. |
 
 #### Returns
 
-`Promise`<`InsertOneResult`<`T`[``"_id"``]\>\>
+`Promise`<[`InsertOneResult`](Realm.Services.MongoDB.InsertOneResult)<`T`[``"_id"``]\>\>
 
 The result.
 
@@ -247,7 +247,7 @@ ___
 
 ### updateMany
 
-▸ **updateMany**(`filter`, `update`, `options?`): `Promise`<`UpdateResult`<`T`[``"_id"``]\>\>
+▸ **updateMany**(`filter`, `update`, `options?`): `Promise`<[`UpdateResult`](Realm.Services.MongoDB.UpdateResult)<`T`[``"_id"``]\>\>
 
 Updates multiple documents matching the provided filter in this collection.
 
@@ -255,13 +255,13 @@ Updates multiple documents matching the provided filter in this collection.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter` | `Filter` | A filter applied to narrow down the result. |
-| `update` | `Update` | The new values for the documents. |
-| `options?` | `UpdateOptions` | Additional options to apply. |
+| `filter` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) | A filter applied to narrow down the result. |
+| `update` | [`Update`](../namespaces/Realm.Services.MongoDB#update) | The new values for the documents. |
+| `options?` | [`UpdateOptions`](Realm.Services.MongoDB.UpdateOptions) | Additional options to apply. |
 
 #### Returns
 
-`Promise`<`UpdateResult`<`T`[``"_id"``]\>\>
+`Promise`<[`UpdateResult`](Realm.Services.MongoDB.UpdateResult)<`T`[``"_id"``]\>\>
 
 The result.
 
@@ -269,7 +269,7 @@ ___
 
 ### updateOne
 
-▸ **updateOne**(`filter`, `update`, `options?`): `Promise`<`UpdateResult`<`T`[``"_id"``]\>\>
+▸ **updateOne**(`filter`, `update`, `options?`): `Promise`<[`UpdateResult`](Realm.Services.MongoDB.UpdateResult)<`T`[``"_id"``]\>\>
 
 Updates a single document matching the provided filter in this collection.
 
@@ -277,13 +277,13 @@ Updates a single document matching the provided filter in this collection.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter` | `Filter` | A filter applied to narrow down the result. |
-| `update` | `Update` | The new values for the document. |
-| `options?` | `UpdateOptions` | Additional options to apply. |
+| `filter` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) | A filter applied to narrow down the result. |
+| `update` | [`Update`](../namespaces/Realm.Services.MongoDB#update) | The new values for the document. |
+| `options?` | [`UpdateOptions`](Realm.Services.MongoDB.UpdateOptions) | Additional options to apply. |
 
 #### Returns
 
-`Promise`<`UpdateResult`<`T`[``"_id"``]\>\>
+`Promise`<[`UpdateResult`](Realm.Services.MongoDB.UpdateResult)<`T`[``"_id"``]\>\>
 
 The result.
 
@@ -291,7 +291,7 @@ ___
 
 ### watch
 
-▸ **watch**(`options?`): `AsyncGenerator`<`ChangeEvent`<`T`\>, `any`, `unknown`\>
+▸ **watch**(`options?`): `AsyncGenerator`<[`ChangeEvent`](../namespaces/Realm.Services.MongoDB#changeevent)<`T`\>, `any`, `unknown`\>
 
 Creates an asynchronous change stream to monitor this collection for changes.
 
@@ -313,9 +313,9 @@ Important Note: To use this on React Native, you must install:
 
 #### Returns
 
-`AsyncGenerator`<`ChangeEvent`<`T`\>, `any`, `unknown`\>
+`AsyncGenerator`<[`ChangeEvent`](../namespaces/Realm.Services.MongoDB#changeevent)<`T`\>, `any`, `unknown`\>
 
-▸ **watch**(`options`): `AsyncGenerator`<`ChangeEvent`<`T`\>, `any`, `unknown`\>
+▸ **watch**(`options`): `AsyncGenerator`<[`ChangeEvent`](../namespaces/Realm.Services.MongoDB#changeevent)<`T`\>, `any`, `unknown`\>
 
 Creates an asynchronous change stream to monitor this collection for changes.
 
@@ -333,9 +333,9 @@ the `filter` or `ids` options.
 
 #### Returns
 
-`AsyncGenerator`<`ChangeEvent`<`T`\>, `any`, `unknown`\>
+`AsyncGenerator`<[`ChangeEvent`](../namespaces/Realm.Services.MongoDB#changeevent)<`T`\>, `any`, `unknown`\>
 
-▸ **watch**(`options`): `AsyncGenerator`<`ChangeEvent`<`T`\>, `any`, `unknown`\>
+▸ **watch**(`options`): `AsyncGenerator`<[`ChangeEvent`](../namespaces/Realm.Services.MongoDB#changeevent)<`T`\>, `any`, `unknown`\>
 
 Creates an asynchronous change stream to monitor this collection for changes.
 
@@ -349,8 +349,8 @@ You may specify at most one of the `filter` or `ids` options.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `options` | `Object` | - |
-| `options.filter` | `Filter` | A filter document |
+| `options.filter` | [`Filter`](../namespaces/Realm.Services.MongoDB#filter) | A filter document |
 
 #### Returns
 
-`AsyncGenerator`<`ChangeEvent`<`T`\>, `any`, `unknown`\>
+`AsyncGenerator`<[`ChangeEvent`](../namespaces/Realm.Services.MongoDB#changeevent)<`T`\>, `any`, `unknown`\>

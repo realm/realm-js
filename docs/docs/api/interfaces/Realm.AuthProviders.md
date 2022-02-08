@@ -13,7 +13,7 @@ An object with interfaces to all possible authentication providers the app might
 
 ### apiKey
 
-• **apiKey**: `ApiKeyAuth`
+• **apiKey**: [`ApiKeyAuth`](../classes/Realm.Auth.ApiKeyAuth)
 
 Authentication provider where users identify using an API-key.
 
@@ -21,6 +21,6 @@ ___
 
 ### emailPassword
 
-• **emailPassword**: `EmailPasswordAuth`
+• **emailPassword**: [`EmailPasswordAuth`](../classes/Realm.Auth.EmailPasswordAuth)
 
 Authentication provider where users identify using email and password.

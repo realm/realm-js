@@ -19,7 +19,7 @@ Authentication provider where users identify using an API-key.
 
 ### create
 
-▸ **create**(`name`): `Promise`<`ApiKey`\>
+▸ **create**(`name`): `Promise`<[`ApiKey`](../namespaces/Realm.Auth#apikey)\>
 
 Creates an API key that can be used to authenticate as the current user.
 
@@ -31,7 +31,7 @@ Creates an API key that can be used to authenticate as the current user.
 
 #### Returns
 
-`Promise`<`ApiKey`\>
+`Promise`<[`ApiKey`](../namespaces/Realm.Auth#apikey)\>
 
 ___
 
@@ -91,7 +91,7 @@ ___
 
 ### fetch
 
-▸ **fetch**(`keyId`): `Promise`<`ApiKey`\>
+▸ **fetch**(`keyId`): `Promise`<[`ApiKey`](../namespaces/Realm.Auth#apikey)\>
 
 Fetches an API key associated with the current user.
 
@@ -103,16 +103,16 @@ Fetches an API key associated with the current user.
 
 #### Returns
 
-`Promise`<`ApiKey`\>
+`Promise`<[`ApiKey`](../namespaces/Realm.Auth#apikey)\>
 
 ___
 
 ### fetchAll
 
-▸ **fetchAll**(): `Promise`<`ApiKey`[]\>
+▸ **fetchAll**(): `Promise`<[`ApiKey`](../namespaces/Realm.Auth#apikey)[]\>
 
 Fetches the API keys associated with the current user.
 
 #### Returns
 
-`Promise`<`ApiKey`[]\>
+`Promise`<[`ApiKey`](../namespaces/Realm.Auth#apikey)[]\>

@@ -29,7 +29,7 @@ Call the custom function to reset the password.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `resetDetails` | `CallResetPasswordFunctionDetails` | The email and password details to reset |
+| `resetDetails` | [`CallResetPasswordFunctionDetails`](../interfaces/Realm.Auth.CallResetPasswordFunctionDetails) | The email and password details to reset |
 | `...args` | `unknown`[] | One or more arguments to pass to the function. |
 
 #### Returns
@@ -68,7 +68,7 @@ Confirm a user by the token received.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `tokenDetails` | `ConfirmUserDetails` | The received token and ID details |
+| `tokenDetails` | [`ConfirmUserDetails`](../interfaces/Realm.Auth.ConfirmUserDetails) | The received token and ID details |
 
 #### Returns
 
@@ -105,7 +105,7 @@ Register a new user.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `userDetails` | `RegisterUserDetails` | The new user's email and password details |
+| `userDetails` | [`RegisterUserDetails`](../interfaces/Realm.Auth.RegisterUserDetails) | The new user's email and password details |
 
 #### Returns
 
@@ -142,7 +142,7 @@ Resend the confirmation email.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `emailDetails` | `ResendConfirmationDetails` | The associated email details |
+| `emailDetails` | [`ResendConfirmationDetails`](../interfaces/Realm.Auth.ResendConfirmationDetails) | The associated email details |
 
 #### Returns
 
@@ -178,7 +178,7 @@ Complete resetting the password
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `resetDetails` | `ResetPasswordDetails` | The token and password details for the reset |
+| `resetDetails` | [`ResetPasswordDetails`](../interfaces/Realm.Auth.ResetPasswordDetails) | The token and password details for the reset |
 
 #### Returns
 
@@ -216,7 +216,7 @@ Rerun the custom confirmation function.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `emailDetails` | `RetryCustomConfirmationDetails` | The associated email details |
+| `emailDetails` | [`RetryCustomConfirmationDetails`](../interfaces/Realm.Auth.RetryCustomConfirmationDetails) | The associated email details |
 
 #### Returns
 
@@ -252,7 +252,7 @@ Send an email with tokens to reset the password.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `emailDetails` | `SendResetPasswordDetails` | The email details to send the reset to |
+| `emailDetails` | [`SendResetPasswordDetails`](../interfaces/Realm.Auth.SendResetPasswordDetails) | The email details to send the reset to |
 
 #### Returns
 

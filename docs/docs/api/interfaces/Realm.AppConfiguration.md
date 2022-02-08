@@ -13,7 +13,7 @@ Pass an object implementing this interface to the app constructor.
 
 ### app
 
-• `Optional` **app**: `LocalAppConfiguration`
+• `Optional` **app**: [`LocalAppConfiguration`](Realm.LocalAppConfiguration)
 
 This describes the local app, sent to the server when a user authenticates.
 Specifying this will enable the server to respond differently to specific versions of specific apps.

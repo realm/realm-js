@@ -115,7 +115,7 @@ ___
 
 ### CollectionChangeCallback
 
-Ƭ **CollectionChangeCallback**<`T`\>: (`collection`: `Collection`<`T`\>, `changes`: `CollectionChangeSet`) => `void`
+Ƭ **CollectionChangeCallback**<`T`\>: (`collection`: [`Collection`](Realm#collection)<`T`\>, `changes`: [`CollectionChangeSet`](../interfaces/Realm.CollectionChangeSet)) => `void`
 
 #### Type parameters
 
@@ -131,8 +131,8 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `collection` | `Collection`<`T`\> |
-| `changes` | `CollectionChangeSet` |
+| `collection` | [`Collection`](Realm#collection)<`T`\> |
+| `changes` | [`CollectionChangeSet`](../interfaces/Realm.CollectionChangeSet) |
 
 ##### Returns
 
@@ -142,7 +142,7 @@ ___
 
 ### Configuration
 
-Ƭ **Configuration**: `ConfigurationWithSync` \| `ConfigurationWithoutSync`
+Ƭ **Configuration**: [`ConfigurationWithSync`](../interfaces/Realm.ConfigurationWithSync) \| [`ConfigurationWithoutSync`](../interfaces/Realm.ConfigurationWithoutSync)
 
 realm configuration
 
@@ -152,7 +152,7 @@ ___
 
 ### ConnectionNotificationCallback
 
-Ƭ **ConnectionNotificationCallback**: (`newState`: `ConnectionState`, `oldState`: `ConnectionState`) => `void`
+Ƭ **ConnectionNotificationCallback**: (`newState`: [`ConnectionState`](../enums/Realm.ConnectionState), `oldState`: [`ConnectionState`](../enums/Realm.ConnectionState)) => `void`
 
 #### Type declaration
 
@@ -162,8 +162,8 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `newState` | `ConnectionState` |
-| `oldState` | `ConnectionState` |
+| `newState` | [`ConnectionState`](../enums/Realm.ConnectionState) |
+| `oldState` | [`ConnectionState`](../enums/Realm.ConnectionState) |
 
 ##### Returns
 
@@ -181,7 +181,7 @@ ___
 
 ### Dictionary
 
-Ƭ **Dictionary**<`ValueType`\>: `DictionaryBase`<`ValueType`\> & { [key: string]: `ValueType`;  }
+Ƭ **Dictionary**<`ValueType`\>: [`DictionaryBase`](../interfaces/Realm.DictionaryBase)<`ValueType`\> & { [key: string]: `ValueType`;  }
 
 Dictionary
 
@@ -191,13 +191,13 @@ Dictionary
 
 | Name | Type |
 | :------ | :------ |
-| `ValueType` | `Mixed` |
+| `ValueType` | [`Mixed`](Realm#mixed) |
 
 ___
 
 ### DictionaryChangeCallback
 
-Ƭ **DictionaryChangeCallback**: (`dict`: `Dictionary`, `changes`: `DictionaryChangeSet`) => `void`
+Ƭ **DictionaryChangeCallback**: (`dict`: [`Dictionary`](Realm#dictionary), `changes`: [`DictionaryChangeSet`](../interfaces/Realm.DictionaryChangeSet)) => `void`
 
 #### Type declaration
 
@@ -207,8 +207,8 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `dict` | `Dictionary` |
-| `changes` | `DictionaryChangeSet` |
+| `dict` | [`Dictionary`](Realm#dictionary) |
+| `changes` | [`DictionaryChangeSet`](../interfaces/Realm.DictionaryChangeSet) |
 
 ##### Returns
 
@@ -218,7 +218,7 @@ ___
 
 ### ErrorCallback
 
-Ƭ **ErrorCallback**: (`session`: `App.Sync.Session`, `error`: `SyncError` \| `ClientResetError`) => `void`
+Ƭ **ErrorCallback**: (`session`: [`Session`](../classes/Realm.App.Sync.Session), `error`: [`SyncError`](../interfaces/Realm.SyncError) \| [`ClientResetError`](../interfaces/Realm.ClientResetError)) => `void`
 
 #### Type declaration
 
@@ -228,8 +228,8 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `session` | `App.Sync.Session` |
-| `error` | `SyncError` \| `ClientResetError` |
+| `session` | [`Session`](../classes/Realm.App.Sync.Session) |
+| `error` | [`SyncError`](../interfaces/Realm.SyncError) \| [`ClientResetError`](../interfaces/Realm.ClientResetError) |
 
 ##### Returns
 
@@ -270,7 +270,7 @@ ___
 
 ### ObjectChangeCallback
 
-Ƭ **ObjectChangeCallback**: (`object`: `Object`, `changes`: `ObjectChangeSet`) => `void`
+Ƭ **ObjectChangeCallback**: (`object`: [`Object`](../classes/Realm.Object), `changes`: [`ObjectChangeSet`](../interfaces/Realm.ObjectChangeSet)) => `void`
 
 #### Type declaration
 
@@ -280,8 +280,8 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `object` | `Object` |
-| `changes` | `ObjectChangeSet` |
+| `object` | [`Object`](../classes/Realm.Object) |
+| `changes` | [`ObjectChangeSet`](../interfaces/Realm.ObjectChangeSet) |
 
 ##### Returns
 
@@ -291,7 +291,7 @@ ___
 
 ### PrimaryKey
 
-Ƭ **PrimaryKey**: `number` \| `string` \| `Realm.BSON.ObjectId` \| `Realm.BSON.UUID`
+Ƭ **PrimaryKey**: `number` \| `string` \| [`ObjectId`](Realm.BSON#objectid) \| [`UUID`](Realm.BSON#uuid)
 
 ___
 
@@ -377,7 +377,7 @@ ___
 
 ### SSLVerifyCallback
 
-Ƭ **SSLVerifyCallback**: (`sslVerifyObject`: `SSLVerifyObject`) => `boolean`
+Ƭ **SSLVerifyCallback**: (`sslVerifyObject`: [`SSLVerifyObject`](../interfaces/Realm.SSLVerifyObject)) => `boolean`
 
 #### Type declaration
 
@@ -387,7 +387,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `sslVerifyObject` | `SSLVerifyObject` |
+| `sslVerifyObject` | [`SSLVerifyObject`](../interfaces/Realm.SSLVerifyObject) |
 
 ##### Returns
 
@@ -407,7 +407,7 @@ ___
 
 ### SyncConfiguration
 
-Ƭ **SyncConfiguration**: `FlexibleSyncConfiguration` \| `PartitionSyncConfiguration`
+Ƭ **SyncConfiguration**: [`FlexibleSyncConfiguration`](../interfaces/Realm.FlexibleSyncConfiguration) \| [`PartitionSyncConfiguration`](../interfaces/Realm.PartitionSyncConfiguration)
 
 ## Variables
 
@@ -425,7 +425,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `prototype` | `Collection`<`any`\> |
+| `prototype` | [`Collection`](Realm#collection)<`any`\> |
 
 ___
 
@@ -437,7 +437,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `prototype` | `Dictionary`<`unknown`\> |
+| `prototype` | [`Dictionary`](Realm#dictionary)<`unknown`\> |
 
 ___
 
@@ -449,7 +449,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `prototype` | `List`<`any`\> |
+| `prototype` | [`List`](Realm#list)<`any`\> |
 
 ___
 
@@ -461,7 +461,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `prototype` | `Results`<`any`\> |
+| `prototype` | [`Results`](Realm#results)<`any`\> |
 
 ___
 
@@ -473,7 +473,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `prototype` | `Set`<`any`\> |
+| `prototype` | [`Set`](Realm#set)<`any`\> |
 
 ## Functions
 

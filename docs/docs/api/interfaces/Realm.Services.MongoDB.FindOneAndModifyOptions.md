@@ -11,7 +11,7 @@ Options passed when finding and modifying a signle document
 
 ## Hierarchy
 
-- `FindOneOptions`
+- [`FindOneOptions`](Realm.Services.MongoDB.FindOneOptions)
 
   ↳ **`FindOneAndModifyOptions`**
 
@@ -25,6 +25,8 @@ Limits the fields to return for all matching documents.
 See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
 
 #### Inherited from
+
+[FindOneOptions](Realm.Services.MongoDB.FindOneOptions).[projection](Realm.Services.MongoDB.FindOneOptions#projection)
 
 ___
 
@@ -45,6 +47,8 @@ ___
 The order in which to return matching documents.
 
 #### Inherited from
+
+[FindOneOptions](Realm.Services.MongoDB.FindOneOptions).[sort](Realm.Services.MongoDB.FindOneOptions#sort)
 
 ___
 

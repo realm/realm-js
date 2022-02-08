@@ -33,4 +33,4 @@ ___
 
 ### properties
 
-• **properties**: `PropertiesTypes`
+• **properties**: [`PropertiesTypes`](Realm.PropertiesTypes)

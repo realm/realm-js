@@ -13,7 +13,7 @@ custom_edit_url: null
 
 ### config
 
-• **config**: `SyncConfiguration`
+• **config**: [`SyncConfiguration`](../namespaces/Realm#syncconfiguration)
 
 ___
 

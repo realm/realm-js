@@ -21,6 +21,6 @@ ___
 
 ### providerType
 
-• **providerType**: `ProviderType`
+• **providerType**: [`ProviderType`](../namespaces/Realm#providertype)
 
 The type of the provider associated with the identity.

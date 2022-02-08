@@ -61,7 +61,7 @@ Iterator of values in the array.
 
 #### Inherited from
 
-ReadonlyArray.\_\_@iterator@49445
+ReadonlyArray.\_\_@iterator@49443
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `callback` | `CollectionChangeCallback`<`T`\> |
+| `callback` | [`CollectionChangeCallback`](../namespaces/Realm#collectionchangecallback)<`T`\> |
 
 #### Returns
 
@@ -263,7 +263,7 @@ ___
 
 ### filtered
 
-▸ **filtered**(`query`, ...`arg`): `Results`<`T`\>
+▸ **filtered**(`query`, ...`arg`): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Parameters
 
@@ -274,7 +274,7 @@ ___
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
 Results
 
@@ -776,7 +776,7 @@ ___
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callback` | `CollectionChangeCallback`<`T`\> | this is the callback to remove |
+| `callback` | [`CollectionChangeCallback`](../namespaces/Realm#collectionchangecallback)<`T`\> | this is the callback to remove |
 
 #### Returns
 
@@ -811,11 +811,11 @@ ___
 
 ### snapshot
 
-▸ **snapshot**(): `Results`<`T`\>
+▸ **snapshot**(): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
 Results
 
@@ -846,7 +846,7 @@ ___
 
 ### sorted
 
-▸ **sorted**(`reverse?`): `Results`<`T`\>
+▸ **sorted**(`reverse?`): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Parameters
 
@@ -856,21 +856,21 @@ ___
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
-▸ **sorted**(`descriptor`): `Results`<`T`\>
+▸ **sorted**(`descriptor`): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `descriptor` | `SortDescriptor`[] |
+| `descriptor` | [`SortDescriptor`](../namespaces/Realm#sortdescriptor)[] |
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
-▸ **sorted**(`descriptor`, `reverse?`): `Results`<`T`\>
+▸ **sorted**(`descriptor`, `reverse?`): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Parameters
 
@@ -881,7 +881,7 @@ ___
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
 ___
 

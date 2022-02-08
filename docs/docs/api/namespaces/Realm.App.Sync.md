@@ -37,7 +37,7 @@ ___
 
 ### PartitionValue
 
-Ƭ **PartitionValue**: `string` \| `number` \| `Realm.BSON.ObjectId` \| `Realm.BSON.UUID` \| ``null``
+Ƭ **PartitionValue**: `string` \| `number` \| [`ObjectId`](Realm.BSON#objectid) \| [`UUID`](Realm.BSON#uuid) \| ``null``
 
 ## Variables
 
@@ -49,7 +49,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `prototype` | `MutableSubscriptionSet` |
+| `prototype` | [`MutableSubscriptionSet`](Realm.App.Sync#mutablesubscriptionset) |
 
 ___
 
@@ -61,13 +61,13 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `prototype` | `SubscriptionSet` |
+| `prototype` | [`SubscriptionSet`](Realm.App.Sync#subscriptionset) |
 
 ___
 
 ### downloadBeforeOpenBehavior
 
-• **downloadBeforeOpenBehavior**: `OpenRealmBehaviorConfiguration`
+• **downloadBeforeOpenBehavior**: [`OpenRealmBehaviorConfiguration`](../interfaces/Realm.OpenRealmBehaviorConfiguration)
 
 The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
 
@@ -75,7 +75,7 @@ ___
 
 ### openLocalRealmBehavior
 
-• **openLocalRealmBehavior**: `OpenRealmBehaviorConfiguration`
+• **openLocalRealmBehavior**: [`OpenRealmBehaviorConfiguration`](../interfaces/Realm.OpenRealmBehaviorConfiguration)
 
 The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
 If this is the first time you open the Realm, it will be empty while the server data is being downloaded in the background.
@@ -90,7 +90,7 @@ If this is the first time you open the Realm, it will be empty while the server 
 
 | Name | Type |
 | :------ | :------ |
-| `app` | `App`<`DefaultFunctionsFactory`, `SimpleObject`\> |
+| `app` | [`App`](../classes/Realm.App-1)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`\> |
 
 #### Returns
 
@@ -106,7 +106,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `app` | `App`<`DefaultFunctionsFactory`, `SimpleObject`\> |
+| `app` | [`App`](../classes/Realm.App-1)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`\> |
 
 #### Returns
 
@@ -116,34 +116,34 @@ ___
 
 ### getAllSyncSessions
 
-▸ **getAllSyncSessions**(`user`): [`Realm.App.Sync.Session`]
+▸ **getAllSyncSessions**(`user`): [[`Session`](../classes/Realm.App.Sync.Session)]
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `user` | `User`<`DefaultFunctionsFactory`, `SimpleObject`, `DefaultUserProfileData`\> |
+| `user` | [`User`](../classes/Realm.User)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`, [`DefaultUserProfileData`](Realm#defaultuserprofiledata)\> |
 
 #### Returns
 
-[`Realm.App.Sync.Session`]
+[[`Session`](../classes/Realm.App.Sync.Session)]
 
 ___
 
 ### getSyncSession
 
-▸ **getSyncSession**(`user`, `partitionValue`): `Realm.App.Sync.Session`
+▸ **getSyncSession**(`user`, `partitionValue`): [`Session`](../classes/Realm.App.Sync.Session)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `user` | `User`<`DefaultFunctionsFactory`, `SimpleObject`, `DefaultUserProfileData`\> |
-| `partitionValue` | `PartitionValue` |
+| `user` | [`User`](../classes/Realm.User)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`, [`DefaultUserProfileData`](Realm#defaultuserprofiledata)\> |
+| `partitionValue` | [`PartitionValue`](Realm.App.Sync#partitionvalue) |
 
 #### Returns
 
-`Realm.App.Sync.Session`
+[`Session`](../classes/Realm.App.Sync.Session)
 
 ___
 
@@ -155,7 +155,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `app` | `App`<`DefaultFunctionsFactory`, `SimpleObject`\> |
+| `app` | [`App`](../classes/Realm.App-1)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`\> |
 | `path` | `string` |
 
 #### Returns
@@ -172,7 +172,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `app` | `App`<`DefaultFunctionsFactory`, `SimpleObject`\> |
+| `app` | [`App`](../classes/Realm.App-1)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`\> |
 
 #### Returns
 
@@ -188,8 +188,8 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `app` | `App`<`DefaultFunctionsFactory`, `SimpleObject`\> |
-| `logLevel` | `LogLevel` |
+| `app` | [`App`](../classes/Realm.App-1)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`\> |
+| `logLevel` | [`LogLevel`](Realm.App.Sync#loglevel) |
 
 #### Returns
 
@@ -205,8 +205,8 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `app` | `App`<`DefaultFunctionsFactory`, `SimpleObject`\> |
-| `callback` | (`level`: `NumericLogLevel`, `message`: `string`) => `void` |
+| `app` | [`App`](../classes/Realm.App-1)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`\> |
+| `callback` | (`level`: [`NumericLogLevel`](../enums/Realm.App.Sync.NumericLogLevel), `message`: `string`) => `void` |
 
 #### Returns
 
@@ -222,7 +222,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `app` | `App`<`DefaultFunctionsFactory`, `SimpleObject`\> |
+| `app` | [`App`](../classes/Realm.App-1)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`\> |
 | `userAgent` | `string` |
 
 #### Returns

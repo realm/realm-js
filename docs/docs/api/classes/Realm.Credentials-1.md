@@ -47,7 +47,7 @@ ___
 
 ### providerType
 
-• `Readonly` **providerType**: `ProviderType`
+• `Readonly` **providerType**: [`ProviderType`](../namespaces/Realm#providertype)
 
 Type of the authentication provider.
 
@@ -55,13 +55,13 @@ Type of the authentication provider.
 
 ### anonymous
 
-▸ `Static` **anonymous**(): `Credentials`<`AnonymousPayload`\>
+▸ `Static` **anonymous**(): [`Credentials`](Realm.Credentials-1)<[`AnonymousPayload`](../namespaces/Realm.Credentials#anonymouspayload)\>
 
 Factory for `Credentials` which authenticate using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
 
 #### Returns
 
-`Credentials`<`AnonymousPayload`\>
+[`Credentials`](Realm.Credentials-1)<[`AnonymousPayload`](../namespaces/Realm.Credentials#anonymouspayload)\>
 
 A `Credentials` object for logging in using `app.logIn`.
 
@@ -69,7 +69,7 @@ ___
 
 ### apple
 
-▸ `Static` **apple**(`idToken`): `Credentials`<`ApplePayload`\>
+▸ `Static` **apple**(`idToken`): [`Credentials`](Realm.Credentials-1)<[`ApplePayload`](../namespaces/Realm.Credentials#applepayload)\>
 
 Factory for `Credentials` which authenticate using the [Apple ID Provider](https://docs.mongodb.com/realm/authentication/apple/).
 
@@ -81,7 +81,7 @@ Factory for `Credentials` which authenticate using the [Apple ID Provider](https
 
 #### Returns
 
-`Credentials`<`ApplePayload`\>
+[`Credentials`](Realm.Credentials-1)<[`ApplePayload`](../namespaces/Realm.Credentials#applepayload)\>
 
 A `Credentials` object for logging in using `app.logIn`.
 
@@ -89,7 +89,7 @@ ___
 
 ### emailPassword
 
-▸ `Static` **emailPassword**(`email`, `password`): `Credentials`<`EmailPasswordPayload`\>
+▸ `Static` **emailPassword**(`email`, `password`): [`Credentials`](Realm.Credentials-1)<[`EmailPasswordPayload`](../namespaces/Realm.Credentials#emailpasswordpayload)\>
 
 Factory for `Credentials` which authenticate using the [Email/Password Provider](https://docs.mongodb.com/realm/authentication/email-password/).
 Note: This was formerly known as the "Username/Password" provider.
@@ -103,7 +103,7 @@ Note: This was formerly known as the "Username/Password" provider.
 
 #### Returns
 
-`Credentials`<`EmailPasswordPayload`\>
+[`Credentials`](Realm.Credentials-1)<[`EmailPasswordPayload`](../namespaces/Realm.Credentials#emailpasswordpayload)\>
 
 A `Credentials` object for logging in using `app.logIn`.
 
@@ -111,7 +111,7 @@ ___
 
 ### facebook
 
-▸ `Static` **facebook**(`accessToken`): `Credentials`<`FacebookPayload`\>
+▸ `Static` **facebook**(`accessToken`): [`Credentials`](Realm.Credentials-1)<[`FacebookPayload`](../namespaces/Realm.Credentials#facebookpayload)\>
 
 Factory for `Credentials` which authenticate using the [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
 
@@ -123,7 +123,7 @@ Factory for `Credentials` which authenticate using the [Facebook Provider](https
 
 #### Returns
 
-`Credentials`<`FacebookPayload`\>
+[`Credentials`](Realm.Credentials-1)<[`FacebookPayload`](../namespaces/Realm.Credentials#facebookpayload)\>
 
 A `Credentials` object for logging in using `app.logIn`.
 
@@ -131,7 +131,7 @@ ___
 
 ### function
 
-▸ `Static` **function**<`PayloadType`\>(`payload`): `Credentials`<`PayloadType`\>
+▸ `Static` **function**<`PayloadType`\>(`payload`): [`Credentials`](Realm.Credentials-1)<`PayloadType`\>
 
 Factory for `Credentials` which authenticate using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
 
@@ -149,7 +149,7 @@ Factory for `Credentials` which authenticate using the [Custom Function Provider
 
 #### Returns
 
-`Credentials`<`PayloadType`\>
+[`Credentials`](Realm.Credentials-1)<`PayloadType`\>
 
 A `Credentials` object for logging in using `app.logIn`.
 
@@ -157,7 +157,7 @@ ___
 
 ### google
 
-▸ `Static` **google**(`authCodeOrIdToken`): `Credentials`<`GooglePayload`\>
+▸ `Static` **google**(`authCodeOrIdToken`): [`Credentials`](Realm.Credentials-1)<[`GooglePayload`](../namespaces/Realm.Credentials#googlepayload)\>
 
 Factory for `Credentials` which authenticate using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
 
@@ -169,11 +169,11 @@ Factory for `Credentials` which authenticate using the [Google Provider](https:/
 
 #### Returns
 
-`Credentials`<`GooglePayload`\>
+[`Credentials`](Realm.Credentials-1)<[`GooglePayload`](../namespaces/Realm.Credentials#googlepayload)\>
 
 A `Credentials` object for logging in using `app.logIn`.
 
-▸ `Static` **google**(`payload`): `Credentials`<`GoogleAuthCodePayload`\>
+▸ `Static` **google**(`payload`): [`Credentials`](Realm.Credentials-1)<[`GoogleAuthCodePayload`](../namespaces/Realm.Credentials#googleauthcodepayload)\>
 
 Factory for `Credentials` which authenticate using the Auth Token OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
 
@@ -186,11 +186,11 @@ Factory for `Credentials` which authenticate using the Auth Token OAuth 2.0 [Goo
 
 #### Returns
 
-`Credentials`<`GoogleAuthCodePayload`\>
+[`Credentials`](Realm.Credentials-1)<[`GoogleAuthCodePayload`](../namespaces/Realm.Credentials#googleauthcodepayload)\>
 
 A `Credentials` object for logging in using `app.logIn`.
 
-▸ `Static` **google**(`payload`): `Credentials`<`GoogleIdTokenPayload`\>
+▸ `Static` **google**(`payload`): [`Credentials`](Realm.Credentials-1)<[`GoogleIdTokenPayload`](../namespaces/Realm.Credentials#googleidtokenpayload)\>
 
 Factory for `Credentials` which authenticate using the OpenID Connect OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
 
@@ -203,7 +203,7 @@ Factory for `Credentials` which authenticate using the OpenID Connect OAuth 2.0 
 
 #### Returns
 
-`Credentials`<`GoogleIdTokenPayload`\>
+[`Credentials`](Realm.Credentials-1)<[`GoogleIdTokenPayload`](../namespaces/Realm.Credentials#googleidtokenpayload)\>
 
 A `Credentials` object for logging in using `app.logIn`.
 
@@ -211,7 +211,7 @@ ___
 
 ### jwt
 
-▸ `Static` **jwt**(`token`): `Credentials`<`JWTPayload`\>
+▸ `Static` **jwt**(`token`): [`Credentials`](Realm.Credentials-1)<[`JWTPayload`](../namespaces/Realm.Credentials#jwtpayload)\>
 
 Factory for `Credentials` which authenticate using the [Custom JWT Provider](https://docs.mongodb.com/realm/authentication/custom-jwt/).
 
@@ -223,7 +223,7 @@ Factory for `Credentials` which authenticate using the [Custom JWT Provider](htt
 
 #### Returns
 
-`Credentials`<`JWTPayload`\>
+[`Credentials`](Realm.Credentials-1)<[`JWTPayload`](../namespaces/Realm.Credentials#jwtpayload)\>
 
 A `Credentials` object for logging in using `app.logIn`.
 
@@ -231,7 +231,7 @@ ___
 
 ### serverApiKey
 
-▸ `Static` **serverApiKey**(`key`): `Credentials`<`ApiKeyPayload`\>
+▸ `Static` **serverApiKey**(`key`): [`Credentials`](Realm.Credentials-1)<[`ApiKeyPayload`](../namespaces/Realm.Credentials#apikeypayload)\>
 
 Factory for `Credentials` which authenticate using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
 
@@ -245,7 +245,7 @@ Factory for `Credentials` which authenticate using the [API Key Provider](https:
 
 #### Returns
 
-`Credentials`<`ApiKeyPayload`\>
+[`Credentials`](Realm.Credentials-1)<[`ApiKeyPayload`](../namespaces/Realm.Credentials#apikeypayload)\>
 
 A `Credentials` object for logging in using `app.logIn`.
 
@@ -253,7 +253,7 @@ ___
 
 ### userApiKey
 
-▸ `Static` **userApiKey**(`key`): `Credentials`<`ApiKeyPayload`\>
+▸ `Static` **userApiKey**(`key`): [`Credentials`](Realm.Credentials-1)<[`ApiKeyPayload`](../namespaces/Realm.Credentials#apikeypayload)\>
 
 Factory for `Credentials` which authenticate using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
 
@@ -267,6 +267,6 @@ Factory for `Credentials` which authenticate using the [API Key Provider](https:
 
 #### Returns
 
-`Credentials`<`ApiKeyPayload`\>
+[`Credentials`](Realm.Credentials-1)<[`ApiKeyPayload`](../namespaces/Realm.Credentials#apikeypayload)\>
 
 A `Credentials` object for logging in using `app.logIn`.

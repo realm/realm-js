@@ -9,4 +9,4 @@ custom_edit_url: null
 
 ## Indexable
 
-▪ [keys: `string`]: `PropertyType` \| `ObjectSchemaProperty` \| `ObjectSchema`
+▪ [keys: `string`]: [`PropertyType`](../namespaces/Realm#propertytype) \| [`ObjectSchemaProperty`](Realm.ObjectSchemaProperty) \| [`ObjectSchema`](Realm.ObjectSchema)

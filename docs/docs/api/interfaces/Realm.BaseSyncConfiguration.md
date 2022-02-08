@@ -11,13 +11,21 @@ custom_edit_url: null
 
 | Name | Type |
 | :------ | :------ |
-| `ClientResetModeT` | `ClientResetMode` |
+| `ClientResetModeT` | [`ClientResetMode`](../enums/Realm.ClientResetMode) |
+
+## Hierarchy
+
+- **`BaseSyncConfiguration`**
+
+  ↳ [`FlexibleSyncConfiguration`](Realm.FlexibleSyncConfiguration)
+
+  ↳ [`PartitionSyncConfiguration`](Realm.PartitionSyncConfiguration)
 
 ## Properties
 
 ### \_sessionStopPolicy
 
-• `Optional` **\_sessionStopPolicy**: `SessionStopPolicy`
+• `Optional` **\_sessionStopPolicy**: [`SessionStopPolicy`](../enums/Realm.SessionStopPolicy)
 
 ___
 
@@ -33,7 +41,7 @@ ___
 
 ### error
 
-• `Optional` **error**: `ErrorCallback`
+• `Optional` **error**: [`ErrorCallback`](../namespaces/Realm#errorcallback)
 
 ___
 
@@ -45,10 +53,10 @@ ___
 
 ### ssl
 
-• `Optional` **ssl**: `SSLConfiguration`
+• `Optional` **ssl**: [`SSLConfiguration`](Realm.SSLConfiguration)
 
 ___
 
 ### user
 
-• **user**: `User`<`DefaultFunctionsFactory`, `SimpleObject`, `DefaultUserProfileData`\>
+• **user**: [`User`](../classes/Realm.User)<[`DefaultFunctionsFactory`](Realm.DefaultFunctionsFactory), `SimpleObject`, [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata)\>

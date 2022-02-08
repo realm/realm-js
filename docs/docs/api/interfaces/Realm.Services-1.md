@@ -13,7 +13,7 @@ The MongoDB Realm Services bound to an app.
 
 ### http
 
-▸ **http**(`serviceName?`): `HTTP`
+▸ **http**(`serviceName?`): [`HTTP`](Realm.Services.HTTP-1)
 
 Get the interface to the HTTP service
 
@@ -25,13 +25,13 @@ Get the interface to the HTTP service
 
 #### Returns
 
-`HTTP`
+[`HTTP`](Realm.Services.HTTP-1)
 
 ___
 
 ### mongodb
 
-▸ **mongodb**(`serviceName?`): `MongoDB`
+▸ **mongodb**(`serviceName?`): [`MongoDB`](Realm.Services.MongoDB-1)
 
 Get the interface to the remote MongoDB service
 
@@ -43,4 +43,4 @@ Get the interface to the remote MongoDB service
 
 #### Returns
 
-`MongoDB`
+[`MongoDB`](Realm.Services.MongoDB-1)

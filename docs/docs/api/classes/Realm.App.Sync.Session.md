@@ -17,13 +17,13 @@ custom_edit_url: null
 
 ### config
 
-• `Readonly` **config**: `SyncConfiguration`
+• `Readonly` **config**: [`SyncConfiguration`](../namespaces/Realm#syncconfiguration)
 
 ___
 
 ### connectionState
 
-• `Readonly` **connectionState**: `ConnectionState`
+• `Readonly` **connectionState**: [`ConnectionState`](../enums/Realm.ConnectionState)
 
 ___
 
@@ -41,7 +41,7 @@ ___
 
 ### user
 
-• `Readonly` **user**: `User`<`DefaultFunctionsFactory`, `SimpleObject`, `DefaultUserProfileData`\>
+• `Readonly` **user**: [`User`](Realm.User)<[`DefaultFunctionsFactory`](../interfaces/Realm.DefaultFunctionsFactory), `SimpleObject`, [`DefaultUserProfileData`](../namespaces/Realm#defaultuserprofiledata)\>
 
 ## Methods
 
@@ -53,7 +53,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `callback` | `ConnectionNotificationCallback` |
+| `callback` | [`ConnectionNotificationCallback`](../namespaces/Realm#connectionnotificationcallback) |
 
 #### Returns
 
@@ -69,9 +69,9 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `direction` | `ProgressDirection` |
-| `mode` | `ProgressMode` |
-| `progressCallback` | `ProgressNotificationCallback` |
+| `direction` | [`ProgressDirection`](../namespaces/Realm#progressdirection) |
+| `mode` | [`ProgressMode`](../namespaces/Realm#progressmode) |
+| `progressCallback` | [`ProgressNotificationCallback`](../namespaces/Realm#progressnotificationcallback) |
 
 #### Returns
 
@@ -123,7 +123,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `callback` | `ConnectionNotificationCallback` |
+| `callback` | [`ConnectionNotificationCallback`](../namespaces/Realm#connectionnotificationcallback) |
 
 #### Returns
 
@@ -139,7 +139,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `progressCallback` | `ProgressNotificationCallback` |
+| `progressCallback` | [`ProgressNotificationCallback`](../namespaces/Realm#progressnotificationcallback) |
 
 #### Returns
 

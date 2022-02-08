@@ -16,9 +16,13 @@ modified inside a [SubscriptionSet.update](Realm.App.Sync.SubscriptionSet#update
 
 ## Hierarchy
 
-- `ReadonlyArray`<`Subscription`\>
+- `ReadonlyArray`<[`Subscription`](../classes/Realm.App.Sync.Subscription)\>
 
   ↳ **`BaseSubscriptionSet`**
+
+  ↳↳ [`SubscriptionSet`](Realm.App.Sync.SubscriptionSet)
+
+  ↳↳ [`MutableSubscriptionSet`](Realm.App.Sync.MutableSubscriptionSet)
 
 ## Constructors
 
@@ -63,7 +67,7 @@ ___
 
 ### state
 
-• `Readonly` **state**: `SubscriptionsState`
+• `Readonly` **state**: [`SubscriptionsState`](../enums/Realm.App.Sync.SubscriptionsState)
 
 **`returns`** The state of the SubscriptionSet.
 
@@ -80,23 +84,23 @@ ___
 
 ### [iterator]
 
-▸ **[iterator]**(): `IterableIterator`<`Subscription`\>
+▸ **[iterator]**(): `IterableIterator`<[`Subscription`](../classes/Realm.App.Sync.Subscription)\>
 
 Iterator of values in the array.
 
 #### Returns
 
-`IterableIterator`<`Subscription`\>
+`IterableIterator`<[`Subscription`](../classes/Realm.App.Sync.Subscription)\>
 
 #### Inherited from
 
-ReadonlyArray.\_\_@iterator@49445
+ReadonlyArray.\_\_@iterator@49443
 
 ___
 
 ### concat
 
-▸ **concat**(...`items`): `Subscription`[]
+▸ **concat**(...`items`): [`Subscription`](../classes/Realm.App.Sync.Subscription)[]
 
 Combines two or more arrays.
 
@@ -104,17 +108,17 @@ Combines two or more arrays.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `...items` | `ConcatArray`<`Subscription`\>[] | Additional items to add to the end of array1. |
+| `...items` | `ConcatArray`<[`Subscription`](../classes/Realm.App.Sync.Subscription)\>[] | Additional items to add to the end of array1. |
 
 #### Returns
 
-`Subscription`[]
+[`Subscription`](../classes/Realm.App.Sync.Subscription)[]
 
 #### Inherited from
 
 ReadonlyArray.concat
 
-▸ **concat**(...`items`): `Subscription`[]
+▸ **concat**(...`items`): [`Subscription`](../classes/Realm.App.Sync.Subscription)[]
 
 Combines two or more arrays.
 
@@ -122,11 +126,11 @@ Combines two or more arrays.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `...items` | (`Subscription` \| `ConcatArray`<`Subscription`\>)[] | Additional items to add to the end of array1. |
+| `...items` | ([`Subscription`](../classes/Realm.App.Sync.Subscription) \| `ConcatArray`<[`Subscription`](../classes/Realm.App.Sync.Subscription)\>)[] | Additional items to add to the end of array1. |
 
 #### Returns
 
-`Subscription`[]
+[`Subscription`](../classes/Realm.App.Sync.Subscription)[]
 
 #### Inherited from
 
@@ -136,13 +140,13 @@ ___
 
 ### entries
 
-▸ **entries**(): `IterableIterator`<[`number`, `Subscription`]\>
+▸ **entries**(): `IterableIterator`<[`number`, [`Subscription`](../classes/Realm.App.Sync.Subscription)]\>
 
 Returns an iterable of key, value pairs for every entry in the array
 
 #### Returns
 
-`IterableIterator`<[`number`, `Subscription`]\>
+`IterableIterator`<[`number`, [`Subscription`](../classes/Realm.App.Sync.Subscription)]\>
 
 #### Inherited from
 
@@ -160,13 +164,13 @@ Determines whether all the members of an array satisfy the specified test.
 
 | Name | Type |
 | :------ | :------ |
-| `S` | extends `Subscription`<`S`\> |
+| `S` | extends [`Subscription`](../classes/Realm.App.Sync.Subscription)<`S`\> |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Subscription`, `index`: `number`, `array`: readonly `Subscription`[]) => value is S | A function that accepts up to three arguments. The every method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array. |
+| `predicate` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => value is S | A function that accepts up to three arguments. The every method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -185,7 +189,7 @@ Determines whether all the members of an array satisfy the specified test.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Subscription`, `index`: `number`, `array`: readonly `Subscription`[]) => `unknown` | A function that accepts up to three arguments. The every method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array. |
+| `predicate` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => `unknown` | A function that accepts up to three arguments. The every method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -208,13 +212,13 @@ Returns the elements of an array that meet the condition specified in a callback
 
 | Name | Type |
 | :------ | :------ |
-| `S` | extends `Subscription`<`S`\> |
+| `S` | extends [`Subscription`](../classes/Realm.App.Sync.Subscription)<`S`\> |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Subscription`, `index`: `number`, `array`: readonly `Subscription`[]) => value is S | A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array. |
+| `predicate` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => value is S | A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -225,7 +229,7 @@ Returns the elements of an array that meet the condition specified in a callback
 
 ReadonlyArray.filter
 
-▸ **filter**(`predicate`, `thisArg?`): `Subscription`[]
+▸ **filter**(`predicate`, `thisArg?`): [`Subscription`](../classes/Realm.App.Sync.Subscription)[]
 
 Returns the elements of an array that meet the condition specified in a callback function.
 
@@ -233,12 +237,12 @@ Returns the elements of an array that meet the condition specified in a callback
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Subscription`, `index`: `number`, `array`: readonly `Subscription`[]) => `unknown` | A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array. |
+| `predicate` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => `unknown` | A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
 
-`Subscription`[]
+[`Subscription`](../classes/Realm.App.Sync.Subscription)[]
 
 #### Inherited from
 
@@ -257,13 +261,13 @@ otherwise.
 
 | Name | Type |
 | :------ | :------ |
-| `S` | extends `Subscription`<`S`\> |
+| `S` | extends [`Subscription`](../classes/Realm.App.Sync.Subscription)<`S`\> |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Subscription`, `index`: `number`, `obj`: readonly `Subscription`[]) => value is S | find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, find immediately returns that element value. Otherwise, find returns undefined. |
+| `predicate` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `obj`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => value is S | find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, find immediately returns that element value. Otherwise, find returns undefined. |
 | `thisArg?` | `any` | If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead. |
 
 #### Returns
@@ -274,18 +278,18 @@ otherwise.
 
 ReadonlyArray.find
 
-▸ **find**(`predicate`, `thisArg?`): `Subscription`
+▸ **find**(`predicate`, `thisArg?`): [`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `predicate` | (`value`: `Subscription`, `index`: `number`, `obj`: readonly `Subscription`[]) => `unknown` |
+| `predicate` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `obj`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => `unknown` |
 | `thisArg?` | `any` |
 
 #### Returns
 
-`Subscription`
+[`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 #### Inherited from
 
@@ -295,7 +299,7 @@ ___
 
 ### findByName
 
-▸ **findByName**(`name`): `Subscription`
+▸ **findByName**(`name`): [`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 Find a subscription by name.
 
@@ -307,7 +311,7 @@ Find a subscription by name.
 
 #### Returns
 
-`Subscription`
+[`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 The named subscription, or `null` if the subscription is not found.
 
@@ -315,7 +319,7 @@ ___
 
 ### findByQuery
 
-▸ **findByQuery**<`T`\>(`query`): `Subscription`
+▸ **findByQuery**<`T`\>(`query`): [`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 Find a subscription by query. Will match both named and unnamed subscriptions.
 
@@ -329,11 +333,11 @@ Find a subscription by query. Will match both named and unnamed subscriptions.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `query` | `Results`<`T` & `Object`\> | The query to search for, represented as a [Realm.Results](../namespaces/Realm#results) instance, e.g. `Realm.objects("Cat").filtered("age > 10")`. |
+| `query` | [`Results`](../namespaces/Realm#results)<`T` & [`Object`](../classes/Realm.Object)\> | The query to search for, represented as a [Realm.Results](../namespaces/Realm#results) instance, e.g. `Realm.objects("Cat").filtered("age > 10")`. |
 
 #### Returns
 
-`Subscription`
+[`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 The subscription with the specified query, or null if the subscription is not found.
 
@@ -350,7 +354,7 @@ otherwise.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Subscription`, `index`: `number`, `obj`: readonly `Subscription`[]) => `unknown` | find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, findIndex immediately returns that element index. Otherwise, findIndex returns -1. |
+| `predicate` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `obj`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => `unknown` | find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, findIndex immediately returns that element index. Otherwise, findIndex returns -1. |
 | `thisArg?` | `any` | If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead. |
 
 #### Returns
@@ -412,7 +416,7 @@ This is identical to a map followed by flat with depth 1.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callback` | (`value`: `Subscription`, `index`: `number`, `array`: `Subscription`[]) => `U` \| readonly `U`[] | A function that accepts up to three arguments. The flatMap method calls the callback function one time for each element in the array. |
+| `callback` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `array`: [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => `U` \| readonly `U`[] | A function that accepts up to three arguments. The flatMap method calls the callback function one time for each element in the array. |
 | `thisArg?` | `This` | An object to which the this keyword can refer in the callback function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -435,7 +439,7 @@ Performs the specified action for each element in an array.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`value`: `Subscription`, `index`: `number`, `array`: readonly `Subscription`[]) => `void` | A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => `void` | A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -458,7 +462,7 @@ Determines whether an array includes a certain element, returning true or false 
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `searchElement` | `Subscription` | The element to search for. |
+| `searchElement` | [`Subscription`](../classes/Realm.App.Sync.Subscription) | The element to search for. |
 | `fromIndex?` | `number` | The position in this array at which to begin searching for searchElement. |
 
 #### Returns
@@ -481,7 +485,7 @@ Returns the index of the first occurrence of a value in an array.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `searchElement` | `Subscription` | The value to locate in the array. |
+| `searchElement` | [`Subscription`](../classes/Realm.App.Sync.Subscription) | The value to locate in the array. |
 | `fromIndex?` | `number` | The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0. |
 
 #### Returns
@@ -542,7 +546,7 @@ Returns the index of the last occurrence of a specified value in an array.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `searchElement` | `Subscription` | The value to locate in the array. |
+| `searchElement` | [`Subscription`](../classes/Realm.App.Sync.Subscription) | The value to locate in the array. |
 | `fromIndex?` | `number` | The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array. |
 
 #### Returns
@@ -571,7 +575,7 @@ Calls a defined callback function on each element of an array, and returns an ar
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`value`: `Subscription`, `index`: `number`, `array`: readonly `Subscription`[]) => `U` | A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => `U` | A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -586,7 +590,7 @@ ___
 
 ### reduce
 
-▸ **reduce**(`callbackfn`): `Subscription`
+▸ **reduce**(`callbackfn`): [`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 
@@ -594,28 +598,28 @@ Calls the specified callback function for all the elements in an array. The retu
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`previousValue`: `Subscription`, `currentValue`: `Subscription`, `currentIndex`: `number`, `array`: readonly `Subscription`[]) => `Subscription` | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`previousValue`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `currentValue`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `currentIndex`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => [`Subscription`](../classes/Realm.App.Sync.Subscription) | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array. |
 
 #### Returns
 
-`Subscription`
+[`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 #### Inherited from
 
 ReadonlyArray.reduce
 
-▸ **reduce**(`callbackfn`, `initialValue`): `Subscription`
+▸ **reduce**(`callbackfn`, `initialValue`): [`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `callbackfn` | (`previousValue`: `Subscription`, `currentValue`: `Subscription`, `currentIndex`: `number`, `array`: readonly `Subscription`[]) => `Subscription` |
-| `initialValue` | `Subscription` |
+| `callbackfn` | (`previousValue`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `currentValue`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `currentIndex`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => [`Subscription`](../classes/Realm.App.Sync.Subscription) |
+| `initialValue` | [`Subscription`](../classes/Realm.App.Sync.Subscription) |
 
 #### Returns
 
-`Subscription`
+[`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 #### Inherited from
 
@@ -635,7 +639,7 @@ Calls the specified callback function for all the elements in an array. The retu
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`previousValue`: `U`, `currentValue`: `Subscription`, `currentIndex`: `number`, `array`: readonly `Subscription`[]) => `U` | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`previousValue`: `U`, `currentValue`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `currentIndex`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => `U` | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array. |
 | `initialValue` | `U` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
 
 #### Returns
@@ -650,7 +654,7 @@ ___
 
 ### reduceRight
 
-▸ **reduceRight**(`callbackfn`): `Subscription`
+▸ **reduceRight**(`callbackfn`): [`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 
@@ -658,28 +662,28 @@ Calls the specified callback function for all the elements in an array, in desce
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`previousValue`: `Subscription`, `currentValue`: `Subscription`, `currentIndex`: `number`, `array`: readonly `Subscription`[]) => `Subscription` | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`previousValue`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `currentValue`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `currentIndex`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => [`Subscription`](../classes/Realm.App.Sync.Subscription) | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. |
 
 #### Returns
 
-`Subscription`
+[`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 #### Inherited from
 
 ReadonlyArray.reduceRight
 
-▸ **reduceRight**(`callbackfn`, `initialValue`): `Subscription`
+▸ **reduceRight**(`callbackfn`, `initialValue`): [`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `callbackfn` | (`previousValue`: `Subscription`, `currentValue`: `Subscription`, `currentIndex`: `number`, `array`: readonly `Subscription`[]) => `Subscription` |
-| `initialValue` | `Subscription` |
+| `callbackfn` | (`previousValue`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `currentValue`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `currentIndex`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => [`Subscription`](../classes/Realm.App.Sync.Subscription) |
+| `initialValue` | [`Subscription`](../classes/Realm.App.Sync.Subscription) |
 
 #### Returns
 
-`Subscription`
+[`Subscription`](../classes/Realm.App.Sync.Subscription)
 
 #### Inherited from
 
@@ -699,7 +703,7 @@ Calls the specified callback function for all the elements in an array, in desce
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`previousValue`: `U`, `currentValue`: `Subscription`, `currentIndex`: `number`, `array`: readonly `Subscription`[]) => `U` | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`previousValue`: `U`, `currentValue`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `currentIndex`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => `U` | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. |
 | `initialValue` | `U` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
 
 #### Returns
@@ -714,7 +718,7 @@ ___
 
 ### slice
 
-▸ **slice**(`start?`, `end?`): `Subscription`[]
+▸ **slice**(`start?`, `end?`): [`Subscription`](../classes/Realm.App.Sync.Subscription)[]
 
 Returns a section of an array.
 
@@ -727,7 +731,7 @@ Returns a section of an array.
 
 #### Returns
 
-`Subscription`[]
+[`Subscription`](../classes/Realm.App.Sync.Subscription)[]
 
 #### Inherited from
 
@@ -745,7 +749,7 @@ Determines whether the specified callback function returns true for any element 
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Subscription`, `index`: `number`, `array`: readonly `Subscription`[]) => `unknown` | A function that accepts up to three arguments. The some method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value true, or until the end of the array. |
+| `predicate` | (`value`: [`Subscription`](../classes/Realm.App.Sync.Subscription), `index`: `number`, `array`: readonly [`Subscription`](../classes/Realm.App.Sync.Subscription)[]) => `unknown` | A function that accepts up to three arguments. The some method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value true, or until the end of the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -792,13 +796,13 @@ ___
 
 ### values
 
-▸ **values**(): `IterableIterator`<`Subscription`\>
+▸ **values**(): `IterableIterator`<[`Subscription`](../classes/Realm.App.Sync.Subscription)\>
 
 Returns an iterable of values in the array
 
 #### Returns
 
-`IterableIterator`<`Subscription`\>
+`IterableIterator`<[`Subscription`](../classes/Realm.App.Sync.Subscription)\>
 
 #### Inherited from
 

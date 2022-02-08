@@ -37,7 +37,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `callback` | `ObjectChangeCallback` |
+| `callback` | [`ObjectChangeCallback`](../namespaces/Realm#objectchangecallback) |
 
 #### Returns
 
@@ -103,7 +103,7 @@ ___
 
 ### linkingObjects
 
-▸ **linkingObjects**<`T`\>(`objectType`, `property`): `Results`<`T` & `Object`\>
+▸ **linkingObjects**<`T`\>(`objectType`, `property`): [`Results`](../namespaces/Realm#results)<`T` & [`Object`](Realm.Object)\>
 
 #### Type parameters
 
@@ -120,7 +120,7 @@ ___
 
 #### Returns
 
-`Results`<`T` & `Object`\>
+[`Results`](../namespaces/Realm#results)<`T` & [`Object`](Realm.Object)\>
 
 Results`<T>`
 
@@ -140,11 +140,11 @@ ___
 
 ### objectSchema
 
-▸ **objectSchema**(): `ObjectSchema`
+▸ **objectSchema**(): [`ObjectSchema`](../interfaces/Realm.ObjectSchema)
 
 #### Returns
 
-`ObjectSchema`
+[`ObjectSchema`](../interfaces/Realm.ObjectSchema)
 
 ObjectSchema
 
@@ -168,7 +168,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `callback` | `ObjectChangeCallback` |
+| `callback` | [`ObjectChangeCallback`](../namespaces/Realm#objectchangecallback) |
 
 #### Returns
 

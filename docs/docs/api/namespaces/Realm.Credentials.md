@@ -112,7 +112,7 @@ ___
 
 ### GooglePayload
 
-Ƭ **GooglePayload**: `GoogleAuthCodePayload` \| `GoogleIdTokenPayload`
+Ƭ **GooglePayload**: [`GoogleAuthCodePayload`](Realm.Credentials#googleauthcodepayload) \| [`GoogleIdTokenPayload`](Realm.Credentials#googleidtokenpayload)
 
 Payload sent when authenticating using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
 

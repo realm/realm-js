@@ -19,7 +19,7 @@ Set
 
 ## Hierarchy
 
-- `Collection`<`T`\>
+- [`Collection`](../namespaces/Realm#collection)<`T`\>
 
   ↳ **`Set`**
 
@@ -75,13 +75,13 @@ Iterator of values in the array.
 
 #### Inherited from
 
-Collection.\_\_@iterator@49445
+Collection.\_\_@iterator@49443
 
 ___
 
 ### add
 
-▸ **add**(`object`): `Set`<`T`\>
+▸ **add**(`object`): [`Set`](../namespaces/Realm#set)<`T`\>
 
 Add a new value to the Set
 
@@ -93,7 +93,7 @@ Add a new value to the Set
 
 #### Returns
 
-`Set`<`T`\>
+[`Set`](../namespaces/Realm#set)<`T`\>
 
 The Realm.Set`<T>` itself, after adding the new value
 
@@ -107,7 +107,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `callback` | `CollectionChangeCallback`<`T`\> |
+| `callback` | [`CollectionChangeCallback`](../namespaces/Realm#collectionchangecallback)<`T`\> |
 
 #### Returns
 
@@ -341,7 +341,7 @@ ___
 
 ### filtered
 
-▸ **filtered**(`query`, ...`arg`): `Results`<`T`\>
+▸ **filtered**(`query`, ...`arg`): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Parameters
 
@@ -352,7 +352,7 @@ ___
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
 Results
 
@@ -898,7 +898,7 @@ ___
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callback` | `CollectionChangeCallback`<`T`\> | this is the callback to remove |
+| `callback` | [`CollectionChangeCallback`](../namespaces/Realm#collectionchangecallback)<`T`\> | this is the callback to remove |
 
 #### Returns
 
@@ -937,11 +937,11 @@ ___
 
 ### snapshot
 
-▸ **snapshot**(): `Results`<`T`\>
+▸ **snapshot**(): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
 Results
 
@@ -976,7 +976,7 @@ ___
 
 ### sorted
 
-▸ **sorted**(`reverse?`): `Results`<`T`\>
+▸ **sorted**(`reverse?`): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Parameters
 
@@ -986,29 +986,29 @@ ___
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Inherited from
 
 Collection.sorted
 
-▸ **sorted**(`descriptor`): `Results`<`T`\>
+▸ **sorted**(`descriptor`): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `descriptor` | `SortDescriptor`[] |
+| `descriptor` | [`SortDescriptor`](../namespaces/Realm#sortdescriptor)[] |
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Inherited from
 
 Collection.sorted
 
-▸ **sorted**(`descriptor`, `reverse?`): `Results`<`T`\>
+▸ **sorted**(`descriptor`, `reverse?`): [`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Parameters
 
@@ -1019,7 +1019,7 @@ Collection.sorted
 
 #### Returns
 
-`Results`<`T`\>
+[`Results`](../namespaces/Realm#results)<`T`\>
 
 #### Inherited from
 

@@ -9,6 +9,12 @@ custom_edit_url: null
 
 A collection of functions as defined on the MongoDB Server.
 
+## Hierarchy
+
+- **`BaseFunctionsFactory`**
+
+  ↳ [`DefaultFunctionsFactory`](Realm.DefaultFunctionsFactory)
+
 ## Methods
 
 ### callFunction

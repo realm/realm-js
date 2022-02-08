@@ -15,4 +15,4 @@ ObjectType
 
 ### type
 
-• **type**: `ObjectClass`
+• **type**: [`ObjectClass`](Realm.ObjectClass)
