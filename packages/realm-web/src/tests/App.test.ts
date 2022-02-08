@@ -394,7 +394,7 @@ describe("App", () => {
     const credentials = Credentials.emailPassword("gilfoyle@testing.mongodb.com", "v3ry-s3cret");
     const user = await app.logIn(credentials);
 
-    // Expect logging in returns a user
+    // Expect login returns a user
     expect(user).is.instanceOf(User);
     expect(user.isLoggedIn).equals(true);
     // Delete the user

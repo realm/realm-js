@@ -175,7 +175,7 @@ export class App<
       this.storage.clear();
       // A failed hydration shouldn't throw and break the app experience
       // Since this is "just" persisted state that unfortunately got corrupted or partially lost
-      console.warn("Realm app hydration failed:", (err as Error).message);
+      console.warn("Realm app hydration failed:", err instanceof Error ? err.message : err);
     }
   }
 

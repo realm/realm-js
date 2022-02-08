@@ -294,8 +294,8 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
 }
 
 /**
- * @brief Delete permanently the user server-side. Moreover, the user will be logged out
- *        locally, and the current user will be changed. The function is asynchronously
+ * @brief Permanently delete the user server-side. Moreover, the user will be logged out
+ *        locally, and the current user will be changed. The function is asynchronous
  *        and the callback function will be called when the operation is completed (either successfully
  *        or with an error).
  *

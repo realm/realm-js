@@ -152,7 +152,7 @@ class App {
 
   /**
    * Deletes the user.
-   * NOTE: This irrecoverably deletes the user from device as well as the server!
+   * NOTE: This irrecoverably deletes the user from the device as well as the server!
    *
    * @param {Realm.User} user - The user to delete.
    * @returns {Promise<void>}

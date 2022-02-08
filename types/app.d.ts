@@ -334,7 +334,7 @@ declare namespace Realm {
 
     /**
      * Delete the user.
-     * NOTE: This irrecoverably deletes the user from device as well as the server!
+     * NOTE: This irrecoverably deletes the user from the device as well as the server!
      *
      * @returns A promise that resolves once the user has been deleted.
      */

@@ -564,7 +564,7 @@ module.exports = {
     app.removeUser(user1);
     TestCase.assertFalse(user1.isLoggedIn);
 
-    // the user still exists
+    // Expect that the user still exists on the server
     let user2 = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
     TestCase.assertTrue(user2.isLoggedIn);
 
