@@ -548,4 +548,52 @@ module.exports = {
     TestCase.assertFalse(user2.isLoggedIn);
     TestCase.assertArrayLength(Object.keys(all), 2, "still holds references to both users"); // FIXME: is this actually expected?
   },
+
+  async testRemoveUser() {
+    let app = new Realm.App(appConfig);
+    await logOutExistingUsers(app);
+    TestCase.assertNull(app.currentUser, "No users");
+
+    const validEmail = randomVerifiableEmail();
+    const validPassword = "test1234567890";
+    await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
+    let user1 = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+
+    TestCase.assertTrue(user1.isLoggedIn);
+
+    app.removeUser(user1);
+    TestCase.assertFalse(user1.isLoggedIn);
+
+    // Expect that the user still exists on the server
+    let user2 = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+    TestCase.assertTrue(user2.isLoggedIn);
+
+    await user2.logOut();
+  },
+
+  async testDeleteUser() {
+    let app = new Realm.App(appConfig);
+    await logOutExistingUsers(app);
+    TestCase.assertNull(app.currentUser, "No users");
+
+    const validEmail = randomVerifiableEmail();
+    const validPassword = "test1234567890";
+    await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
+    let user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+
+    TestCase.assertTrue(user.isLoggedIn);
+
+    await app.deleteUser(user);
+    TestCase.assertFalse(user.isLoggedIn, "User is logged out");
+
+    // cannot log in - user doesn't exist
+    let didFail = false;
+    let user2 = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword)).catch((err) => {
+      TestCase.assertEqual(err.message, "invalid username/password");
+      TestCase.assertEqual(err.code, 50);
+      didFail = true;
+    });
+    TestCase.assertUndefined(user2);
+    TestCase.assertEqual(didFail, true);
+  },
 };

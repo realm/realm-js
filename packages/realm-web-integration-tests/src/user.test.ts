@@ -141,6 +141,31 @@ describe("User", () => {
     }
   });
 
+  it("can be deleted", async () => {
+    const app = createApp();
+    const now = new Date();
+    const nonce = now.getTime();
+    const email = `gilfoyle-${nonce}@testing.mongodb.com`;
+    const password = "v3ry-s3cret";
+    // Register a user and authenticate
+    await app.emailPasswordAuth.registerUser({ email, password });
+    const credentials = Credentials.emailPassword(email, password);
+    const user = await app.logIn(credentials);
+    // Delete the user
+    await app.deleteUser(user);
+    // Fail when logging in again
+    try {
+      await app.logIn(credentials);
+      throw new Error("Expected an error!");
+    } catch (err) {
+      if (err instanceof Error) {
+        expect(err.message).contains("invalid username/password");
+      } else {
+        throw err;
+      }
+    }
+  });
+
   describe("linking with Email/Password credentials", () => {
     it("reuse id in access token and adds identity", async () => {
       const app = createApp();

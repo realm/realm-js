@@ -331,6 +331,14 @@ declare namespace Realm {
      * @returns A promise that resolves once the user has been logged out and removed from the app.
      */
     removeUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void>;
+
+    /**
+     * Delete the user.
+     * NOTE: This irrecoverably deletes the user from the device as well as the server!
+     *
+     * @returns A promise that resolves once the user has been deleted.
+     */
+    deleteUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void>;
   }
 
   /**

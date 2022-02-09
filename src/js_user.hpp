@@ -30,6 +30,7 @@
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
 #include <realm/object-store/sync/app.hpp>
+#include "js_types.hpp"
 #include "platform.hpp"
 
 namespace realm {

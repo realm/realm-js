@@ -262,6 +262,12 @@ export class User<
           tokenType: "refresh",
         });
       }
+    } catch (err) {
+      // Ignore failing to delete a missing refresh token
+      // It might have expired or it might be gone due to the user being deleted
+      if (!(err instanceof Error) || !err.message.includes("failed to find refresh token")) {
+        throw err;
+      }
     } finally {
       // Forget the access and refresh token
       this.accessToken = null;

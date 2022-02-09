@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added `Realm.App#deleteUser(user)` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))
 
 ### Fixed
 * Fixed a crash when using `Proxy` with a `Realm.Results` object ([#4257](https://github.com/realm/realm-js/pull/4257))
@@ -16,12 +16,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* Upgraded Realm Core from v11.8.0 to v11.9.0
-* Fixed documentation publishing ([#4276](https://github.com/realm/realm-js/pull/4276))
-* Enabled mixed tests for flexible sync ([#4279](https://github.com/realm/realm-js/pull/4279))
-* Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet` ([#4298](https://github.com/realm/realm-js/pull/4298))
+* Upgraded Realm Core from v11.8.0 to v11.9.0.
+* Fixed documentation publishing. ([#4276](https://github.com/realm/realm-js/pull/4276))
+* Enabled mixed tests for flexible sync. ([#4279](https://github.com/realm/realm-js/pull/4279))
+* Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet`. ([#4298](https://github.com/realm/realm-js/pull/4298))
 * Submitting [analytics](https://github.com/realm/realm-js/blob/master/README.md#analytics) as a postinstall script.
 
 10.12.0 Release notes (2022-1-24)
@@ -58,7 +56,7 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.7.0 to v11.8.0. ([#4207](https://github.com/realm/realm-js/issues/4207))
+* Upgraded Realm Core from v11.7.0 to v11.8.0.
 * Removed `.dir-locals.el`. Please configure Emacs to use `clang-format` e.g. https://github.com/SavchenkoValeriy/emacs-clang-format-plus.
 * Enabled `strictNullChecks` for integration tests
 * Updated release instructions
