@@ -22,6 +22,7 @@
 
 #import <React/RCTBridge+Private.h>
 #import <React/RCTJavaScriptExecutor.h>
+#include <ReactCommon/CallInvoker.h>
 
 #import <objc/runtime.h>
 #import <arpa/inet.h>
@@ -51,6 +52,7 @@ using namespace realm::rpc;
 @interface RCTBridge (Realm_RCTCxxBridge)
 - (JSGlobalContextRef)jsContextRef;
 - (void *)runtime;
+- (std::shared_ptr<facebook::react::CallInvoker>)jsCallInvoker;
 @end
 
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
@@ -83,6 +85,7 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
 
 @implementation RealmReact {
     NSMutableDictionary *_eventHandlers;
+    bool waitingForFlush;
 
 #if DEBUG
     GCDWebServer *_webServer;
@@ -108,6 +111,7 @@ RCT_EXPORT_MODULE(Realm)
     self = [super init];
     if (self) {
         _eventHandlers = [[NSMutableDictionary alloc] init];
+        waitingForFlush = false;
     }
     return self;
 }
@@ -274,7 +278,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
 typedef JSGlobalContextRef (^JSContextRefExtractor)();
 
-void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
+void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor, std::function<void()> flushUiQueue) {
     // Make sure the previous JS thread is completely finished before continuing.
     static __weak NSThread *s_currentJSThread;
     while (s_currentJSThread && !s_currentJSThread.finished) {
@@ -282,7 +286,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
     }
     s_currentJSThread = [NSThread currentThread];
 
-    RJSInitializeInContext(jsContextExtractor());
+    RJSInitializeInContext(jsContextExtractor(), flushUiQueue);
 }
 
 - (void)setBridge:(RCTBridge *)bridge {
@@ -310,7 +314,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
             if (!self || !bridge) {
                 return;
             }
-
+            
             _initializeOnJSThread(^{
                 // RN < 0.58 has a private method that returns the js context
                 if ([bridge respondsToSelector:@selector(jsContextRef)]) {
@@ -325,6 +329,17 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
                     JSGlobalContextRef ctx_;
                 };
                 return static_cast<RealmJSCRuntime*>(bridge.runtime)->ctx_;
+            }, ^{
+                if (!waitingForFlush) {
+                    waitingForFlush = true;
+                    // Calling jsCallInvokver->invokeAsync restuls in React Native flushing any pending UI
+                    // updates after we have called into JS from C++
+                    //
+                    // TODO add a bit more info
+                    [bridge jsCallInvoker]->invokeAsync([&](){
+                        waitingForFlush = false;
+                    });
+                }
             });
         } queue:RCTJSThread];
     } else { // React Native 0.44 and older
@@ -341,6 +356,8 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
 
             _initializeOnJSThread(^ {
                 return RealmReactGetJSGlobalContextForExecutor(executor, true);
+            }, [&]() {
+                // jsCallInvoker does not exist on older RN
             });
         }];
     }

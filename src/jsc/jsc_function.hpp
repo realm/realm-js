@@ -23,12 +23,18 @@
 namespace realm {
 namespace js {
 
+// TODO
+extern std::function<void()> flush_ui_queue;
+
 template <>
 inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& function, const JSObjectRef& this_object,
                                       size_t argc, const JSValueRef arguments[])
 {
     JSValueRef exception = nullptr;
     JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
+
+    flush_ui_queue();
+
     if (exception) {
         throw jsc::Exception(ctx, exception);
     }
@@ -48,6 +54,9 @@ inline JSObjectRef jsc::Function::construct(JSContextRef ctx, const JSObjectRef&
 {
     JSValueRef exception = nullptr;
     JSObjectRef result = JSObjectCallAsConstructor(ctx, function, argc, arguments, &exception);
+
+    flush_ui_queue();
+
     if (exception) {
         throw jsc::Exception(ctx, exception);
     }

@@ -387,7 +387,7 @@ RPCServerImpl::RPCServerImpl()
     }
 
     m_requests["/create_session"] = [this](const json dict) {
-        RJSInitializeInContext(m_context);
+        RJSInitializeInContext(m_context, []() {});
 
         jsc::String realm_string = "Realm";
         JSObjectRef realm_constructor =
