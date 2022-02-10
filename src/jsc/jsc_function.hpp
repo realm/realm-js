@@ -29,6 +29,17 @@ inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& funct
 {
     JSValueRef exception = nullptr;
     JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
+
+    // Flush the React Native UI task queue whenever we call into JS from C++ – see `_flushUiTaskQueue` in
+    // `lib/extensions.js` for detailed explanation of why this is necessary.
+    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(ctx, global_object, "Realm");
+    JSObjectRef flush_ui_task_queue =
+        jsc::Object::validated_get_function(ctx, realm_constructor, "_flushUiTaskQueue");
+    JSValueRef flush_ui_task_queue_exception = nullptr;
+    // Call it directly rather than via `call_method` to avoid an infinite loop
+    JSObjectCallAsFunction(ctx, flush_ui_task_queue, nullptr, 0, {}, &flush_ui_task_queue_exception);
+
     if (exception) {
         throw jsc::Exception(ctx, exception);
     }
