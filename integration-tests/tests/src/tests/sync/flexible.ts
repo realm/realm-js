@@ -108,7 +108,7 @@ async function addSubscriptionAndSync<T>(
   return { subs, sub, query };
 }
 
-describe.skipIf(environment.missingServer, "Flexible sync", function () {
+describe.skipIf(environment.missingServer || environment.skipFlexibleSync, "Flexible sync", function () {
   importAppBefore("with-db-flx");
   authenticateUserBefore();
   openRealmBeforeEach({
