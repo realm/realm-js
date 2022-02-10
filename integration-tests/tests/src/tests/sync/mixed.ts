@@ -216,7 +216,7 @@ describe.skipIf(environment.missingServer, "mixed", () => {
     describeTypes(false);
   });
 
-  describe("flexible sync", function () {
+  describe.skipIf(environment.skipFlexibleSync, "flexible sync", function () {
     importAppBefore("with-db-flx");
     describeTypes(true);
   });
