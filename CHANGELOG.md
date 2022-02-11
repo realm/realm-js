@@ -1,11 +1,15 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+NOTE: This release is rebased on our `10.13.0` release and as such contain the same enhancements and fixes.
+
 ### Enhancements
-* None.
+* Added `Realm.App#deleteUser(user)` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed a crash when using `Proxy` with a `Realm.Results` object. ([#4257](https://github.com/realm/realm-js/pull/4257))
+* JWT metadata is now populating `Realm.User.profile`. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
+* Security upgrade of `prebuild-install`. ([#4281](https://github.com/realm/realm-js/issues/4281))
+* UserIdentity metadata table will no longer occationally grow indefinitely. ([realm/realm-core#5152](https://github.com/realm/realm-core/pull/5144), since v10.0.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -14,12 +18,17 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.8.0 to v11.9.0.
+* Fixed documentation publishing. ([#4276](https://github.com/realm/realm-js/pull/4276))
+* Enabled mixed tests for flexible sync. ([#4279](https://github.com/realm/realm-js/pull/4279))
+* Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet`. ([#4298](https://github.com/realm/realm-js/pull/4298))
+* Submitting [analytics](https://github.com/realm/realm-js/blob/master/README.md#analytics) as a postinstall script.
+
 
 10.20.0-beta.1 Release notes (2022-1-27)
 =============================================================
+NOTE: This release is rebased on our `10.12.0` release and as such contain the same enhancements and fixes.
+
 ### Breaking change
 * Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
 
@@ -39,9 +48,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Remove the previous implementation to the JavaScriptCore engine (in `src/jsc`).
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Lint react-native templates and ensure they are checked by the CI.
+* Small fix to Jenkins to publish Docker image for Raspberry Pi.
 
 10.20.0-beta.0 Release notes (2021-12-21)
 =============================================================
