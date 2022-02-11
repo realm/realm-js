@@ -22,6 +22,7 @@
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/sync/app.hpp>
 
+// #include "jsc/jsc_function.hpp"
 #include "jsc_init.hpp"
 #include "platform.hpp"
 
