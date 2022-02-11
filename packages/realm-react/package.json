@@ -31,7 +31,6 @@
     "eslint": "^7.31.0",
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "eslint-plugin-tsdoc": "^0.2.14",
     "fb-watchman": "^2.0.1",
     "jest": "^27.0.6",
     "metro-react-native-babel-preset": "^0.66.2",

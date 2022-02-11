@@ -25,7 +25,7 @@ import { cachedObject } from "./cachedObject";
 type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
 export function createUseObject(useRealm: () => Realm) {
-  return function useObject<T>(type: string | { new (): T }, primaryKey: PrimaryKey): (T & Realm.Object) | null {
+  return function useObject<T extends Realm.Object>(type: string | { new (): T }, primaryKey: PrimaryKey): T | null {
     const realm = useRealm();
 
     // Create a forceRerender function for the cachedObject to use as its updateCallback, so that
