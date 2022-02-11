@@ -23,21 +23,18 @@
 namespace realm {
 namespace js {
 
+// We need to flush the React Native UI task queue whenever we call into JS from C++ – see
+// `_flushUiTaskQueue` in `lib/extensions.js` for detailed explanation of why this is necessary.
 extern js::Protected<JSObjectRef> FlushUiTaskQueueFunction;
 
-template <>
-inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& function, const JSObjectRef& this_object,
-                                      size_t argc, const JSValueRef arguments[])
+inline void flush_ui_task_queue(JSContextRef ctx)
 {
-    JSValueRef exception = nullptr;
-    JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
-
-    // Flush the React Native UI task queue whenever we call into JS from C++ – see `_flushUiTaskQueue` in
-    // `lib/extensions.js` for detailed explanation of why this is necessary.
-
-    // Try to cache the JS _flushUiTaskQueue function, stored on the Realm constructor. This could fail if
-    // the JS part of Realm has not started up yet.
+    // Try to cache the JS _flushUiTaskQueue function, which is stored on the Realm constructor, to avoid
+    // having to look it up each time. We don't do this once at jsc_class_init, because the Realm constructor
+    // does not exist at that point. FlushUiTaskQueueFunction will evaluate to false until we have successfully
+    // set it to a value.
     if (!FlushUiTaskQueueFunction) {
+        printf("TRYING\n");
         JSObjectRef global_object = JSContextGetGlobalObject(ctx);
         JSValueRef value = jsc::Object::get_property(ctx, global_object, "Realm");
         JSObjectRef realm_object = jsc::Value::to_object(ctx, value);
@@ -52,6 +49,16 @@ inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& funct
         // Call the function directly rather than via `Function::call` to avoid an infinite loop
         JSObjectCallAsFunction(ctx, FlushUiTaskQueueFunction, nullptr, 0, {}, &flush_ui_task_queue_exception);
     }
+}
+
+template <>
+inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& function, const JSObjectRef& this_object,
+                                      size_t argc, const JSValueRef arguments[])
+{
+    JSValueRef exception = nullptr;
+    JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
+
+    flush_ui_task_queue(ctx);
 
     if (exception) {
         throw jsc::Exception(ctx, exception);
@@ -72,6 +79,9 @@ inline JSObjectRef jsc::Function::construct(JSContextRef ctx, const JSObjectRef&
 {
     JSValueRef exception = nullptr;
     JSObjectRef result = JSObjectCallAsConstructor(ctx, function, argc, arguments, &exception);
+
+    flush_ui_task_queue(ctx);
+
     if (exception) {
         throw jsc::Exception(ctx, exception);
     }
