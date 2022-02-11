@@ -29,12 +29,10 @@ extern js::Protected<JSObjectRef> FlushUiTaskQueueFunction;
 
 inline void flush_ui_task_queue(JSContextRef ctx)
 {
-    // Try to cache the JS _flushUiTaskQueue function, which is stored on the Realm constructor, to avoid
-    // having to look it up each time. We don't do this once at jsc_class_init, because the Realm constructor
-    // does not exist at that point. FlushUiTaskQueueFunction will evaluate to false until we have successfully
-    // set it to a value.
+    // Cache the JS _flushUiTaskQueue function, which is stored on the Realm constructor, to avoid having
+    // to look it up each time. We don't do this once at jsc_class_init, because the Realm constructor
+    // does not exist at that point.
     if (!FlushUiTaskQueueFunction) {
-        printf("TRYING\n");
         JSObjectRef global_object = JSContextGetGlobalObject(ctx);
         JSValueRef value = jsc::Object::get_property(ctx, global_object, "Realm");
         JSObjectRef realm_object = jsc::Value::to_object(ctx, value);
@@ -58,7 +56,7 @@ inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& funct
     JSValueRef exception = nullptr;
     JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
 
-    flush_ui_task_queue(ctx);
+    // flush_ui_task_queue(ctx);
 
     if (exception) {
         throw jsc::Exception(ctx, exception);
@@ -80,7 +78,7 @@ inline JSObjectRef jsc::Function::construct(JSContextRef ctx, const JSObjectRef&
     JSValueRef exception = nullptr;
     JSObjectRef result = JSObjectCallAsConstructor(ctx, function, argc, arguments, &exception);
 
-    flush_ui_task_queue(ctx);
+    // flush_ui_task_queue(ctx);
 
     if (exception) {
         throw jsc::Exception(ctx, exception);
