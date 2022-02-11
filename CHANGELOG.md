@@ -1,10 +1,10 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.13.0 Release notes (2022-2-11)
 =============================================================
 ### Enhancements
 * Added `Realm.App#deleteUser(user)` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))
 
 ### Fixed
-* Fixed a crash when using `Proxy` with a `Realm.Results` object ([#4257](https://github.com/realm/realm-js/pull/4257))
+* Fixed a crash when using `Proxy` with a `Realm.Results` object. ([#4257](https://github.com/realm/realm-js/pull/4257))
 * JWT metadata is now populating `Realm.User.profile`. ([#3268](https://github.com/realm/realm-js/issues/3268), since v10.0.0)
 * Security upgrade of `prebuild-install`. ([#4281](https://github.com/realm/realm-js/issues/4281))
 * UserIdentity metadata table will no longer occationally grow indefinitely. ([realm/realm-core#5152](https://github.com/realm/realm-core/pull/5144), since v10.0.0)
