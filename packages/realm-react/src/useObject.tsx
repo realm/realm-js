@@ -25,7 +25,7 @@ import { cachedObject } from "./cachedObject";
 type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
 export function createUseObject(useRealm: () => Realm) {
-  return function useObject<T>(type: string | { new (): T }, primaryKey: PrimaryKey): (T & Realm.Object) | null {
+  return function useObject<T extends Realm.Object>(type: string | { new (): T }, primaryKey: PrimaryKey): T | null {
     const realm = useRealm();
 
     // Create a forceRerender method so that the cachedObject can determine a relevant change has occured
@@ -41,24 +41,6 @@ export function createUseObject(useRealm: () => Realm) {
 
     // Invoke the tearDown of the cachedObject when useObject is unmounted
     useEffect(() => {
-<<<<<<< HEAD
-      const listenerCallback: Realm.ObjectChangeCallback<T & Realm.Object> = (_, changes) => {
-        if (changes.changedProperties.length > 0) {
-          setObject(() => realm.objectForPrimaryKey(type, primaryKey) ?? null);
-        } else if (changes.deleted) {
-          setObject(null);
-        }
-      };
-      if (object !== null) {
-        object.addListener(listenerCallback);
-      }
-      return () => {
-        if (object !== null) {
-          object.removeListener(listenerCallback);
-        }
-      };
-    }, [realm, object, type, primaryKey]);
-=======
       return () => tearDown();
     }, [tearDown]);
 
@@ -66,7 +48,6 @@ export function createUseObject(useRealm: () => Realm) {
     if (object === null || object?.isValid() === false) {
       return null;
     }
->>>>>>> 987ede56 (Phase 2: Add cache support for Realm.List in Realm.Object)
 
     // Wrap object in a proxy to update the reference on rerender ( should only rerender when something has changed )
     return new Proxy(object, {});
