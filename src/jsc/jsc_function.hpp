@@ -26,27 +26,30 @@ namespace js {
 // We need to flush the React Native UI task queue whenever we call into JS from C++ – see
 // `_flushUiTaskQueue` in `lib/extensions.js` for detailed explanation of why this is necessary.
 extern js::Protected<JSObjectRef> FlushUiTaskQueueFunction;
+extern std::function<void()> send_dummy_event;
 
 inline void flush_ui_task_queue(JSContextRef ctx)
 {
-    // Cache the JS _flushUiTaskQueue function, which is stored on the Realm constructor, to avoid having
-    // to look it up each time. We don't do this once at jsc_class_init, because the Realm constructor
-    // does not exist at that point.
-    if (!FlushUiTaskQueueFunction) {
-        JSObjectRef global_object = JSContextGetGlobalObject(ctx);
-        JSValueRef value = jsc::Object::get_property(ctx, global_object, "Realm");
-        JSObjectRef realm_object = jsc::Value::to_object(ctx, value);
-        value = jsc::Object::get_property(ctx, realm_object, "_flushUiTaskQueue");
-        FlushUiTaskQueueFunction = js::Protected<JSObjectRef>(ctx, jsc::Value::to_object(ctx, value));
-    }
+    send_dummy_event();
 
-    if (FlushUiTaskQueueFunction && !JSValueIsUndefined(ctx, FlushUiTaskQueueFunction)) {
-        // We will ignore this exception, as it's not a fatal error if we can't flush the task queue for some
-        // reason - the UI will update when the user next touches the screen
-        JSValueRef flush_ui_task_queue_exception = nullptr;
-        // Call the function directly rather than via `Function::call` to avoid an infinite loop
-        JSObjectCallAsFunction(ctx, FlushUiTaskQueueFunction, nullptr, 0, {}, &flush_ui_task_queue_exception);
-    }
+    // // Cache the JS _flushUiTaskQueue function, which is stored on the Realm constructor, to avoid having
+    // // to look it up each time. We don't do this once at jsc_class_init, because the Realm constructor
+    // // does not exist at that point.
+    // if (!FlushUiTaskQueueFunction) {
+    //     JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    //     JSValueRef value = jsc::Object::get_property(ctx, global_object, "Realm");
+    //     JSObjectRef realm_object = jsc::Value::to_object(ctx, value);
+    //     value = jsc::Object::get_property(ctx, realm_object, "_flushUiTaskQueue");
+    //     FlushUiTaskQueueFunction = js::Protected<JSObjectRef>(ctx, jsc::Value::to_object(ctx, value));
+    // }
+
+    // if (FlushUiTaskQueueFunction && !JSValueIsUndefined(ctx, FlushUiTaskQueueFunction)) {
+    //     // We will ignore this exception, as it's not a fatal error if we can't flush the task queue for some
+    //     // reason - the UI will update when the user next touches the screen
+    //     JSValueRef flush_ui_task_queue_exception = nullptr;
+    //     // Call the function directly rather than via `Function::call` to avoid an infinite loop
+    //     JSObjectCallAsFunction(ctx, FlushUiTaskQueueFunction, nullptr, 0, {}, &flush_ui_task_queue_exception);
+    // }
 }
 
 template <>
@@ -56,7 +59,7 @@ inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& funct
     JSValueRef exception = nullptr;
     JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
 
-    // flush_ui_task_queue(ctx);
+    flush_ui_task_queue(ctx);
 
     if (exception) {
         throw jsc::Exception(ctx, exception);
@@ -78,7 +81,7 @@ inline JSObjectRef jsc::Function::construct(JSContextRef ctx, const JSObjectRef&
     JSValueRef exception = nullptr;
     JSObjectRef result = JSObjectCallAsConstructor(ctx, function, argc, arguments, &exception);
 
-    // flush_ui_task_queue(ctx);
+    flush_ui_task_queue(ctx);
 
     if (exception) {
         throw jsc::Exception(ctx, exception);

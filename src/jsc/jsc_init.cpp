@@ -22,6 +22,7 @@
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/sync/app.hpp>
 
+// #include "jsc/jsc_function.hpp"
 #include "jsc_init.hpp"
 #include "platform.hpp"
 namespace realm {
@@ -34,6 +35,7 @@ js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
 
 namespace js {
 js::Protected<JSObjectRef> FlushUiTaskQueueFunction;
+std::function<void()> send_dummy_event;
 } // namespace js
 } // namespace realm
 
@@ -47,13 +49,13 @@ JSObjectRef RJSConstructorCreate(JSContextRef ctx)
     return js::RealmClass<Types>::create_constructor(ctx);
 }
 
-void RJSInitializeInContext(JSContextRef ctx)
+void RJSInitializeInContext(JSContextRef ctx, std::function<void()> send_dummy_event)
 {
     static const jsc::String realm_string = "Realm";
 
     JSObjectRef global_object = JSContextGetGlobalObject(ctx);
 
-    jsc_class_init(ctx, global_object);
+    jsc_class_init(ctx, global_object, send_dummy_event);
 
     JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
 

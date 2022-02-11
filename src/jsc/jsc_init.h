@@ -19,13 +19,14 @@
 #pragma once
 
 #include <JavaScriptCore/JSBase.h>
+#include <functional>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 JSObjectRef RJSConstructorCreate(JSContextRef ctx);
-void RJSInitializeInContext(JSContextRef ctx);
+void RJSInitializeInContext(JSContextRef ctx, std::function<void()> send_dummy_event);
 void RJSInvalidateCaches();
 
 #ifdef __cplusplus

@@ -19,6 +19,9 @@
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,10 +30,11 @@ typedef void (^RealmReactEventHandler)(id message);
 
 JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create);
 
-@interface RealmReact : NSObject
+@interface RealmReact : RCTEventEmitter<RCTBridgeModule>
 
 - (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;
 - (void)removeListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;
+- (void)sendDummyEvent;
 
 @end
 

@@ -42,7 +42,7 @@ extern js::Protected<JSObjectRef> FunctionPrototype;
 extern js::Protected<JSObjectRef> RealmObjectClassConstructor;
 extern js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
 
-static inline void jsc_class_init(JSContextRef ctx, JSObjectRef globalObject)
+static inline void jsc_class_init(JSContextRef ctx, JSObjectRef globalObject, std::function<void()> sendDummyEvent)
 {
     // handle ReactNative app refresh by reseting the cached constructor values
     if (RealmObjectClassConstructor) {
@@ -66,6 +66,8 @@ static inline void jsc_class_init(JSContextRef ctx, JSObjectRef globalObject)
     JSObjectRef globalFunction = jsc::Value::to_object(ctx, value);
     value = jsc::Object::get_property(ctx, globalFunction, "prototype");
     FunctionPrototype = js::Protected<JSObjectRef>(ctx, Value::to_object(ctx, value));
+
+    js::send_dummy_event = sendDummyEvent;
 }
 
 template <typename T>

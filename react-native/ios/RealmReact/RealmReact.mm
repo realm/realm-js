@@ -78,8 +78,8 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
     return [rctJSContext context].JSGlobalContextRef;
 }
 
-@interface RealmReact () <RCTBridgeModule>
-@end
+// @interface RealmReact () <RCTBridgeModule>
+// @end
 
 @implementation RealmReact {
     NSMutableDictionary *_eventHandlers;
@@ -150,6 +150,15 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
     for (RealmReactEventHandler handler in [_eventHandlers[eventName] copy]) {
         handler(object);
     }
+}
+
+- (NSArray<NSString *> *)supportedEvents
+{
+  return @[@"RealmDummy"];
+}
+
+- (void)sendDummyEvent {
+    [self sendEventWithName:@"RealmDummy" body:@{}];
 }
 
 #if DEBUG
@@ -274,7 +283,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
 typedef JSGlobalContextRef (^JSContextRefExtractor)();
 
-void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
+void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor, std::function<void()> sendDummyEvent) {
     // Make sure the previous JS thread is completely finished before continuing.
     static __weak NSThread *s_currentJSThread;
     while (s_currentJSThread && !s_currentJSThread.finished) {
@@ -282,7 +291,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
     }
     s_currentJSThread = [NSThread currentThread];
 
-    RJSInitializeInContext(jsContextExtractor());
+    RJSInitializeInContext(jsContextExtractor(), sendDummyEvent);
 }
 
 - (void)setBridge:(RCTBridge *)bridge {
@@ -325,6 +334,8 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
                     JSGlobalContextRef ctx_;
                 };
                 return static_cast<RealmJSCRuntime*>(bridge.runtime)->ctx_;
+            }, [=]() {
+                [self sendDummyEvent];
             });
         } queue:RCTJSThread];
     } else { // React Native 0.44 and older
@@ -341,7 +352,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
 
             _initializeOnJSThread(^ {
                 return RealmReactGetJSGlobalContextForExecutor(executor, true);
-            });
+            }, [&]() { [self sendDummyEvent]; });
         }];
     }
 }
