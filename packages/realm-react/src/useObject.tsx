@@ -28,15 +28,21 @@ export function createUseObject(useRealm: () => Realm) {
     );
 
     useEffect(() => {
-      const listenerCallback: Realm.ObjectChangeCallback = (_, changes) => {
+      const listenerCallback: Realm.ObjectChangeCallback<T & Realm.Object> = (_, changes) => {
         if (changes.changedProperties.length > 0) {
           setObject(() => realm.objectForPrimaryKey(type, primaryKey) ?? null);
         } else if (changes.deleted) {
           setObject(null);
         }
       };
-      object?.addListener(listenerCallback);
-      return () => object?.removeListener(listenerCallback);
+      if (object !== null) {
+        object.addListener(listenerCallback);
+      }
+      return () => {
+        if (object !== null) {
+          object.removeListener(listenerCallback);
+        }
+      };
     }, [realm, object, type, primaryKey]);
 
     return object;
