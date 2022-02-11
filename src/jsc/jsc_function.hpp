@@ -23,7 +23,7 @@
 namespace realm {
 namespace js {
 
-extern js::Protected<JSObjectRef> FlushUiTaskQueueFunction = nullptr;
+extern js::Protected<JSObjectRef> FlushUiTaskQueueFunction;
 
 template <>
 inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& function, const JSObjectRef& this_object,
@@ -38,13 +38,14 @@ inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& funct
     // Try to cache the JS _flushUiTaskQueue function, stored on the Realm constructor. This could fail if
     // the JS part of Realm has not started up yet.
     if (!FlushUiTaskQueueFunction) {
-        value = jsc::Object::get_property(ctx, globalObject, "Realm");
-        JSObjectRef realmObject = jsc::Value::to_object(ctx, value);
-        value = jsc::Object::get_property(ctx, realmObject, "_flushUiTaskQueue");
-        js::FlushUiTaskQueueFunction = js::Protected<JSObjectRef>(ctx, Value::to_object(ctx, value));
+        JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+        JSValueRef value = jsc::Object::get_property(ctx, global_object, "Realm");
+        JSObjectRef realm_object = jsc::Value::to_object(ctx, value);
+        value = jsc::Object::get_property(ctx, realm_object, "_flushUiTaskQueue");
+        FlushUiTaskQueueFunction = js::Protected<JSObjectRef>(ctx, jsc::Value::to_object(ctx, value));
     }
 
-    if (!JSValueIsUndefined(ctx, FlushUiTaskQueueFunction)) {
+    if (FlushUiTaskQueueFunction && !JSValueIsUndefined(ctx, FlushUiTaskQueueFunction)) {
         // We will ignore this exception, as it's not a fatal error if we can't flush the task queue for some
         // reason - the UI will update when the user next touches the screen
         JSValueRef flush_ui_task_queue_exception = nullptr;
