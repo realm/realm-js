@@ -23,6 +23,8 @@
 namespace realm {
 namespace js {
 
+extern js::Protected<JSObjectRef> FlushUiTaskQueueFunction = nullptr;
+
 template <>
 inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& function, const JSObjectRef& this_object,
                                       size_t argc, const JSValueRef arguments[])
@@ -32,13 +34,23 @@ inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& funct
 
     // Flush the React Native UI task queue whenever we call into JS from C++ – see `_flushUiTaskQueue` in
     // `lib/extensions.js` for detailed explanation of why this is necessary.
-    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
-    JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(ctx, global_object, "Realm");
-    JSObjectRef flush_ui_task_queue =
-        jsc::Object::validated_get_function(ctx, realm_constructor, "_flushUiTaskQueue");
-    JSValueRef flush_ui_task_queue_exception = nullptr;
-    // Call it directly rather than via `call_method` to avoid an infinite loop
-    JSObjectCallAsFunction(ctx, flush_ui_task_queue, nullptr, 0, {}, &flush_ui_task_queue_exception);
+
+    // Try to cache the JS _flushUiTaskQueue function, stored on the Realm constructor. This could fail if
+    // the JS part of Realm has not started up yet.
+    if (!FlushUiTaskQueueFunction) {
+        value = jsc::Object::get_property(ctx, globalObject, "Realm");
+        JSObjectRef realmObject = jsc::Value::to_object(ctx, value);
+        value = jsc::Object::get_property(ctx, realmObject, "_flushUiTaskQueue");
+        js::FlushUiTaskQueueFunction = js::Protected<JSObjectRef>(ctx, Value::to_object(ctx, value));
+    }
+
+    if (!JSValueIsUndefined(ctx, FlushUiTaskQueueFunction)) {
+        // We will ignore this exception, as it's not a fatal error if we can't flush the task queue for some
+        // reason - the UI will update when the user next touches the screen
+        JSValueRef flush_ui_task_queue_exception = nullptr;
+        // Call the function directly rather than via `Function::call` to avoid an infinite loop
+        JSObjectCallAsFunction(ctx, FlushUiTaskQueueFunction, nullptr, 0, {}, &flush_ui_task_queue_exception);
+    }
 
     if (exception) {
         throw jsc::Exception(ctx, exception);

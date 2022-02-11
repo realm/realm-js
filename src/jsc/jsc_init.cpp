@@ -31,6 +31,10 @@ js::Protected<JSObjectRef> FunctionPrototype;
 js::Protected<JSObjectRef> RealmObjectClassConstructor;
 js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
 } // namespace jsc
+
+namespace js {
+js::Protected<JSObjectRef> FlushUiTaskQueueFunction;
+} // namespace js
 } // namespace realm
 
 extern "C" {

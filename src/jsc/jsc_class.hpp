@@ -19,6 +19,7 @@
 #pragma once
 
 #include "jsc_types.hpp"
+#include "jsc_function.hpp"
 
 #include "js_class.hpp"
 #include "js_util.hpp"
@@ -51,6 +52,8 @@ static inline void jsc_class_init(JSContextRef ctx, JSObjectRef globalObject)
     if (RealmObjectClassConstructorPrototype) {
         RealmObjectClassConstructorPrototype = js::Protected<JSObjectRef>();
     }
+
+    // tODO need to reset my one here?
 
     JSValueRef value = nullptr;
     value = jsc::Object::get_property(ctx, globalObject, "Object");
