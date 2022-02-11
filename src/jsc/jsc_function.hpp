@@ -26,9 +26,7 @@ namespace js {
 // Function passed in from the React Native initialisation code to flush the UI microtask queue
 extern std::function<void()> flush_ui_queue;
 
-template <>
-inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& function, const JSObjectRef& this_object,
-                                      size_t argc, const JSValueRef arguments[])
+inline void flush_ui_task_queue(JSContextRef ctx)
 {
     JSValueRef exception = nullptr;
     JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
