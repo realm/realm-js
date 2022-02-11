@@ -53,6 +53,8 @@ static inline void jsc_class_init(JSContextRef ctx, JSObjectRef globalObject, st
         RealmObjectClassConstructorPrototype = js::Protected<JSObjectRef>();
     }
 
+    // tODO need to reset my one here?
+
     JSValueRef value = nullptr;
     value = jsc::Object::get_property(ctx, globalObject, "Object");
     JSObjectRef objectClass = jsc::Value::to_object(ctx, value);
