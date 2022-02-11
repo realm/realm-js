@@ -31,18 +31,19 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Run JSDoc documentation build
         run: npm run jsdoc
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Set up S3cmd and configure AWS credentials
+        uses: s3-actions/s3cmd@v1.1
         with:
-          aws-access-key-id: ${{ secrets.DOCS_S3_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.DOCS_S3_SECRET_KEY }}
-          aws-region: us-west-1
+          provider: aws
+          region: "us-west-1"
+          access_key: ${{ secrets.DOCS_S3_ACCESS_KEY }}
+          secret_key: ${{ secrets.DOCS_S3_SECRET_KEY }}
       # Get the version number so we can specify the correct input path for uploading the docs -
       # JSDoc outputs to docs/output/realm/<package.json version number>
       - name: get-npm-version
         id: package-version
         uses: martinbeentjes/npm-get-version-action@master
       - name: Upload versioned docs (for archival)
-        run: aws s3 put --acl public-read docs/output/realm/${{ steps.package-version.outputs.current-version}} s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/realm-sdks/js/${{ steps.package-version.outputs.current-version}}
+        run: s3cmd put --acl-public docs/output/realm/${{ steps.package-version.outputs.current-version}} s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/realm-sdks/js/${{ steps.package-version.outputs.current-version}}
       - name: Upload latest docs (to live site)
-        run: aws s3 put --acl public-read docs/output/realm/${{ steps.package-version.outputs.current-version}} s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/realm-sdks/js/latest
+        run: s3cmd put --acl-public docs/output/realm/${{ steps.package-version.outputs.current-version}} s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/realm-sdks/js/latest
