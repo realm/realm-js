@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #import "RealmReact.h"
-#import "RealmAnalytics.h"
 
 #import "jsc/jsc_init.h"
 
@@ -106,8 +105,6 @@ RCT_EXPORT_MODULE(Realm)
     if (self != [RealmReact class]) {
         return;
     }
-
-    RLMSendAnalytics();
 }
 
 - (instancetype)init {
@@ -208,7 +205,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
         [ipAddresses addObject:@(host)];
     }
-    
+
     freeifaddrs(ifaddrs);
     return [ipAddresses copy];
 }

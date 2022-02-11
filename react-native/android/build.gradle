@@ -329,14 +329,6 @@ task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type
           'build.gradle'
       }
     }
-
-    // copy analytics script
-    into ('/') {
-      from "$projectDir/analytics_template"
-      rename { String fileName ->
-          'analytics.gradle'
-      }
-    }
 }
 
 // publishing into maven local

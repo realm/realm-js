@@ -38,8 +38,8 @@ Prerequisites:
 * nvm (on Mac)
 * cocoapods (on Mac)
 * Android SDK 23+
-* Android NDK 21.0 
-    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.  
+* Android NDK 21.0
+    - Available via the SDK Manager in Android Studio **Tools > SDK Manager**.
     - From the command-line: ```$ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.0.6113669"```.
 
 Clone RealmJS repository:
@@ -224,9 +224,10 @@ Currently the following information is reported:
 
  * What version of Realm is being installed.
  * The OS platform and version which is being used.
- * Node.js, v8, libuv, OpenSSL version numbers.
+ * If a JavaScript framework (currently React Native and Electron) is used and its version.
+ * Which JavaScript engine is being used.
+ * Node.js version number.
  * An anonymous machine identifier and hashed application path to aggregate the other information on.
-
 ## Code of Conduct
 
 This project adheres to the Contributor Covenant [code of conduct](https://realm.io/conduct/).

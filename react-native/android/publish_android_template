@@ -65,20 +65,8 @@ String getAppId () {
     return myappId
 }
 
-apply from: 'analytics.gradle'
-
 import groovy.json.JsonSlurper
 
-def getNpmVersion() {
-    def inputFile = new File(buildscript.sourceFile.getParent() + "/../package.json")
-    def packageJson = new JsonSlurper().parseText(inputFile.text)
-    return packageJson["version"]
-}
-
-task send(type: SendAnalyticsTask) {
-    applicationId = getAppId()
-    version = getNpmVersion().trim()
-}
 
 preBuild.dependsOn send
 
