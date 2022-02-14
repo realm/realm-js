@@ -199,12 +199,12 @@ declare namespace Realm {
         [keys: string]: any;
     }
 
-    interface ObjectChangeSet {
+    interface ObjectChangeSet<T> {
         deleted: boolean;
-        changedProperties: string[]
+        changedProperties: (keyof T)[]
     }
 
-    type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
+    type ObjectChangeCallback<T> = (object: T, changes: ObjectChangeSet<T>) => void;
 
     /**
      * Object
@@ -251,16 +251,16 @@ declare namespace Realm {
         /**
          * @returns void
          */
-        addListener(callback: ObjectChangeCallback): void;
+        addListener(callback: ObjectChangeCallback<this>): void;
 
-        removeListener(callback: ObjectChangeCallback): void;
+        removeListener(callback: ObjectChangeCallback<this>): void;
 
         removeAllListeners(): void;
 
         /**
          * @returns string
          */
-        getPropertyType(propertyName: string) : string;
+        getPropertyType(propertyName: string): string;
     }
 
     /**
