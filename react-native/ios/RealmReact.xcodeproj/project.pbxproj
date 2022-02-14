@@ -10,7 +10,6 @@
 		85CA5FE61F1536720038172D /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F606902F1CA277CD0003FB26 /* libRealmJS.a */; };
 		F60690171CA2766F0003FB26 /* RealmReact.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = F60690161CA2766F0003FB26 /* RealmReact.h */; };
 		F60690191CA2766F0003FB26 /* RealmReact.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690181CA2766F0003FB26 /* RealmReact.mm */; };
-		F60690211CA277410003FB26 /* RealmAnalytics.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690201CA277410003FB26 /* RealmAnalytics.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,8 +69,6 @@
 		F60690131CA2766F0003FB26 /* libRealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60690161CA2766F0003FB26 /* RealmReact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RealmReact.h; sourceTree = "<group>"; };
 		F60690181CA2766F0003FB26 /* RealmReact.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmReact.mm; sourceTree = "<group>"; };
-		F606901F1CA277410003FB26 /* RealmAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RealmAnalytics.h; sourceTree = "<group>"; };
-		F60690201CA277410003FB26 /* RealmAnalytics.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmAnalytics.mm; sourceTree = "<group>"; };
 		F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RealmJS.xcodeproj; path = ../../src/RealmJS.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -107,8 +104,6 @@
 		F60690151CA2766F0003FB26 /* RealmReact */ = {
 			isa = PBXGroup;
 			children = (
-				F606901F1CA277410003FB26 /* RealmAnalytics.h */,
-				F60690201CA277410003FB26 /* RealmAnalytics.mm */,
 				F60690161CA2766F0003FB26 /* RealmReact.h */,
 				F60690181CA2766F0003FB26 /* RealmReact.mm */,
 				3F8D968A220CE21400327C8C /* RealmReact.xcconfig */,
@@ -175,6 +170,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = F606900A1CA2766F0003FB26;
@@ -222,7 +218,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F60690211CA277410003FB26 /* RealmAnalytics.mm in Sources */,
 				F60690191CA2766F0003FB26 /* RealmReact.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
