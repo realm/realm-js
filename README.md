@@ -60,7 +60,7 @@ npx react-native init JsExample --template @realm/react-native-template-js
 
 ## Building Realm JS
 
-For instructions on building Realm JS yourself from source, see the [building.md](contrib/building.md) file.
+For instructions on building Realm JS yourself from source, see the building.md file.
 
 ## Issues with debugging
 Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. See https://github.com/realm/realm-js/issues/491 for more information. The best workaround is to use Safari instead, as a user has described [here](https://github.com/realm/realm-js/issues/491#issuecomment-404670910).
