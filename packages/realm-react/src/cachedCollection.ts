@@ -23,6 +23,9 @@ function getCacheKey(id: string) {
   return `${id}`;
 }
 
+// Creates a proxy around a Realm.Collection that will update any objects
+// references on any relevant change (update, insert, deletion)
+// This fixes using a realm.object as a property for a component wrapped in React.memo
 export function cachedCollection<T extends Realm.Object>({
   collection,
   updateCallback,

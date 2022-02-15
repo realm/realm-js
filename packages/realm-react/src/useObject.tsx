@@ -24,8 +24,28 @@ import { cachedObject } from "./cachedObject";
 // TODO: If we depend on a new version of Realm for @realm/react, we can just use Realm.PrimaryKey
 type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
+/**
+ * Generates the `useObject` hook from a given `useRealm` hook.
+ *
+ * @param useRealm - Hook that returns an open Realm instance
+ * @returns useObject - Hook that is used to gain access to a single Realm object from a primary key
+ */
 export function createUseObject(useRealm: () => Realm) {
-  return function useObject<T extends Realm.Object>(type: string | { new (): T }, primaryKey: PrimaryKey): T | null {
+  /**
+   * Returns a realm object from a given type and primary key.
+   * The hook will update on any changes to the properties on the returned object
+   * and return null if it either doesn't exists or has been deleted.
+   *
+   * @example
+   * ```
+   * const object = useObject(Object, objectId);
+   * ```
+   *
+   * @param type - The object type, depicted by a string or a class extending Realm.Object
+   * @param primaryKey - The primary key of the desired object which will be retrieved using Realm#objectForPrimaryKey
+   * @returns either the desired realm object or null in the case of it being deleted or not existing.
+   */
+  return function useObject<T>(type: string | { new (): T }, primaryKey: PrimaryKey): (T & Realm.Object) | null {
     const realm = useRealm();
 
     // Create a forceRerender function for the cachedObject to use as its updateCallback, so that

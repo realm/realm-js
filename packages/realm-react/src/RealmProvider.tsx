@@ -22,17 +22,45 @@ import { isEqual } from "lodash";
 
 type ProviderProps = Realm.Configuration;
 
+/**
+ * Generates `RealmProvider` given a RealmConfiguration and React.Context.
+ *
+ * @param realmConfig - The configuration of the realm to be instantiated
+ * @param RealmContext - The context that will contain the Realm instance
+ * @returns a RealmProvider component that provides context to all context hooks
+ */
 export function createRealmProvider(
   realmConfig: Realm.Configuration,
   RealmContext: React.Context<Realm | null>,
 ): React.FC<ProviderProps> {
+  /**
+   * Returns a Context Provider component that is required to wrap any component using
+   * the realm hooks.
+   *
+   * @example
+   * ```
+   * const AppRoot = () => {
+   *   return (
+   *     <RealmProvider path={"data.realm"} sync={syncConfigurationObject}>
+   *       <App/>
+   *     </RealmProvider>
+   *   )
+   * }
+   * ```
+   * @param props - One can override any attribute of a Realm.Configuration through the props using
+   * an attribute of the same key.
+   */
   return ({ children, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
+    // This forces the useEffect using configVersion as a dependency to reconfigure the realm.
     const [configVersion, setConfigVersion] = useState(0);
 
     const currentRealm = useRef(realm);
+    // This will merge the configuration provided by createRealmContext and any configuration properties
+    // set directly on the RealmProvider component.  Any settings on the component will override the original configuration.
     const configuration = useRef<Realm.Configuration>(mergeRealmConfiguration(realmConfig, restProps));
 
+    // Reconfigure the configuration if any of the RealmProvider properties change.
     useEffect(() => {
       const combinedConfig = mergeRealmConfiguration(realmConfig, restProps);
       if (!areConfigurationsIdentical(configuration.current, combinedConfig)) {
@@ -47,6 +75,7 @@ export function createRealmProvider(
 
     useEffect(() => {
       const realmRef = currentRealm.current;
+      // This will ensure that realm is configured on the first render
       const shouldInitRealm = realmRef === null;
       const initRealm = async () => {
         const openRealm = await Realm.open(configuration.current);
@@ -72,6 +101,8 @@ export function createRealmProvider(
   };
 }
 
+// Create a configuration with configA as the default and overwritten by any
+// attributes in configB
 export function mergeRealmConfiguration(
   configA: Realm.Configuration,
   configB: Partial<Realm.Configuration>,
@@ -90,6 +121,7 @@ export function mergeRealmConfiguration(
   } as Realm.Configuration;
 }
 
+// Utility function that does a deep comparison (key: value) of object a with object b
 export function areConfigurationsIdentical(a: Realm.Configuration, b: Realm.Configuration): boolean {
   return isEqual(a, b);
 }

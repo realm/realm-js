@@ -29,11 +29,33 @@ type RealmContext = {
   useObject: ReturnType<typeof createUseObject>;
   useRealm: ReturnType<typeof createUseRealm>;
 };
-
 interface CreateRealmContext {
   (realmConfig: Realm.Configuration): RealmContext;
 }
 
+/**
+ * Creates realm hooks and Provider component for a given Realm configuration
+ *
+ * @example
+ * ```
+ *class Task extends Realm.Object {
+ *  ...
+ *
+ *  static schema = {
+ *    name: 'Task',
+ *    primaryKey: '_id',
+ *    properties: {
+ *      ...
+ *    },
+ *  };
+ *}
+ *
+ *const {userRealm, useQuery, useObject, RealmProvider} = createRealmContext({schema: [Task]});
+ * ```
+ *
+ * @param realmConfig - Configuration used to open a Realm
+ * @returns RealmProvider, useRealm, useQuery, useObject
+ */
 export const createRealmContext: CreateRealmContext = (realmConfig: Realm.Configuration) => {
   const RealmContext = createContext<Realm | null>(null);
   const RealmProvider = createRealmProvider(realmConfig, RealmContext);

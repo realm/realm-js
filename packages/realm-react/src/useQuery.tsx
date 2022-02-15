@@ -20,15 +20,45 @@ import Realm from "realm";
 import { useEffect, useReducer, useMemo } from "react";
 import { cachedCollection } from "./cachedCollection";
 
+/**
+ * Generates the `useQuery` hook from a given `useRealm` hook.
+ *
+ * @param useRealm - Hook that returns an open Realm instance
+ * @returns useObject - Hook that is used to gain access to a Realm collection
+ */
 export function createUseQuery(useRealm: () => Realm) {
+  /**
+   * Returns a collection of realm objects from a given type.
+   * The hook will update on any changes to any object in the collection
+   * and return an empty array if the colleciton is empty.
+   *
+   * The result of this can be consumed directly by the `data` argument of any React Native
+   * VirtualizedList or FlatList.  If the RenderItem component is a React.Memo, then a re-render
+   * will only occur on changes to the single object.
+   *
+   * @example
+   * ```
+   * const collection = useQuery(Object);
+   *
+   * // The methods `sorted` and `filtered` should be wrapped in a useMemo.
+   * const sortedCollection = useMemo(collection.sorted(), [collection]);
+   * ```
+   *
+   * @param type - The object type, depicted by a string or a class extending Realm.Object
+   * @returns a collection of realm objects or an empty array
+   */
   return function useQuery<T>(type: string | ({ new (): T } & Realm.ObjectClass)): Realm.Results<T & Realm.Object> {
     const realm = useRealm();
+    // Create a forceRerender function for the cachedCollection to use as its updateCallback, so that
+    // the cachedCollection can force the component using this hook to re-render when a change occurs.
     const [, forceRerender] = useReducer((x) => x + 1, 0);
+    // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
     const { collection, tearDown } = useMemo(
       () => cachedCollection({ collection: realm.objects(type), updateCallback: forceRerender }),
       [type, realm],
     );
 
+    // Invoke the tearDown of the cachedCollection when useQuery is unmounted
     useEffect(() => {
       return () => {
         tearDown();

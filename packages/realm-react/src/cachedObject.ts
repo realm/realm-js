@@ -18,6 +18,8 @@
 import Realm from "realm";
 import { cachedCollection } from "./cachedCollection";
 
+// Creates a proxy around a Realm.Object, that updates its reference on any relevant
+// change.  It also wraps accesses to Realm.List attributes into a cachedCollection.
 export function cachedObject<T extends Realm.Object>({
   object,
   updateCallback,
