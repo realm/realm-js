@@ -27,6 +27,7 @@ export class Task extends Realm.Object {
       description,
       isComplete: false,
       createdAt: new Date(),
+      username: "default",
     };
   }
 
@@ -39,11 +40,11 @@ export class Task extends Realm.Object {
       description: "string",
       isComplete: { type: "bool", default: false },
       createdAt: "date",
+      username: "string",
     },
   };
 }
 
 export default createRealmContext({
   schema: [Task],
-  deleteRealmIfMigrationNeeded: true,
 });
